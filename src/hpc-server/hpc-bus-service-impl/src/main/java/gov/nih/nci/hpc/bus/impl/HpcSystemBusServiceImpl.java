@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,20 +132,65 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     //---------------------------------------------------------------------//  
     
     @Override
-    public void updateDataTransferUploadStatus() throws HpcException
+    public void processDataTranferUploadReceived() throws HpcException
     {
     	// Use system account to perform this service.
         // TODO: Make this AOP. 
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through the data objects that their data transfer is in-progress.
-    	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataObjectsInProgress();
-    	logger.info(dataObjectsInProgress.size() + " Data Objects In Progress: " + dataObjectsInProgress);
+    	List<HpcDataObject> dataObjectsReceived = dataManagementService.getDataObjectsUploadReceived();
+    	logger.info(dataObjectsReceived.size() + " Data Objects Upload Received: " + dataObjectsReceived);
+    	for(HpcDataObject dataObject : dataObjectsReceived) {
+    		String path = dataObject.getAbsolutePath();
+    		logger.info("Processing data object upload queued: " + path);
+    		try {
+    		     // Get the system metadata.
+    			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
+    			    metadataService.getDataObjectSystemGeneratedMetadata(path);
+    			 
+ 				// Transfer the data file.
+ 		        HpcDataObjectUploadResponse uploadResponse = 
+ 		           dataTransferService.uploadDataObject(systemGeneratedMetadata.getSourceLocation(), 
+ 		        		                                null, path, 
+ 		        		                                systemGeneratedMetadata.getRegistrarId(),
+ 		        		                                systemGeneratedMetadata.getCallerObjectId(), 
+ 		        		                                systemGeneratedMetadata.getRegistrarDOC());
+ 		        
+ 			    // Generate system metadata and attach to the data object.
+ 			    metadataService.updateDataObjectSystemGeneratedMetadata(
+ 			        		                    path, uploadResponse.getArchiveLocation(),
+ 			    			                    uploadResponse.getDataTransferRequestId(), 
+ 			    			                    uploadResponse.getChecksum(), 
+ 			    			                    uploadResponse.getDataTransferStatus(),
+ 			    			                    uploadResponse.getDataTransferType(),
+ 			    			                    uploadResponse.getDataTransferCompleted()); 
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to process queued data transfer upload :" + path, e);
+    			    
+    			    // If timeout occurred, move the status to unknown.
+    			    setTransferUploadStatusToUnknown(dataObject, true);
+    		}
+    	}
+    	
+    }
+    
+    @Override
+    public void processDataTranferUploadInProgress() throws HpcException
+    {
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
+    	// Iterate through the data objects that their data transfer is in-progress.
+    	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataObjectsUploadInProgress();
+    	logger.info(dataObjectsInProgress.size() + " Data Objects Upload In Progress: " + dataObjectsInProgress);
     	for(HpcDataObject dataObject : dataObjectsInProgress) {
     		String path = dataObject.getAbsolutePath();
-    		logger.info("Update Data Transfer Status for: " + path);
+    		logger.info("Processing data object upload in-progress: " + path);
     		try {
-    		     // Get current data transfer Request Info.
+    		     // Get the system metadata.
     			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
     			    metadataService.getDataObjectSystemGeneratedMetadata(path);
     			 
@@ -203,8 +249,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through the data objects that their data is in temporary archive.
-    	List<HpcDataObject> dataObjectsInTemporaryArchive = dataManagementService.getDataObjectsInTemporaryArchive();
-    	logger.info(dataObjectsInTemporaryArchive.size() + " Data Objects In Temporary Archive: " + 
+    	List<HpcDataObject> dataObjectsInTemporaryArchive = 
+    			            dataManagementService.getDataObjectsUploadInTemporaryArchive();
+    	logger.info(dataObjectsInTemporaryArchive.size() + " Data Objects Upload In Temporary Archive: " + 
     	            dataObjectsInTemporaryArchive);
     	for(HpcDataObject dataObject : dataObjectsInTemporaryArchive) {
     		String path = dataObject.getAbsolutePath();
@@ -266,34 +313,23 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	securityService.setSystemRequestInvoker();
     	
     	// Iterate through all the data object download tasks that are in their 2nd hop (i.e. GLOBUS download
-    	// to user's endpoint is in progress)
+    	// to user's endpoint is in progress).
     	for(HpcDataObjectDownloadTask downloadTask :
     		dataTransferService.getDataObjectDownloadTasks(HpcDataTransferType.GLOBUS)) {
     		try {
-    		     // Get the data transfer download status.
-    		     HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
-    		     dataTransferService.getDataTransferDownloadStatus(
-    			  	                    downloadTask.getDataTransferType(), 
-    				                    downloadTask.getDataTransferRequestId(),
-    				                    downloadTask.getDoc());
-    		
-    		     // Check the status of the data transfer. 
-    		     if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
-    		    	// This download task is no longer in-progress - complete it.
-    		        boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
-    		        String message = result ? null : 
-    		        	             downloadTask.getDataTransferType() + " transfer failed. Request ID: " +
-    		        	             downloadTask.getDataTransferRequestId();
-    		        Calendar completed = Calendar.getInstance();
-    		    	dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
-    		    	
-    		    	// Send a download completion event (if requested to).
-    		    	if(downloadTask.getCompletionEvent()) {
-    		           addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
-    		        		                        HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
-    		        		                        result, message, downloadTask.getDestinationLocation(),
-    				                                completed);
-    		    	}
+    		     switch(downloadTask.getDataTransferStatus()) {
+    		            case RECEIVED:
+    		    	         dataTransferService.continueDataObjectDownloadTask(downloadTask);
+    		    	         break;
+    		    	   
+    		            case IN_PROGRESS:
+    			             completeDataObjectDownloadTaskInProgress(downloadTask);
+    			             break;
+    			        
+    			        default:
+    				            throw new HpcException("Unexpected data transfer download status [" + 
+    			                                       downloadTask.getDataTransferStatus() + "] for task: " +
+    			                                       downloadTask.getId(), HpcErrorType.UNEXPECTED_ERROR);
     		     }
     		     
     		} catch(HpcException e) {
@@ -312,19 +348,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	for(HpcCollectionDownloadTask downloadTask :
     		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
     		try {
-    			 // Get the collection to be downloaded.
-        		 HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(), true);
-        		 if(collection == null) {
-        			throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
-        		 }
+    			 List<HpcCollectionDownloadTaskItem> downloadItems = null;
+    			 
+    			 if(downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+    			    // Get the collection to be downloaded.
+        		    HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(), true);
+        		    if(collection == null) {
+        			   throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+        		    }
         		 
-        		 // Download all files under this collection.
-        		 List<HpcCollectionDownloadTaskItem> downloadItems = 
-        			  downloadCollection(collection, downloadTask.getDestinationLocation(), 
-			                             downloadTask.getUserId());
-        		 
+        		    // Download all files under this collection.
+        		    downloadItems = downloadCollection(collection, downloadTask.getDestinationLocation(), 
+			                                           downloadTask.getUserId());
+        		    
+    			 } else if(downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+    				       downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(), 
+    				    		                               downloadTask.getDestinationLocation(), 
+                                                               downloadTask.getUserId());
+    			 }
+    			 
         		 // Verify data objects found under this collection.
-    			 if(downloadItems.isEmpty()) {
+    			 if(downloadItems == null || downloadItems.isEmpty()) {
     				// No data objects found under this collection.
     				throw new HpcException("No data objects found under collection",
 				                           HpcErrorType.INVALID_REQUEST_INPUT);
@@ -695,7 +739,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      */
 	private void addDataTransferDownloadEvent(String userId, String path, 
 			                                  HpcDownloadTaskType downloadTaskType,
-                                              Integer downloadTaskId,
+                                              String downloadTaskId,
 			                                  boolean result, String message,
 			                                  HpcFileLocation destinationLocation, 
 			                                  Calendar dataTransferCompleted) 
@@ -733,36 +777,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		
 		// Iterate through the data objects in the collection and download them.
 		for(HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-			// Calculate the destination location for this data object.
-			String dataObjectPath = dataObjectEntry.getPath();
-			HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
-			dataObjectDownloadRequest.setDestination(
-				calculateDownloadDestinationFileLocation(destinationLocation, dataObjectPath));
-			
-			// Instantiate a download item for this data object.
-			HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
-			downloadItem.setPath(dataObjectPath);
-			
-			// Download this data object.
-			try {
-				 HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = 
-				    dataManagementBusService.downloadDataObject(dataObjectPath, dataObjectDownloadRequest,
-					    	                                    userId, false);
-				 
-				 downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
-				 downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
-			     
-			} catch(HpcException e) {
-				    // Data object download failed. 
-				    logger.error("Failed to download data object in a collection" , e); 
-				    
-				    downloadItem.setResult(false);
-				    downloadItem.setDestinationLocation(dataObjectDownloadRequest.getDestination());
-				    downloadItem.setMessage(e.getMessage());
-				    
-			} finally {
-				       downloadItems.add(downloadItem);
-			}
+			downloadItems.add(downloadDataObject(dataObjectEntry.getPath(), destinationLocation, userId));
 		}
 		
 		// Iterate through the sub-collections and download them.
@@ -780,6 +795,73 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		}
 		
 		return downloadItems;
+	}
+	
+    /** 
+     * Download a list of data objects.
+     * 
+     * @param dataObjectPaths The list of data object path to download.
+     * @param destinationLocation The download destination location.
+     * @param userId The user ID who requested the collection download.
+     * @return The download task items (each item represent a data-object download from the requested list).
+     * @throws HpcException on service failure.
+     */
+	private List<HpcCollectionDownloadTaskItem> 
+	        downloadDataObjects(List<String> dataObjectPaths, 
+	        		            HpcFileLocation destinationLocation, String userId) 
+			                   throws HpcException
+	{
+		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+		
+		// Iterate through the data objects in the collection and download them.
+		for(String dataObjectPath : dataObjectPaths) {
+			downloadItems.add(downloadDataObject(dataObjectPath, destinationLocation, userId));
+		}
+		
+		return downloadItems;
+	}
+	
+    /** 
+     * Download a data object.
+     * 
+     * @param path The data object path.
+     * @param destinationLocation The download destination location.
+     * @param userId The user ID who requested the collection download.
+     * @return The download task item.
+     * @throws HpcException on service failure.
+     */
+	private HpcCollectionDownloadTaskItem downloadDataObject(String path, 
+			                                                 HpcFileLocation destinationLocation, 
+			                                                 String userId) 
+	{
+		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
+		dataObjectDownloadRequest.setDestination(
+			calculateDownloadDestinationFileLocation(destinationLocation, path));
+		
+		// Instantiate a download item for this data object.
+		HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
+		downloadItem.setPath(path);
+		
+		// Download this data object.
+		try {
+			 HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = 
+			    dataManagementBusService.downloadDataObject(path, dataObjectDownloadRequest,
+				    	                                    userId, false);
+			 
+			 downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
+			 downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
+		     
+		} catch(HpcException e) {
+			    // Data object download failed. 
+			    logger.error("Failed to download data object in a collection" , e); 
+			    
+			    downloadItem.setResult(false);
+			    downloadItem.setDestinationLocation(dataObjectDownloadRequest.getDestination());
+			    downloadItem.setMessage(e.getMessage());
+			    
+		} 
+		
+		return downloadItem;
 	}
 	
     /** 
@@ -801,7 +883,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	}
 	
     /**
-     * Complete a collection download task
+     * Complete a collection download task.
      * 1. Update task info in DB with results info.
      * 2. Send an event.
      *
@@ -816,10 +898,58 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     {
     	Calendar completed = Calendar.getInstance();
     	dataTransferService.completeCollectionDownloadTask(downloadTask, result, message, completed);
-    	addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
-                                     HpcDownloadTaskType.COLLECTION, downloadTask.getId(),
+    	
+    	// Set the payload with either the collection path or the list of data object paths.
+        String path = "";
+        if(downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+           path = downloadTask.getPath();
+        } else if(downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+        	      path = StringUtils.join(downloadTask.getDataObjectPaths(), ", ");
+        }
+        
+    	addDataTransferDownloadEvent(downloadTask.getUserId(), path,
+    			                     downloadTask.getType(), downloadTask.getId(),
                                      result, message, downloadTask.getDestinationLocation(),
                                      completed);
+    }
+    
+    /**
+     * Complete a data object download task that is in-progress (Globus transfer is in-progress).
+     * 1. Check the status of Globus transfer.
+     * 2. If completed (succeeded ot failed), record the result.
+     *
+     * @param downloadTask The download task to complete.
+     * @throws HpcException on service failure.
+     */
+    private void completeDataObjectDownloadTaskInProgress(HpcDataObjectDownloadTask downloadTask) 
+                                                         throws HpcException
+    {
+    
+	    // Get the data transfer download status.
+	    HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
+	    dataTransferService.getDataTransferDownloadStatus(
+		  	                    downloadTask.getDataTransferType(), 
+			                    downloadTask.getDataTransferRequestId(),
+			                    downloadTask.getDoc());
+	
+	    // Check the status of the data transfer. 
+	    if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+	   	   // This download task is no longer in-progress - complete it.
+	       boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
+	       String message = result ? null : 
+	       	                downloadTask.getDataTransferType() + " transfer failed. Request ID: " +
+	       	                downloadTask.getDataTransferRequestId();
+	       Calendar completed = Calendar.getInstance();
+	   	   dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
+	   	
+	   	   // Send a download completion event (if requested to).
+	   	   if(downloadTask.getCompletionEvent()) {
+	          addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
+	       		                           HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
+	       		                           result, message, downloadTask.getDestinationLocation(),
+			                               completed);
+	   	   }
+	    }
     }
 }
 

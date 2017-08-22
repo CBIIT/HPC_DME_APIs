@@ -20,7 +20,12 @@ verify_registration  dataObject-registration-response-header.tmp
 
 
 FOLDER_PATH=collection/$(cat registered-folder-path.tmp)
+OBJECT_GET_PATH=dataObject/$(cat registered-dataobject-path.tmp)
 
+
+RESPONSE_HEADER=get-item-response-header.tmp 
+RESPONSE_MSG=get-item-response-message.json.tmp
+get_item "$OBJECT_GET_PATH"  "$RESPONSE_HEADER" "$RESPONSE_MSG"
 
 RESPONSE_HEADER=download-response-header.tmp 
 RESPONSE_MSG=download-response-message.json.tmp
@@ -29,12 +34,22 @@ download_async "$FOLDER_PATH"
 HTTP_CODE=`get_http_code $RESPONSE_HEADER`
 echo $HTTP_CODE
 
-FILE_ID=$(cat registered-dataobject-path.tmp)
+taskId=$(get_json_unquotted_value $RESPONSE_MSG taskId)
 
-#Check that the object is still in archive state: 
+sleep 100 
+get_download_status "$taskId" collection
+RESPONSE_HEADER=get-download-status-response-header.tmp
+RESPONSE_MSG=get-download-status-response-message.json.tmp
+status=$(get_json_unquotted_value $RESPONSE_MSG inProgress)
+echo "inProgress:$status"
+
+if [ "$status" != "false" ]
+then
+  echo "Status is still false, can not verify returned message "
+fi
+#Make sure the appropriate message is included
 MSG_EXIST=$(grep "Object is not in archived state yet" $RESPONSE_MSG)
 if [ -z "$MSG_EXIST" ]
 then
     echo "ERROR: an unarchived object $FILE_ID is downloaded " >&2
 fi
-

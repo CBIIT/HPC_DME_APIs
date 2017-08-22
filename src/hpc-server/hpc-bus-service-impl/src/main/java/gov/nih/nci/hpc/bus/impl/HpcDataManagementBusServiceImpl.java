@@ -60,6 +60,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -253,9 +255,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      			                  HpcErrorType.INVALID_REQUEST_INPUT);	
      	}
     	
-    	// Get the collection.
-    	HpcCollection collection = dataManagementService.getCollection(path, true);
-    	if(collection == null) {
+    	// Validate collection exists.
+    	if(dataManagementService.getCollection(path, true) == null) {
     	   throw new HpcException("Collection doesn't exist: " + path,
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
       	}
@@ -279,45 +280,75 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(Integer taskId) 
-                                                                     throws HpcException
+	public HpcDataObjectsDownloadResponseDTO downloadDataObjects(
+			                                         HpcDataObjectsDownloadRequestDTO downloadRequest)
+                                                     throws HpcException
     {
     	// Input validation.
-    	if(taskId == null) {
-    	   throw new HpcException("Null data object download task ID",
+    	if(downloadRequest == null) {
+    	   throw new HpcException("Null download request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
-    	// Get the collection download task status.
-    	HpcDownloadTaskStatus taskStatus = 
-    			   dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.COLLECTION);
-    	if(taskStatus == null) {
-    	   return null;
-    	}
+    	if(downloadRequest.getDataObjectPaths().isEmpty()) {
+      	   throw new HpcException("No data object paths",
+      			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+      	}
     	
-    	// Map the task status to DTO.
-    	HpcCollectionDownloadStatusDTO downloadStatus = new HpcCollectionDownloadStatusDTO();
-    	downloadStatus.setInProgress(taskStatus.getInProgress());
-    	if(taskStatus.getInProgress()) {
-    	   // Download in progress. Populate the DTO accordingly.
-    	   downloadStatus.setPath(taskStatus.getCollectionDownloadTask().getPath());
-    	   downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
-    	   downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
-    	   downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask().getDestinationLocation());
-    	   populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
-    	   
-    	} else {
-    		    // Download completed or failed. Populate the DTO accordingly. 
-    		    downloadStatus.setPath(taskStatus.getResult().getPath());
-     	        downloadStatus.setCreated(taskStatus.getResult().getCreated());
-     	        downloadStatus.setDestinationLocation(taskStatus.getResult().getDestinationLocation());
-     	        downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
-     	        downloadStatus.setMessage(taskStatus.getResult().getMessage());
-     	        downloadStatus.setResult(taskStatus.getResult().getResult());
-     	        populateDownloadItems(downloadStatus, taskStatus.getResult().getItems());
-    	}
+    	if(downloadRequest.getDestination() == null) {
+     	   throw new HpcException("Null destination in download request",
+     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+     	}
     	
-    	return downloadStatus;
+    	// Validate all data object paths requested exist and from the same DOC.
+    	String doc = null;
+    	for(String path : downloadRequest.getDataObjectPaths()) {
+    	    if(dataManagementService.getDataObject(path) == null) {
+    	       throw new HpcException("Data object doesn't exist: " + path,
+	                                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	    }
+    	    
+    	    // Get the System generated metadata.
+        	HpcSystemGeneratedMetadata metadata = 
+        			 metadataService.getDataObjectSystemGeneratedMetadata(path);
+        	if(doc == null) {
+        	   doc = metadata.getRegistrarDOC();
+        	} else {
+        		    if(!doc.equals(metadata.getRegistrarDOC())) {
+        		    	throw new HpcException("Download files from different DOC not allowed: " + 
+        		                               doc + "," + metadata.getRegistrarDOC(),
+                                HpcErrorType.INVALID_REQUEST_INPUT);	
+        		    }
+        	}
+      	}
+
+    	// Submit a data objects download task.
+    	HpcCollectionDownloadTask collectionDownloadTask =
+    	   dataTransferService.downloadDataObjects(downloadRequest.getDataObjectPaths(), 
+    			                                   downloadRequest.getDestination(), 
+    		   	                                   securityService.getRequestInvoker().getNciAccount().getUserId(),
+    		   	                                   doc);
+    	
+    	// Create and return a DAO with the request receipt.
+    	HpcDataObjectsDownloadResponseDTO responseDTO = new HpcDataObjectsDownloadResponseDTO();
+    	responseDTO.setTaskId(collectionDownloadTask.getId());
+    	responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
+    	
+    	return responseDTO;
+    }
+    
+    @Override
+    public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) 
+                                                                     throws HpcException
+    {
+    	return getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION);
+    }
+    
+    @Override
+    public HpcCollectionDownloadStatusDTO getDataObjectsDownloadStatus(String taskId) 
+                                                                       throws HpcException
+    {
+    	return getCollectionDownloadStatus(taskId, HpcDownloadTaskType.DATA_OBJECT_LIST);
     }
     
     @Override
@@ -573,7 +604,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
     
     @Override
-    public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(Integer taskId) 
+    public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(String taskId) 
                                                                      throws HpcException
     {
     	// Input validation.
@@ -984,7 +1015,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(
 			                                           HpcFileLocation destinationLocation,
 			                                           File destinationFile,
-			                                           Integer taskId)
+			                                           String taskId)
 	{
 		// Construct and return a DTO
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
@@ -1196,6 +1227,61 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	return collectionTreeEntry;
     }
+    
+    /**
+     * Get collection download task status.
+     *
+     * @param taskId The collection download task ID.
+     * @param taskType COLLECTION or DATA_OBJECT_LIST
+     * @return A collection download status DTO. Null if the task could not be found.
+     */
+    private HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId,
+    		                                                           HpcDownloadTaskType taskType) 
+                                                                      throws HpcException
+	{
+		// Input validation.
+		if(taskId == null) {
+		   throw new HpcException("Null collection download task ID",
+		                          HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+		// Get the download task status.
+		HpcDownloadTaskStatus taskStatus = 
+		                      dataTransferService.getDownloadTaskStatus(taskId, taskType);
+		if(taskStatus == null) {
+		   return null;
+		}
+		
+		// Map the task status to DTO.
+		HpcCollectionDownloadStatusDTO downloadStatus = new HpcCollectionDownloadStatusDTO();
+		downloadStatus.setInProgress(taskStatus.getInProgress());
+		if(taskStatus.getInProgress()) {
+			// Download in progress. Populate the DTO accordingly.
+			if(taskType.equals(HpcDownloadTaskType.COLLECTION)) {
+			   downloadStatus.setPath(taskStatus.getCollectionDownloadTask().getPath());
+			} else if(taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+				downloadStatus.getDataObjectPaths().addAll(taskStatus.getCollectionDownloadTask().getDataObjectPaths());
+			}
+			downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
+			downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
+			downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask().getDestinationLocation());
+			populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
+		
+		} else {
+				// Download completed or failed. Populate the DTO accordingly. 
+			    if(taskType.equals(HpcDownloadTaskType.COLLECTION)) { 
+				   downloadStatus.setPath(taskStatus.getResult().getPath());
+			    } 
+				downloadStatus.setCreated(taskStatus.getResult().getCreated());
+				downloadStatus.setDestinationLocation(taskStatus.getResult().getDestinationLocation());
+				downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
+				downloadStatus.setMessage(taskStatus.getResult().getMessage());
+				downloadStatus.setResult(taskStatus.getResult().getResult());
+				populateDownloadItems(downloadStatus, taskStatus.getResult().getItems());
+		}
+		
+		return downloadStatus;
+	}
     
 	/** 
      * Split the list of download items into completed, failed and in-progress buckets

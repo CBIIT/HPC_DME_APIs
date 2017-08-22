@@ -61,7 +61,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcMetadataServiceImpl implements HpcMetadataService
@@ -356,7 +355,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	   throw new HpcException(INVALID_PATH_METADATA_MSG, 
 		                          HpcErrorType.INVALID_REQUEST_INPUT);	
        	}
-       	if(!isValidFileLocation(archiveLocation) ||
+       	if((archiveLocation != null &&!isValidFileLocation(archiveLocation)) ||
        	   (sourceLocation != null && !isValidFileLocation(sourceLocation))) {
        	   throw new HpcException("Invalid source/archive location", 
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
@@ -385,15 +384,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			                            sourceLocation.getFileId()));
        	}
        	
-       	// Create the archive location file-container-id metadata.
-       	addMetadataEntry(metadataEntries,
-       			         toMetadataEntry(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
-       			                         archiveLocation.getFileContainerId()));
+       	if(archiveLocation != null) {
+           // Create the archive location file-container-id metadata.
+       	   addMetadataEntry(metadataEntries,
+       		   	            toMetadataEntry(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE, 
+       			                            archiveLocation.getFileContainerId()));
        	
-       	// Create the archive location file-id metadata.
-       	addMetadataEntry(metadataEntries,
-       			         toMetadataEntry(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, 
-       			                         archiveLocation.getFileId()));
+       	   // Create the archive location file-id metadata.
+       	   addMetadataEntry(metadataEntries,
+       		  	            toMetadataEntry(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, 
+       			                            archiveLocation.getFileId()));
+       	}
        	
    	    // Create the Data Transfer Request ID metadata.
        	addMetadataEntry(metadataEntries,

@@ -82,6 +82,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	private HpcDataObjectDeletionDAO dataObjectDeletionDAO = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
+	private List<HpcMetadataQuery> dataTransferReceivedQuery = new ArrayList<>();
+	
+	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
 	
 	// Prepared query to get data objects that have their data transfer in-progress to temporary archive.
@@ -107,6 +110,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
      */
     private HpcDataManagementServiceImpl(String systemAdminSubjects)
     {
+    	// Prepare the query to get data objects in data transfer status of received.
+        dataTransferReceivedQuery.add(
+            toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
+            		        HpcMetadataQueryOperator.EQUAL, 
+        	                HpcDataTransferUploadStatus.RECEIVED.value()));
+        
     	// Prepare the query to get data objects in data transfer in-progress to archive.
         dataTransferInProgressToArchiveQuery.add(
             toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
@@ -393,7 +402,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcDataObject> getDataObjectsInProgress() throws HpcException
+    public List<HpcDataObject> getDataObjectsUploadReceived() throws HpcException
+    {
+    	return dataManagementProxy.getDataObjects(
+	                         dataManagementAuthenticator.getAuthenticatedToken(),
+	                         dataTransferReceivedQuery);
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataObjectsUploadInProgress() throws HpcException
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	List<HpcDataObject> objectsInProgress = new ArrayList<>();
@@ -408,7 +425,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcDataObject> getDataObjectsInTemporaryArchive() throws HpcException
+    public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException
     {
     	return dataManagementProxy.getDataObjects(
     			             dataManagementAuthenticator.getAuthenticatedToken(),
