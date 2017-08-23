@@ -23,7 +23,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;

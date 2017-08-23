@@ -32,8 +32,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -195,12 +197,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			    metadataService.getDataObjectSystemGeneratedMetadata(path);
     			 
     			 // Get the data transfer upload request status.
-    			 HpcDataTransferUploadStatus dataTransferStatus =
+    			 HpcDataTransferUploadReport dataTransferUploadReport =
     		        dataTransferService.getDataTransferUploadStatus(
     		        		               systemGeneratedMetadata.getDataTransferType(),
     		        		               systemGeneratedMetadata.getDataTransferRequestId(),
     		        		               systemGeneratedMetadata.getRegistrarDOC());
     			 
+    			 HpcDataTransferUploadStatus dataTransferStatus = dataTransferUploadReport.getStatus();
     			 Calendar dataTransferCompleted = null;
     			 switch(dataTransferStatus) {
     		            case ARCHIVED:
@@ -220,7 +223,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			        case FAILED:
     			             // Data transfer failed. Remove the data object.
   		    	             dataManagementService.delete(path, true);
-  		    	             logger.error("Data transfer failed: " + path);
+  		    	             logger.error("Data transfer failed [" + dataTransferUploadReport.getMessage() +
+  		    	            		      "]: " + path);
   		    	             break;
   		    	             
   		    	        default:
@@ -926,18 +930,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     {
     
 	    // Get the data transfer download status.
-	    HpcDataTransferDownloadStatus dataTransferDownloadStatus = 
+	    HpcDataTransferDownloadReport dataTransferDownloadReport = 
 	    dataTransferService.getDataTransferDownloadStatus(
 		  	                    downloadTask.getDataTransferType(), 
 			                    downloadTask.getDataTransferRequestId(),
 			                    downloadTask.getDoc());
 	
 	    // Check the status of the data transfer. 
+	    HpcDataTransferDownloadStatus dataTransferDownloadStatus = dataTransferDownloadReport.getStatus();
 	    if(!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 	   	   // This download task is no longer in-progress - complete it.
 	       boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
 	       String message = result ? null : 
-	       	                downloadTask.getDataTransferType() + " transfer failed. Request ID: " +
+	       	                downloadTask.getDataTransferType() + " transfer failed [" +
+	       	                dataTransferDownloadReport.getMessage() + "]. Request ID: " +
 	       	                downloadTask.getDataTransferRequestId();
 	       Calendar completed = Calendar.getInstance();
 	   	   dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
