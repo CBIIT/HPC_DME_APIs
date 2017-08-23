@@ -126,6 +126,18 @@
 											</tr>
 										</thead>
 										<tbody>
+										<!-- 
+											<tr
+												th:each="hpcMetadataValidationRule : ${session.userDOCModel.getCollectionMetadataValidationRules()}" th:if="${session.userDOCModel != null}">
+												<div th:if="hpcMetadataValidationRule.getRuleEnabled()">
+													<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+													<td th:unless="${metadataItem.isSystemAttr() == true}"><input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+														th:value="${metadataItem.getAttrValue()}"></input></td>
+													<td th:if="${metadataItem.isSystemAttr() == true}"><label for="${metadataItem.getAttrName()}"
+														th:text="${metadataItem.getAttrValue()}"></label></td>
+												</div>
+											</tr>
+ 										-->
 											<tr>
 											<td align="left"><input type="text" name="addAttrName1" id="addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
 											<td align="left"><input type="text" name="addAttrValue1" id="addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>

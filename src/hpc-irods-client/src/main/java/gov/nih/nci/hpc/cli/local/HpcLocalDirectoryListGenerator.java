@@ -286,10 +286,12 @@ public class HpcLocalDirectoryListGenerator {
 		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath,
 				hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
+		System.out.println("authToken "+authToken);
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
 
 		try {
 			System.out.println("Processing: " + basePath + "/" + objectPath);
+			System.out.println("atts: "+atts);
 			Response restResponse = client.put(new MultipartBody(atts));
 			if (restResponse.getStatus() != 201) {
 				MappingJsonFactory factory = new MappingJsonFactory();
@@ -342,6 +344,7 @@ public class HpcLocalDirectoryListGenerator {
 			} else
 				System.out.println("Success! ");
 		} catch (HpcBatchException e) {
+			e.printStackTrace();
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -349,6 +352,7 @@ public class HpcLocalDirectoryListGenerator {
 			writeException(e, message, null);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (RestClientException e) {
+			e.printStackTrace();
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -356,6 +360,7 @@ public class HpcLocalDirectoryListGenerator {
 			writeException(e, message, null);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (Exception e) {
+			e.printStackTrace();
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));

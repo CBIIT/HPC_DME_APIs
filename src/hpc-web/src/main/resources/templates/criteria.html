@@ -130,7 +130,7 @@
 												id="level1" name="level" class="form-control"
 												th:required="required"
 												onChange="populateLevelAttributes(this.value, this.id)">
-													<option value="-1">----Select----</option>
+													<option value="ANY">ANY</option>
 													<option
 														th:each="entry : ${hierarchy.getCollectionLevels()}"
 														th:value="${entry}" th:text="${entry}">
