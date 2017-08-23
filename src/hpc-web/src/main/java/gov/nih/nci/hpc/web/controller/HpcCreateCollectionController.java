@@ -33,6 +33,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
@@ -82,8 +83,12 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			HttpServletRequest request) {
 		try {
 			String path = request.getParameter("path");
+			String collectionType = request.getParameter("type");
 			if(path != null)
 				model.addAttribute("parentPath", path);
+
+			if(collectionType != null)
+				model.addAttribute("collectionType", collectionType);
 			// User Session validation
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userId = (String) session.getAttribute("hpcUserId");
@@ -95,7 +100,16 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "index";
 			}
-
+			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO)session.getAttribute("userDOCModel"); 
+			if (modelDTO == null)
+			{
+				modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
+					sslCertPath, sslCertPassword);
+				session.setAttribute("userDOCModel", modelDTO);
+			}
+			List<String> collectionTypes = getValidCollectionTypes(modelDTO);
+			model.addAttribute("collectionTypes", collectionTypes);
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			model.addAttribute("error", "Failed to add Collection: " + e.getMessage());
@@ -103,6 +117,55 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		}
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
 		return "addcollection";
+	}
+	
+	private String getCollectionType(String path)
+	{
+		return null;
+		
+	}
+
+	private List<String> intializeFormAttributes(HpcDataManagementModelDTO modelDTO, Model model)
+	{
+		List<String> collectionTypes = new ArrayList<String>();
+		List<String> validValues = new ArrayList<String>();
+		List<String> defaultValue = new ArrayList<String>();
+		
+		List<HpcMetadataValidationRule> rules = modelDTO.getCollectionMetadataValidationRules();
+		for(HpcMetadataValidationRule rule: rules)
+		{
+			if(rule.getRuleEnabled() && rule.getAttribute().equals("collection_type"))
+			{
+				collectionTypes.addAll(rule.getValidValues());
+				for(String collType : rule.getValidValues())
+				{
+					List<HpcMetadataValidationRule> collectionTypeAttrs = setCollectionTypeAttributes(collType);
+				}
+			}
+		}
+		model.addAttribute("collectionTypes", collectionTypes);
+		return types;
+		
+	}
+	
+	private List<String> setCollectionTypeAttributes(HpcDataManagementModelDTO modelDTO, String type, Model model)
+	{
+		List<String> attributes = new ArrayList<String>();
+		List<String> requiredAttributes = new ArrayList<String>();
+		
+		List<HpcMetadataValidationRule> rules = modelDTO.getCollectionMetadataValidationRules();
+		for(HpcMetadataValidationRule rule: rules)
+		{
+			if(rule.getRuleEnabled() && rule.getCollectionTypes().contains(type))
+			{
+				attributes.add(rule.getAttribute());
+				if(rule.getMandatory())
+					requiredAttributes.add(rule.getAttribute());
+			}
+			
+		}
+		return types;
+		
 	}
 
 	/**
