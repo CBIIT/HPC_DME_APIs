@@ -240,7 +240,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 				                                                    dataTransferRequestId);
 		 
 		 HpcDataTransferUploadReport statusReport = new HpcDataTransferUploadReport();
-		 statusReport.setMessage(report.niceStatus);
+		 statusReport.setMessage(report.niceStatusDescription);
 		 
 		 if(report.status.equals(SUCCEEDED_STATUS)) {
 			// Upload completed successfully. Return status based on the archive type.
@@ -274,7 +274,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 				                                                    dataTransferRequestId);
 		 
 		 HpcDataTransferDownloadReport statusReport = new HpcDataTransferDownloadReport();
-		 statusReport.setMessage(report.niceStatus);
+		 statusReport.setMessage(report.niceStatusDescription);
 		 
 		 if(report.status.equals(SUCCEEDED_STATUS)) {
 			// Download completed successfully.
@@ -470,6 +470,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	private String status = null;
         private String niceStatus = null;
         private long bytesTransferred = 0;
+        private String niceStatusDescription = null;
     }
     
     private HpcGlobusDataTransferReport getDataTransferReport(Object authenticatedToken,
@@ -487,6 +488,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 				 report.status = jsonReport.getString("status");
 			     report.niceStatus = jsonReport.getString("nice_status");
 				 report.bytesTransferred = jsonReport.getLong("bytes_transferred");
+				 report.niceStatusDescription = jsonReport.getString("nice_status_short_description");
 				 
 				 return report;
 			
