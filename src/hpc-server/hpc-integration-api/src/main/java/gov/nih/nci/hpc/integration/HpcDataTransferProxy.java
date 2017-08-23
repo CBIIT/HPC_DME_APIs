@@ -20,8 +20,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -118,7 +118,7 @@ public interface HpcDataTransferProxy
      * @return The data transfer request status.
      * @throws HpcException on data transfer system failure.
      */
-    default public HpcDataTransferUploadStatus 
+    default public HpcDataTransferUploadReport 
             getDataTransferUploadStatus(Object authenticatedToken,
     		                            String dataTransferRequestId) 
     		                           throws HpcException
@@ -135,10 +135,10 @@ public interface HpcDataTransferProxy
      * @return The data transfer request status.
      * @throws HpcException on data transfer system failure.
      */
-    default public 
-            HpcDataTransferDownloadStatus getDataTransferDownloadStatus(Object authenticatedToken,
-    		                                                            String dataTransferRequestId) 
-    		                                                           throws HpcException
+    default public HpcDataTransferDownloadReport 
+            getDataTransferDownloadStatus(Object authenticatedToken,
+    		                              String dataTransferRequestId) 
+    		                             throws HpcException
     {
     	throw new HpcException("getDataTransferDownloadStatus() not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
