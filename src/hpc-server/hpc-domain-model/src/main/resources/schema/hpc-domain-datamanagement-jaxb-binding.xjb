@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: hpc-dto-datamanagement-jaxb-binding.xjb 2308 2017-04-22 13:26:06Z rosenbergea $
  -->
 <jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
 			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -108,9 +107,6 @@
     </jxb:bindings>
     
     <jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
-		<jxb:bindings node="//xsd:complexType[@name='HpcGlobusDataTransferReport']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDataTransferReport"/>
-		</jxb:bindings>
 		<jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation"/>
 		</jxb:bindings>
@@ -164,6 +160,12 @@
 		</jxb:bindings>
 		<jxb:bindings node="//xsd:simpleType[@name='HpcDownloadTaskType']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferUploadReport']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferDownloadReport']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport"/>
 		</jxb:bindings>
     </jxb:bindings>
     
