@@ -330,7 +330,7 @@
 			]
 		},
 		{
-			"eventType": "INTEGRATED_SYSTEM_ERROR",
+			"systemAdminNotificationType": "INTEGRATED_SYSTEM_ERROR",
 			"subjectFormat": "HPC-DM: %1$s error: %2$s",
 			"subjectArguments": [
 				{

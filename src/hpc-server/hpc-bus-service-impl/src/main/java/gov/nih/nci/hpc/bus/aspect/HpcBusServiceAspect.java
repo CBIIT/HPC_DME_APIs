@@ -10,13 +10,6 @@
 
 package gov.nih.nci.hpc.bus.aspect;
 
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
-import gov.nih.nci.hpc.domain.notification.HpcEventType;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcNotificationService;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +22,13 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
+import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcNotificationService;
 
 /**
  * <p>
@@ -174,7 +174,7 @@ public class HpcBusServiceAspect
 		   
 		   // Send the notification.
 		   notificationService.sendNotification(systemAdministratorUserId, 
-				                                HpcEventType.INTEGRATED_SYSTEM_ERROR, 
+				                                HpcSystemAdminNotificationType.INTEGRATED_SYSTEM_ERROR, 
 			                                    payloadEntries, HpcNotificationDeliveryMethod.EMAIL);
 		}
 	}
