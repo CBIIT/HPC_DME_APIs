@@ -161,9 +161,9 @@ public class HPCCmdRegisterGlobusFile extends HPCCmdClient {
 			}
 			try {
 				if(authToken == null)
-					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 						hpcCertPassword);
-				HpcGlobusDirectoryListGenerator generator = new HpcGlobusDirectoryListGenerator(hpcServerURL, authToken,
+				HpcGlobusDirectoryListGenerator generator = new HpcGlobusDirectoryListGenerator(hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, authToken,
 						hpcCertPath, hpcCertPassword);
 				success = generator.run(globusNexusURL, globusURL, globusEndpoint, globusPath, globusUserId,
 						globusPassword, globusToken, basePath, logFile, logRecordsFile);

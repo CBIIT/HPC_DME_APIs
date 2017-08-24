@@ -137,10 +137,7 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			if(rule.getRuleEnabled() && rule.getAttribute().equals("collection_type"))
 			{
 				collectionTypes.addAll(rule.getValidValues());
-				for(String collType : rule.getValidValues())
-				{
-					List<HpcMetadataValidationRule> collectionTypeAttrs = setCollectionTypeAttributes(collType);
-				}
+				setCollectionTypeAttributes(rule.getValidValues(), model);
 			}
 		}
 		model.addAttribute("collectionTypes", collectionTypes);
@@ -148,19 +145,21 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		
 	}
 	
-	private List<String> setCollectionTypeAttributes(HpcDataManagementModelDTO modelDTO, String type, Model model)
+	private List<String> setCollectionTypeAttributes(HpcDataManagementModelDTO modelDTO, List<String> types, Model model)
 	{
 		List<String> attributes = new ArrayList<String>();
-		List<String> requiredAttributes = new ArrayList<String>();
 		
 		List<HpcMetadataValidationRule> rules = modelDTO.getCollectionMetadataValidationRules();
-		for(HpcMetadataValidationRule rule: rules)
+		for(String type: types)
 		{
-			if(rule.getRuleEnabled() && rule.getCollectionTypes().contains(type))
+			for(HpcMetadataValidationRule rule: rules)
 			{
-				attributes.add(rule.getAttribute());
-				if(rule.getMandatory())
-					requiredAttributes.add(rule.getAttribute());
+				if(rule.getRuleEnabled() && rule.getCollectionTypes().contains(type))
+				{
+					attributes.add(rule.getAttribute());
+					if(rule.getMandatory())
+						requiredAttributes.add(rule.getAttribute());
+				}
 			}
 			
 		}
