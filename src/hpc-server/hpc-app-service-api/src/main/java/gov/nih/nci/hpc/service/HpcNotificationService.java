@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -87,6 +88,19 @@ public interface HpcNotificationService
      * @return If the notification was delivered successfully, or false otherwise.
      */
     public boolean sendNotification(String userId, HpcEventType eventType, 
+                                    List<HpcEventPayloadEntry> payloadEntries,
+    		                        HpcNotificationDeliveryMethod deliveryMethod);
+    
+    /**
+     * Notify a system admin.
+     *
+     * @param userId The user to send the notification to.
+     * @param notificationType The system notification type to notify.
+     * @param payloadEntries The payload entries to use for the notification message.
+     * @param deliveryMethod The delivery method.
+     * @return If the notification was delivered successfully, or false otherwise.
+     */
+    public boolean sendNotification(String userId, HpcSystemAdminNotificationType notificationType, 
                                     List<HpcEventPayloadEntry> payloadEntries,
     		                        HpcNotificationDeliveryMethod deliveryMethod);
     
