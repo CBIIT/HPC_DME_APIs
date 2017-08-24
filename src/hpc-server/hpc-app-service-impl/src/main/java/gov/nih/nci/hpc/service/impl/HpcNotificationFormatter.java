@@ -20,6 +20,7 @@ import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
@@ -329,22 +330,22 @@ public class HpcNotificationFormatter
 		      JSONObject jsonNotificationFormat = jsonNotificationFormatIterator.next();
 			   
 			  // Extract the event type.
-			  HpcEventType eventType = HpcEventType.valueOf(
-			                              (String) jsonNotificationFormat.get("eventType"));
-			  HpcSystemAdminNotificationType systemAdminNotificationType = HpcSystemAdminNotificationType.valueOf(
-                                             (String) jsonNotificationFormat.get("systemAdminNotificationType"));
-			  if(eventType == null && systemAdminNotificationType == null) {
+			  String eventTypeStr = (String) jsonNotificationFormat.get("eventType");
+			  String systemAdminNotificationTypeStr = (String) jsonNotificationFormat.get("systemAdminNotificationType");
+			  if(StringUtils.isEmpty(eventTypeStr) && StringUtils.isEmpty(systemAdminNotificationTypeStr)) {
 				 throw new HpcException("Invalid event type / system admin notification type: " + jsonNotificationFormat,
 				                        HpcErrorType.SPRING_CONFIGURATION_ERROR); 
 			  }
 			   
 			  HpcNotificationFormat notificationFormat = notificationFormatFromJSON(jsonNotificationFormat);
-			  if(eventType != null) {
+			  if(eventTypeStr != null) {
 				 // Populate the map <eventType -> notificationFormat>
-			     notificationFormats.put(eventType, notificationFormat);
+			     notificationFormats.put(HpcEventType.valueOf(eventTypeStr), notificationFormat);
 			  } else {
 				      // Populate the map <systemAdminNotificationType -> notificationFormat>
-				      systemAdminNotificationFormats.put(systemAdminNotificationType, notificationFormat);
+				      systemAdminNotificationFormats.put(
+				    		HpcSystemAdminNotificationType.valueOf(systemAdminNotificationTypeStr), 
+				    		notificationFormat);
 			  }
 		}
     }
