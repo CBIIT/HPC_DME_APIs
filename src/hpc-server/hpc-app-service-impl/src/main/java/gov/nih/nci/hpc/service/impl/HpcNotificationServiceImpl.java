@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger;
+import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
@@ -43,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcNotificationServiceImpl implements HpcNotificationService
@@ -228,7 +228,36 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     	     notificationSender.sendNotification(userId, eventType, payloadEntries);
     	     
     	} catch(HpcException e) {
-    		    logger.error("failed to deliver event", e);
+    		    logger.error("failed to send user notification", e);
+    		    return false;
+    	}
+    	
+    	return true;
+    }
+    
+    @Override
+    public boolean sendNotification(String userId, HpcSystemAdminNotificationType notificationType, 
+                                    List<HpcEventPayloadEntry> payloadEntries,
+                                    HpcNotificationDeliveryMethod deliveryMethod) 
+    {
+    	// Input validation.
+    	if(userId == null || notificationType == null || deliveryMethod == null) {
+    	   return false;
+    	}
+    	
+    	// Locate the notification sender for this delivery method.
+    	HpcNotificationSender notificationSender = notificationSenders.get(deliveryMethod);
+    	if(notificationSender == null) {
+    	   logger.error("Could not locate notification sender for: " + deliveryMethod);
+    	   return false;
+    	}
+
+    	// Send the notification.
+    	try {
+    	     notificationSender.sendNotification(userId, notificationType, payloadEntries);
+    	     
+    	} catch(HpcException e) {
+    		    logger.error("failed to send system admin notification", e);
     		    return false;
     	}
     	
