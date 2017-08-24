@@ -16,6 +16,8 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -24,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDataManagementAuthenticator
@@ -37,6 +38,9 @@ public class HpcDataManagementAuthenticator
 	@Autowired
     private HpcDataManagementProxy dataManagementProxy = null;
 	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+		
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -69,6 +73,7 @@ public class HpcDataManagementAuthenticator
     	}
     	
     	if(invoker.getDataManagementAuthenticatedToken() != null) {
+    		logger.error("ERAN: Reusing IRODS token");
     	   return invoker.getDataManagementAuthenticatedToken();
     	}
     	
