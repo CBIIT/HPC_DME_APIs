@@ -20,9 +20,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -100,7 +100,7 @@ public interface HpcDataTransferService
      * @return The data transfer upload request status.
      * @throws HpcException on service failure.
      */
-    public HpcDataTransferUploadStatus getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
+    public HpcDataTransferUploadReport getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
     		                                                       String dataTransferRequestId,
     		                                                       String doc) 
     		                                                      throws HpcException;
@@ -114,7 +114,7 @@ public interface HpcDataTransferService
      * @return The data transfer download request status.
      * @throws HpcException on service failure.
      */
-    public HpcDataTransferDownloadStatus getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
+    public HpcDataTransferDownloadReport getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
     		                                                           String dataTransferRequestId, String doc) 
     		                                                          throws HpcException;
     

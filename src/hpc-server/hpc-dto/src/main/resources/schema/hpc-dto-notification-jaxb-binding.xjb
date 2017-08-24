@@ -41,6 +41,9 @@
             <jxb:bindings node="//xsd:simpleType[@name='HpcNotificationDeliveryMethod']">
                 <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod"/>
             </jxb:bindings>
+            <jxb:bindings node="//xsd:simpleType[@name='HpcSystemAdminNotificationType']">
+                <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType"/>
+            </jxb:bindings>
             <jxb:bindings node="//xsd:complexType[@name='HpcNotificationTrigger']">
                 <jxb:class ref="gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger"/>
             </jxb:bindings>
