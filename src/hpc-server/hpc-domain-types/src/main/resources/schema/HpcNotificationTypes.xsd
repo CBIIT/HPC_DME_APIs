@@ -32,7 +32,6 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_REPORT" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT" />
 			<xsd:enumeration value="COLLECTION_UPDATED" />
-			<xsd:enumeration value="INTEGRATED_SYSTEM_ERROR" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -40,6 +39,12 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="EMAIL" />
 			<xsd:enumeration value="TEXT" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcSystemAdminNotificationType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="INTEGRATED_SYSTEM_ERROR" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
