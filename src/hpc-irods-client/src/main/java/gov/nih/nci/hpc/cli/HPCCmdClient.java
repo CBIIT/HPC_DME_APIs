@@ -25,6 +25,8 @@ public abstract class HPCCmdClient {
 	@Autowired
 	protected HpcConfigProperties configProperties;
 	protected String hpcServerURL;
+	protected String hpcServerProxyURL;
+	protected String hpcServerProxyPort;
 	protected String globusNexusURL;
 	protected String globusURL;
 	protected String hpcCertPath;
@@ -47,6 +49,8 @@ public abstract class HPCCmdClient {
 
 	protected void preprocess() {
 		hpcServerURL = configProperties.getProperty("hpc.server.url");
+		hpcServerProxyURL = configProperties.getProperty("hpc.server.proxy.url");
+		hpcServerProxyPort = configProperties.getProperty("hpc.server.proxy.port");
 		globusNexusURL = configProperties.getProperty("globus.nexus.url");
 		globusURL = configProperties.getProperty("globus.url");
 		hpcServerURL = configProperties.getProperty("hpc.server.url");

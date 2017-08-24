@@ -38,6 +38,7 @@ import javax.xml.transform.Source;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -63,10 +64,14 @@ import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 
 public class HpcClientUtil {
 
-	public static String[] cipherSuites = new String[]{"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_DSS_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA", "TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA", "TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA", "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_EMPTY_RENEGOTIATION_INFO_SCSV", "SSL_RSA_WITH_DES_CBC_SHA", "SSL_DHE_RSA_WITH_DES_CBC_SHA", "SSL_DHE_DSS_WITH_DES_CBC_SHA", "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA", "TLS_KRB5_WITH_3DES_EDE_CBC_SHA", "TLS_KRB5_WITH_3DES_EDE_CBC_MD5", "TLS_KRB5_WITH_DES_CBC_SHA", "TLS_KRB5_WITH_DES_CBC_MD5", "TLS_KRB5_EXPORT_WITH_DES_CBC_40_SHA", "TLS_KRB5_EXPORT_WITH_DES_CBC_40_MD5"};
-	public static WebClient getWebClient(String url, String hpcCertPath, String hpcCertPassword) {
+//	public static WebClient getWebClient(String url, String hpcCertPath, String hpcCertPassword) {
+//		return getWebClient(url, null, null, hpcCertPath, hpcCertPassword);
+//	}
+
+	public static WebClient getWebClient(String url, String proxyURL, String proxyPort, String hpcCertPath, String hpcCertPassword) {
 		FileInputStream fis = null;
 		WebClient client = null;
+		String[] cipherSuites = new String[]{"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_DSS_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA", "TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA", "TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA", "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_EMPTY_RENEGOTIATION_INFO_SCSV", "SSL_RSA_WITH_DES_CBC_SHA", "SSL_DHE_RSA_WITH_DES_CBC_SHA", "SSL_DHE_DSS_WITH_DES_CBC_SHA", "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA", "TLS_KRB5_WITH_3DES_EDE_CBC_SHA", "TLS_KRB5_WITH_3DES_EDE_CBC_MD5", "TLS_KRB5_WITH_DES_CBC_SHA", "TLS_KRB5_WITH_DES_CBC_MD5", "TLS_KRB5_EXPORT_WITH_DES_CBC_40_SHA", "TLS_KRB5_EXPORT_WITH_DES_CBC_40_MD5"};
 		try {
 			fis = new java.io.FileInputStream(hpcCertPath);
 			KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -84,17 +89,25 @@ public class HpcClientUtil {
 			WebClient.getConfig(client).getHttpConduit().getClient().setReceiveTimeout(60000000);
 			WebClient.getConfig(client).getHttpConduit().getClient().setConnectionTimeout(60000000);
 			HTTPConduit conduit = WebClient.getConfig(client).getHttpConduit();
+			if(proxyURL!= null && proxyPort != null)
+			{
+				//System.out.println("Setting proxy settings.." +proxyURL+":"+proxyPort);
+		        HTTPClientPolicy policy = conduit.getClient();
+		        policy.setProxyServer(proxyURL);
+		        policy.setProxyServerPort(new Integer(proxyPort).intValue());
+			}
 
 			TLSClientParameters params = conduit.getTlsClientParameters();
 			if (params == null) {
 				params = new TLSClientParameters();
-				params.setCipherSuites(Arrays.asList(cipherSuites));
-				params.setSecureSocketProtocol("TLSv1.2");
 				conduit.setTlsClientParameters(params);
 			}
 
 			// params.setTrustManagers(new TrustManager[] { new
 			// TrustAllX509TrustManager() });
+//			params.setCipherSuites(Arrays.asList(cipherSuites));
+//			params.setSecureSocketProtocol("TLSv1.2");
+//			System.out.println("Using TLSv1.2");
 			params.setTrustManagers(trustManagers);
 			params.setDisableCNCheck(true);
 			conduit.setTlsClientParameters(params);
@@ -123,12 +136,12 @@ public class HpcClientUtil {
 		return client;
 	}
 
-	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL, String hpcCertPath,
+	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL, String proxyURL, String proxyPort, String hpcCertPath,
 			String hpcCertPassword) {
 		JsonParser parser;
 
 		try {
-			WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", hpcCertPath, hpcCertPassword);
+			WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
 			String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
 			client.header("Authorization", "Basic " + token);
 			Response restResponse = client.get();
