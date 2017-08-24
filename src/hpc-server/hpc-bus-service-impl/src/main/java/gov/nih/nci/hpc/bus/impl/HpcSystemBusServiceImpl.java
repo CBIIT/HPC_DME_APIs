@@ -943,8 +943,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	       boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
 	       String message = result ? null : 
 	       	                downloadTask.getDataTransferType() + " transfer failed [" +
-	       	                dataTransferDownloadReport.getMessage() + "]. Request ID: " +
-	       	                downloadTask.getDataTransferRequestId();
+	       	                dataTransferDownloadReport.getMessage() + "].";
 	       Calendar completed = Calendar.getInstance();
 	   	   dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
 	   	
