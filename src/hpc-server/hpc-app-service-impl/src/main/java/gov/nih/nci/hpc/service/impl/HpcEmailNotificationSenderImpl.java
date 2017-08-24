@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -57,6 +58,19 @@ public class HpcEmailNotificationSenderImpl implements HpcNotificationSender
     {
         try {
              mailSender.send(messagePreparator.getPreparator(userId, eventType, payloadEntries));
+             
+        } catch(MailException e) {
+                throw new HpcException(e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public void sendNotification(String userId, HpcSystemAdminNotificationType notificationType, 
+                                 List<HpcEventPayloadEntry> payloadEntries) 
+                                throws HpcException
+    {
+        try {
+             mailSender.send(messagePreparator.getPreparator(userId, notificationType, payloadEntries));
              
         } catch(MailException e) {
                 throw new HpcException(e.getMessage(), e);

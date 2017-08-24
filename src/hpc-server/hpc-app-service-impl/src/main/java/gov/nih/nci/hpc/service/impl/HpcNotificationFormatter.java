@@ -10,13 +10,6 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
-import gov.nih.nci.hpc.domain.notification.HpcEventType;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationFormat;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationFormatArgument;
-import gov.nih.nci.hpc.exception.HpcException;
-
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,13 +21,20 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationFormat;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationFormatArgument;
+import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
+import gov.nih.nci.hpc.exception.HpcException;
+
 /**
  * <p>
  * Format text for event notifications.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcNotificationFormatter
@@ -52,6 +52,8 @@ public class HpcNotificationFormatter
 
 	// A map of notification formats.
 	private Map<HpcEventType, HpcNotificationFormat> notificationFormats = new HashMap<>();
+	
+	private Map<HpcSystemAdminNotificationType, HpcNotificationFormat> systemAdminNotificationFormats = new HashMap<>();
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -107,6 +109,28 @@ public class HpcNotificationFormatter
     }
     
     /**
+     * Generate a notification text message for system admin notification type.
+     *
+     * @param notificationType The system admin notification type to generate the text for.
+     * @param payloadEntries The payload entries to use for the format arguments.
+     * @return A notification text message.
+     * @throws HpcException on service failure.
+     */
+    public String formatText(HpcSystemAdminNotificationType notificationType, 
+    		                 List<HpcEventPayloadEntry> payloadEntries) 
+    		                throws HpcException
+    {
+    	// Find the format for the event type
+    	HpcNotificationFormat format = notificationFormats.get(notificationType);
+    	if(format == null) {
+    	   throw new HpcException("Notification format not found for: " +  notificationType,
+    			                  HpcErrorType.UNEXPECTED_ERROR);
+    	}
+    	
+		return format(format.getTextFormat(), format.getTextArguments(), payloadEntries);
+    }
+    
+    /**
      * Generate a notification subject for an event.
      *
      * @param eventType The event type to generate the subject for.
@@ -121,6 +145,28 @@ public class HpcNotificationFormatter
     	HpcNotificationFormat format = notificationFormats.get(eventType);
     	if(format == null) {
     	   throw new HpcException("Notification format not found for: " + eventType,
+    			                  HpcErrorType.UNEXPECTED_ERROR);
+    	}
+    	
+		return format(format.getSubjectFormat(), format.getSubjectArguments(), payloadEntries);
+    }
+    
+    /**
+     * Generate a notification subject for an event.
+     *
+     * @param notificationType The system admin notification type to generate the subject for.
+     * @param payloadEntries The payload entries to use for the format arguments.
+     * @return A notification text message.
+     * @throws HpcException on service failure.
+     */
+    public String formatSubject(HpcSystemAdminNotificationType notificationType, 
+    		                    List<HpcEventPayloadEntry> payloadEntries) 
+    		                   throws HpcException
+    {
+    	// Find the format for the event type
+    	HpcNotificationFormat format = notificationFormats.get(notificationType);
+    	if(format == null) {
+    	   throw new HpcException("Notification format not found for: " + notificationType,
     			                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
@@ -285,13 +331,21 @@ public class HpcNotificationFormatter
 			  // Extract the event type.
 			  HpcEventType eventType = HpcEventType.valueOf(
 			                              (String) jsonNotificationFormat.get("eventType"));
-			  if(eventType == null) {
-				 throw new HpcException("Invalid event type: " + jsonNotificationFormat,
+			  HpcSystemAdminNotificationType systemAdminNotificationType = HpcSystemAdminNotificationType.valueOf(
+                                             (String) jsonNotificationFormat.get("systemAdminNotificationType"));
+			  if(eventType == null && systemAdminNotificationType == null) {
+				 throw new HpcException("Invalid event type / system admin notification type: " + jsonNotificationFormat,
 				                        HpcErrorType.SPRING_CONFIGURATION_ERROR); 
 			  }
 			   
-			  // Populate the map <eventType -> notificationFormat>
-			  notificationFormats.put(eventType, notificationFormatFromJSON(jsonNotificationFormat));
+			  HpcNotificationFormat notificationFormat = notificationFormatFromJSON(jsonNotificationFormat);
+			  if(eventType != null) {
+				 // Populate the map <eventType -> notificationFormat>
+			     notificationFormats.put(eventType, notificationFormat);
+			  } else {
+				      // Populate the map <systemAdminNotificationType -> notificationFormat>
+				      systemAdminNotificationFormats.put(systemAdminNotificationType, notificationFormat);
+			  }
 		}
     }
 	
