@@ -178,7 +178,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		 }
     		    
         } catch(AmazonClientException ace) {
-    	        throw new HpcException("[S3] Failed to download file: " + ace.getMessage(), 
+    	        throw new HpcException("[S3] Failed to download file: [" + ace.getMessage() + "]", 
     	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
     	    
         } catch(InterruptedException ie) {
