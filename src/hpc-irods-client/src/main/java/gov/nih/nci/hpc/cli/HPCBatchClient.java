@@ -27,6 +27,8 @@ public abstract class HPCBatchClient {
 	@Autowired
 	protected HpcConfigProperties configProperties;
 	protected String hpcServerURL;
+	protected String hpcServerProxyURL;
+	protected String hpcServerProxyPort;
 	protected String hpcCertPath;
 	protected String hpcCertPassword;
 	protected String hpcDataService;
@@ -47,6 +49,8 @@ public abstract class HPCBatchClient {
 
 	protected void preprocess() {
 		hpcServerURL = configProperties.getProperty("hpc.server.url");
+		hpcServerProxyURL = configProperties.getProperty("hpc.server.proxy.url");
+		hpcServerProxyPort = configProperties.getProperty("hpc.server.proxy.port");
 		hpcDataService = configProperties.getProperty("hpc.dataobject.service");
 		hpcCertPath = configProperties.getProperty("hpc.ssl.keystore.path");
 		hpcCertPassword = configProperties.getProperty("hpc.ssl.keystore.password");
