@@ -113,7 +113,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 
 			try {
 				if(authToken == null)
-					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 						hpcCertPassword);
 
 				Response restResponse = null;
@@ -121,7 +121,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
 					serviceURL = serviceURL + path;
-					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
+					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
 					restResponse = client.get();
 				} else if (cmd.equals("getDatafiles")) {
@@ -141,7 +141,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 						addErrorToLog(exceptionAsString, cmd);
 						return false;
 					}
-					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
+					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
 					restResponse = client.post(criteriaClause);
 				}

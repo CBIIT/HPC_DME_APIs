@@ -57,18 +57,22 @@ public class HpcLocalDirectoryListGenerator {
 	private String logFile;
 	private String recordFile;
 	String hpcServerURL;
+	String hpcServerProxyURL;
+	String hpcServerProxyPort;
 
 	public HpcLocalDirectoryListGenerator(String configProps) throws IOException, FileNotFoundException {
 		InputStream input = new FileInputStream(configProps);
 		properties.load(input);
 	}
 
-	public HpcLocalDirectoryListGenerator(String hpcServerURL, String authToken, String hpcCertPath,
+	public HpcLocalDirectoryListGenerator(String hpcServerURL, String hpcServerProxyURL, String hpcServerProxyPort, String authToken, String hpcCertPath,
 			String hpcCertPassword) throws IOException, FileNotFoundException {
 		this.hpcCertPath = hpcCertPath;
 		this.hpcCertPassword = hpcCertPassword;
 		this.authToken = authToken;
 		this.hpcServerURL = hpcServerURL;
+		this.hpcServerProxyPort = hpcServerProxyPort;
+		this.hpcServerProxyURL = hpcServerProxyURL;
 	}
 
 	public boolean run(String filePath, String excludePatternFile, String includePatternFile, String filePathBaseName,
@@ -283,15 +287,13 @@ public class HpcLocalDirectoryListGenerator {
 		objectPath = objectPath.replace("\\", "/");
 		if (objectPath.charAt(0) != File.separatorChar)
 			objectPath = "/" + objectPath;
-		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath,
+		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath, hpcServerProxyURL, hpcServerProxyPort,
 				hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
-		System.out.println("authToken "+authToken);
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
 
 		try {
 			System.out.println("Processing: " + basePath + "/" + objectPath);
-			System.out.println("atts: "+atts);
 			Response restResponse = client.put(new MultipartBody(atts));
 			if (restResponse.getStatus() != 201) {
 				MappingJsonFactory factory = new MappingJsonFactory();
@@ -344,7 +346,6 @@ public class HpcLocalDirectoryListGenerator {
 			} else
 				System.out.println("Success! ");
 		} catch (HpcBatchException e) {
-			e.printStackTrace();
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -352,7 +353,6 @@ public class HpcLocalDirectoryListGenerator {
 			writeException(e, message, null);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (RestClientException e) {
-			e.printStackTrace();
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -360,7 +360,6 @@ public class HpcLocalDirectoryListGenerator {
 			writeException(e, message, null);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (Exception e) {
-			e.printStackTrace();
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));

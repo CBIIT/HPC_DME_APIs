@@ -98,7 +98,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
 				hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();
-		WebClient client = HpcClientUtil.getWebClient(hpcObject.getBasePath() + "/" + hpcObject.getObjectPath(),
+		WebClient client = HpcClientUtil.getWebClient(hpcObject.getBasePath() + "/" + hpcObject.getObjectPath(), hpcObject.getProxyURL(), hpcObject.getProxyPort(),
 				hpcObject.getHpcCertPath(), hpcObject.getHpcCertPassword());
 		// String token =
 		// DatatypeConverter.printBase64Binary((hpcObject.getUserId() + ":" +
