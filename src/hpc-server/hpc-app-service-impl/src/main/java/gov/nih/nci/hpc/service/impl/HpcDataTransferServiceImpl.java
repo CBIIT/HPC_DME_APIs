@@ -537,6 +537,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		invoker.getDataTransferAuthenticatedTokens()) {
     		if(authenticatedToken.getDataTransferType().equals(dataTransferType) &&
     	       authenticatedToken.getDoc().equals(doc)) {
+    		   logger.error("ERAN: Reusing " + dataTransferType + " token");
     	       return authenticatedToken.getDataTransferAuthenticatedToken();
     		} 
     	}
