@@ -20,6 +20,8 @@ public class HPCDataObject {
 	private String objectPath;
 	private HpcDataObjectRegistrationDTO dto;
 	private String basePath;
+	private String proxyURL;
+	private String proxyPort;
 	private String hpcCertPath;
 	private String hpcCertPassword;
 	private String userId;
@@ -128,4 +130,21 @@ public class HPCDataObject {
 	public void setErrorRecordsFile(String errorRecordsFile) {
 		this.errorRecordsFile = errorRecordsFile;
 	}
+
+	public String getProxyURL() {
+		return proxyURL;
+	}
+
+	public void setProxyURL(String proxyURL) {
+		this.proxyURL = proxyURL;
+	}
+
+	public String getProxyPort() {
+		return proxyPort;
+	}
+
+	public void setProxyPort(String proxyPort) {
+		this.proxyPort = proxyPort;
+	}
+	
 }
