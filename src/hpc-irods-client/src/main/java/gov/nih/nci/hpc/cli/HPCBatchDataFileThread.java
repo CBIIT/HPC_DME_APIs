@@ -57,9 +57,11 @@ public class HPCBatchDataFileThread implements Runnable {
 	String hpcCertPassword;
 	String userId;
 	String password;
+	String proxyURL;
+	String proxyPort;
 
 	HPCBatchDataFileThread(String name, Map<String, Integer> headersMap, int recordId, CSVRecord record,
-			String basePath, String fileLogWriter, String csvFilePrinter, String hpcCertPath, String hpcCertPassword,
+			String basePath, String proxyURL, String proxyPort, String fileLogWriter, String csvFilePrinter, String hpcCertPath, String hpcCertPassword,
 			String userId, String password) {
 		threadName = name;
 		this.headersMap = headersMap;
@@ -72,6 +74,8 @@ public class HPCBatchDataFileThread implements Runnable {
 		this.hpcCertPassword = hpcCertPassword;
 		this.userId = userId;
 		this.password = password;
+		this.proxyPort = proxyPort;
+		this.proxyURL = proxyURL;
 
 		System.out.println("Creating " + threadName);
 	}
@@ -113,7 +117,7 @@ public class HPCBatchDataFileThread implements Runnable {
 
 		hpcDataObjectRegistrationDTO.setSource(source);
 		hpcDataObjectRegistrationDTO.setCallerObjectId("/");
-		WebClient client = HpcClientUtil.getWebClient(basePath + collName, hpcCertPath, hpcCertPassword);
+		WebClient client = HpcClientUtil.getWebClient(basePath + collName, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
 		List<Attachment> atts = new LinkedList<Attachment>();
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {

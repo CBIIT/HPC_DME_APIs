@@ -41,7 +41,7 @@ public class HPCBatchDatafile extends HPCBatchClient {
 			return false;
 		}
 		try {
-			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 					hpcCertPassword);
 			success = new HPCBatchDataFileProcessor(fileName, threadCount, hpcServerURL + "/" + hpcDataService,
 					hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile, authToken).processData();

@@ -90,7 +90,7 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 			}
 			try {
 				if(authToken == null)
-					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcCertPath,
+					authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 						hpcCertPassword);
 				
 				if(authToken == null)
@@ -98,7 +98,7 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 					System.out.println("Failed to get authentication token. Aborting!");
 					return false;
 				}
-				HpcLocalDirectoryListGenerator generator = new HpcLocalDirectoryListGenerator(hpcServerURL, authToken,
+				HpcLocalDirectoryListGenerator generator = new HpcLocalDirectoryListGenerator(hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, authToken,
 						hpcCertPath, hpcCertPassword);
 				success = generator.run(localPath, excludePattern, includePattern, filePathBaseName, destinationBasePath, logFile, logRecordsFile, testRun);
 				logRecordsFile = null;

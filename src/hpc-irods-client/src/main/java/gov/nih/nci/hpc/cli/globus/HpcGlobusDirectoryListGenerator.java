@@ -50,18 +50,22 @@ public class HpcGlobusDirectoryListGenerator {
 	private String logFile;
 	private String recordFile;
 	String hpcServerURL;
+	String hpcServerProxyPort;
+	String hpcServerProxyURL;
 
 	public HpcGlobusDirectoryListGenerator(String configProps) throws IOException, FileNotFoundException {
 		InputStream input = new FileInputStream(configProps);
 		properties.load(input);
 	}
 
-	public HpcGlobusDirectoryListGenerator(String hpcServerURL, String authToken, String hpcCertPath,
+	public HpcGlobusDirectoryListGenerator(String hpcServerURL, String hpcServerProxyURL, String hpcServerProxyPort, String authToken, String hpcCertPath,
 			String hpcCertPassword) throws IOException, FileNotFoundException {
 		this.hpcCertPath = hpcCertPath;
 		this.hpcCertPassword = hpcCertPassword;
 		this.authToken = authToken;
 		this.hpcServerURL = hpcServerURL;
+		this.hpcServerProxyURL = hpcServerProxyURL;
+		this.hpcServerProxyPort = hpcServerProxyPort;
 	}
 
 	public boolean run(String nexusURL, String globusURL, String globusEndpoint, String globusPath, String userId,
@@ -159,7 +163,7 @@ public class HpcGlobusDirectoryListGenerator {
 
 		long start = System.currentTimeMillis();
 		objectPath = objectPath.replace("//", "/");
-		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath,
+		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath, hpcServerProxyURL, hpcServerProxyPort,
 				hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
