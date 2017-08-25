@@ -270,6 +270,18 @@ public interface HpcDataTransferService
     public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
     		                                   boolean result, String message, Calendar completed) 
     		                                  throws HpcException;
+    
+    /**
+     * Get a file container name.
+     *
+     * @param dataTransferType The data transfer type.
+     * @param doc The doc (needed to determine the archive connection config).
+     * @param fileContainerId The file container ID.
+     * @throws HpcException on data transfer system failure.
+     */
+    public String getFileContainerName(HpcDataTransferType dataTransferType,
+                                       String doc, String fileContainerId) 
+    		                          throws HpcException;
 }
 
  

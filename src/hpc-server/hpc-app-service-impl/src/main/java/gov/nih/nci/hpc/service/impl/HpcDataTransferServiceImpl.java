@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -511,6 +512,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 	}
 	
+    @Override
+    public String getFileContainerName(HpcDataTransferType dataTransferType,
+                                       String doc, String fileContainerId) 
+    		                          throws HpcException
+    {
+    	// Input validation.
+    	if(StringUtils.isEmpty(fileContainerId)) {	
+    	   throw new HpcException("Null / Empty file container ID.", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}	
+    	
+    	return dataTransferProxies.get(dataTransferType).getFileContainerName(
+    			                                            getAuthenticatedToken(dataTransferType, doc), 
+    			                                            fileContainerId);	
+    }
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
@@ -537,7 +554,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     		invoker.getDataTransferAuthenticatedTokens()) {
     		if(authenticatedToken.getDataTransferType().equals(dataTransferType) &&
     	       authenticatedToken.getDoc().equals(doc)) {
-    		   logger.error("ERAN: Reusing " + dataTransferType + " token");
     	       return authenticatedToken.getDataTransferAuthenticatedToken();
     		} 
     	}

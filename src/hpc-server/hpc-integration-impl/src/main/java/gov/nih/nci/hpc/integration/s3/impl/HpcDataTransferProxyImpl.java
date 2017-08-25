@@ -176,7 +176,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			     // Download asynchronously.
     			     s3Download.addProgressListener(new HpcS3ProgressListener(progressListener));
     		 }
-    		    
+    		 
         } catch(AmazonClientException ace) {
     	        throw new HpcException("[S3] Failed to download file: [" + ace.getMessage() + "]", 
     	    	     	               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
