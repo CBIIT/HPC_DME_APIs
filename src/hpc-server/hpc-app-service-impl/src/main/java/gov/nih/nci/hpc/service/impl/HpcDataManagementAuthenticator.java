@@ -93,6 +93,7 @@ public class HpcDataManagementAuthenticator
     	
     	// Store token on the request context.
     	invoker.setDataManagementAuthenticatedToken(token);
+    	HpcRequestContext.setRequestInvoker(invoker);
     	return token;
     } 
 }
