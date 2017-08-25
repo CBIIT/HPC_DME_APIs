@@ -9,6 +9,10 @@ hpc.server.url=https://fr-s-hpcdm-uat-p.ncifcrf.gov:7738/hpc-server
 hpc.ssl.keystore.path=hpc-client/keystore/keystore-uat.jks
 hpc.ssl.keystore.password=hpc-server-store-pwd
 
+#Proxy Settings
+#hpc.server.proxy.url=10.1.200.240
+#hpc.server.proxy.port=3128
+
 hpc.user=konkapv
 
 #Globus settings
