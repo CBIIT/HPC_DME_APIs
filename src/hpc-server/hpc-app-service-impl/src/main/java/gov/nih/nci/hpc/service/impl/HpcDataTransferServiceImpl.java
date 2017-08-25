@@ -563,6 +563,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	authenticatedToken.setDataTransferType(dataTransferType);
     	authenticatedToken.setDoc(doc);
     	invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
+    	HpcRequestContext.setRequestInvoker(invoker);
     	
     	return token;
     }
