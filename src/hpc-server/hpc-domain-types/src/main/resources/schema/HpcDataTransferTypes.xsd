@@ -84,6 +84,7 @@
 	<xsd:complexType name="HpcFileLocation">
 		<xsd:sequence>
 			<xsd:element name="fileContainerId" type="xsd:string" />
+			<xsd:element name="fileContainerName" type="xsd:string" />
 			<xsd:element name="fileId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
