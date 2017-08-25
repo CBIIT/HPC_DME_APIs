@@ -235,7 +235,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 // Data transfer upload completed (successfully or failed). Add an event.
     			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
 		                                    dataTransferStatus, null, systemGeneratedMetadata.getSourceLocation(), 
-		                                    dataTransferCompleted, systemGeneratedMetadata.getDataTransferType());
+		                                    dataTransferCompleted, systemGeneratedMetadata.getDataTransferType(),
+		                                    systemGeneratedMetadata.getRegistrarDOC());
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process data transfer upload update:" + path, e);
@@ -299,7 +300,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     					                    uploadResponse.getChecksum(), 
     					                    systemGeneratedMetadata.getSourceLocation(),
     					                    uploadResponse.getDataTransferCompleted(),
-    					                    uploadResponse.getDataTransferType());
+    					                    uploadResponse.getDataTransferType(),
+    					                    systemGeneratedMetadata.getRegistrarDOC());
  			     
     		} catch(HpcException e) {
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
@@ -696,13 +698,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param sourceLocation (Optional) The data transfer source location.
      * @param dataTransferCompleted (Optional) The time the data upload completed.
      * @param dataTransferType The type of data transfer used to upload (Globus, S3, etc).
+     * @param doc The DOC.
      */
 	private void addDataTransferUploadEvent(String userId, String path,
 			                                HpcDataTransferUploadStatus dataTransferStatus,
 			                                String checksum, HpcFileLocation sourceLocation, 
 			                                Calendar dataTransferCompleted, 
-			                                HpcDataTransferType dataTransferType) 
+			                                HpcDataTransferType dataTransferType, String doc) 
 	{
+		setFileContainerName(HpcDataTransferType.GLOBUS, doc, sourceLocation);
 		try {
 			 switch(dataTransferStatus) {
 			        case ARCHIVED: 
@@ -751,16 +755,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			                                  HpcFileLocation destinationLocation, 
 			                                  Calendar dataTransferCompleted) 
 	{
-		try {
-			 // Get the file container ID name.
-			 destinationLocation.setFileContainerName(
-					    dataTransferService.getFileContainerName(dataTransferType, doc, 
-					    		                                 destinationLocation.getFileContainerId()));
-			 
-		} catch(HpcException e) {
-			    logger.error("Failed to get file container name: " + destinationLocation.getFileContainerId());
-		}
-		
+		setFileContainerName(dataTransferType, doc, destinationLocation);
 		try {
 			 if(result) {
 		        eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType, 
@@ -973,6 +968,32 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			                               completed);
 	   	   }
 	    }
+    }
+    
+    /**
+     * Set the file container name.
+     *
+     * @param dataTransferType The data transfer type.
+     * @param doc The DOC.
+     * @param fileLocation The file location.
+     * @throws HpcException on service failure.
+     */
+    private void setFileContainerName(HpcDataTransferType dataTransferType,
+    		                          String doc, HpcFileLocation fileLocation) 
+    {
+    	if(fileLocation == null) {
+    	   return;
+    	}
+    	
+		try {
+			 // Get the file container ID name.
+			 fileLocation.setFileContainerName(
+					         dataTransferService.getFileContainerName(dataTransferType, doc, 
+					    	     	                                  fileLocation.getFileContainerId()));
+			 
+		} catch(HpcException e) {
+			    logger.error("Failed to get file container name: " + fileLocation.getFileContainerId());
+		}
     }
 }
 
