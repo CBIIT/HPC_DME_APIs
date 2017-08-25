@@ -73,7 +73,6 @@ public class HpcDataManagementAuthenticator
     	}
     	
     	if(invoker.getDataManagementAuthenticatedToken() != null) {
-    		logger.error("ERAN: Reusing IRODS token");
     	   return invoker.getDataManagementAuthenticatedToken();
     	}
     	

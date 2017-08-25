@@ -736,6 +736,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param path The collection or data objection path.
      * @param downloadTaskType The download task type.
      * @param downloadTaskId The download task ID.
+     * @param dataTransferType The data transfer type,
+     * @param doc The doc.
      * @param result The download result.
      * @param message A failure message.
      * @param destinationLocation The download destination location.
@@ -744,10 +746,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	private void addDataTransferDownloadEvent(String userId, String path, 
 			                                  HpcDownloadTaskType downloadTaskType,
                                               String downloadTaskId,
+                                              HpcDataTransferType dataTransferType, String doc,
 			                                  boolean result, String message,
 			                                  HpcFileLocation destinationLocation, 
 			                                  Calendar dataTransferCompleted) 
 	{
+		try {
+			 // Get the file container ID name.
+			 destinationLocation.setFileContainerName(
+					    dataTransferService.getFileContainerName(dataTransferType, doc, 
+					    		                                 destinationLocation.getFileContainerId()));
+			 
+		} catch(HpcException e) {
+			    logger.error("Failed to get file container name: " + destinationLocation.getFileContainerId());
+		}
+		
 		try {
 			 if(result) {
 		        eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType, 
@@ -913,6 +926,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
         
     	addDataTransferDownloadEvent(downloadTask.getUserId(), path,
     			                     downloadTask.getType(), downloadTask.getId(),
+    			                     // TODO: data-transfer-type and DOC needs to be carried in the collection download
+    			                     //       task instead of hard-coded here. This will be critical when we have DOC
+    			                     //       specific Globus config. Until then - this works fine as is.
+    			                     HpcDataTransferType.GLOBUS, "", 
                                      result, message, downloadTask.getDestinationLocation(),
                                      completed);
     }
@@ -951,6 +968,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	   	   if(downloadTask.getCompletionEvent()) {
 	          addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
 	       		                           HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
+	       		                           downloadTask.getDataTransferType(), downloadTask.getDoc(),
 	       		                           result, message, downloadTask.getDestinationLocation(),
 			                               completed);
 	   	   }
