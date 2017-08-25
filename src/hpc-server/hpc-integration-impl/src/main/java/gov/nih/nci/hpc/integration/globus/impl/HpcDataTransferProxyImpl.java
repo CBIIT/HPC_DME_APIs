@@ -337,6 +337,25 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	return sourceLocation;
     }
     
+    @Override
+    public String getFileContainerName(Object authenticatedToken, 
+    		                           String fileContainerId) throws HpcException
+    {
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+
+		return retryTemplate.execute(arg0 -> 
+		{
+			try {
+				 JSONObject jsonEndpoint = client.getResult("/endpoint/" + fileContainerId).document;
+				 return jsonEndpoint.getString("display_name");
+			
+			} catch(Exception e) {
+			        throw new HpcException("[GLOBUS] Failed to get endpoint display name", 
+			                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
+		});
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  
