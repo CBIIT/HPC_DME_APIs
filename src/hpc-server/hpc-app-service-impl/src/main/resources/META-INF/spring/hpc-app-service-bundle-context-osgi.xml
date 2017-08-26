@@ -24,7 +24,7 @@
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.dataTransfer.downloadDirectory">${karaf.base}/data/tmp/S3</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
-		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">120</prop>
+		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
 		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
 		<prop key="hpc.service.notification.mail.port">25</prop>
