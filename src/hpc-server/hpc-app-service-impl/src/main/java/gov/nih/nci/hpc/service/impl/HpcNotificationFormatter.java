@@ -122,7 +122,7 @@ public class HpcNotificationFormatter
     		                throws HpcException
     {
     	// Find the format for the event type
-    	HpcNotificationFormat format = notificationFormats.get(notificationType);
+    	HpcNotificationFormat format = systemAdminNotificationFormats.get(notificationType);
     	if(format == null) {
     	   throw new HpcException("Notification format not found for: " +  notificationType,
     			                  HpcErrorType.UNEXPECTED_ERROR);
@@ -165,7 +165,7 @@ public class HpcNotificationFormatter
     		                   throws HpcException
     {
     	// Find the format for the event type
-    	HpcNotificationFormat format = notificationFormats.get(notificationType);
+    	HpcNotificationFormat format = systemAdminNotificationFormats.get(notificationType);
     	if(format == null) {
     	   throw new HpcException("Notification format not found for: " + notificationType,
     			                  HpcErrorType.UNEXPECTED_ERROR);
