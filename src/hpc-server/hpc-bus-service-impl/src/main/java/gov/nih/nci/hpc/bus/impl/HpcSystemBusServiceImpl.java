@@ -69,15 +69,6 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 public class HpcSystemBusServiceImpl implements HpcSystemBusService
 {  
     //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // Data transfer status check timeout, in days. If these many days pass 
-	// after the data registration date, and we still can't get a data transfer 
-	// status, then the state will move to UNKNOWN.
-	private static final int DATA_TRANSFER_STATUS_CHECK_TIMEOUT_PERIOD = 1;
-	
-    //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 
@@ -171,8 +162,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		} catch(HpcException e) {
     			    logger.error("Failed to process queued data transfer upload :" + path, e);
     			    
-    			    // If timeout occurred, move the status to unknown.
-    			    setTransferUploadStatusToUnknown(dataObject, true);
+    			    // Delete the data object.
+    			    deleteDataObject(path);
     		}
     	}
     	
@@ -221,11 +212,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	    		         break;
 	   	    		         
     			        case FAILED:
-    			             // Data transfer failed. Remove the data object.
-  		    	             dataManagementService.delete(path, true);
-  		    	             logger.error("Data transfer failed [" + dataTransferUploadReport.getMessage() +
-  		    	            		      "]: " + path);
-  		    	             break;
+    			             // Data transfer failed. 
+    			        	 throw new HpcException("Data transfer failed: " + dataTransferUploadReport.getMessage(),
+    			        			                HpcErrorType.DATA_TRANSFER_ERROR); 
   		    	             
   		    	        default:
   		    	        	 // Transfer is still in progress.
@@ -239,10 +228,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		                                    systemGeneratedMetadata.getRegistrarDOC());
     		     
     		} catch(HpcException e) {
-    			    logger.error("Failed to process data transfer upload update:" + path, e);
+    			    logger.error("Failed to process data transfer upload in progress:" + path, e);
     			    
-    			    // If timeout occurred, move the status to unknown.
-    			    setTransferUploadStatusToUnknown(dataObject, true);
+    			    // Delete the data object.
+    			    deleteDataObject(path);
     		}
     	}
     }
@@ -306,8 +295,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		} catch(HpcException e) {
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
     			    
-    			    // If timeout occurred, move the status to unknown.
-    			    setTransferUploadStatusToUnknown(dataObject, true);
+    			    // Delete the data object.
+    			    deleteDataObject(path);
     		}
     	}
     }
@@ -640,53 +629,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
-    
-    /** 
-     * Determine if data transfer status check timed out.
-     * 
-     * @param dataObject The data object to check the timeout for.
-     * @return true if status check timeout occurred. 
-     */
-	private boolean isDataTransferStatusCheckTimedOut(HpcDataObject dataObject) 
-	{
-		if(dataObject.getCreatedAt() == null) {
-		   // Creation time unknown.
-		   return true;	
-		}
-		
-		// Calculate the timeout.
-		Calendar timeout = Calendar.getInstance();
-	    timeout.setTime(dataObject.getCreatedAt().getTime());
-	    timeout.add(Calendar.DATE, DATA_TRANSFER_STATUS_CHECK_TIMEOUT_PERIOD);
-	    
-	    // Compare to now.
-	    return Calendar.getInstance().after(timeout);
-	}
-	
-    /** 
-     * Set the data transfer upload status of a data object to unknown.
-     * 
-     * @param dataObject The data object
-     * @param checkTimeout If 'true', this method checks for transfer status timeout occurred 
-     *                     before setting the status. 
-     */
-	private void setTransferUploadStatusToUnknown(HpcDataObject dataObject, 
-			                                      boolean checkTimeout)
-	{
-		// If timeout occurred, move the status to unknown.
-		if(!checkTimeout || isDataTransferStatusCheckTimedOut(dataObject)) {
-			try {
-				 metadataService.updateDataObjectSystemGeneratedMetadata(dataObject.getAbsolutePath(), null, null, null, 
-						                                                 HpcDataTransferUploadStatus.UNKNOWN, null, null);
-
-			} catch(Exception ex) {
-				    logger.error("failed to set data transfer status to unknown: " + 
-				    		     dataObject.getAbsolutePath(), ex);
-			}
-			
-			logger.error("Unknown data transfer status: " + dataObject.getAbsolutePath());
-		}
-	}
 	
     /** 
      * add data transfer upload event.
@@ -995,6 +937,45 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 			    logger.error("Failed to get file container name: " + fileLocation.getFileContainerId());
 		}
     }
+    
+    /**
+     * Delete a data object (from the data management system)
+     *
+     * @param path The data object path.
+     */
+    private void deleteDataObject(String path)
+    {
+    	// Update the data transfer status. This is needed in case the actual deletion failed.
+    	HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
+    	try {
+    		 metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
+                                                                     HpcDataTransferUploadStatus.FAILED, null, null);
+    		 
+    		 systemGeneratedMetadata =  metadataService.getDataObjectSystemGeneratedMetadata(path);
+    		 
+    	} catch(HpcException e) {
+    		    logger.error("Failed to update system metadata: " + path, HpcErrorType.UNEXPECTED_ERROR, e);
+    	}
+    	
+    	// Delete the data object.
+    	try {
+    	     dataManagementService.delete(path, true);
+    	     
+    	} catch(HpcException e) {
+    		    logger.error("Failed to delete data object: " + path, HpcErrorType.UNEXPECTED_ERROR, e);
+    	}
+    	
+	    // Send an an event.
+    	if(systemGeneratedMetadata != null) {
+		   addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
+		    		                  systemGeneratedMetadata.getDataTransferStatus(), null, 
+		    		                  systemGeneratedMetadata.getSourceLocation(), 
+		    		                  systemGeneratedMetadata.getDataTransferCompleted(), 
+		    		                  systemGeneratedMetadata.getDataTransferType(),
+                                      systemGeneratedMetadata.getRegistrarDOC());
+    	}
+    }
+
 }
 
 
