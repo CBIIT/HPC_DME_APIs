@@ -25,7 +25,9 @@
 			<xsd:enumeration value="IN_PROGRESS_TO_ARCHIVE" />
 			<xsd:enumeration value="ARCHIVED" />
 			<xsd:enumeration value="FAILED" />
-			<xsd:enumeration value="UNKNOWN" />
+			<xsd:enumeration value="DELETE_REQUESTED" />
+			<xsd:enumeration value="DELETED" />
+			<xsd:enumeration value="DELETE_FAILED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
