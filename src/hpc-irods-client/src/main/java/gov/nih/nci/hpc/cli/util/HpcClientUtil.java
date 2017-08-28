@@ -54,12 +54,19 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 
 public class HpcClientUtil {
@@ -288,4 +295,36 @@ public class HpcClientUtil {
 			return encodedStr.toString();
 		}
 	}
+	
+	public static HpcDataObjectListDTO getDatafiles(String token, String hpcDatafileURL, String proxyURL, String proxyPort, String path, boolean list,
+			String hpcCertPath, String hpcCertPassword) {
+		try {
+			WebClient client = getWebClient(
+					hpcDatafileURL + "/" + path + (list ? "?list=true" : "?list=false"), proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("GET", null);
+			if (restResponse.getStatus() == 200) {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcDataObjectListDTO datafiles = parser.readValueAs(HpcDataObjectListDTO.class);
+				return datafiles;
+			} else {
+				System.out.println("Failed to get data file: "+path);
+				throw new HpcBatchException("Failed to get data file: "+path);
+			}
+
+		} catch (Exception e) {
+			System.out.println("Failed to get data file: "+path);
+			throw new HpcBatchException("Failed to get data file: "+path);
+		}
+	}	
 }
