@@ -785,7 +785,7 @@ public class HpcClientUtil {
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("PUT", collectionDTO);
-			if (restResponse.getStatus() == 200) {
+			if (restResponse.getStatus() == 200 || restResponse.getStatus() == 201) {
 				return true;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
@@ -799,7 +799,7 @@ public class HpcClientUtil {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				throw new HpcWebException("Failed to update collection: " + exception.getMessage());
+				throw new HpcWebException(exception.getMessage());
 			}
 		} catch (HpcWebException e) {
 			throw e;

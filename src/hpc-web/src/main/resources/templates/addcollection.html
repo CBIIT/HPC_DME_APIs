@@ -59,6 +59,15 @@
 	height: 300px
 }
 </style>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var collectionTypes = [[${collectionTypes}]];
+    var collectionTypeAttrs = [[${collectionTypeAttrs}]];
+    var collectionTypeAttrDefaultValues = [[${collectionTypeAttrDefaultValues}]];
+    var collectionTypeAttrValidValues = [[${collectionTypeAttrValidValues}]];
+/*]]>*/
+</script>
+
 </head>
 <body ng-controller="MyCtrl">
 
@@ -126,6 +135,20 @@
 											</tr>
 										</thead>
 										<tbody>
+										<tr id='attrRow0' th:if="${collectionTypes != null}">
+											<td style="white-space: nowrap"><label id="rowId0">Collection Type</label>
+											</td>
+											<td style="white-space: nowrap"><select size="1"
+												id="zAttrStr_collection_type" name="zAttrStr_collection_type" class="form-control"
+												th:required="required"
+												onChange="addAttributesForType(this.value)">
+													<option value="-1">----Select----</option>
+													<option
+														th:each="collectionType : ${collectionTypes}"
+														th:value="${collectionType}" th:text="${collectionType}">
+														Wireframe</option>
+											</select></td>
+										</tr>										
 										<!-- 
 											<tr
 												th:each="hpcMetadataValidationRule : ${session.userDOCModel.getCollectionMetadataValidationRules()}" th:if="${session.userDOCModel != null}">
@@ -137,11 +160,12 @@
 														th:text="${metadataItem.getAttrValue()}"></label></td>
 												</div>
 											</tr>
- 										-->
+ 										
 											<tr>
 											<td align="left"><input type="text" name="addAttrName1" id="addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
 											<td align="left"><input type="text" name="addAttrValue1" id="addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>
 											</tr>
+											-->
 										</tbody>
 									</table>
 								</div>
@@ -150,7 +174,7 @@
 									<button class="btn btn-md btn-primary"
 										id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 									<button type="submit" class="btn btn-md btn-primary"
-										id="primaryButton">Create</button>
+										id="primaryButton" onClick="return validate()">Create</button>
 									<button type="submit" class="btn btn-primary"
 										id="cancel" onClick="cancelEdit()">Cancel</button>
 								</div>
@@ -181,6 +205,7 @@
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
+	//<![CDATA[	
 	var rowId = 1;
 	
 	function addMetadata() {
@@ -196,11 +221,105 @@
 	    return false;
 	}	
 
+	function addAttributesForType(collectionType) {
+	    var table = document.getElementById("metaAttrTable");
+	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+	    table = document.getElementById("metaAttrTable");
+	    if(collectionTypeAttrs.length >= 1)
+	    {
+	    	for(var x=2;x<=rows;x++)
+	    		table.deleteRow(2);
+	    }
+
+	    rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+	    table = document.getElementById("metaAttrTable");
+		for(var i=0;i<collectionTypeAttrs.length;i++)
+		{
+			var fullAttr = collectionTypeAttrs[i];
+			var collType = fullAttr.substring(0, fullAttr.indexOf(":"));
+			var defaultValue = "";
+			if(collType == collectionType)
+			{
+				rows++;
+				var attrName = fullAttr.substring(fullAttr.indexOf(":")+1);
+				//Get default value
+				for(var j=0;j<collectionTypeAttrDefaultValues.length;j++)
+				{
+					if(collectionTypeAttrDefaultValues[j].indexOf(fullAttr+":") != -1)
+					{
+						defaultValue = collectionTypeAttrDefaultValues[j].substring(collectionTypeAttrDefaultValues[j].lastIndexOf(":")+1);
+					}
+				}
+				//Get valid values
+				var validValueFlag = false;
+				var listBox = '<select id="zAttrStr_'+(attrName)+'" name="zAttrStr_'+(attrName)+'" class="form-control"><option value="-1">--Select--</option>';
+				for(var j=0;j<collectionTypeAttrValidValues.length;j++)
+				{
+					if(collectionTypeAttrValidValues[j].indexOf(fullAttr+":") != -1)
+					{
+						var validValue = collectionTypeAttrValidValues[j].substring(collectionTypeAttrValidValues[j].lastIndexOf(":")+1);
+						if(validValue == defaultValue)
+							listBox += "<option value='"+validValue+"' selected='selected'>"+validValue+"</option>"
+						else
+							listBox += "<option value='"+validValue+"'>"+validValue+"</option>"
+						validValueFlag = true;
+					}
+				}
+				listBox = listBox + "</select>"
+		    
+			    var row = table.insertRow(rows);
+			    row.id = "attrRow"+(rows);
+			    var cell0 = row.insertCell(0);
+			    var cell1 = row.insertCell(1);
+			    cell0.innerHTML = '<label id="'+ (fullAttr) +'">'+ (attrName) + '</label>';
+			    if(validValueFlag)
+			    	cell1.innerHTML = listBox;
+			    else
+			    	cell1.innerHTML = '<input type="text" id="zAttrStr_'+(attrName)+'" name="zAttrStr_'+(attrName)+'" placeholder="Attribute Value" class="form-control" value="'+(defaultValue)+'"/>';
+			}
+		}
+	    return false;
+	}	
+
+	function validate()
+	{
+		if(!document.getElementById("path").value)
+		{
+			alert("Path is missng!")
+			return false;
+		}
+
+		var collectionType = document.getElementById("zAttrStr_collection_type").value;
+	
+		if(!collectionType || collectionType == "-1")
+		{
+			alert("Collection type is missng!")
+			return false;
+		}
+			
+		for(var i=0;i<collectionTypeAttrs.length;i++)
+		{
+			var fullAttr = collectionTypeAttrs[i];
+			var collType = fullAttr.substring(0, fullAttr.indexOf(":"));
+			var defaultValue = "";
+			if(collType == collectionType)
+			{
+				var attrName = fullAttr.substring(fullAttr.indexOf(":")+1);
+				if(!document.getElementById("zAttrStr_"+attrName).value || document.getElementById("zAttrStr_"+attrName).value == "-1")
+				{
+					alert("Attribute " + attrName + " value is missing!")
+					return false;
+				}
+			}
+		}
+	}
+	
 	function cancelEdit()
     {
 		document.getElementById("action").value = "cancel";
 		$("#collectionForm").submit();
     }
+//]]>
 </script>
 
 </body>
