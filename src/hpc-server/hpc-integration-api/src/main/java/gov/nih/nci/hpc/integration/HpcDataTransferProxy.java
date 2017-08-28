@@ -58,7 +58,7 @@ public interface HpcDataTransferProxy
      * @return True if upload/download requests are accepted, or false if the data-transfer system is too busy.
      * @throws HpcException on data transfer system failure.
      */
-    default public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException
+    public default boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException
     {
     	return true;
     }
@@ -102,7 +102,7 @@ public interface HpcDataTransferProxy
      * @param fileLocation The file location.
      * @throws HpcException on data transfer system failure.
      */
-    default public void deleteDataObject(Object authenticatedToken,
+    public default void deleteDataObject(Object authenticatedToken,
     		                             HpcFileLocation fileLocation)
                                         throws HpcException
     {
@@ -118,7 +118,7 @@ public interface HpcDataTransferProxy
      * @return The data transfer request status.
      * @throws HpcException on data transfer system failure.
      */
-    default public HpcDataTransferUploadReport 
+    public default HpcDataTransferUploadReport 
             getDataTransferUploadStatus(Object authenticatedToken,
     		                            String dataTransferRequestId) 
     		                           throws HpcException
@@ -135,7 +135,7 @@ public interface HpcDataTransferProxy
      * @return The data transfer request status.
      * @throws HpcException on data transfer system failure.
      */
-    default public HpcDataTransferDownloadReport 
+    public default HpcDataTransferDownloadReport 
             getDataTransferDownloadStatus(Object authenticatedToken,
     		                              String dataTransferRequestId) 
     		                             throws HpcException
@@ -152,7 +152,7 @@ public interface HpcDataTransferProxy
      * @return The size of the data transferred in bytes.
      * @throws HpcException on data transfer system failure.
      */
-    default public long getDataTransferSize(Object authenticatedToken,
+    public default long getDataTransferSize(Object authenticatedToken,
     		                                String dataTransferRequestId) 
     		                               throws HpcException
     {
@@ -169,7 +169,7 @@ public interface HpcDataTransferProxy
      * @return The path attributes.
      * @throws HpcException on data transfer system failure.
      */
-    default public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
+    public default HpcPathAttributes getPathAttributes(Object authenticatedToken, 
     		                                           HpcFileLocation fileLocation,
     		                                           boolean getSize) 
     		                                          throws HpcException
@@ -186,7 +186,7 @@ public interface HpcDataTransferProxy
      * @return a file path.
      * @throws HpcException on data transfer system failure.
      */
-    default public String getFilePath(String fileId, boolean archive) throws HpcException
+    public default String getFilePath(String fileId, boolean archive) throws HpcException
     {
 	  	throw new HpcException("getFilePath not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
@@ -199,10 +199,25 @@ public interface HpcDataTransferProxy
      * @return The download source location.
      * @throws HpcException on data transfer system failure.
      */
-    default public HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
+    public default HpcFileLocation getDownloadSourceLocation(String path) throws HpcException
     {
 	  	throw new HpcException("getDownloadSourceLocation not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
+    }
+    
+    /**
+     * Get a file container name.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param fileContainerId The file container ID.
+     * @throws HpcException on data transfer system failure.
+     */
+    public default String getFileContainerName(Object authenticatedToken,
+    		                                   String fileContainerId) 
+    		                                  throws HpcException
+    {
+    	throw new HpcException("getFileContainerName() not supported",
+                               HpcErrorType.UNEXPECTED_ERROR);
     }
     
     /** 
