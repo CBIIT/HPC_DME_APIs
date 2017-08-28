@@ -411,7 +411,7 @@ function print_error_message {
       exit 1
     elif [ "$RESPONSE_CODE" -eq 204  ]
     then
-      echo "ERROR_MESSAGE:\"no content for the specified path\"" >&2
+      echo "ERROR_MESSAGE:\"no content for the specified item\"" >&2
       exit 1
     fi 
 }
@@ -514,7 +514,7 @@ function check_java {
   fi
 }
 
-#Returns the absolute path from a relative path
+#Returns the absolute path from a relative path for a directory
 #Arguments:   <relative_path>
 function myreadlink {
   relative_path=$1
@@ -523,6 +523,19 @@ function myreadlink {
   popd > /dev/null
   echo $absolute_path 
 }
+
+
+#Returns the absolute path from a relative path for a file
+#Arguments:   <relative_path>
+function myfilereadlink {
+  relative_dir_path=$(dirname $1)
+  pushd $relative_dir_path > /dev/null
+  absolute_dir_path=$(pwd)
+  popd > /dev/null
+  echo $absolute_dir_path/$(basename $1)
+}
+
+
 
 #Returns if the path is either a collection or a dataObject or none
 #Argument: <path>
