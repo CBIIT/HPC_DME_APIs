@@ -650,8 +650,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     public HpcDataObjectDeleteResponseDTO deleteDataObject(String path) throws HpcException
     {
     	// Input validation.
-    	if(path == null) {
-    	   throw new HpcException("Null path",
+    	if(StringUtils.isEmpty(path)) {
+    	   throw new HpcException("Null / empty path",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
         	
@@ -673,29 +673,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcSystemGeneratedMetadata systemGeneratedMetadata =
 		   metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 		
-		// Validate the file is archived.
-		if(!systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-		   throw new HpcException("Object is not in archived state yet. It is in " +
-				                  systemGeneratedMetadata.getDataTransferStatus().value() + " state",
-				                  HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-		}
-    	
-		HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
+    	// Instantiate a response DTO
+    	HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
 		dataObjectDeleteResponse.setArchiveDeleteStatus(true);
 	    dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
 	    
-		// Try to remove the file from archive and capture the status.
-		try {
-    	     dataTransferService.deleteDataObject(systemGeneratedMetadata.getArchiveLocation(), 
-    		     	                              systemGeneratedMetadata.getDataTransferType(),
-    		     	                              systemGeneratedMetadata.getRegistrarDOC());
-    	     
-		} catch(HpcException e) {
-			    logger.error("Failed to delete file from archive", e);
-			    dataObjectDeleteResponse.setArchiveDeleteStatus(false);
-			    dataObjectDeleteResponse.setMessage(e.getMessage());
+		// Delete the file from the archive (if it's archived).
+	    switch(systemGeneratedMetadata.getDataTransferStatus()) {
+	           case ARCHIVED:
+	           case DELETE_REQUESTED:
+	           case DELETE_FAILED:
+	        	    deleteDataObjectFromArchive(path, systemGeneratedMetadata, dataObjectDeleteResponse);
+			        break;
+			        
+	           case RECEIVED:
+	           case IN_PROGRESS_TO_TEMPORARY_ARCHIVE:
+	           case IN_TEMPORARY_ARCHIVE:
+	           case IN_PROGRESS_TO_ARCHIVE:
+	        	    // Data transfer still in progress.
+		            throw new HpcException("Object is not in archived state yet. It is in " +
+				                           systemGeneratedMetadata.getDataTransferStatus().value() + " state",
+				                           HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+		            
+		       default:
+		    	    // The file is not in archive (data transfer failed, or it was deleted).
+		    	    break;
 		}
-		
+    	
 		// If the archive removal was successful, then remove the file from data management.
 		try {
 			 if(dataObjectDeleteResponse.getArchiveDeleteStatus()) {
@@ -718,7 +722,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				                  dataObjectDeleteResponse.getMessage());
 		
 		return dataObjectDeleteResponse;
-    	
     }
     
     @Override
@@ -1284,7 +1287,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
     
 	/** 
-     * Split the list of download items into completed, failed and in-progress buckets
+     * Split the list of download items into completed, failed and in-progress buckets.
      * 
      * @param downloadStatus The download status to populate the items into.
      * @param items The collection download items.
@@ -1303,6 +1306,52 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		} else {
     			    downloadStatus.getFailedItems().add(item);
     		}
+    	}
+    }
+    
+	/** 
+     * Delete a data object from the archive.
+     * 
+     * @param path The data object path.
+     * @param systemGeneratedMetadata The system generetaed metadata.
+     * @param dataObjectDeleteResponse The deletion response DTO.
+     */
+    private void deleteDataObjectFromArchive(String path, HpcSystemGeneratedMetadata systemGeneratedMetadata,
+    		                                 HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse)
+    {
+       updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETE_REQUESTED);
+ 	
+       try {
+            dataTransferService.deleteDataObject(systemGeneratedMetadata.getArchiveLocation(), 
+	     	                                      systemGeneratedMetadata.getDataTransferType(),
+	     	                                      systemGeneratedMetadata.getRegistrarDOC());
+    
+       } catch(HpcException e) {
+	            logger.error("Failed to delete file from archive", e);
+	            updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETE_FAILED);
+	            dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+	            dataObjectDeleteResponse.setMessage(e.getMessage());
+       }
+       
+       updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETED);
+    }
+
+	/** 
+     * Attempt to update data object upload status. No exception thrown is failed.
+     * 
+     * @param path The data object path.
+     * @param dataTransferStatus The data transfer upload system generetaed metadata.
+     * @param dataObjectDeleteResponse The deletion response DTO.
+     */
+    private void updateDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus)
+    {
+    	try {
+ 		     metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
+ 		    		                                                 dataTransferStatus, null, null);
+ 		 
+    	} catch(HpcException e) {
+ 		        logger.error("Failed to update system metadata: " + path + ". Data transfer status: " +
+    	                     dataTransferStatus, HpcErrorType.UNEXPECTED_ERROR, e);
     	}
     }
 }

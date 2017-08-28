@@ -251,7 +251,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	   } catch(Exception e) {
     			   logger.error("Unable to determine data transfer status: "+ 
     		                    metadataMap.get(DATA_TRANSFER_STATUS_ATTRIBUTE), e);
-    			   systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferUploadStatus.UNKNOWN);
+    			   systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferUploadStatus.FAILED);
     		}
     	}
     	
