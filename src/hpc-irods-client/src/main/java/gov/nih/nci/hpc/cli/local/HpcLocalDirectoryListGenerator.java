@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +47,8 @@ import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
@@ -261,12 +265,17 @@ public class HpcLocalDirectoryListGenerator {
 		List<Attachment> atts = new LinkedList<Attachment>();
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
 				hpcDataObjectRegistrationDTO));
+		MessageDigest md = null;
+		String digestStr = "";
 		try {
 			inputStream = new BufferedInputStream(
 					new FileInputStream(hpcDataObjectRegistrationDTO.getSource().getFileId()));
+			md = MessageDigest.getInstance("MD5");
+			DigestInputStream dis = new DigestInputStream(inputStream, md);
+			
 			ContentDisposition cd2 = new ContentDisposition(
 					"attachment;filename=" + hpcDataObjectRegistrationDTO.getSource().getFileId());
-			atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
+			atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", dis, cd2));
 			hpcDataObjectRegistrationDTO.setSource(null);
 		} catch (FileNotFoundException e) {
 			String message = "Failed to process record due to: " + e.getMessage();
@@ -295,6 +304,11 @@ public class HpcLocalDirectoryListGenerator {
 		try {
 			System.out.println("Processing: " + basePath + "/" + objectPath);
 			Response restResponse = client.put(new MultipartBody(atts));
+			byte[] digest = md.digest();
+			
+			for (int i=0; i < digest.length; i++) {
+				digestStr += Integer.toString( ( digest[i] & 0xff ) + 0x100, 16).substring( 1 );
+		       }			
 			if (restResponse.getStatus() != 201) {
 				MappingJsonFactory factory = new MappingJsonFactory();
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
@@ -344,7 +358,31 @@ public class HpcLocalDirectoryListGenerator {
 							"Failed to process record due to unknown error. Return code: " + restResponse.getStatus());
 				}
 			} else
-				System.out.println("Success! ");
+			{
+//				System.out.println("Success! ");
+				HpcDataObjectListDTO dataFilesDTO = HpcClientUtil.getDatafiles(authToken, hpcServerURL + "/dataObject/" + basePath, hpcServerProxyURL, hpcServerProxyPort, objectPath, true,
+						hpcCertPath, hpcCertPassword);
+				if(dataFilesDTO == null || dataFilesDTO.getDataObjects() == null || dataFilesDTO.getDataObjects().size() == 0)
+					throw new RecordProcessingException(
+							"Failed to process record. Unable to locate after save " + objectPath);
+				List<HpcDataObjectDTO> dataObjects = dataFilesDTO.getDataObjects();
+				for(HpcDataObjectDTO dto : dataObjects)
+				{
+					List<HpcMetadataEntry> metadata = dto.getMetadataEntries().getSelfMetadataEntries();
+					for(HpcMetadataEntry entry : metadata)
+					{
+						if(entry.getAttribute().equals("checksum"))
+						{
+							if(!entry.getValue().equals(digestStr))
+								throw new RecordProcessingException(
+										"MD5 CheckSum validation failed. Source: " + digestStr + " is not matching with destination: "+entry.getValue());
+							else
+								System.out.println("Success! MD5 CheckSum validation successful. Source: " + digestStr + " matched with destination: "+entry.getValue());
+						}
+					}
+				}
+
+			}
 		} catch (HpcBatchException e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
