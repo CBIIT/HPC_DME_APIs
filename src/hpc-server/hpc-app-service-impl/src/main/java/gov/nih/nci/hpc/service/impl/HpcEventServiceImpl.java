@@ -39,6 +39,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -534,10 +535,12 @@ public class HpcEventServiceImpl implements HpcEventService
     private String toString(HpcFileLocation fileLocation)
     {
 	   StringBuilder fileLocationStr = new StringBuilder();
-	   if(fileLocation.getFileContainerId() != null) {
-		  fileLocationStr.append(fileLocation.getFileContainerId() + ":"); 
+	   if(!StringUtils.isEmpty(fileLocation.getFileContainerName())) {
+		  fileLocationStr.append(fileLocation.getFileContainerName() + ":"); 
+	   } else if(!StringUtils.isEmpty(fileLocation.getFileContainerId())) {
+		         fileLocationStr.append(fileLocation.getFileContainerId() + ":"); 
 	   }
-	   if(fileLocation.getFileId() != null) {
+	   if(!StringUtils.isEmpty(fileLocation.getFileId())) {
 		  fileLocationStr.append(fileLocation.getFileId()); 
 	   }
 	   
