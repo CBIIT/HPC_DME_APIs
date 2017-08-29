@@ -42,6 +42,7 @@ public abstract class HPCCmdClient {
 	protected String tokenFile = null;
 	protected String logRecordsFile = null;
 	protected boolean headerAdded = false;
+	protected boolean validateMD5 = false;
 
 	public HPCCmdClient() {
 
@@ -52,6 +53,9 @@ public abstract class HPCCmdClient {
 		hpcServerProxyURL = configProperties.getProperty("hpc.server.proxy.url");
 		hpcServerProxyPort = configProperties.getProperty("hpc.server.proxy.port");
 		globusNexusURL = configProperties.getProperty("globus.nexus.url");
+		String checkMD5 = configProperties.getProperty("validate.md5.checksum");
+		if(checkMD5 != null && checkMD5.equalsIgnoreCase("true"))
+			validateMD5 = true;	
 		globusURL = configProperties.getProperty("globus.url");
 		hpcServerURL = configProperties.getProperty("hpc.server.url");
 		hpcDataService = configProperties.getProperty("hpc.dataobject.service");

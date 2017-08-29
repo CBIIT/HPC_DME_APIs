@@ -99,7 +99,7 @@ public class HPCCmdRegisterLocalFile extends HPCCmdClient {
 					return false;
 				}
 				HpcLocalDirectoryListGenerator generator = new HpcLocalDirectoryListGenerator(hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, authToken,
-						hpcCertPath, hpcCertPassword);
+						hpcCertPath, hpcCertPassword, validateMD5);
 				success = generator.run(localPath, excludePattern, includePattern, filePathBaseName, destinationBasePath, logFile, logRecordsFile, testRun);
 				logRecordsFile = null;
 			} catch (Exception e) {
