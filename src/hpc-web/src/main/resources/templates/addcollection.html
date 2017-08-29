@@ -103,6 +103,7 @@
 							</div>
 								<form class="form-horizontal" id="collectionForm" th:action="@{/addCollection}"
 									th:object="${hpcCollection}" method="POST">
+									<input type="hidden" name="actionType" id="actionType"/>
 								<!--panel-body start-->
 								<div class="panel-body">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -115,8 +116,16 @@
 								</div>								
 									<div class="form-group">
 										<div class="col-md-12 form-group">
-											<label for="Name">Path:</label> 
-											<input type="text" name="path" id="path" size="100" th:value="${parentPath}"/>
+											<label for="Name">Parent Path:</label> 
+											<input type="text" name="path" id="path" size="100" th:value="${parentPath}"/>&nbsp;&nbsp;&nbsp;<button class="btn btn-md btn-primary"
+										id="primaryButton" onClick="return getHierarchy()">Get Hierarchy</button>
+											
+										</div>
+									</div>
+									<div class="form-group">
+										<div class="col-md-12 form-group">
+											<label for="Name">Collection Name:</label> 
+											<input type="text" name="collectionName" id="path" size="100" th:value="${collectionName}"/>
 										</div>
 									</div>
 								</div>
@@ -314,9 +323,16 @@
 		}
 	}
 	
+	function getHierarchy()
+    {
+		document.getElementById("actionType").value = "hierarchy";
+		$("#collectionForm").submit();
+    }
+	
+	
 	function cancelEdit()
     {
-		document.getElementById("action").value = "cancel";
+		document.getElementById("actionType").value = "cancel";
 		$("#collectionForm").submit();
     }
 //]]>
