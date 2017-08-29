@@ -154,7 +154,7 @@ public class HpcLocalDirectoryListQuery {
 			for (String pattern : excludePatterns)
 				patterns.add("!"+pattern);
 		}
-		patterns.add("!.metadata.json");
+		//patterns.add("!*.metadata.json");
 		return paths.glob(basePath, patterns);
 		
 	}
