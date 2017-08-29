@@ -32,8 +32,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -74,12 +77,11 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String body, 
-			Model model, BindingResult bindingResult, HttpSession session,
-			HttpServletRequest request) {
+	public String home(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request) {
 		try {
 			String path = request.getParameter("path");
-			if(path != null)
+			if (path != null)
 				model.addAttribute("parentPath", path);
 			// User Session validation
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -93,7 +95,7 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				return "index";
 			}
 
-			populateFormAttributes(session, model);
+			populateFormAttributes(session, model, path);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			model.addAttribute("error", "Failed to add Collection: " + e.getMessage());
@@ -102,9 +104,8 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
 		return "addcollection";
 	}
-	
-	private void populateFormAttributes(HttpSession session, Model model)
-	{
+
+	private void populateFormAttributes(HttpSession session, Model model, String path) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
@@ -113,48 +114,89 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(), sslCertPath, sslCertPassword);
 			session.setAttribute("userDOCModel", modelDTO);
 		}
-		
+		String collectionType = null;
+		if (path != null)
+			collectionType = getCollectionType(authToken, serviceURL, path, false, sslCertPath, sslCertPassword);
+
 		Set<String> collectionTypesSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 		Set<String> collectionTypeAttrsSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 		Set<String> collectionTypeAttrDefaultValuesSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 		Set<String> collectionTypeAttrValidValuesSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-
 		List<HpcMetadataValidationRule> rules = modelDTO.getCollectionMetadataValidationRules();
-		for(HpcMetadataValidationRule rule:rules)
-		{
-			if(rule.getMandatory() && rule.getAttribute().equals("collection_type"))
-				collectionTypesSet.addAll(rule.getValidValues());
-				
-		}
-		
-		//For each collection type, get required attributes
-		//Build list as type1:attribute1, type1:attribute2, type2:attribute2, type2:attribute3
 
-		//For each attribute, get valid values
-		//Build list as type1:attribute1:value1, type1:attribute1:value2
-		
-		//For each attribute, get default value
-		//Build list as type1:attribute1:defaultValue, type2:attribute2:defaultValue
-		for(String collectionType : collectionTypesSet)
-		{
-			for(HpcMetadataValidationRule rule:rules)
-			{
-				if(rule.getMandatory() && rule.getCollectionTypes().contains(collectionType))
-					collectionTypeAttrsSet.add(collectionType+":"+rule.getAttribute());
-				if(rule.getDefaultValue() != null)
-					collectionTypeAttrDefaultValuesSet.add(collectionType+":"+rule.getAttribute()+":"+rule.getDefaultValue());
-				if(rule.getValidValues() != null && !rule.getValidValues().isEmpty())
-				{
-					for(String value : rule.getValidValues())
-						collectionTypeAttrValidValuesSet.add(collectionType+":"+rule.getAttribute()+":"+value);
-				}
+		if (collectionType != null)
+			collectionTypesSet.addAll(getSubCollectionTypes(collectionType, modelDTO.getDataHierarchy()));
+		else {
+
+			for (HpcMetadataValidationRule rule : rules) {
+				if (rule.getMandatory() && rule.getAttribute().equals("collection_type"))
+					collectionTypesSet.addAll(rule.getValidValues());
+
 			}
 		}
 		
+		if(rules.isEmpty() && collectionTypesSet.isEmpty())
+			collectionTypesSet.add("Folder");
+
+		// For each collection type, get required attributes
+		// Build list as type1:attribute1, type1:attribute2, type2:attribute2,
+		// type2:attribute3
+
+		// For each attribute, get valid values
+		// Build list as type1:attribute1:value1, type1:attribute1:value2
+
+		// For each attribute, get default value
+		// Build list as type1:attribute1:defaultValue,
+		// type2:attribute2:defaultValue
+		for (String cType : collectionTypesSet) {
+			for (HpcMetadataValidationRule rule : rules) {
+				if (rule.getMandatory() && rule.getCollectionTypes().contains(cType))
+					collectionTypeAttrsSet.add(cType + ":" + rule.getAttribute());
+				if (rule.getDefaultValue() != null)
+					collectionTypeAttrDefaultValuesSet
+							.add(cType + ":" + rule.getAttribute() + ":" + rule.getDefaultValue());
+				if (rule.getValidValues() != null && !rule.getValidValues().isEmpty()) {
+					for (String value : rule.getValidValues())
+						collectionTypeAttrValidValuesSet.add(cType + ":" + rule.getAttribute() + ":" + value);
+				}
+			}
+		}
+
 		model.addAttribute("collectionTypes", collectionTypesSet);
 		model.addAttribute("collectionTypeAttrs", collectionTypeAttrsSet);
 		model.addAttribute("collectionTypeAttrDefaultValues", collectionTypeAttrDefaultValuesSet);
 		model.addAttribute("collectionTypeAttrValidValues", collectionTypeAttrValidValuesSet);
+	}
+
+	private List<String> getSubCollectionTypes(String collectionType, HpcDataHierarchy dataHierarchy) {
+		List<String> types = new ArrayList<String>();
+		if(dataHierarchy.getCollectionType().equals(collectionType))
+		{
+			List<HpcDataHierarchy> subs = dataHierarchy.getSubCollectionsHierarchies();
+			for(HpcDataHierarchy sub : subs)
+				types.add(sub.getCollectionType());
+		}
+		else
+		{
+			List<HpcDataHierarchy> subs = dataHierarchy.getSubCollectionsHierarchies();
+			for(HpcDataHierarchy sub : subs)
+				return getSubCollectionTypes(collectionType, sub);
+		}
+		
+		return types;
+	}
+
+	private String getCollectionType(String authToken, String serviceURL, String path, boolean list, String sslCertPath,
+			String sslCertPassword) {
+		HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, list, sslCertPath,
+				sslCertPassword);
+		if (collections != null && collections.getCollections() != null && collections.getCollections().size() > 0) {
+			HpcCollectionDTO collection = collections.getCollections().get(0);
+			for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
+				if (entry.getAttribute().equals("collection_type"))
+					return entry.getValue();
+		}
+		return null;
 	}
 
 	/**
@@ -170,13 +212,21 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String updateCollection(@Valid @ModelAttribute("hpcGroup") HpcCollectionModel hpcCollection, Model model,
+	public String createCollection(@Valid @ModelAttribute("hpcCollection") HpcCollectionModel hpcCollection, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
-		String[] action = request.getParameterValues("action");
+		String[] action = request.getParameterValues("actionType");
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
 			return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
-
+		else if (action != null && action.length > 0 && action[0].equals("actionType"))
+		{
+			populateFormAttributes(session, model, null);
+			model.addAttribute("hpcCollection", new HpcCollectionModel());
+			model.addAttribute("parentPath", request.getParameter("parentPath"));
+			model.addAttribute("collectionName", request.getParameter("collectionName"));
+			return "addcollection";
+		}
+			
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
 			if (hpcCollection.getPath() == null || hpcCollection.getPath().trim().length() == 0)
@@ -191,18 +241,18 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			//redirectAttributes.addFlashAttribute("error", "Failed to create collection: " + e.getMessage());
+			// redirectAttributes.addFlashAttribute("error", "Failed to create
+			// collection: " + e.getMessage());
 			model.addAttribute("error", "Failed to create collection: " + e.getMessage());
 			return "addcollection";
-		}finally
-		{
-			populateFormAttributes(session, model);			
+		} finally {
+			populateFormAttributes(session, model, null);
 		}
 		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
 	}
 
-	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session,
-			String path) throws HpcWebException{
+	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session, String path)
+			throws HpcWebException {
 		Enumeration<String> params = request.getParameterNames();
 		HpcCollectionRegistrationDTO dto = new HpcCollectionRegistrationDTO();
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
@@ -216,17 +266,16 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				entry.setAttribute(attrName);
 				entry.setValue(attrValue[0]);
 				metadataEntries.add(entry);
-			} else if(paramName.startsWith("addAttrName"))
-			{
+			} else if (paramName.startsWith("addAttrName")) {
 				HpcMetadataEntry entry = new HpcMetadataEntry();
 				String attrId = paramName.substring("addAttrName".length());
 				String[] attrName = request.getParameterValues(paramName);
-				String[] attrValue = request.getParameterValues("addAttrValue"+attrId);
-				if(attrName.length > 0 && !attrName[0].isEmpty())
+				String[] attrValue = request.getParameterValues("addAttrValue" + attrId);
+				if (attrName.length > 0 && !attrName[0].isEmpty())
 					entry.setAttribute(attrName[0]);
 				else
 					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
-				if(attrValue.length > 0 && !attrValue[0].isEmpty())
+				if (attrValue.length > 0 && !attrValue[0].isEmpty())
 					entry.setValue(attrValue[0]);
 				else
 					throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");

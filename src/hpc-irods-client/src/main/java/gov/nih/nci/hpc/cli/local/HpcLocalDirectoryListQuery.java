@@ -140,11 +140,10 @@ public class HpcLocalDirectoryListQuery {
 
 	private static Paths getFileList(String basePath, List<String> excludePatterns, List<String> includePatterns) {
 		Paths paths = new Paths();
-		if ((includePatterns == null || includePatterns.isEmpty())
-				&& (excludePatterns == null || excludePatterns.isEmpty()))
+		if (includePatterns == null || includePatterns.isEmpty())
 		{
-			List<String> patterns = null;
-			return paths.glob(basePath, patterns);
+			includePatterns = new ArrayList<String>();
+			includePatterns.add("*");
 		}
 		
 		List<String> patterns = new ArrayList<String>();
