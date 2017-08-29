@@ -63,20 +63,22 @@ public class HpcLocalDirectoryListGenerator {
 	String hpcServerURL;
 	String hpcServerProxyURL;
 	String hpcServerProxyPort;
+	boolean validateMD5 = false;
 
 	public HpcLocalDirectoryListGenerator(String configProps) throws IOException, FileNotFoundException {
 		InputStream input = new FileInputStream(configProps);
 		properties.load(input);
 	}
 
-	public HpcLocalDirectoryListGenerator(String hpcServerURL, String hpcServerProxyURL, String hpcServerProxyPort, String authToken, String hpcCertPath,
-			String hpcCertPassword) throws IOException, FileNotFoundException {
+	public HpcLocalDirectoryListGenerator(String hpcServerURL, String hpcServerProxyURL, String hpcServerProxyPort,
+			String authToken, String hpcCertPath, String hpcCertPassword, boolean validateMD5) throws IOException, FileNotFoundException {
 		this.hpcCertPath = hpcCertPath;
 		this.hpcCertPassword = hpcCertPassword;
 		this.authToken = authToken;
 		this.hpcServerURL = hpcServerURL;
 		this.hpcServerProxyPort = hpcServerProxyPort;
 		this.hpcServerProxyURL = hpcServerProxyURL;
+		this.validateMD5 = validateMD5;
 	}
 
 	public boolean run(String filePath, String excludePatternFile, String includePatternFile, String filePathBaseName,
@@ -88,8 +90,10 @@ public class HpcLocalDirectoryListGenerator {
 		HpcLocalDirectoryListQuery impl = new HpcLocalDirectoryListQuery();
 		try {
 			// authenticatedToken = impl.authenticate(userId, password);
-//			List<Pattern> excludePatterns = readPatternsfromFile(excludePatternFile);
-//			List<Pattern> includePatterns = readPatternsfromFile(includePatternFile);
+			// List<Pattern> excludePatterns =
+			// readPatternsfromFile(excludePatternFile);
+			// List<Pattern> includePatterns =
+			// readPatternsfromFile(includePatternFile);
 			List<String> excludePatterns = readPatternStringsfromFile(excludePatternFile);
 			List<String> includePatterns = readPatternStringsfromFile(includePatternFile);
 			List<HpcPathAttributes> files = impl.getPathAttributes(filePath, excludePatterns, includePatterns);
@@ -157,13 +161,11 @@ public class HpcLocalDirectoryListGenerator {
 				Pattern pattern = Pattern.compile(line);
 				patterns.add(pattern);
 			}
-			
+
 		} catch (IOException e) {
 			throw new HpcCmdException("Failed to read include/exclude pattern file due to: " + e.getMessage());
-		}
-		finally
-		{
-			if(reader != null)
+		} finally {
+			if (reader != null)
 				try {
 					reader.close();
 				} catch (IOException e) {
@@ -185,13 +187,11 @@ public class HpcLocalDirectoryListGenerator {
 			while ((line = reader.readLine()) != null) {
 				patterns.add(line);
 			}
-			
+
 		} catch (IOException e) {
 			throw new HpcCmdException("Failed to read include/exclude pattern file due to: " + e.getMessage());
-		}
-		finally
-		{
-			if(reader != null)
+		} finally {
+			if (reader != null)
 				try {
 					reader.close();
 				} catch (IOException e) {
@@ -272,7 +272,7 @@ public class HpcLocalDirectoryListGenerator {
 					new FileInputStream(hpcDataObjectRegistrationDTO.getSource().getFileId()));
 			md = MessageDigest.getInstance("MD5");
 			DigestInputStream dis = new DigestInputStream(inputStream, md);
-			
+
 			ContentDisposition cd2 = new ContentDisposition(
 					"attachment;filename=" + hpcDataObjectRegistrationDTO.getSource().getFileId());
 			atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", dis, cd2));
@@ -296,19 +296,20 @@ public class HpcLocalDirectoryListGenerator {
 		objectPath = objectPath.replace("\\", "/");
 		if (objectPath.charAt(0) != File.separatorChar)
 			objectPath = "/" + objectPath;
-		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath, hpcServerProxyURL, hpcServerProxyPort,
-				hpcCertPath, hpcCertPassword);
+		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath,
+				hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
 
 		try {
-			System.out.println("Processing: " + basePath + "/" + objectPath);
+			System.out.println("Processing: " + basePath + objectPath);
 			Response restResponse = client.put(new MultipartBody(atts));
 			byte[] digest = md.digest();
-			
-			for (int i=0; i < digest.length; i++) {
-				digestStr += Integer.toString( ( digest[i] & 0xff ) + 0x100, 16).substring( 1 );
-		       }			
+
+			for (int i = 0; i < digest.length; i++) {
+				digestStr += Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1);
+			}
+			System.out.println("MD5 Checksum: " + digestStr);
 			if (restResponse.getStatus() != 201) {
 				MappingJsonFactory factory = new MappingJsonFactory();
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
@@ -319,8 +320,6 @@ public class HpcLocalDirectoryListGenerator {
 					jsonInString = mapper.writeValueAsString(hpcDataObjectRegistrationDTO);
 					System.out.println("Failed to process: " + basePath + "/" + objectPath);
 					HpcLogWriter.getInstance().WriteLog(logFile, basePath + "/" + objectPath + "|" + jsonInString);
-					// HpcCSVFileWriter.getInstance().writeRecord(recordFile,
-					// hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
 					if (restResponse.getStatus() == 401) {
 						HpcLogWriter.getInstance().WriteLog(logFile, basePath + "/" + objectPath + "|"
 								+ "Unauthorized access: response status is: " + restResponse.getStatus());
@@ -335,7 +334,6 @@ public class HpcLocalDirectoryListGenerator {
 				}
 
 				if (response != null) {
-					// System.out.println(response);
 					StringBuffer buffer = new StringBuffer();
 					if (response.getMessage() != null) {
 						buffer.append("Failed to process record due to: " + response.getMessage());
@@ -357,30 +355,36 @@ public class HpcLocalDirectoryListGenerator {
 					throw new RecordProcessingException(
 							"Failed to process record due to unknown error. Return code: " + restResponse.getStatus());
 				}
-			} else
-			{
-//				System.out.println("Success! ");
-				HpcDataObjectListDTO dataFilesDTO = HpcClientUtil.getDatafiles(authToken, hpcServerURL + "/dataObject/" + basePath, hpcServerProxyURL, hpcServerProxyPort, objectPath, true,
-						hpcCertPath, hpcCertPassword);
-				if(dataFilesDTO == null || dataFilesDTO.getDataObjects() == null || dataFilesDTO.getDataObjects().size() == 0)
-					throw new RecordProcessingException(
-							"Failed to process record. Unable to locate after save " + objectPath);
-				List<HpcDataObjectDTO> dataObjects = dataFilesDTO.getDataObjects();
-				for(HpcDataObjectDTO dto : dataObjects)
-				{
-					List<HpcMetadataEntry> metadata = dto.getMetadataEntries().getSelfMetadataEntries();
-					for(HpcMetadataEntry entry : metadata)
-					{
-						if(entry.getAttribute().equals("checksum"))
-						{
-							if(!entry.getValue().equals(digestStr))
-								throw new RecordProcessingException(
-										"MD5 CheckSum validation failed. Source: " + digestStr + " is not matching with destination: "+entry.getValue());
-							else
-								System.out.println("Success! MD5 CheckSum validation successful. Source: " + digestStr + " matched with destination: "+entry.getValue());
+			} else {
+				// System.out.println("Success! ");
+				if (validateMD5) {
+					HpcDataObjectListDTO dataFilesDTO = HpcClientUtil.getDatafiles(authToken,
+							hpcServerURL + "/dataObject/" + basePath, hpcServerProxyURL, hpcServerProxyPort, objectPath,
+							true, hpcCertPath, hpcCertPassword);
+					if (dataFilesDTO == null || dataFilesDTO.getDataObjects() == null
+							|| dataFilesDTO.getDataObjects().size() == 0)
+						throw new RecordProcessingException(
+								"Failed to process record. Unable to locate after save " + objectPath);
+					List<HpcDataObjectDTO> dataObjects = dataFilesDTO.getDataObjects();
+					for (HpcDataObjectDTO dto : dataObjects) {
+						List<HpcMetadataEntry> metadata = dto.getMetadataEntries().getSelfMetadataEntries();
+						for (HpcMetadataEntry entry : metadata) {
+							if (entry.getAttribute().equals("checksum")) {
+								if (!entry.getValue().equals(digestStr)) {
+									System.out.println("Failed! MD5 CheckSum validation failed for " + basePath
+											+ objectPath + ". Source: " + digestStr
+											+ " is not matching with destination: " + entry.getValue());
+									throw new RecordProcessingException("MD5 CheckSum validation failed for " + basePath
+											+ objectPath + ". Source: " + digestStr
+											+ " is not matching with destination: " + entry.getValue());
+								} else
+									System.out.println("Success! MD5 CheckSum validation successful for " + basePath
+											+ objectPath + ". Value: " + digestStr);
+							}
 						}
 					}
-				}
+				} else
+					System.out.println("Success! ");
 
 			}
 		} catch (HpcBatchException e) {
