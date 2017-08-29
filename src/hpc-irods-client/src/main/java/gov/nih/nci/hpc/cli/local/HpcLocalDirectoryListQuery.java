@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.cli.util.Paths;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -79,25 +80,25 @@ public class HpcLocalDirectoryListQuery {
 	}
 
 	public static List<File> listDirectory(String directoryName, List<String> excludePattern,
-			List<String> includePattern) {
+			List<String> includePattern) throws HpcException {
 		File directory = new File(directoryName);
 
 		List<File> resultList = new ArrayList<File>();
 
 		// get all the files from a directory
 		File[] fList = directory.listFiles();
+		if(fList == null)
+		{
+			System.out.println("Invalid source folder");
+			throw new HpcException("Invalid source folder " + directoryName,
+					HpcErrorType.DATA_TRANSFER_ERROR);
+		}
+
 		// resultList.addAll(Arrays.asList(fList));
-		for (File file : fList) {
-			if (isExclude(file.getAbsolutePath(), excludePattern, includePattern)) {
-				System.out.println("Excluding file: " + file.getAbsolutePath());
-				continue;
-			}
-			if (file.isFile()) {
-				resultList.add(file);
-				System.out.println("Including file:" + file.getAbsolutePath());
-			} else if (file.isDirectory()) {
-				resultList.addAll(listDirectory(file.getAbsolutePath(), excludePattern, includePattern));
-			}
+		Paths paths = getFileList(directoryName, excludePattern, includePattern);
+		for (String file : paths) {
+			System.out.println("Including: "+file);
+			resultList.add(new File(file));
 		}
 		return resultList;
 	}
@@ -137,55 +138,94 @@ public class HpcLocalDirectoryListQuery {
 		return exclude;
 	}
 
+	private static Paths getFileList(String basePath, List<String> excludePatterns, List<String> includePatterns) {
+		Paths paths = new Paths();
+		if ((includePatterns == null || includePatterns.isEmpty())
+				&& (excludePatterns == null || excludePatterns.isEmpty()))
+		{
+			List<String> patterns = null;
+			return paths.glob(basePath, patterns);
+		}
+		
+		List<String> patterns = new ArrayList<String>();
+		patterns.addAll(includePatterns);
+//		System.out.println(patterns);
+		if(excludePatterns != null)
+		{
+			for (String pattern : excludePatterns)
+				patterns.add("!"+pattern);
+		}
+		patterns.add("!.metadata.json");
+		return paths.glob(basePath, patterns);
+		
+	}
+	
 	private static boolean isExclude(String fileName, List<String> excludePatterns, List<String> includePatterns) {
 		if ((includePatterns == null || includePatterns.isEmpty())
 				&& (excludePatterns == null || excludePatterns.isEmpty()))
 			return false;
 
-		boolean include = false;
+		boolean include = true;
 		if (includePatterns != null && !includePatterns.isEmpty()) {
 			for (String pattern : includePatterns) {
-				if(pattern.startsWith("*") || pattern.startsWith("."))
-				{
-					String matchingExt = pattern.substring(pattern.indexOf("*")+1, pattern.length());
-					if(fileName.endsWith(matchingExt))
-					{
-						include = true;
-						break;
-					}
-						
-				}else
-				{
-					if(fileName.indexOf(pattern) != -1)
-					{
-						include = true;
-						break;
-					}
-				}
+				//Pattern regpattern = Pattern.compile(pattern, Pattern.UNICODE_CASE  | Pattern.CASE_INSENSITIVE);
+				Pattern regpattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+				Matcher matcher = regpattern.matcher(fileName);
+				include =matcher.matches();
+				System.out.println("fileName: "+fileName + " " +include);
+				if(include)
+					break;
+//				if(pattern.startsWith("*") || pattern.startsWith("."))
+//				{
+//					String matchingExt = pattern.substring(pattern.indexOf("*")+1, pattern.length());
+//					if(fileName.endsWith(matchingExt))
+//					{
+//						include = true;
+//						break;
+//					}
+//						
+//				}else
+//				{
+//					if(fileName.indexOf(pattern) != -1)
+//					{
+//						include = true;
+//						break;
+//					}
+//				}
 			}
 		} else
 			include = true;
 
+		if(!include)
+			return true;
+		
 		boolean exclude = false;
 		if (excludePatterns != null && !excludePatterns.isEmpty() && include) {
 			for (String pattern : excludePatterns) {
-				if(pattern.startsWith("*") || pattern.startsWith("."))
-				{
-					String matchingExt = pattern.substring(pattern.indexOf("*")+1, pattern.length());
-					if(fileName.endsWith(matchingExt))
-					{
-						exclude = true;
-						break;
-					}
-						
-				}else
-				{
-					if(fileName.indexOf(pattern) != -1)
-					{
-						exclude = true;
-						break;
-					}
-				}
+				Pattern regpattern = Pattern.compile(pattern, Pattern.LITERAL);
+				Matcher matcher = regpattern.matcher(fileName);
+				exclude =matcher.matches();
+				System.out.println("fileName: "+fileName + " " +include);
+				if(exclude)
+					break;
+				
+//				if(pattern.startsWith("*") || pattern.startsWith("."))
+//				{
+//					String matchingExt = pattern.substring(pattern.indexOf("*")+1, pattern.length());
+//					if(fileName.endsWith(matchingExt))
+//					{
+//						exclude = true;
+//						break;
+//					}
+//						
+//				}else
+//				{
+//					if(fileName.indexOf(pattern) != -1)
+//					{
+//						exclude = true;
+//						break;
+//					}
+//				}
 			}
 		}
 		
