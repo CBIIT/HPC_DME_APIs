@@ -135,7 +135,7 @@
 											</tr>
 										</thead>
 										<tbody>
-										<tr id='attrRow0' th:if="${collectionTypes != null}">
+										<tr id='attrRow0' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
 											<td style="white-space: nowrap"><label id="rowId0">Collection Type</label>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
