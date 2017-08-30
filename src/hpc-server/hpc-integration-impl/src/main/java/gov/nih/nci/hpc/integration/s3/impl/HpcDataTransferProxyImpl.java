@@ -122,9 +122,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			s3UploadResult = s3Upload.waitForUploadResult();
     			dataTransferCompleted = Calendar.getInstance();
     		 } else {
-    			     // Upload asynchronously
+    			     // Upload asynchronously.
     			     s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener));
-    			 
     		 }
     		 
         } catch(AmazonClientException ace) {
