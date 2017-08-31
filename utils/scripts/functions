@@ -474,6 +474,7 @@ function dm_register_directory {
       case "${option}" in
         d)
           dry_run=1
+          echo "Running dry, no registration will take place."
           ;;
         e)
           exclude_option=1
@@ -559,7 +560,7 @@ function dm_register_directory {
 
     if [ "$dry_run" ]
     then
-      command_args+=" --test"
+      command_args+=" --test true"
     fi
 
     #Generate the command for the client: 
