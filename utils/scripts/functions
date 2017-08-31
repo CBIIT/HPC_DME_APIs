@@ -446,6 +446,21 @@ function dm_download_dataobject_sync {
 }
 
 
+#Print Usage of dm_register_directory function
+function dm_show_register_directory_usage {
+  read -d  '' usage <<- EOF
+  Usage: dm_register_directory [OPTIONS]  <source-path> <destination-path> 
+
+  Recursively copy all files in the <source-path> to the archive's <destination-path>
+  OPTIONS:
+  -d                    Print the files to be included in registration an exit 
+  -e[EXCLUDE_FILE]      Exclude the files that match the patterns specified in EXCLUDE_FILE
+  -i[INCLUDE_FILE]      Only include the files that match the patterns in INCLUDE_FILE
+  -h                    Print this message 
+EOF
+  echo "$usage"
+}
+
 
 #Register a directory from a file system using the cmd line client.
 #Inputs:  <source-path>: The path on the file system 
@@ -453,6 +468,45 @@ function dm_download_dataobject_sync {
 function dm_register_directory {
 
     local USAGE="USAGE: dm_register_directory <source-path> <destination-path>"
+    local OPTIND
+    while getopts ":de:i:h" option
+    do
+      case "${option}" in
+        d)
+          dry_run=1
+          echo "Running dry, no registration will take place."
+          ;;
+        e)
+          exclude_option=1
+          exclude_file="${OPTARG}"
+          if [ ! -e "$exclude_file" ]
+          then
+            echo "ERROR: The exclude file $exclude_file does not exists" >&2
+            exit 1
+          fi
+          ;;
+        i)
+          include_option=1
+          include_file="${OPTARG}"
+          if [ ! -e "$include_file" ]
+          then
+            echo "ERROR: The include file $include_file does not exists" >&2
+            exit 1
+          fi
+          ;;
+        h)
+          dm_show_register_directory_usage 
+          exit 1
+          ;;
+        *)
+          echo "ERROR: Unsoported option ${option}" >&2
+          dm_show_register_directory_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    shift $(( OPTIND-1 ))   
 
     check_java
     if [ "$?" -ne 0 ]
@@ -462,9 +516,9 @@ function dm_register_directory {
     if [ -z "$1" ] || [ -z "$2" ] 
     then
         echo "ERROR: using dm_register_directory" >&2
-        echo "Received: $@" >&2
-        echo "$USAGE" >&2
-        return 1
+        usage=$(dm_show_register_directory_usage)
+        echo "$usage" >&2
+        exit 1 
     fi
 
     local src_path="$1"
@@ -487,10 +541,32 @@ function dm_register_directory {
     fi 
 
     full_src_path=$(myreadlink $src_path)
+
+    command_args=""
+    #Get the include path
+    if [ "$include_option" ]
+    then
+      full_include_path=$(myfilereadlink $include_file)
+      command_args+=" --includePatternFile $full_include_path"
+    fi
+
+
+    #Get the exclude path
+    if [ "$exclude_option" ]
+    then
+      full_exclude_path=$(myfilereadlink $exclude_file)
+      command_args+=" --excludePatternFile $full_exclude_path"
+    fi
+
+    if [ "$dry_run" ]
+    then
+      command_args+=" --test true"
+    fi
+
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file
     local basedir=$(basename $full_src_path)
-    echo "registerFromFilePath --filePath $full_src_path --filePathBaseName $basedir --destinationBasePath $dst_path" >  $command_file
+    echo "registerFromFilePath --filePath $full_src_path --filePathBaseName $basedir --destinationBasePath $dst_path" $command_args >  $command_file
 
     local log_file=./dm_log
     local error_file=./dm_error
@@ -822,3 +898,69 @@ function dm_download_async {
         echo "Check the full download receipt at $response_msg"
     fi
 }
+
+
+
+#Get the status of asynchronousl download request 
+#Input: <taskId>  a numerical id for the download receipt
+#Input: <request_type> dataObject, collection, or empty string for multiple downloads
+#Input: [download-status-file]
+#Input: [REST-response]
+function dm_get_download_status {
+
+ 
+    local USAGE="dm_get_download_status  <download-taskId> <request-type> [download-status-file] [REST-response]"
+    if [ "$#" -lt 2 ] 
+    then
+        echo "ERROR: using dm_get_download_status" >&2
+        echo "recieved $(basename $0) $@" 
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+    task_id="$1"
+    request_type="$2"
+
+    if [ "$request_type" != "" ]
+    then
+      request_type=/${request_type}
+    fi
+
+
+
+    local response_msg=${2-get-downlaod-status-response-message.json.tmp}
+    local response_header=${3-get-item-response-header.tmp}
+
+
+    config=$(get_config) || exit 1
+    server=$(get_server) || exit 1
+
+   
+    set -x 
+    curl -G -X GET ${server}${request_type}/download?task_id="$taskId"  $config  -H "Accept: application/json" -D $response_header -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    check_connection $response_header
+
+    #TO CONTINUE
+
+    local response_code=$(get_http_code $response_header)
+    if [ "$response_code" -ne 200 ]
+    then
+      echo "ERROR getting download status for taskID:\"$taskId\" " >&2
+      print_error_message "$response_msg" "$response_code"
+      exit 1
+    else 
+     
+      #Check if the user needs the response header file 
+      if [ -z "$3" ]
+      then 
+        rm "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      if [ -z "$2" ]
+      then
+        print_json_message "$response_msg"    
+        rm $response_msg 2> /dev/null 
+      fi
+    fi
+}
+
