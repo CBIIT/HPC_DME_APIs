@@ -3,7 +3,9 @@ package gov.nih.nci.hpc.web.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 
@@ -12,6 +14,37 @@ public class HpcCollectionModel {
 	private HpcCollection collection;
 	private List<HpcMetadataAttrEntry> selfMetadataEntries;
 	private List<HpcMetadataAttrEntry> parentMetadataEntries;
+	private Map<String, String> attributes = new HashMap<String, String>();
+	private String defaultValue;
+	private List<String> validValues;
+	
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
+	public List<String> getValidValues() {
+		return validValues;
+	}
+
+	public void setValidValues(List<String> validValues) {
+		this.validValues = validValues;
+	}
+
+	public Map<String, String> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, String> attributes) {
+		this.attributes = attributes;
+	}
+
+	public void addAttribute(String attribute, String value) {
+		this.attributes.put(attribute, value);
+	}
 
 	public String getPath() {
 		return path;
