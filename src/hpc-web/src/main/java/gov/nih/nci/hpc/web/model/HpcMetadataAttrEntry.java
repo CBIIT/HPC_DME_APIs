@@ -1,10 +1,31 @@
 package gov.nih.nci.hpc.web.model;
 
+import java.util.List;
+
 public class HpcMetadataAttrEntry {
 	private String attrName;
 	private String attrValue;
 	private String attrUnit;
 	private boolean systemAttr;
+	private List<String> validValues = null;
+	private String defaultValue = null;
+
+	
+	public List<String> getValidValues() {
+		return validValues;
+	}
+
+	public void setValidValues(List<String> validValues) {
+		this.validValues = validValues;
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
 
 	public String getAttrName() {
 		return attrName;
