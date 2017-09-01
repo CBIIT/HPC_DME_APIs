@@ -453,10 +453,10 @@ function dm_show_register_directory_usage {
 
   Recursively copy all files in the <source-path> to the archive's <destination-path>
   OPTIONS:
-  -d                    Print the files to be included in registration an exit 
-  -e[EXCLUDE_FILE]      Exclude the files that match the patterns specified in EXCLUDE_FILE
-  -i[INCLUDE_FILE]      Only include the files that match the patterns in INCLUDE_FILE
-  -h                    Print this message 
+  -d                      Print the files to be included in registration an exit 
+  -e[EXCLUDE_FILE_PATH]   Exclude the files that match the patterns specified in the file EXCLUDE_FILE_PATH
+  -i[INCLUDE_FILE_PARH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
+  -h                      Print this message 
 EOF
   echo "$usage"
 }
