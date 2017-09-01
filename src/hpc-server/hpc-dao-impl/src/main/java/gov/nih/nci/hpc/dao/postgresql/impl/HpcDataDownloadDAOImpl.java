@@ -219,7 +219,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
     	downloadTaskResult.setCreated(created);
     	
     	Calendar completed = Calendar.getInstance();
-    	created.setTime(rs.getTimestamp("COMPLETED"));
+    	completed.setTime(rs.getTimestamp("COMPLETED"));
     	downloadTaskResult.setCompleted(completed);
 		
         return downloadTaskResult;
