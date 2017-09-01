@@ -519,7 +519,7 @@ VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestV
 				"attribute": "source_lab_pi",
 				"mandatory": true,
 				"collectionTypes": [
-					"Project"
+					"Dataset"
 				],
 				"ruleEnabled": true
 			},
@@ -527,7 +527,7 @@ VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestV
 				"attribute": "lab_branch",
 				"mandatory": true,
 				"collectionTypes": [
-					"Project"
+					"Dataset"
 				],
 				"ruleEnabled": true
 			},
@@ -535,7 +535,7 @@ VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestV
 				"attribute": "pi_doc",
 				"mandatory": true,
 				"collectionTypes": [
-					"Project"
+					"Dataset"
 				],
 				"validValues": [
 					"FNLCR",
@@ -548,7 +548,7 @@ VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestV
 				"attribute": "original_date_created",
 				"mandatory": true,
 				"collectionTypes": [
-					"Project"
+					"Dataset"
 				],
 				"defaultValue": "System-Date",
 				"ruleEnabled": true
