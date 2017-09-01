@@ -661,17 +661,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
 	  	}
 		
+    	// Get the metadata for this data object. 
+    	HpcMetadataEntries metadataEntries = 
+    		               metadataService.getDataObjectMetadataEntries(path);
+    	HpcSystemGeneratedMetadata systemGeneratedMetadata =
+		   metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+    	if(systemGeneratedMetadata.getDataTransferStatus() == null) {
+    	   throw new HpcException("Object is not in archived state yet",
+                                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+		
 		// Validate the invoker is the owner of the data object.
 		HpcPermission permission = dataManagementService.getDataObjectPermission(path).getPermission();
 		if(!permission.equals(HpcPermission.OWN)) {
 		   throw new HpcException("Data object can only be deleted by its owner. Your permission: " + 
 		                          permission.value(), HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
-    	// Get the metadata for this data object. 
-    	HpcMetadataEntries metadataEntries = 
-    		               metadataService.getDataObjectMetadataEntries(path);
-    	HpcSystemGeneratedMetadata systemGeneratedMetadata =
-		   metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+
 		
     	// Instantiate a response DTO
     	HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
