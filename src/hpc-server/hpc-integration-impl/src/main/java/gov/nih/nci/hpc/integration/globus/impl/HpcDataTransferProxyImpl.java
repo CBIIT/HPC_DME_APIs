@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
 import org.globusonline.transfer.JSONTransferAPIClient;
@@ -59,9 +60,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     // Globus transfer status strings.
 	private static final String FAILED_STATUS = "FAILED"; 
 	private static final String INACTIVE_STATUS = "INACTIVE";
-	private static final String ACTIVE_STATUS = "ACTIVE";
 	private static final String SUCCEEDED_STATUS = "SUCCEEDED";
 	private static final String PERMISSION_DENIED_STATUS = "PERMISSION_DENIED";
+	private static final String OK_STATUS = "OK";
+	private static final String QUEUED_STATUS = "Queued";
 	
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = 
 			                    "ExternalError.DirListingFailed.NotDirectory";
@@ -250,8 +252,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	      		     statusReport.setStatus(HpcDataTransferUploadStatus.ARCHIVED);
 	      	 }	
 	    	
-		 } else if(report.status.equals(FAILED_STATUS) || report.status.equals(INACTIVE_STATUS) ||
-		           (report.status.equals(ACTIVE_STATUS) && report.niceStatus.equals(PERMISSION_DENIED_STATUS))) {
+		 } else if(transferFailed(authenticatedToken, dataTransferRequestId, report)) {
 			       // Upload failed.
 			       statusReport.setStatus(HpcDataTransferUploadStatus.FAILED);
 			       
@@ -280,8 +281,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			// Download completed successfully.
 			 statusReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
 			 
-		 } else if(report.status.equals(FAILED_STATUS) || report.status.equals(INACTIVE_STATUS) ||
-		           (report.status.equals(ACTIVE_STATUS) && report.niceStatus.equals(PERMISSION_DENIED_STATUS))) {
+		 } else if(transferFailed(authenticatedToken, dataTransferRequestId, report)) {
 			       // Download failed.
 			       statusReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
 			       if(report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
@@ -494,6 +494,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         private String niceStatus = null;
         private long bytesTransferred = 0;
         private String niceStatusDescription = null;
+        private String rawError = null;
     }
     
     private HpcGlobusDataTransferReport getDataTransferReport(Object authenticatedToken,
@@ -512,6 +513,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 			     report.niceStatus = jsonReport.getString("nice_status");
 				 report.bytesTransferred = jsonReport.getLong("bytes_transferred");
 				 report.niceStatusDescription = jsonReport.getString("nice_status_short_description");
+				 report.rawError = jsonReport.getString("nice_status_details");
 				 
 				 return report;
 			
@@ -692,6 +694,67 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		{
 			String resource = BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()) + "/ls";
 		 	return client.getResult(resource, params);
+		});
+    }
+    
+    /**
+     * Check if a Globus transfer request failed. It is also canceling the request if needed.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param dataTransferRequestId The globus task ID.
+     * @param niceStatus The transfer task nice_status. 
+     * @return True if the transfer failed, or false otherwise
+     */
+    private boolean transferFailed(Object authenticatedToken,
+    		                       String dataTransferRequestId, 
+    		                       HpcGlobusDataTransferReport report)
+    {
+    	if(report.status.equals(FAILED_STATUS)) {
+    	   return true;	
+    	}
+    	
+    	if(report.status.equals(INACTIVE_STATUS) || 
+    	   (!StringUtils.isEmpty(report.niceStatus) &&
+    	    !report.niceStatus.equals(OK_STATUS) && 
+    	    !report.niceStatus.equals(QUEUED_STATUS))) {
+    	   // Globus task requires some manual intervention. We cancel it and consider it a failure.
+    	   logger.error("Globus transfer deemed failed: task-id: " + dataTransferRequestId + "[" + 
+    	                report.rawError + "]");
+    	   try { 
+    		    cancelTransferRequest(authenticatedToken, dataTransferRequestId);
+    		    
+    	   } catch(HpcException e) {
+    		       logger.error("Failed to cancel task", e);
+    	   }
+    	   
+    	   return true;	
+    	}
+    	
+    	return false;
+    }
+    
+    /**
+     * Cancel a transfer request.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param dataTransferRequestId The globus task ID.
+     * @throws HpcException on data transfer system failure.
+     */
+    private void cancelTransferRequest(Object authenticatedToken, 
+    		                           String dataTransferRequestId) throws HpcException
+    {
+		JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+
+		retryTemplate.execute(arg0 -> 
+		{
+			try {
+				 client.postResult("/task/" +  dataTransferRequestId + "/cancel", null);
+				 return null;
+			
+			} catch(Exception e) {
+			        throw new HpcException("[GLOBUS] Failed to cancel task: " + dataTransferRequestId, 
+			                               HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+			}
 		});
     }
 }
