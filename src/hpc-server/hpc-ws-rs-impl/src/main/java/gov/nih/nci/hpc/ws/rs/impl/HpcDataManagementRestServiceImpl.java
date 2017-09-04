@@ -40,6 +40,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -246,6 +248,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		
 		return dataObjectCreated ? createdResponse(null) : okResponse(null, false);
 	}
+    
+    @Override
+    public Response registerDataObjects(
+	                        HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest)
+    {
+    	HpcDataObjectsRegistrationResponseDTO registrationResponse = null;
+		try {
+			 registrationResponse = dataManagementBusService.registerDataObjects(dataObjectsRegistrationRequest);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+
+		return okResponse(registrationResponse, false);    	
+    }
     
     @Override
     public Response getDataObject(String path)
