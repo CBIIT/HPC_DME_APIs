@@ -62,6 +62,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -508,6 +510,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    
 	    return created;
     }
+    
+    @Override
+	public HpcDataObjectsRegistrationResponseDTO 
+              registerDataObjects(HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest)
+	                             throws HpcException
+	{
+    	return null;
+	}
     
     @Override
     public HpcDataObjectDTO getDataObject(String path) throws HpcException
