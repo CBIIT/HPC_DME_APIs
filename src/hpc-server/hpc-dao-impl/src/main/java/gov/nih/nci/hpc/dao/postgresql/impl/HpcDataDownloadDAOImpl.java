@@ -88,7 +88,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	
 	public static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = 
 		   "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"DATA_TRANSFER_TYPE\" = ? " +
-	                 " order by CREATED";
+	                 " order by \"CREATED\"";
 	
 	public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = 
 		   "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( " +
@@ -137,7 +137,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	
 	public static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = 
 		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"STATUS\" = ? " +
-	                 "order by CREATED";
+	                 "order by \"CREATED\"";
 	
     //---------------------------------------------------------------------//
     // Instance members
