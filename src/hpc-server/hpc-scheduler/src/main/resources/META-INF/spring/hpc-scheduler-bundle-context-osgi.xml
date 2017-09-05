@@ -33,6 +33,7 @@
 		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">55 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processevents.delay">40 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.refreshMaterializedViews.delay">0 0/15 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.refreshReportViews.delay">0 0/60 * * * ?</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
