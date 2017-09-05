@@ -56,6 +56,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
@@ -99,6 +100,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	// Metadata Application Service Instance
 	@Autowired
     private HpcMetadataService metadataService = null;
+
+	// Reports Application Service Instance
+	@Autowired
+    private HpcReportService reportsService = null;
 
 	// The logger instance.
 	private final Logger logger = 
@@ -621,6 +626,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
+    @SystemBusServiceImpl // Weave setSystemRequestInvoker() advice.
+    public void refreshReportViews() throws HpcException
+    {
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
+    	reportsService.refreshViews();
+    }
+
+    @Override
     public void closeConnection()
     {
     	dataManagementService.closeConnection();
@@ -976,7 +992,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
                                       systemGeneratedMetadata.getRegistrarDOC());
     	}
     }
-
 }
 
 
