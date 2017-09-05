@@ -246,15 +246,18 @@
 			alert("Collection type is missng!")
 			return false;
 		}
-			
-		for(var i=0;i<attributeNames.length;i++)
+		
+		if(attributeNames)
 		{
-			var attrName = attributeNames[i];
-			var defaultValue = "";
-			if((!document.getElementById("zAttrStr_"+attrName).value) || (document.getElementById("zAttrStr_"+attrName).value=="_select_null"))
+			for(var i=0;i<attributeNames.length;i++)
 			{
-				alert("Attribute " + attrName + " value is missing!")
-				return false;
+				var attrName = attributeNames[i];
+				var defaultValue = "";
+				if((!document.getElementById("zAttrStr_"+attrName).value) || (document.getElementById("zAttrStr_"+attrName).value=="_select_null"))
+				{
+					alert("Attribute " + attrName + " value is missing!")
+					return false;
+				}
 			}
 		}
 		
