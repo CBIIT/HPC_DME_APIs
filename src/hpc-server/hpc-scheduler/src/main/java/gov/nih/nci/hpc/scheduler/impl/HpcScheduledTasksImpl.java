@@ -164,6 +164,16 @@ public class HpcScheduledTasksImpl
     {
     	executeTask("refreshMetadataViewsTask()", systemBusService::refreshMetadataViews);
     }
+
+    /**
+     * Refresh Report Views.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.refreshReportViews.delay}")
+    private void refreshReportViewsTask()
+    {
+    	executeTask("refreshReportViewsTask()", systemBusService::refreshReportViews);
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods

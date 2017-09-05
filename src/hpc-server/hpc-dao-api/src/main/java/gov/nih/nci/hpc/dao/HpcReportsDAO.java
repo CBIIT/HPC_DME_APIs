@@ -35,6 +35,13 @@ public interface HpcReportsDAO
      * @throws HpcException on database error.
      */
     public List<HpcReport> generatReport(HpcReportCriteria criteria) throws HpcException;
+    
+    /**
+     * Refresh all materialized views.
+     * @throws HpcException on database error.
+     */
+    public void refreshViews() throws HpcException;
+    
 }
 
  
