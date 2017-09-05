@@ -861,6 +861,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
         	      path = StringUtils.join(downloadTask.getDataObjectPaths(), ", ");
         }
         
+        // Send download completed/failed event.
     	addDataTransferDownloadEvent(downloadTask.getUserId(), path,
     			                     downloadTask.getType(), downloadTask.getId(),
     			                     // TODO: data-transfer-type and DOC needs to be carried in the collection download
