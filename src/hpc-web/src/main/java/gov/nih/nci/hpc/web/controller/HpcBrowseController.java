@@ -295,6 +295,9 @@ public class HpcBrowseController extends AbstractHpcController {
 	}
 
 	private HpcBrowserEntry getSelectedEntry(String path, HpcBrowserEntry browserEntry) {
+		if(browserEntry == null)
+			return null;
+		
 		if (browserEntry.getFullPath() != null && browserEntry.getFullPath().equals(path))
 			return browserEntry;
 

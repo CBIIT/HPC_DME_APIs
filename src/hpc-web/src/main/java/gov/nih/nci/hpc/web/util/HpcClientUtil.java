@@ -25,6 +25,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.transform.Source;
@@ -71,6 +72,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -1337,6 +1339,28 @@ public class HpcClientUtil {
 					encodedStr.append("/");
 			}
 			return encodedStr.toString();
+		}
+	}
+	
+	public static <T> Object getObject(Response response,
+			Class<T> objectClass) {
+		ObjectMapper mapper = new ObjectMapper();
+		AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+				new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+				new JacksonAnnotationIntrospector());
+		mapper.setAnnotationIntrospector(intr);
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		MappingJsonFactory factory = new MappingJsonFactory(mapper);
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) response.getEntity());
+			return parser.readValueAs(objectClass);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			throw new HpcWebException("Failed to parse object: " + e1.getMessage());
+		} catch (Exception e) {
+			throw new HpcWebException("Failed to parse object: " + e.getMessage());
 		}
 	}
 }

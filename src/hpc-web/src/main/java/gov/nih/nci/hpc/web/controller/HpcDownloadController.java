@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -155,7 +156,12 @@ public class HpcDownloadController extends AbstractHpcController {
 
 			Response restResponse = client.invoke("POST", dto);
 			if (restResponse.getStatus() == 200) {
-				result.setMessage("Asynchronous download request is submitted successfully!");
+				HpcDataObjectDownloadResponseDTO downloadDTO = (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse, HpcDataObjectDownloadResponseDTO.class);
+				String taskId = "Unknown";
+				if(downloadDTO != null)
+					taskId = downloadDTO.getTaskId();
+
+				result.setMessage("<strong>Asynchronous download request is submitted successfully! <br>TaskId: "+taskId+"<strong>");
 				return result;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
