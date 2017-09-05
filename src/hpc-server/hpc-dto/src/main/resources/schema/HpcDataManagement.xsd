@@ -83,6 +83,39 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
+	
+	<xsd:complexType name="HpcDataObjectRegistrationItemDTO">
+		<xsd:sequence>
+		    <xsd:element name="path" type="xsd:string" />
+			<xsd:element name="source"
+			             type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="callerObjectId" type="xsd:string" />
+			<xsd:element name="metadataEntries" 
+			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
+			<xsd:element name="createParentCollections" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="parentCollectionMetadataEntries" 
+			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcDataObjectsRegistrationRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO" 
+				             minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcDataObjectsRegistrationResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+			    <xsd:element name="taskId" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 		
 	<xsd:complexType name="HpcDataObjectDTO">
 		<xsd:sequence>
