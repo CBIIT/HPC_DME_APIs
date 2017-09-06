@@ -48,26 +48,26 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	// Constants
 	// ---------------------------------------------------------------------//
 	// File size range
-	private static final String FILE_RANGE_SELECT = "select (case when to_number(a.meta_attr_value, '9999999999999999999') <  1000000 then 'range1' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     < 10000000 then 'range2' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    < 50000000 then 'range3' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    < 100000000 then 'range4' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   < 500000000 then 'range5' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   < 1000000000 then 'range6' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  < 10000000000 then 'range7' "
+	private static final String FILE_RANGE_SELECT = "select (case when to_number(a.meta_attr_value, '9999999999999999999') <=  1000000 then 'range1' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
 			+ "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' "
 			+ "end) as range, count(*) as cnt ";
 
 	private static String FILE_RANGE_FROM = "";
 	private static String FILE_RANGE_WHERE = "";
 
-	private static final String FILE_RANGE_GROUP = " group by (case when to_number(a.meta_attr_value, '9999999999999999999') < 1000000 then 'range1' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     < 10000000 then 'range2' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    < 50000000 then 'range3' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    < 100000000 then 'range4' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   < 500000000 then 'range5' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   < 1000000000 then 'range6' "
-			+ "when to_number(a.meta_attr_value, '9999999999999999999') >= 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  < 10000000000 then 'range7' "
+	private static final String FILE_RANGE_GROUP = " group by (case when to_number(a.meta_attr_value, '9999999999999999999') <= 1000000 then 'range1' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000 and to_number(a.meta_attr_value, '9999999999999999999')     <= 10000000 then 'range2' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 10000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 50000000 then 'range3' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 50000000 and to_number(a.meta_attr_value, '9999999999999999999')    <= 100000000 then 'range4' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 100000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 500000000 then 'range5' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 500000000 and to_number(a.meta_attr_value, '9999999999999999999')   <= 1000000000 then 'range6' "
+			+ "when to_number(a.meta_attr_value, '9999999999999999999') > 1000000000 and to_number(a.meta_attr_value, '9999999999999999999')  <= 10000000000 then 'range7' "
 			+ "when to_number(a.meta_attr_value, '9999999999999999999') >  10000000000  then 'range8' " + "end)";
 
 	private RowMapper<Map<String, Object>> fileSizeRangeRowMapper = (rs, rowNum) -> {
@@ -89,7 +89,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_SQL = "select meta_attr_value attr, count(meta_attr_name) cnt from r_report_collection_type group by meta_attr_value";
 
-	private static final String TOTAL_NUM_OF_META_ATTRS_SQL = "SELECT count(meta_id) totalAttrs FROM public.r_meta_main";
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_SQL = "SELECT count(meta_attr_name) / count(distinct data_id) FROM r_report_data_objects";
 
 	/////////////////////////////// USAGE_SUMMARY_DATE_RANGE.
 	private static final String SUM_OF_DATA_BY_DATE_SQL = "select sum(to_number(meta_attr_value, '9999999999999999999')) totalSize, "
@@ -104,7 +104,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_AND_DATE_SQL = "select meta_attr_value attr, count(meta_attr_name) cnt from r_report_collection_type where CAST(create_ts as double precision) BETWEEN ? AND ? group by meta_attr_value";
 
-	private static final String TOTAL_NUM_OF_META_ATTRS_BY_DATE_SQL = "SELECT count(*) totalAttrs FROM public.r_meta_main where CAST(create_ts as double precision) BETWEEN ? AND ?";
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DATE_SQL = "SELECT count(meta_attr_name) / count(distinct data_id) FROM r_report_data_objects where CAST(create_ts as double precision) BETWEEN ? AND ?";
 
 	/////////////////////////// USAGE_SUMMARY_BY_DOC.
 	private static final String SUM_OF_DATA_BY_DOC_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
@@ -121,9 +121,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_SQL = "select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_report_collection_type a,  "
 			+ "r_report_coll_registered_by_doc b where b.meta_attr_value=? and a.coll_id=b.object_id group by a.meta_attr_value";
 
-	private static final String TOTAL_NUM_OF_META_ATTRS_BY_DOC_SQL = "select count(*) from r_report_meta_main where object_id in( "
-			+ "select object_id from r_report_coll_registered_by_doc where meta_attr_value=? " + "union "
-			+ "select object_id from r_report_registered_by_doc where meta_attr_value=?) ";
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DOC_SQL = "SELECT count(a.meta_attr_name) / count(distinct a.data_id) "+
+				"FROM r_report_data_objects a, r_report_registered_by_doc b "+
+				"where a.data_id = b.object_id and b.meta_attr_value=?";
 
 	/////////////////////////////////// USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE.
 	private static final String SUM_OF_DATA_BY_DOC_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
@@ -141,9 +141,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "r_report_coll_registered_by_doc b where b.meta_attr_value=? and a.coll_id=b.object_id "
 			+ "and CAST(a.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
 
-	private static final String TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL = "select count(*) from r_report_meta_main where object_id in( "
-			+ "select object_id from r_report_coll_registered_by_doc where meta_attr_value=?" + "union "
-			+ "select object_id from r_report_registered_by_doc where meta_attr_value=?) and CAST(create_ts as double precision) BETWEEN ? AND ?";
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DOC_DATE_SQL = "SELECT count(a.meta_attr_name) / count(distinct a.data_id) "+
+			"FROM r_report_data_objects a, r_report_registered_by_doc b "+
+			"where a.data_id = b.object_id and b.meta_attr_value=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	////////////////////////////////////// USAGE_SUMMARY_BY_USER.
 	private static final String SUM_OF_DATA_BY_USER_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
@@ -158,9 +158,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_SQL = "select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_report_collection_type a,  "
 			+ "r_report_coll_registered_by b where b.meta_attr_value=? and a.coll_id=b.object_id group by a.meta_attr_value";
 
-	private static final String TOTAL_NUM_OF_META_ATTRS_BY_USER_SQL = "select count(*) from r_report_meta_main where object_id in( "
-			+ "select object_id from r_report_coll_registered_by where meta_attr_value=? " + "union "
-			+ "select object_id from r_report_registered_by where meta_attr_value=?)";
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_SQL = "SELECT count(a.meta_attr_name) / count(distinct a.data_id) "+
+			"FROM r_report_data_objects a, r_report_registered_by b "+
+			"where a.data_id = b.object_id and b.meta_attr_value=?";
 
 	//////////////////////////////////// USAGE_SUMMARY_BY_USER_BY_DATE_RANGE.
 	private static final String SUM_OF_DATA_BY_USER_DATE_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
@@ -176,9 +176,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "r_report_coll_registered_by b where b.meta_attr_value=? and a.coll_id=b.object_id "
 			+ "and CAST(a.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
 
-	private static final String TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL = "select count(*) from r_report_meta_main where object_id in( "
-			+ "select object_id from r_report_coll_registered_by where meta_attr_value=? " + "union "
-			+ "select object_id from r_report_registered_by where meta_attr_value=?) and CAST(create_ts as double precision) BETWEEN ? AND ?";
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_DATE_SQL = "SELECT count(a.meta_attr_name) / count(distinct a.data_id) "+
+			"FROM r_report_data_objects a, r_report_registered_by b "+
+			"where a.data_id = b.object_id and b.meta_attr_value=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String USERS_SQL = "select \"USER_ID\" from public.\"HPC_USER\"";
 
@@ -318,37 +318,33 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			Object[] docDateArgs, String[] userArg, Object[] userDateArgs) {
 		Long metaAttrCount = null;
 		if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_SQL, Long.class);
+			metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_SQL, Long.class);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DATE_SQL, dates, Long.class);
+			metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DATE_SQL, dates, Long.class);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC)) {
-			String[] newDoc = new String[2];
+			String[] newDoc = new String[1];
 			newDoc[0] = docArg[0];
-			newDoc[1] = docArg[0];
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_SQL, newDoc, Long.class);
+			metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DOC_SQL, newDoc, Long.class);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)) {
-			Object[] newdocDateArgs = new Object[4];
+			Object[] newdocDateArgs = new Object[3];
 			newdocDateArgs[0] = docDateArgs[0];
-			newdocDateArgs[1] = docDateArgs[0];
-			newdocDateArgs[2] = docDateArgs[1];
-			newdocDateArgs[3] = docDateArgs[2];
+			newdocDateArgs[1] = docDateArgs[1];
+			newdocDateArgs[2] = docDateArgs[2];
 
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_DOC_DATE_SQL, newdocDateArgs,
+			metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DOC_DATE_SQL, newdocDateArgs,
 					Long.class);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER)) {
-			String[] newUser = new String[2];
+			String[] newUser = new String[1];
 			newUser[0] = userArg[0];
-			newUser[1] = userArg[0];
 
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_SQL, newUser, Long.class);
+			metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_SQL, newUser, Long.class);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE)) {
-			Object[] newuserDateArgs = new Object[4];
+			Object[] newuserDateArgs = new Object[3];
 			newuserDateArgs[0] = userDateArgs[0];
-			newuserDateArgs[1] = userDateArgs[0];
-			newuserDateArgs[2] = userDateArgs[1];
-			newuserDateArgs[3] = userDateArgs[2];
+			newuserDateArgs[1] = userDateArgs[1];
+			newuserDateArgs[2] = userDateArgs[2];
 
-			metaAttrCount = jdbcTemplate.queryForObject(TOTAL_NUM_OF_META_ATTRS_BY_USER_DATE_SQL, newuserDateArgs,
+			metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_DATE_SQL, newuserDateArgs,
 					Long.class);
 		}
 		if (metaAttrCount != null)
@@ -570,7 +566,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 		// Total Meta attributes Size - TOTAL_NUMBER_OF_META_ATTRS
 		HpcReportEntry metasizeEntry = new HpcReportEntry();
-		metasizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUMBER_OF_META_ATTRS);
+		metasizeEntry.setAttribute(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
 		metasizeEntry
 				.setValue(getTotalMetaAttrCount(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs));
 		stop = System.currentTimeMillis();
