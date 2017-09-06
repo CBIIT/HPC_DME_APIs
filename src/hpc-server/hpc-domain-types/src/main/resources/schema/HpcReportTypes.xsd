@@ -76,7 +76,7 @@
 			<xsd:enumeration value="TOTAL_NUM_OF_REGISTERED_USERS" />
 			<xsd:enumeration value="TOTAL_NUM_OF_DATA_OBJECTS" />
 			<xsd:enumeration value="TOTAL_NUM_OF_COLLECTIONS" />
-			<xsd:enumeration value="TOTAL_NUMBER_OF_META_ATTRS" />
+			<xsd:enumeration value="AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS" />
 			<xsd:enumeration value="LARGEST_FILE_SIZE" />
 			<xsd:enumeration value="AVERAGE_FILE_SIZE" />
 			<xsd:enumeration value="SMALLEST_FILE_SIZE" />
