@@ -288,7 +288,7 @@ public class HpcPermissionController extends AbstractHpcController {
 				HpcPermissionEntryType type = entry.getType();
 				if (type.equals(HpcPermissionEntryType.USER) && userPermission.getUserId().equals(entry.getName())) {
 					found = true;
-					if (!userPermission.getPermission().equals(entry.getPermission()))
+					if (!userPermission.getPermission().value().equals(entry.getPermission()))
 						updatedUserPermissions.add(userPermission);
 					break;
 				}
@@ -304,7 +304,7 @@ public class HpcPermissionController extends AbstractHpcController {
 				if (type.equals(HpcPermissionEntryType.GROUP)
 						&& groupPermission.getGroupName().equals(entry.getName())) {
 					found = true;
-					if (!groupPermission.getPermission().equals(entry.getPermission()))
+					if (!groupPermission.getPermission().value().equals(entry.getPermission()))
 						updatedGroupPermissions.add(groupPermission);
 					break;
 				}
