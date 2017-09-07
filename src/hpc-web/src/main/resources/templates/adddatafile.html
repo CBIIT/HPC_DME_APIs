@@ -83,7 +83,7 @@
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Add Collection</li>
+							<li><i class="fa fa-list-alt"></i>Add Data File</li>
 						</ol>
 					</div>
 				</div>
@@ -223,6 +223,12 @@
 		if(!document.getElementById("path").value)
 		{
 			alert("Path is missng!")
+			return false;
+		}
+		
+		if (!(/^\S{3,}$/.test(document.getElementById("path").value)))
+		{
+			alert("Space is not allowed in the path!")
 			return false;
 		}
 		
