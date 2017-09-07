@@ -162,6 +162,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 				model.addAttribute("error", "Invald Data file path");
 			// Validate parent path
 			String parentPath = null;
+			hpcDataModel.setPath(hpcDataModel.getPath().trim());
 			try {
 				parentPath = hpcDataModel.getPath().substring(0, hpcDataModel.getPath().lastIndexOf("/"));
 				HpcClientUtil.getCollection(authToken, collectionServiceURL, parentPath, true, sslCertPath, sslCertPassword);

@@ -239,6 +239,11 @@
 			return false;
 		}
 
+		if (!(/^\S{3,}$/.test(document.getElementById("path").value)))
+		{
+			alert("Space is not allowed in the path!")
+			return false;
+		}
 		var collectionType = document.getElementById("zAttrStr_collection_type").value;
 	
 		if(!collectionType || collectionType == "_select_null")
@@ -328,8 +333,7 @@
 	
 	function cancelEdit()
     {
-		document.getElementById("actionType").value = "cancel";
-		$("#collectionForm").submit();
+		window.history.back();
     }
 //]]>
 </script>

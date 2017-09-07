@@ -307,7 +307,11 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		// Validate parent path
 		String parentPath = null;
 		try {
-			parentPath = hpcCollection.getPath().substring(0, hpcCollection.getPath().lastIndexOf("/"));
+			hpcCollection.setPath(hpcCollection.getPath().trim());
+			if(hpcCollection.getPath().lastIndexOf("/") != -1)
+				parentPath = hpcCollection.getPath().substring(0, hpcCollection.getPath().lastIndexOf("/"));
+			else
+				parentPath = hpcCollection.getPath();
 			HpcClientUtil.getCollection(authToken, serviceURL, parentPath, true, sslCertPath, sslCertPassword);
 		} catch (HpcWebException e) {
 			model.addAttribute("hpcCollection", hpcCollection);
