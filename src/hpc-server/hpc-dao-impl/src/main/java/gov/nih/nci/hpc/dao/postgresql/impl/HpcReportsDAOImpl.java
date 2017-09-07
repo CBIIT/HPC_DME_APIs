@@ -87,9 +87,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects";
 
-	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_SQL = "select meta_attr_value attr, count(meta_attr_name) cnt from r_report_collection_type group by meta_attr_value";
+	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_SQL = "select meta_attr_value attr, count(coll_id) cnt from r_report_collection_type group by meta_attr_value";
 
-	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_SQL = "SELECT count(meta_attr_name) / count(distinct data_id) FROM r_report_data_objects";
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_SQL = "SELECT count(meta_attr_name) / greatest( count(distinct data_id), 1 ) FROM r_report_data_objects";
 
 	/////////////////////////////// USAGE_SUMMARY_DATE_RANGE.
 	private static final String SUM_OF_DATA_BY_DATE_SQL = "select sum(to_number(meta_attr_value, '9999999999999999999')) totalSize, "
@@ -102,9 +102,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DATE_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects "
 			+ "where CAST(create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_AND_DATE_SQL = "select meta_attr_value attr, count(meta_attr_name) cnt from r_report_collection_type where CAST(create_ts as double precision) BETWEEN ? AND ? group by meta_attr_value";
+	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_AND_DATE_SQL = "select meta_attr_value attr, count(coll_id) cnt from r_report_collection_type where CAST(create_ts as double precision) BETWEEN ? AND ? group by meta_attr_value";
 
-	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DATE_SQL = "SELECT count(meta_attr_name) / count(distinct data_id) FROM r_report_data_objects where CAST(create_ts as double precision) BETWEEN ? AND ?";
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DATE_SQL = "SELECT count(meta_attr_name) / greatest( count(distinct data_id), 1 ) FROM r_report_data_objects where CAST(create_ts as double precision) BETWEEN ? AND ?";
 
 	/////////////////////////// USAGE_SUMMARY_BY_DOC.
 	private static final String SUM_OF_DATA_BY_DOC_SQL = "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
@@ -118,10 +118,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects "
 			+ "where meta_attr_name='registered_by_doc' and meta_attr_value=?";
 
-	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_SQL = "select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_report_collection_type a,  "
-			+ "r_report_coll_registered_by_doc b where b.meta_attr_value=? and a.coll_id=b.object_id group by a.meta_attr_value";
+	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_SQL = "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
+			+ "r_report_coll_registered_by_doc b where b.meta_attr_value=? and a.coll_id=b.coll_id group by a.meta_attr_value";
 
-	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DOC_SQL = "SELECT count(a.meta_attr_name) / count(distinct a.data_id) "+
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DOC_SQL = "SELECT count(a.meta_attr_name) / greatest( count(distinct data_id), 1 ) "+
 				"FROM r_report_data_objects a, r_report_registered_by_doc b "+
 				"where a.data_id = b.object_id and b.meta_attr_value=?";
 
@@ -137,11 +137,11 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects "
 			+ "where meta_attr_name='registered_by_doc' and meta_attr_value=? and CAST(create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_DATE_SQL = "select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_report_collection_type a,  "
-			+ "r_report_coll_registered_by_doc b where b.meta_attr_value=? and a.coll_id=b.object_id "
-			+ "and CAST(a.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
+	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_DATE_SQL = "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
+			+ "r_report_coll_registered_by_doc b where b.meta_attr_value=? and a.coll_id=b.coll_id "
+			+ "and CAST(b.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
 
-	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DOC_DATE_SQL = "SELECT count(a.meta_attr_name) / count(distinct a.data_id) "+
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_DOC_DATE_SQL = "SELECT count(a.meta_attr_name) / greatest( count(distinct data_id), 1 ) "+
 			"FROM r_report_data_objects a, r_report_registered_by_doc b "+
 			"where a.data_id = b.object_id and b.meta_attr_value=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
@@ -155,10 +155,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects "
 			+ "where meta_attr_name='registered_by' and meta_attr_value=?";
 
-	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_SQL = "select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_report_collection_type a,  "
-			+ "r_report_coll_registered_by b where b.meta_attr_value=? and a.coll_id=b.object_id group by a.meta_attr_value";
+	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_SQL = "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
+			+ "r_report_coll_registered_by b where b.meta_attr_value=? and a.coll_id=b.coll_id group by a.meta_attr_value";
 
-	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_SQL = "SELECT count(a.meta_attr_name) / count(distinct a.data_id) "+
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_SQL = "SELECT count(a.meta_attr_name) / greatest( count(distinct data_id), 1 ) "+
 			"FROM r_report_data_objects a, r_report_registered_by b "+
 			"where a.data_id = b.object_id and b.meta_attr_value=?";
 
@@ -172,11 +172,11 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_DATE_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects "
 			+ "where meta_attr_name='registered_by' and meta_attr_value=? and CAST(create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_DATE_SQL = "select a.meta_attr_value attr, count(a.meta_attr_name) cnt from r_report_collection_type a,  "
-			+ "r_report_coll_registered_by b where b.meta_attr_value=? and a.coll_id=b.object_id "
-			+ "and CAST(a.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
+	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_DATE_SQL = "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
+			+ "r_report_coll_registered_by b where b.meta_attr_value=? and a.coll_id=b.coll_id "
+			+ "and CAST(b.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
 
-	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_DATE_SQL = "SELECT count(a.meta_attr_name) / count(distinct a.data_id) "+
+	private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_DATE_SQL = "SELECT count(a.meta_attr_name) / greatest( count(distinct data_id), 1 ) "+
 			"FROM r_report_data_objects a, r_report_registered_by b "+
 			"where a.data_id = b.object_id and b.meta_attr_value=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
@@ -452,6 +452,16 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		Long[] dateLongArgs = new Long[2];
 		Date[] dateArgs = new Date[2];
 		if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+			criteria.getFromDate().set(Calendar.HOUR_OF_DAY, 0);
+			criteria.getFromDate().set(Calendar.MINUTE, 0);
+			criteria.getFromDate().set(Calendar.SECOND, 0);
+			criteria.getFromDate().set(Calendar.MILLISECOND, 0);
+			
+			criteria.getToDate().set(Calendar.HOUR_OF_DAY, 23);
+			criteria.getToDate().set(Calendar.MINUTE, 59);
+			criteria.getToDate().set(Calendar.SECOND, 60);
+			criteria.getToDate().set(Calendar.MILLISECOND, 0);
+
 			fromDate = criteria.getFromDate().getTime();
 			toDate = criteria.getToDate().getTime();
 			fromDateLong = criteria.getFromDate().getTime().getTime() / 1000;
@@ -704,6 +714,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by_doc");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_meta_main");
 		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by");
+		     jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by");
+		     
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to refresh report views: " + e.getMessage(),
