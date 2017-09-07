@@ -807,7 +807,7 @@ public class HpcClientUtil {
 			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to update collection due to: " + e.getMessage());
+			throw new HpcWebException(e.getMessage());
 		}
 	}
 
