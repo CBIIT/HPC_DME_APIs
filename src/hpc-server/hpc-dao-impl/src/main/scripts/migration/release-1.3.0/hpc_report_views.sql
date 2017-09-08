@@ -11,29 +11,6 @@
 -- @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
 -- @version $Id$
 --
-DROP MATERIALIZED VIEW IF EXISTS r_report_meta_map;
-CREATE MATERIALIZED VIEW r_report_meta_map
-AS (
-select distinct a.object_id from public.r_objt_metamap a 
-inner join public.r_meta_main b on  a.meta_id=b.meta_id 
-inner join public.r_data_main c on a.object_id = c.data_id 
-);
-
-DROP MATERIALIZED VIEW IF EXISTS r_report_data_meta_main;
-CREATE MATERIALIZED VIEW r_report_data_meta_main
-AS (
-select a.meta_attr_value attr, a.meta_attr_name, a.meta_id cnt from r_meta_main a
-inner join r_objt_metamap b on a.meta_id=b.meta_id 
-inner join r_data_main c on b.object_id=c.data_id
-);
-
-DROP MATERIALIZED VIEW IF EXISTS r_report_coll_meta_main;
-CREATE MATERIALIZED VIEW r_report_coll_meta_main
-AS (
-select a.meta_attr_value attr, a.meta_attr_name, a.meta_id cnt from r_meta_main a
-inner join r_objt_metamap b on a.meta_id=b.meta_id 
-inner join r_coll_main c on b.object_id=c.coll_id
-);
 
 DROP MATERIALIZED VIEW IF EXISTS r_report_meta_main;
 CREATE MATERIALIZED VIEW r_report_meta_main
@@ -73,7 +50,7 @@ CREATE UNIQUE INDEX r_report_registered_by_uidx1 ON r_report_registered_by(meta_
 DROP MATERIALIZED VIEW IF EXISTS r_report_coll_registered_by;
 CREATE MATERIALIZED VIEW r_report_coll_registered_by
 AS (
-select distinct a.meta_attr_name, a.meta_attr_value, b.object_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c  
+select distinct a.meta_attr_name, a.meta_attr_value, c.coll_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c  
 where a.meta_id=b.meta_id and b.object_id = c.coll_id and a.meta_attr_name='registered_by' 
 );
 CREATE UNIQUE INDEX r_report_coll_registered_by_uidx1 ON r_report_coll_registered_by(meta_attr_name, meta_attr_value, object_id);
@@ -92,10 +69,10 @@ CREATE UNIQUE INDEX r_report_collection_type_uidx1 ON r_report_collection_type(m
 DROP MATERIALIZED VIEW IF EXISTS r_report_coll_registered_by_doc;
 CREATE MATERIALIZED VIEW r_report_coll_registered_by_doc
 AS (
-select distinct a.meta_attr_name, a.meta_attr_value, b.object_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c  
+select distinct a.meta_attr_name, a.meta_attr_value, c.coll_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c  
 where a.meta_id=b.meta_id and b.object_id = c.coll_id and a.meta_attr_name='registered_by_doc'  
 );
-CREATE UNIQUE INDEX r_report_coll_registered_by_doc_uidx1 ON r_report_coll_registered_by_doc(meta_attr_name, meta_attr_value, object_id);
+CREATE UNIQUE INDEX r_report_coll_registered_by_doc_uidx1 ON r_report_coll_registered_by_doc(meta_attr_name, meta_attr_value, coll_id);
 
 DROP MATERIALIZED VIEW IF EXISTS r_report_data_objects;
 CREATE MATERIALIZED VIEW r_report_data_objects
