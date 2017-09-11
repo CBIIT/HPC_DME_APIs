@@ -253,8 +253,8 @@ public class HpcBrowseController extends AbstractHpcController {
 				selectedEntry.setPopulated(true);
 			else
 				selectedEntry.setPopulated(false);
+			selectedEntry.setCollection(true);
 			for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
-				selectedEntry.setCollection(true);
 				HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
 				listChildEntry.setCollection(true);
 				listChildEntry.setFullPath(listEntry.getPath());
