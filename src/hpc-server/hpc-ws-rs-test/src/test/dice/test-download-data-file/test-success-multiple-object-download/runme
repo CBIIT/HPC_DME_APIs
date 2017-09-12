@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Generate a destination directory 
+sleep 1
+suffix=`date +"%b-%d-%G-%H-%M-%S"`
+destination_path=/download/collection-$suffix
+
+#update the destination
+download_request=download-request.json.tmp
+update_uid input-template.json updated-uid.json.tmp
+cat updated-uid.json.tmp | sed  "s@download-path@$destination_path@" > $download_request
+
+#Send the download request
+RESPONSE_HEADER=download-response-header.tmp
+RESPONSE_MSG=download-response-message.json.tmp
+download_async "" $download_request
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo "download_async_code $HTTP_CODE"
+
+#Do not check the file is the code is not 200
+if [ $HTTP_CODE != 200 ] 
+then
+    echo "Unable to submit download request" >&2
+    exit 1
+fi
+
+#Make sure a task ID is returned
+taskId=$(get_json_value $RESPONSE_MSG taskId)
+
+if [ -z "$taskId" ]
+then
+  echo "ERROR: Can not retrieve download taskId from $RESPONSE_MSG" >&2
+  exit 1
+fi
+
+#Verify the files are in globus
+verify_globus_download "$taskId" "$destination_path/dice_object_1 $destination_path/dice_object_2" ""
