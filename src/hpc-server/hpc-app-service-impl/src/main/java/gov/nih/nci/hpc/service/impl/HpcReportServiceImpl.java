@@ -91,5 +91,11 @@ public class HpcReportServiceImpl implements HpcReportService
 		return reportsDAO.generatReport(criteria);
 	}
 
+    @Override
+    public void refreshViews() throws HpcException
+    {
+    	reportsDAO.refreshViews();
+    }
+	
 }
 	
