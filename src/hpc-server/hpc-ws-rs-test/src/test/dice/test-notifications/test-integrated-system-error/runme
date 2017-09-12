@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# runme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Run the common runtest
+$HPC_DM_TEST/test-notifications/utils/runtest
+
+
+RESPONSE_HEADER=subscribe-notifications-response-header.tmp
+RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
+subscribe_to_notifications input.json 
+
+
+
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE 1>&2
+
+#Parse the response message. 
+ERROR_TYPE=$(get_json_value $RESPONSE_MSG errorType)
+ERROR_MSG=$(get_json_value $RESPONSE_MSG message)
+echo "$ERROR_TYPE" 1>&2
+echo "$ERROR_MSG" 1>&2
