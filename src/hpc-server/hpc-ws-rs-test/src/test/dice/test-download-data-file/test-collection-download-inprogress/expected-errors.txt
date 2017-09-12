@@ -1,0 +1,3 @@
+Sync download request code:400
+REQUEST_REJECTED
+FILE_NOT_ARCHIVED
