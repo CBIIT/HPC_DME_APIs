@@ -1,0 +1,10 @@
+{ 
+  "dataObjectPaths" : [
+    "/DXBASEFOLDER/dice_project4/dice_object_1",
+    "/DXBASEFOLDER/dice_project2/dice_object_2"
+      ],
+    "destination": {
+      "fileContainerId" : "globus-shared-endpoint-uid",
+      "fileId" : "download-path"
+    }
+}
