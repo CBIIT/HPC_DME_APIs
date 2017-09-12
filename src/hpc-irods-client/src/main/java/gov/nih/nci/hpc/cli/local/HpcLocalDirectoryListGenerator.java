@@ -299,6 +299,7 @@ public class HpcLocalDirectoryListGenerator {
 		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath,
 				hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
+		client.header("Connection", "Keep-Alive");
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
 
 		try {
