@@ -32,7 +32,7 @@ public interface HpcReportBusService
 	 * @return Reports DTO
 	 * @throws HpcException on service failure.
 	 */
-	public HpcReportsDTO generateReport(HpcReportRequestDTO criteria) throws HpcException;
+	public HpcReportsDTO generateReport(HpcReportRequestDTO criteria) throws HpcException;	
 }
 
  

@@ -26,6 +26,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -164,6 +166,17 @@ public interface HpcDataManagementBusService
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile) 
     		                         throws HpcException;
+    
+    /**
+     * Data objects registration.
+     *
+     * @param dataObjectsRegistrationRequest The registration request of a list of data objects.
+     * @return A registration response DTO.
+     * @throws HpcException on service failure.
+     */
+	public HpcDataObjectsRegistrationResponseDTO 
+	          registerDataObjects(HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest)
+			                     throws HpcException;
     
     /**
      * Get Data Object.

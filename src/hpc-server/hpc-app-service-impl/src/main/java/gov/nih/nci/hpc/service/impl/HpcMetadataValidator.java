@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcMetadataValidator
@@ -227,7 +226,12 @@ public class HpcMetadataValidator
     	Map<String, String> addUpdateMetadataEntriesMap = new HashMap<>();
     	for(HpcMetadataEntry metadataEntry : addUpdateMetadataEntries) {
     		metadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
-    		addUpdateMetadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
+    		if(addUpdateMetadataEntriesMap.put(metadataEntry.getAttribute(), metadataEntry.getValue()) != null) {
+    		   // Metadata attributes are expected to be unique.
+    		   throw new HpcException("Metadata attribute is not unique: " +  metadataEntry.getAttribute(),
+                                      HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    		
     		// Default null unit values to empty string (This is an iRODS expectation).
     		if(metadataEntry.getUnit() == null) {
     		   metadataEntry.setUnit("");	

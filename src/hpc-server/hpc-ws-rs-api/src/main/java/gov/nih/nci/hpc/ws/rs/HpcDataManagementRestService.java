@@ -31,6 +31,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
@@ -168,6 +169,19 @@ public interface HpcDataManagementRestService
 			        HpcDataObjectRegistrationDTO dataObjectRegistration,
 			        @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
 			        InputStream dataObjectInputStream);
+	
+    /**
+     * Data objects registration.
+     *
+     * @param dataObjectsRegistrationRequest The registration request of a list of data objects.
+     * @return The REST service response.
+     */
+	@PUT
+	@Path("/dataObject/")
+	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response registerDataObjects(
+			                HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest);
 
     /**
      * Get a data object.
