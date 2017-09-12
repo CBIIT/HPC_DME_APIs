@@ -1,0 +1,8 @@
+{
+   "addUpdateSubscriptions": [
+    {
+        "eventType": "NTEGRATED_SYSTEM_ERROR",
+        "notificationDeliveryMethods": ["EMAIL"]
+    }
+   ]
+}
