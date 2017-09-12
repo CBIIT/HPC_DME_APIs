@@ -62,9 +62,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var collectionTypes = [[${collectionTypes}]];
-    var collectionTypeAttrs = [[${collectionTypeAttrs}]];
-    var collectionTypeAttrDefaultValues = [[${collectionTypeAttrDefaultValues}]];
-    var collectionTypeAttrValidValues = [[${collectionTypeAttrValidValues}]];
+    var attributeNames = [[${attributeNames}]];
 /*]]>*/
 </script>
 
@@ -104,6 +102,7 @@
 								<form class="form-horizontal" id="collectionForm" th:action="@{/addCollection}"
 									th:object="${hpcCollection}" method="POST">
 									<input type="hidden" name="actionType" id="actionType"/>
+									<input type="hidden" name="parent" id="parent" th:value="${parent}"/>
 								<!--panel-body start-->
 								<div class="panel-body">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -116,16 +115,9 @@
 								</div>								
 									<div class="form-group">
 										<div class="col-md-12 form-group">
-											<label for="Name">Parent Path:</label> 
-											<input type="text" name="path" id="path" size="100" th:value="${parentPath}"/>&nbsp;&nbsp;&nbsp;<button class="btn btn-md btn-primary"
-										id="primaryButton" onClick="return getHierarchy()">Get Hierarchy</button>
+											<label for="Name">Collection Path:</label> 
+											<input type="text" name="path" id="path" size="100" th:value="${collectionPath}"/>
 											
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="col-md-12 form-group">
-											<label for="Name">Collection Name:</label> 
-											<input type="text" name="collectionName" id="path" size="100" th:value="${collectionName}"/>
 										</div>
 									</div>
 								</div>
@@ -145,36 +137,45 @@
 										</thead>
 										<tbody>
 										<tr id='attrRow0' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
-											<td style="white-space: nowrap"><label id="rowId0">Collection Type</label>
+											<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
 												id="zAttrStr_collection_type" name="zAttrStr_collection_type" class="form-control"
 												th:required="required"
-												onChange="addAttributesForType(this.value)">
-													<option value="-1">----Select----</option>
+												onChange="refreshAttributes()">
+													<option value="_select_null">----Select----</option>
 													<option
 														th:each="collectionType : ${collectionTypes}"
-														th:value="${collectionType}" th:text="${collectionType}">
+														th:value="${collectionType}" th:text="${collectionType}" th:selected="${collectionType.equals(collection_type)}">
 														Wireframe</option>
 											</select></td>
 										</tr>										
-										<!-- 
 											<tr
-												th:each="hpcMetadataValidationRule : ${session.userDOCModel.getCollectionMetadataValidationRules()}" th:if="${session.userDOCModel != null}">
-												<div th:if="hpcMetadataValidationRule.getRuleEnabled()">
-													<td><label th:text="${metadataItem.getAttrName()}"></label></td>
-													<td th:unless="${metadataItem.isSystemAttr() == true}"><input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
-														th:value="${metadataItem.getAttrValue()}"></input></td>
-													<td th:if="${metadataItem.isSystemAttr() == true}"><label for="${metadataItem.getAttrName()}"
-														th:text="${metadataItem.getAttrValue()}"></label></td>
-												</div>
+												th:each="hpcMetadataAttrEntry : ${collectionAttrs}" th:if="${collectionAttrs != null}">
+													<td><label th:text="${hpcMetadataAttrEntry.getAttrName()}"></label></td>
+													<td th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input type="text" class="form-control" th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
+													<td th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
+														<select size="1"
+														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" class="form-control"
+														th:required="required"
+														>
+															<option value="_select_null">----Select----</option>
+															<option
+																th:each="validValue : ${hpcMetadataAttrEntry.getValidValues()}"
+																th:value="${validValue}" th:text="${validValue}" th:selected="${validValue.equals(hpcMetadataAttrEntry.getAttrValue())}">
+																Wireframe</option>
+														</select>													
+													</td>
 											</tr>
  										
 											<tr>
+<!-- 
 											<td align="left"><input type="text" name="addAttrName1" id="addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
 											<td align="left"><input type="text" name="addAttrValue1" id="addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>
+ -->
 											</tr>
-											-->
+											
 										</tbody>
 									</table>
 								</div>
@@ -225,68 +226,8 @@
 	    row.id = "attrRow"+(rows+1);
 	    var cell0 = row.insertCell(0);
 	    var cell1 = row.insertCell(1);
-	    cell0.innerHTML = '<input type="text" id="addAttrName'+(rows+1)+'" name="addAttrName'+(rows+1)+'" placeholder="Attribute Name" class="form-control"/>';
-	    cell1.innerHTML = '<input type="text" id="addAttrValue'+(rows+1)+'" name="addAttrValue'+(rows+1)+'" placeholder="Attribute Value" class="form-control"/>';
-	    return false;
-	}	
-
-	function addAttributesForType(collectionType) {
-	    var table = document.getElementById("metaAttrTable");
-	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-	    table = document.getElementById("metaAttrTable");
-	    if(collectionTypeAttrs.length >= 1)
-	    {
-	    	for(var x=2;x<=rows;x++)
-	    		table.deleteRow(2);
-	    }
-
-	    rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-	    table = document.getElementById("metaAttrTable");
-		for(var i=0;i<collectionTypeAttrs.length;i++)
-		{
-			var fullAttr = collectionTypeAttrs[i];
-			var collType = fullAttr.substring(0, fullAttr.indexOf(":"));
-			var defaultValue = "";
-			if(collType == collectionType)
-			{
-				rows++;
-				var attrName = fullAttr.substring(fullAttr.indexOf(":")+1);
-				//Get default value
-				for(var j=0;j<collectionTypeAttrDefaultValues.length;j++)
-				{
-					if(collectionTypeAttrDefaultValues[j].indexOf(fullAttr+":") != -1)
-					{
-						defaultValue = collectionTypeAttrDefaultValues[j].substring(collectionTypeAttrDefaultValues[j].lastIndexOf(":")+1);
-					}
-				}
-				//Get valid values
-				var validValueFlag = false;
-				var listBox = '<select id="zAttrStr_'+(attrName)+'" name="zAttrStr_'+(attrName)+'" class="form-control"><option value="-1">--Select--</option>';
-				for(var j=0;j<collectionTypeAttrValidValues.length;j++)
-				{
-					if(collectionTypeAttrValidValues[j].indexOf(fullAttr+":") != -1)
-					{
-						var validValue = collectionTypeAttrValidValues[j].substring(collectionTypeAttrValidValues[j].lastIndexOf(":")+1);
-						if(validValue == defaultValue)
-							listBox += "<option value='"+validValue+"' selected='selected'>"+validValue+"</option>"
-						else
-							listBox += "<option value='"+validValue+"'>"+validValue+"</option>"
-						validValueFlag = true;
-					}
-				}
-				listBox = listBox + "</select>"
-		    
-			    var row = table.insertRow(rows);
-			    row.id = "attrRow"+(rows);
-			    var cell0 = row.insertCell(0);
-			    var cell1 = row.insertCell(1);
-			    cell0.innerHTML = '<label id="'+ (fullAttr) +'">'+ (attrName) + '</label>';
-			    if(validValueFlag)
-			    	cell1.innerHTML = listBox;
-			    else
-			    	cell1.innerHTML = '<input type="text" id="zAttrStr_'+(attrName)+'" name="zAttrStr_'+(attrName)+'" placeholder="Attribute Value" class="form-control" value="'+(defaultValue)+'"/>';
-			}
-		}
+	    cell0.innerHTML = '<input type="text" id="_addAttrName'+(rows+1)+'" name="_addAttrName'+(rows+1)+'" placeholder="Attribute Name" class="form-control"/>';
+	    cell1.innerHTML = '<input type="text" id="_addAttrValue'+(rows+1)+'" name="_addAttrValue'+(rows+1)+'" placeholder="Attribute Value" class="form-control"/>';
 	    return false;
 	}	
 
@@ -298,31 +239,91 @@
 			return false;
 		}
 
+		if (!(/^\S{3,}$/.test(document.getElementById("path").value)))
+		{
+			alert("Space is not allowed in the path!")
+			return false;
+		}
 		var collectionType = document.getElementById("zAttrStr_collection_type").value;
 	
-		if(!collectionType || collectionType == "-1")
+		if(!collectionType || collectionType == "_select_null")
 		{
 			alert("Collection type is missng!")
 			return false;
 		}
-			
-		for(var i=0;i<collectionTypeAttrs.length;i++)
+		
+		if(attributeNames)
 		{
-			var fullAttr = collectionTypeAttrs[i];
-			var collType = fullAttr.substring(0, fullAttr.indexOf(":"));
-			var defaultValue = "";
-			if(collType == collectionType)
+			for(var i=0;i<attributeNames.length;i++)
 			{
-				var attrName = fullAttr.substring(fullAttr.indexOf(":")+1);
-				if(!document.getElementById("zAttrStr_"+attrName).value || document.getElementById("zAttrStr_"+attrName).value == "-1")
+				var attrName = attributeNames[i];
+				var defaultValue = "";
+				if((!document.getElementById("zAttrStr_"+attrName).value) || (document.getElementById("zAttrStr_"+attrName).value=="_select_null"))
 				{
 					alert("Attribute " + attrName + " value is missing!")
 					return false;
 				}
 			}
 		}
+		
+		var form = document.getElementById("collectionForm");
+		var inputs = form.getElementsByTagName("input");
+		var selects = form.getElementsByTagName("select");
+		var attrs = getAttributeNames();
+		for(var j=0;j<attrs.length;j++)
+		{
+			if(duplicate(attrs, attrs[j]))
+			{
+				alert("Duplicate attribute name: "+attrs[j]);
+				return false;
+			}
+		}
 	}
 	
+	function getAttributeNames()
+	{
+		var form = document.getElementById("collectionForm");
+		var inputs = form.getElementsByTagName("input");
+		var selects = form.getElementsByTagName("select");
+		
+		var attrs = new Array();
+		for(var j=0;j<inputs.length;j++)
+		{
+			if(inputs[j].name.startsWith("_addAttrName"))
+				attrs.push(inputs[j].value);
+		}
+		
+		if(attributeNames != null)
+		{
+			for(var k=0;k<attributeNames.length;k++)
+				attrs.push(attributeNames[k]);
+		}
+		attrs.push("path");
+		attrs.push("actionType");
+		attrs.push("collection_type");
+		return attrs;
+	}
+	
+	function duplicate(list, obj) {
+	    var i = list.length;
+	    var first = false;
+	    while (i--) {
+	       if (list[i] === obj) {
+	    	   if(!first)
+		    	   first = true;
+	    	   else
+		           return true;
+	       }
+	    }
+	    return false;
+	}
+
+	function refreshAttributes()
+    {
+		document.getElementById("actionType").value = "refresh";
+		$("#collectionForm").submit();
+    }
+
 	function getHierarchy()
     {
 		document.getElementById("actionType").value = "hierarchy";
@@ -332,8 +333,7 @@
 	
 	function cancelEdit()
     {
-		document.getElementById("actionType").value = "cancel";
-		$("#collectionForm").submit();
+		window.history.back();
     }
 //]]>
 </script>

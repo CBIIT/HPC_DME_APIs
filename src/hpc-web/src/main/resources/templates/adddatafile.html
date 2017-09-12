@@ -59,6 +59,12 @@
 	height: 300px
 }
 </style>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var attributeNames = [[${attributeNames}]];
+/*]]>*/
+</script>
+
 </head>
 <body ng-controller="MyCtrl">
 
@@ -77,7 +83,7 @@
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Add Collection</li>
+							<li><i class="fa fa-list-alt"></i>Add Data File</li>
 						</ol>
 					</div>
 				</div>
@@ -94,6 +100,8 @@
 							</div>
 								<form class="form-horizontal" id="dataFileForm" th:action="@{/addDatafile}"
 									th:object="${hpcDatafile}" enctype="multipart/form-data" method="POST">
+									<input type="hidden" name="actionType" id="actionType"/>
+									<input type="hidden" name="parent" id="parent" th:value="${parent}"/>
 								<!--panel-body start-->
 								<div class="panel-body">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -107,7 +115,7 @@
 									<div class="form-group">
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> 
-											<input type="text" name="path" id="path" size="100" th:value="${parentPath}"/>
+											<input type="text" name="path" id="path" size="100" th:value="${datafilePath}"/>
 										</div>
 								</div>
 								<div class="form-inline">
@@ -131,9 +139,28 @@
 											</tr>
 										</thead>
 										<tbody>
-											<tr>
-											<td align="left"><input type="text" name="addAttrName1" id="addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
-											<td align="left"><input type="text" name="addAttrValue1" id="addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>
+											<tr
+												th:each="hpcMetadataAttrEntry : ${datafileAttrs}" th:if="${datafileAttrs != null}">
+													<td><label th:text="${hpcMetadataAttrEntry.getAttrName()}"></label></td>
+													<td th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input type="text" class="form-control" th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
+													<td th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
+														<select size="1"
+														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" class="form-control"
+														th:required="required"
+														>
+															<option value="_select_null">----Select----</option>
+															<option
+																th:each="validValue : ${hpcMetadataAttrEntry.getValidValues()}"
+																th:value="${validValue}" th:text="${validValue}" th:selected="${validValue.equals(hpcMetadataAttrEntry.getAttrValue())}">
+																Wireframe</option>
+														</select>													
+													</td>
+											</tr>
+										
+											<tr th:unless="${datafileAttrs != null}">
+											<td align="left"><input type="text" name="_addAttrName1" id="_addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
+											<td align="left"><input type="text" name="_addAttrValue1" id="_addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>
 											</tr>
 										</tbody>
 									</table>
@@ -143,7 +170,7 @@
 									<button class="btn btn-md btn-primary"
 										id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 									<button type="submit" class="btn btn-md btn-primary"
-										id="primaryButton">Create</button>
+										id="primaryButton" onClick="return validate()">Create</button>
 									<button type="submit" class="btn btn-primary"
 										id="cancel" onClick="cancelEdit()">Cancel</button>
 								</div>
@@ -174,6 +201,8 @@
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
+	//<![CDATA[	
+	
 	var rowId = 1;
 	
 	function addMetadata() {
@@ -184,16 +213,96 @@
 	    row.id = "attrRow"+(rows+1);
 	    var cell0 = row.insertCell(0);
 	    var cell1 = row.insertCell(1);
-	    cell0.innerHTML = '<input type="text" id="addAttrName'+(rows+1)+'" name="addAttrName'+(rows+1)+'" placeholder="Attribute Name" class="form-control"/>';
-	    cell1.innerHTML = '<input type="text" id="addAttrValue'+(rows+1)+'" name="addAttrValue'+(rows+1)+'" placeholder="Attribute Value" class="form-control"/>';
+	    cell0.innerHTML = '<input type="text" id="_addAttrName'+(rows+1)+'" name="_addAttrName'+(rows+1)+'" placeholder="Attribute Name" class="form-control"/>';
+	    cell1.innerHTML = '<input type="text" id="_addAttrValue'+(rows+1)+'" name="_addAttrValue'+(rows+1)+'" placeholder="Attribute Value" class="form-control"/>';
 	    return false;
 	}	
 
+	function validate()
+	{
+		if(!document.getElementById("path").value)
+		{
+			alert("Path is missng!")
+			return false;
+		}
+		
+		if (!(/^\S{3,}$/.test(document.getElementById("path").value)))
+		{
+			alert("Space is not allowed in the path!")
+			return false;
+		}
+		
+		if(attributeNames)
+		{
+			for(var i=0;i<attributeNames.length;i++)
+			{
+				var attrName = attributeNames[i];
+				var defaultValue = "";
+				if((!document.getElementById("zAttrStr_"+attrName).value) || (document.getElementById("zAttrStr_"+attrName).value=="_select_null"))
+				{
+					alert("Attribute " + attrName + " value is missing!")
+					return false;
+				}
+			}
+		}
+		
+		var form = document.getElementById("dataFileForm");
+		var inputs = form.getElementsByTagName("input");
+		var selects = form.getElementsByTagName("select");
+		var attrs = getAttributeNames();
+		for(var j=0;j<attrs.length;j++)
+		{
+			if(duplicate(attrs, attrs[j]))
+			{
+				alert("Duplicate attribute name: "+attrs[j]);
+				return false;
+			}
+		}
+	}
+	
+	function getAttributeNames()
+	{
+		var form = document.getElementById("dataFileForm");
+		var inputs = form.getElementsByTagName("input");
+		var selects = form.getElementsByTagName("select");
+		
+		var attrs = new Array();
+		for(var j=0;j<inputs.length;j++)
+		{
+			if(inputs[j].name.startsWith("_addAttrName"))
+				attrs.push(inputs[j].value);
+		}
+		
+		if(attributeNames != null)
+		{
+			for(var k=0;k<attributeNames.length;k++)
+				attrs.push(attributeNames[k]);
+		}
+		attrs.push("path");
+		attrs.push("actionType");
+		return attrs;
+	}
+	
+	function duplicate(list, obj) {
+	    var i = list.length;
+	    var first = false;
+	    while (i--) {
+	       if (list[i] === obj) {
+	    	   if(!first)
+		    	   first = true;
+	    	   else
+		           return true;
+	       }
+	    }
+	    return false;
+	}
+	
 	function cancelEdit()
     {
 		document.getElementById("action").value = "cancel";
 		$("#dataFileForm").submit();
     }
+//]]>	
 </script>
 
 </body>

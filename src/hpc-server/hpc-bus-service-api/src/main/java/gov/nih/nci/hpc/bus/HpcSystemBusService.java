@@ -124,6 +124,13 @@ public interface HpcSystemBusService
 	public void refreshMetadataViews() throws HpcException;
 	
 	/**
+     * Refresh the reports materialized views.
+     *
+     * @throws HpcException on service failure.
+     */
+	public void refreshReportViews() throws HpcException;
+
+	/**
 	 * Close connection to Data Management system for the current service call.
 	 */
 	public void closeConnection();

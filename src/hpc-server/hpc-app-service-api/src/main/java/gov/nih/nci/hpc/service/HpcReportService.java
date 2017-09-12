@@ -35,4 +35,12 @@ public interface HpcReportService
 	 * @throws HpcException on service failure.
 	 */
 	public List<HpcReport> generateReport(HpcReportCriteria criteria) throws HpcException;
+	
+    /**
+     * Refresh all reports materialized views.
+     *
+     * @throws HpcException on service failure.
+     */
+    public void refreshViews() throws HpcException;
+	
 }
