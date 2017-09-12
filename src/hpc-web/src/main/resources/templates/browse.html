@@ -286,10 +286,10 @@ $('#tree1').bind('tree.open', function (e,data) {
 
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "addCollection": function (node) { 
-    	window.location = "/addCollection?path="+node.fullPath;
+    	window.location = "/addCollection?parent="+node.fullPath;
     },
     "addDatafile": function (node) {
-    	window.location = "/addDatafile?path="+node.fullPath;
+    	window.location = "/addDatafile?parent="+node.fullPath;
     }
 
 }); 
