@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+
+RESPONSE_HEADER=object1_response-header.tmp
+RESPONSE_MSG=object1_response-message.json.tmp
+
+base_path=$(get_basefolder)
+dice_object_1=$base_path/dice_project1/dice_object_1
+dice_object_2=$base_path/dice_project2/dice_object_2
+
+ACTING_USER=dice_user
+download_dataobject_sync  $dice_object_1
+get_http_code $RESPONSE_HEADER
+
+
+RESPONSE_HEADER=object2_response-header.tmp
+RESPONSE_MSG=object2_response-message.json.tmp
+download_dataobject_sync  $dice_object_2
+get_http_code $RESPONSE_HEADER
