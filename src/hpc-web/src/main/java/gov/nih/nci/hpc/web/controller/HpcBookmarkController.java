@@ -82,8 +82,8 @@ public class HpcBookmarkController extends AbstractHpcController {
 		}
 		String path = request.getParameter("path");
 		HpcBookmark bookmark = new HpcBookmark();
-		bookmark.setSelectedPath(path);
-		bookmark.setPath(path);
+		bookmark.setSelectedPath(path != null ? path.trim() : null);
+		bookmark.setPath(path != null ? path.trim() : null);
 		model.addAttribute("bookmark", bookmark);
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
@@ -119,7 +119,7 @@ public class HpcBookmarkController extends AbstractHpcController {
 			else
 			{
 				HpcBookmarkRequestDTO dto = new HpcBookmarkRequestDTO();
-				dto.setPath(hpcBookmark.getPath());
+				dto.setPath(hpcBookmark.getPath().trim());
 				boolean created = HpcClientUtil.createBookmark(authToken, bookmarkServiceURL, dto, hpcBookmark.getName(),
 					sslCertPath, sslCertPassword);
 				if (created)
