@@ -110,7 +110,7 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		return "addcollection";
 	}
 
-	private void populateCollectionTypes(HttpSession session, Model model, String path, String parent) {
+	private void populateCollectionTypes(HttpSession session, Model model, String path, String parent) throws HpcWebException{
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
@@ -123,12 +123,50 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		String collectionType = null;
 		Set<String> collectionTypesSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 		List<HpcMetadataValidationRule> rules = modelDTO.getCollectionMetadataValidationRules();
+		//Parent name is given
 		if (parent != null)
 		{
-			collectionType = getCollectionType(authToken, serviceURL, parent, false, sslCertPath, sslCertPassword);
-			collectionTypesSet.addAll(getSubCollectionTypes(collectionType, modelDTO.getDataHierarchy()));
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, parent, false, sslCertPath,
+					sslCertPassword);
+			if (collections != null && collections.getCollections() != null && collections.getCollections().size() > 0) {
+				HpcCollectionDTO collection = collections.getCollections().get(0);
+				if(collection.getMetadataEntries() == null)
+				{
+					if(modelDTO.getDataHierarchy() != null)
+						collectionTypesSet.add(modelDTO.getDataHierarchy().getCollectionType());
+					else
+						collectionTypesSet.add("Folder");
+				}
+				else
+				{
+					for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
+					{
+						if (entry.getAttribute().equals("collection_type"))
+						{
+							collectionType = entry.getValue();
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				//Collection not found
+				//Populate all collection types
+				collectionTypesSet.addAll(getCollectionTypes(rules));
+			}
+
+//			collectionType = getCollectionType(authToken, serviceURL, parent, false, sslCertPath, sslCertPassword);
+			if(collectionType != null)
+			{
+				List<String> subCollections = getSubCollectionTypes(collectionType, modelDTO.getDataHierarchy()); 
+				if((subCollections == null || subCollections.isEmpty()) && !rules.isEmpty())
+					throw new HpcWebException("Adding a sub collection is not allowed with: "+parent);
+				collectionTypesSet.addAll(subCollections);
+			}
 		}
-		else
+		
+		if(collectionType == null &&  collectionTypesSet.isEmpty())
 		{
 			for (HpcMetadataValidationRule rule : rules) {
 				if (rule.getMandatory() && rule.getAttribute().equals("collection_type"))
@@ -140,6 +178,17 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			collectionTypesSet.add("Folder");
 
 		model.addAttribute("collectionTypes", collectionTypesSet);
+	}
+
+	
+	private List<String> getCollectionTypes(List<HpcMetadataValidationRule> rules)
+	{
+		List<String> collectionTypesSet = new ArrayList<String>();
+		for (HpcMetadataValidationRule rule : rules) {
+			if (rule.getMandatory() && rule.getAttribute().equals("collection_type"))
+				collectionTypesSet.addAll(rule.getValidValues());
+		}
+		return collectionTypesSet;
 	}
 
 	private List<String> getSubCollectionTypes(String collectionType, HpcDataHierarchy dataHierarchy) {
@@ -261,6 +310,8 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				sslCertPassword);
 		if (collections != null && collections.getCollections() != null && collections.getCollections().size() > 0) {
 			HpcCollectionDTO collection = collections.getCollections().get(0);
+			if(collection.getMetadataEntries() == null)
+				return null;
 			for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
 				if (entry.getAttribute().equals("collection_type"))
 					return entry.getValue();

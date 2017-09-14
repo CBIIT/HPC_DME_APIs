@@ -132,10 +132,10 @@ public class HpcBookmarksController extends AbstractHpcController {
 			else
 			{
 				HpcBookmarkRequestDTO dto = new HpcBookmarkRequestDTO();
-				dto.setPath(hpcBookmark.getPath());
-				boolean created = HpcClientUtil.deleteBookmark(authToken, bookmarkServiceURL, hpcBookmark.getName(),
+				dto.setPath(hpcBookmark.getPath().trim());
+				boolean deleted = HpcClientUtil.deleteBookmark(authToken, bookmarkServiceURL, hpcBookmark.getName(),
 					sslCertPath, sslCertPassword);
-				if (created)
+				if (deleted)
 				{
 					result.setMessage("Bookmark deleted!");
 					HpcBookmarkListDTO bookmarksDTO = HpcClientUtil.getBookmarks(authToken, bookmarkServiceURL, sslCertPath,
