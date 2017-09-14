@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+
+
+
+# Script to build the executable for this test
+# Usage: makeme [no arguments]
+
+../../../utils/maketest
+
+#Clean previous parsed policies file
+../../utils/cleantest
+#../../utils/maketest collectionMetadataValidationRules Project
