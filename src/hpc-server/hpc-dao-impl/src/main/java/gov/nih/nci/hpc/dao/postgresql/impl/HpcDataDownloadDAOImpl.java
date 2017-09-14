@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import java.sql.Array;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -417,8 +418,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 			 
 			 Array sqlArray = null;
 			 if(!collectionDownloadTask.getDataObjectPaths().isEmpty()) {
-			    sqlArray = jdbcTemplate.getDataSource().getConnection().createArrayOf(
-			    		       "text", collectionDownloadTask.getDataObjectPaths().toArray());
+				Connection conn = jdbcTemplate.getDataSource().getConnection();
+				try {
+					 sqlArray = conn.createArrayOf("text", collectionDownloadTask.getDataObjectPaths().toArray());
+					 
+				} finally {
+					       conn.close();
+				}
 			 }
 			 
 		     jdbcTemplate.update(UPSERT_COLLECTION_DOWNLOAD_TASK_SQL,
