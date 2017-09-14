@@ -457,12 +457,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setDestinationLocation(destinationLocation);
-		//downloadTask.getDataObjectPaths().addAll(dataObjectPath);
-		
-		downloadTask.setPath("/FNL_SF_Archive/eran-pi-lab/eran-project/eran-flowcell/eran-sample");
+		downloadTask.getDataObjectPaths().addAll(dataObjectPath);
 		downloadTask.setUserId(userId);
-		//downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
-		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
+		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		
 		// Persist the request.
