@@ -13,8 +13,10 @@ package gov.nih.nci.hpc.bus.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -44,6 +46,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -59,11 +62,12 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -282,9 +286,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-	public HpcDataObjectsDownloadResponseDTO downloadDataObjects(
-			                                         HpcDataObjectsDownloadRequestDTO downloadRequest)
-                                                     throws HpcException
+	public HpcDataObjectListDownloadResponseDTO downloadDataObjects(
+			                                            HpcDataObjectListDownloadRequestDTO downloadRequest)
+                                                        throws HpcException
     {
     	// Input validation.
     	if(downloadRequest == null) {
@@ -332,7 +336,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		   	                                   doc);
     	
     	// Create and return a DAO with the request receipt.
-    	HpcDataObjectsDownloadResponseDTO responseDTO = new HpcDataObjectsDownloadResponseDTO();
+    	HpcDataObjectListDownloadResponseDTO responseDTO = new HpcDataObjectListDownloadResponseDTO();
     	responseDTO.setTaskId(collectionDownloadTask.getId());
     	responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
     	
@@ -512,12 +516,54 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-	public HpcDataObjectsRegistrationResponseDTO 
-              registerDataObjects(HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest)
+	public HpcDataObjectListRegistrationResponseDTO 
+              registerDataObjects(HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest)
 	                             throws HpcException
 	{
-    	return null;
-	}
+    	// Input validation.
+    	if(dataObjectListRegistrationRequest == null ||
+    	   dataObjectListRegistrationRequest.getDataObjectRegistrationItems().isEmpty()) {
+    	   throw new HpcException("Null / Empty registration request",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Break the DTO into a map of registration requests and ensure no duplication of registration paths.
+    	Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests = new HashMap<>();
+    	for(HpcDataObjectListRegistrationItemDTO dataObjectRegistrationItem : 
+    		dataObjectListRegistrationRequest.getDataObjectRegistrationItems()) {
+    		HpcDataObjectRegistrationRequest dataObjectRegistrationRequest = new HpcDataObjectRegistrationRequest();
+    		dataObjectRegistrationRequest.setCallerObjectId(dataObjectRegistrationItem.getCallerObjectId());
+    		dataObjectRegistrationRequest.setCreateParentCollections(
+    				                         dataObjectRegistrationItem.getCreateParentCollections());
+    		dataObjectRegistrationRequest.setSource(dataObjectRegistrationItem.getSource());
+    		dataObjectRegistrationRequest.getMetadataEntries().addAll(
+    				                         dataObjectRegistrationItem.getMetadataEntries());
+    		dataObjectRegistrationRequest.getParentCollectionMetadataEntries().addAll(
+    				                         dataObjectRegistrationItem.getParentCollectionMetadataEntries());
+    		
+    		String path = dataObjectRegistrationItem.getPath();
+    		if(StringUtils.isEmpty(path)) {
+    		   throw new HpcException("Null / Empty path in registration request",
+		                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    		}
+    		
+    		// Validate no multiple registration requests for the same path.
+    		if(dataObjectRegistrationRequests.put(path, dataObjectRegistrationRequest) != null) {
+    		   throw new HpcException("Duplicated path in registration requests list: " + path,
+                                      HpcErrorType.INVALID_REQUEST_INPUT);	
+    		}
+    	}
+    	
+    	HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+
+    	// Submit a data objects registration task and return a response DTO.
+    	HpcDataObjectListRegistrationResponseDTO responseDTO = new HpcDataObjectListRegistrationResponseDTO();
+    	responseDTO.setTaskId(dataManagementService.registerDataObjects(invokerNciAccount.getUserId(), 
+    			                                                        invokerNciAccount.getDoc(), 
+    			                                                        dataObjectRegistrationRequests));
+    	
+    	return responseDTO;
+    }
     
     @Override
     public HpcDataObjectDTO getDataObject(String path) throws HpcException
