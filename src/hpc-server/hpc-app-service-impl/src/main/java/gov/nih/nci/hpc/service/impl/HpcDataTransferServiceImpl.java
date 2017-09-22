@@ -979,9 +979,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    // HpcDataTransferProgressListener Interface Implementation
 	    //---------------------------------------------------------------------//  
 		
-		@Override public void transferCompleted()
+		@Override 
+		public void transferCompleted()
 		{
 			// This callback method is called when the first hop (S3) download completed.
+			
+			// This method is executed in a thread managed by S3 Transfer manager (part of a pool).
+			// If this thread was used before, then it has Globus token cached in it. We are clearing 
+			// the cached token, so a new one is generated if needed. This is to avoid using an expired token.
+	    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+	    	invoker.getDataTransferAuthenticatedTokens().clear();
+	    	HpcRequestContext.setRequestInvoker(invoker);
+	    	
 			try {
 				   // Update the download task to reflect 1st hop transfer completed.
 				   downloadTask.setDataTransferType(secondHopDownloadRequest.getDataTransferType());
