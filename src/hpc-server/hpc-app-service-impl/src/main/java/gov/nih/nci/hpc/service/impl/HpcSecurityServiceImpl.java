@@ -295,10 +295,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     @Override
     public void setSystemRequestInvoker() throws HpcException
     {
-    	HpcRequestInvoker ri = HpcRequestContext.getRequestInvoker();
-    	logger.error("ERAN before: " + ri.getDataTransferAuthenticatedTokens().size());
-    	logger.error("ERAN before: " + ri.getAuthenticationType());
-    	
     	HpcIntegratedSystemAccount dataManagementAccount = 
     	   systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
     	if(dataManagementAccount == null) {
@@ -313,10 +309,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	invoker.setAuthenticationType(HpcAuthenticationType.SYSTEM_ACCOUNT);
 
     	HpcRequestContext.setRequestInvoker(invoker);
-    	
-    	HpcRequestInvoker ri1 = HpcRequestContext.getRequestInvoker();
-    	logger.error("ERAN after: " + ri1.getDataTransferAuthenticatedTokens().size());
-    	logger.error("ERAN after: " + ri1.getAuthenticationType());
     }
 
     @Override

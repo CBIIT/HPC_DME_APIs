@@ -65,6 +65,12 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcPathAttributes']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcDataObjectRegistrationTaskItem']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:simpleType[@name='HpcDataObjectListRegistrationTaskStatus']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus"/>
+        </jxb:bindings>
     </jxb:bindings>
 	
 	<jxb:bindings schemaLocation="HpcMetadataTypes.xsd">

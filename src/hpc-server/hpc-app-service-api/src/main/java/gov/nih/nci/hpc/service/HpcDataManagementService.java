@@ -14,10 +14,12 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -244,6 +246,19 @@ public interface HpcDataManagementService
      * @return List of DOCs.
      */
     public List<String> getDocs();
+    
+    /**
+     * Data objects registration.
+     *
+     * @param userId The user ID requested the registration.
+     * @param doc The registrar DOC.
+     * @param dataObjectRegistrationRequests The data object registration requests.
+     * @return The task ID created to register the data objects and can be used to track status
+     * @throws HpcException on service failure.
+     */
+    public String registerDataObjects(String userId, String doc, 
+    		                          Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+    				                 throws HpcException;
 }
 
  

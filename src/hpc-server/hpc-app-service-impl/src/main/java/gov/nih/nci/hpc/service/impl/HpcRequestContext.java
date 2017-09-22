@@ -36,7 +36,7 @@ public class HpcRequestContext
 	        };
 	
     /**
-     * Get the invoker of his service-call.
+     * Get the invoker of this service-call.
      *
      * @return The HPC user who invoked this service.
      */

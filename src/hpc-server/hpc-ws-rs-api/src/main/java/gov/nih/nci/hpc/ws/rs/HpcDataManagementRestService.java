@@ -29,9 +29,9 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
@@ -173,7 +173,7 @@ public interface HpcDataManagementRestService
     /**
      * Data objects registration.
      *
-     * @param dataObjectsRegistrationRequest The registration request of a list of data objects.
+     * @param dataObjectListRegistrationRequest The registration request of a list of data objects.
      * @return The REST service response.
      */
 	@PUT
@@ -181,7 +181,7 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerDataObjects(
-			                HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest);
+			                HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest);
 
     /**
      * Get a data object.
@@ -281,7 +281,7 @@ public interface HpcDataManagementRestService
 	@Path("/download")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response downloadDataObjects(HpcDataObjectsDownloadRequestDTO downloadRequest);
+	public Response downloadDataObjects(HpcDataObjectListDownloadRequestDTO downloadRequest);
 	
     /**
      * Get data objects download task status.

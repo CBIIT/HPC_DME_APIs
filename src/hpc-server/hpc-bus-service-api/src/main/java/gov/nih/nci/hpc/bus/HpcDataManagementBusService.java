@@ -23,11 +23,11 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -96,9 +96,9 @@ public interface HpcDataManagementBusService
      * @return Download Response DTO.
      * @throws HpcException on service failure.
      */
-	public HpcDataObjectsDownloadResponseDTO downloadDataObjects(
-			                                         HpcDataObjectsDownloadRequestDTO downloadRequest)
-			                                         throws HpcException;
+	public HpcDataObjectListDownloadResponseDTO downloadDataObjects(
+			                                            HpcDataObjectListDownloadRequestDTO downloadRequest)
+			                                            throws HpcException;
 	
     /**
      * Get collection download task status.
@@ -170,12 +170,12 @@ public interface HpcDataManagementBusService
     /**
      * Data objects registration.
      *
-     * @param dataObjectsRegistrationRequest The registration request of a list of data objects.
+     * @param dataObjectListRegistrationRequest The registration request of a list of data objects.
      * @return A registration response DTO.
      * @throws HpcException on service failure.
      */
-	public HpcDataObjectsRegistrationResponseDTO 
-	          registerDataObjects(HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest)
+	public HpcDataObjectListRegistrationResponseDTO 
+	          registerDataObjects(HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest)
 			                     throws HpcException;
     
     /**
