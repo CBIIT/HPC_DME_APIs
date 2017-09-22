@@ -46,7 +46,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Data Object Download Cleanup DAO Implementation.
+ * HPC Data Download DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -408,6 +408,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		}
 	}
 	
+	@Override
 	public void upsertCollectionDownloadTask(HpcCollectionDownloadTask collectionDownloadTask) 
                                                throws HpcException
     {

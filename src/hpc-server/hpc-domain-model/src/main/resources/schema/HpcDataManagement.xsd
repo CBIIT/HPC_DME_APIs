@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcDataManagement.xsd 2241 2017-03-31 18:58:29Z konkapv $
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -17,6 +16,7 @@
 	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-domain-model="http://hpc.nci.nih.gov/domain/model"
 	targetNamespace="http://hpc.nci.nih.gov/domain/model"
 	elementFormDefault="unqualified">
 	
@@ -45,5 +45,56 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
+	
+	<xsd:complexType name="HpcDataObjectRegistrationRequest">
+		<xsd:sequence>
+			<xsd:element name="source"
+			             type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="callerObjectId" type="xsd:string" />
+			<xsd:element name="metadataEntries" 
+			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
+			<xsd:element name="createParentCollections" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="parentCollectionMetadataEntries" 
+			             type="hpc-domain-metadata:HpcMetadataEntry" 
+				         maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcDataObjectListRegistrationItem">
+		<xsd:sequence>
+			<xsd:element name="task" type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem" />
+			<xsd:element name="request" type="hpc-domain-model:HpcDataObjectRegistrationRequest" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcDataObjectListRegistrationTask">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="id" type="xsd:string" />
+				<xsd:element name="userId" type="xsd:string" />
+				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="status" type="hpc-domain-datamanagement:HpcDataObjectListRegistrationTaskStatus" />
+				<xsd:element name="created" type="xsd:dateTime" />
+				<xsd:element name="items" type="hpc-domain-model:HpcDataObjectListRegistrationItem" 
+				             minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcDataObjectListRegistrationResult">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="id" type="xsd:string" />
+				<xsd:element name="userId" type="xsd:string" />
+				<xsd:element name="result" type="xsd:boolean" />
+				<xsd:element name="message" type="xsd:string" />
+				<xsd:element name="created" type="xsd:dateTime" />
+				<xsd:element name="completed" type="xsd:dateTime" />
+				<xsd:element name="items" type="hpc-domain-model:HpcDataObjectListRegistrationItem" 
+				             minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 </xsd:schema>
