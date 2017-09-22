@@ -22,7 +22,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Data Download Cleanup DAO Interface.
+ * HPC Data Download DAO Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
