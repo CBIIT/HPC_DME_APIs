@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -30,6 +29,7 @@
 		<prop key="hpc.scheduler.cron.processTemporaryArchive.delay">20 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processCollectionDownloadTasks.delay">50 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processDataObjectListRegistrationTasks.delay">45 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">55 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processevents.delay">40 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.refreshMaterializedViews.delay">0 0/15 * * * ?</prop>
