@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
@@ -513,6 +514,47 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	dataRegistrationDAO.upsertDataObjectListRegistrationTask(dataObjectListRegistrationTask);
     	return dataObjectListRegistrationTask.getId();
     }
+    
+    @Override
+    public List<HpcDataObjectListRegistrationTask> getDataObjectListRegistrationTasks(
+                                                      HpcDataObjectListRegistrationTaskStatus status) 
+                                                      throws HpcException
+    {
+    	return dataRegistrationDAO.getDataObjectListRegistrationTasks(status);
+    }
+    
+	@Override
+	public void updateDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask)
+                                                    throws HpcException
+    {
+		dataRegistrationDAO.upsertDataObjectListRegistrationTask(registrationTask);
+    }
+	
+	@Override
+	public void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
+			                                           boolean result, String message, Calendar completed)
+	                                                  throws HpcException
+	{
+		// Input validation
+		if(registrationTask == null) {
+		   throw new HpcException("Invalid data object list registration task", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Cleanup the DB record.
+		dataRegistrationDAO.deleteDataObjectListRegistrationTask(registrationTask.getId());
+		
+		// Create a registration result object.
+		HpcDataObjectListRegistrationResult registrationResult = new HpcDataObjectListRegistrationResult();
+		registrationResult.setId(registrationTask.getId());
+		registrationResult.setUserId(registrationTask.getUserId());
+		registrationResult.setResult(result);
+		registrationResult.setMessage(message);
+		registrationResult.setCreated(registrationTask.getCreated());
+		registrationResult.setCompleted(completed);	
+		registrationResult.getItems().addAll(registrationTask.getItems());
+		dataRegistrationDAO.upsertDataObjectListRegistrationResult(registrationResult);
+	}
     
     //---------------------------------------------------------------------//
     // Helper Methods

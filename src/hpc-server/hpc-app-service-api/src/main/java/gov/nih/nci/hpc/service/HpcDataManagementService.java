@@ -9,17 +9,20 @@
 
 package gov.nih.nci.hpc.service;
 
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -259,6 +262,40 @@ public interface HpcDataManagementService
     public String registerDataObjects(String userId, String doc, 
     		                          Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
     				                 throws HpcException;
+    
+    /**
+     * Get data object list registration tasks. 
+     *
+     * @param status Get tasks in this status.
+     * @return A list of data object list registration tasks.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcDataObjectListRegistrationTask> getDataObjectListRegistrationTasks(
+    		                                              HpcDataObjectListRegistrationTaskStatus status) 
+    		                                              throws HpcException;
+    
+    /** 
+     * Update a data object list registration task.
+     * 
+     * @param registrationTask The registration task to update.
+     * @throws HpcException on service failure.
+     */
+    public void updateDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask)
+                                                    throws HpcException;
+    
+    /**
+     * Complete a data object list registration task:
+     * 1. Update task info in DB with results info.
+     *
+     * @param registrationTask The registration task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
+     * @param completed (Optional) The download task completion timestamp.
+     * @throws HpcException on service failure.
+     */
+    public void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
+    		                                           boolean result, String message, Calendar completed) 
+    		                                          throws HpcException;
 }
 
  
