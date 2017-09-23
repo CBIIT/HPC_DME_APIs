@@ -151,7 +151,7 @@ public interface HpcDataManagementBusService
     public HpcUserPermissionDTO getCollectionPermissionForUser(String path, String userId) throws HpcException;
 	
     /**
-     * Register a Data object.
+     * Register a Data object. 
      *
      * @param path The data object's path.
      * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
@@ -165,6 +165,25 @@ public interface HpcDataManagementBusService
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile) 
+    		                         throws HpcException;
+    
+    /**
+     * Register a Data object. In this overloaded method, the user-id and DOC are explicitly provided.
+     *
+     * @param path The data object's path.
+     * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
+     * @param dataObjectFile (Optional) The data object file. 2 options are available to upload the data -
+     *                         Specify a source in 'dataObjectRegistrationDTO' or provide this file. The caller
+     *                         is expected to provide one and only one option.
+     * @param userId The registrar user-id
+     * @param doc The registrar DOC.
+     * @return true if a new data object was registered, false if the collection already exists
+     *         and its metadata got updated.
+     * @throws HpcException on service failure.
+     */
+    public boolean registerDataObject(String path,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
+    		                          File dataObjectFile, String userId, String doc) 
     		                         throws HpcException;
     
     /**

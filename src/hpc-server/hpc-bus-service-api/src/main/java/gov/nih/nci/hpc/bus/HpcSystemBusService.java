@@ -61,6 +61,13 @@ public interface HpcSystemBusService
 	public void processCollectionDownloadTasks() throws HpcException;
 	
     /**
+     * Process data object list registration tasks that received. 
+     *
+     * @throws HpcException on service failure.
+     */
+	public void processDataObjectListRegistrationTasks() throws HpcException;
+	
+    /**
      * Check status of all active collection download tasks and complete these that are no longer in progress.
      *
      * @throws HpcException on service failure.
