@@ -10,6 +10,10 @@
 
 package gov.nih.nci.hpc.dao;
 
+import java.util.List;
+
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -43,43 +47,43 @@ public interface HpcDataRegistrationDAO
      * @throws HpcException on database error.
      */
     public HpcDataObjectListRegistrationTask getDataObjectListRegistrationTask(String id) throws HpcException;
-//    
-//    *//**
-//     * Delete a data object list registration task.
-//     *
-//     * @param id The data object list registration task ID.
-//     * @throws HpcException on database error.
-//     *//*
-//    public void deleteDataObjectListRegistrationTask(String id) throws HpcException;
-//    
-//    /**
-//     * Get data object list registration tasks. 
-//     *
-//     * @param status Get tasks in this status.
-//     * @return A list of data object list registration tasks.
-//     * @throws HpcException on database error.
-//     */
-//    public List<HpcDataObjectListRegistrationTask> getDataObjectListRegistrationTasks(
-//    		                                              HpcDataObjectListRegistrationTaskStatus status) 
-//    		                                              throws HpcException;
-//    
-//    *//**
-//     * Store a new data object list registration result, or updated an task result.
-//     *
-//     * @param registrationTaskResult The registration task result to persist.
-//     * @throws HpcException on database error.
-//     *//*
-//    public void upsertDataObjectListRegistrationResult(HpcDataObjectListRegistrationResult registrationResult) 
-//    		                                          throws HpcException;
-//    
-//    *//**
-//     * Get a data object list registration result.
-//     *
-//     * @param id The registration task ID.
-//     * @return The registration task result object, or null if not found.
-//     * @throws HpcException on database error.
-//     *//*
-//    public HpcDataObjectListRegistrationResult getDataObjectListRegistrationResult(String id) throws HpcException;*/
+    
+    /**
+     * Delete a data object list registration task.
+     *
+     * @param id The data object list registration task ID.
+     * @throws HpcException on database error.
+     */
+    public void deleteDataObjectListRegistrationTask(String id) throws HpcException;
+    
+    /**
+     * Get data object list registration tasks. 
+     *
+     * @param status Get tasks in this status.
+     * @return A list of data object list registration tasks.
+     * @throws HpcException on database error.
+     */
+    public List<HpcDataObjectListRegistrationTask> getDataObjectListRegistrationTasks(
+    		                                              HpcDataObjectListRegistrationTaskStatus status) 
+    		                                              throws HpcException;
+    
+    /**
+     * Store a new data object list registration result, or updated an task result.
+     *
+     * @param registrationTaskResult The registration task result to persist.
+     * @throws HpcException on database error.
+     */
+    public void upsertDataObjectListRegistrationResult(HpcDataObjectListRegistrationResult registrationResult) 
+    		                                          throws HpcException;
+    
+    /**
+     * Get a data object list registration result.
+     *
+     * @param id The registration task ID.
+     * @return The registration task result object, or null if not found.
+     * @throws HpcException on database error.
+     */
+    public HpcDataObjectListRegistrationResult getDataObjectListRegistrationResult(String id) throws HpcException;
 }
 
  

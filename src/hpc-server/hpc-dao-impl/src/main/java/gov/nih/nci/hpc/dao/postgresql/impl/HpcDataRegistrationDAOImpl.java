@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -56,7 +57,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 	public static final String UPSERT_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" ( " +
                    "\"ID\", \"USER_ID\", \"DOC\", \"STATUS\", \"ITEMS\", \"CREATED\") " + 
-                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                   "values (?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"DOC\"=excluded.\"DOC\", " + 
                         "\"STATUS\"=excluded.\"STATUS\", " +
@@ -65,6 +66,27 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 	
 	public static final String GET_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL = 
 		   "select * from public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" where \"ID\" = ?";
+	
+	public static final String DELETE_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL = 
+		   "delete from public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" where \"ID\" = ?";
+	
+	public static final String GET_DATA_OBJECT_LIST_REGISTRATION_TASKS_SQL = 
+		   "select * from public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" where \"STATUS\" = ? " +
+		   "order by \"CREATED\"";
+	
+	public static final String UPSERT_DATA_OBJECT_LIST_REGISTRATION_RESULT_SQL = 
+		   "insert into public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_RESULT\" ( " +
+	                    "\"ID\", \"USER_ID\", \"RESULT\", \"MESSAGE\", \"ITEMS\", \"CREATED\", \"COMPLETED\") " + 
+	                    "values (?, ?, ?, ?, ?, ?, ?) " +
+	       "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
+	                    "\"RESULT\"=excluded.\"RESULT\", " + 
+	                    "\"MESSAGE\"=excluded.\"MEASSAGE\", " +
+	                    "\"ITEMS\"=excluded.\"ITEMS\", " +
+	                    "\"CREATED\"=excluded.\"CREATED\", " +
+	                    "\"COMPLETED\"=excluded.\"COMPLETED\"";
+	
+	public static final String GET_DATA_OBJECT_LIST_REGISTRATION_RESULT_SQL = 
+		   "select * from public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_RESULT\" where \"ID\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -90,6 +112,27 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
     	dataObjectListRegistrationTask.setCreated(created);
     	
         return dataObjectListRegistrationTask;
+	};
+	
+	// HpcDataObjectListRegistrationResulr table to object mapper.
+	private RowMapper<HpcDataObjectListRegistrationResult> dataObjectListRegistrationResultRowMapper = (rs, rowNum) -> 
+	{
+		HpcDataObjectListRegistrationResult dataObjectListRegistrationResult = new HpcDataObjectListRegistrationResult();
+		dataObjectListRegistrationResult.setId(rs.getString("ID"));
+		dataObjectListRegistrationResult.setUserId(rs.getString("USER_ID"));
+		dataObjectListRegistrationResult.setResult(rs.getBoolean("RESULT"));
+		dataObjectListRegistrationResult.setMessage(rs.getString("MESSAGE"));
+		dataObjectListRegistrationResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+		
+    	Calendar created = Calendar.getInstance();
+    	created.setTime(rs.getTimestamp("CREATED"));
+    	dataObjectListRegistrationResult.setCreated(created);
+    	
+    	Calendar completed = Calendar.getInstance();
+    	completed.setTime(rs.getTimestamp("COMLETED"));
+    	dataObjectListRegistrationResult.setCompleted(completed);
+    	
+        return dataObjectListRegistrationResult;
 	};
 	
     //---------------------------------------------------------------------//
@@ -151,7 +194,74 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}    
     }
-	
+    
+    @Override
+    public void deleteDataObjectListRegistrationTask(String id) throws HpcException
+	{
+		try {
+		     jdbcTemplate.update(DELETE_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL, id);
+		     
+		} catch(DataAccessException e) {
+			    throw new HpcException("Failed to delete a data object list registration task: " + e.getMessage(),
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+    
+    @Override
+    public List<HpcDataObjectListRegistrationTask> 
+           getDataObjectListRegistrationTasks(HpcDataObjectListRegistrationTaskStatus status) 
+                                             throws HpcException
+	{
+    	try {
+		     return jdbcTemplate.query(GET_DATA_OBJECT_LIST_REGISTRATION_TASKS_SQL, 
+		    		                   dataObjectListRegistrationTaskRowMapper, status.value());
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get data object list registration tasks: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+    
+    @Override
+    public void upsertDataObjectListRegistrationResult(HpcDataObjectListRegistrationResult registrationResult) 
+                                                      throws HpcException
+    {
+    	try {
+   		     jdbcTemplate.update(UPSERT_DATA_OBJECT_LIST_REGISTRATION_RESULT_SQL,
+   		    		             registrationResult.getId(),
+   		    		             registrationResult.getUserId(),
+   		    		             registrationResult.getResult(),
+   		    		             registrationResult.getMessage(),
+   		    		             toJSON(registrationResult.getItems()),
+   		    		             registrationResult.getCreated(),
+   		    		             registrationResult.getCompleted());
+   		     
+   		} catch(DataAccessException e) {
+   			    throw new HpcException("Failed to upsert a data object list registration result: " + e.getMessage(),
+   			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+   		} 
+    }
+    
+    @Override
+    public HpcDataObjectListRegistrationResult getDataObjectListRegistrationResult(String id) throws HpcException
+    {
+		try {
+		     return jdbcTemplate.queryForObject(GET_DATA_OBJECT_LIST_REGISTRATION_RESULT_SQL, 
+		    		                            dataObjectListRegistrationResultRowMapper, id);
+		     
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get a data object list registration result: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}        	
+    }
+    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

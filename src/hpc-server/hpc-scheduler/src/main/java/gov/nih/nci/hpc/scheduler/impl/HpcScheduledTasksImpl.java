@@ -124,6 +124,17 @@ public class HpcScheduledTasksImpl
     }
     
     /**
+     * Process collection download tasks.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.processDataObjectListRegistrationTasks.delay}")
+    private void processDataObjectListRegistrationTasks()
+    {
+    	executeTask("processDataObjectListRegistrationTasks()", 
+    			    systemBusService::processDataObjectListRegistrationTasks);
+    }
+    
+    /**
      * Process Events Task.
      * 
      */  

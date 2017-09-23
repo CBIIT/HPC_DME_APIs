@@ -27,6 +27,8 @@ import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -41,6 +43,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
@@ -49,6 +54,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -387,6 +393,36 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			    
     		} 
     	}
+    }
+    
+    @Override
+    public void processDataObjectListRegistrationTasks() throws HpcException
+    {
+    	// Use system account to perform this service.
+    	securityService.setSystemRequestInvoker();
+    	
+    	// Iterate through all the data object list registration requests that were submitted (not processed yet).
+        dataManagementService.getDataObjectListRegistrationTasks(HpcDataObjectListRegistrationTaskStatus.RECEIVED).forEach(
+    		registrationTask -> 
+    		{
+	    		try {
+	    			 // 'Activate' the registration task. 
+	    			 registrationTask.setStatus(HpcDataObjectListRegistrationTaskStatus.ACTIVE);
+	    			 
+	    			 // Register all items in this list registration request 
+	    			 registrationTask.getItems().forEach(
+	    					     item -> registerDataObject(item, 
+	    					    		                    registrationTask.getUserId(), 
+	    					    		                    registrationTask.getDoc()));
+	    			 
+	    			 // Persist the data object list registration task.
+	    			 dataManagementService.updateDataObjectListRegistrationTask(registrationTask);
+	    		     
+	    		} catch(HpcException e) {
+	    			    logger.error("Failed to process a data object list registration: " + registrationTask.getId(), e);
+	    			    completeDataObjectListRegistrationTask(registrationTask, false, e.getMessage());
+	    		} 
+    		});
     }
     
     @Override
@@ -992,6 +1028,65 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
                                       systemGeneratedMetadata.getRegistrarDOC());
     	}
     }
+    
+    /**
+     * Register a data object.
+     *
+     * @param registrationItem The data object registration item (one in a list).
+     * @param userId The registrar user-id.
+     * @param doc The registrar DOC.
+     */
+    private void registerDataObject(HpcDataObjectListRegistrationItem registrationItem,
+    		                        String userId, String doc)
+    {
+    	HpcDataObjectRegistrationRequest registrationRequest = registrationItem.getRequest();
+    	HpcDataObjectRegistrationTaskItem registrationTask = registrationItem.getTask();
+    	
+    	// Map request to a DTO.
+    	HpcDataObjectRegistrationDTO registrationDTO = new HpcDataObjectRegistrationDTO();
+    	registrationDTO.setCallerObjectId(registrationRequest.getCallerObjectId());
+    	registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
+    	registrationDTO.setSource(registrationRequest.getSource());
+    	registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
+    	registrationDTO.getParentCollectionMetadataEntries().addAll(registrationRequest.getParentCollectionMetadataEntries());
+    	
+    	try {
+    	     dataManagementBusService.registerDataObject(registrationTask.getPath(), 
+    		        	                                 registrationDTO, null, userId, doc);
+    	     
+    	} catch(HpcException e) {
+    		    // Data object registration failed. Update the task accordingly.
+    		    registrationTask.setResult(false);
+    		    registrationTask.setMessage(e.getMessage());
+    		    registrationTask.setCompleted(Calendar.getInstance());
+    	}
+    }
+    
+    /**
+     * Complete a data object list registration task.
+     * 1. Update task info in DB with results info.
+     * 2. Send an event.
+     *
+     * @param registrationTask The registration task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
+     */
+    private void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
+    		                                            boolean result, String message)
+    {
+    	Calendar completed = Calendar.getInstance();
+    	
+    	try {
+    	     dataManagementService.completeDataObjectListRegistrationTask(registrationTask, result, message, completed);
+    	     
+    	} catch(HpcException e) {
+    		    logger.error("Failed to complete data object list registration request", e);
+    	}
+    	
+        // TODO: Send data object registration list completed/failed event.
+    	//addDataRegistrationEvent();
+    }
+    
 }
 
 

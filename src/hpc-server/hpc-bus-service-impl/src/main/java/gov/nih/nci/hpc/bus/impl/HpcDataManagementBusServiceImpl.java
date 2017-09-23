@@ -431,6 +431,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                          File dataObjectFile)  
     		                         throws HpcException
     {
+    	HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+	    return registerDataObject(path, dataObjectRegistration, dataObjectFile, 
+	    		                  invokerNciAccount.getUserId(),
+	    		                  invokerNciAccount.getDoc());
+    }
+    
+    @Override
+    public boolean registerDataObject(String path,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
+    		                          File dataObjectFile, String userId, String doc)  
+    		                         throws HpcException
+    {
     	// Input validation.
     	if(path == null || dataObjectRegistration == null) {
     	   throw new HpcException("Null path or dataObjectRegistrationDTO",
@@ -449,8 +461,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   try {
       	        // Validate the new collection meets the hierarchy definition.
     		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
-    		    HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
-    		    String doc = invokerNciAccount.getDoc();
+    		    
       	        dataManagementService.validateHierarchy(collectionPath, doc, true);
     		   
     		    // Assign system account as an additional owner of the data-object.
@@ -471,7 +482,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
 		           dataTransferService.uploadDataObject(source, dataObjectFile, path, 
-		        	                                    invokerNciAccount.getUserId(),
+		        	                                    userId,
 		        	                                    dataObjectRegistration.getCallerObjectId(), doc);
 		        
 			    // Generate system metadata and attach to the data object.
@@ -508,8 +519,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                              HpcErrorType.REQUEST_REJECTED);
 	    	    }
 	    	
-	    	    String doc = metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC();
-	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries(), doc); 
+	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries(), 
+	    	    		                                 metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC()); 
 	    }
 	    
 	    return created;
