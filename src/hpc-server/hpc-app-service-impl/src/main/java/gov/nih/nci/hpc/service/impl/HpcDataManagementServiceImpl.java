@@ -332,7 +332,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
-    public void assignSystemAccountPermission(String path) throws HpcException
+    public void setCoOwnership(String path, String userId) throws HpcException
     {
     	HpcIntegratedSystemAccount dataManagementAccount = 
     	    	     systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
@@ -341,17 +341,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	      	                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
-        HpcSubjectPermission permissionRequest = new HpcSubjectPermission();
-        permissionRequest.setPermission(HpcPermission.OWN);
-        permissionRequest.setSubject(dataManagementAccount.getUsername());
-            
+    	// System account ownership request.
+        HpcSubjectPermission systemAccountPermissionRequest = new HpcSubjectPermission();
+        systemAccountPermissionRequest.setPermission(HpcPermission.OWN);
+        systemAccountPermissionRequest.setSubject(dataManagementAccount.getUsername());
+        
+        // User ownership request.
+        HpcSubjectPermission userPermissionRequest = new HpcSubjectPermission();
+        userPermissionRequest.setPermission(HpcPermission.OWN);
+        userPermissionRequest.setSubject(userId);
+        
         // Determine if it's a collection or data object.
         Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
         HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
         if(pathAttributes.getIsDirectory()) {
-           dataManagementProxy.setCollectionPermission(authenticatedToken, path, permissionRequest);
+           dataManagementProxy.setCollectionPermission(authenticatedToken, path, systemAccountPermissionRequest);
+           dataManagementProxy.setCollectionPermission(authenticatedToken, path, userPermissionRequest);
         } else if(pathAttributes.getIsFile()) {
-        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, permissionRequest);
+        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, systemAccountPermissionRequest);
+        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, userPermissionRequest);
         }
     }
     

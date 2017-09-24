@@ -29,7 +29,6 @@ import java.util.Map;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcMetadataService 
@@ -69,9 +68,13 @@ public interface HpcMetadataService
      *      4. Registrar DOC.
      *
      * @param path The collection path.
+     * @param userId The user ID.
+     * @param userName The user name.
+     * @param doc The DOC.
      * @throws HpcException on service failure.
      */
-    public void addSystemGeneratedMetadataToCollection(String path) 
+    public void addSystemGeneratedMetadataToCollection(String path, String userId, 
+    		                                           String userName, String doc) 
     		                                          throws HpcException; 
     
     /**
@@ -151,6 +154,10 @@ public interface HpcMetadataService
      * @param dataTransferCompleted (Optional) The time data transfer completed.
      * @param sourceSize (Optional) The data source size in bytes.
      * @param callerObjectId (Optional) The caller object ID.
+     * @param userId The user ID.
+     * @param userName The user name.
+     * @param doc The DOC.
+     * 
      * @throws HpcException on service failure.
      */
     public void addSystemGeneratedMetadataToDataObject(String path, 
@@ -162,7 +169,8 @@ public interface HpcMetadataService
     		                                           HpcDataTransferType dataTransferType,
     		                                           Calendar dataTransferStarted,
     		                                           Calendar dataTransferCompleted,
-    		                                           Long sourceSize, String callerObjectId) 
+    		                                           Long sourceSize, String callerObjectId,
+    		                                           String userId, String userName, String doc) 
     		                                          throws HpcException; 
     
     /**

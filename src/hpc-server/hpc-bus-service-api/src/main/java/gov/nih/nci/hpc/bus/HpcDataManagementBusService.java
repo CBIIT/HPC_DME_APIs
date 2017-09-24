@@ -44,6 +44,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 public interface HpcDataManagementBusService 
 {  
+	
     /**
      * Register a Collection.
      *
@@ -55,6 +56,23 @@ public interface HpcDataManagementBusService
      */
     public boolean registerCollection(String path,
     		                          HpcCollectionRegistrationDTO collectionRegistration) 
+    		                         throws HpcException;
+    
+    /**
+     * Register a Collection. In this overloaded method, the user-id, user Name, and DOC are explicitly provided.
+     *
+     * @param path The collection's path.
+     * @param collectionRegistration A DTO containing a list of metadata entries to attach to the collection.
+     * @param userId The registrar user-id.
+     * @param userName The registrar name.
+     * @param doc The registrar DOC.
+     * @return true if a new collection was registered, false if the collection already exists
+     *         and its metadata got updated.
+     * @throws HpcException on service failure.
+     */
+    public boolean registerCollection(String path,
+    		                          HpcCollectionRegistrationDTO collectionRegistration,
+    		                          String userId, String userName, String doc) 
     		                         throws HpcException;
     
     /**
@@ -168,14 +186,15 @@ public interface HpcDataManagementBusService
     		                         throws HpcException;
     
     /**
-     * Register a Data object. In this overloaded method, the user-id and DOC are explicitly provided.
+     * Register a Data object. In this overloaded method, the user-id, user Name, and DOC are explicitly provided.
      *
      * @param path The data object's path.
      * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
      * @param dataObjectFile (Optional) The data object file. 2 options are available to upload the data -
      *                         Specify a source in 'dataObjectRegistrationDTO' or provide this file. The caller
      *                         is expected to provide one and only one option.
-     * @param userId The registrar user-id
+     * @param userId The registrar user-id.
+     * @param userName The registrar name.
      * @param doc The registrar DOC.
      * @return true if a new data object was registered, false if the collection already exists
      *         and its metadata got updated.
@@ -183,7 +202,7 @@ public interface HpcDataManagementBusService
      */
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile, String userId, String doc) 
+    		                          File dataObjectFile, String userId, String userName, String doc) 
     		                         throws HpcException;
     
     /**
