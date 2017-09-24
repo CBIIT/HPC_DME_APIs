@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -41,6 +42,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -263,6 +265,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 
 		return okResponse(registrationResponse, false);    	
+    }
+    
+    @Override
+    public Response getDataObjectsRegistrationStatus(String taskId)
+    {
+    	HpcDataObjectListRegistrationStatusDTO registrationStatus = null;
+		try {
+			 registrationStatus = dataManagementBusService.getDataObjectsRegistrationStatus(taskId);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+    	return okResponse(registrationStatus, true);    	
     }
     
     @Override

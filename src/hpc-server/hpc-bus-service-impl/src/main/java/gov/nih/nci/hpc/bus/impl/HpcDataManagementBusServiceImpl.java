@@ -46,6 +46,8 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -67,6 +69,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -452,6 +455,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
+    public HpcDataObjectListRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
+                                                                                  throws HpcException
+	{
+		// Input validation.
+		if(StringUtils.isEmpty(taskId)) {
+		   throw new HpcException("Null / Empty registration task ID",
+		                          HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+		// Get the registration task status.
+		HpcDataObjectListRegistrationStatus taskStatus = 
+		   dataManagementService.getDataObjectListRegistrationTaskStatus(taskId);
+		if(taskStatus == null) {
+		   return null;
+		}
+		
+		// Map the task status to DTO.
+		HpcDataObjectListRegistrationStatusDTO registrationStatus = new HpcDataObjectListRegistrationStatusDTO();
+		registrationStatus.setInProgress(taskStatus.getInProgress());
+		if(taskStatus.getInProgress()) {
+		   // Registration in progress. Populate the DTO accordingly.
+			registrationStatus.setCreated(taskStatus.getTask().getCreated());
+			registrationStatus.setTaskStatus(taskStatus.getTask().getStatus());
+			populateRegistrationItems(registrationStatus, taskStatus.getTask().getItems());
+		
+		} else {
+				// Download completed or failed. Populate the DTO accordingly. 
+			    registrationStatus.setCreated(taskStatus.getResult().getCreated());
+			    registrationStatus.setCompleted(taskStatus.getResult().getCompleted());
+			    registrationStatus.setMessage(taskStatus.getResult().getMessage());
+			    registrationStatus.setResult(taskStatus.getResult().getResult());
+			    populateRegistrationItems(registrationStatus, taskStatus.getResult().getItems());
+		}
+		
+		return registrationStatus;
+	}
+    
+    @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile, String userId, String userName, String doc)  
@@ -691,8 +732,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                                      throws HpcException
     {
     	// Input validation.
-    	if(taskId == null) {
-    	   throw new HpcException("Null data object download task ID",
+    	if(StringUtils.isEmpty(taskId)) {
+    	   throw new HpcException("Null / Empty data object download task ID",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
@@ -1446,6 +1487,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	} catch(HpcException e) {
  		        logger.error("Failed to update system metadata: " + path + ". Data transfer status: " +
     	                     dataTransferStatus, HpcErrorType.UNEXPECTED_ERROR, e);
+    	}
+    }
+    
+	/** 
+     * Split the list of registration items into completed, failed and in-progress buckets.
+     * 
+     * @param registrationStatus The registration status to populate the items into.
+     * @param items The registration items.
+     * @return A data management tree .
+     * @throws HpcException on service failure.
+     */
+    private void populateRegistrationItems(HpcDataObjectListRegistrationStatusDTO registrationStatus,
+    		                               List<HpcDataObjectListRegistrationItem> items)
+    {
+    	for(HpcDataObjectListRegistrationItem item : items) {
+    		Boolean result = item.getTask().getResult();
+    		if(result == null) {
+    		   registrationStatus.getInProgressItems().add(item.getTask());
+    		} else if(result) {
+    			      registrationStatus.getCompletedItems().add(item.getTask());
+    		} else {
+    			    registrationStatus.getFailedItems().add(item.getTask());
+    		}
     	}
     }
 }
