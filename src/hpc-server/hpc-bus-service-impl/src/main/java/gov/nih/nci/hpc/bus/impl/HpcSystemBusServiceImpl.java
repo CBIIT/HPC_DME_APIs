@@ -47,6 +47,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
@@ -1042,6 +1043,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	HpcDataObjectRegistrationRequest registrationRequest = registrationItem.getRequest();
     	HpcDataObjectRegistrationTaskItem registrationTask = registrationItem.getTask();
     	
+    	// Get the user name.
+    	HpcUser user = null;
+    	try {
+    	     user = securityService.getUser(userId);
+    	} catch(HpcException e) {
+    		    logger.error("Failed to get user: " + userId);
+    	}
+    	String userName = user != null ? user.getNciAccount().getFirstName() + " " +
+    			                         user.getNciAccount().getLastName() : "UNKNOWN";
+          	
     	// Map request to a DTO.
     	HpcDataObjectRegistrationDTO registrationDTO = new HpcDataObjectRegistrationDTO();
     	registrationDTO.setCallerObjectId(registrationRequest.getCallerObjectId());
@@ -1052,7 +1063,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	
     	try {
     	     dataManagementBusService.registerDataObject(registrationTask.getPath(), 
-    		        	                                 registrationDTO, null, userId, doc);
+    		        	                                 registrationDTO, null, userId, userName, doc);
     	     
     	} catch(HpcException e) {
     		    // Data object registration failed. Update the task accordingly.
