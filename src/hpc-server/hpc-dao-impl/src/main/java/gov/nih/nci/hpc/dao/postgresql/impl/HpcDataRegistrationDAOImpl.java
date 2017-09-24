@@ -81,7 +81,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 	                    "values (?, ?, ?, ?, ?, ?, ?) " +
 	       "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
 	                    "\"RESULT\"=excluded.\"RESULT\", " + 
-	                    "\"MESSAGE\"=excluded.\"MEASSAGE\", " +
+	                    "\"MESSAGE\"=excluded.\"MESSAGE\", " +
 	                    "\"ITEMS\"=excluded.\"ITEMS\", " +
 	                    "\"CREATED\"=excluded.\"CREATED\", " +
 	                    "\"COMPLETED\"=excluded.\"COMPLETED\"";
