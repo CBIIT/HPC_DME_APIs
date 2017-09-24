@@ -61,6 +61,13 @@ public interface HpcSystemBusService
 	public void processCollectionDownloadTasks() throws HpcException;
 	
     /**
+     * Check status of all active collection download tasks and complete these that are no longer in progress.
+     *
+     * @throws HpcException on service failure.
+     */
+	public void completeCollectionDownloadTasks() throws HpcException;
+	
+    /**
      * Process data object list registration tasks that received. 
      *
      * @throws HpcException on service failure.
@@ -68,11 +75,11 @@ public interface HpcSystemBusService
 	public void processDataObjectListRegistrationTasks() throws HpcException;
 	
     /**
-     * Check status of all active collection download tasks and complete these that are no longer in progress.
+     * Check status of all active data object list registration tasks and complete these that are no longer in progress. 
      *
      * @throws HpcException on service failure.
      */
-	public void completeCollectionDownloadTasks() throws HpcException;
+	public void completeDataObjectListRegistrationTasks() throws HpcException;
 	
     /**
      * Process all (active) events.
