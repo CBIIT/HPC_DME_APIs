@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
@@ -321,8 +322,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
     /** 
      * Convert a list of metadata entries into a JSON string.
      * 
-     * @param downloadItems The list of collection download items.
-     * @return A JSON representation of download items.
+     * @param metadataEntries The list of metadata entries
+     * @return A JSON representation of the metadata entries.
      */
 	@SuppressWarnings("unchecked")
 	private JSONArray toJSONArray(List<HpcMetadataEntry> metadataEntries)
@@ -340,6 +341,31 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 		}
 		
 		return jsonMetadataEntries;
+	}
+	
+    /** 
+     * Convert a JSON array to a list of metadata entries.
+     * 
+     * @param jsonMetadataEntries The list of collection download items.
+     * @return A JSON representation of download items.
+     */
+	@SuppressWarnings("unchecked")
+	private List<HpcMetadataEntry> fromJSONArray(JSONArray jsonMetadataEntries)
+	{
+		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+		jsonMetadataEntries.forEach((entry -> {
+			JSONObject jsonMetadataEntry = (JSONObject) entry;
+			HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+			metadataEntry.setAttribute(jsonMetadataEntry.get("attribute").toString());
+			metadataEntry.setValue(jsonMetadataEntry.get("value").toString());
+			Object unit = jsonMetadataEntry.get("unit");
+			if(unit != null) {
+			   metadataEntry.setUnit(unit.toString());
+			}
+			metadataEntries.add(metadataEntry);
+		}));
+		
+		return metadataEntries;
 	}
 	
     /** 
@@ -399,21 +425,21 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 	   	task.setPath(jsonTask.get("path").toString());
 	   	
 	   	Object result = jsonTask.get("result");
-		    if(result != null) {
-		       task.setResult(Boolean.valueOf(result.toString()));
-		    }
-		    
-		    Object message = jsonTask.get("message");
-		    if(message != null) {
-		       task.setMessage(message.toString());
-		    }
-	   	
-		    Object completed = jsonTask.get("completed");
-		    if(completed != null) {
-		       Calendar cal = Calendar.getInstance();
-		       cal.setTimeInMillis((Long) completed); 
-		       task.setCompleted(cal);
-		    }
+	    if(result != null) {
+	       task.setResult(Boolean.valueOf(result.toString()));
+	    }
+	    
+	    Object message = jsonTask.get("message");
+	    if(message != null) {
+	       task.setMessage(message.toString());
+	    }
+   	
+	    Object completed = jsonTask.get("completed");
+	    if(completed != null) {
+	       Calendar cal = Calendar.getInstance();
+	       cal.setTimeInMillis((Long) completed); 
+	       task.setCompleted(cal);
+	    }
 	
 		return task;
 	}
@@ -431,6 +457,32 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 		}
 		
 		HpcDataObjectRegistrationRequest request = new HpcDataObjectRegistrationRequest();
+		Object callerObjectId = jsonRequest.get("callerObjectId");
+	    if(callerObjectId != null) {
+	       request.setCallerObjectId(callerObjectId.toString());
+	    }
+	    
+	    Object createParentCollection = jsonRequest.get("createParentCollection");
+	    if(createParentCollection != null) {
+	       request.setCreateParentCollections(Boolean.valueOf(createParentCollection.toString()));
+	    }
+	    
+	    HpcFileLocation source = new HpcFileLocation();
+	    source.setFileContainerId(jsonRequest.get("sourceFileContainerId").toString());
+	    source.setFileId(jsonRequest.get("sourceFileId").toString());
+	    request.setSource(source);
+	    
+	    Object metadataEntries = jsonRequest.get("metadataEntries");
+	    if(metadataEntries != null) {
+	       request.getMetadataEntries().addAll(fromJSONArray((JSONArray) metadataEntries));
+	    }
+	    
+	    Object parentCollectionMetadataEntries = jsonRequest.get("parentCollectionMetadataEntries");
+	    if(parentCollectionMetadataEntries != null) {
+	       request.getParentCollectionMetadataEntries().addAll(
+	    		      fromJSONArray((JSONArray) parentCollectionMetadataEntries));
+	    }
+	
 		return request;
 	}
 }
