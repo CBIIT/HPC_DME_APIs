@@ -177,7 +177,7 @@ public interface HpcDataManagementRestService
      * @return The REST service response.
      */
 	@PUT
-	@Path("/dataObject/")
+	@Path("/registration")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerDataObjects(
