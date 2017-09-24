@@ -158,12 +158,14 @@ public interface HpcDataManagementService
     public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException;
 
     /**
-     * Assign system account as an additional owner of an entity.
+     * Set a co-ownership on an entity. Both the user-id and the system account will be assigned
+     * as owners.
      *
      * @param path The entity path.
+     * @param userId The user-id
      * @throws HpcException on service failure.
      */
-    public void assignSystemAccountPermission(String path) throws HpcException;
+    public void setCoOwnership(String path, String userId) throws HpcException;
     
     /**
      * Validate a path against a hierarchy definition.

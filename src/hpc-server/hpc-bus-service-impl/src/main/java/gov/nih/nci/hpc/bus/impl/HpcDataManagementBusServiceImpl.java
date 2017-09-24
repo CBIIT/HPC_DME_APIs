@@ -144,6 +144,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                          HpcCollectionRegistrationDTO collectionRegistration)  
     		                         throws HpcException
     {
+    	HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+	    return registerCollection(path, collectionRegistration,
+	    		                  invokerNciAccount.getUserId(),
+	    		                  invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(),
+	    		                  invokerNciAccount.getDoc());
+    }
+    
+    @Override
+    public boolean registerCollection(String path,
+    		                          HpcCollectionRegistrationDTO collectionRegistration,
+    		                          String userId, String userName, String doc)  
+    		                         throws HpcException
+    {
     	// Input validation.
     	if(path == null || path.isEmpty() || collectionRegistration == null || 
     	   collectionRegistration.getMetadataEntries().isEmpty()) {
@@ -153,7 +166,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Create parent collections if requested to.
     	createParentCollections(path, collectionRegistration.getCreateParentCollections(), 
-    			                collectionRegistration.getParentCollectionMetadataEntries());
+    			                collectionRegistration.getParentCollectionMetadataEntries(),
+    			                userId, userName, doc);
     	
     	// Create a collection directory.
     	boolean created = dataManagementService.createDirectory(path);
@@ -163,14 +177,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   boolean registrationCompleted = false; 
     	   try {
     		    // Assign system account as an additional owner of the collection.
-    		    dataManagementService.assignSystemAccountPermission(path);
+    		    dataManagementService.setCoOwnership(path, userId);
     		    
     		    // Add user provided metadata.
-    		    String doc = securityService.getRequestInvoker().getNciAccount().getDoc();
     	        metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(), doc);
     	        
     	        // Generate system metadata and attach to the collection.
-       	        metadataService.addSystemGeneratedMetadataToCollection(path);
+       	        metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, doc);
        	        
        	        // Validate the collection hierarchy.
        	        dataManagementService.validateHierarchy(path, doc, false);
@@ -188,8 +201,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	       }
        	   
     	} else {
-    		    String doc = metadataService.getCollectionSystemGeneratedMetadata(path).getRegistrarDOC();
-    		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(), doc);
+    		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(), 
+    		    		                                 metadataService.getCollectionSystemGeneratedMetadata(path).getRegistrarDOC());
     		    addCollectionUpdatedEvent(path, false, false);
     	}
     	
@@ -434,13 +447,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 	    return registerDataObject(path, dataObjectRegistration, dataObjectFile, 
 	    		                  invokerNciAccount.getUserId(),
+	    		                  invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(),
 	    		                  invokerNciAccount.getDoc());
     }
     
     @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile, String userId, String doc)  
+    		                          File dataObjectFile, String userId, String userName, String doc)  
     		                         throws HpcException
     {
     	// Input validation.
@@ -451,7 +465,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Create parent collections if requested to.
     	createParentCollections(path, dataObjectRegistration.getCreateParentCollections(), 
-    			                dataObjectRegistration.getParentCollectionMetadataEntries());
+    			                dataObjectRegistration.getParentCollectionMetadataEntries(),
+    			                userId, userName, doc);
     	
     	// Create a data object file (in the data management system).
 	    boolean created = dataManagementService.createFile(path);
@@ -465,7 +480,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       	        dataManagementService.validateHierarchy(collectionPath, doc, true);
     		   
     		    // Assign system account as an additional owner of the data-object.
-   		        dataManagementService.assignSystemAccountPermission(path);
+      	        dataManagementService.setCoOwnership(path, userId);
    		  
 		        // Attach the user provided metadata.
 		        metadataService.addMetadataToDataObject(path, 
@@ -496,7 +511,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   uploadResponse.getDataTransferCompleted(),
 			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile, doc), 
-			    			                   dataObjectRegistration.getCallerObjectId()); 
+			    			                   dataObjectRegistration.getCallerObjectId(),
+			    			                   userId, userName, doc); 
 	
 			    // Add collection update event.
        	        addCollectionUpdatedEvent(path, false, true);
@@ -1108,11 +1124,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * @param path The data object's path.
      * @param createParentCollections The indicator whether to create parent collections.
      * @param parentCollectionMetadataEntries The parent collection metadata entries.
+     * @param userId The registrar user-id.
+     * @param userName The registrar name.
+     * @param doc The registrar DOC.
      * @throws HpcException on service failure.
      */
 	private void createParentCollections(String path, 
 			                             Boolean createParentCollections, 
-			                             List<HpcMetadataEntry> parentCollectionMetadataEntries)
+			                             List<HpcMetadataEntry> parentCollectionMetadataEntries,
+			                             String userId, String userName, String doc)
 			                            throws HpcException
 	{
 		// Create parent collections if requested and needed to.
@@ -1131,7 +1151,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		   collectionRegistration.setCreateParentCollections(true);
 		   
 		   // Register the parent collection.
-		   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
+		   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration,
+				              userId, userName, doc);
 		}
 	}
 	
