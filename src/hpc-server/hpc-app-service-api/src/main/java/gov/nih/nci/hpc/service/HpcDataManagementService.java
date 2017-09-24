@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskSt
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
@@ -298,6 +299,19 @@ public interface HpcDataManagementService
     public void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
     		                                           boolean result, String message, Calendar completed) 
     		                                          throws HpcException;
+    
+    /**
+     * Get data object list task status. 
+     *
+     * @param taskId The registration task ID.
+     * @return A download status object, or null if the task can't be found.
+     *         Note: The returned object is associated with a 'task' object if the registration 
+     *         is in-progress. If the registration completed or failed, the returned object is associated with a 
+     *         'result' object. 
+     * @throws HpcException on service failure.
+     */
+    public HpcDataObjectListRegistrationStatus getDataObjectListRegistrationTaskStatus(String taskId) 
+    		                                                                          throws HpcException;
 }
 
  

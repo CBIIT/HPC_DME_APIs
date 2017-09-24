@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
@@ -562,6 +563,35 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		registrationResult.setCompleted(completed);	
 		registrationResult.getItems().addAll(registrationTask.getItems());
 		dataRegistrationDAO.upsertDataObjectListRegistrationResult(registrationResult);
+	}
+	
+	@Override
+	public HpcDataObjectListRegistrationStatus getDataObjectListRegistrationTaskStatus(String taskId) 
+                                                                                      throws HpcException
+    {
+		if(StringUtils.isEmpty(taskId)) {
+		   throw new HpcException("Null / Empty task id", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+			
+		HpcDataObjectListRegistrationStatus taskStatus = new HpcDataObjectListRegistrationStatus();
+		HpcDataObjectListRegistrationResult taskResult = dataRegistrationDAO.getDataObjectListRegistrationResult(taskId);
+		if(taskResult != null) {
+		   // Task completed or failed. Return the result.
+		   taskStatus.setInProgress(false);
+		   taskStatus.setResult(taskResult);
+		   return taskStatus;
+		}
+	    
+		// Task still in-progress. 
+		taskStatus.setInProgress(true);
+		HpcDataObjectListRegistrationTask task = dataRegistrationDAO.getDataObjectListRegistrationTask(taskId);
+		if(task != null) {
+		   taskStatus.setTask(task);
+		   return taskStatus;	
+		}
+		
+		// Task not found.
+		return null;
 	}
     
     //---------------------------------------------------------------------//
