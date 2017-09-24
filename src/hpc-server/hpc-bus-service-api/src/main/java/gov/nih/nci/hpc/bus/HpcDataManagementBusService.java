@@ -27,6 +27,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -215,6 +216,15 @@ public interface HpcDataManagementBusService
 	public HpcDataObjectListRegistrationResponseDTO 
 	          registerDataObjects(HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest)
 			                     throws HpcException;
+	
+    /**
+     * Get data objects registration task status.
+     *
+     * @param taskId The registration task ID.
+     * @return A data object list registration status DTO. Null if the task could not be found.
+     */
+	public HpcDataObjectListRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
+			                                                                      throws HpcException;
     
     /**
      * Get Data Object.

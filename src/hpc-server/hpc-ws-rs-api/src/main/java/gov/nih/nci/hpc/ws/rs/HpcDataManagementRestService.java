@@ -182,6 +182,17 @@ public interface HpcDataManagementRestService
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerDataObjects(
 			                HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest);
+	
+    /**
+     * Get data objects list registration task status.
+     *
+     * @param taskId The registration task ID.
+     * @return The REST service response w/ HpcDataObjectListRegistrationStatusDTO entity.
+     */
+	@GET
+	@Path("/registration/{taskId}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjectsRegistrationStatus(@PathParam("taskId") String taskId);
 
     /**
      * Get a data object.
@@ -290,9 +301,9 @@ public interface HpcDataManagementRestService
      * @return The REST service response w/ HpcCollectionDownloadStatusDTO entity.
      */
 	@GET
-	@Path("/download")
+	@Path("/download/{taskId}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataObjectsDownloadStatus(@QueryParam("taskId") String taskId);
+	public Response getDataObjectsDownloadStatus(@PathParam("taskId") String taskId);
 	
     /**
      * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.
