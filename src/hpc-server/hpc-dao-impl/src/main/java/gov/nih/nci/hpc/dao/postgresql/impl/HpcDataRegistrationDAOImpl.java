@@ -130,7 +130,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
     	dataObjectListRegistrationResult.setCreated(created);
     	
     	Calendar completed = Calendar.getInstance();
-    	completed.setTime(rs.getTimestamp("COMLETED"));
+    	completed.setTime(rs.getTimestamp("COMPLETED"));
     	dataObjectListRegistrationResult.setCompleted(completed);
     	
         return dataObjectListRegistrationResult;
