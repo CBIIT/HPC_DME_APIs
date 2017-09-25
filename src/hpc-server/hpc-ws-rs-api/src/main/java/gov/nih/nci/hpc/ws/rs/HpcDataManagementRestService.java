@@ -29,9 +29,9 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
@@ -173,15 +173,26 @@ public interface HpcDataManagementRestService
     /**
      * Data objects registration.
      *
-     * @param dataObjectsRegistrationRequest The registration request of a list of data objects.
+     * @param dataObjectListRegistrationRequest The registration request of a list of data objects.
      * @return The REST service response.
      */
 	@PUT
-	@Path("/dataObject/")
+	@Path("/registration")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerDataObjects(
-			                HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest);
+			                HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest);
+	
+    /**
+     * Get data objects list registration task status.
+     *
+     * @param taskId The registration task ID.
+     * @return The REST service response w/ HpcDataObjectListRegistrationStatusDTO entity.
+     */
+	@GET
+	@Path("/registration/{taskId}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjectsRegistrationStatus(@PathParam("taskId") String taskId);
 
     /**
      * Get a data object.
@@ -281,7 +292,7 @@ public interface HpcDataManagementRestService
 	@Path("/download")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response downloadDataObjects(HpcDataObjectsDownloadRequestDTO downloadRequest);
+	public Response downloadDataObjects(HpcDataObjectListDownloadRequestDTO downloadRequest);
 	
     /**
      * Get data objects download task status.
@@ -290,9 +301,19 @@ public interface HpcDataManagementRestService
      * @return The REST service response w/ HpcCollectionDownloadStatusDTO entity.
      */
 	@GET
+	@Path("/download/{taskId}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjectsDownloadStatus(@PathParam("taskId") String taskId);
+	
+    /**
+     * Get download summary (for the request invoker).
+     *
+     * @return The REST service response w/ HpcDownloadSummaryDTO entity.
+     */
+	@GET
 	@Path("/download")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataObjectsDownloadStatus(@QueryParam("taskId") String taskId);
+	public Response getDownloadSummary();
 	
     /**
      * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.

@@ -23,12 +23,14 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -44,6 +46,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 public interface HpcDataManagementBusService 
 {  
+	
     /**
      * Register a Collection.
      *
@@ -55,6 +58,23 @@ public interface HpcDataManagementBusService
      */
     public boolean registerCollection(String path,
     		                          HpcCollectionRegistrationDTO collectionRegistration) 
+    		                         throws HpcException;
+    
+    /**
+     * Register a Collection. In this overloaded method, the user-id, user Name, and DOC are explicitly provided.
+     *
+     * @param path The collection's path.
+     * @param collectionRegistration A DTO containing a list of metadata entries to attach to the collection.
+     * @param userId The registrar user-id.
+     * @param userName The registrar name.
+     * @param doc The registrar DOC.
+     * @return true if a new collection was registered, false if the collection already exists
+     *         and its metadata got updated.
+     * @throws HpcException on service failure.
+     */
+    public boolean registerCollection(String path,
+    		                          HpcCollectionRegistrationDTO collectionRegistration,
+    		                          String userId, String userName, String doc) 
     		                         throws HpcException;
     
     /**
@@ -96,9 +116,9 @@ public interface HpcDataManagementBusService
      * @return Download Response DTO.
      * @throws HpcException on service failure.
      */
-	public HpcDataObjectsDownloadResponseDTO downloadDataObjects(
-			                                         HpcDataObjectsDownloadRequestDTO downloadRequest)
-			                                         throws HpcException;
+	public HpcDataObjectListDownloadResponseDTO downloadDataObjects(
+			                                            HpcDataObjectListDownloadRequestDTO downloadRequest)
+			                                            throws HpcException;
 	
     /**
      * Get collection download task status.
@@ -117,6 +137,13 @@ public interface HpcDataManagementBusService
      */
 	public HpcCollectionDownloadStatusDTO getDataObjectsDownloadStatus(String taskId) 
 			                                                           throws HpcException;
+	
+    /**
+     * Get download summary. Note: the summary is for the request invoker.
+     *
+     * @return A summary of download tasks for the request invoker
+     */
+	public HpcDownloadSummaryDTO getDownloadSummary() throws HpcException;
 	
     /**
      * Set collection permissions.
@@ -151,7 +178,7 @@ public interface HpcDataManagementBusService
     public HpcUserPermissionDTO getCollectionPermissionForUser(String path, String userId) throws HpcException;
 	
     /**
-     * Register a Data object.
+     * Register a Data object. 
      *
      * @param path The data object's path.
      * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
@@ -168,15 +195,44 @@ public interface HpcDataManagementBusService
     		                         throws HpcException;
     
     /**
+     * Register a Data object. In this overloaded method, the user-id, user Name, and DOC are explicitly provided.
+     *
+     * @param path The data object's path.
+     * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
+     * @param dataObjectFile (Optional) The data object file. 2 options are available to upload the data -
+     *                         Specify a source in 'dataObjectRegistrationDTO' or provide this file. The caller
+     *                         is expected to provide one and only one option.
+     * @param userId The registrar user-id.
+     * @param userName The registrar name.
+     * @param doc The registrar DOC.
+     * @return true if a new data object was registered, false if the collection already exists
+     *         and its metadata got updated.
+     * @throws HpcException on service failure.
+     */
+    public boolean registerDataObject(String path,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
+    		                          File dataObjectFile, String userId, String userName, String doc) 
+    		                         throws HpcException;
+    
+    /**
      * Data objects registration.
      *
-     * @param dataObjectsRegistrationRequest The registration request of a list of data objects.
+     * @param dataObjectListRegistrationRequest The registration request of a list of data objects.
      * @return A registration response DTO.
      * @throws HpcException on service failure.
      */
-	public HpcDataObjectsRegistrationResponseDTO 
-	          registerDataObjects(HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest)
+	public HpcDataObjectListRegistrationResponseDTO 
+	          registerDataObjects(HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest)
 			                     throws HpcException;
+	
+    /**
+     * Get data objects registration task status.
+     *
+     * @param taskId The registration task ID.
+     * @return A data object list registration status DTO. Null if the task could not be found.
+     */
+	public HpcDataObjectListRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
+			                                                                      throws HpcException;
     
     /**
      * Get Data Object.

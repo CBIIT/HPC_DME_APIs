@@ -13,8 +13,10 @@ package gov.nih.nci.hpc.bus.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -44,6 +46,9 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -59,12 +64,15 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
@@ -140,6 +148,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                          HpcCollectionRegistrationDTO collectionRegistration)  
     		                         throws HpcException
     {
+    	HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+	    return registerCollection(path, collectionRegistration,
+	    		                  invokerNciAccount.getUserId(),
+	    		                  invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(),
+	    		                  invokerNciAccount.getDoc());
+    }
+    
+    @Override
+    public boolean registerCollection(String path,
+    		                          HpcCollectionRegistrationDTO collectionRegistration,
+    		                          String userId, String userName, String doc)  
+    		                         throws HpcException
+    {
     	// Input validation.
     	if(path == null || path.isEmpty() || collectionRegistration == null || 
     	   collectionRegistration.getMetadataEntries().isEmpty()) {
@@ -149,7 +170,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Create parent collections if requested to.
     	createParentCollections(path, collectionRegistration.getCreateParentCollections(), 
-    			                collectionRegistration.getParentCollectionMetadataEntries());
+    			                collectionRegistration.getParentCollectionMetadataEntries(),
+    			                userId, userName, doc);
     	
     	// Create a collection directory.
     	boolean created = dataManagementService.createDirectory(path);
@@ -159,14 +181,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   boolean registrationCompleted = false; 
     	   try {
     		    // Assign system account as an additional owner of the collection.
-    		    dataManagementService.assignSystemAccountPermission(path);
+    		    dataManagementService.setCoOwnership(path, userId);
     		    
     		    // Add user provided metadata.
-    		    String doc = securityService.getRequestInvoker().getNciAccount().getDoc();
     	        metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(), doc);
     	        
     	        // Generate system metadata and attach to the collection.
-       	        metadataService.addSystemGeneratedMetadataToCollection(path);
+       	        metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, doc);
        	        
        	        // Validate the collection hierarchy.
        	        dataManagementService.validateHierarchy(path, doc, false);
@@ -184,8 +205,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	       }
        	   
     	} else {
-    		    String doc = metadataService.getCollectionSystemGeneratedMetadata(path).getRegistrarDOC();
-    		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(), doc);
+    		    metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(), 
+    		    		                                 metadataService.getCollectionSystemGeneratedMetadata(path).getRegistrarDOC());
     		    addCollectionUpdatedEvent(path, false, false);
     	}
     	
@@ -282,9 +303,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-	public HpcDataObjectsDownloadResponseDTO downloadDataObjects(
-			                                         HpcDataObjectsDownloadRequestDTO downloadRequest)
-                                                     throws HpcException
+	public HpcDataObjectListDownloadResponseDTO downloadDataObjects(
+			                                            HpcDataObjectListDownloadRequestDTO downloadRequest)
+                                                        throws HpcException
     {
     	// Input validation.
     	if(downloadRequest == null) {
@@ -332,7 +353,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		   	                                   doc);
     	
     	// Create and return a DAO with the request receipt.
-    	HpcDataObjectsDownloadResponseDTO responseDTO = new HpcDataObjectsDownloadResponseDTO();
+    	HpcDataObjectListDownloadResponseDTO responseDTO = new HpcDataObjectListDownloadResponseDTO();
     	responseDTO.setTaskId(collectionDownloadTask.getId());
     	responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
     	
@@ -351,6 +372,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                                        throws HpcException
     {
     	return getCollectionDownloadStatus(taskId, HpcDownloadTaskType.DATA_OBJECT_LIST);
+    }
+    
+    @Override
+    public HpcDownloadSummaryDTO getDownloadSummary() throws HpcException
+    {
+    	// Get the request invoker user-id
+    	String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    	
+    	// Populate the DTO with active and completed sownload requests for this user.
+    	HpcDownloadSummaryDTO downloadSummary = new HpcDownloadSummaryDTO();
+    	downloadSummary.getActiveTasks().addAll(dataTransferService.getDownloadRequests(userId));
+    	downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId));
+    	
+    	return downloadSummary;
     }
     
     @Override
@@ -427,6 +462,57 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                          File dataObjectFile)  
     		                         throws HpcException
     {
+    	HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+	    return registerDataObject(path, dataObjectRegistration, dataObjectFile, 
+	    		                  invokerNciAccount.getUserId(),
+	    		                  invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(),
+	    		                  invokerNciAccount.getDoc());
+    }
+    
+    @Override
+    public HpcDataObjectListRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
+                                                                                  throws HpcException
+	{
+		// Input validation.
+		if(StringUtils.isEmpty(taskId)) {
+		   throw new HpcException("Null / Empty registration task ID",
+		                          HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+		// Get the registration task status.
+		HpcDataObjectListRegistrationStatus taskStatus = 
+		   dataManagementService.getDataObjectListRegistrationTaskStatus(taskId);
+		if(taskStatus == null) {
+		   return null;
+		}
+		
+		// Map the task status to DTO.
+		HpcDataObjectListRegistrationStatusDTO registrationStatus = new HpcDataObjectListRegistrationStatusDTO();
+		registrationStatus.setInProgress(taskStatus.getInProgress());
+		if(taskStatus.getInProgress()) {
+		   // Registration in progress. Populate the DTO accordingly.
+			registrationStatus.setCreated(taskStatus.getTask().getCreated());
+			registrationStatus.setTaskStatus(taskStatus.getTask().getStatus());
+			populateRegistrationItems(registrationStatus, taskStatus.getTask().getItems());
+		
+		} else {
+				// Download completed or failed. Populate the DTO accordingly. 
+			    registrationStatus.setCreated(taskStatus.getResult().getCreated());
+			    registrationStatus.setCompleted(taskStatus.getResult().getCompleted());
+			    registrationStatus.setMessage(taskStatus.getResult().getMessage());
+			    registrationStatus.setResult(taskStatus.getResult().getResult());
+			    populateRegistrationItems(registrationStatus, taskStatus.getResult().getItems());
+		}
+		
+		return registrationStatus;
+	}
+    
+    @Override
+    public boolean registerDataObject(String path,
+    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
+    		                          File dataObjectFile, String userId, String userName, String doc)  
+    		                         throws HpcException
+    {
     	// Input validation.
     	if(path == null || dataObjectRegistration == null) {
     	   throw new HpcException("Null path or dataObjectRegistrationDTO",
@@ -435,7 +521,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Create parent collections if requested to.
     	createParentCollections(path, dataObjectRegistration.getCreateParentCollections(), 
-    			                dataObjectRegistration.getParentCollectionMetadataEntries());
+    			                dataObjectRegistration.getParentCollectionMetadataEntries(),
+    			                userId, userName, doc);
     	
     	// Create a data object file (in the data management system).
 	    boolean created = dataManagementService.createFile(path);
@@ -445,12 +532,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   try {
       	        // Validate the new collection meets the hierarchy definition.
     		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
-    		    HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
-    		    String doc = invokerNciAccount.getDoc();
+    		    
       	        dataManagementService.validateHierarchy(collectionPath, doc, true);
     		   
     		    // Assign system account as an additional owner of the data-object.
-   		        dataManagementService.assignSystemAccountPermission(path);
+      	        dataManagementService.setCoOwnership(path, userId);
    		  
 		        // Attach the user provided metadata.
 		        metadataService.addMetadataToDataObject(path, 
@@ -467,7 +553,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
 		           dataTransferService.uploadDataObject(source, dataObjectFile, path, 
-		        	                                    invokerNciAccount.getUserId(),
+		        	                                    userId,
 		        	                                    dataObjectRegistration.getCallerObjectId(), doc);
 		        
 			    // Generate system metadata and attach to the data object.
@@ -481,7 +567,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   uploadResponse.getDataTransferCompleted(),
 			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile, doc), 
-			    			                   dataObjectRegistration.getCallerObjectId()); 
+			    			                   dataObjectRegistration.getCallerObjectId(),
+			    			                   userId, userName, doc); 
 	
 			    // Add collection update event.
        	        addCollectionUpdatedEvent(path, false, true);
@@ -504,20 +591,62 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                              HpcErrorType.REQUEST_REJECTED);
 	    	    }
 	    	
-	    	    String doc = metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC();
-	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries(), doc); 
+	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries(), 
+	    	    		                                 metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC()); 
 	    }
 	    
 	    return created;
     }
     
     @Override
-	public HpcDataObjectsRegistrationResponseDTO 
-              registerDataObjects(HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest)
+	public HpcDataObjectListRegistrationResponseDTO 
+              registerDataObjects(HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest)
 	                             throws HpcException
 	{
-    	return null;
-	}
+    	// Input validation.
+    	if(dataObjectListRegistrationRequest == null ||
+    	   dataObjectListRegistrationRequest.getDataObjectRegistrationItems().isEmpty()) {
+    	   throw new HpcException("Null / Empty registration request",
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);	
+    	}
+    	
+    	// Break the DTO into a map of registration requests and ensure no duplication of registration paths.
+    	Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests = new HashMap<>();
+    	for(HpcDataObjectListRegistrationItemDTO dataObjectRegistrationItem : 
+    		dataObjectListRegistrationRequest.getDataObjectRegistrationItems()) {
+    		HpcDataObjectRegistrationRequest dataObjectRegistrationRequest = new HpcDataObjectRegistrationRequest();
+    		dataObjectRegistrationRequest.setCallerObjectId(dataObjectRegistrationItem.getCallerObjectId());
+    		dataObjectRegistrationRequest.setCreateParentCollections(
+    				                         dataObjectRegistrationItem.getCreateParentCollections());
+    		dataObjectRegistrationRequest.setSource(dataObjectRegistrationItem.getSource());
+    		dataObjectRegistrationRequest.getMetadataEntries().addAll(
+    				                         dataObjectRegistrationItem.getMetadataEntries());
+    		dataObjectRegistrationRequest.getParentCollectionMetadataEntries().addAll(
+    				                         dataObjectRegistrationItem.getParentCollectionMetadataEntries());
+    		
+    		String path = dataObjectRegistrationItem.getPath();
+    		if(StringUtils.isEmpty(path)) {
+    		   throw new HpcException("Null / Empty path in registration request",
+		                              HpcErrorType.INVALID_REQUEST_INPUT);	
+    		}
+    		
+    		// Validate no multiple registration requests for the same path.
+    		if(dataObjectRegistrationRequests.put(path, dataObjectRegistrationRequest) != null) {
+    		   throw new HpcException("Duplicated path in registration requests list: " + path,
+                                      HpcErrorType.INVALID_REQUEST_INPUT);	
+    		}
+    	}
+    	
+    	HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+
+    	// Submit a data objects registration task and return a response DTO.
+    	HpcDataObjectListRegistrationResponseDTO responseDTO = new HpcDataObjectListRegistrationResponseDTO();
+    	responseDTO.setTaskId(dataManagementService.registerDataObjects(invokerNciAccount.getUserId(), 
+    			                                                        invokerNciAccount.getDoc(), 
+    			                                                        dataObjectRegistrationRequests));
+    	
+    	return responseDTO;
+    }
     
     @Override
     public HpcDataObjectDTO getDataObject(String path) throws HpcException
@@ -618,8 +747,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                                      throws HpcException
     {
     	// Input validation.
-    	if(taskId == null) {
-    	   throw new HpcException("Null data object download task ID",
+    	if(StringUtils.isEmpty(taskId)) {
+    	   throw new HpcException("Null / Empty data object download task ID",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	
@@ -1051,11 +1180,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * @param path The data object's path.
      * @param createParentCollections The indicator whether to create parent collections.
      * @param parentCollectionMetadataEntries The parent collection metadata entries.
+     * @param userId The registrar user-id.
+     * @param userName The registrar name.
+     * @param doc The registrar DOC.
      * @throws HpcException on service failure.
      */
 	private void createParentCollections(String path, 
 			                             Boolean createParentCollections, 
-			                             List<HpcMetadataEntry> parentCollectionMetadataEntries)
+			                             List<HpcMetadataEntry> parentCollectionMetadataEntries,
+			                             String userId, String userName, String doc)
 			                            throws HpcException
 	{
 		// Create parent collections if requested and needed to.
@@ -1074,7 +1207,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		   collectionRegistration.setCreateParentCollections(true);
 		   
 		   // Register the parent collection.
-		   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration);
+		   registerCollection(path.substring(0, path.lastIndexOf('/')), collectionRegistration,
+				              userId, userName, doc);
 		}
 	}
 	
@@ -1368,6 +1502,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	} catch(HpcException e) {
  		        logger.error("Failed to update system metadata: " + path + ". Data transfer status: " +
     	                     dataTransferStatus, HpcErrorType.UNEXPECTED_ERROR, e);
+    	}
+    }
+    
+	/** 
+     * Split the list of registration items into completed, failed and in-progress buckets.
+     * 
+     * @param registrationStatus The registration status to populate the items into.
+     * @param items The registration items.
+     * @return A data management tree .
+     * @throws HpcException on service failure.
+     */
+    private void populateRegistrationItems(HpcDataObjectListRegistrationStatusDTO registrationStatus,
+    		                               List<HpcDataObjectListRegistrationItem> items)
+    {
+    	for(HpcDataObjectListRegistrationItem item : items) {
+    		Boolean result = item.getTask().getResult();
+    		if(result == null) {
+    		   registrationStatus.getInProgressItems().add(item.getTask());
+    		} else if(result) {
+    			      registrationStatus.getCompletedItems().add(item.getTask());
+    		} else {
+    			    registrationStatus.getFailedItems().add(item.getTask());
+    		}
     	}
     }
 }
