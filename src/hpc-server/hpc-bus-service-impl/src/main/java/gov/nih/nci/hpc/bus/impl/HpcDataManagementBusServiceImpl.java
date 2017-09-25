@@ -72,6 +72,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseD
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
@@ -371,6 +372,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                                                        throws HpcException
     {
     	return getCollectionDownloadStatus(taskId, HpcDownloadTaskType.DATA_OBJECT_LIST);
+    }
+    
+    @Override
+    public HpcDownloadSummaryDTO getDownloadSummary() throws HpcException
+    {
+    	// Get the request invoker user-id
+    	String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    	
+    	// Populate the DTO with active and completed sownload requests for this user.
+    	HpcDownloadSummaryDTO downloadSummary = new HpcDownloadSummaryDTO();
+    	downloadSummary.getActiveTasks().addAll(dataTransferService.getDownloadRequests(userId));
+    	downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId));
+    	
+    	return downloadSummary;
     }
     
     @Override
