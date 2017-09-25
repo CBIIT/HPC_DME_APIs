@@ -9,6 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
@@ -53,18 +57,18 @@ public class HpcLoginController extends AbstractHpcController {
 	private String hpcModelURL;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(Model model) {
+	public String home(Model model, HttpSession session, HttpServletRequest request) {
 		HpcLogin hpcLogin = new HpcLogin();
 		model.addAttribute("hpcLogin", hpcLogin);
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
-
+		session.setAttribute("callerPath", getCallerPath(request));
 		return "index";
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
 	public String login(@Valid @ModelAttribute("hpcLogin") HpcLogin hpcLogin, BindingResult bindingResult, Model model,
-			HttpSession session) {
+			HttpSession session, HttpServletRequest request) {
 		if (bindingResult.hasErrors()) {
 			return "index";
 		}
@@ -101,7 +105,45 @@ public class HpcLoginController extends AbstractHpcController {
 		}
 		model.addAttribute("hpcLogin", hpcLogin);
 		model.addAttribute("queryURL", queryURL);
-
-		return "dashboard";
+		String callerPath =  (String)session.getAttribute("callerPath");
+		session.removeAttribute("callerPath");
+		if(callerPath == null)
+			return "dashboard";
+		else
+			return "redirect:/"+callerPath;
+	}
+	
+	private String getCallerPath(HttpServletRequest request)
+	{
+		Map<String, String[]> params = request.getParameterMap();
+		StringBuffer buffer = new StringBuffer();
+		if(params.isEmpty())
+			return null;
+		else
+		{
+			String[] returnPath = params.get("returnPath");
+			if(returnPath == null || returnPath.length == 0)
+				return null;
+			else
+				buffer.append(returnPath[0]);
+			
+			Iterator<String> iter = params.keySet().iterator();
+			boolean first = true;
+			while(iter.hasNext())
+			{
+				String key = iter.next();
+				if(key.equals("returnPath"))
+					continue;
+				String[] value = params.get(key);
+				if(first)
+				{
+					buffer.append("?"+key+"="+value[0]);
+					first = false;
+				}
+				else
+					buffer.append("&"+key+"="+value[0]);
+			}
+		}
+		return buffer.toString();
 	}
 }

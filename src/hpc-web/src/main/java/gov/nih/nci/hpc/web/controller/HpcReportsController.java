@@ -99,7 +99,7 @@ public class HpcReportsController extends AbstractHpcController {
 	private String init(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (authToken == null) {
-			return "redirect:/";
+			return "redirect:/login?returnPath=reports";
 		}
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -107,7 +107,7 @@ public class HpcReportsController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "redirect:/";
+			return "redirect:/login?returnPath=reports";
 		}
 		model.addAttribute("userRole", user.getUserRole());
 		model.addAttribute("userDOC", user.getDoc());

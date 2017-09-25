@@ -83,7 +83,7 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login?returnPath=updategroup";
 		}
 		session.removeAttribute("updategroup");
 		initialize(model, authToken, groupName, session);
