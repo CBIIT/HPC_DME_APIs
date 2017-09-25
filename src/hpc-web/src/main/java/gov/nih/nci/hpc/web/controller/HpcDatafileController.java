@@ -94,7 +94,7 @@ public class HpcDatafileController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "index";
+				return "redirect:/login?returnPath=datafile&action="+action+"&path="+path;
 			}
 
 			if (path == null)

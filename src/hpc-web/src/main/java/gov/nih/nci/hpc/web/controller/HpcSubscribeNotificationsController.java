@@ -105,7 +105,7 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "redirect:/";
+			return "redirect:/login?returnPath=subscribe";
 		}
 
 		populateNotifications(model, authToken, user, session);

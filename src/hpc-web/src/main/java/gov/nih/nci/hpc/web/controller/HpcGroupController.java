@@ -56,7 +56,7 @@ public class HpcGroupController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login?returnPath=group";
 		}
 
 		String returnToHome = request.getParameter("return");
