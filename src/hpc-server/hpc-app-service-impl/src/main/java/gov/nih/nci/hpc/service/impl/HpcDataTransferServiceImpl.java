@@ -45,6 +45,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -510,6 +511,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    taskResult.setCompleted(completed);	
 	    taskResult.getItems().addAll(downloadTask.getItems());
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
+	}
+	
+	@Override
+    public List<HpcUserDownloadRequest> getDownloadRequests(String userId) throws HpcException
+    {
+		List<HpcUserDownloadRequest> downloadRequests = dataDownloadDAO.getDataObjectDownloadRequests(userId);
+		downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequests(userId));
+		
+		return downloadRequests;
+    }
+    
+	@Override
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId) throws HpcException
+	{
+		return dataDownloadDAO.getDownloadResults(userId);
 	}
 	
     @Override

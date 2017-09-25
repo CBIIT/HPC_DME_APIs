@@ -40,6 +40,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -139,6 +140,18 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	public static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = 
 		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"STATUS\" = ? " +
 	                 "order by \"CREATED\"";
+	
+	public static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = 
+		   "select \"ID\", \"PATH\", \"CREATED\", 'DATA_OBJECT' as \"TYPE\", null as \"COMPLETED\", " +
+	       "null as \"RESULT\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"USER_ID\" = ? order by \"CREATED\"";
+	
+	public static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = 
+		   "select \"ID\", \"PATH\", \"CREATED\", \"TYPE\", null as \"COMPLETED\", " +
+		   "null as \"RESULT\" from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"USER_ID\" = ? order by \"CREATED\"";
+	
+	public static final String GET_DOWNLOAD_RESULTS_SQL = 
+		   "select \"ID\", \"PATH\", \"CREATED\", \"TYPE\", \"COMPLETED\", \"RESULT\" " +
+	       "from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"USER_ID\" = ? order by \"CREATED\" desc";	
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -264,6 +277,30 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		}
     	
         return collectionDownloadTask;
+	};
+	
+	// HpcUserDownloadRequest table to object mapper.
+	private RowMapper<HpcUserDownloadRequest> userDownloadRequestRowMapper = (rs, rowNum) -> 
+	{
+		HpcUserDownloadRequest userDownloadRequest = new HpcUserDownloadRequest();
+		userDownloadRequest.setTaskId(rs.getString("ID"));
+		userDownloadRequest.setPath(rs.getString("PATH"));
+		userDownloadRequest.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
+		
+		if(rs.getObject("RESULT") != null) {
+		   userDownloadRequest.setResult(rs.getBoolean("RESULT"));
+		}
+    	Calendar created = Calendar.getInstance();
+    	created.setTime(rs.getTimestamp("CREATED"));
+    	userDownloadRequest.setCreated(created);
+    	
+    	if(rs.getTimestamp("COMPLETED") != null) {
+    	   Calendar completed = Calendar.getInstance();
+    	   completed.setTime(rs.getTimestamp("COMPLETED"));
+    	   userDownloadRequest.setCompleted(completed);
+    	}
+    	
+        return userDownloadRequest;
 	};
 	
     //---------------------------------------------------------------------//
@@ -446,7 +483,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		} catch(SQLException se) {
 		        throw new HpcException("Failed to upsert a collection download request: " + se.getMessage(),
 		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, se);
-}
+		}
     }
 	
 	@Override 
@@ -495,6 +532,59 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
+	
+	@Override
+    public List<HpcUserDownloadRequest> getDataObjectDownloadRequests(String userId) 
+                                                                     throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL, 
+		    		                   userDownloadRequestRowMapper, userId);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get data object download requests: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+    }
+
+	@Override
+	public List<HpcUserDownloadRequest> getCollectionDownloadRequests(String userId) 
+                                                                     throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_REQUESTS_SQL, 
+		    		                   userDownloadRequestRowMapper, userId);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get collection download requests: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+    }
+
+	@Override
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId) throws HpcException
+	{
+		try {
+		     return jdbcTemplate.query(GET_DOWNLOAD_RESULTS_SQL, 
+		    		                   userDownloadRequestRowMapper, userId);
+		     
+		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get download results: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
 	
     //---------------------------------------------------------------------//
     // Helper Methods

@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -45,6 +44,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseD
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -412,6 +412,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
     	return okResponse(downloadStatus, true);
+    }
+    
+    @Override
+    public Response getDownloadSummary()
+    {
+    	HpcDownloadSummaryDTO downloadSummary = null;
+		try {
+			downloadSummary = dataManagementBusService.getDownloadSummary();
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+    	return okResponse(downloadSummary.getActiveTasks().isEmpty() && 
+    			          downloadSummary.getCompletedTasks().isEmpty() ? null : downloadSummary , true);
     }
     
     @Override
