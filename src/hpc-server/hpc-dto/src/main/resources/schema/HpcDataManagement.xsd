@@ -302,6 +302,17 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
+	<xsd:element name="HpcDownloadSummaryDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="activeTasks" type="hpc-domain-datatransfer:HpcUserDownloadRequest" 
+			                 minOccurs="0" maxOccurs="unbounded" />
+			    <xsd:element name="completedTasks" type="hpc-domain-datatransfer:HpcUserDownloadRequest" 
+			                 minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<!--  Data Object Delete Response DTO -->
 	<xsd:element name="HpcDataObjectDeleteResponseDTO">
 		<xsd:complexType>
