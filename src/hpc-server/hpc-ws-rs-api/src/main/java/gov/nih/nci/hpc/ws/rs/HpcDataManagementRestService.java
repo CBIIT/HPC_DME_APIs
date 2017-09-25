@@ -306,6 +306,16 @@ public interface HpcDataManagementRestService
 	public Response getDataObjectsDownloadStatus(@PathParam("taskId") String taskId);
 	
     /**
+     * Get download summary (for the request invoker).
+     *
+     * @return The REST service response w/ HpcDownloadSummaryDTO entity.
+     */
+	@GET
+	@Path("/download")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDownloadSummary();
+	
+    /**
      * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.
      *
      * @param doc The DOC to get the model for.

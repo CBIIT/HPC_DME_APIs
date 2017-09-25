@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseD
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -136,6 +137,13 @@ public interface HpcDataManagementBusService
      */
 	public HpcCollectionDownloadStatusDTO getDataObjectsDownloadStatus(String taskId) 
 			                                                           throws HpcException;
+	
+    /**
+     * Get download summary. Note: the summary is for the request invoker.
+     *
+     * @return A summary of download tasks for the request invoker
+     */
+	public HpcDownloadSummaryDTO getDownloadSummary() throws HpcException;
 	
     /**
      * Set collection permissions.

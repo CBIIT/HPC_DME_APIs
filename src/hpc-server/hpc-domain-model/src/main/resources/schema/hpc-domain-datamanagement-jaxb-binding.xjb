@@ -173,6 +173,9 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcDataTransferDownloadReport']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcUserDownloadRequest']">
+        	<jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest"/>
+		</jxb:bindings>
     </jxb:bindings>
     
 </jxb:bindings>
