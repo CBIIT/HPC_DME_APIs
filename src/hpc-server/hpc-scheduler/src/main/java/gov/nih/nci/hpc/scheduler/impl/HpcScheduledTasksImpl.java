@@ -108,7 +108,7 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.processCollectionDownloadTasks.delay}")
     private void processCollectionDownloadTasksTask()
     {
-    	executeTask("processCollectionDownloadRequests()", 
+    	executeTask("processCollectionDownloadTasks()", 
     			    systemBusService::processCollectionDownloadTasks);
     }
     
@@ -119,8 +119,30 @@ public class HpcScheduledTasksImpl
     @Scheduled(cron = "${hpc.scheduler.cron.completeCollectionDownloadTasks.delay}")
     private void completeCollectionDownloadTasksTask()
     {
-    	executeTask("completeCollectionDownloadRequests()", 
+    	executeTask("completeCollectionDownloadTasks()", 
     			    systemBusService::completeCollectionDownloadTasks);
+    }
+    
+    /**
+     * Process data object list registration tasks.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.processDataObjectListRegistrationTasks.delay}")
+    private void processDataObjectListRegistrationTasksTask()
+    {
+    	executeTask("processDataObjectListRegistrationTasks()", 
+    			    systemBusService::processDataObjectListRegistrationTasks);
+    }
+    
+    /**
+     * Complete data object list registration tasks.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.completeDataObjectListRegistrationTasks.delay}")
+    private void completeDataObjectListRegistrationTasksTask()
+    {
+    	executeTask("completeDataObjectListRegistrationTasks()", 
+    			    systemBusService::completeDataObjectListRegistrationTasks);
     }
     
     /**

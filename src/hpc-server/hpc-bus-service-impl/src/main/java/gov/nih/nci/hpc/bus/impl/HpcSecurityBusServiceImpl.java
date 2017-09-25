@@ -52,7 +52,6 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
