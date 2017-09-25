@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -23,8 +24,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO;
+import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
@@ -36,6 +40,11 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -80,6 +89,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Data Object Deletion DAO.
 	@Autowired
 	private HpcDataObjectDeletionDAO dataObjectDeletionDAO = null;
+	
+	// Data Registration DAO.
+	@Autowired
+	private HpcDataRegistrationDAO dataRegistrationDAO = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferReceivedQuery = new ArrayList<>();
@@ -320,7 +333,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
-    public void assignSystemAccountPermission(String path) throws HpcException
+    public void setCoOwnership(String path, String userId) throws HpcException
     {
     	HpcIntegratedSystemAccount dataManagementAccount = 
     	    	     systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
@@ -329,17 +342,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	      	                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
-        HpcSubjectPermission permissionRequest = new HpcSubjectPermission();
-        permissionRequest.setPermission(HpcPermission.OWN);
-        permissionRequest.setSubject(dataManagementAccount.getUsername());
-            
+    	// System account ownership request.
+        HpcSubjectPermission systemAccountPermissionRequest = new HpcSubjectPermission();
+        systemAccountPermissionRequest.setPermission(HpcPermission.OWN);
+        systemAccountPermissionRequest.setSubject(dataManagementAccount.getUsername());
+        
+        // User ownership request.
+        HpcSubjectPermission userPermissionRequest = new HpcSubjectPermission();
+        userPermissionRequest.setPermission(HpcPermission.OWN);
+        userPermissionRequest.setSubject(userId);
+        
         // Determine if it's a collection or data object.
         Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
         HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
         if(pathAttributes.getIsDirectory()) {
-           dataManagementProxy.setCollectionPermission(authenticatedToken, path, permissionRequest);
+           dataManagementProxy.setCollectionPermission(authenticatedToken, path, systemAccountPermissionRequest);
+           dataManagementProxy.setCollectionPermission(authenticatedToken, path, userPermissionRequest);
         } else if(pathAttributes.getIsFile()) {
-        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, permissionRequest);
+        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, systemAccountPermissionRequest);
+        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, userPermissionRequest);
         }
     }
     
@@ -459,6 +480,119 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	return new ArrayList<String>(docConfigurationLocator.keySet());
     }
+    
+    @Override
+    public String registerDataObjects(String userId, String doc, 
+                                      Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+                                     throws HpcException
+    {
+    	// Input validation
+    	if(StringUtils.isEmpty(userId) || StringUtils.isEmpty(doc)) {
+    	   throw new HpcException("Null / Empty userId ot DOC in registration list request", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	// Create a data object list registration task.
+    	HpcDataObjectListRegistrationTask dataObjectListRegistrationTask = new HpcDataObjectListRegistrationTask();
+    	dataObjectListRegistrationTask.setUserId(userId);
+    	dataObjectListRegistrationTask.setDoc(doc);
+    	dataObjectListRegistrationTask.setCreated(Calendar.getInstance());
+    	dataObjectListRegistrationTask.setStatus(HpcDataObjectListRegistrationTaskStatus.RECEIVED);
+    	
+    	// Iterate through the individual data object registration requests and add them as items to the 
+    	// list registration task.
+    	for(String path : dataObjectRegistrationRequests.keySet()) {
+    		HpcDataObjectRegistrationRequest registrationRequest = dataObjectRegistrationRequests.get(path);
+    	    // Validate registration request.
+    		if(!HpcDomainValidator.isValidFileLocation(registrationRequest.getSource())) {
+    			throw new HpcException("Invalid source in registration request for: " + path, 
+		                               HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    		
+    		// Create a data object registration item.
+    		HpcDataObjectListRegistrationItem registrationItem = new HpcDataObjectListRegistrationItem();
+    		HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
+    		reqistrationTask.setPath(path);
+    		registrationItem.setTask(reqistrationTask);
+    		registrationItem.setRequest(registrationRequest);
+    		
+    		dataObjectListRegistrationTask.getItems().add(registrationItem);
+    	}
+    	
+    	// Persist the registration request.
+    	dataRegistrationDAO.upsertDataObjectListRegistrationTask(dataObjectListRegistrationTask);
+    	return dataObjectListRegistrationTask.getId();
+    }
+    
+    @Override
+    public List<HpcDataObjectListRegistrationTask> getDataObjectListRegistrationTasks(
+                                                      HpcDataObjectListRegistrationTaskStatus status) 
+                                                      throws HpcException
+    {
+    	return dataRegistrationDAO.getDataObjectListRegistrationTasks(status);
+    }
+    
+	@Override
+	public void updateDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask)
+                                                    throws HpcException
+    {
+		dataRegistrationDAO.upsertDataObjectListRegistrationTask(registrationTask);
+    }
+	
+	@Override
+	public void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
+			                                           boolean result, String message, Calendar completed)
+	                                                  throws HpcException
+	{
+		// Input validation
+		if(registrationTask == null) {
+		   throw new HpcException("Invalid data object list registration task", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Cleanup the DB record.
+		dataRegistrationDAO.deleteDataObjectListRegistrationTask(registrationTask.getId());
+		
+		// Create a registration result object.
+		HpcDataObjectListRegistrationResult registrationResult = new HpcDataObjectListRegistrationResult();
+		registrationResult.setId(registrationTask.getId());
+		registrationResult.setUserId(registrationTask.getUserId());
+		registrationResult.setResult(result);
+		registrationResult.setMessage(message);
+		registrationResult.setCreated(registrationTask.getCreated());
+		registrationResult.setCompleted(completed);	
+		registrationResult.getItems().addAll(registrationTask.getItems());
+		dataRegistrationDAO.upsertDataObjectListRegistrationResult(registrationResult);
+	}
+	
+	@Override
+	public HpcDataObjectListRegistrationStatus getDataObjectListRegistrationTaskStatus(String taskId) 
+                                                                                      throws HpcException
+    {
+		if(StringUtils.isEmpty(taskId)) {
+		   throw new HpcException("Null / Empty task id", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+			
+		HpcDataObjectListRegistrationStatus taskStatus = new HpcDataObjectListRegistrationStatus();
+		HpcDataObjectListRegistrationResult taskResult = dataRegistrationDAO.getDataObjectListRegistrationResult(taskId);
+		if(taskResult != null) {
+		   // Task completed or failed. Return the result.
+		   taskStatus.setInProgress(false);
+		   taskStatus.setResult(taskResult);
+		   return taskStatus;
+		}
+	    
+		// Task still in-progress. 
+		taskStatus.setInProgress(true);
+		HpcDataObjectListRegistrationTask task = dataRegistrationDAO.getDataObjectListRegistrationTask(taskId);
+		if(task != null) {
+		   taskStatus.setTask(task);
+		   return taskStatus;	
+		}
+		
+		// Task not found.
+		return null;
+	}
     
     //---------------------------------------------------------------------//
     // Helper Methods

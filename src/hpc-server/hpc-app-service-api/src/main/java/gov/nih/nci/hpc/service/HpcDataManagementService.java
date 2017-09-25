@@ -9,15 +9,21 @@
 
 package gov.nih.nci.hpc.service;
 
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
 
 /**
  * <p>
@@ -153,12 +159,14 @@ public interface HpcDataManagementService
     public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException;
 
     /**
-     * Assign system account as an additional owner of an entity.
+     * Set a co-ownership on an entity. Both the user-id and the system account will be assigned
+     * as owners.
      *
      * @param path The entity path.
+     * @param userId The user-id
      * @throws HpcException on service failure.
      */
-    public void assignSystemAccountPermission(String path) throws HpcException;
+    public void setCoOwnership(String path, String userId) throws HpcException;
     
     /**
      * Validate a path against a hierarchy definition.
@@ -244,6 +252,66 @@ public interface HpcDataManagementService
      * @return List of DOCs.
      */
     public List<String> getDocs();
+    
+    /**
+     * Data objects registration.
+     *
+     * @param userId The user ID requested the registration.
+     * @param doc The registrar DOC.
+     * @param dataObjectRegistrationRequests The data object registration requests.
+     * @return The task ID created to register the data objects and can be used to track status
+     * @throws HpcException on service failure.
+     */
+    public String registerDataObjects(String userId, String doc, 
+    		                          Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+    				                 throws HpcException;
+    
+    /**
+     * Get data object list registration tasks. 
+     *
+     * @param status Get tasks in this status.
+     * @return A list of data object list registration tasks.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcDataObjectListRegistrationTask> getDataObjectListRegistrationTasks(
+    		                                              HpcDataObjectListRegistrationTaskStatus status) 
+    		                                              throws HpcException;
+    
+    /** 
+     * Update a data object list registration task.
+     * 
+     * @param registrationTask The registration task to update.
+     * @throws HpcException on service failure.
+     */
+    public void updateDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask)
+                                                    throws HpcException;
+    
+    /**
+     * Complete a data object list registration task:
+     * 1. Update task info in DB with results info.
+     *
+     * @param registrationTask The registration task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
+     * @param completed (Optional) The download task completion timestamp.
+     * @throws HpcException on service failure.
+     */
+    public void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
+    		                                           boolean result, String message, Calendar completed) 
+    		                                          throws HpcException;
+    
+    /**
+     * Get data object list task status. 
+     *
+     * @param taskId The registration task ID.
+     * @return A download status object, or null if the task can't be found.
+     *         Note: The returned object is associated with a 'task' object if the registration 
+     *         is in-progress. If the registration completed or failed, the returned object is associated with a 
+     *         'result' object. 
+     * @throws HpcException on service failure.
+     */
+    public HpcDataObjectListRegistrationStatus getDataObjectListRegistrationTaskStatus(String taskId) 
+    		                                                                          throws HpcException;
 }
 
  
