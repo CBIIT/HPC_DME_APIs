@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -24,8 +23,8 @@
 	<context:annotation-config />
 	
 	<task:annotation-driven executor="hpcScheduledTaskExecutor" scheduler="hpcScheduledTaskScheduler"/>
-	<task:executor id="hpcScheduledTaskExecutor" pool-size="10"/>
-	<task:scheduler id="hpcScheduledTaskScheduler" pool-size="10"/>
+	<task:executor id="hpcScheduledTaskExecutor" pool-size="15"/>
+	<task:scheduler id="hpcScheduledTaskScheduler" pool-size="15"/>
 	
 	<!--  Scheduled tasks -->
 	<bean id="hpcScheduledTasks" class="gov.nih.nci.hpc.scheduler.impl.HpcScheduledTasksImpl" />

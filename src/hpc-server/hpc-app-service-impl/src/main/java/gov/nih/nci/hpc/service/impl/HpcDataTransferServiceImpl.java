@@ -45,6 +45,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -510,6 +511,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    taskResult.setCompleted(completed);	
 	    taskResult.getItems().addAll(downloadTask.getItems());
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
+	}
+	
+	@Override
+    public List<HpcUserDownloadRequest> getDownloadRequests(String userId) throws HpcException
+    {
+		List<HpcUserDownloadRequest> downloadRequests = dataDownloadDAO.getDataObjectDownloadRequests(userId);
+		downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequests(userId));
+		
+		return downloadRequests;
+    }
+    
+	@Override
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId) throws HpcException
+	{
+		return dataDownloadDAO.getDownloadResults(userId);
 	}
 	
     @Override
@@ -979,10 +995,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    // HpcDataTransferProgressListener Interface Implementation
 	    //---------------------------------------------------------------------//  
 		
-		@Override public void transferCompleted()
+		@Override 
+		public void transferCompleted()
 		{
 			// This callback method is called when the first hop (S3) download completed.
-			try {
+			
+			// This method is executed in a thread managed by S3 Transfer manager (part of a pool).
+			// If this thread was used before, then it has Globus token cached in it. We are clearing 
+			// the cached token, so a new one is generated if needed. This is to avoid using an expired token.
+	    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+	    	invoker.getDataTransferAuthenticatedTokens().clear();
+	    	HpcRequestContext.setRequestInvoker(invoker);
+
+	    	try {
 				   // Update the download task to reflect 1st hop transfer completed.
 				   downloadTask.setDataTransferType(secondHopDownloadRequest.getDataTransferType());
 				   
