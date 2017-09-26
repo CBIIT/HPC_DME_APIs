@@ -103,6 +103,7 @@
 									th:object="${hpcCollection}" method="POST">
 									<input type="hidden" name="actionType" id="actionType"/>
 									<input type="hidden" name="parent" id="parent" th:value="${parent}"/>
+									<input type="hidden" name="source" id="source" th:value="${source}"/>
 								<!--panel-body start-->
 								<div class="panel-body">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -330,10 +331,10 @@
 		$("#collectionForm").submit();
     }
 	
-	
-	function cancelEdit()
+    function cancelEdit()
     {
-		window.history.back();
+		document.getElementById("actionType").value = "cancel";
+		$("#collectionForm").submit();
     }
 //]]>
 </script>
