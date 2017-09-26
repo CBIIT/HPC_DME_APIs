@@ -97,6 +97,14 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 			else
 				model.addAttribute("datafilePath", parent);
 			
+			String source = request.getParameter("source");
+			if(source == null || source.isEmpty())
+				source = (String) request.getAttribute("source");
+			if(source == null || source.isEmpty())
+				source = "dashboard";
+			
+			model.addAttribute("source", source);
+			
 			// User Session validation
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userId = (String) session.getAttribute("hpcUserId");
@@ -135,7 +143,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
-		String[] action = request.getParameterValues("action");
+		String[] action = request.getParameterValues("actionType");
 		String parent = request.getParameter("parent");
 		if (parent != null)
 			model.addAttribute("parent", parent);
@@ -145,8 +153,16 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 		else
 			model.addAttribute("datafilePath", parent);
 		
+		String source = request.getParameter("source");
+		if(source == null || source.isEmpty())
+			source = (String) request.getAttribute("source");
+
+		if(source == null || source.isEmpty())
+			source = "dashboard";
+		model.addAttribute("source", source);
+		
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
-			return "redirect:/datafile?path=" + hpcDataModel.getPath() + "&action=view";
+			return "redirect:/" + source;
 
 		if(hpcDatafile.isEmpty())
 		{
