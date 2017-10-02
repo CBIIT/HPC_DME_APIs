@@ -67,14 +67,17 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -1184,6 +1187,103 @@ public class HpcClientUtil {
 			throw new HpcWebException("Failed to get notification subscriptions due to: " + e.getMessage());
 		}
 	}
+
+	public static HpcDownloadSummaryDTO getDownloadSummary(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcDownloadSummaryDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
+		}
+	}
+	
+	public static HpcDataObjectDownloadStatusDTO getDataObjectDownloadTask(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data object download tasks details due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcDataObjectDownloadStatusDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data object download tasks details due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data object download tasks details due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data object download tasks details due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcCollectionDownloadStatusDTO getDataObjectsDownloadTask(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data objects download tasks details due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcCollectionDownloadStatusDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data objects download tasks details due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data objects download tasks details due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data objects download tasks details due to: " + e.getMessage());
+		}
+	}
+
 
 	public static HpcMetadataAttributesListDTO getMetadataAttrNames(String token, String hpcMetadataAttrsURL,
 			String hpcCertPath, String hpcCertPassword) {
