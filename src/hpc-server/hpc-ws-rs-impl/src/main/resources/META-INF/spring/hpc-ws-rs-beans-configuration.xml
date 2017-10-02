@@ -112,6 +112,9 @@
           <value>deleteGroupMemberResponses</value>
           <value>addGroupMemberResponses</value>
           <value>bookmarks</value>
+          <value>activeTasks</value>
+          <value>completedTasks</value>
+          <value>items</value>
     </util:list>
 
 	<!-- JSON Provider -->
