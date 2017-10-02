@@ -143,14 +143,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	
 	public static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = 
 		   "select \"ID\", \"PATH\", \"CREATED\", 'DATA_OBJECT' as \"TYPE\", null as \"COMPLETED\", " +
-	       "null as \"RESULT\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"USER_ID\" = ? order by \"CREATED\"";
+	       "null as \"RESULT\", null as \"ITEMS\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"USER_ID\" = ? order by \"CREATED\"";
 	
 	public static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = 
 		   "select \"ID\", \"PATH\", \"CREATED\", \"TYPE\", null as \"COMPLETED\", " +
-		   "null as \"RESULT\" from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"USER_ID\" = ? order by \"CREATED\"";
+		   "null as \"RESULT\", \"ITEMS\" from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"USER_ID\" = ? order by \"CREATED\"";
 	
 	public static final String GET_DOWNLOAD_RESULTS_SQL = 
-		   "select \"ID\", \"PATH\", \"CREATED\", \"TYPE\", \"COMPLETED\", \"RESULT\" " +
+		   "select \"ID\", \"PATH\", \"CREATED\", \"TYPE\", \"COMPLETED\", \"RESULT\", \"ITEMS\" " +
 	       "from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"USER_ID\" = ? order by \"CREATED\" desc";	
 	
     //---------------------------------------------------------------------//
@@ -299,7 +299,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
     	   completed.setTime(rs.getTimestamp("COMPLETED"));
     	   userDownloadRequest.setCompleted(completed);
     	}
-    	
+    	userDownloadRequest.getItems().addAll(fromJSON(rs.getString("ITEMS")));
         return userDownloadRequest;
 	};
 	
