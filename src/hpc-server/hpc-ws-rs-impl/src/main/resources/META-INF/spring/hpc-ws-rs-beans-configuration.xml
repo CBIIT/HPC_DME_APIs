@@ -114,6 +114,10 @@
           <value>bookmarks</value>
           <value>activeTasks</value>
           <value>completedTasks</value>
+          <value>completedItems</value>
+          <value>failedItems</value>
+          <value>inProgressItems</value>
+          <value>dataObjectPaths</value>
           <value>items</value>
     </util:list>
 
