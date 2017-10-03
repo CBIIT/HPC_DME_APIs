@@ -24,10 +24,11 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
     enableSorting: true,
     enableColumnResizing: true, 
     columnDefs: [
-                 { field: 'path', width:300, displayName: 'Path', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="task?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+                 { field: 'taskId', width:300, displayName: 'Task Id', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="task?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+                 { field: 'path', width:200, displayName : 'Path' },
                  { field: 'type', width:200, displayName : 'Type'},
                  { field: 'result', width:200, displayName: 'Transfer Result'},
-                 { field: 'taskId', width:200, displayName : 'Task Id' },
+                 
                ],
   };
 }]);
