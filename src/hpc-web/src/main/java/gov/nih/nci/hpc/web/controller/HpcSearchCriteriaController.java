@@ -215,7 +215,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				return "criteria";
 			}
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to project: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
@@ -242,6 +242,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			if (!success) {
 				HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 				String authToken = (String) session.getAttribute("hpcUserToken");
+				model.addAttribute("hpcSearch", search);
 				populateHierarchy(session, model, authToken, user);
 				populateMetadata(model, authToken, user, search.getSearchType(), session);
 				populateOperators(model);

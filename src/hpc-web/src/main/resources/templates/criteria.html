@@ -47,6 +47,10 @@
 
 <script th:inline="javascript">
 /*<![CDATA[*/
+    var searchError = [[${error}]];
+    var searchCriteria  = [[${hpcSearch}]];
+    console.log(JSON.stringify(searchCriteria));
+	var advancedCriteriaExist = [[${hpcSearch.advancedCriteria}]];
     var attributes = [[${hierarchy.getAllAttributes()}]];
     var collattributes = [[${hierarchy.getCollectionAttrsSet()}]];
     var dataattributes = [[${hierarchy.getDataobjectAttrsSet()}]];
@@ -604,6 +608,16 @@ function advancedSearch() {
 		ele.style.display = "block";
 	}
 	window.scrollBy(0, 200);
+}
+
+if(advancedCriteriaExist) {
+	// if there are advanced search criteria, restore the advancedSearch
+	// box to the open state
+	advancedSearch();
+}
+
+if(searchError) {
+	// Process the hpcSearch object and restore the level criteria
 }
 //]]>
 </script>
