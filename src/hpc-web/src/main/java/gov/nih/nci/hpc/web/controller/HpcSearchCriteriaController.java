@@ -126,7 +126,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login?returnPath=criteria";
 		}
 		populateHierarchy(session, model, authToken, user);
 		populateMetadata(model, authToken, user, "collection", session);

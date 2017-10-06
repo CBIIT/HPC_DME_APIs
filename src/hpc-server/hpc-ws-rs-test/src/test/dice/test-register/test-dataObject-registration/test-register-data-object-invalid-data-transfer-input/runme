@@ -25,7 +25,7 @@ PROJECT_PATH=`cat registered-project-path.tmp`
 
 curl_register input.json $PROJECT_PATH/object-${NAME}.txt dataObject
 
-EXPECTED_MSG="\[GLOBUS\] Endpoint doesn't exist or inactive. Make sure the endpoint name is correct and active"
+EXPECTED_MSG="\[GLOBUS\] Endpoint doesn't exist. Make sure the endpoint name is correct and active"
 get_http_code $RESPONSE_HEADER >&2
 get_json_value $RESPONSE_MSG errorType >&2
 get_json_value $RESPONSE_MSG message | sed "s/^$EXPECTED_MSG.*/$EXPECTED_MSG/" >&2

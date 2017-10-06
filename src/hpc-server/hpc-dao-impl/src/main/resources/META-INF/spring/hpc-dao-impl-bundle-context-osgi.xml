@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -38,6 +37,7 @@
 	<osgi:service ref="hpcUserDAO" interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
 	<osgi:service ref="hpcSystemAccountDAO" interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
 	<osgi:service ref="hpcDataDownloadDAO" interface="gov.nih.nci.hpc.dao.HpcDataDownloadDAO" />
+	<osgi:service ref="hpcDataRegistrationDAO" interface="gov.nih.nci.hpc.dao.HpcDataRegistrationDAO" />
 	<osgi:service ref="hpcDataObjectDeletionDAO" interface="gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO" />
 	<osgi:service ref="hpcNotificationDAO" interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />
 	<osgi:service ref="hpcEventDAO" interface="gov.nih.nci.hpc.dao.HpcEventDAO" />

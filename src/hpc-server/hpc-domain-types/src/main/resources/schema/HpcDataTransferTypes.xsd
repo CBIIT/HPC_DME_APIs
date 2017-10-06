@@ -57,7 +57,7 @@
 	<xsd:simpleType name="HpcDataTransferType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
-			<xsd:enumeration value="S3" />
+			<xsd:enumeration value="S_3" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -216,6 +216,19 @@
 			<xsd:element name="dataObjectDownloadTask" type="hpc-domain-datatransfer:HpcDataObjectDownloadTask" />
 			<xsd:element name="collectionDownloadTask" type="hpc-domain-datatransfer:HpcCollectionDownloadTask" />
 			<xsd:element name="result" type="hpc-domain-datatransfer:HpcDownloadTaskResult" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcUserDownloadRequest">
+		<xsd:sequence>
+			<xsd:element name="taskId" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="type" type="hpc-domain-datatransfer:HpcDownloadTaskType" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="completed" type="xsd:dateTime" />
+			<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="items" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
+			             minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 

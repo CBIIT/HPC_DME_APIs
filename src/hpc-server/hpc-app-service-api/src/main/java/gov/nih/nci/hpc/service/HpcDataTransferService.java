@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -270,6 +271,24 @@ public interface HpcDataTransferService
     public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
     		                                   boolean result, String message, Calendar completed) 
     		                                  throws HpcException;
+    
+    /**
+     * Get active download requests for a user. 
+     *
+     * @param userId The user ID to query for.
+     * @return A list of active download requests.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcUserDownloadRequest> getDownloadRequests(String userId) throws HpcException;
+    
+    /**
+     * Get download results (all completed download requests) for a user. 
+     *
+     * @param userId The user ID to query for.
+     * @return A list of completed download requests.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcUserDownloadRequest> getDownloadResults(String userId) throws HpcException;
     
     /**
      * Get a file container name.

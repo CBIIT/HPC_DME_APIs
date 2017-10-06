@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +31,7 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -45,6 +47,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -512,7 +515,48 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 	}
 	
-    @Override
+	@Override
+    public List<HpcUserDownloadRequest> getDownloadRequests(String userId) throws HpcException
+    {
+		List<HpcUserDownloadRequest> downloadRequests = dataDownloadDAO.getDataObjectDownloadRequests(userId);
+		downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequests(userId));
+		//Remove data object requests originated from Collection download request
+		removeCollectionDataObjectRequests(downloadRequests);
+		return downloadRequests;
+    }
+    
+	private void removeCollectionDataObjectRequests(List<HpcUserDownloadRequest> downloadRequests)
+	{
+		List<String> requestIds = new ArrayList<String>();
+		for(HpcUserDownloadRequest request : downloadRequests)
+		{
+			if(request.getType().equals(HpcDownloadTaskType.DATA_OBJECT))
+				continue;
+			if(request.getItems().isEmpty())
+				continue;
+			for(HpcCollectionDownloadTaskItem taskItem :request.getItems())
+				requestIds.add(taskItem.getDataObjectDownloadTaskId());
+		}
+		
+		for (Iterator<HpcUserDownloadRequest> iterator = downloadRequests.iterator(); iterator.hasNext();) {
+			HpcUserDownloadRequest request = iterator.next();
+			if(request.getType().equals(HpcDownloadTaskType.DATA_OBJECT))
+			{
+				if(requestIds.contains(request.getTaskId()))
+					iterator.remove();
+			}
+		}
+	}
+	
+	@Override
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId) throws HpcException
+	{
+		List<HpcUserDownloadRequest> requests =  dataDownloadDAO.getDownloadResults(userId);
+		removeCollectionDataObjectRequests(requests);
+		return requests;
+	}
+
+	@Override
     public String getFileContainerName(HpcDataTransferType dataTransferType,
                                        String doc, String fileContainerId) 
     		                          throws HpcException
@@ -979,10 +1023,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    // HpcDataTransferProgressListener Interface Implementation
 	    //---------------------------------------------------------------------//  
 		
-		@Override public void transferCompleted()
+		@Override 
+		public void transferCompleted()
 		{
 			// This callback method is called when the first hop (S3) download completed.
-			try {
+			
+			// This method is executed in a thread managed by S3 Transfer manager (part of a pool).
+			// If this thread was used before, then it has Globus token cached in it. We are clearing 
+			// the cached token, so a new one is generated if needed. This is to avoid using an expired token.
+	    	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+	    	invoker.getDataTransferAuthenticatedTokens().clear();
+	    	HpcRequestContext.setRequestInvoker(invoker);
+
+	    	try {
 				   // Update the download task to reflect 1st hop transfer completed.
 				   downloadTask.setDataTransferType(secondHopDownloadRequest.getDataTransferType());
 				   

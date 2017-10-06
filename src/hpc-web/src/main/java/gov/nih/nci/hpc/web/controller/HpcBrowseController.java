@@ -81,7 +81,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login?returnPath=browse";
 		}
 
 		// Get User DOC model for base path
@@ -199,10 +199,10 @@ public class HpcBrowseController extends AbstractHpcController {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
 				
 				//session.setAttribute("selectedBrowsePath", hpcBrowserEntry.getSelectedNodePath());
-				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath(), browserEntry, authToken, model,
+				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry, authToken, model,
 						false, hpcBrowserEntry.isPartial());
 				if(hpcBrowserEntry.isPartial())
-					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath(), browserEntry);
+					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
 
 				browserEntry = trimPath(browserEntry, browserEntry.getName());
 				List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();

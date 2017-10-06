@@ -22,25 +22,13 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_ST
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_DOC_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
-import gov.nih.nci.hpc.dao.HpcMetadataDAO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
-import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
-import gov.nih.nci.hpc.service.HpcMetadataService;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -54,6 +42,18 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
+import gov.nih.nci.hpc.service.HpcMetadataService;
 
 /**
  * <p>
@@ -174,7 +174,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     }
     
     @Override
-    public void addSystemGeneratedMetadataToCollection(String path) 
+    public void addSystemGeneratedMetadataToCollection(String path, String userId, String userName,
+    		                                           String doc) 
                                                       throws HpcException
     {
        	// Input validation.
@@ -192,7 +193,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	metadataEntries.add(generateMetadataUpdatedMetadata());
        	
        	// Create and add the registrar ID, name and DOC metadata.
-       	metadataEntries.addAll(generateRegistrarMetadata());
+       	metadataEntries.addAll(generateRegistrarMetadata(userId, userName, doc));
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(), 
@@ -346,7 +347,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     		                                           HpcDataTransferType dataTransferType,
     		                                           Calendar dataTransferStarted,
     		                                           Calendar dataTransferCompleted,
-    		                                           Long sourceSize, String callerObjectId) 
+    		                                           Long sourceSize, String callerObjectId,
+    		                                           String userId, String userName, String doc) 
                                                       throws HpcException
     {
        	// Input validation.
@@ -370,7 +372,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	metadataEntries.add(generateMetadataUpdatedMetadata());
        	
        	// Create and add the registrar ID, name and DOC metadata.
-       	metadataEntries.addAll(generateRegistrarMetadata());
+       	metadataEntries.addAll(generateRegistrarMetadata(userId, userName, doc));
        	
        	if(sourceLocation != null) {
        	   // Create the source location file-container-id metadata.
@@ -617,35 +619,28 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     /**
      * Generate registrar ID, name and DOC metadata.
      * 
-     * @return a List of the 3 metadata.
+     * @param userId The user ID.
+     * @param userName The user name.
+     * @param doc The DOC.
+     * @return A List of the 3 metadata.
      * @throws HpcException if the service invoker is unknown.
      */
-    private List<HpcMetadataEntry> generateRegistrarMetadata() throws HpcException
+    private List<HpcMetadataEntry> generateRegistrarMetadata(String userId, String userName, String doc) 
+    		                                                throws HpcException
     {
-       	// Get the service invoker.
-       	HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-       	if(invoker == null) {
-       	   throw new HpcException("Unknown service invoker", 
-		                          HpcErrorType.UNEXPECTED_ERROR);
-       	}	
-       	
        	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
        	
        	// Create the registrar user-id metadata.
        	addMetadataEntry(metadataEntries,
-       			         toMetadataEntry(REGISTRAR_ID_ATTRIBUTE, 
-       			                         invoker.getNciAccount().getUserId()));
+       			         toMetadataEntry(REGISTRAR_ID_ATTRIBUTE, userId));
        	
        	// Create the registrar name metadata.
        	addMetadataEntry(metadataEntries,
-       			         toMetadataEntry(REGISTRAR_NAME_ATTRIBUTE, 
-       			                         invoker.getNciAccount().getFirstName() + " " +
-                                         invoker.getNciAccount().getLastName()));
+       			         toMetadataEntry(REGISTRAR_NAME_ATTRIBUTE, userName));
        	
        	// Create the registrar DOC.
        	addMetadataEntry(metadataEntries,
-       			         toMetadataEntry(REGISTRAR_DOC_ATTRIBUTE, 
-       			                         invoker.getNciAccount().getDoc()));
+       			         toMetadataEntry(REGISTRAR_DOC_ATTRIBUTE, doc));
        	
        	return metadataEntries;
     }

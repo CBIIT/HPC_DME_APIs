@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -113,6 +112,13 @@
           <value>deleteGroupMemberResponses</value>
           <value>addGroupMemberResponses</value>
           <value>bookmarks</value>
+          <value>activeTasks</value>
+          <value>completedTasks</value>
+          <value>completedItems</value>
+          <value>failedItems</value>
+          <value>inProgressItems</value>
+          <value>dataObjectPaths</value>
+          <value>items</value>
     </util:list>
 
 	<!-- JSON Provider -->
@@ -190,14 +196,20 @@
         		<entry key="registerCollection" value="${hpc.ws.rs.auth.data-management.register-collection}"/>
         		<entry key="getCollection" value="${hpc.ws.rs.auth.data-management.get-collection}"/>
         		<entry key="downloadCollection" value="${hpc.ws.rs.auth.data-management.download-collection}"/>
+        		<entry key="getCollectionDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-collection-download-status}"/>
         		<entry key="setCollectionPermissions" value="${hpc.ws.rs.auth.data-management.set-collection-permissions}"/>
         		<entry key="getCollectionPermissions" value="${hpc.ws.rs.auth.data-management.get-collection-permissions}"/>
         		<entry key="registerDataObject" value="${hpc.ws.rs.auth.data-management.register-data-object}"/>
+        		<entry key="registerDataObjects" value="${hpc.ws.rs.auth.data-management.register-data-objects}"/>
+        		<entry key="getDataObjectsRegistrationDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-data-objects-registration-status}"/>
         		<entry key="getDataObject" value="${hpc.ws.rs.auth.data-management.get-data-object}"/>
         		<entry key="downloadDataObject" value="${hpc.ws.rs.auth.data-management.download-data-object}"/>
+        		<entry key="getDataObjectDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-data-object-download-status}"/>
         		<entry key="deleteDataObject" value="${hpc.ws.rs.auth.data-management.delete-data-object}"/>
         		<entry key="setDataObjectPermissions" value="${hpc.ws.rs.auth.data-management.set-data-object-permissions}"/>
         		<entry key="getDataObjectPermissions" value="${hpc.ws.rs.auth.data-management.get-data-object-permissions}"/>
+        		<entry key="downloadDataObjects" value="${hpc.ws.rs.auth.data-management.download-data-objects}"/>
+        		<entry key="getDataObjectsDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-data-objects-download-status}"/>
         		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.data-management.get-data-management-model}"/>
         		<entry key="getDataManagementTree" value="${hpc.ws.rs.auth.data-management.get-data-management-tree}"/>
         		
