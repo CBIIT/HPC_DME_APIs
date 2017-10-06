@@ -36,8 +36,8 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/tasks")
-public class HpcTaskBoardController extends AbstractHpcController {
+@RequestMapping("/uploadtasks")
+public class HpcUploadTaskBoardController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionURL;
 	@Value("${gov.nih.nci.hpc.server.query}")
@@ -56,14 +56,6 @@ public class HpcTaskBoardController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		model.addAttribute("queryURL", queryURL);
-		model.addAttribute("collectionURL", collectionURL);
-		session.removeAttribute("compoundQuery");
-		session.removeAttribute("hierarchy");
-		session.removeAttribute("permissionsPath");
-		session.removeAttribute("selectedUsers");
-		session.removeAttribute("permissions");
-
 		String authToken = (String) session.getAttribute("hpcUserToken");
 
 		if (authToken == null) {
@@ -78,6 +70,6 @@ public class HpcTaskBoardController extends AbstractHpcController {
 			return "redirect:/";
 		}
 
-		return "taskboard";
+		return "uploadtaskboard";
 	}
 }
