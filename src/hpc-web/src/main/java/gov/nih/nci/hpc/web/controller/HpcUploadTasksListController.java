@@ -49,8 +49,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 @Controller
 @EnableAutoConfiguration
-@RequestMapping("/downloadTasks")
-public class HpcCurrentTasksListController extends AbstractHpcController {
+@RequestMapping("/uploadTasksList")
+public class HpcUploadTasksListController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.download}")
 	private String queryServiceURL;
 

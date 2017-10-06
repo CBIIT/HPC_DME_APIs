@@ -5,7 +5,7 @@ var linkSearchNameCellTemplate = '<div class="ngCellText" ng-class="col.colIndex
 
 app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
 	$scope.searchesloading = true;
-	$http.get('/downloadTasks').
+	$http.get('/downloadTasksList').
 	  success(function(data, status, headers, config) {
         	$scope.hpcQueries = data;
         	$scope.searchesloading = false;

@@ -1,5 +1,8 @@
 package gov.nih.nci.hpc.web.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HpcDownloadDatafile {
 
 	private String endPointName;
@@ -8,6 +11,18 @@ public class HpcDownloadDatafile {
 	private String downloadFileName;
 	private String searchType;
 	private String downloadType;
+	private List<String> selectedPaths;
+
+	
+	public List<String> getSelectedPaths() {
+		if(selectedPaths == null)
+			selectedPaths = new ArrayList<String>();
+		return selectedPaths;
+	}
+
+	public void setSelectedPaths(List<String> selectedPaths) {
+		this.selectedPaths = selectedPaths;
+	}
 
 	public String getSearchType() {
 		return searchType;

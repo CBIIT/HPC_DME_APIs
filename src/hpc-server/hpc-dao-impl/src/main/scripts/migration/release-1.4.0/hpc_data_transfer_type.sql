@@ -26,3 +26,10 @@ UPDATE public."HPC_DOWNLOAD_TASK_RESULT"
        "DATA_TRANSFER_TYPE"='S_3'
  WHERE "DATA_TRANSFER_TYPE"='S3';
 
+update r_meta_main 
+	set  meta_attr_value='S_3' 
+where meta_attr_name='data_transfer_type' and meta_attr_value='S3';
+
+UPDATE public."HPC_SYSTEM_ACCOUNT"
+   SET "DATA_TRANSFER_TYPE"='S_3'
+ WHERE "DATA_TRANSFER_TYPE"='S3';
