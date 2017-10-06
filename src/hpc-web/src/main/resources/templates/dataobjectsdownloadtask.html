@@ -168,14 +168,14 @@
 											for="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"
 											th:text="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"></label></a>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getMessage() != null}">
+									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getMessage() != null}">
 										<label for="Name">Message:</label> <label
-											for="${hpcDataObjectsDownloadStatusDTO.getMessage()}"
-											th:text="${hpcDataObjectsDownloadStatusDTO.getMessage()}"></label>
+											for="${hpcCollectionDownloadTaskItem.getMessage()}"
+											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
+							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
 								</h2>
@@ -194,10 +194,10 @@
 											for="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"
 											th:text="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"></label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getMessage() != null}">
+									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getMessage() != null}">
 										<label for="Name">Message:</label> <label
-											for="${hpcDataObjectsDownloadStatusDTO.getMessage()}"
-											th:text="${hpcDataObjectsDownloadStatusDTO.getMessage()}"></label>
+											for="${hpcCollectionDownloadTaskItem.getMessage()}"
+											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
 									</div>
 								</div>
 							</div>
@@ -220,10 +220,10 @@
 											for="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"
 											th:text="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"></label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsDownloadStatusDTO.getMessage() != null}">
+									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getMessage() != null}">
 										<label for="Name">Message:</label> <label
-											for="${hpcDataObjectsDownloadStatusDTO.getMessage()}"
-											th:text="${hpcDataObjectsDownloadStatusDTO.getMessage()}"></label>
+											for="${hpcCollectionDownloadTaskItem.getMessage()}"
+											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
 									</div>
 								</div>
 							</div>

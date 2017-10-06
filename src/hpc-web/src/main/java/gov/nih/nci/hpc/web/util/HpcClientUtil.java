@@ -1198,23 +1198,19 @@ public class HpcClientUtil {
 
 		if (restResponse == null || restResponse.getStatus() != 200)
 			return null;
-		MappingJsonFactory factory = new MappingJsonFactory();
-		JsonParser parser;
 		try {
-			parser = factory.createParser((InputStream) restResponse.getEntity());
-		} catch (IllegalStateException | IOException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
-		}
-		try {
+			ObjectMapper mapper = new ObjectMapper();
+			AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+					new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+					new JacksonAnnotationIntrospector());
+			mapper.setAnnotationIntrospector(intr);
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+			MappingJsonFactory factory = new MappingJsonFactory(mapper);
+			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
 			return parser.readValueAs(HpcDownloadSummaryDTO.class);
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
-		} catch (IOException e) {
+		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
 		}
