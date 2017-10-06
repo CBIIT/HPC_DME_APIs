@@ -106,7 +106,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			}
 
 			if (taskId == null || type == null)
-				return "redirect:/tasks";
+				return "redirect:/downloadtasks";
 			
 			if(type.equals(HpcDownloadTaskType.COLLECTION.name()))
 				return displayCollectionTask(authToken, taskId, model);
@@ -117,12 +117,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 			else {
 				String message = "Data file not found!";
 				model.addAttribute("error", message);
-				return "redirect:/tasks";
+				return "redirect:/downloadtasks";
 			}	
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get data file: " + e.getMessage());
 			e.printStackTrace();
-			return "dashboard";
+			return "redirect:/downloadtasks";
 		}
 	}
 

@@ -151,29 +151,6 @@
 					<!--/col-->
 
 				</div>
-				<!-- 
-				<div class="row">
-					<div class="col-lg-9 col-md-12">
-						<div class="panel panel-default">
-							<div class="panel-heading">
-								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Upload Tasks</strong>
-								</h2>
-							</div>
-							<div class="panel-body">
-								<div id="grid2" ui-grid="gridOptions2" class="grid">
-									<div class="no-data" ng-hide="!notificationsloading">
-										<div class="msg">
-											<i class="fa fa-spin fa-spinner"></i> <span>Loading
-												Data...</span>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				-->					
 				<form class="form-horizontal" id="searchForm" th:action="@{/savedSearchList}" method="POST">
 					<input type="hidden" name="searchName" id="searchName" />
 				</form>
@@ -196,18 +173,9 @@
 	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
 	<script src="js/jquery.customSelect.min.js"></script>
 
-	<script type="text/javascript" src="js/hpcTaskboard.js"></script>
+	<script type="text/javascript" src="js/hpcDownloadTaskboard.js"></script>
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
-	<script>
-	function deleteSearch(searchName)
-	{
-		document.getElementById("searchName").value = searchName;
-		$("#searchForm").submit();
-	}
-	
-	</script>
-
 </body>
 </html>
