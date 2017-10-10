@@ -233,11 +233,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
   		    	        	 continue;
     		     }
     			 
-    			 // Data transfer upload completed (successfully or failed). Add an event.
-    			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
-		                                    dataTransferStatus, null, systemGeneratedMetadata.getSourceLocation(), 
-		                                    dataTransferCompleted, systemGeneratedMetadata.getDataTransferType(),
-		                                    systemGeneratedMetadata.getRegistrarDOC());
+    			 // Data transfer upload completed (successfully or failed). Add an event if needed.
+    			 if(systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+    			    addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
+		                                       dataTransferStatus, 
+		                                       systemGeneratedMetadata.getSourceLocation(), 
+		                                       dataTransferCompleted, 
+		                                       systemGeneratedMetadata.getDataTransferType(),
+		                                       systemGeneratedMetadata.getRegistrarDOC());
+    			 }
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process data transfer upload in progress:" + path, e);
@@ -273,7 +277,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     					         systemGeneratedMetadata.getDataTransferType(),
     					         systemGeneratedMetadata.getArchiveLocation().getFileId());
     			 
- 				 // Transfer the data file.
+ 				 // Transfer the data file from the temporary archive into the archive.
  		         HpcDataObjectUploadResponse uploadResponse = 
  		        	dataTransferService.uploadDataObject(null, file, path, 
  		        			                             systemGeneratedMetadata.getRegistrarId(),
@@ -295,14 +299,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			    			               uploadResponse.getDataTransferType(),
  			    			               uploadResponse.getDataTransferCompleted()); 
  			     
- 			     // Data transfer upload completed (successfully or failed). Add an event.
-    			 addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
-    					                    uploadResponse.getDataTransferStatus(),
-    					                    uploadResponse.getChecksum(), 
-    					                    systemGeneratedMetadata.getSourceLocation(),
-    					                    uploadResponse.getDataTransferCompleted(),
-    					                    uploadResponse.getDataTransferType(),
-    					                    systemGeneratedMetadata.getRegistrarDOC());
+ 			     // Data transfer upload completed (successfully or failed). Add an event if needed.
+ 			     if(systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+    			    addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
+    				   	                       uploadResponse.getDataTransferStatus(),
+    					                       systemGeneratedMetadata.getSourceLocation(),
+    					                       uploadResponse.getDataTransferCompleted(),
+    					                       uploadResponse.getDataTransferType(),
+    					                       systemGeneratedMetadata.getRegistrarDOC());
+ 			     }
  			     
     		} catch(HpcException e) {
     			    logger.error("Failed to transfer data from temporary archive:" + path, e);
@@ -733,7 +738,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param userId The user ID.
      * @param path The data object path.
      * @param dataTransferStatus The data transfer upload status.
-     * @param checksum (Optional) The data checksum.
      * @param sourceLocation (Optional) The data transfer source location.
      * @param dataTransferCompleted (Optional) The time the data upload completed.
      * @param dataTransferType The type of data transfer used to upload (Globus, S3, etc).
@@ -741,7 +745,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      */
 	private void addDataTransferUploadEvent(String userId, String path,
 			                                HpcDataTransferUploadStatus dataTransferStatus,
-			                                String checksum, HpcFileLocation sourceLocation, 
+			                                HpcFileLocation sourceLocation, 
 			                                Calendar dataTransferCompleted, 
 			                                HpcDataTransferType dataTransferType, String doc) 
 	{
@@ -749,7 +753,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		try {
 			 switch(dataTransferStatus) {
 			        case ARCHIVED: 
-		                 eventService.addDataTransferUploadArchivedEvent(userId, path, checksum, 
+		                 eventService.addDataTransferUploadArchivedEvent(userId, path, null, 
 		                		                                         sourceLocation, dataTransferCompleted);
 		                 break;
 		                 
@@ -758,13 +762,40 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		                 break;
 		                 
 			        case FAILED: 
-		                 eventService.addDataTransferUploadFailedEvent(userId, path, sourceLocation, 
+		                 eventService.addDataTransferUploadFailedEvent(userId, path, null, sourceLocation, 
 		                		                                       dataTransferCompleted,
 		                		                                       dataTransferType.value() + " failure");
 		                 break;
 		                 
 		            default: 
 		                 logger.error("Unexpected data transfer status: " + dataTransferStatus); 
+			 }
+
+		} catch(HpcException e) {
+			    logger.error("Failed to add a data transfer upload event", e);
+		}
+	}
+	
+    /** 
+     * add data transfer download event.
+     * 
+     * @param userId The user ID.
+     * @param registrationTaskId The data registration task ID.
+     * @param result The registration result.
+     * @param message A failure message.
+     * @param dataTransferCompleted The upload completion time.
+     */
+	private void addDataTransferUploadEvent(String userId, String registrationTaskId,
+			                                boolean result, String message,
+			                                Calendar dataTransferCompleted) 
+	{
+		try {
+			 if(result) {
+				eventService.addDataTransferUploadArchivedEvent(userId, null, registrationTaskId, 
+                                                                null, dataTransferCompleted);
+			 } else {
+				     eventService.addDataTransferUploadFailedEvent(userId, null, registrationTaskId, null, 
+                                                                   dataTransferCompleted, message);
 			 }
 
 		} catch(HpcException e) {
@@ -1063,10 +1094,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		    logger.error("Failed to delete data object: " + path, HpcErrorType.UNEXPECTED_ERROR, e);
     	}
     	
-	    // Send an an event.
-    	if(systemGeneratedMetadata != null) {
+	    // Send an an event if needed.
+    	if(systemGeneratedMetadata != null && systemGeneratedMetadata.getRegistrationCompletionEvent()) {
 		   addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
-		    		                  systemGeneratedMetadata.getDataTransferStatus(), null, 
+		    		                  systemGeneratedMetadata.getDataTransferStatus(), 
 		    		                  systemGeneratedMetadata.getSourceLocation(), 
 		    		                  systemGeneratedMetadata.getDataTransferCompleted(), 
 		    		                  systemGeneratedMetadata.getDataTransferType(),
@@ -1107,7 +1138,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	
     	try {
     	     dataManagementBusService.registerDataObject(registrationTask.getPath(), 
-    		        	                                 registrationDTO, null, userId, userName, doc);
+    		        	                                 registrationDTO, null, userId, userName, doc, false);
     	     
     	} catch(HpcException e) {
     		    // Data object registration failed. Update the task accordingly.
@@ -1138,8 +1169,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		    logger.error("Failed to complete data object list registration request", e);
     	}
     	
-        // TODO: Send data object registration list completed/failed event.
-    	//addDataRegistrationEvent();
+    	// Send an event.
+    	addDataTransferUploadEvent(registrationTask.getUserId(), registrationTask.getId(),
+    			                   result, message, completed);
     }
     
     /**

@@ -466,7 +466,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    return registerDataObject(path, dataObjectRegistration, dataObjectFile, 
 	    		                  invokerNciAccount.getUserId(),
 	    		                  invokerNciAccount.getFirstName() + " " + invokerNciAccount.getLastName(),
-	    		                  invokerNciAccount.getDoc());
+	    		                  invokerNciAccount.getDoc(), true);
     }
     
     @Override
@@ -510,7 +510,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile, String userId, String userName, String doc)  
+    		                          File dataObjectFile, String userId, String userName, String doc,
+    		                          boolean registrationCompletionEvent)  
     		                         throws HpcException
     {
     	// Input validation.
@@ -568,7 +569,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			    			                   getSourceSize(source, uploadResponse.getDataTransferType(),
 				                                             dataObjectFile, doc), 
 			    			                   dataObjectRegistration.getCallerObjectId(),
-			    			                   userId, userName, doc); 
+			    			                   userId, userName, doc, registrationCompletionEvent); 
 	
 			    // Add collection update event.
        	        addCollectionUpdatedEvent(path, false, true);
