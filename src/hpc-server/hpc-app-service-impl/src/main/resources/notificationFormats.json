@@ -47,7 +47,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your data registration failed. \nData path: %1$s \nReason for failure: %2$s",
+			"textFormat": "Your data registration failed. \nData path: %1$s \nReason for failure: %2$s\nTask ID: %3$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -56,6 +56,10 @@
 				{
 					"payloadEntryAttribute": "ERROR_MESSAGE",
 					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
+					"index": "2"
 				}
 			]
 		},
