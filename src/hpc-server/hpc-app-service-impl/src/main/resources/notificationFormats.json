@@ -22,7 +22,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your upload request is completed.\nSource path: %1$s\nTarget path: %2$s",
+			"textFormat": "Your upload request is completed.\nSource path: %1$s\nTarget path: %2$s\nTask ID: %3$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "SOURCE_LOCATION",
@@ -31,6 +31,10 @@
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
 					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
+					"index": "2"
 				}
 			]
 		},

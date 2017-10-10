@@ -205,13 +205,16 @@ public interface HpcDataManagementBusService
      * @param userId The registrar user-id.
      * @param userName The registrar name.
      * @param doc The registrar DOC.
+     * @param registrationCompletionEvent If set to true, an event will be generated when 
+     *                                    registration is completed or failed. 
      * @return true if a new data object was registered, false if the collection already exists
      *         and its metadata got updated.
      * @throws HpcException on service failure.
      */
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile, String userId, String userName, String doc) 
+    		                          File dataObjectFile, String userId, String userName, String doc,
+    		                          boolean registrationCompletionEvent) 
     		                         throws HpcException;
     
     /**
