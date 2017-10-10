@@ -105,12 +105,12 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
-     * @param checksum (Optional) The data checksum.
+     * @param registrationTaskId (Optional) The data registration task ID.
      * @param sourceLocation The data transfer source location.
      * @param dataTransferCompleted The time the data upload completed.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferUploadArchivedEvent(String userId, String path, String checksum,
+    public void addDataTransferUploadArchivedEvent(String userId, String path, String registrationTaskId, 
     		                                       HpcFileLocation sourceLocation, Calendar dataTransferCompleted) 
                                                   throws HpcException;
     
@@ -119,12 +119,14 @@ public interface HpcEventService
      *
      * @param userId The user ID.
      * @param path The data object path.
+     * @param registrationTaskId (Optional) The data registration task ID.
      * @param sourceLocation The data transfer source location.
      * @param dataTransferCompleted The time the data upload completed.
      * @param errorMessage the upload failed error message.
      * @throws HpcException on service failure.
      */
-    public void addDataTransferUploadFailedEvent(String userId, String path, HpcFileLocation sourceLocation, 
+    public void addDataTransferUploadFailedEvent(String userId, String path, String registrationTaskId,
+    		                                     HpcFileLocation sourceLocation, 
     		                                     Calendar dataTransferCompleted, String errorMessage) 
                                                 throws HpcException;
 

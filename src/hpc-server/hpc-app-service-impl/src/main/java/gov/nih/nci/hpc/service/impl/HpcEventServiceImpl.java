@@ -59,20 +59,22 @@ public class HpcEventServiceImpl implements HpcEventService
 	public static final String DOWNLOAD_TASK_ID_PAYLOAD_ATTRIBUTE = "DOWNLOAD_TASK_ID";
 	public static final String DOWNLOAD_TASK_TYPE_PAYLOAD_ATTRIBUTE = "DOWNLOAD_TASK_TYPE";
 	public static final String DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE = "DATA_OBJECT_PATH";
-	public static final String CHECKSUM_PAYLOAD_ATTRIBUTE = "CHECKSUM";
+	public static final String REGISTRATION_TASK_ID_PAYLOAD_ATTRIBUTE = "REGISTRATION_TASK_ID";
 	public static final String COLLECTION_PATH_PAYLOAD_ATTRIBUTE = "COLLECTION_PATH";
 	public static final String COLLECTION_UPDATE_PAYLOAD_ATTRIBUTE = "UPDATE";
 	public static final String COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE = "UPDATE_DESCRIPTION";
+	public static final String SOURCE_LOCATION_PAYLOAD_ATTRIBUTE = "SOURCE_LOCATION";
+	public static final String DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE = "DESTINATION_LOCATION";
+	public static final String DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE = "DATA_TRANSFER_COMPLETED";
+	public static final String ERROR_MESSAGE_PAYLOAD_ATTRIBUTE = "ERROR_MESSAGE";
+	
+	// Event payload entries values.
 	public static final String COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE = "METADATA";
 	public static final String COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE = "Collection metadata updated";
 	public static final String COLLECTION_REGISTRATION_PAYLOAD_VALUE = "COLLECTION_REGISTRATION";
 	public static final String COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE = "Sub collection registerd";
 	public static final String DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE = "DATA_OBJECT_REGISTRATION";
 	public static final String DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE = "Data object registered";
-	public static final String SOURCE_LOCATION_PAYLOAD_ATTRIBUTE = "SOURCE_LOCATION";
-	public static final String DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE = "DESTINATION_LOCATION";
-	public static final String DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE = "DATA_TRANSFER_COMPLETED";
-	public static final String ERROR_MESSAGE_PAYLOAD_ATTRIBUTE = "ERROR_MESSAGE";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -197,21 +199,23 @@ public class HpcEventServiceImpl implements HpcEventService
     }
     
     @Override
-    public void addDataTransferUploadArchivedEvent(String userId, String path, String checksum, 
+    public void addDataTransferUploadArchivedEvent(String userId, String path, String registrationTaskId, 
     		                                       HpcFileLocation sourceLocation, Calendar dataTransferCompleted) 
     		                                      throws HpcException
     {
-    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED, null, null, path, checksum, 
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_ARCHIVED, null, null, path, registrationTaskId, 
     			             dataTransferCompleted, sourceLocation, null, null);
     }
     
     @Override
-    public void addDataTransferUploadFailedEvent(String userId, String path, HpcFileLocation sourceLocation, 
+    public void addDataTransferUploadFailedEvent(String userId, String path, String registrationTaskId,
+    		                                     HpcFileLocation sourceLocation, 
                                                  Calendar dataTransferCompleted, String errorMessage) 
     		                                    throws HpcException
     {
     	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_FAILED,
-                             null, null, path, null, dataTransferCompleted, sourceLocation, null, errorMessage);
+                             null, null, path, registrationTaskId, dataTransferCompleted, sourceLocation, 
+                             null, errorMessage);
     }
     
     @Override
@@ -343,7 +347,7 @@ public class HpcEventServiceImpl implements HpcEventService
      * @param downloadTaskType (Optional) The download task type.
      * @param downloadTaskId (Optional) The download task ID.
      * @param path (Optional) The data object path.
-     * @param checksum (Optional) The data checksum.
+     * @param registrationTaskId (Optional) The data registration task ID.
      * @param dataTransferCompleted (Optional) The time the data upload completed.
      * @param sourceLocation (Optional) The data transfer source location.
      * @param destinationLocation (Optional) The data transfer destination location.
@@ -353,7 +357,8 @@ public class HpcEventServiceImpl implements HpcEventService
     private void addDataTransferEvent(String userId, HpcEventType eventType, 
     		                          HpcDownloadTaskType downloadTaskType,
                                       String downloadTaskId,
-    		                          String path, String checksum, Calendar dataTransferCompleted,
+    		                          String path, String registrationTaskId, 
+    		                          Calendar dataTransferCompleted,
     		                          HpcFileLocation sourceLocation, HpcFileLocation destinationLocation,
     		                          String errorMessage) 
     		                         throws HpcException
@@ -389,8 +394,9 @@ public class HpcEventServiceImpl implements HpcEventService
 		   event.getPayloadEntries().add(toPayloadEntry(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE, 
 				                                        dataManagementProxy.getRelativePath(path)));
 		}
-		if(checksum != null) {
-		   event.getPayloadEntries().add(toPayloadEntry(CHECKSUM_PAYLOAD_ATTRIBUTE, checksum));
+		if(registrationTaskId != null) {
+		   event.getPayloadEntries().add(toPayloadEntry(REGISTRATION_TASK_ID_PAYLOAD_ATTRIBUTE, 
+				                                        registrationTaskId));
 		}
 		if(dataTransferCompleted != null) {
 		   event.getPayloadEntries().add(toPayloadEntry(DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE, 
