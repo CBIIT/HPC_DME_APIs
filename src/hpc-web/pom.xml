@@ -152,13 +152,4 @@
 		</plugins>
 	</build>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>gov.nih.nci.hpc</groupId>
-				<artifactId>hpc-dto</artifactId>
-				<version>1.4.0-SNAPSHOT</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>
