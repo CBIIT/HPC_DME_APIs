@@ -49,7 +49,6 @@
 /*<![CDATA[*/
     var searchError = [[${error}]];
     var searchCriteria  = [[${hpcSearch}]];
-    console.log(JSON.stringify(searchCriteria));
 	var advancedCriteriaExist = [[${hpcSearch.advancedCriteria}]];
     var attributes = [[${hierarchy.getAllAttributes()}]];
     var collattributes = [[${hierarchy.getCollectionAttrsSet()}]];
@@ -90,7 +89,7 @@
 					</h3>
 					<br /> <br />
 					<div th:if="${error != null}">
-						<div class="alert alert-error">
+						<div class="alert alert-danger">
 							<a class="close" data-dismiss="alert">×</a> <label for="${error}"
 								th:text="${error}"></label>
 						</div>
@@ -618,8 +617,20 @@ if(advancedCriteriaExist) {
 
 if(searchError) {
 	// Process the hpcSearch object and restore the level criteria
-	for(var i = 0; i < inputs.length; i++)
-	
+	for(var i = 0; i < searchCriteria.level.length; i++) {
+		
+		// The first row always exists.  Don't add it a second time.
+		if(i > 0) {
+			addRow();
+		}
+		
+		// The table is one-indexed, not zero-indexed.
+		var rowId = (i + 1);
+		$('#level' + rowId).val(searchCriteria.level[i]);
+		$('#attrName' + rowId).val(searchCriteria.attrName[i]);
+		$('#operator' + rowId).val(searchCriteria.operator[i]);
+		$('#attrValue' + rowId).val(searchCriteria.attrValue[i]);
+	}	
 }
 //]]>
 </script>
