@@ -62,6 +62,7 @@ public class HpcMetadataValidator
 	public static final String CALLER_OBJECT_ID_ATTRIBUTE = "archive_caller_object_id";
 	public static final String CHECKSUM_ATTRIBUTE = "checksum";
 	public static final String METADATA_UPDATED_ATTRIBUTE = "metadata_updated";
+	public static final String REGISTRATION_COMPLETION_EVENT_ATTRIBUTE = "registration_completion_event";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -94,7 +95,8 @@ public class HpcMetadataValidator
 	            		           DATA_TRANSFER_STATUS_ATTRIBUTE, DATA_TRANSFER_TYPE_ATTRIBUTE,
 	            		           DATA_TRANSFER_STARTED_ATTRIBUTE, DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
 	            		           SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, 
-	            		           CHECKSUM_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
+	            		           CHECKSUM_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE, 
+	            		           REGISTRATION_COMPLETION_EVENT_ATTRIBUTE);
     	List<String> collectionAttributes = 
     			     Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE, REGISTRAR_NAME_ATTRIBUTE,
 		                           REGISTRAR_DOC_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);

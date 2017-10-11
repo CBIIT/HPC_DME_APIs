@@ -29,6 +29,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_A
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_COMPLETION_EVENT_ATTRIBUTE;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -285,6 +286,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	if(metadataMap.get(METADATA_UPDATED_ATTRIBUTE) != null) {
      	   systemGeneratedMetadata.setMetadataUpdated(toCalendar(metadataMap.get(METADATA_UPDATED_ATTRIBUTE)));
      	}
+    	
+    	if(metadataMap.get(REGISTRATION_COMPLETION_EVENT_ATTRIBUTE) != null) {
+      	   systemGeneratedMetadata.setRegistrationCompletionEvent(
+      			 Boolean.valueOf(metadataMap.get(REGISTRATION_COMPLETION_EVENT_ATTRIBUTE)));
+      	}
     		  
 		return systemGeneratedMetadata;
 	}
@@ -348,7 +354,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     		                                           Calendar dataTransferStarted,
     		                                           Calendar dataTransferCompleted,
     		                                           Long sourceSize, String callerObjectId,
-    		                                           String userId, String userName, String doc) 
+    		                                           String userId, String userName, String doc,
+    		                                           boolean registrationCompletionEvent) 
                                                       throws HpcException
     {
        	// Input validation.
@@ -437,6 +444,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
         addMetadataEntry(metadataEntries,
         		         toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, 
         	                             callerObjectId));
+        // Create the Registration Completion Event Indicator metadata.
+        addMetadataEntry(metadataEntries,
+        		         toMetadataEntry(REGISTRATION_COMPLETION_EVENT_ATTRIBUTE, 
+        		        		         Boolean.toString(registrationCompletionEvent)));
         
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), 
