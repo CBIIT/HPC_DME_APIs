@@ -135,13 +135,16 @@ public interface HpcMetadataService
      * 		2. Registrar user ID.
      * 		3. Registrar name.
      *      4. Registrar DOC.
-     * 		5. Source location (file-container-id and file-id). (Optional)
+     * 		5. Source location (file-container-id and file-id). (Optional).
      *      6. Archive location (file-container-id and file-id).
      *      7. Data Transfer Request ID. (Optional)
      *      8. Data Transfer Status.
      *      9. Data Transfer Type.
-     *      10. Data Object File(s) size. (Optional)
-     *      11. Metadata Origin
+     *      10. Data Transfer Started.
+     *      11. Data Transfer Completed (Optional).
+     *      12. Data Object File size. (Optional).
+     *      13. Caller Object ID (Optional).
+     *      14. Registration Completion Event Indicator.
      *
      * @param path The data object path.
      * @param archiveLocation The physical file archive location.
@@ -157,6 +160,8 @@ public interface HpcMetadataService
      * @param userId The user ID.
      * @param userName The user name.
      * @param doc The DOC.
+     * @param registrationCompletionEvent If set to true, an event will be generated when 
+     *                                    registration is completed or failed. 
      * 
      * @throws HpcException on service failure.
      */
@@ -170,7 +175,8 @@ public interface HpcMetadataService
     		                                           Calendar dataTransferStarted,
     		                                           Calendar dataTransferCompleted,
     		                                           Long sourceSize, String callerObjectId,
-    		                                           String userId, String userName, String doc) 
+    		                                           String userId, String userName, String doc,
+    		                                           boolean registrationCompletionEvent) 
     		                                          throws HpcException; 
     
     /**
