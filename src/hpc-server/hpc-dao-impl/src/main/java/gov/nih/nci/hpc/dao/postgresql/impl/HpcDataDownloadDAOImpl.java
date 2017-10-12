@@ -145,7 +145,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	public static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = 
 		   "select \"ID\", \"PATH\", \"CREATED\", 'DATA_OBJECT' as \"TYPE\", null as \"COMPLETED\", " +
 	       "null as \"RESULT\", null as \"ITEMS\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " +
-		   "\"USER_ID\" ? = and \"COMPLETION_EVENT\" = true order by \"CREATED\"";
+		   "\"USER_ID\" = ? and \"COMPLETION_EVENT\" = true order by \"CREATED\"";
 	
 	public static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = 
 		   "select \"ID\", \"PATH\", \"CREATED\", \"TYPE\", null as \"COMPLETED\", " +
