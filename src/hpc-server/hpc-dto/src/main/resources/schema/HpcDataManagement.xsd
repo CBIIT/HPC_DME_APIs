@@ -309,6 +309,9 @@
 			                 minOccurs="0" maxOccurs="unbounded" />
 			    <xsd:element name="completedTasks" type="hpc-domain-datatransfer:HpcUserDownloadRequest" 
 			                 minOccurs="0" maxOccurs="unbounded" />
+			    <xsd:element name="page" type="xsd:int" />
+				<xsd:element name="limit" type="xsd:int" />
+				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

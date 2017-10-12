@@ -141,9 +141,12 @@ public interface HpcDataManagementBusService
     /**
      * Get download summary. Note: the summary is for the request invoker.
      *
+     * @param page The requested results page.
+     * @param totalCount If set to true, return the total count of completed tasks. All active tasks
+     *                   are always returned.
      * @return A summary of download tasks for the request invoker
      */
-	public HpcDownloadSummaryDTO getDownloadSummary() throws HpcException;
+	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount) throws HpcException;
 	
     /**
      * Set collection permissions.

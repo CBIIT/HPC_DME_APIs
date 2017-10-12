@@ -37,6 +37,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * <p>
@@ -68,8 +69,10 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
 	@Autowired
     private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 	
-	// The max page size of notification delivery receipts.
-	private int notificationDeliveryReceiptsPageSize = 0;
+	// Pagination support.
+	@Autowired
+	@Qualifier("hpcNotificationPagination")
+	private HpcPagination pagination = null;
 	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -93,14 +96,11 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     /**
      * Constructor for Spring Dependency Injection.
      *
-     * @param notificationDeliveryReceiptsPageSize The max page size of delivery notification receipts. 
      * @param notificationSenders The notification senders.
      */
     private HpcNotificationServiceImpl(
-    		   int notificationDeliveryReceiptsPageSize,
     		   Map<HpcNotificationDeliveryMethod, HpcNotificationSender> notificationSenders) 
     {
-    	this.notificationDeliveryReceiptsPageSize = notificationDeliveryReceiptsPageSize;
     	this.notificationSenders.putAll(notificationSenders);
     }
 
@@ -300,7 +300,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
        	}
        	
     	return notificationDAO.getDeliveryReceipts(invoker.getNciAccount().getUserId(), 
-                                                   getOffset(page), notificationDeliveryReceiptsPageSize);
+    			                                   pagination.getOffset(page), pagination.getPageSize());
     }
 
     @Override
@@ -321,7 +321,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     @Override
     public int getNotificationDeliveryReceiptsPageSize()
     {
-    	return notificationDeliveryReceiptsPageSize;
+    	return pagination.getPageSize();
     }
 
     @Override
@@ -341,24 +341,6 @@ public class HpcNotificationServiceImpl implements HpcNotificationService
     // Helper Methods
     //---------------------------------------------------------------------//  
 	
-    /**
-     * Calculate search offset by requested page.
-     *
-     * @param page The requested page.
-     * @return The calculated offset
-     * @throws HpcException if the page is invalid.
-     * 
-     */
-    private int getOffset(int page) throws HpcException
-    {
-    	if(page < 1) {
-    	   throw new HpcException("Invalid page: " + page,
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
-    	return (page - 1) * notificationDeliveryReceiptsPageSize;
-    }
-    
     /**
      * Validate notification triggers include collection/data-objects that exist.
 	 * In addition, event payload for collections/data-objects are referencing the relative path of 

@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,12 +25,12 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -101,6 +100,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	// DOC configuration locator.
 	@Autowired
 	private HpcDocConfigurationLocator docConfigurationLocator = null;
+	
+	// Pagination support.
+	@Autowired
+	@Qualifier("hpcDownloadResultsPagination")
+	private HpcPagination pagination = null;
 	
 	// The download directory
 	private String downloadDirectory = null;
@@ -390,6 +394,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    taskResult.setResult(result);
 	    taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
 	    taskResult.setMessage(message);
+	    taskResult.setCompletionEvent(downloadTask.getCompletionEvent());
 	    taskResult.setCreated(downloadTask.getCreated());
 	    taskResult.setCompleted(completed);	
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
@@ -509,6 +514,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	    taskResult.setResult(result);
 	    taskResult.setType(downloadTask.getType());
 	    taskResult.setMessage(message);
+	    taskResult.setCompletionEvent(true);
 	    taskResult.setCreated(downloadTask.getCreated());
 	    taskResult.setCompleted(completed);	
 	    taskResult.getItems().addAll(downloadTask.getItems());
@@ -520,41 +526,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     {
 		List<HpcUserDownloadRequest> downloadRequests = dataDownloadDAO.getDataObjectDownloadRequests(userId);
 		downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequests(userId));
-		//Remove data object requests originated from Collection download request
-		removeCollectionDataObjectRequests(downloadRequests);
 		return downloadRequests;
     }
     
-	private void removeCollectionDataObjectRequests(List<HpcUserDownloadRequest> downloadRequests)
+	@Override
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page) throws HpcException
 	{
-		List<String> requestIds = new ArrayList<String>();
-		for(HpcUserDownloadRequest request : downloadRequests)
-		{
-			if(request.getType().equals(HpcDownloadTaskType.DATA_OBJECT))
-				continue;
-			if(request.getItems().isEmpty())
-				continue;
-			for(HpcCollectionDownloadTaskItem taskItem :request.getItems())
-				requestIds.add(taskItem.getDataObjectDownloadTaskId());
-		}
-		
-		for (Iterator<HpcUserDownloadRequest> iterator = downloadRequests.iterator(); iterator.hasNext();) {
-			HpcUserDownloadRequest request = iterator.next();
-			if(request.getType().equals(HpcDownloadTaskType.DATA_OBJECT))
-			{
-				if(requestIds.contains(request.getTaskId()))
-					iterator.remove();
-			}
-		}
+		return dataDownloadDAO.getDownloadResults(userId,
+				                                  pagination.getOffset(page), 
+				                                  pagination.getPageSize());
 	}
 	
 	@Override
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId) throws HpcException
+	public int getDownloadResultsCount(String userId) throws HpcException
 	{
-		List<HpcUserDownloadRequest> requests =  dataDownloadDAO.getDownloadResults(userId);
-		removeCollectionDataObjectRequests(requests);
-		return requests;
+		return dataDownloadDAO.getDownloadResultsCount(userId);
 	}
+	
+    @Override
+    public int getDownloadResultsPageSize()
+    {
+    	return pagination.getPageSize();
+    }
 
 	@Override
     public String getFileContainerName(HpcDataTransferType dataTransferType,
