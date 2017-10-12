@@ -375,7 +375,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDownloadSummaryDTO getDownloadSummary() throws HpcException
+    public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount) throws HpcException
     {
     	// Get the request invoker user-id
     	String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
@@ -383,7 +383,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Populate the DTO with active and completed sownload requests for this user.
     	HpcDownloadSummaryDTO downloadSummary = new HpcDownloadSummaryDTO();
     	downloadSummary.getActiveTasks().addAll(dataTransferService.getDownloadRequests(userId));
-    	downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId));
+    	downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId, page));
+    	
+    	int limit = dataTransferService.getDownloadResultsPageSize(); 
+    	downloadSummary.setPage(page);
+    	downloadSummary.setLimit(limit);
+    	
+		if(totalCount) {
+		   int count = downloadSummary.getCompletedTasks().size();
+		   downloadSummary.setTotalCount((page == 1 && count < limit) ? 
+					                      count : dataTransferService.getDownloadResultsCount(userId));
+		}
     	
     	return downloadSummary;
     }
