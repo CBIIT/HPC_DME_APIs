@@ -308,12 +308,16 @@ public interface HpcDataManagementRestService
     /**
      * Get download summary (for the request invoker).
      *
+     * @param page The requested results page.
+     * @param totalCount If set to true, return the total count of completed tasks. All active tasks
+     *                   are always returned.
      * @return The REST service response w/ HpcDownloadSummaryDTO entity.
      */
 	@GET
 	@Path("/download")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDownloadSummary();
+	public Response getDownloadSummary(@QueryParam("page") Integer page,
+                                       @QueryParam("totalCount") Boolean totalCount);
 	
     /**
      * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.
