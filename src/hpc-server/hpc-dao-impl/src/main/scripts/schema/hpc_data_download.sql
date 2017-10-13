@@ -66,6 +66,7 @@ CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"
   "RESULT" boolean NOT NULL,
   "MESSAGE" text,
   "ITEMS" text,
+  "COMPLETION_EVENT" boolean,
   "CREATED" timestamp NOT NULL,
   "COMPLETED" timestamp NOT NULL
 )

@@ -152,10 +152,23 @@ public interface HpcDataDownloadDAO
      * Get download results for a user. 
      *
      * @param userId The user ID to query for.
+     * @param offset Skip that many download-results in the returned results.
+     * @param limit No more than 'limit' download-results will be returned.
      * @return A list of completed download requests.
      * @throws HpcException on database error.
      */
-    public List<HpcUserDownloadRequest> getDownloadResults(String userId) throws HpcException;
+    public List<HpcUserDownloadRequest> getDownloadResults(String userId, int offset, 
+    		                                               int limit) 
+    		                                              throws HpcException;
+    
+    /**
+     * Get download results count for a user. 
+     *
+     * @param userId The user ID to query for.
+     * @return A total count of completed download requests.
+     * @throws HpcException on database error.
+     */
+    public int getDownloadResultsCount(String userId) throws HpcException;
 }
 
  

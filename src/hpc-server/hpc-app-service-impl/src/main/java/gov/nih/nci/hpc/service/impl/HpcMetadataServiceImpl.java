@@ -326,7 +326,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     @Override
     public void addMetadataToDataObject(String path, 
     		                            List<HpcMetadataEntry> metadataEntries,
-    		                            String doc) 
+    		                            String doc, String collectionType) 
     		                           throws HpcException
     {
        	// Input validation.
@@ -336,7 +336,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateDataObjectMetadata(doc, null, metadataEntries);
+       	metadataValidator.validateDataObjectMetadata(doc, null, metadataEntries, collectionType);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), 
@@ -543,7 +543,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     @Override
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries, 
-    		                             String doc) 
+    		                             String doc, String collectionType) 
     		                            throws HpcException
     {
        	// Input validation.
@@ -557,7 +557,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        			                                     dataManagementProxy.getDataObjectMetadata(
        			                                         dataManagementAuthenticator.getAuthenticatedToken(),
                                                          path),
-       			                                     metadataEntries);
+       			                                     metadataEntries, collectionType);
        	
        	// Update the 'metadata updated' system-metadata to record the time of this metadata update.
        	metadataEntries.add(generateMetadataUpdatedMetadata());
