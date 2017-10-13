@@ -9,7 +9,6 @@
 --
 --
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
--- @version $Id$
 --
 
 INSERT INTO public."HPC_DOC_CONFIGURATION" 
@@ -28,7 +27,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-Tes
           	 "subCollections": [
             	{
               	 "collectionType": "Flowcell",
-              	 "isDataObjectContainer": true,
+              	 "isDataObjectContainer": false,
               	 "subCollections": [
                 	{
                      "collectionType": "Sample",
@@ -308,14 +307,6 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-Tes
 		 "metadataValidationRules": [{
 				"attribute": "object_name",
 				"mandatory": true,
-				"ruleEnabled": true
-			},
-			{
-				"attribute": "Eran-test",
-				"mandatory": true,
-				"collectionTypes": [
-					"Flowcell"
-				],
 				"ruleEnabled": true
 			},
 			{
