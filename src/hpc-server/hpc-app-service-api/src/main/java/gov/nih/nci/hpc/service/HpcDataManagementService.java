@@ -174,7 +174,7 @@ public interface HpcDataManagementService
      * @param path The collection path.
      * @param doc Use validation rules of this DOC.
      * @param dataObjectRegistration If true, the service validates if data object registration is allowed 
-     *                               in this collection
+     *                               in this collection.
      * @throws HpcException If the hierarchy is invalid.
      */
     public void validateHierarchy(String path, String doc,
@@ -312,6 +312,15 @@ public interface HpcDataManagementService
      */
     public HpcDataObjectListRegistrationStatus getDataObjectListRegistrationTaskStatus(String taskId) 
     		                                                                          throws HpcException;
+    
+    /**
+     * Get a collection type of a path.
+     *
+     * @param path The collection path.
+     * @return The collection type.
+     * @throws HpcException on service failure.
+     */
+    public String getCollectionType(String path) throws HpcException;
 }
 
  
