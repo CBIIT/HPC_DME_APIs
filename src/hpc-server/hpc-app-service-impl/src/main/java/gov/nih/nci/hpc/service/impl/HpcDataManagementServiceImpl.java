@@ -593,6 +593,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		// Task not found.
 		return null;
 	}
+	
+	@Override
+    public String getCollectionType(String path) throws HpcException
+    {
+    	for(HpcMetadataEntry metadataEntry : 
+    		dataManagementProxy.getCollectionMetadata(
+    				               dataManagementAuthenticator.getAuthenticatedToken(), path)) {
+    		if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
+    		   return metadataEntry.getValue();
+    		}
+    	}
+    	
+    	return null;
+    }
     
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -615,26 +629,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	    query.setValue(value);
 	    
 	    return query;
-    }
-    
-    /**
-     * Get a collection type of a path.
-     *
-     * @param path The collection path.
-     * @return The collection type.
-     * @throws HpcException on service failure.
-     */
-    private String getCollectionType(String path) throws HpcException
-    {
-    	for(HpcMetadataEntry metadataEntry : 
-    		dataManagementProxy.getCollectionMetadata(
-    				               dataManagementAuthenticator.getAuthenticatedToken(), path)) {
-    		if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
-    		   return metadataEntry.getValue();
-    		}
-    	}
-    	
-    	return null;
     }
     
     /**
