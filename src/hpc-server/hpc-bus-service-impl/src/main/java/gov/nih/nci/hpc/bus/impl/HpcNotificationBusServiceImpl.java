@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
@@ -137,7 +136,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService
 		   deliveryReceiptsDTO.setTotalCount((page == 1 && count < limit) ? 
 				                             count : 
 			                                 notificationService.getNotificationDeliveryReceiptsCount());
-			}
+		}
 
     	return deliveryReceiptsDTO;
     }

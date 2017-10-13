@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -96,24 +95,35 @@
 		<constructor-arg value="${hpc.service.security.authenticationTokenSignatureKey}" index="0" />
 		<constructor-arg value="${hpc.service.security.authenticationTokenExpirationPeriod}" index="1" />
 	</bean>
+	
+	<bean id="hpcDownloadResultsPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
+		<constructor-arg value="${hpc.service.dataManagement.downloadResultsPageSize}" />
+	</bean>
 	<bean id="hpcDataTransferService" class="gov.nih.nci.hpc.service.impl.HpcDataTransferServiceImpl">
 		<constructor-arg ref="hpcDataTransferProxies" index="0" />
 		<constructor-arg value="${hpc.service.dataTransfer.downloadDirectory}" index="1" />
 	</bean>
+	
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" >
 		<constructor-arg value="${hpc.service.dataManagement.systemAdminSubjects}" />
 	</bean>
 	<bean id="hpcDataManagementSecurityService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementSecurityServiceImpl" />
+	
+	<bean id="hpcDataSearchPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
+		<constructor-arg value="${hpc.service.dataSearch.searchResultsPageSize}" />
+	</bean>
 	<bean id="hpcDataSearchService" class="gov.nih.nci.hpc.service.impl.HpcDataSearchServiceImpl">
-		<constructor-arg value="${hpc.service.dataSearch.searchResultsPageSize}" index="0" />
-		<constructor-arg ref="hpcDefaultCollectionLevelFilter" index="1" />
-		<constructor-arg ref="hpcDefaultDataObjectLevelFilter" index="2" />
+		<constructor-arg ref="hpcDefaultCollectionLevelFilter" index="0" />
+		<constructor-arg ref="hpcDefaultDataObjectLevelFilter" index="1" />
 	</bean>
 	<bean id="hpcMetadataService" class="gov.nih.nci.hpc.service.impl.HpcMetadataServiceImpl" />
 	<bean id="hpcDataBrowseService" class="gov.nih.nci.hpc.service.impl.HpcDataBrowseServiceImpl" />
+	
+	<bean id="hpcNotificationPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
+		<constructor-arg value="${hpc.service.notification.notificationDeliveryReceiptsPageSize}" />
+	</bean>
 	<bean id="hpcNotificationService" class="gov.nih.nci.hpc.service.impl.HpcNotificationServiceImpl">
-		<constructor-arg value="${hpc.service.notification.notificationDeliveryReceiptsPageSize}" index="0" />
-		<constructor-arg ref="hpcNotificationSenders" index="1" />
+		<constructor-arg ref="hpcNotificationSenders" />
 	</bean>
 	<bean id="hpcEventService" class="gov.nih.nci.hpc.service.impl.HpcEventServiceImpl" >
 		<constructor-arg value="${hpc.service.event.invokerCollectionUpdateNotification}" />

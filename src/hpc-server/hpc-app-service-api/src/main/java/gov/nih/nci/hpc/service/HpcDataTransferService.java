@@ -285,10 +285,27 @@ public interface HpcDataTransferService
      * Get download results (all completed download requests) for a user. 
      *
      * @param userId The user ID to query for.
+     * @param page The requested results page.
      * @return A list of completed download requests.
      * @throws HpcException on service failure.
      */
-    public List<HpcUserDownloadRequest> getDownloadResults(String userId) throws HpcException;
+    public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page) throws HpcException;
+    
+    /**
+     * Get download results (all completed download requests) count for a user. 
+     *
+     * @param userId The user ID to query for.
+     * @return A total count of completed download requests.
+     * @throws HpcException on service failure.
+     */
+    public int getDownloadResultsCount(String userId) throws HpcException;
+    
+    /**
+     * Get the download results page size.
+     *
+     * @return The download results page size.
+     */
+    public int getDownloadResultsPageSize();
     
     /**
      * Get a file container name.
