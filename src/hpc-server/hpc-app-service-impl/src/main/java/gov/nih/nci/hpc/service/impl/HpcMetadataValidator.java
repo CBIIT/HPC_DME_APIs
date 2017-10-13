@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -131,7 +132,8 @@ public class HpcMetadataValidator
     	
     	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
-    			         docConfiguration.getCollectionMetadataValidationRules());
+    			         docConfiguration.getCollectionMetadataValidationRules(),
+    			         null);
     }
     
     /**
@@ -142,12 +144,14 @@ public class HpcMetadataValidator
      *                                with the collection or data object.
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
      *                                 that are being added or updated to 'metadataEntries'. 
+     * @param collectionType The type of collection containing the data object.
      * 
      * @throws HpcException If the metadata is invalid.
      */
     public void validateDataObjectMetadata(String doc,
     		                               List<HpcMetadataEntry> existingMetadataEntries,
-    		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
+    		                               List<HpcMetadataEntry> addUpdateMetadataEntries,
+    		                               String collectionType) 
     		                              throws HpcException
     {
     	HpcDocConfiguration docConfiguration = docConfigurationLocator.get(doc);
@@ -157,7 +161,8 @@ public class HpcMetadataValidator
     	
     	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
-    			         docConfiguration.getDataObjectMetadataValidationRules());
+    			         docConfiguration.getDataObjectMetadataValidationRules(),
+    			         collectionType);
     }
     
     /**
@@ -202,12 +207,15 @@ public class HpcMetadataValidator
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
      *                                 that are being added or updated to 'metadataEntries'. 
      * @param metadataValidationRules Validation rules to apply.
+     * @param collectionType (Optional) The collection type. In case of data object, the type of collection
+     *                       containing the data object.
      * 
      * @throws HpcException If the metadata is invalid.
      */
     private void validateMetadata(List<HpcMetadataEntry> existingMetadataEntries,
     		                      List<HpcMetadataEntry> addUpdateMetadataEntries,
-    		                      List<HpcMetadataValidationRule> metadataValidationRules) 
+    		                      List<HpcMetadataValidationRule> metadataValidationRules,
+    		                      String collectionType) 
     		                     throws HpcException
     {
     	// Crate a metadata <attribute, value> map. Put existing entries first.
@@ -247,10 +255,15 @@ public class HpcMetadataValidator
     		}
     	}
     	
+    	// Determining the collection type of this collection or collection containing this data object.
+    	if(StringUtils.isEmpty(collectionType)) {
+     	   collectionType = metadataEntriesMap.get(COLLECTION_TYPE_ATTRIBUTE);
+     	}
+    	
     	// Execute the validation rules.
 	    for(HpcMetadataValidationRule metadataValidationRule: metadataValidationRules) {
 	    	// Check if rules needs to be skipped.
-	    	if(skipRule(metadataValidationRule, metadataEntriesMap)) {
+	    	if(skipRule(metadataValidationRule, metadataEntriesMap, collectionType)) {
 	    	   continue;
 	    	}
 	    
@@ -292,10 +305,13 @@ public class HpcMetadataValidator
      *
      * @param metadataValidationRule The validation rule.
      * @param metadataEntriesMap The metadata entries.
+     * @param collectionType the collection type for collection metadata, 
+     *                       or the collection type hosting the data object.
      * @return true if the rule needs to be skipped.
      */
     private boolean skipRule(HpcMetadataValidationRule metadataValidationRule,
-    		                 Map<String, String> metadataEntriesMap)
+    		                 Map<String, String> metadataEntriesMap,
+    		                 String collectionType)
     {
 		// Skip disabled rules.
 		if(!metadataValidationRule.getRuleEnabled()) {
@@ -303,7 +319,6 @@ public class HpcMetadataValidator
 		}
 	
 	    // Skip rules for other collection types.
-		String collectionType = metadataEntriesMap.get(COLLECTION_TYPE_ATTRIBUTE);
 		if(collectionType != null &&
 		   metadataValidationRule.getCollectionTypes() != null &&
 		   !metadataValidationRule.getCollectionTypes().isEmpty() &&

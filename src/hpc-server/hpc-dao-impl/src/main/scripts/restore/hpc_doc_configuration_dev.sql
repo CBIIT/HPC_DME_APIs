@@ -28,7 +28,7 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-Tes
           	 "subCollections": [
             	{
               	 "collectionType": "Flowcell",
-              	 "isDataObjectContainer": false,
+              	 "isDataObjectContainer": true,
               	 "subCollections": [
                 	{
                      "collectionType": "Sample",
@@ -308,6 +308,14 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-Tes
 		 "metadataValidationRules": [{
 				"attribute": "object_name",
 				"mandatory": true,
+				"ruleEnabled": true
+			},
+			{
+				"attribute": "Eran-test",
+				"mandatory": true,
+				"collectionTypes": [
+					"Flowcell"
+				],
 				"ruleEnabled": true
 			},
 			{

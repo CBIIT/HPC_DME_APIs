@@ -22,7 +22,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * <p>
  * HPC Metadata Application Service Interface.
@@ -121,11 +120,12 @@ public interface HpcMetadataService
      * @param path The data object path.
      * @param metadataEntries The metadata entries to add.
      * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
+     * @param collectionType The collection type containing the data object.
      * @throws HpcException on service failure.
      */ 
     public void addMetadataToDataObject(String path, 
     		                            List<HpcMetadataEntry> metadataEntries,
-    		                            String doc) 
+    		                            String doc, String collectionType) 
     		                           throws HpcException; 
     
     /**
@@ -210,11 +210,12 @@ public interface HpcMetadataService
      * @param path The data object path.
      * @param metadataEntries The metadata entries to update.
      * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
+     * @param collectionType The collection type containing the data object.
      * @throws HpcException on service failure.
      */
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries,
-    		                             String doc) 
+    		                             String doc, String collectionType) 
     		                            throws HpcException; 
     
     /**
