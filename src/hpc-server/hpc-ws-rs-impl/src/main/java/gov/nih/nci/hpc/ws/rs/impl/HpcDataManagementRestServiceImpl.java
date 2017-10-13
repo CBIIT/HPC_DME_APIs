@@ -415,11 +415,13 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDownloadSummary()
+    public Response getDownloadSummary(Integer page, Boolean totalCount)
     {
     	HpcDownloadSummaryDTO downloadSummary = null;
 		try {
-			downloadSummary = dataManagementBusService.getDownloadSummary();
+			downloadSummary = dataManagementBusService.getDownloadSummary(
+					                                      page != null ? page : 1,
+                                                          totalCount != null ? totalCount : false);
 
 		} catch(HpcException e) {
 			    return errorResponse(e);

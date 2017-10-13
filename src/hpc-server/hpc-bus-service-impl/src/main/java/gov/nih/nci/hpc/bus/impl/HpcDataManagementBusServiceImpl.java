@@ -375,7 +375,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDownloadSummaryDTO getDownloadSummary() throws HpcException
+    public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount) throws HpcException
     {
     	// Get the request invoker user-id
     	String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
@@ -383,7 +383,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Populate the DTO with active and completed sownload requests for this user.
     	HpcDownloadSummaryDTO downloadSummary = new HpcDownloadSummaryDTO();
     	downloadSummary.getActiveTasks().addAll(dataTransferService.getDownloadRequests(userId));
-    	downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId));
+    	downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId, page));
+    	
+    	int limit = dataTransferService.getDownloadResultsPageSize(); 
+    	downloadSummary.setPage(page);
+    	downloadSummary.setLimit(limit);
+    	
+		if(totalCount) {
+		   int count = downloadSummary.getCompletedTasks().size();
+		   downloadSummary.setTotalCount((page == 1 && count < limit) ? 
+					                      count : dataTransferService.getDownloadResultsCount(userId));
+		}
     	
     	return downloadSummary;
     }
@@ -525,15 +535,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                dataObjectRegistration.getParentCollectionMetadataEntries(),
     			                userId, userName, doc);
     	
+    	// Get the colelction type containing the data object.
+    	String collectionPath = path.substring(0, path.lastIndexOf('/'));
+    	String collectionType = dataManagementService.getCollectionType(collectionPath);
+    	
     	// Create a data object file (in the data management system).
 	    boolean created = dataManagementService.createFile(path);
 	    
 	    if(created) {
     	   boolean registrationCompleted = false; 
     	   try {
-      	        // Validate the new collection meets the hierarchy definition.
-    		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
-    		    
+      	        // Validate the new data object meets the hierarchy definition.
       	        dataManagementService.validateHierarchy(collectionPath, doc, true);
     		   
     		    // Assign system account as an additional owner of the data-object.
@@ -542,7 +554,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        // Attach the user provided metadata.
 		        metadataService.addMetadataToDataObject(path, 
 		    			                                dataObjectRegistration.getMetadataEntries(), 
-		    			                                doc);
+		    			                                doc, collectionType);
 		        
 		        // Extract the source location and size.
 		        HpcFileLocation source = dataObjectRegistration.getSource();
@@ -592,8 +604,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                              HpcErrorType.REQUEST_REJECTED);
 	    	    }
 	    	
-	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries(), 
-	    	    		                                 metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC()); 
+	    	    metadataService.updateDataObjectMetadata(
+	    	    		path, dataObjectRegistration.getMetadataEntries(), 
+	    	    		metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC(),
+	    	    		collectionType); 
 	    }
 	    
 	    return created;
