@@ -1565,15 +1565,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         FileInputStream fileInputStream = null;
         try {
         	 fileInputStream = new FileInputStream(file);
-        	 logger.error("ERAN: checksum: " + DigestUtils.md5DigestAsHex(IOUtils.toByteArray(fileInputStream)));
              if(!checksum.equals(DigestUtils.md5DigestAsHex(IOUtils.toByteArray(fileInputStream)))) {
             	throw new HpcException("Checksum validation failed",
 		                                HpcErrorType.INVALID_REQUEST_INPUT);	
              }
 
         } catch(IOException e) {
-        	    throw new HpcException("Failed to perform checksum test",
-                                       HpcErrorType.UNEXPECTED_ERROR);	
+        	    throw new HpcException("Failed calculate checksum",
+                                       HpcErrorType.UNEXPECTED_ERROR, e);	
         	    
         } finally {
         	       IOUtils.closeQuietly(fileInputStream);
