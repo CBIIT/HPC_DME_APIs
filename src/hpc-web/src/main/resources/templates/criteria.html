@@ -628,7 +628,7 @@ if(searchError) {
 		// The table is one-indexed, not zero-indexed.
 		var row_id = (i + 1);
 		$('#level' + row_id).val(searchCriteria.level[i]).change();
-		$('#attrName' + row_id).val(searchCriteria.attrName[i]).change();
+		$('#attrName' + row_id).val(searchCriteria.attrName[i]);
 		$('#operator' + row_id).val(searchCriteria.operator[i]);
 		$('#attrValue' + row_id).val(searchCriteria.attrValue[i]);
 	}	

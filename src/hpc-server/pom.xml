@@ -37,6 +37,7 @@
 		<google-json-simple.version>1.1.1</google-json-simple.version>
 		<jjwt.version>0.6.0</jjwt.version>
 		<commons-io.version>2.5</commons-io.version>
+		<commons-codec.version>1.10</commons-codec.version>
 		<aspectj.version>1.7.4</aspectj.version>
 		<google-oauth-client.version>1.22.0</google-oauth-client.version>
 	</properties>
@@ -159,6 +160,11 @@
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>${commons-io.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>${commons-codec.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
