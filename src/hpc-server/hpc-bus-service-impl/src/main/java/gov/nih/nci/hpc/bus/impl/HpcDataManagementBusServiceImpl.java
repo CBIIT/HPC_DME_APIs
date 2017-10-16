@@ -11,6 +11,8 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,9 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
@@ -465,7 +469,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	return toUserPermissionDTO(permission);
     }
-
+    
     @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
@@ -480,44 +484,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcDataObjectListRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
-                                                                                  throws HpcException
-	{
-		// Input validation.
-		if(StringUtils.isEmpty(taskId)) {
-		   throw new HpcException("Null / Empty registration task ID",
-		                          HpcErrorType.INVALID_REQUEST_INPUT);	
-		}
-		
-		// Get the registration task status.
-		HpcDataObjectListRegistrationStatus taskStatus = 
-		   dataManagementService.getDataObjectListRegistrationTaskStatus(taskId);
-		if(taskStatus == null) {
-		   return null;
-		}
-		
-		// Map the task status to DTO.
-		HpcDataObjectListRegistrationStatusDTO registrationStatus = new HpcDataObjectListRegistrationStatusDTO();
-		registrationStatus.setInProgress(taskStatus.getInProgress());
-		if(taskStatus.getInProgress()) {
-		   // Registration in progress. Populate the DTO accordingly.
-			registrationStatus.setCreated(taskStatus.getTask().getCreated());
-			registrationStatus.setTaskStatus(taskStatus.getTask().getStatus());
-			populateRegistrationItems(registrationStatus, taskStatus.getTask().getItems());
-		
-		} else {
-				// Download completed or failed. Populate the DTO accordingly. 
-			    registrationStatus.setCreated(taskStatus.getResult().getCreated());
-			    registrationStatus.setCompleted(taskStatus.getResult().getCompleted());
-			    registrationStatus.setMessage(taskStatus.getResult().getMessage());
-			    registrationStatus.setResult(taskStatus.getResult().getResult());
-			    populateRegistrationItems(registrationStatus, taskStatus.getResult().getItems());
-		}
-		
-		return registrationStatus;
-	}
-    
-    @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile, String userId, String userName, String doc,
@@ -525,15 +491,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                         throws HpcException
     {
     	// Input validation.
-    	if(path == null || dataObjectRegistration == null) {
+    	if(StringUtils.isEmpty(path) || dataObjectRegistration == null) {
     	   throw new HpcException("Null path or dataObjectRegistrationDTO",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
+    	
+    	// Checksum validation (if requested by caller).
+    	validateChecksum(dataObjectFile, dataObjectRegistration.getChecksum());
     	
     	// Create parent collections if requested to.
     	createParentCollections(path, dataObjectRegistration.getCreateParentCollections(), 
     			                dataObjectRegistration.getParentCollectionMetadataEntries(),
     			                userId, userName, doc);
+    	
+    	// Get the collection type containing the data object.
+    	String collectionPath = path.substring(0, path.lastIndexOf('/'));
+    	String collectionType = dataManagementService.getCollectionType(collectionPath);
     	
     	// Create a data object file (in the data management system).
 	    boolean created = dataManagementService.createFile(path);
@@ -541,9 +514,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    if(created) {
     	   boolean registrationCompleted = false; 
     	   try {
-      	        // Validate the new collection meets the hierarchy definition.
-    		    String collectionPath = path.substring(0, path.lastIndexOf('/'));
-    		    
+      	        // Validate the new data object meets the hierarchy definition.
       	        dataManagementService.validateHierarchy(collectionPath, doc, true);
     		   
     		    // Assign system account as an additional owner of the data-object.
@@ -552,7 +523,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        // Attach the user provided metadata.
 		        metadataService.addMetadataToDataObject(path, 
 		    			                                dataObjectRegistration.getMetadataEntries(), 
-		    			                                doc);
+		    			                                doc, collectionType);
 		        
 		        // Extract the source location and size.
 		        HpcFileLocation source = dataObjectRegistration.getSource();
@@ -563,8 +534,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
-		           dataTransferService.uploadDataObject(source, dataObjectFile, path, 
-		        	                                    userId,
+		           dataTransferService.uploadDataObject(source, dataObjectFile, path, userId,
 		        	                                    dataObjectRegistration.getCallerObjectId(), doc);
 		        
 			    // Generate system metadata and attach to the data object.
@@ -602,8 +572,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			                              HpcErrorType.REQUEST_REJECTED);
 	    	    }
 	    	
-	    	    metadataService.updateDataObjectMetadata(path, dataObjectRegistration.getMetadataEntries(), 
-	    	    		                                 metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC()); 
+	    	    metadataService.updateDataObjectMetadata(
+	    	    		path, dataObjectRegistration.getMetadataEntries(), 
+	    	    		metadataService.getDataObjectSystemGeneratedMetadata(path).getRegistrarDOC(),
+	    	    		collectionType); 
 	    }
 	    
 	    return created;
@@ -658,6 +630,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	return responseDTO;
     }
+    
+    @Override
+    public HpcDataObjectListRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
+                                                                                  throws HpcException
+	{
+		// Input validation.
+		if(StringUtils.isEmpty(taskId)) {
+		   throw new HpcException("Null / Empty registration task ID",
+		                          HpcErrorType.INVALID_REQUEST_INPUT);	
+		}
+		
+		// Get the registration task status.
+		HpcDataObjectListRegistrationStatus taskStatus = 
+		   dataManagementService.getDataObjectListRegistrationTaskStatus(taskId);
+		if(taskStatus == null) {
+		   return null;
+		}
+		
+		// Map the task status to DTO.
+		HpcDataObjectListRegistrationStatusDTO registrationStatus = new HpcDataObjectListRegistrationStatusDTO();
+		registrationStatus.setInProgress(taskStatus.getInProgress());
+		if(taskStatus.getInProgress()) {
+		   // Registration in progress. Populate the DTO accordingly.
+			registrationStatus.setCreated(taskStatus.getTask().getCreated());
+			registrationStatus.setTaskStatus(taskStatus.getTask().getStatus());
+			populateRegistrationItems(registrationStatus, taskStatus.getTask().getItems());
+		
+		} else {
+				// Download completed or failed. Populate the DTO accordingly. 
+			    registrationStatus.setCreated(taskStatus.getResult().getCreated());
+			    registrationStatus.setCompleted(taskStatus.getResult().getCompleted());
+			    registrationStatus.setMessage(taskStatus.getResult().getMessage());
+			    registrationStatus.setResult(taskStatus.getResult().getResult());
+			    populateRegistrationItems(registrationStatus, taskStatus.getResult().getItems());
+		}
+		
+		return registrationStatus;
+	}
     
     @Override
     public HpcDataObjectDTO getDataObject(String path) throws HpcException
@@ -1537,6 +1547,36 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			    registrationStatus.getFailedItems().add(item.getTask());
     		}
     	}
+    }
+    
+	/** 
+     * Calculate MD5 checksum of the file and compare it to the value provided.
+     * 
+     * @param file The file to validate checksum.
+     * @param checksum The checksum value provided by the caller.
+     * @throws HpcException If the calculated checksum doesn't match the provided value.
+     */
+    private void validateChecksum(File file, String checksum) throws HpcException
+    {
+    	if(file == null || StringUtils.isEmpty(checksum)) {
+    	   return;
+    	}
+    	
+        FileInputStream fileInputStream = null;
+        try {
+        	 fileInputStream = new FileInputStream(file);
+             if(!checksum.equals(DigestUtils.md5DigestAsHex(IOUtils.toByteArray(fileInputStream)))) {
+            	throw new HpcException("Checksum validation failed",
+		                                HpcErrorType.INVALID_REQUEST_INPUT);	
+             }
+
+        } catch(IOException e) {
+        	    throw new HpcException("Failed calculate checksum",
+                                       HpcErrorType.UNEXPECTED_ERROR, e);	
+        	    
+        } finally {
+        	       IOUtils.closeQuietly(fileInputStream);
+        }
     }
 }
 

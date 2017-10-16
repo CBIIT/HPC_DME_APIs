@@ -80,6 +80,7 @@
 				<xsd:element name="parentCollectionMetadataEntries" 
 				             type="hpc-domain-metadata:HpcMetadataEntry" 
 					         maxOccurs="unbounded" />
+				<xsd:element name="checksum" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
