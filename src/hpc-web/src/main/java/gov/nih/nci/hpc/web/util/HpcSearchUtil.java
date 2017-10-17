@@ -5,7 +5,10 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 
 import org.springframework.ui.Model;
@@ -22,6 +25,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.web.model.HpcCollectionSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
+import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.HpcSearchResult;
 
@@ -154,4 +158,32 @@ public class HpcSearchUtil {
 		return null;
 	}
 
+	public static void cacheSelectedRows(HttpSession session, HttpServletRequest request, Model model)
+	{
+		HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcSelectedDatafileList");
+
+		HpcDownloadDatafile	newHpcDownloadDatafile = new HpcDownloadDatafile();
+
+		String selectedPathsStr = request.getParameter("selectedFilePaths");
+		if(selectedPathsStr == null)
+		{
+			model.addAttribute("hpcSelectedDatafileList", hpcDownloadDatafile != null ? hpcDownloadDatafile.getSelectedPaths() : null);
+			return;
+		}
+		
+		StringTokenizer tokens = new StringTokenizer(selectedPathsStr, ",");
+		while(tokens.hasMoreTokens())
+		{
+			String path = tokens.nextToken();
+			newHpcDownloadDatafile.getSelectedPaths().add(path);
+		}
+		
+		session.setAttribute("hpcSelectedDatafileList", newHpcDownloadDatafile);
+		model.addAttribute("hpcSelectedDatafileList", newHpcDownloadDatafile.getSelectedPaths());
+	}
+
+	public static void clearCachedSelectedRows(HttpSession session)
+	{
+		session.removeAttribute("hpcSelectedDatafileList");
+	}
 }
