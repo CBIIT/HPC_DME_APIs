@@ -73,8 +73,10 @@ import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
+import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
 /**
  * <p>
@@ -125,8 +127,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "dashboard";
 			}
+			HpcSearchUtil.cacheSelectedRows(session, request, model);
 			HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 
+			String searchType = request.getParameter("searchType");
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
 			if(selectedPathsStr.isEmpty())
 			{
@@ -137,10 +141,17 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				StringTokenizer tokens = new StringTokenizer(selectedPathsStr, ",");
 				while(tokens.hasMoreTokens())
 				{
-					hpcDownloadDatafile.getSelectedPaths().add(tokens.nextToken());
+					String pathStr = tokens.nextToken();
+					hpcDownloadDatafile.getSelectedPaths().add(pathStr.substring(pathStr.lastIndexOf(":")+1));
 				}
 			}
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+			HpcSearch hpcSearch = new HpcSearch();
+			String pageNumber = request.getParameter("pageNumber");
+			hpcSearch.setPageNumber(pageNumber != null ? Integer.parseInt(pageNumber) : 1);
+			hpcSearch.setQueryName(request.getParameter("queryName"));
+			hpcSearch.setSearchType(request.getParameter("searchType"));
+			model.addAttribute("hpcSearch", hpcSearch);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get selected data file: " + e.getMessage());
 			e.printStackTrace();

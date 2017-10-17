@@ -13,6 +13,15 @@ public class HpcSearch {
 	private String advancedCriteria;
 	private String actionType;
 	private int pageNumber=1;
+	private String queryName;
+	
+	public String getQueryName() {
+		return queryName;
+	}
+
+	public void setQueryName(String queryName) {
+		this.queryName = queryName;
+	}
 
 	public String[] getRowId() {
 		return rowId;
