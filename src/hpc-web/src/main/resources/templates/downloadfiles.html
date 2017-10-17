@@ -64,6 +64,12 @@
 	height: 300px
 }
 </style>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var searchType = [[${hpcSearch.getSearchType()}]];
+/*]]>*/
+</script>
+
 </head>
 <body ng-controller="MyCtrl">
 
@@ -110,12 +116,8 @@
 						</tr>
 						<tr><td>&nbsp;</td></tr>
 						<tr><td>Selected Files:<br/>
-						<div class="pull-left" th:each="selectedPath : ${hpcDownloadDatafile.getSelectedPaths()}">
-						
-						<label th:text="${selectedPath}"></label> 
-						<!-- 
-						<a id="deletePath" th:onClick="@{'deletePath(\''+${hpcDownloadDatafile.getSelectedPaths()}+'\')'}" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>
-						 -->
+						<div class="display: block;" th:each="selectedPath : ${hpcDownloadDatafile.getSelectedPaths()}">
+							<label th:text="${selectedPath}"></label> 
 						</div>
 						</td></tr>
 						<tr><td>&nbsp;</td></tr>
@@ -150,7 +152,7 @@
 									<button class="btn btn-primary" id="submit"
 										onClick="return validateAndSubmit()">Download</button>
 									<button type="button" class="btn btn-primary"
-										onClick="history.back()" id="close">Back</button>
+										onClick="goBack()" id="close">Back</button>
 								</div>
 							</td>
 						</tr>
@@ -165,11 +167,26 @@
 			</div>
 		</form>
 		<form class="form-horizontal" id="downloadSyncForm"
-			th:object="${hpcDownloadDatafile}" method="POST">
+			th:object="${hpcDownloadDatafile}" method="POST" th:action="@{/downloadfiles}">
 			<input type="hidden" name="destinationPath" id="destinationPath"
 				th:value="${downloadFilePath}" /> <input type="hidden"
 				class="form-control" th:field="*{downloadFileName}"
 				id="downloadFileName" placeholder="Enter Download file name" />
+			<input type="hidden" id="actionType" name="actionType"/>
+		</form>
+		<form class="form-horizontal" id="criteriaForm"
+			th:object="${hpcSearch}" method="POST" th:action="@{/criteria}">
+			<input type="hidden" name="actionType" id="actionType" value="pagination"/>
+			<input type="hidden"
+				class="form-control" name="pageNumber" id="pageNumber"
+				 th:value="${hpcSearch.getPageNumber()}"/>			
+		</form>
+		<form class="form-horizontal" id="searchForm"
+			th:object="${hpcSearch}" method="POST" th:action="@{/search}">
+			<input type="hidden" name="queryName" id="queryName"
+				th:value="${hpcSearch.getQueryName()}" /> <input type="hidden"
+				class="form-control" name="pageNumber" id="pageNumber"
+				 th:value="${hpcSearch.getPageNumber()}"/>
 		</form>
 						</div>
 				</div>
@@ -211,6 +228,14 @@
 			}
 		}
 
+		function goBack()
+		{
+			if(searchType == "search")
+				document.getElementById("searchForm").submit();
+			else
+				document.getElementById("criteriaForm").submit();
+		}
+		
 		$(function() {
 			//twitter bootstrap script
 			var $form = $('#downloadFilesForm');

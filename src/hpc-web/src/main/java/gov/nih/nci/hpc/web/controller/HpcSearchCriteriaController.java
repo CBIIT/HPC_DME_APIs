@@ -128,6 +128,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/login?returnPath=criteria";
 		}
+		HpcSearchUtil.clearCachedSelectedRows(session);
 		populateHierarchy(session, model, authToken, user);
 		populateMetadata(model, authToken, user, "collection", session);
 		populateOperators(model);
@@ -162,21 +163,11 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		}
 
 		HpcSearch hpcSearch = null;
+		
 		if(search == null || (search.getActionType() != null && search.getActionType().equals("pagination")))
 		{
+			HpcSearchUtil.cacheSelectedRows(session, request, model);
 			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
-//			if(hpcSearch == null)
-//				hpcSearch = new HpcSearch();
-//
-//			hpcSearch.setAdvancedCriteria(search.getAdvancedCriteria());
-//			hpcSearch.setAttrName(search.getAttrName());
-//			hpcSearch.setAttrValue(search.getAttrValue());
-//			hpcSearch.setDetailed(search.isDetailed());
-//			hpcSearch.setLevel(search.getLevel());
-//			hpcSearch.setLevelOperator(search.getLevelOperator());
-//			hpcSearch.setOperator(search.getOperator());
-//			hpcSearch.setRowId(search.getRowId());
-//			hpcSearch.setSearchType(search.getSearchType());
 			hpcSearch.setPageNumber(search.getPageNumber());
 			search = hpcSearch;
 		}
