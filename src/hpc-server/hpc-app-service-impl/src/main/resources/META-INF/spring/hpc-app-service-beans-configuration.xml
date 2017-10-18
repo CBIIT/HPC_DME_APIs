@@ -87,7 +87,8 @@
 	</util:map>
 	
 	<!--  The DOC to base path map -->
-	<bean id="hpcDocConfigurationLocator" class="gov.nih.nci.hpc.service.impl.HpcDocConfigurationLocator" 
+	<bean id="hpcDataManagementConfigurationLocator" 
+	      class="gov.nih.nci.hpc.service.impl.HpcDataManagementConfigurationLocator" 
 	      init-method="reload" />
 	
 	<!-- HPC Application Services Beans -->
