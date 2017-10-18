@@ -160,7 +160,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		        		                                null, path, 
  		        		                                systemGeneratedMetadata.getRegistrarId(),
  		        		                                systemGeneratedMetadata.getCallerObjectId(), 
- 		        		                                systemGeneratedMetadata.getRegistrarDOC());
+ 		        		                                systemGeneratedMetadata.getConfigurationId());
  		        
  			    // Generate system metadata and attach to the data object.
  			    metadataService.updateDataObjectSystemGeneratedMetadata(
@@ -204,7 +204,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		        dataTransferService.getDataTransferUploadStatus(
     		        		               systemGeneratedMetadata.getDataTransferType(),
     		        		               systemGeneratedMetadata.getDataTransferRequestId(),
-    		        		               systemGeneratedMetadata.getRegistrarDOC());
+    		        		               systemGeneratedMetadata.getConfigurationId());
     			 
     			 HpcDataTransferUploadStatus dataTransferStatus = dataTransferUploadReport.getStatus();
     			 Calendar dataTransferCompleted = null;
@@ -240,7 +240,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		                                       systemGeneratedMetadata.getSourceLocation(), 
 		                                       dataTransferCompleted, 
 		                                       systemGeneratedMetadata.getDataTransferType(),
-		                                       systemGeneratedMetadata.getRegistrarDOC());
+		                                       systemGeneratedMetadata.getConfigurationId());
     			 }
     		     
     		} catch(HpcException e) {
@@ -282,7 +282,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  		        	dataTransferService.uploadDataObject(null, file, path, 
  		        			                             systemGeneratedMetadata.getRegistrarId(),
  		        			                             systemGeneratedMetadata.getCallerObjectId(),
- 		        			                             systemGeneratedMetadata.getRegistrarDOC());
+ 		        			                             systemGeneratedMetadata.getConfigurationId());
  		     
  		         // Delete the file.
  		         if(!FileUtils.deleteQuietly(file)) {
@@ -306,7 +306,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     					                       systemGeneratedMetadata.getSourceLocation(),
     					                       uploadResponse.getDataTransferCompleted(),
     					                       uploadResponse.getDataTransferType(),
-    					                       systemGeneratedMetadata.getRegistrarDOC());
+    					                       systemGeneratedMetadata.getConfigurationId());
  			     }
  			     
     		} catch(HpcException e) {
@@ -487,8 +487,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	    			 // Register all items in this list registration task.
 	    			listRegistrationTask.getItems().forEach(
 	    					        item -> registerDataObject(item, 
-	    					        		                   listRegistrationTask.getUserId(), 
-	    					        		                   listRegistrationTask.getDoc()));
+	    					        		                   listRegistrationTask.getUserId()));
 	    			 
 	    			 // Persist the data object list registration task.
 	    			 dataManagementService.updateDataObjectListRegistrationTask(listRegistrationTask);
@@ -741,15 +740,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param sourceLocation (Optional) The data transfer source location.
      * @param dataTransferCompleted (Optional) The time the data upload completed.
      * @param dataTransferType The type of data transfer used to upload (Globus, S3, etc).
-     * @param doc The DOC.
+     * @param configurationId The data management configuration ID.
      */
 	private void addDataTransferUploadEvent(String userId, String path,
 			                                HpcDataTransferUploadStatus dataTransferStatus,
 			                                HpcFileLocation sourceLocation, 
 			                                Calendar dataTransferCompleted, 
-			                                HpcDataTransferType dataTransferType, String doc) 
+			                                HpcDataTransferType dataTransferType, 
+			                                String configurationId) 
 	{
-		setFileContainerName(HpcDataTransferType.GLOBUS, doc, sourceLocation);
+		setFileContainerName(HpcDataTransferType.GLOBUS, configurationId, sourceLocation);
 		try {
 			 switch(dataTransferStatus) {
 			        case ARCHIVED: 
@@ -811,7 +811,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param downloadTaskType The download task type.
      * @param downloadTaskId The download task ID.
      * @param dataTransferType The data transfer type,
-     * @param doc The doc.
+     * @param configurationId The data management configuration ID..
      * @param result The download result.
      * @param message A failure message.
      * @param destinationLocation The download destination location.
@@ -820,12 +820,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	private void addDataTransferDownloadEvent(String userId, String path, 
 			                                  HpcDownloadTaskType downloadTaskType,
                                               String downloadTaskId,
-                                              HpcDataTransferType dataTransferType, String doc,
+                                              HpcDataTransferType dataTransferType, 
+                                              String configurationId,
 			                                  boolean result, String message,
 			                                  HpcFileLocation destinationLocation, 
 			                                  Calendar dataTransferCompleted) 
 	{
-		setFileContainerName(dataTransferType, doc, destinationLocation);
+		setFileContainerName(dataTransferType, configurationId, destinationLocation);
 		try {
 			 if(result) {
 		        eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType, 
@@ -1017,7 +1018,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	    dataTransferService.getDataTransferDownloadStatus(
 		  	                    downloadTask.getDataTransferType(), 
 			                    downloadTask.getDataTransferRequestId(),
-			                    downloadTask.getDoc());
+			                    downloadTask.getConfigurationId());
 	
 	    // Check the status of the data transfer. 
 	    HpcDataTransferDownloadStatus dataTransferDownloadStatus = dataTransferDownloadReport.getStatus();
@@ -1034,7 +1035,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 	   	   if(downloadTask.getCompletionEvent()) {
 	          addDataTransferDownloadEvent(downloadTask.getUserId(), downloadTask.getPath(),
 	       		                           HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
-	       		                           downloadTask.getDataTransferType(), downloadTask.getDoc(),
+	       		                           downloadTask.getDataTransferType(), 
+	       		                           downloadTask.getConfigurationId(),
 	       		                           result, message, downloadTask.getDestinationLocation(),
 			                               completed);
 	   	   }
@@ -1045,12 +1047,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * Set the file container name.
      *
      * @param dataTransferType The data transfer type.
-     * @param doc The DOC.
+     * @param configurationId The data management configuration ID.
      * @param fileLocation The file location.
      * @throws HpcException on service failure.
      */
     private void setFileContainerName(HpcDataTransferType dataTransferType,
-    		                          String doc, HpcFileLocation fileLocation) 
+    		                          String configurationId, HpcFileLocation fileLocation) 
     {
     	if(fileLocation == null) {
     	   return;
@@ -1059,7 +1061,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		try {
 			 // Get the file container ID name.
 			 fileLocation.setFileContainerName(
-					         dataTransferService.getFileContainerName(dataTransferType, doc, 
+					         dataTransferService.getFileContainerName(dataTransferType, configurationId, 
 					    	     	                                  fileLocation.getFileContainerId()));
 			 
 		} catch(HpcException e) {
@@ -1068,7 +1070,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     /**
-     * Delete a data object (from the data management system)
+     * Delete a data object (from the data management system).
      *
      * @param path The data object path.
      */
@@ -1101,7 +1103,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		    		                  systemGeneratedMetadata.getSourceLocation(), 
 		    		                  systemGeneratedMetadata.getDataTransferCompleted(), 
 		    		                  systemGeneratedMetadata.getDataTransferType(),
-                                      systemGeneratedMetadata.getRegistrarDOC());
+                                      systemGeneratedMetadata.getConfigurationId());
     	}
     }
     
@@ -1110,10 +1112,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      *
      * @param registrationItem The data object registration item (one in a list).
      * @param userId The registrar user-id.
-     * @param doc The registrar DOC.
      */
     private void registerDataObject(HpcDataObjectListRegistrationItem registrationItem,
-    		                        String userId, String doc)
+    		                        String userId)
     {
     	HpcDataObjectRegistrationRequest registrationRequest = registrationItem.getRequest();
     	HpcDataObjectRegistrationTaskItem registrationTask = registrationItem.getTask();
@@ -1137,8 +1138,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	registrationDTO.getParentCollectionMetadataEntries().addAll(registrationRequest.getParentCollectionMetadataEntries());
     	
     	try {
+        	 // Determine the data management configuration to use based on the path.
+        	 String configurationId = dataManagementService.getConfigurationId(registrationTask.getPath());
+        	 if(StringUtils.isEmpty(configurationId.toString())) {
+        	    throw new HpcException("Failed to determine data management configuration.",
+        			                   HpcErrorType.INVALID_REQUEST_INPUT);
+        	 }
+        	 
     	     dataManagementBusService.registerDataObject(registrationTask.getPath(), 
-    		        	                                 registrationDTO, null, userId, userName, doc, false);
+    		        	                                 registrationDTO, null, userId, userName, 
+    		        	                                 configurationId, false);
     	     
     	} catch(HpcException e) {
     		    // Data object registration failed. Update the task accordingly.

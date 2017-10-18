@@ -16,7 +16,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -67,14 +66,14 @@ public interface HpcDataManagementBusService
      * @param collectionRegistration A DTO containing a list of metadata entries to attach to the collection.
      * @param userId The registrar user-id.
      * @param userName The registrar name.
-     * @param doc The registrar DOC.
+     * @param configurationId The data management configuration ID.
      * @return true if a new collection was registered, false if the collection already exists
      *         and its metadata got updated.
      * @throws HpcException on service failure.
      */
     public boolean registerCollection(String path,
     		                          HpcCollectionRegistrationDTO collectionRegistration,
-    		                          String userId, String userName, String doc) 
+    		                          String userId, String userName, String configurationId) 
     		                         throws HpcException;
     
     /**
@@ -207,7 +206,7 @@ public interface HpcDataManagementBusService
      *                         is expected to provide one and only one option.
      * @param userId The registrar user-id.
      * @param userName The registrar name.
-     * @param doc The registrar DOC.
+     * @param configurationId The data management configuration ID.
      * @param registrationCompletionEvent If set to true, an event will be generated when 
      *                                    registration is completed or failed. 
      * @return true if a new data object was registered, false if the collection already exists
@@ -216,8 +215,8 @@ public interface HpcDataManagementBusService
      */
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile, String userId, String userName, String doc,
-    		                          boolean registrationCompletionEvent) 
+    		                          File dataObjectFile, String userId, String userName, 
+    		                          String configurationId, boolean registrationCompletionEvent) 
     		                         throws HpcException;
     
     /**
@@ -331,13 +330,12 @@ public interface HpcDataManagementBusService
     public HpcUserPermissionDTO getDataObjectPermissionForUser(String path, String userId) throws HpcException;
 	
     /**
-     * Get the Data Management Model (Metadata validation rules and hierarchy definition) for a DOC.
+     * Get the Data Management Model (Metadata validation rules and hierarchy definitions) 
      *
-     * @param doc The DOC to get the model for.
      * @return Data Management Model DTO.
      * @throws HpcException on service failure.
      */
-	public HpcDataManagementModelDTO getDataManagementModel(String doc) throws HpcException;
+	public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
 	
     /**
      * Get data management tree (collections and data objects) from a DOC base path.
@@ -347,14 +345,6 @@ public interface HpcDataManagementBusService
      * @throws HpcException on service failure.
      */
 	public HpcDataManagementTreeDTO getDataManagementTree(String doc) throws HpcException;
-
-	/**
-     * Get data management docs.
-     *
-     * @return Data Management doc list DTO.
-     * @throws HpcException on service failure.
-     */
-	public HpcDataManagementDocListDTO getDataManagementDocs() throws HpcException;
 }
 
  
