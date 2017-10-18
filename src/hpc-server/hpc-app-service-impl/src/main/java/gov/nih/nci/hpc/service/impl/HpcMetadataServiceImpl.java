@@ -16,6 +16,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CALLER_OBJECT_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CHECKSUM_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CONFIGURATION_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_COMPLETED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
@@ -23,13 +24,12 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_ST
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_DOC_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_COMPLETION_EVENT_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_COMPLETION_EVENT_ATTRIBUTE;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -127,7 +127,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     @Override
     public void addMetadataToCollection(String path, 
     		                            List<HpcMetadataEntry> metadataEntries,
-    		                            String doc) 
+    		                            String configurationId) 
     		                           throws HpcException
     {
        	// Input validation.
@@ -137,7 +137,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateCollectionMetadata(doc, null, metadataEntries);
+       	metadataValidator.validateCollectionMetadata(configurationId, null, metadataEntries);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(),
@@ -147,7 +147,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     @Override
     public void updateCollectionMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries,
-    		                             String doc) 
+    		                             String configurationId) 
     		                            throws HpcException
     {
        	// Input validation.
@@ -163,7 +163,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	validateCollectionTypeUpdate(existingMetadataEntries, metadataEntries);
        	
        	// Validate the metadata.
-       	metadataValidator.validateCollectionMetadata(doc, existingMetadataEntries,
+       	metadataValidator.validateCollectionMetadata(configurationId, existingMetadataEntries,
        			                                     metadataEntries);
        	
         // Update the 'metadata updated' system-metadata to record the time of this metadata update.
@@ -176,7 +176,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     
     @Override
     public void addSystemGeneratedMetadataToCollection(String path, String userId, String userName,
-    		                                           String doc) 
+    		                                           String configurationId) 
                                                       throws HpcException
     {
        	// Input validation.
@@ -193,8 +193,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	// Create the Metadata-Updated metadata.
        	metadataEntries.add(generateMetadataUpdatedMetadata());
        	
-       	// Create and add the registrar ID, name and DOC metadata.
-       	metadataEntries.addAll(generateRegistrarMetadata(userId, userName, doc));
+       	// Create and add the registrar ID, name and data management configuration metadata.
+       	metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToCollection(dataManagementAuthenticator.getAuthenticatedToken(), 
@@ -227,7 +227,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	systemGeneratedMetadata.setObjectId(metadataMap.get(ID_ATTRIBUTE));
     	systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
     	systemGeneratedMetadata.setRegistrarName(metadataMap.get(REGISTRAR_NAME_ATTRIBUTE));
-    	systemGeneratedMetadata.setRegistrarDOC(metadataMap.get(REGISTRAR_DOC_ATTRIBUTE));
+    	systemGeneratedMetadata.setConfigurationId(metadataMap.get(CONFIGURATION_ID_ATTRIBUTE));
     	
     	HpcFileLocation archiveLocation = new HpcFileLocation();
     	archiveLocation.setFileContainerId(metadataMap.get(ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE));
@@ -326,7 +326,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     @Override
     public void addMetadataToDataObject(String path, 
     		                            List<HpcMetadataEntry> metadataEntries,
-    		                            String doc, String collectionType) 
+    		                            String configurationId, String collectionType) 
     		                           throws HpcException
     {
        	// Input validation.
@@ -336,7 +336,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate Metadata.
-       	metadataValidator.validateDataObjectMetadata(doc, null, metadataEntries, collectionType);
+       	metadataValidator.validateDataObjectMetadata(configurationId, null, metadataEntries, collectionType);
        	
        	// Add Metadata to the DM system.
        	dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(), 
@@ -354,7 +354,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     		                                           Calendar dataTransferStarted,
     		                                           Calendar dataTransferCompleted,
     		                                           Long sourceSize, String callerObjectId,
-    		                                           String userId, String userName, String doc,
+    		                                           String userId, String userName, 
+    		                                           String configurationId,
     		                                           boolean registrationCompletionEvent) 
                                                       throws HpcException
     {
@@ -378,8 +379,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	// Create the Metadata-Updated metadata.
        	metadataEntries.add(generateMetadataUpdatedMetadata());
        	
-       	// Create and add the registrar ID, name and DOC metadata.
-       	metadataEntries.addAll(generateRegistrarMetadata(userId, userName, doc));
+       	// Create and add the registrar ID, name and data management configuration metadata.
+       	metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
        	
        	if(sourceLocation != null) {
        	   // Create the source location file-container-id metadata.
@@ -543,7 +544,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     @Override
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries, 
-    		                             String doc, String collectionType) 
+    		                             String configurationId, String collectionType) 
     		                            throws HpcException
     {
        	// Input validation.
@@ -553,7 +554,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	}	
        	
        	// Validate the metadata.
-       	metadataValidator.validateDataObjectMetadata(doc,
+       	metadataValidator.validateDataObjectMetadata(configurationId,
        			                                     dataManagementProxy.getDataObjectMetadata(
        			                                         dataManagementAuthenticator.getAuthenticatedToken(),
                                                          path),
@@ -632,11 +633,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
      * 
      * @param userId The user ID.
      * @param userName The user name.
-     * @param doc The DOC.
+     * @param configurationId The data management configuration ID..
      * @return A List of the 3 metadata.
      * @throws HpcException if the service invoker is unknown.
      */
-    private List<HpcMetadataEntry> generateRegistrarMetadata(String userId, String userName, String doc) 
+    private List<HpcMetadataEntry> generateRegistrarMetadata(String userId, String userName, 
+    		                                                 String configurationId) 
     		                                                throws HpcException
     {
        	List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
@@ -649,9 +651,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        	addMetadataEntry(metadataEntries,
        			         toMetadataEntry(REGISTRAR_NAME_ATTRIBUTE, userName));
        	
-       	// Create the registrar DOC.
+       	// Create the data management configuration ID metadata.
        	addMetadataEntry(metadataEntries,
-       			         toMetadataEntry(REGISTRAR_DOC_ATTRIBUTE, doc));
+       			         toMetadataEntry(CONFIGURATION_ID_ATTRIBUTE, configurationId.toString()));
        	
        	return metadataEntries;
     }

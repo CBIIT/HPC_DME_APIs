@@ -108,7 +108,7 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="sourceFile" type="hpc-domain-datatransfer:HpcFile" />
-			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="configurationId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -131,7 +131,7 @@
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
-			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 		</xsd:sequence>
@@ -151,7 +151,7 @@
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
@@ -168,7 +168,6 @@
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="type" type="hpc-domain-datatransfer:HpcDownloadTaskType" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />

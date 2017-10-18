@@ -57,10 +57,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
     // SQL Queries.
 	public static final String UPSERT_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" ( " +
-                   "\"ID\", \"USER_ID\", \"DOC\", \"STATUS\", \"ITEMS\", \"CREATED\") " + 
-                   "values (?, ?, ?, ?, ?, ?) " +
+                   "\"ID\", \"USER_ID\", \"STATUS\", \"ITEMS\", \"CREATED\") " + 
+                   "values (?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
-                        "\"DOC\"=excluded.\"DOC\", " + 
                         "\"STATUS\"=excluded.\"STATUS\", " +
                         "\"ITEMS\"=excluded.\"ITEMS\", " +
                         "\"CREATED\"=excluded.\"CREATED\"";
@@ -103,7 +102,6 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 		HpcDataObjectListRegistrationTask dataObjectListRegistrationTask = new HpcDataObjectListRegistrationTask();
 		dataObjectListRegistrationTask.setId(rs.getString("ID"));
 		dataObjectListRegistrationTask.setUserId(rs.getString("USER_ID"));
-		dataObjectListRegistrationTask.setDoc(rs.getString("DOC"));
 		dataObjectListRegistrationTask.setStatus(
 				  HpcDataObjectListRegistrationTaskStatus.fromValue(rs.getString(("STATUS"))));
 		dataObjectListRegistrationTask.getItems().addAll(fromJSON(rs.getString("ITEMS")));
@@ -169,7 +167,6 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 		     jdbcTemplate.update(UPSERT_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL,
 		    		             dataObjectListRegistrationTask.getId(),
 		    		             dataObjectListRegistrationTask.getUserId(),
-		    		             dataObjectListRegistrationTask.getDoc(),
 		    		             dataObjectListRegistrationTask.getStatus().value(),
 		    		             toJSON(dataObjectListRegistrationTask.getItems()),
 		    		             dataObjectListRegistrationTask.getCreated());

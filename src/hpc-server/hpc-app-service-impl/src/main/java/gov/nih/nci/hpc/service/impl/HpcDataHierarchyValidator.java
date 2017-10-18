@@ -10,20 +10,20 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
-import gov.nih.nci.hpc.exception.HpcException;
-
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.exception.HpcException;
+
 /**
  * <p>
- * Validates data registration path against defined hierarchy for DOC.
+ * Validates data registration path against defined hierarchy for a given data management configuration.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -35,9 +35,9 @@ public class HpcDataHierarchyValidator
     // Instance members
     //---------------------------------------------------------------------//
 
-	// DOC configuration locator.
+	// Data management configuration locator.
 	@Autowired
-	private HpcDocConfigurationLocator docConfigurationLocator = null;
+	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -55,27 +55,29 @@ public class HpcDataHierarchyValidator
     //---------------------------------------------------------------------//
     
     /**
-     * Validate a collection path against a hierarchy definition for the DOC.
+     * Validate a collection path against a hierarchy definition for a given data management configuration.
      *
-     * @param doc The DOC.
+     * @param configurationId The data management configuration ID.
      * @param collectionPathTypes The collection types on the path. e.g /Project/Dataset/Folder.
      * @param dataObjectRegistration If set to true, the validation will check if a data object is allowed
      *                               to be registered to this path.
      * 
      * @throws HpcException If the hierarchy is invalid.
      */
-    public void validateHierarchy(String doc, List<String> collectionPathTypes, 
+    public void validateHierarchy(String configurationId, List<String> collectionPathTypes, 
     		                      boolean dataObjectRegistration) 
     		                     throws HpcException
     {
-    	HpcDocConfiguration docConfiguration = docConfigurationLocator.get(doc);
-    	if(docConfiguration == null) {
-    	   throw new HpcException("Invalid DOC: " + doc, HpcRequestRejectReason.INVALID_DOC);
+    	HpcDataManagementConfiguration dataManagementConfiguration = 
+    	                               dataManagementConfigurationLocator.get(configurationId);
+    	if(dataManagementConfiguration == null) {
+    	   throw new HpcException("Invalid Data Management Configuration: " + configurationId, 
+    			                  HpcRequestRejectReason.INVALID_DOC);
     	}
     	
-    	HpcDataHierarchy dataHierarchy = docConfiguration.getDataHierarchy();
+    	HpcDataHierarchy dataHierarchy = dataManagementConfiguration.getDataHierarchy();
   		if(dataHierarchy == null) {
-    	   // No hierarchy definition found for the DOC, so validation is not needed.
+    	   // No hierarchy definition is configured, so validation is not needed.
     	   return;
     	}
     	
@@ -95,8 +97,8 @@ public class HpcDataHierarchyValidator
     		}
     		
     		if(!collectionTypeValidated) {
-    		   throw new HpcException("Invalid collection hierarchy for DOC: " + doc +
-    				                  ". collection hirarchy: " + toString(collectionPathTypes) +
+    		   throw new HpcException("Invalid collection hierarchy. collection hirarchy: " 
+    		                          + toString(collectionPathTypes) +
     				                  ". hierarchy definition: " + dataHierarchy, 
     				                  HpcErrorType.INVALID_REQUEST_INPUT);
     		}
