@@ -16,7 +16,6 @@ CREATE TABLE public."HPC_DATA_OBJECT_LIST_REGISTRATION_TASK"
 (
   "ID" text PRIMARY KEY,
   "USER_ID" text,
-  "DOC" text,
   "STATUS" text,
   "ITEMS" text,
   "CREATED" timestamp

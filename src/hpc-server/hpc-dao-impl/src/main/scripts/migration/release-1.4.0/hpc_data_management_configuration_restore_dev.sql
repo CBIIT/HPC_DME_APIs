@@ -1,5 +1,5 @@
 --
--- hpc_doc_configuration_dev.sql
+-- hpc_data_management_configuration_restore_dev.sql
 --
 -- Copyright SVG, Inc.
 -- Copyright Leidos Biomedical Research, Inc
@@ -11,12 +11,20 @@
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
 --
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('NOHIERARCHY', '/NO_HIERARCHY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'NO_HIERARCHY',
+update r_meta_main set meta_attr_name = 'configuration_id', meta_attr_value = 'cd8ffbe3-d2b7-4125-a1ca-acb808fc90f0' where meta_attr_name = 'registered_by_doc' and meta_attr_value = 'NOHIERARCHY';
+update r_meta_main set meta_attr_name = 'configuration_id', meta_attr_value = 'c93e82ba-7c66-4463-8376-1c7cb0b1a598' where meta_attr_name = 'registered_by_doc' and meta_attr_value = 'FNLCR';
+update r_meta_main set meta_attr_name = 'configuration_id', meta_attr_value = 'be21cdf5-cdd3-4282-a78f-0d817285394a' where meta_attr_name = 'registered_by_doc' and meta_attr_value = 'CCBR';
+update r_meta_main set meta_attr_name = 'configuration_id', meta_attr_value = '63fdccdd-64b8-477f-9e5c-450c4dccf748' where meta_attr_name = 'registered_by_doc' and meta_attr_value = 'DUMMY';
+update r_meta_main set meta_attr_name = 'configuration_id', meta_attr_value = '963f55b4-5910-42d2-9cea-c2834ddd0a51' where meta_attr_name = 'registered_by_doc' and meta_attr_value = 'CCR-LEEMAX';
+update r_meta_main set meta_attr_name = 'configuration_id', meta_attr_value = '50a8d63b-2eef-47bb-af96-0e333a80eda5' where meta_attr_name = 'registered_by_doc' and meta_attr_value = 'HiTIF';
+update r_meta_main set meta_attr_name = 'configuration_id', meta_attr_value = '0812a506-6e2f-4dcc-b11a-8a14cff00819' where meta_attr_name = 'registered_by_doc' and meta_attr_value = 'DUMMY_NO_HIER';
+
+INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
+VALUES('cd8ffbe3-d2b7-4125-a1ca-acb808fc90f0', '/NO_HIERARCHY', 'NOHIERARCHY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'NO_HIERARCHY',
        'ARCHIVE', NULL, NULL, NULL);
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('FNLCR', '/FNL_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'FNL_SF_Archive', 'ARCHIVE',
+INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
+VALUES('c93e82ba-7c66-4463-8376-1c7cb0b1a598', '/FNL_SF_Archive', 'FNLCR', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'FNL_SF_Archive', 'ARCHIVE',
        '{
       	 "collectionType": "PI_Lab",
       	 "isDataObjectContainer": false,
@@ -385,12 +393,12 @@ VALUES('FNLCR', '/FNL_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-Tes
 		 ]
 	    }');
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('CCBR', '/CCBR_SF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 
+INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
+VALUES('be21cdf5-cdd3-4282-a78f-0d817285394a', '/CCBR_SF_Archive', 'CCBR', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 
        'CCBR_SF_Archive', 'ARCHIVE', NULL, NULL, NULL);
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'DUMMY_Archive', 'ARCHIVE',
+INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
+VALUES('63fdccdd-64b8-477f-9e5c-450c4dccf748', '/TEST_Archive', 'DUMMY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'DUMMY_Archive', 'ARCHIVE',
        '{
       	 "collectionType": "Project",
       	 "isDataObjectContainer": true,
@@ -910,15 +918,14 @@ VALUES('DUMMY', '/TEST_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestV
 		 ]
 	    }');
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('CCR-LEEMAX', '/CCR_LEEMAX_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'CCR_LEEMAX_Archive',
+INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
+VALUES('963f55b4-5910-42d2-9cea-c2834ddd0a51', '/CCR_LEEMAX_Archive', 'CCR-LEEMAX', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'CCR_LEEMAX_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
-INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('HiTIF', '/HiTIF_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'HiTIF_Archive',
+INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
+VALUES('50a8d63b-2eef-47bb-af96-0e333a80eda5', '/HiTIF_Archive', 'HiTIF', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'HiTIF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
                                                   
-INSERT INTO public."HPC_DOC_CONFIGURATION" 
-VALUES('DUMMY_NO_HIER', '/TEST_NO_HIER_Archive', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'NO_HIER_Archive',
+INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
+VALUES('0812a506-6e2f-4dcc-b11a-8a14cff00819', '/TEST_NO_HIER_Archive', 'DUMMY_NO_HIER', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'NO_HIER_Archive',
        'ARCHIVE', NULL, NULL, NULL);
-

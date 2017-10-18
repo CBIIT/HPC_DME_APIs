@@ -1,5 +1,5 @@
 /**
- * HpcDocConfigurationDAOImpl.java
+ * HpcDataManagementConfigurationDAOImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -24,34 +24,34 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import gov.nih.nci.hpc.dao.HpcDocConfigurationDAO;
+import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC DOC Configuration DAO Implementation.
+ * HPC Data Management Configuration DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 
-public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
+public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementConfigurationDAO
 { 
     //---------------------------------------------------------------------//
     // Constants
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	private static final String GET_DOC_CONFIGURATIONS_SQL = 
-			                    "select * from public.\"HPC_DOC_CONFIGURATION\"";
+	private static final String GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL = 
+			                    "select * from public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\"";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -61,33 +61,34 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 	
-	// HpcDocConfiguration Table to Object mapper.
-	private RowMapper<HpcDocConfiguration> rowMapper = (rs, rowNum) -> 
+	// HpcDataManagementConfiguration Table to Object mapper.
+	private RowMapper<HpcDataManagementConfiguration> rowMapper = (rs, rowNum) -> 
 	{
-		HpcDocConfiguration docConfiguration = new HpcDocConfiguration();
-		docConfiguration.setDoc(rs.getString("DOC"));
-		docConfiguration.setBasePath(rs.getString("BASE_PATH"));
-		docConfiguration.setS3URL(rs.getString("S3_URL"));
+		HpcDataManagementConfiguration dataManagementConfiguration = new HpcDataManagementConfiguration();
+		dataManagementConfiguration.setId(rs.getString("ID"));
+		dataManagementConfiguration.setBasePath(rs.getString("BASE_PATH"));
+		dataManagementConfiguration.setDoc(rs.getString("DOC"));
+		dataManagementConfiguration.setS3URL(rs.getString("S3_URL"));
 		HpcArchive s3BaseArchiveDestination = new HpcArchive();
 		HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
 		s3ArchiveLocation.setFileContainerId(rs.getString("S3_VAULT"));
 		s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
 		s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
 		s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("S3_ARCHIVE_TYPE")));
-		docConfiguration.setS3BaseArchiveDestination(s3BaseArchiveDestination);
+		dataManagementConfiguration.setS3BaseArchiveDestination(s3BaseArchiveDestination);
 		
 		try {
-		     docConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
-		     docConfiguration.getCollectionMetadataValidationRules().addAll(
+			 dataManagementConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
+			 dataManagementConfiguration.getCollectionMetadataValidationRules().addAll(
 		        getMetadataValidationRulesFromJSONStr(rs.getString("COLLECTION_METADATA_VALIDATION_RULES")));
-		     docConfiguration.getDataObjectMetadataValidationRules().addAll(
+			 dataManagementConfiguration.getDataObjectMetadataValidationRules().addAll(
 				        getMetadataValidationRulesFromJSONStr(rs.getString("DATA_OBJECT_METADATA_VALIDATION_RULES")));
 		     
 		} catch(HpcException e) {
 			    throw new SQLException(e);
 		}
 
-		return docConfiguration;
+		return dataManagementConfiguration;
 	};
 	
     //---------------------------------------------------------------------//
@@ -98,7 +99,7 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
      * Constructor for Spring Dependency Injection. 
      * 
      */
-    private HpcDocConfigurationDAOImpl()
+    private HpcDataManagementConfigurationDAOImpl()
     {
     }   
     
@@ -107,20 +108,20 @@ public class HpcDocConfigurationDAOImpl implements HpcDocConfigurationDAO
     //---------------------------------------------------------------------//
     
     //---------------------------------------------------------------------//
-    // HpcDocConfigDAO Interface Implementation
+    // HpcDataManagementConfigDAO Interface Implementation
     //---------------------------------------------------------------------//  
     
 	@Override
-	public List<HpcDocConfiguration> getDocConfigurations() throws HpcException
+	public List<HpcDataManagementConfiguration> getDataManagementConfigurations() throws HpcException
     {
 		try {
-		     return jdbcTemplate.query(GET_DOC_CONFIGURATIONS_SQL, rowMapper);
+		     return jdbcTemplate.query(GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL, rowMapper);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get DOC configurations: " + e.getMessage(),
+		        throw new HpcException("Failed to get data management configurations: " + e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
     }

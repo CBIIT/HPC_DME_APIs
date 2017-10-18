@@ -62,7 +62,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
     // SQL Queries.
 	public static final String UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" ( " +
-                   "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " + 
+                   "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " + 
 				   "\"DATA_TRANSFER_STATUS\", \"DOWNLOAD_FILE_PATH\"," +
 				   "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", " + 
                    "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", " + 
@@ -70,7 +70,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
-                        "\"DOC\"=excluded.\"DOC\", " + 
+                        "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", " + 
                         "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
                         "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
                         "\"DATA_TRANSFER_STATUS\"=excluded.\"DATA_TRANSFER_STATUS\", " +
@@ -94,13 +94,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	
 	public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = 
 		   "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( " +
-                   "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " +
+                   "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " +
                    "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"RESULT\", " +
                    "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"CREATED\", \"COMPLETED\") " + 
-                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict on constraint \"HPC_DOWNLOAD_TASK_RESULT_pkey\" do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
-                        "\"DOC\"=excluded.\"DOC\", " + 
                         "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
                         "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
                         "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
@@ -174,7 +173,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		HpcDataObjectDownloadTask dataObjectDownloadTask = new HpcDataObjectDownloadTask();
 		dataObjectDownloadTask.setId(rs.getString("ID"));
 		dataObjectDownloadTask.setUserId(rs.getString("USER_ID"));
-		dataObjectDownloadTask.setDoc(rs.getString("DOC"));
+		dataObjectDownloadTask.setConfigurationId(rs.getString("CONFIGURATION_ID"));
 		dataObjectDownloadTask.setPath(rs.getString("PATH"));
 		dataObjectDownloadTask.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 		dataObjectDownloadTask.setDataTransferType(
@@ -217,7 +216,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		HpcDownloadTaskResult downloadTaskResult = new HpcDownloadTaskResult();
 		downloadTaskResult.setId(rs.getString("ID"));
 		downloadTaskResult.setUserId(rs.getString("USER_ID"));
-		downloadTaskResult.setDoc(rs.getString("DOC"));
 		downloadTaskResult.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 		downloadTaskResult.setPath(rs.getString("PATH"));
 		downloadTaskResult.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
@@ -344,7 +342,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		    		             dataObjectDownloadTask.getId(),
 					    		 dataObjectDownloadTask.getUserId(),
 					    		 dataObjectDownloadTask.getPath(),
-					    		 dataObjectDownloadTask.getDoc(),
+					    		 dataObjectDownloadTask.getConfigurationId(),
 					    		 dataObjectDownloadTask.getDataTransferRequestId(),
 					    		 dataObjectDownloadTask.getDataTransferType().value(),
 					    		 dataObjectDownloadTask.getDataTransferStatus().value(),
@@ -417,7 +415,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 taskResult.getId(),
 					    		 taskResult.getUserId(),
 					    		 taskResult.getPath(),
-					    		 taskResult.getDoc(),
 					    		 taskResult.getDataTransferRequestId(),
 					    		 taskResult.getDataTransferType() != null ? 
 					    		     taskResult.getDataTransferType().value() : null,
