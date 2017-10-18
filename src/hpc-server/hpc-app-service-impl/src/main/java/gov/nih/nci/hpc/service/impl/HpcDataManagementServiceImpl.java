@@ -40,12 +40,12 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -82,9 +82,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Autowired
 	private HpcDataHierarchyValidator dataHierarchyValidator = null;
 	
-	// DOC configuration locator.
+	// Data Management configuration locator.
 	@Autowired
-	private HpcDocConfigurationLocator docConfigurationLocator = null;
+	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 	
 	// Data Object Deletion DAO.
 	@Autowired
@@ -176,8 +176,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	String relativePath = dataManagementProxy.getRelativePath(path);
-    	// Validate the path is not a DOC base path.
-    	if(docConfigurationLocator.getBasePaths().contains(relativePath)) {
+    	// Validate the path is not a configured base path. 
+    	if(dataManagementConfigurationLocator.getBasePaths().contains(relativePath)) {
     	   throw new HpcException("Invalid collection path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
@@ -365,7 +365,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void validateHierarchy(String path, String doc,
+    public void validateHierarchy(String path, String configurationId,
     		                      boolean dataObjectRegistration) 
     		                     throws HpcException
     {
@@ -390,7 +390,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		}
 
 		// Perform the hierarchy validation.
-		dataHierarchyValidator.validateHierarchy(doc, collectionPathTypes, dataObjectRegistration);
+		dataHierarchyValidator.validateHierarchy(configurationId, collectionPathTypes, 
+				                                 dataObjectRegistration);
     }
     
     @Override
@@ -466,19 +467,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public HpcDocConfiguration getDocConfiguration(String doc)
+    public List<HpcDataManagementConfiguration> getDataManagementConfigurations()
     {
-    	if(StringUtils.isEmpty(doc)) {
-    	   return null;
-    	}
-    	
-    	return docConfigurationLocator.get(doc);
-    }
-    
-    @Override
-    public List<String> getDocs()
-    {
-    	return new ArrayList<String>(docConfigurationLocator.keySet());
+    	return new ArrayList<>(dataManagementConfigurationLocator.values());
     }
     
     @Override
@@ -495,7 +486,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	// Create a data object list registration task.
     	HpcDataObjectListRegistrationTask dataObjectListRegistrationTask = new HpcDataObjectListRegistrationTask();
     	dataObjectListRegistrationTask.setUserId(userId);
-    	dataObjectListRegistrationTask.setDoc(doc);
     	dataObjectListRegistrationTask.setCreated(Calendar.getInstance());
     	dataObjectListRegistrationTask.setStatus(HpcDataObjectListRegistrationTaskStatus.RECEIVED);
     	
@@ -606,6 +596,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	}
     	
     	return null;
+    }
+	
+	@Override
+	public String getConfigurationId(String path)
+    {
+		String relativePath = dataManagementProxy.getRelativePath(path);
+		for(HpcDataManagementConfiguration dataManagementConfiguration : 
+			dataManagementConfigurationLocator.values()) {
+		    if(relativePath.startsWith(dataManagementConfiguration.getBasePath())) {
+			   return dataManagementConfiguration.getId();
+			}
+		}
+		
+		return null;
     }
     
     //---------------------------------------------------------------------//

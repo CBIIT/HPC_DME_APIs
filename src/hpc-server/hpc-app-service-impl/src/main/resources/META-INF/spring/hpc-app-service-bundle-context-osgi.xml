@@ -88,8 +88,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />	
 	<osgi:reference id="hpcUserBookmarkDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcUserBookmarkDAO" />			
-	<osgi:reference id="hpcDocConfigurationDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcDocConfigurationDAO" />                 
+	<osgi:reference id="hpcDataManagementConfigurationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO" />                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>
