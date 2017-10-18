@@ -320,15 +320,15 @@ public interface HpcDataManagementRestService
                                        @QueryParam("totalCount") Boolean totalCount);
 	
     /**
-     * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.
+     * Get data management model. This includes all rules.
      *
      * @param doc The DOC to get the model for.
      * @return The REST service response w/ HpcDataManagementModelDTO entity.
      */
 	@GET
-	@Path("/dm/model/{doc}")
+	@Path("/dm/model")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataManagementModel(@PathParam("doc") String doc);
+	public Response getDataManagementModel();
 	
     /**
      * Get data management tree (collections and data objects) from a DOC base path.
@@ -340,15 +340,5 @@ public interface HpcDataManagementRestService
 	@Path("/dm/tree/{doc}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getDataManagementTree(@PathParam("doc") String doc);
-	
-    /**
-     * Get data management model DOCs.
-     *
-     * @return The REST service response w/ HpcDataManagementDocListDTO entity.
-     */
-	@GET
-	@Path("/dm/docs")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataManagementModelDOCs();
 }
 

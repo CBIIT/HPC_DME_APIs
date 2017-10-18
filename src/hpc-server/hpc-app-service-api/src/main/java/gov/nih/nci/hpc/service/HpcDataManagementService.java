@@ -19,10 +19,10 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskSt
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -172,12 +172,12 @@ public interface HpcDataManagementService
      * Validate a path against a hierarchy definition.
      *
      * @param path The collection path.
-     * @param doc Use validation rules of this DOC.
+     * @param configurationId Use validation rules of this data management configuration.
      * @param dataObjectRegistration If true, the service validates if data object registration is allowed 
      *                               in this collection.
      * @throws HpcException If the hierarchy is invalid.
      */
-    public void validateHierarchy(String path, String doc,
+    public void validateHierarchy(String path, String configurationId,
     		                      boolean dataObjectRegistration) 
     		                     throws HpcException;
     
@@ -239,20 +239,12 @@ public interface HpcDataManagementService
     public void closeConnection();
     
     /**
-     * Get DOC configuration.
+     * Get all Data Management Configurations.
      * 
-     * @param doc The DOC to get the configuration for
-     * @return DOC configuration.
+     * @return Data management configuration.
      */
-    public HpcDocConfiguration getDocConfiguration(String doc);
+    public List<HpcDataManagementConfiguration> getDataManagementConfigurations();
 
-    /**
-     * Get a list of all DOCs supported by the system.
-     * 
-     * @return List of DOCs.
-     */
-    public List<String> getDocs();
-    
     /**
      * Data objects registration.
      *
@@ -321,6 +313,15 @@ public interface HpcDataManagementService
      * @throws HpcException on service failure.
      */
     public String getCollectionType(String path) throws HpcException;
+    
+	/**
+     * Get data management configuration ID for a given path. This is calculated
+     * based on matching configuration base path to the given path.
+     *
+     * @param path the path to get a config ID for.
+     * @return A configuration ID if matched by base path, or null otherwise
+     */
+	public String getConfigurationId(String path);
 }
 
  
