@@ -467,19 +467,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public List<HpcDataManagementConfiguration> getDataManagementConfigurations()
-    {
-    	return new ArrayList<>(dataManagementConfigurationLocator.values());
-    }
-    
-    @Override
-    public String registerDataObjects(String userId, String doc, 
+    public String registerDataObjects(String userId, 
                                       Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
                                      throws HpcException
     {
     	// Input validation
-    	if(StringUtils.isEmpty(userId) || StringUtils.isEmpty(doc)) {
-    	   throw new HpcException("Null / Empty userId ot DOC in registration list request", 
+    	if(StringUtils.isEmpty(userId)) {
+    	   throw new HpcException("Null / Empty userId in registration list request", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
@@ -598,8 +592,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	return null;
     }
 	
+    @Override
+    public List<HpcDataManagementConfiguration> getDataManagementConfigurations()
+    {
+    	return new ArrayList<>(dataManagementConfigurationLocator.values());
+    }
+    
 	@Override
-	public String getConfigurationId(String path)
+	public String findDataManagementConfigurationId(String path)
     {
 		String relativePath = dataManagementProxy.getRelativePath(path);
 		for(HpcDataManagementConfiguration dataManagementConfiguration : 
@@ -611,6 +611,18 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		
 		return null;
     }
+	
+	@Override
+	public String getDataManagementConfigurationId(String basePath)
+	{
+		return dataManagementConfigurationLocator.getConfigurationId(basePath);
+	}
+	
+	@Override
+	public HpcDataManagementConfiguration getDataManagementConfiguration(String id)
+	{
+		return dataManagementConfigurationLocator.get(id);
+	}
     
     //---------------------------------------------------------------------//
     // Helper Methods
