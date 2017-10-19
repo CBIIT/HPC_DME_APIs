@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -31,7 +30,7 @@
 			<xsd:sequence>
 				<xsd:element name="firstName" type="xsd:string" />
 				<xsd:element name="lastName" type="xsd:string" />
-				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="defaultBasePath" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
 				<xsd:element name="active" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
@@ -43,7 +42,7 @@
 			<xsd:sequence>
 				<xsd:element name="firstName" type="xsd:string" />
 				<xsd:element name="lastName" type="xsd:string" />
-				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="defaultBasePath" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
 				<xsd:element name="active" type="xsd:boolean" />
 			</xsd:sequence>
@@ -55,7 +54,7 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="firstName" type="xsd:string" />
 			<xsd:element name="lastName" type="xsd:string" />
-			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="defaultBasePath" type="xsd:string" />
 			<xsd:element name="active" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
