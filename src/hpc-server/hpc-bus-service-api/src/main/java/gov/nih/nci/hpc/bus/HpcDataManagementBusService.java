@@ -17,7 +17,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -336,15 +335,6 @@ public interface HpcDataManagementBusService
      * @throws HpcException on service failure.
      */
 	public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
-	
-    /**
-     * Get data management tree (collections and data objects) from a DOC base path.
-     *
-     * @param doc The DOC to get the tree for.
-     * @return Data Management Tree DTO.
-     * @throws HpcException on service failure.
-     */
-	public HpcDataManagementTreeDTO getDataManagementTree(String doc) throws HpcException;
 }
 
  

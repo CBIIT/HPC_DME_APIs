@@ -1139,7 +1139,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	
     	try {
         	 // Determine the data management configuration to use based on the path.
-        	 String configurationId = dataManagementService.getConfigurationId(registrationTask.getPath());
+        	 String configurationId = 
+        			dataManagementService.findDataManagementConfigurationId(
+        					                  registrationTask.getPath());
         	 if(StringUtils.isEmpty(configurationId.toString())) {
         	    throw new HpcException("Failed to determine data management configuration.",
         			                   HpcErrorType.INVALID_REQUEST_INPUT);

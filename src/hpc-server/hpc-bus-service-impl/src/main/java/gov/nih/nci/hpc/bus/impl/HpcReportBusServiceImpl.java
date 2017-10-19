@@ -88,7 +88,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService
 	 		{
 	 			for(String doc : criteriaDTO.getDoc())
 	 			{
-	 				if(!doc.equals(invoker.getNciAccount().getDoc()))
+	 				if(!doc.equals(""/* TODO - FIX ME invoker.getNciAccount().getDoc()*/))
 	 					throw new HpcException("Unauthorized access to DOC report for: "+ criteriaDTO.getDoc(), HpcErrorType.UNAUTHORIZED_REQUEST);
 	 			}
 	 		}
