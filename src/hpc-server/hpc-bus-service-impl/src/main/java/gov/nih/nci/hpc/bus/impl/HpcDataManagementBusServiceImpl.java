@@ -30,7 +30,6 @@ import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
@@ -62,8 +61,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -154,7 +151,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                         throws HpcException
     {
     	// Determine the data management configuration to use based on the path.
-    	String configurationId = dataManagementService.getConfigurationId(path);
+    	String configurationId = dataManagementService.findDataManagementConfigurationId(path);
     	if(StringUtils.isEmpty(configurationId)) {
     	   throw new HpcException("Failed to determine data management configuration for: " + path,
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
@@ -487,7 +484,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		                         throws HpcException
     {
     	// Determine the data management configuration to use based on the path.
-    	String configurationId = dataManagementService.getConfigurationId(path);
+    	String configurationId = dataManagementService.findDataManagementConfigurationId(path);
     	if(StringUtils.isEmpty(configurationId)) {
     	   throw new HpcException("Failed to determine data management configuration for: " + path,
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
@@ -645,7 +642,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Submit a data objects registration task and return a response DTO.
     	HpcDataObjectListRegistrationResponseDTO responseDTO = new HpcDataObjectListRegistrationResponseDTO();
     	responseDTO.setTaskId(dataManagementService.registerDataObjects(invokerNciAccount.getUserId(), 
-    			                                                        invokerNciAccount.getDoc(), 
     			                                                        dataObjectRegistrationRequests));
     	
     	return responseDTO;
@@ -1012,27 +1008,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	return dataManagementModel;
     }
     
-    // TODO - Remove this method
-    @Override
-    public HpcDataManagementTreeDTO getDataManagementTree(String doc) throws HpcException
-    {
-    	/*
-    	// Input validation.
-    	if(StringUtils.isEmpty(doc)) {
-    	   throw new HpcException("Null or empty DOC", HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	
-    	HpcDocConfiguration docConfiguration = dataManagementService.getDocConfiguration(doc);
-    	if(docConfiguration == null) {
-    	   throw new HpcException("DOC not supported: " + doc, HpcErrorType.INVALID_REQUEST_INPUT);	
-    	}
-    	
-    	HpcDataManagementTreeDTO dataManagementTree = new HpcDataManagementTreeDTO();
-    	dataManagementTree.setBasePath(getCollectionTree(docConfiguration.getBasePath()));
-    	*/
-    	return new HpcDataManagementTreeDTO();
-    }
-    
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//
@@ -1393,38 +1368,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return userPermission;
 	}
 	
-	/** 
-     * Get the data management tree for a given collection path.
-     * 
-     * @param path The collection to get the tree for.
-     * @return A data management tree .
-     * @throws HpcException on service failure.
-     */
-    private HpcDataManagementTreeEntry getCollectionTree(String path) throws HpcException
-    {
-    	HpcDataManagementTreeEntry collectionTreeEntry = new HpcDataManagementTreeEntry();
-    	collectionTreeEntry.setPath(path);
-    	
-    	// Get the collection.
-    	HpcCollection collection = dataManagementService.getCollection(path, true);
-    	if(collection == null) {
-      	   throw new HpcException("Failed to get collection: " + path, 
-      			                  HpcErrorType.DATA_MANAGEMENT_ERROR);
-      	}
-    	
-    	// List the data objects.
-    	for(HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
-    		collectionTreeEntry.getDataObjects().add(dataObject.getPath());
-    	}
-    	
-    	// Recursively list the sub collections.
-    	for(HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
-    		collectionTreeEntry.getSubCollections().add(getCollectionTree(subCollection.getPath()));
-    	}
-    	
-    	return collectionTreeEntry;
-    }
-    
     /**
      * Get collection download task status.
      *
