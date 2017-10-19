@@ -79,7 +79,8 @@ public class HpcReportServiceImpl implements HpcReportService
 	    	if(criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC) ||
 	    			criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
 	    	{
-	    		String doc = invoker.getNciAccount().getDoc();
+	    		// TODO - fix me.
+	    		String doc = "";//invoker.getNciAccount().getDoc();
 	    		List<String> docs = criteria.getDocs();
 	    		for(String criteriaDOC : docs)
 	    		{

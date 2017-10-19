@@ -239,22 +239,14 @@ public interface HpcDataManagementService
     public void closeConnection();
     
     /**
-     * Get all Data Management Configurations.
-     * 
-     * @return Data management configuration.
-     */
-    public List<HpcDataManagementConfiguration> getDataManagementConfigurations();
-
-    /**
      * Data objects registration.
      *
      * @param userId The user ID requested the registration.
-     * @param doc The registrar DOC.
      * @param dataObjectRegistrationRequests The data object registration requests.
      * @return The task ID created to register the data objects and can be used to track status
      * @throws HpcException on service failure.
      */
-    public String registerDataObjects(String userId, String doc, 
+    public String registerDataObjects(String userId,  
     		                          Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
     				                 throws HpcException;
     
@@ -314,14 +306,41 @@ public interface HpcDataManagementService
      */
     public String getCollectionType(String path) throws HpcException;
     
+    /**
+     * Get all Data Management Configurations.
+     * 
+     * @return Data management configuration.
+     */
+    public List<HpcDataManagementConfiguration> getDataManagementConfigurations();
+    
 	/**
-     * Get data management configuration ID for a given path. This is calculated
-     * based on matching configuration base path to the given path.
+     * Find data management configuration ID for a given path. This is searched
+     * by matching the given path to all configuration base paths. If any configuration
+     * base path is found to be the 'base path' of the given path, then the corresponding configuration ID
+     * is returned
      *
-     * @param path the path to get a config ID for.
+     * @param path the path to find a config ID for.
      * @return A configuration ID if matched by base path, or null otherwise
      */
-	public String getConfigurationId(String path);
+	public String findDataManagementConfigurationId(String path);
+	
+	/**
+     * Get data management configuration ID by base path. 
+     * 
+     * @param basePath The base path to get the config for.
+     *
+     * @return A configuration ID, or null if not found.
+     */
+	public String getDataManagementConfigurationId(String basePath);
+	
+	/**
+     * Get data management configuration by ID. 
+     * 
+     * @param id The configuration ID.
+     *
+     * @return A configuration ID, or null if not found.
+     */
+	public HpcDataManagementConfiguration getDataManagementConfiguration(String id);
 }
 
  

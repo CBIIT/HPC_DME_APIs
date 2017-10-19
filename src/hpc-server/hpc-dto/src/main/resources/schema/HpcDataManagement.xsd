@@ -377,22 +377,4 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<xsd:complexType name="HpcDataManagementTreeEntry">
-		<xsd:sequence>
-		    <xsd:element name="path" type="xsd:string" />
-			<xsd:element name="dataObjects" type="xsd:string" 
-			             minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element name="subCollections" type="hpc-dto-datamanagement:HpcDataManagementTreeEntry" 
-			             minOccurs="0" maxOccurs="unbounded"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	
-	<xsd:element name="HpcDataManagementTreeDTO">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="basePath" type="hpc-dto-datamanagement:HpcDataManagementTreeEntry" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>	
-	
 </xsd:schema>
