@@ -3,3 +3,4 @@ org.eclipse.core.resources.prefs
 .project
 hpc-soapui-workspace.xml
 org.eclipse.jdt.core.prefs
+src/hpc-web/hpcweb.log
