@@ -79,7 +79,7 @@ public class HpcAuthenticationTestInterceptor
     public void handleMessage(Message message) 
     {
     	HpcNciAccount nciAccount = new HpcNciAccount();
-    	nciAccount.setDoc("UNIT_TEST");
+    	nciAccount.setDefaultConfigurationId("DEFAULT_CONFIG_ID");
     	nciAccount.setFirstName("Unit");
     	nciAccount.setLastName("Test");
     	nciAccount.setUserId("unittest");
