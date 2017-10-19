@@ -30,7 +30,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
@@ -442,20 +441,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 		
 		return okResponse(docModel, true);
-    }
-    
-    @Override
-    public Response getDataManagementTree(String doc)
-    {
-    	HpcDataManagementTreeDTO docTree = null;
-		try {
-			 docTree = dataManagementBusService.getDataManagementTree(doc);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(docTree, true);
     }
     
     //---------------------------------------------------------------------//

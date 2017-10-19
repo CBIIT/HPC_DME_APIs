@@ -93,7 +93,7 @@ public interface HpcSecurityRestService
      *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
      *                                   SQL LIKE wildcards ('%', '_') are supported. 
-     * @param doc User DOC.                      
+     * @param defaultBasePath The default base path.                      
      * @return The REST service response w/ HpcUserListDTO entity.
      */
     @GET
@@ -102,7 +102,7 @@ public interface HpcSecurityRestService
     public Response getActiveUsers(@QueryParam("nciUserId") String nciUserId,
     		                       @QueryParam("firstNamePattern") String firstNamePattern,
     		                       @QueryParam("lastNamePattern") String lastNamePattern,
-    		                       @QueryParam("doc") String doc);
+    		                       @QueryParam("defaultBasePath") String defaultBasePath);
     
     /**
      * Get users by search criterias. Note: All users are returned, both active and inactive
