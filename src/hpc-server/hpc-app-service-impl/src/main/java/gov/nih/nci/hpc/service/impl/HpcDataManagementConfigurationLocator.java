@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -51,7 +51,7 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
     private HpcDataManagementConfigurationDAO dataManagementConfigurationDAO = null;
 	
 	// A set of all supported base paths (to allow quick search).
-	private Set<String> basePaths = new HashSet<>();
+	private Map<String, HpcDataManagementConfiguration> basePathConfigurations = new HashMap<>();
 	
     // The logger instance.
 	private final Logger logger = 
@@ -81,7 +81,20 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
      */
 	public Set<String> getBasePaths() 
     {
-		return basePaths;
+		return basePathConfigurations.keySet();
+    }
+	
+	/**
+     * Get configuration ID by base path.
+     * 
+     * @param basePath The base path to get the config for.
+     *
+     * @return A configuration ID, or null if not found.
+     */
+	public String getConfigurationId(String basePath) 
+    {
+		HpcDataManagementConfiguration configuration = basePathConfigurations.get(basePath);
+		return configuration != null ? configuration.getId() : null;
     }
 	
 	/**
@@ -127,20 +140,26 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 	public void reload() throws HpcException
     {
 		clear();
-    	basePaths.clear();
+    	basePathConfigurations.clear();
     	
     	for(HpcDataManagementConfiguration dataManagementConfiguration : 
     		dataManagementConfigurationDAO.getDataManagementConfigurations()) {
-    		// Ensure the base path is in the form of a relative path.
-    		dataManagementConfiguration.setBasePath(dataManagementProxy.getRelativePath(dataManagementConfiguration.getBasePath()));
-    		
+    		// Ensure the base path is in the form of a relative path, and one level deep (i.e. /base-path).
+    		String basePath = dataManagementProxy.getRelativePath(dataManagementConfiguration.getBasePath());
+    		if(basePath.split("/").length != 2) {
+    		   throw new HpcException("Invalid base path [" + basePath + "]. Only one level path supported.",
+    				                  HpcErrorType.UNEXPECTED_ERROR);
+    		}
+    		dataManagementConfiguration.setBasePath(basePath);
+
     		// Ensure base path is unique (i.e. no 2 configurations share the same base path).
-    		if(!basePaths.add(dataManagementConfiguration.getBasePath())) {
+    		if(basePathConfigurations.put(basePath, dataManagementConfiguration) != null) {
     		   throw new HpcException("Duplicate base-path in data management configurations:" + 
     				                  dataManagementConfiguration.getBasePath(), 
     				                  HpcErrorType.UNEXPECTED_ERROR);	
     		}
     		
+    		// Populate the configurationId -> configuration map.
     		put(dataManagementConfiguration.getId(), dataManagementConfiguration);
     	}
     	
