@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,6 +54,9 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 	// A set of all supported base paths (to allow quick search).
 	private Map<String, HpcDataManagementConfiguration> basePathConfigurations = new HashMap<>();
 	
+	// A set of all supported docs (to allow quick search).
+	private Set<String> docs = new HashSet<>();
+	
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -82,6 +86,16 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
 	public Set<String> getBasePaths() 
     {
 		return basePathConfigurations.keySet();
+    }
+	
+	/**
+     * Get all supported DOCs.
+     *
+     * @return A list of all supported base paths.
+     */
+	public Set<String> getDocs() 
+    {
+		return docs;
     }
 	
 	/**
@@ -141,6 +155,7 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
     {
 		clear();
     	basePathConfigurations.clear();
+    	docs.clear();
     	
     	for(HpcDataManagementConfiguration dataManagementConfiguration : 
     		dataManagementConfigurationDAO.getDataManagementConfigurations()) {
@@ -158,6 +173,9 @@ public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDa
     				                  dataManagementConfiguration.getBasePath(), 
     				                  HpcErrorType.UNEXPECTED_ERROR);	
     		}
+    		
+    		// Populate the DOCs list.
+    		docs.add(dataManagementConfiguration.getDoc());
     		
     		// Populate the configurationId -> configuration map.
     		put(dataManagementConfiguration.getId(), dataManagementConfiguration);

@@ -46,12 +46,13 @@ public interface HpcSecurityService
      * @param nciUserId The NCI user ID of the user to update. 
      * @param firstName The user first name.
      * @param lastName The user last name. 
+     * @param doc The DOC.
      * @param defaultConfigurationId The default configuration ID for this user.
      * @param active The active indicator.
      * @throws HpcException on service failure.
      */
     public void updateUser(String nciUserId, String firstName, String lastName, 
-    		               String defaultConfigurationId, boolean active) 
+    		               String doc, String defaultConfigurationId, boolean active) 
     		              throws HpcException;
 
     /**
@@ -72,12 +73,13 @@ public interface HpcSecurityService
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
      *                                   SQL LIKE wildcards ('%', '_') are supported. 
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
+     * @param doc The DOC.
      * @param defaultConfigurationId The default configuration ID.
      * @return A list of users.
      * @throws HpcException on service failure.
      */
     public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
-    		                      String defaultConfigurationId, boolean active) 
+    		                      String doc, String defaultConfigurationId, boolean active) 
     		                     throws HpcException;
     
     /**
