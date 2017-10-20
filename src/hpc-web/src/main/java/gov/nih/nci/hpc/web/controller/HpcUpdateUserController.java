@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -56,8 +55,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcUpdateUserController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user}")
 	private String userServiceURL;
-	@Value("${gov.nih.nci.hpc.server.docs}")
-	private String docsServiceURL;
+	@Value("${gov.nih.nci.hpc.server.model}")
+	private String hpcModelURL;
 
 	/**
 	 * GET action to prepare update user page
@@ -82,7 +81,7 @@ public class HpcUpdateUserController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/login?returnPath=updateuser";
 		}
-		init(userId, model, authToken, user);
+		init(userId, model, authToken, user, session);
 		return "updateuser";
 	}
 
@@ -127,17 +126,17 @@ public class HpcUpdateUserController extends AbstractHpcController {
 		} catch (Exception e) {
 			result.setMessage("Failed to update user: " + e.getMessage());
 		} finally {
-			init(hpcWebUser.getNciUserId(), model, authToken, user);
+			init(hpcWebUser.getNciUserId(), model, authToken, user, session);
 		}
 		return result;
 	}
 
-	private void init(String userId, Model model, String authToken, HpcUserDTO user) {
+	private void init(String userId, Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		getUser(userId, model, authToken);
 		HpcWebUser webUser = new HpcWebUser();
 		webUser.setNciUserId(userId);
 		model.addAttribute("hpcWebUser", webUser);
-		populateDOCs(model, authToken, user);
+		populateDOCs(model, authToken, user, session);
 		populateRoles(model, user);
 	}
 
@@ -147,12 +146,11 @@ public class HpcUpdateUserController extends AbstractHpcController {
 		model.addAttribute("userDTO", userDTO);
 	}
 
-	private void populateDOCs(Model model, String authToken, HpcUserDTO user) {
+	private void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		List<String> userDOCs = new ArrayList<String>();
 		if (user.getUserRole().equals(SYSTEM_ADMIN)) {
-			HpcDataManagementDocListDTO docs = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
-					sslCertPassword);
-			model.addAttribute("docs", docs.getDocs());
+			List<String> docs = HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session);
+			model.addAttribute("docs", docs);
 		} else {
 			userDOCs.add(user.getDoc());
 			model.addAttribute("docs", userDOCs);

@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -55,8 +54,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcCreateUserController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.user}")
 	private String userServiceURL;
-	@Value("${gov.nih.nci.hpc.server.docs}")
-	private String docsServiceURL;
+	@Value("${gov.nih.nci.hpc.server.model}")
+	private String hpcModelURL;
 
 	/**
 	 * Prepare create user page. Populate available DOCs and Roles to assign to
@@ -80,7 +79,7 @@ public class HpcCreateUserController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		initialize(model, authToken, user);
+		initialize(model, authToken, user, session);
 		return "createuser";
 	}
 
@@ -127,25 +126,24 @@ public class HpcCreateUserController extends AbstractHpcController {
 		} finally {
 			model.addAttribute("hpcWebUser", hpcWebUser);
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-			initialize(model, authToken, user);
+			initialize(model, authToken, user, session);
 		}
 		return result;
 	}
 
-	private void initialize(Model model, String authToken, HpcUserDTO user) {
+	private void initialize(Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
-		populateDOCs(model, authToken, user);
+		populateDOCs(model, authToken, user, session);
 		populateRoles(model, user);
 
 	}
 
-	private void populateDOCs(Model model, String authToken, HpcUserDTO user) {
+	private void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		List<String> userDOCs = new ArrayList<String>();
 		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
-			HpcDataManagementDocListDTO docs = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
-					sslCertPassword);
-			model.addAttribute("docs", docs.getDocs());
+			List<String> docs = HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session);
+			model.addAttribute("docs", docs);
 		} else {
 			userDOCs.add(user.getDoc());
 			model.addAttribute("docs", userDOCs);

@@ -102,9 +102,10 @@ public class HpcCollectionController extends AbstractHpcController {
 			if (collections != null && collections.getCollections() != null
 					&& collections.getCollections().size() > 0) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-				if (modelDTO == null)
-					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(), sslCertPath,
-							sslCertPassword);
+				if (modelDTO == null) {
+					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+					session.setAttribute("userDOCModel", modelDTO);
+				}
 				// Get collection permissions to enable Edit, Permission icons
 				// on the UI
 				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,

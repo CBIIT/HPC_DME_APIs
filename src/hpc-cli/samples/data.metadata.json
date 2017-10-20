@@ -1,0 +1,45 @@
+{
+	"metadataEntries": [
+      	{
+      	 "attribute": "name",
+      	 "value": "Data folder new 1"
+   		},
+      	{
+      	 "attribute": "collection_type",
+      	 "value": "Project"
+   		},
+   		{
+      	 "attribute": "description",
+      	 "value": "Project desc1"
+   		},
+   		{
+   		 "attribute": "internal_project_id",
+      	 "value": "ipi"
+   		},
+   		{
+   		 "attribute": "source_lab_pi",
+      	 "value": "Source Lab PI"
+   		},
+   		{
+   		 "attribute": "project_id_CSAS",
+      	 "value": "CSAS"
+   		},
+   		{
+   		 "attribute": "lab_branch",
+      	 "value": "Lab / Branch Name Child"
+   		},
+   		{
+   		 "attribute": "pi_doc",
+      	 "value": "FNLCR"
+   		},
+   		{
+   		 "attribute": "child-custom-md",
+      	 "value": "Rosenberg Eran"
+   		},
+   		{
+   		 "attribute": "parent-md-only",
+      	 "value": "testing testing testing"
+   		}
+   		
+	]
+}
