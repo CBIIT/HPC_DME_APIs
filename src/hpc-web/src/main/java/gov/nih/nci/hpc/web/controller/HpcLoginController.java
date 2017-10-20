@@ -82,7 +82,7 @@ public class HpcLoginController extends AbstractHpcController {
 					throw new HpcWebException("Invlaid User");
 				session.setAttribute("hpcUser", user);
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
-				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(),
+				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL,
 						sslCertPath, sslCertPassword);
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
