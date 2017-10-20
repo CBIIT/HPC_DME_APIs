@@ -50,13 +50,14 @@ public interface HpcUserDAO
      *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case sensitive matching).
      *                                   SQL LIKE wildcards ('%', '_') are supported. 
-     * @param defaultConfigurationId The default data management configuration ID.                    
+     * @param doc (Optional) The doc.  
+     * @param defaultConfigurationId (Optional) The default data management configuration ID.                    
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
      * @return A list of users.
      * @throws HpcException on service failure.
      */
     public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
-    		                      String defaultConfigurationId, boolean active) 
+    		                      String doc, String defaultConfigurationId, boolean active) 
     		                     throws HpcException;
 }
 

@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -101,6 +102,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	@Autowired
     private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 	
+    // The Data Management Configuration Locator.
+	@Autowired
+    private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
+	
 	// The authentication token signature key.
 	private String authenticationTokenSignatureKey = null;
 	
@@ -154,6 +159,18 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	   throw new HpcException("Invalid add user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
+    	
+    	if(!dataManagementConfigurationLocator.getDocs().contains(nciAccount.getDoc())) {
+    	   throw new HpcException("Invalid Doc. Valid values: " + 
+    	                          Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	if(dataManagementConfigurationLocator.get(nciAccount.getDefaultConfigurationId()) == null) {
+  		  throw new HpcException("Invalid Configuration ID. Valid values: " + 
+                                 Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
+                                 HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
 
     	// Check if the user already exists.
     	if(getUser(nciAccount.getUserId()) != null) {
@@ -182,7 +199,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 
     @Override
     public void updateUser(String nciUserId, String firstName, String lastName, 
-    		               String defaultConfigurationId, boolean active)
+    		               String doc, String defaultConfigurationId, boolean active)
 	                      throws HpcException
     {
     	// Input validation.
@@ -202,12 +219,29 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	if(!StringUtils.isEmpty(firstName)) {
     	   user.getNciAccount().setFirstName(firstName);
     	}
+    	
     	if(!StringUtils.isEmpty(lastName)) {
     		user.getNciAccount().setLastName(lastName);
     	}
+    	
+    	if(!StringUtils.isEmpty(doc)) {
+    	   if(!dataManagementConfigurationLocator.getDocs().contains(doc)) {
+    	      throw new HpcException("Invalid Doc. Valid values: " + 
+    	                             Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
+    	 	                         HpcErrorType.INVALID_REQUEST_INPUT);
+    	   }
+     	   user.getNciAccount().setDoc(doc);
+     	}
+    	
     	if(!StringUtils.isEmpty(defaultConfigurationId)) {
+    	   if(dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
+    		  throw new HpcException("Invalid Configuration ID. Valid values: " + 
+                                     Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
+                                     HpcErrorType.INVALID_REQUEST_INPUT);
+    	   }
     	   user.getNciAccount().setDefaultConfigurationId(defaultConfigurationId);
     	}
+    	
     	if(user.getActive() != active) {
     	   user.setActive(active);
     	   // Active indicator has changed. Update the invoker (admin) who changed it.
@@ -237,11 +271,11 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     
     @Override
     public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
-    		                      String defaultConfigurationId, boolean active) 
+    		                      String doc, String defaultConfigurationId, boolean active) 
                                  throws HpcException
     {
     	return userDAO.getUsers(nciUserId, firstNamePattern, lastNamePattern, 
-    			                defaultConfigurationId, active);
+    			                doc, defaultConfigurationId, active);
     }
                                  
 

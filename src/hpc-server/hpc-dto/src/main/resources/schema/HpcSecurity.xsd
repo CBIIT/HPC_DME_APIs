@@ -30,6 +30,7 @@
 			<xsd:sequence>
 				<xsd:element name="firstName" type="xsd:string" />
 				<xsd:element name="lastName" type="xsd:string" />
+				<xsd:element name="doc" type="xsd:string" />
 				<xsd:element name="defaultBasePath" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
 				<xsd:element name="active" type="xsd:boolean" minOccurs="0" />
@@ -42,6 +43,7 @@
 			<xsd:sequence>
 				<xsd:element name="firstName" type="xsd:string" />
 				<xsd:element name="lastName" type="xsd:string" />
+				<xsd:element name="doc" type="xsd:string" />
 				<xsd:element name="defaultBasePath" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
 				<xsd:element name="active" type="xsd:boolean" />
@@ -54,6 +56,7 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="firstName" type="xsd:string" />
 			<xsd:element name="lastName" type="xsd:string" />
+			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="defaultBasePath" type="xsd:string" />
 			<xsd:element name="active" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
