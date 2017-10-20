@@ -102,7 +102,7 @@ public class HpcLocalDirectoryListGenerator {
 	}
 
 	public boolean run(String filePath, String excludePatternFile, String includePatternFile, String filePathBaseName,
-			String destinationBasePath, String logFile, String recordFile, boolean testRun, boolean metadataOnly) {
+			String destinationBasePath, String logFile, String recordFile, boolean testRun, boolean confirmation, boolean metadataOnly) {
 		this.logFile = logFile;
 		this.recordFile = recordFile;
 		boolean success = true;
@@ -153,10 +153,10 @@ public class HpcLocalDirectoryListGenerator {
 							dataObject.setSource(fileLocation);
 							dataObject.setCallerObjectId(null);
 							processRecord(dataObject, destinationBasePath,
-									getObjectPath(filePathBaseName, file.getPath()), metadataOnly);
+									getObjectPath(filePathBaseName, file.getPath()), metadataOnly, confirmation);
 						} else {
 							processCollection(file, destinationBasePath,
-									getCollectionPath(filePathBaseName, file.getPath()));
+									getCollectionPath(filePathBaseName, file.getPath()), confirmation);
 						}
 
 					} catch (RecordProcessingException e) {
@@ -342,7 +342,7 @@ public class HpcLocalDirectoryListGenerator {
 	}
 
 	public void processRecord(HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO, String basePath,
-			String objectPath, boolean metadataOnly) throws RecordProcessingException {
+			String objectPath, boolean metadataOnly, boolean confirmation) throws RecordProcessingException {
 		InputStream inputStream = null;
 		HpcExceptionDTO response = null;
 		String jsonInString = null;
@@ -350,14 +350,18 @@ public class HpcLocalDirectoryListGenerator {
 		MessageDigest md = null;
 		try {
 			if (!metadataOnly) {
-				inputStream = new BufferedInputStream(
-						new FileInputStream(hpcDataObjectRegistrationDTO.getSource().getFileId()));
+				inputStream = 
+						new FileInputStream(hpcDataObjectRegistrationDTO.getSource().getFileId());
+//				inputStream = new BufferedInputStream(
+//						new FileInputStream(hpcDataObjectRegistrationDTO.getSource().getFileId()));
 				md = MessageDigest.getInstance("MD5");
-				DigestInputStream dis = new DigestInputStream(inputStream, md);
+				//DigestInputStream dis = new DigestInputStream(inputStream, md);
 				ContentDisposition cd2 = new ContentDisposition(
 						"attachment;filename=" + hpcDataObjectRegistrationDTO.getSource().getFileId());
-				atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", dis, cd2));
-				hpcDataObjectRegistrationDTO.setChecksum(DigestUtils.md5DigestAsHex(IOUtils.toByteArray(inputStream)));
+				atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
+				String checksum = DigestUtils.md5DigestAsHex(IOUtils.toByteArray(inputStream));
+				System.out.println("checksum: "+checksum);
+				hpcDataObjectRegistrationDTO.setChecksum(checksum);
 			}
 			hpcDataObjectRegistrationDTO.setSource(null);
 		} catch (FileNotFoundException e) {
@@ -382,6 +386,26 @@ public class HpcLocalDirectoryListGenerator {
 		objectPath = objectPath.replace("\\", "/");
 		if (objectPath.charAt(0) != File.separatorChar)
 			objectPath = "/" + objectPath;
+		System.out.println("Processing: " + basePath + objectPath);
+		if(confirmation)
+		{
+			jline.console.ConsoleReader reader;
+			try {
+				reader = new jline.console.ConsoleReader();
+				reader.setExpandEvents(false);
+				System.out.println("Are you sure you want to register? (Y/N):");
+				String confirm = reader.readLine();
+				if(confirm != null && !confirm.equalsIgnoreCase("Y"))
+				{
+					System.out.println("Skipped registering data file " + objectPath);
+					return;
+				}
+			} catch (IOException e) {
+				throw new HpcBatchException("Failed to get confirmation " + e.getMessage());
+			}
+			
+		}
+
 		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath,
 				hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
@@ -389,7 +413,7 @@ public class HpcLocalDirectoryListGenerator {
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
 
 		try {
-			System.out.println("Processing: " + basePath + objectPath);
+			
 			Response restResponse = client.put(new MultipartBody(atts));
 			if (!(restResponse.getStatus() == 201 || restResponse.getStatus() == 200)) {
 				MappingJsonFactory factory = new MappingJsonFactory();
@@ -470,7 +494,7 @@ public class HpcLocalDirectoryListGenerator {
 		}
 	}
 
-	public void processCollection(HpcPathAttributes file, String basePath, String collectionPath)
+	public void processCollection(HpcPathAttributes file, String basePath, String collectionPath, boolean confirmation)
 			throws RecordProcessingException {
 		collectionPath = collectionPath.replace("//", "/");
 		collectionPath = collectionPath.replace("\\", "/");
@@ -488,6 +512,25 @@ public class HpcLocalDirectoryListGenerator {
 
 		System.out.println("Registering Collection " + collectionPath);
 
+		if(confirmation)
+		{
+			jline.console.ConsoleReader reader;
+			try {
+				reader = new jline.console.ConsoleReader();
+				reader.setExpandEvents(false);
+				System.out.println("Are you sure you want to register? (Y/N):");
+				String confirm = reader.readLine();
+				if(confirm != null && !confirm.equalsIgnoreCase("Y"))
+				{
+					System.out.println("Skipped registering Collection " + collectionPath);
+					return;
+				}
+			} catch (IOException e) {
+				throw new HpcBatchException("Failed to get confirmation " + e.getMessage());
+			}
+			
+		}
+		
 		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/collection" + basePath + "/" + collectionPath,
 				hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
