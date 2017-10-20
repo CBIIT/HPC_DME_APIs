@@ -17,6 +17,7 @@ CREATE TABLE public."HPC_USER"
   "USER_ID" text NOT NULL,
   "FIRST_NAME" text,
   "LAST_NAME" text,
+  "DOC" text,
   "DEFAULT_CONFIGURATION_ID" text,
   "ACTIVE" boolean,
   "CREATED" date,
