@@ -524,12 +524,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                dataObjectRegistration.getParentCollectionMetadataEntries(),
     			                userId, userName, doc);
     	
-    	// Get the colelction type containing the data object.
-    	String collectionPath = path.substring(0, path.lastIndexOf('/'));
-    	String collectionType = dataManagementService.getCollectionType(collectionPath);
-    	
     	// Create a data object file (in the data management system).
 	    boolean created = dataManagementService.createFile(path);
+	    
+    	// Get the collection type containing the data object.
+    	String collectionPath = path.substring(0, path.lastIndexOf('/'));
+    	String collectionType = dataManagementService.getCollectionType(collectionPath);
 	    
 	    if(created) {
     	   boolean registrationCompleted = false; 
