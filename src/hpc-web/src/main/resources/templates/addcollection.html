@@ -336,6 +336,9 @@
 
 	function refreshAttributes()
     {
+		if(document.getElementById("zAttrStr_collection_type").value == "_select_null")
+			return false;
+		
 		document.getElementById("actionType").value = "refresh";
 		$("#collectionForm").submit();
     }

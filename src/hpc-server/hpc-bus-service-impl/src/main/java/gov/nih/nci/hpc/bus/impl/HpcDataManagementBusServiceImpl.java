@@ -1531,7 +1531,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         FileInputStream fileInputStream = null;
         try {
         	 fileInputStream = new FileInputStream(file);
-             if(!checksum.equals(DigestUtils.md5DigestAsHex(IOUtils.toByteArray(fileInputStream)))) {
+        	 String checksumComputed = DigestUtils.md5DigestAsHex(IOUtils.toByteArray(fileInputStream));
+        	 logger.info("checksum file: " + file.getAbsolutePath());
+        	 logger.info("checksum given: " + checksum);
+        	 logger.info("checksum computed: " + checksumComputed);
+             if(!checksum.equals(checksumComputed)) {
             	throw new HpcException("Checksum validation failed",
 		                                HpcErrorType.INVALID_REQUEST_INPUT);	
              }
