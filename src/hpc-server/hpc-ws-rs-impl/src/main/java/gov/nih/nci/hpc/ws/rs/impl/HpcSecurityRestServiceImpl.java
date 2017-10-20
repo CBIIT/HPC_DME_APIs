@@ -126,12 +126,12 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response getActiveUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
-    		                       String defaultBasePath)
+    		                       String doc, String defaultBasePath)
     {
 		HpcUserListDTO users = null;
 		try {
 			 users = securityBusService.getUsers(nciUserId, firstNamePattern, lastNamePattern, 
-					                             defaultBasePath, true);
+					                             doc, defaultBasePath, true);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -141,11 +141,13 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getAllUsers(String nciUserId, String firstName, String lastName, String doc)
+    public Response getAllUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
+                                String doc, String defaultBasePath)
     {
 		HpcUserListDTO users = null;
 		try {
-			 users = securityBusService.getUsers(nciUserId, firstName, lastName, doc, false);
+			 users = securityBusService.getUsers(nciUserId, firstNamePattern, lastNamePattern, 
+					                             doc, defaultBasePath, false);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);

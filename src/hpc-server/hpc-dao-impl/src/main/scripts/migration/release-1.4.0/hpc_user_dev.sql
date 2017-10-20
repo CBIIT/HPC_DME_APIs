@@ -21,5 +21,4 @@ update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '963f55b4-5910-42d2-9c
 update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '50a8d63b-2eef-47bb-af96-0e333a80eda5' where "DOC" = 'HiTIF';
 update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '0812a506-6e2f-4dcc-b11a-8a14cff00819' where "DOC" = 'DUMMY_NO_HIER';
 
---ALTER TABLE public."HPC_USER" DROP COLUMN "DOC";
 

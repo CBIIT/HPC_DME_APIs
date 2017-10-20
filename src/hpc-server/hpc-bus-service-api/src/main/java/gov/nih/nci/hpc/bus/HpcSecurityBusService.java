@@ -70,13 +70,14 @@ public interface HpcSecurityBusService
      *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
      *                                   SQL LIKE wildcards ('%', '_') are supported. 
+     * @param doc (Optional) The DOC to search for.
      * @param defaultBasePath (Optional) The default base path to search for.
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
      * @return A list of users.
      * @throws HpcException on service failure.
      */
     public HpcUserListDTO getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
-    		                       String defaultBasePath, boolean active) 
+    		                       String doc, String defaultBasePath, boolean active) 
     		                      throws HpcException;
     
     /**

@@ -125,6 +125,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
  	    nciAccount.setUserId(nciUserId);
  	    nciAccount.setFirstName(userRegistrationRequest.getFirstName());
  	    nciAccount.setLastName(userRegistrationRequest.getLastName());
+ 	    nciAccount.setDoc(userRegistrationRequest.getDoc());
  	    nciAccount.setDefaultConfigurationId(configurationId);
     	
     	// HPC-DM is integrated with a data management system (IRODS). When registering a user with HPC-DM, 
@@ -184,6 +185,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                 userUpdateRequest.getFirstName() : user.getNciAccount().getFirstName();
         String updateLastName = !StringUtils.isEmpty(userUpdateRequest.getLastName()) ?
         		                userUpdateRequest.getLastName() : user.getNciAccount().getLastName();
+        String updateDoc = !StringUtils.isEmpty(userUpdateRequest.getDoc()) ?
+                		                        userUpdateRequest.getDoc() : user.getNciAccount().getDoc();
     	String updateDefaultConfigurationId = user.getNciAccount().getDefaultConfigurationId();
     	if(!StringUtils.isEmpty(userUpdateRequest.getDefaultBasePath())) {
     	   updateDefaultConfigurationId = dataManagementService.getDataManagementConfigurationId(
@@ -212,7 +215,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	
 	    // Update User.
 	    securityService.updateUser(nciUserId, updateFirstName, updateLastName, 
-	    		                   updateDefaultConfigurationId, active);
+	    		                   updateDoc, updateDefaultConfigurationId, active);
     }
     
     @Override
@@ -243,6 +246,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	HpcUserDTO userDTO = new HpcUserDTO();
     	userDTO.setFirstName(user.getNciAccount().getFirstName());
     	userDTO.setLastName(user.getNciAccount().getLastName());
+    	userDTO.setDoc(user.getNciAccount().getDoc());
     	userDTO.setDefaultBasePath(dataManagementConfiguration != null ? 
     			                   dataManagementConfiguration.getBasePath() : null);
     	userDTO.setUserRole(dataManagementSecurityService.getUserRole(userId).value());
@@ -252,7 +256,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     
     @Override
     public HpcUserListDTO getUsers(String nciUserId, String firstNamePattern, 
-    		                       String lastNamePattern, String defaultBasePath, boolean active) 
+    		                       String doc, String lastNamePattern, String defaultBasePath, 
+    		                       boolean active) 
                                   throws HpcException
     {
     	// Get the users based on search criteria.
@@ -271,7 +276,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	
     	// Perform the search and construct the return DTO.
     	for(HpcUser user : securityService.getUsers(nciUserId, firstNamePattern, 
-    			                                    lastNamePattern, defaultConfigurationId, active)) {
+    			                                    doc, lastNamePattern, 
+    			                                    defaultConfigurationId, active)) {
     		// Get the default data management configuration for this user.
         	HpcDataManagementConfiguration dataManagementConfiguration = 
         	    	   dataManagementService.getDataManagementConfiguration(
@@ -282,6 +288,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     		userListEntry.setUserId(user.getNciAccount().getUserId());
     		userListEntry.setFirstName(user.getNciAccount().getFirstName());
     		userListEntry.setLastName(user.getNciAccount().getLastName());
+    		userListEntry.setDoc(user.getNciAccount().getDoc());
     		userListEntry.setDefaultBasePath(dataManagementConfiguration != null ? 
 	                         dataManagementConfiguration.getBasePath() : null);
     		if(!active) {
