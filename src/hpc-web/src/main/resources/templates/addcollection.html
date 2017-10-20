@@ -62,6 +62,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var collectionTypes = [[${collectionTypes}]];
+    var basePaths = [[${basePaths}]];
     var attributeNames = [[${attributeNames}]];
 /*]]>*/
 </script>
@@ -137,7 +138,21 @@
 											</tr>
 										</thead>
 										<tbody>
-										<tr id='attrRow0' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
+										<tr id='attrRow0' th:if="${basePaths != null and basePaths.size() &gt; 0}">
+											<td style="white-space: nowrap"><label id="rowId0">Base Path</label>
+											</td>
+											<td style="white-space: nowrap"><select size="1"
+												id="basePath" name="basePath" class="form-control"
+												th:required="required"
+												onChange="refreshAttributes()">
+													<option value="_select_null">----Select----</option>
+													<option
+														th:each="basePath : ${basePaths}"
+														th:value="${basePath}" th:text="${basePath}" th:selected="${basePath.equals(basePathSelected)}">
+														Wireframe</option>
+											</select></td>
+										</tr>	
+										<tr id='attrRow1' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
 											<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
 											</td>
 											<td style="white-space: nowrap"><select size="1"

@@ -1,0 +1,2 @@
+object_path,name,description,file_type,reference_genome,reference_annotation,software_tool,md5_checksum,phi_content,pii_content,data_encryption_status,data_compression_status,fileId
+/FNL_SF_Archive/PI_Ji_Luo/Project_Ji_Luo_Next_Year_4_shRNA_lib_7_6_16/Cell_AN3KP/Sample_CRISPR_HZ_Luo_3_N701/CRISPR_HZ_Luo_3_N701_1,CRISPR_HZ_Luo_3_N701_1,raw fastq 50bp reads,FASTQ,human - hg19,ensemblev70,bcl2fastq v2.17,no,Unspecified,Unspecified,Not Encrypted,Not Compressed,C:/DEV/HPC/hpc-prototype-dev/src/hpc/hpc-irods-client/samples/output.dat

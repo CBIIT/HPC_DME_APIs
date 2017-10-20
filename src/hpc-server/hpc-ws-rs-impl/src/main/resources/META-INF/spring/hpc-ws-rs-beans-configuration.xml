@@ -119,6 +119,8 @@
           <value>inProgressItems</value>
           <value>dataObjectPaths</value>
           <value>items</value>
+          <value>rules</value>
+          <value>docRules</value>
     </util:list>
 
 	<!-- JSON Provider -->

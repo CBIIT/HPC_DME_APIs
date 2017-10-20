@@ -59,8 +59,6 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 
 	@Value("${gov.nih.nci.hpc.server.group}")
 	private String groupServiceURL;
-	@Value("${gov.nih.nci.hpc.server.docs}")
-	private String docsServiceURL;
 
 	/**
 	 * Populate data for Update Group page
