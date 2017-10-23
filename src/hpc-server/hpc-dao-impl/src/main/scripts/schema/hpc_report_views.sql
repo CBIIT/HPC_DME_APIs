@@ -15,29 +15,29 @@
 DROP MATERIALIZED VIEW IF EXISTS r_report_meta_main;
 CREATE MATERIALIZED VIEW r_report_meta_main
 AS (
-select a.meta_attr_value, a.meta_attr_name, a.meta_id, b.object_id, a.create_ts from r_meta_main a
-inner join r_objt_metamap b on a.meta_id=b.meta_id 
+	select a.meta_attr_value, a.meta_attr_name, a.meta_id, b.object_id, a.create_ts from r_meta_main a
+	inner join r_objt_metamap b on a.meta_id=b.meta_id 
 );
 CREATE UNIQUE INDEX r_report_meta_main_uidx1 ON r_report_meta_main(meta_attr_value, meta_attr_name, meta_id, object_id);
 
 DROP MATERIALIZED VIEW IF EXISTS r_report_source_file_size;
 CREATE MATERIALIZED VIEW r_report_source_file_size
 AS (
-SELECT a.meta_attr_name, a.meta_attr_value, b.object_id, c.create_ts 
-FROM public.r_meta_main a 
-inner join r_objt_metamap b on a.meta_id=b.meta_id 
-inner join r_data_main c on b.object_id=c.data_id 
-where a.meta_attr_name = 'source_file_size'
+	SELECT a.meta_attr_name, a.meta_attr_value, b.object_id, c.create_ts 
+	FROM public.r_meta_main a 
+	inner join r_objt_metamap b on a.meta_id=b.meta_id 
+	inner join r_data_main c on b.object_id=c.data_id 
+	where a.meta_attr_name = 'source_file_size'
 );
 CREATE UNIQUE INDEX r_report_source_file_size_uidx1 ON r_report_source_file_size(meta_attr_value, meta_attr_name, object_id);
 
 DROP MATERIALIZED VIEW IF EXISTS r_report_registered_by_doc;
 CREATE MATERIALIZED VIEW r_report_registered_by_doc
 AS (
-select distinct a.meta_attr_name, a.meta_attr_value, b.object_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_data_main c  
-where a.meta_id=b.meta_id and b.object_id = c.data_id and a.meta_attr_name='registered_by_doc'
+select distinct d."DOC", a.meta_attr_name, a.meta_attr_value, b.object_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_data_main c, public."HPC_DATA_MANAGEMENT_CONFIGURATION" d 
+	where a.meta_id=b.meta_id and b.object_id = c.data_id and a.meta_attr_name='configuration_id' and a.meta_attr_value=d."ID"
 );
-CREATE UNIQUE INDEX r_report_registered_by_doc_uidx1 ON r_report_registered_by_doc(meta_attr_name, meta_attr_value, object_id);
+CREATE UNIQUE INDEX r_report_registered_by_doc_uidx1 ON r_report_registered_by_doc(meta_attr_name, meta_attr_value, object_id, "DOC");
 
 DROP MATERIALIZED VIEW IF EXISTS r_report_registered_by;
 CREATE MATERIALIZED VIEW r_report_registered_by
@@ -69,10 +69,10 @@ CREATE UNIQUE INDEX r_report_collection_type_uidx1 ON r_report_collection_type(m
 DROP MATERIALIZED VIEW IF EXISTS r_report_coll_registered_by_doc;
 CREATE MATERIALIZED VIEW r_report_coll_registered_by_doc
 AS (
-select distinct a.meta_attr_name, a.meta_attr_value, c.coll_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c  
-where a.meta_id=b.meta_id and b.object_id = c.coll_id and a.meta_attr_name='registered_by_doc'  
+select distinct d."DOC", a.meta_attr_name, a.meta_attr_value, c.coll_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c, public."HPC_DATA_MANAGEMENT_CONFIGURATION" d
+where a.meta_id=b.meta_id and b.object_id = c.coll_id and a.meta_attr_name='configuration_id' and a.meta_attr_value=d."ID" 
 );
-CREATE UNIQUE INDEX r_report_coll_registered_by_doc_uidx1 ON r_report_coll_registered_by_doc(meta_attr_name, meta_attr_value, coll_id);
+CREATE UNIQUE INDEX r_report_coll_registered_by_doc_uidx1 ON r_report_coll_registered_by_doc(meta_attr_name, meta_attr_value, coll_id, "DOC");
 
 DROP MATERIALIZED VIEW IF EXISTS r_report_data_objects;
 CREATE MATERIALIZED VIEW r_report_data_objects
