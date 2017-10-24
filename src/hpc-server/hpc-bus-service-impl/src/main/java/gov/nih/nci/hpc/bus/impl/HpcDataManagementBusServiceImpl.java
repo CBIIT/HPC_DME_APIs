@@ -986,6 +986,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		   docsRules.containsKey(doc) ? docsRules.get(doc) : new HpcDocDataManagementRulesDTO();
     		
     		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
+    		rules.setId(dataManagementConfiguration.getId());
     		rules.setBasePath(dataManagementConfiguration.getBasePath());
     		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
     		rules.getCollectionMetadataValidationRules().addAll(
