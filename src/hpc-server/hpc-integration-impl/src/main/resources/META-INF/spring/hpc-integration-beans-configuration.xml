@@ -68,6 +68,9 @@
 		<constructor-arg value="${hpc.integration.globus.globusAuthScope}" index="1" />
 	</bean>
 	
+	<!--  Globus Directory Browser  -->
+	<bean id="hpcGlobusDirectoryBrowser" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusDirectoryBrowser" />
+	
 	<!-- Globus Data Transfer Proxy -->
 	<bean id="hpcGlobusDataTransferProxy" 
 	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" >
