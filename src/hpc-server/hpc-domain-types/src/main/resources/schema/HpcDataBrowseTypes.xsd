@@ -27,4 +27,12 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcFileEntry">
+		<xsd:sequence>
+			<xsd:element name="name" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="lastModified" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>
