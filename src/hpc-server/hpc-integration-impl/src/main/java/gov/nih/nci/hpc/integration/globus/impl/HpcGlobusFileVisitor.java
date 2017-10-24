@@ -1,0 +1,33 @@
+/**
+ * HpcGlobusFileVisitor.java
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ */
+
+package gov.nih.nci.hpc.integration.globus.impl;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+/**
+ * <p>
+ * HPC Globus File Visitor Interface.
+ * </p>
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ */
+
+public interface HpcGlobusFileVisitor 
+{    
+    /**
+     * Called when a file is found during directory scan/traverse.
+     * 
+     * @param jsonFile The visited file JSON data.
+     * @throws JSONException If it failed to visit the file.
+     */
+    public void onFile(JSONObject jsonFile) throws JSONException;
+}

@@ -119,9 +119,9 @@ public interface HpcDataTransferProxy
      * @throws HpcException on data transfer system failure.
      */
     public default HpcDataTransferUploadReport 
-            getDataTransferUploadStatus(Object authenticatedToken,
-    		                            String dataTransferRequestId) 
-    		                           throws HpcException
+           getDataTransferUploadStatus(Object authenticatedToken,
+    		                           String dataTransferRequestId) 
+    		                          throws HpcException
     {
     	throw new HpcException("getDataTransferUploadStatus() not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
@@ -136,9 +136,9 @@ public interface HpcDataTransferProxy
      * @throws HpcException on data transfer system failure.
      */
     public default HpcDataTransferDownloadReport 
-            getDataTransferDownloadStatus(Object authenticatedToken,
-    		                              String dataTransferRequestId) 
-    		                             throws HpcException
+           getDataTransferDownloadStatus(Object authenticatedToken,
+    		                             String dataTransferRequestId) 
+    	                                throws HpcException
     {
     	throw new HpcException("getDataTransferDownloadStatus() not supported",
 	                           HpcErrorType.UNEXPECTED_ERROR);
