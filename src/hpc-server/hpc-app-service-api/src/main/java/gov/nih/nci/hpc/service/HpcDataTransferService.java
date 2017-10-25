@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -134,7 +135,7 @@ public interface HpcDataTransferService
     		                       throws HpcException;
     
     /**
-     * Get endpoint/path attributes .
+     * Get endpoint/path attributes.
      *
      * @param dataTransferType The data transfer type.
      * @param fileLocation The endpoint/path to get attributes for.
@@ -147,6 +148,20 @@ public interface HpcDataTransferService
     		                                   HpcFileLocation fileLocation,
     		                                   boolean getSize, String configurationId) 
     		                                  throws HpcException;
+    
+    /**
+     * Scan a directory (recursively) and return a list of all its files.
+     *
+     * @param dataTransferType The data transfer type.
+     * @param directoryLocation The endpoint/directory to scan and get a list of files for.
+     * @param configurationId The configuration ID (needed to determine the archive connection config).
+     * @return A list of files found.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
+    		                                        HpcFileLocation directoryLocation,
+    		                                        String configurationId) 
+    		                                       throws HpcException;
     
     /**
      * Get a file from the archive.

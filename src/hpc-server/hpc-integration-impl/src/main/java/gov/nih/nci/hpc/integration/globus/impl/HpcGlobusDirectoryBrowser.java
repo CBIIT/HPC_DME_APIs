@@ -103,15 +103,15 @@ public class HpcGlobusDirectoryBrowser
             	if(jsonFileType != null) {
             	   if(jsonFileType.equals("file")) {
             		  // This is a file. Visit it.
-            	      visitor.onFile(jsonFile);
+            	      visitor.onFile(dirContent.document.getString("path"), jsonFile);
             	      continue;
+            	      
             	   } else if(jsonFileType.equals("dir")) {
             		         // It's a sub directory. Make a recursive call, to visit its files/sub-directories
             		         HpcFileLocation subDirLocation = new HpcFileLocation();
             		         subDirLocation.setFileContainerId(dirContent.document.getString("endpoint"));
             		         subDirLocation.setFileId(dirContent.document.getString("path") +
-            		        		                '/' + jsonFile.getString("name"));
-            		         
+            		        		                  '/' + jsonFile.getString("name"));
             		         scan(list(subDirLocation, client), client, visitor);
             	   }
             	}
