@@ -100,19 +100,32 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:element name="HpcDataObjectListRegistrationRequestDTO">
+	<xsd:complexType name="HpcDirectoryScanRegistrationItemDTO">
+		<xsd:sequence>
+		    <xsd:element name="basePath" type="xsd:string" />
+			<xsd:element name="scanDirectoryLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="callerObjectId" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcBulkDataObjectRegistrationRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectListRegistrationItemDTO" 
 				             minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="directoryScanRegistrationItems" type="hpc-dto-datamanagement:HpcDirectoryScanRegistrationItemDTO" 
+				             minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="dryRun" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:element name="HpcDataObjectListRegistrationResponseDTO">
+	<xsd:element name="HpcBulkDataObjectRegistrationResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 			    <xsd:element name="taskId" type="xsd:string" />
+			    <xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectListRegistrationItemDTO" 
+				             minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -331,6 +344,7 @@
 	<!--  Data Management Model DTO -->
 	<xsd:complexType name="HpcDataManagementRulesDTO">
 		<xsd:sequence>
+			<xsd:element name="id" type="xsd:string" />
 		    <xsd:element name="basePath" type="xsd:string" />
 			<xsd:element name="collectionMetadataValidationRules"
 			             type="hpc-domain-metadata:HpcMetadataValidationRule"
