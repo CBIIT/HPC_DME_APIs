@@ -344,7 +344,7 @@
 	<!--  Data Management Model DTO -->
 	<xsd:complexType name="HpcDataManagementRulesDTO">
 		<xsd:sequence>
-			<xsd:element name="configurationId" type="xsd:string" />
+			<xsd:element name="id" type="xsd:string" />
 		    <xsd:element name="basePath" type="xsd:string" />
 			<xsd:element name="collectionMetadataValidationRules"
 			             type="hpc-domain-metadata:HpcMetadataValidationRule"
