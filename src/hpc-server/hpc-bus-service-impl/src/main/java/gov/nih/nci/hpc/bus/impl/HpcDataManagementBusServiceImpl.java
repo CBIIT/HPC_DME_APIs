@@ -55,6 +55,8 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -68,8 +70,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationItemDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
@@ -599,13 +599,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-	public HpcDataObjectListRegistrationResponseDTO 
-              registerDataObjects(HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest)
+	public HpcBulkDataObjectRegistrationResponseDTO 
+              registerDataObjects(HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest)
 	                             throws HpcException
 	{
     	// Input validation.
-    	if(dataObjectListRegistrationRequest == null ||
-    	   dataObjectListRegistrationRequest.getDataObjectRegistrationItems().isEmpty()) {
+    	if(bulkDataObjectRegistrationRequest == null ||
+    	   (bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().isEmpty() &&
+    	    bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().isEmpty())) {
     	   throw new HpcException("Null / Empty registration request",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
@@ -613,7 +614,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Break the DTO into a map of registration requests and ensure no duplication of registration paths.
     	Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests = new HashMap<>();
     	for(HpcDataObjectListRegistrationItemDTO dataObjectRegistrationItem : 
-    		dataObjectListRegistrationRequest.getDataObjectRegistrationItems()) {
+    		bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems()) {
     		HpcDataObjectRegistrationRequest dataObjectRegistrationRequest = new HpcDataObjectRegistrationRequest();
     		dataObjectRegistrationRequest.setCallerObjectId(dataObjectRegistrationItem.getCallerObjectId());
     		dataObjectRegistrationRequest.setCreateParentCollections(
@@ -640,7 +641,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 
     	// Submit a data objects registration task and return a response DTO.
-    	HpcDataObjectListRegistrationResponseDTO responseDTO = new HpcDataObjectListRegistrationResponseDTO();
+    	HpcBulkDataObjectRegistrationResponseDTO responseDTO = new HpcBulkDataObjectRegistrationResponseDTO();
     	responseDTO.setTaskId(dataManagementService.registerDataObjects(invokerNciAccount.getUserId(), 
     			                                                        dataObjectRegistrationRequests));
     	
@@ -986,6 +987,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		   docsRules.containsKey(doc) ? docsRules.get(doc) : new HpcDocDataManagementRulesDTO();
     		
     		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
+    		rules.setId(dataManagementConfiguration.getId());
     		rules.setBasePath(dataManagementConfiguration.getBasePath());
     		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
     		rules.getCollectionMetadataValidationRules().addAll(
