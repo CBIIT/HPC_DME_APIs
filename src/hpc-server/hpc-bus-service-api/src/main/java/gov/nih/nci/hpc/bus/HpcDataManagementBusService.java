@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.bus;
 
 import java.io.File;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -23,8 +25,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -219,14 +219,14 @@ public interface HpcDataManagementBusService
     		                         throws HpcException;
     
     /**
-     * Data objects registration.
+     * Bulk Data object registration.
      *
-     * @param dataObjectListRegistrationRequest The registration request of a list of data objects.
+     * @param bulkDataObjectRegistrationRequest The bulk registration request.
      * @return A registration response DTO.
      * @throws HpcException on service failure.
      */
-	public HpcDataObjectListRegistrationResponseDTO 
-	          registerDataObjects(HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest)
+	public HpcBulkDataObjectRegistrationResponseDTO 
+	          registerDataObjects(HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest)
 			                     throws HpcException;
 	
     /**

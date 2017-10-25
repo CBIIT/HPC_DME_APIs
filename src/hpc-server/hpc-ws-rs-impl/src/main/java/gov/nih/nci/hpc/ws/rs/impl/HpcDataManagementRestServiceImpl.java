@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -37,8 +39,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -251,12 +251,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response registerDataObjects(
-	                        HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest)
+	                        HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest)
     {
-    	HpcDataObjectListRegistrationResponseDTO registrationResponse = null;
+    	HpcBulkDataObjectRegistrationResponseDTO registrationResponse = null;
 		try {
 			 registrationResponse = 
-					     dataManagementBusService.registerDataObjects(dataObjectListRegistrationRequest);
+					     dataManagementBusService.registerDataObjects(bulkDataObjectRegistrationRequest);
 
 		} catch(HpcException e) {
 			    return errorResponse(e);

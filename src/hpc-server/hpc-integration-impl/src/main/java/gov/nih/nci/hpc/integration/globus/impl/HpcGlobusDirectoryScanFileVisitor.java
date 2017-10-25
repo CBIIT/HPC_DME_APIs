@@ -1,5 +1,5 @@
 /**
- * HpcGlobusDirectorySizeFileVisitor.java
+ * HpcGlobusDirectoryScanFileVisitor.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -10,37 +10,42 @@
 
 package gov.nih.nci.hpc.integration.globus.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
+
 /**
  * <p>
- * HPC Globus Directory Size (calculator) File Visitor implementation.
+ * HPC Globus Directory Scan File Visitor implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 
-public class HpcGlobusDirectorySizeFileVisitor implements HpcGlobusFileVisitor
+public class HpcGlobusDirectoryScanFileVisitor implements HpcGlobusFileVisitor
 { 
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
 	
-	// Directory size.
-	private long size = 0;
+	// Scan items.
+	private List<HpcDirectoryScanItem> scanItems = new ArrayList<>();
 	
     //---------------------------------------------------------------------//
     // Methods
     //---------------------------------------------------------------------//
     
     /**
-     * Get the calculated directory size.
-     * @return The directory size.
+     * Get the scanned items.
+     * @return A list of files in the directory tree that was scanned.
      */
-    public long getSize()
+    public List<HpcDirectoryScanItem> getScanItems()
 	{
-		return size;
+		return scanItems;
 	}
     		          
 	//---------------------------------------------------------------------//
@@ -50,6 +55,11 @@ public class HpcGlobusDirectorySizeFileVisitor implements HpcGlobusFileVisitor
     @Override
     public void onFile(String path, JSONObject jsonFile) throws JSONException
     {
-    	size += jsonFile.getLong("size");
+    	HpcDirectoryScanItem scanItem = new HpcDirectoryScanItem();
+    	scanItem.setFileName(jsonFile.getString("name"));
+    	scanItem.setFilePath(path + "/" + scanItem.getFileName());
+    	scanItem.setLastModified(jsonFile.getString("last_modified"));
+    	
+    	scanItems.add(scanItem);
     }
 }
