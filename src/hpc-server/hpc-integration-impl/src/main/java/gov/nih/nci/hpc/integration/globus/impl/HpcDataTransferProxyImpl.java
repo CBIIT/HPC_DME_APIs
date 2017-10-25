@@ -32,6 +32,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -317,6 +318,26 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	autoActivate(fileLocation.getFileContainerId(), client);
     	return getPathAttributes(fileLocation, client, getSize);
     }
+    
+    public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken, 
+                                                    HpcFileLocation directoryLocation) 
+                                                   throws HpcException
+    {
+    	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+    	autoActivate(directoryLocation.getFileContainerId(), client);
+    	
+    	// Invoke the Globus directory scan service.
+    	HpcGlobusDirectoryScanFileVisitor directoryScanFileVisitor = new HpcGlobusDirectoryScanFileVisitor();
+        try {
+        	 globusDirectoryBrowser.scan(globusDirectoryBrowser.list(directoryLocation, client), client, 
+        			                     directoryScanFileVisitor);
+        	 return directoryScanFileVisitor.getScanItems();
+
+        } catch(Exception e) {
+	            throw new HpcException("[GLOBUS] Failed to scan a directory: " + directoryLocation, 
+       		                           HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+        }
+    }                                                   
     
     @Override
     public String getFilePath(String fileId, boolean archive) throws HpcException
