@@ -26,8 +26,9 @@ public interface HpcGlobusFileVisitor
     /**
      * Called when a file is found during directory scan/traverse.
      * 
+     * @param path The directory path containing the file.
      * @param jsonFile The visited file JSON data.
      * @throws JSONException If it failed to visit the file.
      */
-    public void onFile(JSONObject jsonFile) throws JSONException;
+    public void onFile(String path, JSONObject jsonFile) throws JSONException;
 }
