@@ -182,7 +182,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 		String collectionType = request.getParameter("zAttrStr_collection_type");
 		if (collectionType == null || collectionType.isEmpty())
 			collectionType = (String) request.getAttribute("zAttrStr_collection_type");
-		if (!collectionType.isEmpty())
+		if (collectionType != null && !collectionType.isEmpty())
 			model.addAttribute("collection_type", collectionType);
 
 		String source = request.getParameter("source");
