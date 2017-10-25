@@ -28,9 +28,9 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -173,7 +173,7 @@ public interface HpcDataManagementRestService
     /**
      * Data objects registration.
      *
-     * @param dataObjectListRegistrationRequest The registration request of a list of data objects.
+     * @param bulkDataObjectRegistrationRequest The bulk registration request.
      * @return The REST service response.
      */
 	@PUT
@@ -181,7 +181,7 @@ public interface HpcDataManagementRestService
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerDataObjects(
-			                HpcDataObjectListRegistrationRequestDTO dataObjectListRegistrationRequest);
+			                HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
 	
     /**
      * Get data objects list registration task status.
