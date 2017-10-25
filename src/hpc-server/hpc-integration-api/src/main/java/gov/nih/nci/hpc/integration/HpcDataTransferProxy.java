@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -175,6 +176,22 @@ public interface HpcDataTransferProxy
     		                                          throws HpcException
     {
     	throw new HpcException("getDataTransferStatus() not supported",
+                               HpcErrorType.UNEXPECTED_ERROR);
+    }
+    
+    /**
+     * Scan a directory (recursively) and return a list of all its files.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param directoryLocation The endpoint/path to scan.
+     * @return A list of files found.
+     * @throws HpcException on data transfer system failure.
+     */
+    public default List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken, 
+    		                                                HpcFileLocation directoryLocation) 
+    		                                               throws HpcException
+    {
+    	throw new HpcException("scanDirectory() not supported",
                                HpcErrorType.UNEXPECTED_ERROR);
     }
     

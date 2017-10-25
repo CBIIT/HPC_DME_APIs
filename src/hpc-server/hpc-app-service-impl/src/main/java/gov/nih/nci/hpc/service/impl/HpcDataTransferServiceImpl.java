@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -295,6 +296,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	return dataTransferProxies.get(dataTransferType).
     			   getPathAttributes(getAuthenticatedToken(dataTransferType, configurationId), 
     			                     fileLocation, getSize);
+    }
+	
+	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
+                                                    HpcFileLocation directoryLocation,
+                                                    String configurationId) 
+                                                   throws HpcException
+    {
+       	// Input validation.
+       	if(!HpcDomainValidator.isValidFileLocation(directoryLocation)) {	
+       	   throw new HpcException("Invalid directory location", 
+       			                  HpcErrorType.INVALID_REQUEST_INPUT);
+       	}	
+       	
+       	return dataTransferProxies.get(dataTransferType).
+       			   scanDirectory(getAuthenticatedToken(dataTransferType, configurationId), 
+       					         directoryLocation);
     }
 	
 	@Override
