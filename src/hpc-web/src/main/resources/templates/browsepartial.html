@@ -70,7 +70,12 @@
 		//<![CDATA[
 		function prepareAndSubmit()
 		{
-			document.getElementById("actionType").value = "search";
+			// There is no such element in the page, so this next line was causing an error.
+			//document.getElementById("actionType").value = "search";
+			
+			// Clear the local storage to reset the state of the tree
+			// when they browse a new node. 
+			localStorage.removeItem("tree");
 		}
 		
 		function cancel() {
