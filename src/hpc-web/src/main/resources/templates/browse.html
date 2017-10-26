@@ -278,6 +278,7 @@ function scrollWindow()
 $('#tree1').bind('tree.open', function (e,data) {  
 	document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
+	console.log("Node: " + node);
     document.getElementById("processingIcon"+node.id).style.visibility = "visible";
 	document.getElementById("selectedNodeId").value = node.id;
 	document.getElementById("scrollLoc").value = scrollLoc;
