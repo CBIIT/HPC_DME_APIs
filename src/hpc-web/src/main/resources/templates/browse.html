@@ -282,6 +282,7 @@ $('#tree1').bind('tree.open', function (e,data) {
 	document.getElementById("selectedNodeId").value = node.id;
 	document.getElementById("scrollLoc").value = scrollLoc;
 	$("#browseForm").submit();
+	$('#tree1').tree('selectNode', node);
 }
 );
 
