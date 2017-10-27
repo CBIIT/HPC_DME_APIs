@@ -130,12 +130,15 @@ public class HpcClientUtil {
 			String configurationId = null;
 			if(collection != null)
 			{
+				if(collection.getMetadataEntries() != null && collection.getMetadataEntries().getSelfMetadataEntries() != null)
+				{
 				for(HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
 					if(entry.getAttribute().equals("configuration_id"))
 					{
 						configurationId = entry.getValue();
 						break;
 					}
+				}
 			}
 			if(configurationId != null)
 			{
