@@ -105,12 +105,29 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "index";
 			}
-			populateBasePaths(request, session, model, path);
+			
+			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+			if (modelDTO == null) {
+				modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+				session.setAttribute("userDOCModel", modelDTO);
+			}
+			String basePath = null;
+			if(parent != null)
+				basePath = HpcClientUtil.getBasePath(authToken, serviceURL, parent, sslCertPath, sslCertPassword, modelDTO);
+			else
+				basePath = HpcClientUtil.getBasePath(request);
+
+			if(parent == null || basePath == null)
+				populateBasePaths(request, session, model, path);
+			
+			populateCollectionTypes(session, model, basePath, parent);
 			setCollectionPath(model, request, parent);
+			model.addAttribute("basePath", basePath);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to add Collection: " + e.getMessage());
 			e.printStackTrace();
 		}
+		
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
 		return "addcollection";
 	}
@@ -328,7 +345,13 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 	// Get given path
 	private String updateView(HttpSession session, HttpServletRequest request, Model model, String basePath, String path, String parent,
 			boolean refresh) {
-		populateBasePaths(request, session, model, path);
+		if(parent == null)
+		{
+			populateBasePaths(request, session, model, path);
+			model.addAttribute("collectionPath", basePath);
+		}
+		else
+			setCollectionPath(model, request, parent);
 		populateCollectionTypes(session, model, basePath, parent);
 		String collectionType = getFormAttributeValue(request, "zAttrStr_collection_type");
 		populateFormAttributes(request, session, model, basePath, path, collectionType, refresh);
@@ -354,6 +377,8 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			HttpServletResponse response, final RedirectAttributes redirectAttributes) {
 		String[] action = request.getParameterValues("actionType");
 		String[] parent = request.getParameterValues("parent");
+		String authToken = (String) session.getAttribute("hpcUserToken");
+
 		String originPath = null;
 		String[] sourceParam = request.getParameterValues("source");
 		String source = "Dashboard";
@@ -367,15 +392,25 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		}
 		if (source == null || source.isEmpty())
 			source = "dashboard";
-
-		model.addAttribute("source", source);
-		String basePath = HpcClientUtil.getBasePath(request);
-
 		if (parent != null && !parent[0].isEmpty())
 			originPath = parent[0];
 
 		if (originPath != null)
 			model.addAttribute("parent", originPath);
+
+		model.addAttribute("source", source);
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+		if (modelDTO == null) {
+			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+			session.setAttribute("userDOCModel", modelDTO);
+		}
+		
+		String basePath = null;
+		if(originPath != null)
+			basePath = HpcClientUtil.getBasePath(authToken, serviceURL, originPath, sslCertPath, sslCertPassword, modelDTO);
+		else
+			basePath = HpcClientUtil.getBasePath(request);
+
 
 		String collectionType = getFormAttributeValue(request, "zAttrStr_collection_type");
 
@@ -384,7 +419,6 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		else if (action != null && action.length > 0 && action[0].equals("refresh"))
 			return updateView(session, request, model, basePath, hpcCollection.getPath(), originPath, true);
 
-		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcCollectionRegistrationDTO registrationDTO = constructRequest(request, session, hpcCollection.getPath(),
 				hpcCollection);
 
@@ -432,7 +466,8 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			model.addAttribute("error", "Failed to create collection: " + e.getMessage());
 			return "addcollection";
 		} finally {
-			populateBasePaths(request, session, model, hpcCollection.getPath());
+			if(originPath == null)
+				populateBasePaths(request, session, model, hpcCollection.getPath());
 			populateCollectionTypes(session, model, basePath, originPath);
 			populateFormAttributes(request, session, model, basePath, request.getParameter("path"), collectionType, false);
 			model.addAttribute("hpcCollection", hpcCollection);

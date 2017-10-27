@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.web.controller;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,7 +56,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
- * Add data file controller. 
+ * Add data file controller.
  * </p>
  *
  * @author <a href="mailto:Prasad.Konka@nih.gov">Prasad Konka</a>
@@ -85,9 +87,8 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(@RequestBody(required = false) String body, 
-			Model model, BindingResult bindingResult, HttpSession session,
-			HttpServletRequest request) {
+	public String home(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request) {
 		try {
 			String path = request.getParameter("path");
 			String parent = request.getParameter("parent");
@@ -97,19 +98,31 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 				model.addAttribute("datafilePath", path);
 			else
 				model.addAttribute("datafilePath", parent);
-			
+
 			String source = request.getParameter("source");
-			if(source == null || source.isEmpty())
+			if (source == null || source.isEmpty())
 				source = (String) request.getAttribute("source");
-			if(source == null || source.isEmpty())
+			if (source == null || source.isEmpty())
 				source = "dashboard";
-			
+
 			model.addAttribute("source", source);
-			String basePath = HpcClientUtil.getBasePath(request);
+			String authToken = (String) session.getAttribute("hpcUserToken");
+
+			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+			if (modelDTO == null) {
+				modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+				session.setAttribute("userDOCModel", modelDTO);
+			}
+
+			String basePath = null;
+			if(parent != null)
+				basePath = HpcClientUtil.getBasePath(authToken, collectionServiceURL, parent, sslCertPath, sslCertPassword, modelDTO);
+			else
+				basePath = HpcClientUtil.getBasePath(request);
 			// User Session validation
+			
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userId = (String) session.getAttribute("hpcUserId");
-			String authToken = (String) session.getAttribute("hpcUserToken");
 			if (user == null || authToken == null) {
 				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 				bindingResult.addError(error);
@@ -117,15 +130,60 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "index";
 			}
-			populateFormAttributes(request, session, model, basePath);
+			if(parent == null || basePath == null)
+				populateBasePaths(request, session, model, path);
+			else
+				setDatafilePath(model, request, parent);
+			populateFormAttributes(request, session, model, basePath, false);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			model.addAttribute("error", "Failed to add data file: " + e.getMessage());
+			model.addAttribute("error", "Failed to initialize add data file: " + e.getMessage());
 			e.printStackTrace();
 		}
 		model.addAttribute("hpcDatafile", new HpcDatafileModel());
 		return "adddatafile";
 	}
+
+	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, String path) throws HpcWebException {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+		if (modelDTO == null) {
+			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+			session.setAttribute("userDOCModel", modelDTO);
+		}
+
+		Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		List<HpcDataManagementRulesDTO> docRules = HpcClientUtil.getUserDOCManagementRules(modelDTO, user.getDoc());
+		for (HpcDataManagementRulesDTO docRule : docRules) {
+			basePaths.add(docRule.getBasePath());
+		}
+		model.addAttribute("basePathSelected", HpcClientUtil.getBasePath(request));
+		setDatafilePath(model, request, path);
+		model.addAttribute("basePaths", basePaths);
+	}
+	
+	private void setDatafilePath(Model model, HttpServletRequest request, String parentPath)
+	{
+		String path = request.getParameter("path");
+		if(path != null && !path.isEmpty())
+			model.addAttribute("datafilePath", request.getParameter("path"));
+		
+		if(parentPath == null || parentPath.isEmpty())
+		{
+			String[] basePathValues = request.getParameterValues("basePath");
+			String basePath = null;
+			if (basePathValues == null || basePathValues.length == 0)
+				basePath = (String) request.getAttribute("basePath");
+			else 
+				basePath = basePathValues[0];
+			model.addAttribute("datafilePath", basePath);
+		}
+		else
+			model.addAttribute("datafilePath", parentPath);
+	}
+	
 
 	/**
 	 * Post operation to update metadata
@@ -140,8 +198,9 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String createDatafile(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDataModel, @RequestParam("hpcDatafile") MultipartFile hpcDatafile, Model model,
-			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
+	public String createDatafile(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDataModel,
+			@RequestParam("hpcDatafile") MultipartFile hpcDatafile, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		String[] action = request.getParameterValues("actionType");
@@ -153,26 +212,32 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 			model.addAttribute("datafilePath", path);
 		else
 			model.addAttribute("datafilePath", parent);
-		
+
 		String basePath = HpcClientUtil.getBasePath(request);
 		String source = request.getParameter("source");
-		if(source == null || source.isEmpty())
+		if (source == null || source.isEmpty())
 			source = (String) request.getAttribute("source");
 
-		if(source == null || source.isEmpty())
+		if (source == null || source.isEmpty())
 			source = "dashboard";
 		model.addAttribute("source", source);
 		
+		String checksum = request.getParameter("checksum");
+		if (checksum == null || checksum.isEmpty())
+			checksum = (String) request.getAttribute("checksum");
+
+		model.addAttribute("checksum", checksum);
+
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
 			return "redirect:/" + source;
+		else if (action != null && action.length > 0 && action[0].equals("refresh"))
+			return updateView(session, request, model, basePath, hpcDataModel.getPath(), true);
 
-		if(hpcDatafile.isEmpty())
-		{
+		if (hpcDatafile.isEmpty()) {
 			model.addAttribute("hpcDataModel", hpcDataModel);
 			model.addAttribute("dataFilePath", request.getParameter("path"));
 			model.addAttribute("error", "Data file missing!");
-			populateFormAttributes(request, session, model, basePath);
-			return "adddatafile";
+			return updateView(session, request, model, basePath, hpcDataModel.getPath(), true);
 		}
 
 		try {
@@ -183,17 +248,19 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 			hpcDataModel.setPath(hpcDataModel.getPath().trim());
 			try {
 				parentPath = hpcDataModel.getPath().substring(0, hpcDataModel.getPath().lastIndexOf("/"));
-				HpcClientUtil.getCollection(authToken, collectionServiceURL, parentPath, true, sslCertPath, sslCertPassword);
+				HpcClientUtil.getCollection(authToken, collectionServiceURL, parentPath, true, sslCertPath,
+						sslCertPassword);
 			} catch (HpcWebException e) {
 				model.addAttribute("hpcDataModel", hpcDataModel);
 				model.addAttribute("dataFilePath", request.getParameter("path"));
 				model.addAttribute("error", "Invalid parent collection: " + e.getMessage());
-				populateFormAttributes(request, session, model, basePath);
+				populateFormAttributes(request, session, model, basePath, false);
 				return "adddatafile";
 			}
 
 			HpcDataObjectRegistrationDTO registrationDTO = constructRequest(request, session, hpcDataModel.getPath());
 
+			registrationDTO.setChecksum(checksum);
 			boolean updated = HpcClientUtil.registerDatafile(authToken, hpcDatafile, serviceURL, registrationDTO,
 					hpcDataModel.getPath(), sslCertPath, sslCertPassword);
 			if (updated) {
@@ -206,11 +273,11 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 		} finally {
 			model.addAttribute("hpcDatafile", hpcDatafile);
 			model.addAttribute("dataFilePath", request.getParameter("path"));
-			populateFormAttributes(request, session, model, basePath);
+			populateFormAttributes(request, session, model, basePath, false);
 		}
 		return "redirect:/datafile?path=" + hpcDataModel.getPath() + "&action=view";
 	}
-	
+
 	private HpcDataObjectRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session,
 			String path) {
 		Enumeration<String> params = request.getParameterNames();
@@ -226,17 +293,16 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 				entry.setAttribute(attrName);
 				entry.setValue(attrValue[0]);
 				metadataEntries.add(entry);
-			}else if(paramName.startsWith("addAttrName"))
-			{
+			} else if (paramName.startsWith("_addAttrName")) {
 				HpcMetadataEntry entry = new HpcMetadataEntry();
-				String attrId = paramName.substring("addAttrName".length());
+				String attrId = paramName.substring("_addAttrName".length());
 				String[] attrName = request.getParameterValues(paramName);
-				String[] attrValue = request.getParameterValues("addAttrValue"+attrId);
-				if(attrName.length > 0 && !attrName[0].isEmpty())
+				String[] attrValue = request.getParameterValues("_addAttrValue" + attrId);
+				if (attrName.length > 0 && !attrName[0].isEmpty())
 					entry.setAttribute(attrName[0]);
 				else
 					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
-				if(attrValue.length > 0 && !attrValue[0].isEmpty())
+				if (attrValue.length > 0 && !attrValue[0].isEmpty())
 					entry.setValue(attrValue[0]);
 				else
 					throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
@@ -248,7 +314,20 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 		return dto;
 	}
 
-	private void populateFormAttributes(HttpServletRequest request, HttpSession session, Model model, String basePath) {
+	// Get Collection type attributes
+	// Get selected collection type
+	// Get given path
+	private String updateView(HttpSession session, HttpServletRequest request, Model model, String basePath, String path,
+			boolean refresh) {
+		populateBasePaths(request, session, model, path);
+		if(path != null && !path.equals(basePath))
+			model.addAttribute("datafilePath", basePath);
+		populateFormAttributes(request, session, model, basePath, refresh);
+
+		return "adddatafile";
+	}
+	
+	private void populateFormAttributes(HttpServletRequest request, HttpSession session, Model model, String basePath, boolean refresh) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
@@ -258,10 +337,10 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 			session.setAttribute("userDOCModel", modelDTO);
 		}
 		List<HpcDataManagementRulesDTO> docRules = HpcClientUtil.getUserDOCManagementRules(modelDTO, user.getDoc());
+		
 		List<HpcMetadataValidationRule> rules = null;
-		for(HpcDataManagementRulesDTO docRule : docRules)
-		{
-			if(docRule.getBasePath().equals(basePath))
+		for (HpcDataManagementRulesDTO docRule : docRules) {
+			if (docRule.getBasePath().equals(basePath))
 				rules = docRule.getDataObjectMetadataValidationRules();
 		}
 
@@ -275,9 +354,10 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 		// For each attribute, get default value
 		// Build list as type1:attribute1:defaultValue,
 		// type2:attribute2:defaultValue
-		List<HpcMetadataAttrEntry> metadataEntries = new ArrayList<HpcMetadataAttrEntry>();
-		List<String> attributeNames = new ArrayList<String>();
-		for (HpcMetadataValidationRule rule : rules) {
+		if (rules != null && !rules.isEmpty()) {
+			List<HpcMetadataAttrEntry> metadataEntries = new ArrayList<HpcMetadataAttrEntry>();
+			List<String> attributeNames = new ArrayList<String>();
+			for (HpcMetadataValidationRule rule : rules) {
 				HpcMetadataAttrEntry entry = new HpcMetadataAttrEntry();
 				entry.setAttrName(rule.getAttribute());
 				attributeNames.add(rule.getAttribute());
@@ -291,31 +371,33 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 					entry.setValidValues(validValues);
 				}
 				metadataEntries.add(entry);
-		}
-
-		//Handle custom attributes
-		Enumeration<String> params = request.getParameterNames();
-		while (params.hasMoreElements()) {
-			String paramName = params.nextElement();
-			if (paramName.startsWith("_addAttrName")) {
-				HpcMetadataAttrEntry entry = new HpcMetadataAttrEntry();
-				String[] attrName = request.getParameterValues(paramName);
-				String attrId = paramName.substring("_addAttrName".length());
-				String[] attrValue = request.getParameterValues("_addAttrValue" + attrId);
-				if (attrName.length > 0 && !attrName[0].isEmpty())
-					entry.setAttrName(attrName[0]);
-				if (attrValue.length > 0 && !attrValue[0].isEmpty())
-					entry.setAttrValue(attrValue[0]);
-				metadataEntries.add(entry);
 			}
-		}
-		
+
+			if (!refresh) {
+			// Handle custom attributes
+			Enumeration<String> params = request.getParameterNames();
+			while (params.hasMoreElements()) {
+				String paramName = params.nextElement();
+				if (paramName.startsWith("_addAttrName")) {
+					HpcMetadataAttrEntry entry = new HpcMetadataAttrEntry();
+					String[] attrName = request.getParameterValues(paramName);
+					String attrId = paramName.substring("_addAttrName".length());
+					String[] attrValue = request.getParameterValues("_addAttrValue" + attrId);
+					if (attrName.length > 0 && !attrName[0].isEmpty())
+						entry.setAttrName(attrName[0]);
+					if (attrValue.length > 0 && !attrValue[0].isEmpty())
+						entry.setAttrValue(attrValue[0]);
+					metadataEntries.add(entry);
+				}
+			}
+			}
 		if (!attributeNames.isEmpty())
 			model.addAttribute("attributeNames", attributeNames);
 		if (!metadataEntries.isEmpty())
 			model.addAttribute("datafileAttrs", metadataEntries);
+		}
 	}
-	
+
 	private String getFormAttributeValue(HttpServletRequest request, String attributeName) {
 		String[] attrValue = request.getParameterValues(attributeName);
 		if (attrValue != null)
@@ -323,5 +405,5 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 		else
 			return null;
 	}
-	
+
 }
