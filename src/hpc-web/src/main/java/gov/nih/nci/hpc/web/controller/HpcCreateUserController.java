@@ -11,6 +11,8 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,8 +33,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
@@ -79,7 +85,7 @@ public class HpcCreateUserController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "index";
 		}
-		initialize(model, authToken, user, session);
+		initialize(model, authToken, user, session, request);
 		return "createuser";
 	}
 
@@ -116,6 +122,7 @@ public class HpcCreateUserController extends AbstractHpcController {
 			dto.setFirstName(hpcWebUser.getFirstName());
 			dto.setLastName(hpcWebUser.getLastName());
 			dto.setUserRole(hpcWebUser.getUserRole());
+			dto.setDefaultBasePath(hpcWebUser.getBasePath());
 
 			boolean created = HpcClientUtil.createUser(authToken, userServiceURL, dto, hpcWebUser.getNciUserId(),
 					sslCertPath, sslCertPassword);
@@ -126,19 +133,42 @@ public class HpcCreateUserController extends AbstractHpcController {
 		} finally {
 			model.addAttribute("hpcWebUser", hpcWebUser);
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-			initialize(model, authToken, user, session);
+			initialize(model, authToken, user, session, request);
 		}
 		return result;
 	}
 
-	private void initialize(Model model, String authToken, HpcUserDTO user, HttpSession session) {
+	private void initialize(Model model, String authToken, HpcUserDTO user, HttpSession session, HttpServletRequest request) {
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
 		populateDOCs(model, authToken, user, session);
+		populateBasePaths(request, session, model);
 		populateRoles(model, user);
 
 	}
 
+	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model) throws HpcWebException {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+		if (modelDTO == null) {
+			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+			session.setAttribute("userDOCModel", modelDTO);
+		}
+
+		Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		if(modelDTO != null && modelDTO.getDocRules() != null)
+		{
+			for (HpcDocDataManagementRulesDTO docRules : modelDTO.getDocRules()) {
+				String doc = docRules.getDoc();
+				for(HpcDataManagementRulesDTO ruleDTO : docRules.getRules())
+					basePaths.add(doc + ":" + ruleDTO.getBasePath());
+			}
+		}
+		model.addAttribute("basePathSelected", HpcClientUtil.getBasePath(request));
+		model.addAttribute("basePaths", basePaths);
+	}
+	
 	private void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		List<String> userDOCs = new ArrayList<String>();
 		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
