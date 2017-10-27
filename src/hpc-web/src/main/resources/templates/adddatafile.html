@@ -115,10 +115,30 @@
 								</div>								
 									<div class="form-group">
 										<div class="col-md-12 form-group">
-											<label for="Name">Path:</label> 
+											<label for="Name">Data file Path:</label> 
 											<input type="text" name="path" id="path" size="100" th:value="${datafilePath}"/>
 										</div>
+										<div class="col-md-12 form-group">
+											<label for="checksum">Checksum (This value is used to validate data transfer):</label> 
+											<input type="text" name="checksum" id="checksum" size="50" th:value="${checksum}"/>
+										</div>
 								</div>
+								<div class="form-group" th:if="${basePaths != null and basePaths.size() &gt; 0}">
+									<div class="col-md-12 form-group">
+									<label id="rowId0">Base Path: </label>
+									<select size="1"
+										id="basePath" name="basePath" class="form-control"
+										th:required="required"
+										onChange="refreshAttributes()">
+											<option value="_select_null">----Select----</option>
+											<option
+												th:each="basePath : ${basePaths}"
+												th:value="${basePath}" th:text="${basePath}" th:selected="${basePath.equals(basePathSelected)}">
+												Wireframe</option>
+									</select>
+									</div>
+								</div>	
+								
 								<div class="form-inline">
 					              <div class="form-group">
 					                <input type="file" name="hpcDatafile" id="hpcDatafile"/>
@@ -297,6 +317,12 @@
 	    }
 	    return false;
 	}
+	
+	function refreshAttributes()
+    {
+		document.getElementById("actionType").value = "refresh";
+		$("#dataFileForm").submit();
+    }
 	
     function cancelEdit()
     {
