@@ -85,7 +85,7 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<xsd:complexType name="HpcDataObjectListRegistrationItemDTO">
+	<xsd:complexType name="HpcDataObjectRegistrationItemDTO">
 		<xsd:sequence>
 		    <xsd:element name="path" type="xsd:string" />
 			<xsd:element name="source" type="hpc-domain-datatransfer:HpcFileLocation" />
@@ -111,7 +111,7 @@
 	<xsd:element name="HpcBulkDataObjectRegistrationRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectListRegistrationItemDTO" 
+				<xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO" 
 				             minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="directoryScanRegistrationItems" type="hpc-dto-datamanagement:HpcDirectoryScanRegistrationItemDTO" 
 				             minOccurs="0" maxOccurs="unbounded" />
@@ -124,17 +124,17 @@
 		<xsd:complexType>
 			<xsd:sequence>
 			    <xsd:element name="taskId" type="xsd:string" />
-			    <xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectListRegistrationItemDTO" 
+			    <xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO" 
 				             minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:element name="HpcDataObjectListRegistrationStatusDTO">
+	<xsd:element name="HpcBulkDataObjectRegistrationStatusDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="inProgress" type="xsd:boolean" />
-				<xsd:element name="taskStatus" type="hpc-domain-datamanagement:HpcDataObjectListRegistrationTaskStatus" />
+				<xsd:element name="taskStatus" type="hpc-domain-datamanagement:HpcBulkDataObjectRegistrationTaskStatus" />
 				<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="completedItems" type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem" 
 			                 minOccurs="0" maxOccurs="unbounded" />
@@ -296,7 +296,7 @@
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:element name="HpcDataObjectListDownloadRequestDTO">
+	<xsd:element name="HpcBulkDataObjectDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="dataObjectPaths" type="xsd:string" 
@@ -307,7 +307,7 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
-	<xsd:element name="HpcDataObjectListDownloadResponseDTO">
+	<xsd:element name="HpcBulkDataObjectDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 			    <xsd:element name="taskId" type="xsd:string" />
