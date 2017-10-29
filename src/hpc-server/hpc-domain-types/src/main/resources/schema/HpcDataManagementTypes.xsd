@@ -127,7 +127,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:simpleType name="HpcDataObjectListRegistrationTaskStatus">
+	<xsd:simpleType name="HpcBulkDataObjectRegistrationTaskStatus">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="ACTIVE" />

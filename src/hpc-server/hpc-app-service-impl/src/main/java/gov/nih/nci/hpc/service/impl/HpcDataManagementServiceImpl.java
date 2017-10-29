@@ -25,9 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
@@ -40,11 +40,11 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationResult;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -477,11 +477,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	// Create a data object list registration task.
-    	HpcDataObjectListRegistrationTask dataObjectListRegistrationTask = new HpcDataObjectListRegistrationTask();
-    	dataObjectListRegistrationTask.setUserId(userId);
-    	dataObjectListRegistrationTask.setCreated(Calendar.getInstance());
-    	dataObjectListRegistrationTask.setStatus(HpcDataObjectListRegistrationTaskStatus.RECEIVED);
+    	// Create a bulk data object registration task.
+    	HpcBulkDataObjectRegistrationTask bulkDataObjectRegistrationTask = new HpcBulkDataObjectRegistrationTask();
+    	bulkDataObjectRegistrationTask.setUserId(userId);
+    	bulkDataObjectRegistrationTask.setCreated(Calendar.getInstance());
+    	bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED);
     	
     	// Iterate through the individual data object registration requests and add them as items to the 
     	// list registration task.
@@ -494,37 +494,37 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     		}
     		
     		// Create a data object registration item.
-    		HpcDataObjectListRegistrationItem registrationItem = new HpcDataObjectListRegistrationItem();
+    		HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
     		HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
     		reqistrationTask.setPath(path);
     		registrationItem.setTask(reqistrationTask);
     		registrationItem.setRequest(registrationRequest);
     		
-    		dataObjectListRegistrationTask.getItems().add(registrationItem);
+    		bulkDataObjectRegistrationTask.getItems().add(registrationItem);
     	}
     	
     	// Persist the registration request.
-    	dataRegistrationDAO.upsertDataObjectListRegistrationTask(dataObjectListRegistrationTask);
-    	return dataObjectListRegistrationTask.getId();
+    	dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
+    	return bulkDataObjectRegistrationTask.getId();
     }
     
     @Override
-    public List<HpcDataObjectListRegistrationTask> getDataObjectListRegistrationTasks(
-                                                      HpcDataObjectListRegistrationTaskStatus status) 
+    public List<HpcBulkDataObjectRegistrationTask> getBulkDataObjectRegistrationTasks(
+                                                      HpcBulkDataObjectRegistrationTaskStatus status) 
                                                       throws HpcException
     {
-    	return dataRegistrationDAO.getDataObjectListRegistrationTasks(status);
+    	return dataRegistrationDAO.getBulkDataObjectRegistrationTasks(status);
     }
     
 	@Override
-	public void updateDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask)
+	public void updateBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask)
                                                     throws HpcException
     {
-		dataRegistrationDAO.upsertDataObjectListRegistrationTask(registrationTask);
+		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(registrationTask);
     }
 	
 	@Override
-	public void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
+	public void completeBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask,
 			                                           boolean result, String message, Calendar completed)
 	                                                  throws HpcException
 	{
@@ -535,10 +535,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		}
 		
 		// Cleanup the DB record.
-		dataRegistrationDAO.deleteDataObjectListRegistrationTask(registrationTask.getId());
+		dataRegistrationDAO.deleteBulkDataObjectRegistrationTask(registrationTask.getId());
 		
 		// Create a registration result object.
-		HpcDataObjectListRegistrationResult registrationResult = new HpcDataObjectListRegistrationResult();
+		HpcBulkDataObjectRegistrationResult registrationResult = new HpcBulkDataObjectRegistrationResult();
 		registrationResult.setId(registrationTask.getId());
 		registrationResult.setUserId(registrationTask.getUserId());
 		registrationResult.setResult(result);
@@ -546,19 +546,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		registrationResult.setCreated(registrationTask.getCreated());
 		registrationResult.setCompleted(completed);	
 		registrationResult.getItems().addAll(registrationTask.getItems());
-		dataRegistrationDAO.upsertDataObjectListRegistrationResult(registrationResult);
+		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
 	}
 	
 	@Override
-	public HpcDataObjectListRegistrationStatus getDataObjectListRegistrationTaskStatus(String taskId) 
+	public HpcBulkDataObjectRegistrationStatus getBulkDataObjectRegistrationTaskStatus(String taskId) 
                                                                                       throws HpcException
     {
 		if(StringUtils.isEmpty(taskId)) {
 		   throw new HpcException("Null / Empty task id", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 			
-		HpcDataObjectListRegistrationStatus taskStatus = new HpcDataObjectListRegistrationStatus();
-		HpcDataObjectListRegistrationResult taskResult = dataRegistrationDAO.getDataObjectListRegistrationResult(taskId);
+		HpcBulkDataObjectRegistrationStatus taskStatus = new HpcBulkDataObjectRegistrationStatus();
+		HpcBulkDataObjectRegistrationResult taskResult = dataRegistrationDAO.getBulkDataObjectRegistrationResult(taskId);
 		if(taskResult != null) {
 		   // Task completed or failed. Return the result.
 		   taskStatus.setInProgress(false);
@@ -568,7 +568,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	    
 		// Task still in-progress. 
 		taskStatus.setInProgress(true);
-		HpcDataObjectListRegistrationTask task = dataRegistrationDAO.getDataObjectListRegistrationTask(taskId);
+		HpcBulkDataObjectRegistrationTask task = dataRegistrationDAO.getBulkDataObjectRegistrationTask(taskId);
 		if(task != null) {
 		   taskStatus.setTask(task);
 		   return taskStatus;	
