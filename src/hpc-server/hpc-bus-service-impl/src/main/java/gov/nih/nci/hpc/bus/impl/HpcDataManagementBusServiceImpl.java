@@ -1581,12 +1581,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     {
     	List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems = new ArrayList<>();
     	for(HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem : directoryScanRegistrationItems) {
+    		String basePath = directoryScanRegistrationItem.getBasePath();
+    		if(StringUtils.isEmpty(basePath)) {
+    		   throw new HpcException("Null / Empty base path in directory scan registration request",
+                                      HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    		
     		// Get the configuration ID.
-    		String configurationId = dataManagementService.findDataManagementConfigurationId(
-    				                                           directoryScanRegistrationItem.getBasePath());
+    		String configurationId = dataManagementService.findDataManagementConfigurationId(basePath);
     		if(StringUtils.isEmpty(configurationId)) {
-    		   throw new HpcException("Can't determine configuration id for path: " + 
-    		                          directoryScanRegistrationItem.getBasePath(), HpcErrorType.INVALID_REQUEST_INPUT);
+    		   throw new HpcException("Can't determine configuration id for path: " + basePath,
+    		                          HpcErrorType.INVALID_REQUEST_INPUT);
     		}
     		
     		// Validate the directory to scan exists and accessible.
@@ -1614,7 +1619,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     				                          directoryScanRegistrationItem.getScanDirectoryLocation(), 
     				                          configurationId).forEach(scanItem -> 
     			dataObjectRegistrationItems.add(toDataObjectRegistrationItem(
-    				                              scanItem,
+    				                              scanItem, basePath,
     				                              directoryScanRegistrationItem.getScanDirectoryLocation().getFileContainerId(),
     				                              directoryScanRegistrationItem.getCallerObjectId()))); 
     	}
@@ -1626,11 +1631,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * Create a data object registration DTO out of a directory scan item.
      * 
      * @param scanItem The scan item.
+     * @param basePath The base path to register the scan item with.
      * @param sourceFileContainerId The container ID containing the scan item. 
      * @param callerObjectId The caller's object ID.
      * @return data object registration DTO.
      */
     private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(HpcDirectoryScanItem scanItem, 
+    		                                                              String basePath,
     		                                                              String sourceFileContainerId,
     		                                                              String callerObjectId) 
     {
@@ -1639,6 +1646,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	// Construct the registration DTO.
     	HpcDataObjectRegistrationItemDTO dataObjectRegistration = new HpcDataObjectRegistrationItemDTO();
+    	dataObjectRegistration.setPath(basePath + scanItem.getFilePath());
     	dataObjectRegistration.getMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
     	dataObjectRegistration.setCreateParentCollections(true);
 		dataObjectRegistration.getParentCollectionMetadataEntries().addAll(metadataEntries.getParentMetadataEntries());

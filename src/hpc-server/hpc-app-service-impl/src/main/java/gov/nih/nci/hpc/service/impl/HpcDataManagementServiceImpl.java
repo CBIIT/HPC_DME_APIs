@@ -601,6 +601,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Override
 	public String findDataManagementConfigurationId(String path)
     {
+		if(StringUtils.isEmpty(path)) {
+		   return null;
+		}
+		
 		String relativePath = dataManagementProxy.getRelativePath(path);
 		for(HpcDataManagementConfiguration dataManagementConfiguration : 
 			dataManagementConfigurationLocator.values()) {
