@@ -112,11 +112,15 @@ public class HpcBrowseController extends AbstractHpcController {
 			session.removeAttribute("browserEntry");
 		if (path == null || path.isEmpty() || request.getParameter("base") != null)
 			path = user.getDefaultBasePath();
-		path = path.trim();
-		session.setAttribute("selectedBrowsePath", path);
+		
 		// If browser tree nodes are cached, return cached data. If not, query
 		// browser tree nodes based on the base path and cache it.
 		try {
+			if(path != null)
+			{
+				path = path.trim();
+			session.setAttribute("selectedBrowsePath", path);
+
 			HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
 			if (browserEntry == null) {
 				browserEntry = new HpcBrowserEntry();
@@ -138,6 +142,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				model.addAttribute("browserEntry", browserEntry);
 			} else
 				model.addAttribute("message", "No collections found!");
+			}
 			model.addAttribute("basePath", user.getDefaultBasePath());
 			return "browse";
 		} catch (Exception e) {

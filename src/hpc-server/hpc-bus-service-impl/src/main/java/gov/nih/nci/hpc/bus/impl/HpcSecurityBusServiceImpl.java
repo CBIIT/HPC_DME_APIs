@@ -197,6 +197,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
      	                             HpcErrorType.INVALID_REQUEST_INPUT);
       	   }
      	}
+    	else
+    		updateDefaultConfigurationId = null;
+    	
     	HpcUserRole updateRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole()) ?
     		                     roleFromString(userUpdateRequest.getUserRole()) : currentUserRole;
     	boolean active = userUpdateRequest.getActive() != null ? 

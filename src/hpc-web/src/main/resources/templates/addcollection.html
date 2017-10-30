@@ -336,7 +336,10 @@
 
 	function refreshAttributes()
     {
-		if(document.getElementById("zAttrStr_collection_type").value == "_select_null")
+		if(document.getElementById("basePath") != null && document.getElementById("basePath").value == "_select_null")
+			return false;
+
+		if(document.getElementById("zAttrStr_collection_type") != null && document.getElementById("zAttrStr_collection_type").value == "_select_null")
 			return false;
 		
 		document.getElementById("actionType").value = "refresh";
