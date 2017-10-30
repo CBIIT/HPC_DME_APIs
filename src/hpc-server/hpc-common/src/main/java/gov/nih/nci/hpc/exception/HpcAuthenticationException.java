@@ -19,7 +19,6 @@ import java.io.StringWriter;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcAuthenticationException extends RuntimeException implements java.io.Serializable
@@ -29,7 +28,7 @@ public class HpcAuthenticationException extends RuntimeException implements java
     //---------------------------------------------------------------------//
 	
 	// UID.
-	private final static long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 	
     //---------------------------------------------------------------------//
     // constructors

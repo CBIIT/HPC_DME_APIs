@@ -28,9 +28,9 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -292,7 +292,7 @@ public interface HpcDataManagementRestService
 	@Path("/download")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response downloadDataObjects(HpcDataObjectListDownloadRequestDTO downloadRequest);
+	public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest);
 	
     /**
      * Get data objects download task status.
@@ -322,7 +322,6 @@ public interface HpcDataManagementRestService
     /**
      * Get data management model. This includes all rules.
      *
-     * @param doc The DOC to get the model for.
      * @return The REST service response w/ HpcDataManagementModelDTO entity.
      */
 	@GET

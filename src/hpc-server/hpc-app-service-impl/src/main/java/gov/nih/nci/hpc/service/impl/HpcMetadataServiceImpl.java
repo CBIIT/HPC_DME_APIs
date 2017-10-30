@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -320,6 +321,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
     	metadataEntries.getParentMetadataEntries().addAll(
     			metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path), 2));
     	
+    	return metadataEntries;
+    }
+    
+    @Override
+    public HpcMetadataEntries toMetadataEntries(HpcDirectoryScanItem scanItem)
+    {
+    	HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
+    	metadataEntries.getSelfMetadataEntries().add(toMetadataEntry("name", scanItem.getFileName()));
+    	metadataEntries.getSelfMetadataEntries().add(toMetadataEntry("modified_date", scanItem.getLastModified()));
+    	metadataEntries.getParentMetadataEntries().add(toMetadataEntry("collection_type", "Folder"));
+
     	return metadataEntries;
     }
     

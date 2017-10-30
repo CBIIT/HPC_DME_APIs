@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -115,6 +116,14 @@ public interface HpcMetadataService
      * @throws HpcException on service failure.
      */
     public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException;
+    
+    /**
+     * Create (default) metadata entries for a file found in a directory scan. 
+     *
+     * @param scanItem The directory scan item to generate the default metadata for.
+     * @return The generated metadata.
+     */
+    public HpcMetadataEntries toMetadataEntries(HpcDirectoryScanItem scanItem);
     
     /**
      * Add metadata to a data object.
@@ -262,7 +271,6 @@ public interface HpcMetadataService
      */
     public List<String> 
            getDataObjectSystemMetadataAttributeNames() throws HpcException;
-    
 }
 
  
