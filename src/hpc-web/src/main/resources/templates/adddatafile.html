@@ -179,7 +179,7 @@
 													</td>
 											</tr>
 										
-											<tr th:unless="${datafileAttrs != null}">
+											<tr th:if="${datafileAttrs != null and datafileAttrs.size() &gt; 0}">
 											<td align="left"><input type="text" name="_addAttrName1" id="_addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
 											<td align="left"><input type="text" name="_addAttrValue1" id="_addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>
 											</tr>
