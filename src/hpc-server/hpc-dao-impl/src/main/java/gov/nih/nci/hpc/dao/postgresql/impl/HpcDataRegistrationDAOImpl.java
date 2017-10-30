@@ -28,14 +28,14 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationResult;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -55,8 +55,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	public static final String UPSERT_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL = 
-		   "insert into public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" ( " +
+	public static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = 
+		   "insert into public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" ( " +
                    "\"ID\", \"USER_ID\", \"STATUS\", \"ITEMS\", \"CREATED\") " + 
                    "values (?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
@@ -64,18 +64,18 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
                         "\"ITEMS\"=excluded.\"ITEMS\", " +
                         "\"CREATED\"=excluded.\"CREATED\"";
 	
-	public static final String GET_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL = 
-		   "select * from public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" where \"ID\" = ?";
+	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = 
+		   "select * from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" where \"ID\" = ?";
 	
-	public static final String DELETE_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL = 
-		   "delete from public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" where \"ID\" = ?";
+	public static final String DELETE_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = 
+		   "delete from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" where \"ID\" = ?";
 	
-	public static final String GET_DATA_OBJECT_LIST_REGISTRATION_TASKS_SQL = 
-		   "select * from public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_TASK\" where \"STATUS\" = ? " +
+	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL = 
+		   "select * from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" where \"STATUS\" = ? " +
 		   "order by \"CREATED\"";
 	
-	public static final String UPSERT_DATA_OBJECT_LIST_REGISTRATION_RESULT_SQL = 
-		   "insert into public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_RESULT\" ( " +
+	public static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = 
+		   "insert into public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" ( " +
 	                    "\"ID\", \"USER_ID\", \"RESULT\", \"MESSAGE\", \"ITEMS\", \"CREATED\", \"COMPLETED\") " + 
 	                    "values (?, ?, ?, ?, ?, ?, ?) " +
 	       "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
@@ -85,8 +85,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 	                    "\"CREATED\"=excluded.\"CREATED\", " +
 	                    "\"COMPLETED\"=excluded.\"COMPLETED\"";
 	
-	public static final String GET_DATA_OBJECT_LIST_REGISTRATION_RESULT_SQL = 
-		   "select * from public.\"HPC_DATA_OBJECT_LIST_REGISTRATION_RESULT\" where \"ID\" = ?";
+	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = 
+		   "select * from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" where \"ID\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -96,42 +96,42 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 	@Autowired
 	private JdbcTemplate jdbcTemplate = null;
 	
-	// HpcDataObjectListRegistrationTask table to object mapper.
-	private RowMapper<HpcDataObjectListRegistrationTask> dataObjectListRegistrationTaskRowMapper = (rs, rowNum) -> 
+	// HpcBulkDataObjectRegistrationTask table to object mapper.
+	private RowMapper<HpcBulkDataObjectRegistrationTask> bulkDataObjectRegistrationTaskRowMapper = (rs, rowNum) -> 
 	{
-		HpcDataObjectListRegistrationTask dataObjectListRegistrationTask = new HpcDataObjectListRegistrationTask();
-		dataObjectListRegistrationTask.setId(rs.getString("ID"));
-		dataObjectListRegistrationTask.setUserId(rs.getString("USER_ID"));
-		dataObjectListRegistrationTask.setStatus(
-				  HpcDataObjectListRegistrationTaskStatus.fromValue(rs.getString(("STATUS"))));
-		dataObjectListRegistrationTask.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+		HpcBulkDataObjectRegistrationTask bulkDataObjectRegistrationTask = new HpcBulkDataObjectRegistrationTask();
+		bulkDataObjectRegistrationTask.setId(rs.getString("ID"));
+		bulkDataObjectRegistrationTask.setUserId(rs.getString("USER_ID"));
+		bulkDataObjectRegistrationTask.setStatus(
+				HpcBulkDataObjectRegistrationTaskStatus.fromValue(rs.getString(("STATUS"))));
+		bulkDataObjectRegistrationTask.getItems().addAll(fromJSON(rs.getString("ITEMS")));
 		
     	Calendar created = Calendar.getInstance();
     	created.setTime(rs.getTimestamp("CREATED"));
-    	dataObjectListRegistrationTask.setCreated(created);
+    	bulkDataObjectRegistrationTask.setCreated(created);
     	
-        return dataObjectListRegistrationTask;
+        return bulkDataObjectRegistrationTask;
 	};
 	
-	// HpcDataObjectListRegistrationResulr table to object mapper.
-	private RowMapper<HpcDataObjectListRegistrationResult> dataObjectListRegistrationResultRowMapper = (rs, rowNum) -> 
+	// HpcBulkDataObjectRegistrationResulr table to object mapper.
+	private RowMapper<HpcBulkDataObjectRegistrationResult> dataObjectListRegistrationResultRowMapper = (rs, rowNum) -> 
 	{
-		HpcDataObjectListRegistrationResult dataObjectListRegistrationResult = new HpcDataObjectListRegistrationResult();
-		dataObjectListRegistrationResult.setId(rs.getString("ID"));
-		dataObjectListRegistrationResult.setUserId(rs.getString("USER_ID"));
-		dataObjectListRegistrationResult.setResult(rs.getBoolean("RESULT"));
-		dataObjectListRegistrationResult.setMessage(rs.getString("MESSAGE"));
-		dataObjectListRegistrationResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+		HpcBulkDataObjectRegistrationResult bulkDdataObjectRegistrationResult = new HpcBulkDataObjectRegistrationResult();
+		bulkDdataObjectRegistrationResult.setId(rs.getString("ID"));
+		bulkDdataObjectRegistrationResult.setUserId(rs.getString("USER_ID"));
+		bulkDdataObjectRegistrationResult.setResult(rs.getBoolean("RESULT"));
+		bulkDdataObjectRegistrationResult.setMessage(rs.getString("MESSAGE"));
+		bulkDdataObjectRegistrationResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
 		
     	Calendar created = Calendar.getInstance();
     	created.setTime(rs.getTimestamp("CREATED"));
-    	dataObjectListRegistrationResult.setCreated(created);
+    	bulkDdataObjectRegistrationResult.setCreated(created);
     	
     	Calendar completed = Calendar.getInstance();
     	completed.setTime(rs.getTimestamp("COMPLETED"));
-    	dataObjectListRegistrationResult.setCompleted(completed);
+    	bulkDdataObjectRegistrationResult.setCompleted(completed);
     	
-        return dataObjectListRegistrationResult;
+        return bulkDdataObjectRegistrationResult;
 	};
 	
     //---------------------------------------------------------------------//
@@ -155,8 +155,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
     //---------------------------------------------------------------------//  
     
     @Override
-	public void upsertDataObjectListRegistrationTask(
-			          HpcDataObjectListRegistrationTask dataObjectListRegistrationTask) 
+	public void upsertBulkDataObjectRegistrationTask(
+			          HpcBulkDataObjectRegistrationTask dataObjectListRegistrationTask) 
                       throws HpcException
     {
 		try {
@@ -164,7 +164,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 				dataObjectListRegistrationTask.setId(UUID.randomUUID().toString());
 			 }
 			 
-		     jdbcTemplate.update(UPSERT_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL,
+		     jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL,
 		    		             dataObjectListRegistrationTask.getId(),
 		    		             dataObjectListRegistrationTask.getUserId(),
 		    		             dataObjectListRegistrationTask.getStatus().value(),
@@ -172,64 +172,65 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 		    		             dataObjectListRegistrationTask.getCreated());
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to upsert a data object list registration request: " + e.getMessage(),
+			    throw new HpcException("Failed to upsert a bulk data object registration request: " + e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		} 
     }
     
     @Override
-    public HpcDataObjectListRegistrationTask getDataObjectListRegistrationTask(String id) throws HpcException
+    public HpcBulkDataObjectRegistrationTask getBulkDataObjectRegistrationTask(String id) 
+    		                                                                  throws HpcException
     {
 		try {
-		     return jdbcTemplate.queryForObject(GET_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL, 
-		    		                            dataObjectListRegistrationTaskRowMapper, id);
+		     return jdbcTemplate.queryForObject(GET_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL, 
+		    		                            bulkDataObjectRegistrationTaskRowMapper, id);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get a data object list registration task: " + e.getMessage(),
+		        throw new HpcException("Failed to get a bulk data object registration task: " + e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}    
     }
     
     @Override
-    public void deleteDataObjectListRegistrationTask(String id) throws HpcException
+    public void deleteBulkDataObjectRegistrationTask(String id) throws HpcException
 	{
 		try {
-		     jdbcTemplate.update(DELETE_DATA_OBJECT_LIST_REGISTRATION_TASK_SQL, id);
+		     jdbcTemplate.update(DELETE_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL, id);
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to delete a data object list registration task: " + e.getMessage(),
+			    throw new HpcException("Failed to delete a bulk data object registration task: " + e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
     
     @Override
-    public List<HpcDataObjectListRegistrationTask> 
-           getDataObjectListRegistrationTasks(HpcDataObjectListRegistrationTaskStatus status) 
+    public List<HpcBulkDataObjectRegistrationTask> 
+           getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus status) 
                                              throws HpcException
 	{
     	try {
-		     return jdbcTemplate.query(GET_DATA_OBJECT_LIST_REGISTRATION_TASKS_SQL, 
-		    		                   dataObjectListRegistrationTaskRowMapper, status.value());
+		     return jdbcTemplate.query(GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL, 
+		    		                   bulkDataObjectRegistrationTaskRowMapper, status.value());
 		     
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get data object list registration tasks: " + 
+		        throw new HpcException("Failed to get bulk data object registration tasks: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
     
     @Override
-    public void upsertDataObjectListRegistrationResult(HpcDataObjectListRegistrationResult registrationResult) 
+    public void upsertBulkDataObjectRegistrationResult(HpcBulkDataObjectRegistrationResult registrationResult) 
                                                       throws HpcException
     {
     	try {
-   		     jdbcTemplate.update(UPSERT_DATA_OBJECT_LIST_REGISTRATION_RESULT_SQL,
+   		     jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL,
    		    		             registrationResult.getId(),
    		    		             registrationResult.getUserId(),
    		    		             registrationResult.getResult(),
@@ -239,23 +240,23 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
    		    		             registrationResult.getCompleted());
    		     
    		} catch(DataAccessException e) {
-   			    throw new HpcException("Failed to upsert a data object list registration result: " + e.getMessage(),
+   			    throw new HpcException("Failed to upsert a bulk data object registration result: " + e.getMessage(),
    			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
    		} 
     }
     
     @Override
-    public HpcDataObjectListRegistrationResult getDataObjectListRegistrationResult(String id) throws HpcException
+    public HpcBulkDataObjectRegistrationResult getBulkDataObjectRegistrationResult(String id) throws HpcException
     {
 		try {
-		     return jdbcTemplate.queryForObject(GET_DATA_OBJECT_LIST_REGISTRATION_RESULT_SQL, 
+		     return jdbcTemplate.queryForObject(GET_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL, 
 		    		                            dataObjectListRegistrationResultRowMapper, id);
 		     
 		} catch(IncorrectResultSizeDataAccessException irse) {
 			    return null;
 			    
 		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get a data object list registration result: " + e.getMessage(),
+		        throw new HpcException("Failed to get a bulk data object registration result: " + e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}        	
     }
@@ -271,10 +272,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
      * @return A JSON representation of download items.
      */
 	@SuppressWarnings("unchecked")
-	private String toJSON(List<HpcDataObjectListRegistrationItem> registrationItems)
+	private String toJSON(List<HpcBulkDataObjectRegistrationItem> registrationItems)
 	{
 		JSONArray jsonRegistrationItems = new JSONArray();
-		for(HpcDataObjectListRegistrationItem registrationItem : registrationItems) {
+		for(HpcBulkDataObjectRegistrationItem registrationItem : registrationItems) {
 			JSONObject jsonTask = new JSONObject();
 			HpcDataObjectRegistrationTaskItem taskItem = registrationItem.getTask();
 			jsonTask.put("path", taskItem.getPath());
@@ -366,15 +367,15 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
 	}
 	
     /** 
-     * Convert JSON string to a list of data object list registration items.
+     * Convert JSON string to a list of bulk data object registration items.
      * 
      * @param jsonRegistrationItemsStr The registration items JSON string.
      * @return A list of data object registration download items.
      */
 	@SuppressWarnings("unchecked")
-	private List<HpcDataObjectListRegistrationItem> fromJSON(String jsonRegistrationItemsStr)
+	private List<HpcBulkDataObjectRegistrationItem> fromJSON(String jsonRegistrationItemsStr)
 	{
-		List<HpcDataObjectListRegistrationItem> registrationItems = new ArrayList<>();
+		List<HpcBulkDataObjectRegistrationItem> registrationItems = new ArrayList<>();
 		if(StringUtils.isEmpty(jsonRegistrationItemsStr)) {
 		   return registrationItems;
 		}
@@ -393,7 +394,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
   	    if(jsonRegistrationItems != null) {
 		   Iterator<JSONObject> registrationItemIterator = jsonRegistrationItems.iterator();
 	       while(registrationItemIterator.hasNext()) {
-	    	     HpcDataObjectListRegistrationItem registrationItem = new HpcDataObjectListRegistrationItem();
+	    	     HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
 	    	     JSONObject jsonRegistrationItem = registrationItemIterator.next();
 	    	     
 	    	     registrationItem.setTask(toRegistrationTask((JSONObject) jsonRegistrationItem.get("task")));
