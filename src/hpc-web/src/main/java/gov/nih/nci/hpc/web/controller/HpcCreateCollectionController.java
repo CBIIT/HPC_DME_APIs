@@ -40,6 +40,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
@@ -105,21 +106,22 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "index";
 			}
-			
+
 			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
 			if (modelDTO == null) {
 				modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 				session.setAttribute("userDOCModel", modelDTO);
 			}
 			String basePath = null;
-			if(parent != null)
-				basePath = HpcClientUtil.getBasePath(authToken, serviceURL, parent, sslCertPath, sslCertPassword, modelDTO);
+			if (parent != null)
+				basePath = HpcClientUtil.getBasePath(authToken, serviceURL, parent, sslCertPath, sslCertPassword,
+						modelDTO);
 			else
 				basePath = HpcClientUtil.getBasePath(request);
 
-			if(parent == null || basePath == null)
+			if (parent == null || basePath == null)
 				populateBasePaths(request, session, model, path);
-			
+
 			populateCollectionTypes(session, model, basePath, parent);
 			setCollectionPath(model, request, parent);
 			model.addAttribute("basePath", basePath);
@@ -127,12 +129,13 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			model.addAttribute("error", "Failed to add Collection: " + e.getMessage());
 			e.printStackTrace();
 		}
-		
+
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
 		return "addcollection";
 	}
 
-	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, String path) throws HpcWebException {
+	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, String path)
+			throws HpcWebException {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
@@ -151,8 +154,9 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		setCollectionPath(model, request, path);
 		model.addAttribute("basePaths", basePaths);
 	}
-	
-	private void populateCollectionTypes(HttpSession session, Model model, String basePath, String parent) throws HpcWebException {
+
+	private void populateCollectionTypes(HttpSession session, Model model, String basePath, String parent)
+			throws HpcWebException {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
@@ -162,25 +166,24 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			session.setAttribute("userDOCModel", modelDTO);
 		}
 
+		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		String collectionType = null;
 		Set<String> collectionTypesSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-		List<HpcDataManagementRulesDTO> docRules = HpcClientUtil.getUserDOCManagementRules(modelDTO, user.getDoc());
+
 		HpcCollectionListDTO collections = null;
-		if(parent != null)
-			collections = HpcClientUtil.getCollection(authToken, serviceURL, parent, false,
-				sslCertPath, sslCertPassword);
-		for (HpcDataManagementRulesDTO docRule : docRules) {
-			if(!docRule.getBasePath().equals(basePath))
-				continue;
-			List<HpcMetadataValidationRule> rules = docRule.getCollectionMetadataValidationRules();
+		if (parent != null)
+			collections = HpcClientUtil.getCollection(authToken, serviceURL, parent, false, sslCertPath,
+					sslCertPassword);
+		if (basePathRules != null) {
+			List<HpcMetadataValidationRule> rules = basePathRules.getCollectionMetadataValidationRules();
 			// Parent name is given
 			if (parent != null) {
 				if (collections != null && collections.getCollections() != null
 						&& collections.getCollections().size() > 0) {
 					HpcCollectionDTO collection = collections.getCollections().get(0);
 					if (collection.getMetadataEntries() == null) {
-						if (docRule.getDataHierarchy() != null)
-							collectionTypesSet.add(docRule.getDataHierarchy().getCollectionType());
+						if (basePathRules.getDataHierarchy() != null)
+							collectionTypesSet.add(basePathRules.getDataHierarchy().getCollectionType());
 						else
 							collectionTypesSet.add("Folder");
 					} else {
@@ -194,32 +197,31 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 				} else {
 					// Collection not found
 					// Populate all collection types
-					for(String type : getCollectionTypes(rules))
+					for (String type : getCollectionTypes(rules))
 						collectionTypesSet.add(type);
 				}
 
 				if (collectionType != null) {
-					List<String> subCollections = getSubCollectionTypes(collectionType, docRule.getDataHierarchy());
+					List<String> subCollections = getSubCollectionTypes(collectionType,
+							basePathRules.getDataHierarchy());
 					if ((subCollections == null || subCollections.isEmpty()) && !rules.isEmpty())
 						throw new HpcWebException("Adding a sub collection is not allowed with: " + parent);
-					for(String type : subCollections)
+					for (String type : subCollections)
 						collectionTypesSet.add(type);
 				}
 			}
 
 			if (collectionType == null && collectionTypesSet.isEmpty()) {
-				for (HpcMetadataValidationRule rule : rules) {
-					if (rule.getMandatory() && rule.getAttribute().equals("collection_type"))
-					{
-						for(String type : rule.getValidValues())
+				for (HpcMetadataValidationRule validationrule : rules) {
+					if (validationrule.getMandatory() && validationrule.getAttribute().equals("collection_type")) {
+						for (String type : validationrule.getValidValues())
 							collectionTypesSet.add(type);
 					}
 				}
 			}
-
-			if (rules.isEmpty() && collectionTypesSet.isEmpty())
-				collectionTypesSet.add("Folder");
 		}
+		if (collectionTypesSet.isEmpty())
+			collectionTypesSet.add("Folder");
 		model.addAttribute("collectionTypes", collectionTypesSet);
 	}
 
@@ -249,8 +251,8 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		return types;
 	}
 
-	private void populateFormAttributes(HttpServletRequest request, HttpSession session, Model model, String basePath, String path,
-			String collectionType, boolean refresh) {
+	private void populateFormAttributes(HttpServletRequest request, HttpSession session, Model model, String basePath,
+			String path, String collectionType, boolean refresh) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
@@ -259,14 +261,11 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 			session.setAttribute("userDOCModel", modelDTO);
 		}
-		List<HpcDataManagementRulesDTO> docRules = HpcClientUtil.getUserDOCManagementRules(modelDTO, user.getDoc());
 		List<HpcMetadataValidationRule> rules = null;
-		for(HpcDataManagementRulesDTO docRule : docRules)
-		{
-			if(docRule.getBasePath().equals(basePath))
-				rules = docRule.getCollectionMetadataValidationRules();
-		}
-
+		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
+		if(basePathRules != null)
+			rules = basePathRules.getCollectionMetadataValidationRules();
+		
 		if (collectionType == null)
 			collectionType = "Folder";
 
@@ -282,21 +281,23 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		// type2:attribute2:defaultValue
 		List<HpcMetadataAttrEntry> metadataEntries = new ArrayList<HpcMetadataAttrEntry>();
 		List<String> attributeNames = new ArrayList<String>();
-		for (HpcMetadataValidationRule rule : rules) {
-			if (rule.getMandatory() && rule.getCollectionTypes().contains(collectionType)) {
-				HpcMetadataAttrEntry entry = new HpcMetadataAttrEntry();
-				entry.setAttrName(rule.getAttribute());
-				attributeNames.add(rule.getAttribute());
-				entry.setAttrValue(getFormAttributeValue(request, "zAttrStr_" + rule.getAttribute()));
-				if (entry.getAttrValue() == null)
-					entry.setAttrValue(rule.getDefaultValue());
-				if (rule.getValidValues() != null && !rule.getValidValues().isEmpty()) {
-					List<String> validValues = new ArrayList<String>();
-					for (String value : rule.getValidValues())
-						validValues.add(value);
-					entry.setValidValues(validValues);
+		if (rules != null && !rules.isEmpty()) {
+			for (HpcMetadataValidationRule rule : rules) {
+				if (rule.getMandatory() && rule.getCollectionTypes().contains(collectionType)) {
+					HpcMetadataAttrEntry entry = new HpcMetadataAttrEntry();
+					entry.setAttrName(rule.getAttribute());
+					attributeNames.add(rule.getAttribute());
+					entry.setAttrValue(getFormAttributeValue(request, "zAttrStr_" + rule.getAttribute()));
+					if (entry.getAttrValue() == null)
+						entry.setAttrValue(rule.getDefaultValue());
+					if (rule.getValidValues() != null && !rule.getValidValues().isEmpty()) {
+						List<String> validValues = new ArrayList<String>();
+						for (String value : rule.getValidValues())
+							validValues.add(value);
+						entry.setValidValues(validValues);
+					}
+					metadataEntries.add(entry);
 				}
-				metadataEntries.add(entry);
 			}
 		}
 
@@ -327,8 +328,8 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		if (!collectionType.isEmpty())
 			model.addAttribute("collection_type", collectionType);
 
-//		if (!path.isEmpty())
-//			model.addAttribute("collectionPath", path);
+		// if (!path.isEmpty())
+		// model.addAttribute("collectionPath", path);
 		model.addAttribute("basePath", basePath);
 	}
 
@@ -343,14 +344,12 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 	// Get Collection type attributes
 	// Get selected collection type
 	// Get given path
-	private String updateView(HttpSession session, HttpServletRequest request, Model model, String basePath, String path, String parent,
-			boolean refresh) {
-		if(parent == null)
-		{
+	private String updateView(HttpSession session, HttpServletRequest request, Model model, String basePath,
+			String path, String parent, boolean refresh) {
+		if (parent == null) {
 			populateBasePaths(request, session, model, path);
 			model.addAttribute("collectionPath", basePath);
-		}
-		else
+		} else
 			setCollectionPath(model, request, parent);
 		populateCollectionTypes(session, model, basePath, parent);
 		String collectionType = getFormAttributeValue(request, "zAttrStr_collection_type");
@@ -404,13 +403,13 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 			session.setAttribute("userDOCModel", modelDTO);
 		}
-		
+
 		String basePath = null;
-		if(originPath != null)
-			basePath = HpcClientUtil.getBasePath(authToken, serviceURL, originPath, sslCertPath, sslCertPassword, modelDTO);
+		if (originPath != null)
+			basePath = HpcClientUtil.getBasePath(authToken, serviceURL, originPath, sslCertPath, sslCertPassword,
+					modelDTO);
 		else
 			basePath = HpcClientUtil.getBasePath(request);
-
 
 		String collectionType = getFormAttributeValue(request, "zAttrStr_collection_type");
 
@@ -466,35 +465,34 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			model.addAttribute("error", "Failed to create collection: " + e.getMessage());
 			return "addcollection";
 		} finally {
-			if(originPath == null)
+			if (originPath == null)
 				populateBasePaths(request, session, model, hpcCollection.getPath());
 			populateCollectionTypes(session, model, basePath, originPath);
-			populateFormAttributes(request, session, model, basePath, request.getParameter("path"), collectionType, false);
+			populateFormAttributes(request, session, model, basePath, request.getParameter("path"), collectionType,
+					false);
 			model.addAttribute("hpcCollection", hpcCollection);
-			setCollectionPath(model, request, originPath);		}
+			setCollectionPath(model, request, originPath);
+		}
 		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
 	}
 
-	private void setCollectionPath(Model model, HttpServletRequest request, String parentPath)
-	{
+	private void setCollectionPath(Model model, HttpServletRequest request, String parentPath) {
 		String path = request.getParameter("path");
-		if(path != null && !path.isEmpty())
+		if (path != null && !path.isEmpty())
 			model.addAttribute("collectionPath", request.getParameter("path"));
-		
-		if(parentPath == null || parentPath.isEmpty())
-		{
+
+		if (parentPath == null || parentPath.isEmpty()) {
 			String[] basePathValues = request.getParameterValues("basePath");
 			String basePath = null;
 			if (basePathValues == null || basePathValues.length == 0)
 				basePath = (String) request.getAttribute("basePath");
-			else 
+			else
 				basePath = basePathValues[0];
 			model.addAttribute("collectionPath", basePath);
-		}
-		else
+		} else
 			model.addAttribute("collectionPath", parentPath);
 	}
-	
+
 	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session, String path,
 			HpcCollectionModel hpcCollection) throws HpcWebException {
 		Enumeration<String> params = request.getParameterNames();
