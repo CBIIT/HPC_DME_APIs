@@ -68,7 +68,7 @@ public class HpcBusServiceAspect
      * Default Constructor disabled.
      * 
      */
-    private HpcBusServiceAspect() throws HpcException
+    public HpcBusServiceAspect() throws HpcException
     {
     	throw new HpcException("Default constructor disabled", 
     		                   HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -79,7 +79,7 @@ public class HpcBusServiceAspect
      * 
      * @param systemAdministratorUserId The system administrator NCI user ID.
      */
-    private HpcBusServiceAspect(String systemAdministratorUserId)
+    public HpcBusServiceAspect(String systemAdministratorUserId)
     {
     	this.systemAdministratorUserId = systemAdministratorUserId;
     }  
@@ -135,7 +135,7 @@ public class HpcBusServiceAspect
      * @throws Throwable The advised object exception.
      */
 	@AfterThrowing (pointcut = "busServices()", throwing = "exception")
-    public void logException(JoinPoint joinPoint, HpcException exception) throws Throwable  
+    public void logException(JoinPoint joinPoint, HpcException exception)
 	{
 		logger.error(joinPoint.getSignature().toShortString() + 
 				     " business service error:  " + exception.getMessage(), exception); 
@@ -149,7 +149,7 @@ public class HpcBusServiceAspect
      * @throws Throwable The advised object exception.
      */
 	@AfterThrowing (pointcut = "busServices()", throwing = "exception")
-    public void notifySystemAdmin(JoinPoint joinPoint, HpcException exception) throws Throwable  
+    public void notifySystemAdmin(JoinPoint joinPoint, HpcException exception)
 	{
 		if(exception.getIntegratedSystem() != null) {
 		   logger.info("Sending a notification to system admin: " + exception.getMessage());

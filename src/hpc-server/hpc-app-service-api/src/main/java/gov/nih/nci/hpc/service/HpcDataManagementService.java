@@ -13,15 +13,15 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationStatus;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -251,27 +251,27 @@ public interface HpcDataManagementService
     				                 throws HpcException;
     
     /**
-     * Get data object list registration tasks. 
+     * Get bulk object registration tasks. 
      *
      * @param status Get tasks in this status.
      * @return A list of data object list registration tasks.
      * @throws HpcException on service failure.
      */
-    public List<HpcDataObjectListRegistrationTask> getDataObjectListRegistrationTasks(
-    		                                              HpcDataObjectListRegistrationTaskStatus status) 
+    public List<HpcBulkDataObjectRegistrationTask> getBulkDataObjectRegistrationTasks(
+    		                                              HpcBulkDataObjectRegistrationTaskStatus status) 
     		                                              throws HpcException;
     
     /** 
-     * Update a data object list registration task.
+     * Update a bulk data object registration task.
      * 
      * @param registrationTask The registration task to update.
      * @throws HpcException on service failure.
      */
-    public void updateDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask)
+    public void updateBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask)
                                                     throws HpcException;
     
     /**
-     * Complete a data object list registration task:
+     * Complete a bulk data object registration task:
      * 1. Update task info in DB with results info.
      *
      * @param registrationTask The registration task to complete.
@@ -280,12 +280,12 @@ public interface HpcDataManagementService
      * @param completed (Optional) The download task completion timestamp.
      * @throws HpcException on service failure.
      */
-    public void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
+    public void completeBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask,
     		                                           boolean result, String message, Calendar completed) 
     		                                          throws HpcException;
     
     /**
-     * Get data object list task status. 
+     * Get bulk data object registration task status. 
      *
      * @param taskId The registration task ID.
      * @return A download status object, or null if the task can't be found.
@@ -294,7 +294,7 @@ public interface HpcDataManagementService
      *         'result' object. 
      * @throws HpcException on service failure.
      */
-    public HpcDataObjectListRegistrationStatus getDataObjectListRegistrationTaskStatus(String taskId) 
+    public HpcBulkDataObjectRegistrationStatus getBulkDataObjectRegistrationTaskStatus(String taskId) 
     		                                                                          throws HpcException;
     
     /**

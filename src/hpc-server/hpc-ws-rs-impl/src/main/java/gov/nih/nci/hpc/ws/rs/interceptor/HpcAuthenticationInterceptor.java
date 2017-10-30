@@ -81,7 +81,7 @@ public class HpcAuthenticationInterceptor
      * 
      * @param ldapAuthentication Enable LDAP authentication indicator.
      */
-    private HpcAuthenticationInterceptor(boolean ldapAuthentication) 
+    public HpcAuthenticationInterceptor(boolean ldapAuthentication) 
     {
         super(Phase.RECEIVE);
         this.ldapAuthentication = ldapAuthentication;
@@ -154,7 +154,8 @@ public class HpcAuthenticationInterceptor
      */
     private void authenticate(AuthorizationPolicy policy) throws HpcException
     {
-    	String userName = null, password = null;
+    	String userName = null; 
+    	String password = null;
     	if(policy != null) {
     	   userName = policy.getUserName();
     	   password = policy.getPassword();
@@ -178,10 +179,10 @@ public class HpcAuthenticationInterceptor
      * Get Authorization array from a message.
      * 
      * @param message The RS message.
-     * @return The authorzation type of the message.
-     * @throws HpcAuthenticationException on invalid authorization header.
+     * @return The authorization type of the message.
+     * @throws HpcAuthenticationException on invalid authorization header. This is a runtime exception.
      */
-    private String[] getAuthorization(Message message) throws HpcAuthenticationException
+    private String[] getAuthorization(Message message) 
     {
 		// Determine the authorization type.
 		@SuppressWarnings("unchecked")
