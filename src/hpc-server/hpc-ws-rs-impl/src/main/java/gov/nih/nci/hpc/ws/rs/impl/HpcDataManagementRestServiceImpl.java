@@ -24,8 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -37,9 +40,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
@@ -268,7 +268,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     @Override
     public Response getDataObjectsRegistrationStatus(String taskId)
     {
-    	HpcDataObjectListRegistrationStatusDTO registrationStatus = null;
+    	HpcBulkDataObjectRegistrationStatusDTO registrationStatus = null;
 		try {
 			 registrationStatus = dataManagementBusService.getDataObjectsRegistrationStatus(taskId);
 
@@ -385,9 +385,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-	public Response downloadDataObjects(HpcDataObjectListDownloadRequestDTO downloadRequest)
+	public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest)
     {
-    	HpcDataObjectListDownloadResponseDTO downloadResponse = null;
+    	HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
 		try {
 			 downloadResponse = dataManagementBusService.downloadDataObjects(downloadRequest);
 
