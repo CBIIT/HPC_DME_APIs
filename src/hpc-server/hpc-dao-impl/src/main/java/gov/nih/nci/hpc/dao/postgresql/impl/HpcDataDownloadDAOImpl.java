@@ -396,9 +396,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		     return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL, 
 		    		                   dataObjectDownloadTaskRowMapper, dataTransferType.value());
 		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
-			    return null;
-			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object download tasks: " + 
 		                               e.getMessage(),
@@ -529,9 +526,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		     return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_SQL, 
 		    		                   collectionDownloadTaskRowMapper, status.value());
 		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
-			    return null;
-			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection download tasks: " + 
 		                               e.getMessage(),
@@ -547,9 +541,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		     return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL, 
 		    		                   userDownloadRequestRowMapper, userId);
 		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
-			    return null;
-			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object download requests: " + 
 		                               e.getMessage(),
@@ -565,9 +556,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		     return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_REQUESTS_SQL, 
 		    		                   userDownloadRequestRowMapper, userId);
 		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
-			    return null;
-			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection download requests: " + 
 		                               e.getMessage(),
@@ -584,9 +572,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		     return jdbcTemplate.query(GET_DOWNLOAD_RESULTS_SQL, 
 		    		                   userDownloadRequestRowMapper, userId, limit, offset);
 		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
-			    return null;
-			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get download results: " + 
 		                               e.getMessage(),
