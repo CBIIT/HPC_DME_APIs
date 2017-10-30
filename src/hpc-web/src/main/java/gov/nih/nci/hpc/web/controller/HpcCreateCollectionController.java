@@ -125,6 +125,7 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 			populateCollectionTypes(session, model, basePath, parent);
 			setCollectionPath(model, request, parent);
 			model.addAttribute("basePath", basePath);
+			model.addAttribute("create", false);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to add Collection: " + e.getMessage());
 			e.printStackTrace();
@@ -354,7 +355,7 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 		populateCollectionTypes(session, model, basePath, parent);
 		String collectionType = getFormAttributeValue(request, "zAttrStr_collection_type");
 		populateFormAttributes(request, session, model, basePath, path, collectionType, refresh);
-
+		model.addAttribute("create", true);
 		return "addcollection";
 	}
 
