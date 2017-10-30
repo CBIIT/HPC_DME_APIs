@@ -241,6 +241,8 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	   }
     	   user.getNciAccount().setDefaultConfigurationId(defaultConfigurationId);
     	}
+    	else
+    		user.getNciAccount().setDefaultConfigurationId(null);
     	
     	if(user.getActive() != active) {
     	   user.setActive(active);

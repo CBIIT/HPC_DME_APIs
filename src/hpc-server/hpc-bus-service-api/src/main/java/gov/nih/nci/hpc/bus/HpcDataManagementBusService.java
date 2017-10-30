@@ -12,8 +12,11 @@ package gov.nih.nci.hpc.bus;
 
 import java.io.File;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -23,9 +26,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
@@ -114,8 +114,8 @@ public interface HpcDataManagementBusService
      * @return Download Response DTO.
      * @throws HpcException on service failure.
      */
-	public HpcDataObjectListDownloadResponseDTO downloadDataObjects(
-			                                            HpcDataObjectListDownloadRequestDTO downloadRequest)
+	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjects(
+			                                            HpcBulkDataObjectDownloadRequestDTO downloadRequest)
 			                                            throws HpcException;
 	
     /**
@@ -235,7 +235,7 @@ public interface HpcDataManagementBusService
      * @param taskId The registration task ID.
      * @return A data object list registration status DTO. Null if the task could not be found.
      */
-	public HpcDataObjectListRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
+	public HpcBulkDataObjectRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
 			                                                                      throws HpcException;
     
     /**

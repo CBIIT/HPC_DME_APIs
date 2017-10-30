@@ -32,6 +32,9 @@ public class HpcWebUser {
 	private String doc;
 
 	@JsonView(Views.Public.class)
+	private String basePath;
+
+	@JsonView(Views.Public.class)
 	private String active;
 
 	public String getDoc() {
@@ -40,6 +43,14 @@ public class HpcWebUser {
 
 	public void setDoc(String doc) {
 		this.doc = doc;
+	}
+
+	public String getBasePath() {
+		return basePath;
+	}
+
+	public void setBasePath(String basePath) {
+		this.basePath = basePath;
 	}
 
 	public String getFirstName() {

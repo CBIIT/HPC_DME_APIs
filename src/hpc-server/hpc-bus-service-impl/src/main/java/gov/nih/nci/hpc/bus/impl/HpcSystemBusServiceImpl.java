@@ -24,10 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectListRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -43,8 +43,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationItem;
-import gov.nih.nci.hpc.domain.model.HpcDataObjectListRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -476,26 +476,26 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	// Use system account to perform this service.
     	securityService.setSystemRequestInvoker();
     	
-    	// Iterate through all the data object list registration requests that were submitted (not processed yet).
-        dataManagementService.getDataObjectListRegistrationTasks(HpcDataObjectListRegistrationTaskStatus.RECEIVED).forEach(
+    	// Iterate through all the bulk data object registration requests that were submitted (not processed yet).
+        dataManagementService.getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED).forEach(
     		listRegistrationTask -> 
     		{
 	    		try {
 	    			 // 'Activate' the registration task. 
-	    			listRegistrationTask.setStatus(HpcDataObjectListRegistrationTaskStatus.ACTIVE);
+	    			listRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE);
 	    			 
-	    			 // Register all items in this list registration task.
+	    			 // Register all items in this bulk registration task.
 	    			listRegistrationTask.getItems().forEach(
 	    					        item -> registerDataObject(item, 
 	    					        		                   listRegistrationTask.getUserId()));
 	    			 
-	    			 // Persist the data object list registration task.
-	    			 dataManagementService.updateDataObjectListRegistrationTask(listRegistrationTask);
+	    			 // Persist the bulk data object registration task.
+	    			 dataManagementService.updateBulkDataObjectRegistrationTask(listRegistrationTask);
 	    		     
 	    		} catch(HpcException e) {
 	    			    logger.error("Failed to process a data object list registration: " + 
 	    		                     listRegistrationTask.getId(), e);
-	    			    completeDataObjectListRegistrationTask(listRegistrationTask, false, e.getMessage());
+	    			    completeBulkDataObjectRegistrationTask(listRegistrationTask, false, e.getMessage());
 	    		} 
     		});
     }
@@ -506,24 +506,24 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	// Use system account to perform this service.
     	securityService.setSystemRequestInvoker();
     	
-    	// Iterate through all the data object list registration requests that are active.
-        dataManagementService.getDataObjectListRegistrationTasks(HpcDataObjectListRegistrationTaskStatus.ACTIVE).forEach(
-    		listRegistrationTask -> 
+    	// Iterate through all the bulk data object registration requests that are active.
+        dataManagementService.getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE).forEach(
+    		bulkRegistrationTask -> 
     		{
-    			// Update status of items in this list registration task.
-    			listRegistrationTask.getItems().forEach(this::updateRegistrationItemStatus);
+    			// Update status of items in this bulk registration task.
+    			bulkRegistrationTask.getItems().forEach(this::updateRegistrationItemStatus);
 	
     			// Check if registration task completed.
     			int completedItemsCount = 0;
-    			for(HpcDataObjectListRegistrationItem registrationItem : listRegistrationTask.getItems()) {
+    			for(HpcBulkDataObjectRegistrationItem registrationItem : bulkRegistrationTask.getItems()) {
     				if(registrationItem.getTask().getResult() == null) {
     				   // Task still in progress. Update progress.
     				   try {
-		                    dataManagementService.updateDataObjectListRegistrationTask(listRegistrationTask);
+		                    dataManagementService.updateBulkDataObjectRegistrationTask(bulkRegistrationTask);
    				    
     				   } catch(HpcException e) {
    				    	       logger.error("Failed to update data object list task: " +  
-    					       listRegistrationTask.getId());
+    					       bulkRegistrationTask.getId());
     				   }
     				   return;
     				}
@@ -534,10 +534,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			}
     			
     			// List registration task completed.
-    			int itemsCount = listRegistrationTask.getItems().size();
+    			int itemsCount = bulkRegistrationTask.getItems().size();
     			boolean result = completedItemsCount == itemsCount;
-    			completeDataObjectListRegistrationTask(
-    			 	    listRegistrationTask, result, 
+    			completeBulkDataObjectRegistrationTask(
+    			 	    bulkRegistrationTask, result, 
 			            result ? null : completedItemsCount + " items registered successfully out of " + itemsCount);
     		}
 		);
@@ -1113,7 +1113,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param registrationItem The data object registration item (one in a list).
      * @param userId The registrar user-id.
      */
-    private void registerDataObject(HpcDataObjectListRegistrationItem registrationItem,
+    private void registerDataObject(HpcBulkDataObjectRegistrationItem registrationItem,
     		                        String userId)
     {
     	HpcDataObjectRegistrationRequest registrationRequest = registrationItem.getRequest();
@@ -1160,7 +1160,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     /**
-     * Complete a data object list registration task.
+     * Complete a bulk data object registration task.
      * 1. Update task info in DB with results info.
      * 2. Send an event.
      *
@@ -1168,13 +1168,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param result The result of the task (true is successful, false is failed).
      * @param message (Optional) If the task failed, a message describing the failure.
      */
-    private void completeDataObjectListRegistrationTask(HpcDataObjectListRegistrationTask registrationTask,
+    private void completeBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask,
     		                                            boolean result, String message)
     {
     	Calendar completed = Calendar.getInstance();
     	
     	try {
-    	     dataManagementService.completeDataObjectListRegistrationTask(registrationTask, result, message, completed);
+    	     dataManagementService.completeBulkDataObjectRegistrationTask(registrationTask, result, message, completed);
     	     
     	} catch(HpcException e) {
     		    logger.error("Failed to complete data object list registration request", e);
@@ -1190,7 +1190,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      *
      * @param registrationItem The registration item to check.
      */
-    private void updateRegistrationItemStatus(HpcDataObjectListRegistrationItem registrationItem)
+    private void updateRegistrationItemStatus(HpcBulkDataObjectRegistrationItem registrationItem)
     {
 		HpcDataObjectRegistrationTaskItem registrationTask = registrationItem.getTask();
 		try {

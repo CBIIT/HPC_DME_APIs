@@ -65,8 +65,12 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
@@ -74,8 +78,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
@@ -119,6 +121,44 @@ public class HpcClientUtil {
 		return client;
 	}
 
+	public static String getBasePath(String authToken, String serviceURL, String parent, String sslCertPath, String sslCertPassword, HpcDataManagementModelDTO modelDTO)
+	{
+		HpcCollectionListDTO collectionListDTO = HpcClientUtil.getCollection(authToken, serviceURL, parent, true, sslCertPath, sslCertPassword);
+		if(collectionListDTO != null && collectionListDTO.getCollections() != null)
+		{
+			HpcCollectionDTO collection = collectionListDTO.getCollections().get(0);
+			String configurationId = null;
+			if(collection != null)
+			{
+				if(collection.getMetadataEntries() != null && collection.getMetadataEntries().getSelfMetadataEntries() != null)
+				{
+				for(HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
+					if(entry.getAttribute().equals("configuration_id"))
+					{
+						configurationId = entry.getValue();
+						break;
+					}
+				}
+			}
+			if(configurationId != null)
+			{
+				if(modelDTO != null)
+				{
+					//TODO
+					for(HpcDocDataManagementRulesDTO rulesDTO : modelDTO.getDocRules())
+					{
+						for(HpcDataManagementRulesDTO rule : rulesDTO.getRules())
+						{
+							if(rule.getId().equals(configurationId))
+								return rule.getBasePath();
+						}
+					}
+				}
+			}
+		}
+		return null;
+		
+	}
 	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL)
 			throws HpcWebException {
 
@@ -1225,9 +1265,9 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static HpcDataObjectListDownloadResponseDTO downloadFiles(String token, String hpcQueryURL, HpcDataObjectListDownloadRequestDTO dto,
+	public static HpcBulkDataObjectDownloadResponseDTO downloadFiles(String token, String hpcQueryURL, HpcBulkDataObjectDownloadRequestDTO dto,
 			String hpcCertPath, String hpcCertPassword) {
-		HpcDataObjectListDownloadResponseDTO response = null;
+		HpcBulkDataObjectDownloadResponseDTO response = null;
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
 			client.header("Authorization", "Bearer " + token);
@@ -1242,7 +1282,7 @@ public class HpcClientUtil {
 
 				MappingJsonFactory factory = new MappingJsonFactory(mapper);
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-				response = parser.readValueAs(HpcDataObjectListDownloadResponseDTO.class);
+				response = parser.readValueAs(HpcBulkDataObjectDownloadResponseDTO.class);
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(

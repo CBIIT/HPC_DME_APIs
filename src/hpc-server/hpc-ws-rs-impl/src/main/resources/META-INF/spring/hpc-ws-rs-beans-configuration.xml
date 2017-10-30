@@ -213,7 +213,6 @@
         		<entry key="downloadDataObjects" value="${hpc.ws.rs.auth.data-management.download-data-objects}"/>
         		<entry key="getDataObjectsDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-data-objects-download-status}"/>
         		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.data-management.get-data-management-model}"/>
-        		<entry key="getDataManagementTree" value="${hpc.ws.rs.auth.data-management.get-data-management-tree}"/>
         		
         		<!--  Data Search Service Authorizations -->
         		<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}"/>
