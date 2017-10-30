@@ -479,7 +479,10 @@ public class HpcCreateCollectionController extends AbstractHpcController {
 	private void setCollectionPath(Model model, HttpServletRequest request, String parentPath) {
 		String path = request.getParameter("path");
 		if (path != null && !path.isEmpty())
+		{
 			model.addAttribute("collectionPath", request.getParameter("path"));
+			return;
+		}
 
 		if (parentPath == null || parentPath.isEmpty()) {
 			String[] basePathValues = request.getParameterValues("basePath");
