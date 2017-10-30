@@ -1600,7 +1600,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			 	                                 directoryScanRegistrationItem.getScanDirectoryLocation(), 
     				        		                 false, configurationId);
     		if(!pathAttributes.getExists()) {
-    		   throw new HpcException("Endpoint doesn't exist: " + 
+    		   throw new HpcException("Endpoint or path doesn't exist: " + 
     		                          directoryScanRegistrationItem.getScanDirectoryLocation(),
                                       HpcErrorType.INVALID_REQUEST_INPUT);
     		}
