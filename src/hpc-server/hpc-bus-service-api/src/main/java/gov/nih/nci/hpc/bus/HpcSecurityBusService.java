@@ -46,7 +46,10 @@ public interface HpcSecurityBusService
      * Update a User.
      *
      * @param nciUserId The user ID to update.
-     * @param userUpdateRequest The user update request DTO.
+     * @param userUpdateRequest The user update request DTO. 
+     *                          Note: only fields that are provided in the DTO are updated. If 'defaultBasePath' is
+     *                                provided as empty string, then it is removed.
+     *                 
      * @throws HpcException on service failure.
      */
     public void updateUser(String nciUserId, 
