@@ -166,10 +166,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	if(dataManagementConfigurationLocator.get(nciAccount.getDefaultConfigurationId()) == null) {
-  		  throw new HpcException("Invalid Configuration ID. Valid values: " + 
-                                 Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
-                                 HpcErrorType.INVALID_REQUEST_INPUT);
+    	String defaultConfigurationId = nciAccount.getDefaultConfigurationId();
+    	if(defaultConfigurationId != null && 
+    	   dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
+  		   throw new HpcException("Invalid Configuration ID. Valid values: " + 
+                                  Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
     	// Check if the user already exists.
