@@ -470,20 +470,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
 	
 	@Override
-	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPath,
+	public HpcCollectionDownloadTask downloadDataObjects(Map<String, String> dataObjectPathsMap,
                                                          HpcFileLocation destinationLocation,
-                                                         String userId, String configurationId)
+                                                         String userId)
                                                         throws HpcException
     {
-		// Validate the requested destination location.
+		// Validate the requested destination location. Note: we use the configuration ID of the 
+		// first data object path. At this time, there is no need to validate for all configuration IDs.
 		validateDownloadDestinationFileLocation(HpcDataTransferType.GLOBUS, destinationLocation, 
-				                                false, configurationId);
+				                                false, dataObjectPathsMap.values().iterator().next());
 		
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setDestinationLocation(destinationLocation);
-		downloadTask.getDataObjectPaths().addAll(dataObjectPath);
+		downloadTask.getDataObjectPaths().addAll(dataObjectPathsMap.keySet());
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
