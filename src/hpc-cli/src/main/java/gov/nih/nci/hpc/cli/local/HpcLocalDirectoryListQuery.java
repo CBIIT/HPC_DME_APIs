@@ -75,6 +75,8 @@ public class HpcLocalDirectoryListQuery {
 					SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 					pathAttributes.setUpdatedDate(sdf.format(file.lastModified()));
 					pathAttributes.setAbsolutePath(file.getAbsolutePath());
+					if(file.isDirectory())
+						pathAttributes.setIsDirectory(true);
 					attributes.add(pathAttributes);
 				}
 			}
