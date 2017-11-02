@@ -665,6 +665,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 				                                    !StringUtils.isEmpty(userUpdateRequest.getFirstName()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getLastName()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getDefaultBasePath()),
+				                                    !StringUtils.isEmpty(userUpdateRequest.getDoc()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getUserRole()),
 				                                    userUpdateRequest.getActive() != null));
 		if(!updateItems.contains(true)) {
