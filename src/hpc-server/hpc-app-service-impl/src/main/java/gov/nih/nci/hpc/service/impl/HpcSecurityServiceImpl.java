@@ -161,7 +161,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	}
     	
     	if(!dataManagementConfigurationLocator.getDocs().contains(nciAccount.getDoc())) {
-    	   throw new HpcException("Invalid Doc. Valid values: " + 
+    	   throw new HpcException("Invalid DOC: " + nciAccount.getDoc()+". Valid values: " + 
     	                          Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
@@ -228,7 +228,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	
     	if(!StringUtils.isEmpty(doc)) {
     	   if(!dataManagementConfigurationLocator.getDocs().contains(doc)) {
-    	      throw new HpcException("Invalid Doc. Valid values: " + 
+    	      throw new HpcException("Invalid DOC: "+ doc +". Valid values: " + 
     	                             Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
     	 	                         HpcErrorType.INVALID_REQUEST_INPUT);
     	   }
