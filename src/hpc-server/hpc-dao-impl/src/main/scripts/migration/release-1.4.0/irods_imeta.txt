@@ -1,0 +1,25 @@
+imkdir CCR_SBL_WangLab_Archive
+ichmod own -r konkapv CCR_SBL_WangLab_Archive
+imkdir CCR_SBL_WaltersLab_Archive
+ichmod own -r konkapv CCR_SBL_WaltersLab_Archive
+imkdir CCR_SBL_ByrdLab_Archive
+ichmod own -r konkapv CCR_SBL_ByrdLab_Archive
+imkdir CCR_SBL_Admin_Archive
+ichmod own -r konkapv CCR_SBL_Admin_Archive
+
+imeta add -C /ncifHpcZone/home/FNL_SF_Archive 'configuration_id' 'c93e82ba-7c66-4463-8376-1c7cb0b1a598'
+imeta add -C /ncifHpcZone/home/CCBR_SF_Archive 'configuration_id' 'be21cdf5-cdd3-4282-a78f-0d817285394a'
+imeta add -C /ncifHpcZone/home/TEST_Archive 'configuration_id' '63fdccdd-64b8-477f-9e5c-450c4dccf748'
+imeta add -C /ncifHpcZone/home/CCR_LEEMAX_Archive 'configuration_id' '963f55b4-5910-42d2-9cea-c2834ddd0a51'
+imeta add -C /ncifHpcZone/home/HiTIF_Archive 'configuration_id' '50a8d63b-2eef-47bb-af96-0e333a80eda5'
+imeta add -C /ncifHpcZone/home/TEST_NO_HIER_Archive 'configuration_id' '0812a506-6e2f-4dcc-b11a-8a14cff00819'
+imeta add -C /ncifHpcZone/home/JDACS4C_Archive 'configuration_id' 'a4574a94-7bb0-4540-a0d2-a4c1b17e60f3'
+imeta add -C /ncifHpcZone/home/ATOM_Archive 'configuration_id' 'e58318ab-6a61-4478-9d72-f43f4a8257d9'
+imeta add -C /ncifHpcZone/home/MoCha_Archive 'configuration_id' '3ea3cacb-567c-46fe-bd84-db01e950991c'
+imeta add -C /ncifHpcZone/home/RAS_INF_Archive 'configuration_id' '4864e232-2fcb-4b9d-9144-d30473457575'
+imeta add -C /ncifHpcZone/home/BIOWULF_Archive 'configuration_id' 'd4fdb3ca-f407-4d3e-9fc7-99fdb81431b6'
+imeta add -C /ncifHpcZone/home/DSITP_FNL_Archive 'configuration_id' '1e088147-4fcd-4282-975c-ee7229297a54'
+imeta add -C /ncifHpcZone/home/CCR_SBL_WaltersLab_Archive 'configuration_id' 'b0e00125-6385-4d02-8e6c-9a67b02d32cb'
+imeta add -C /ncifHpcZone/home/CCR_SBL_WangLab_Archive 'configuration_id' 'b0e00125-6385-4d02-8e6c-9a67b02d3b0b'
+imeta add -C /ncifHpcZone/home/CCR_SBL_ByrdLab_Archive 'configuration_id' '327c87f0-6623-4e1a-8175-9f337f69374c'
+imeta add -C /ncifHpcZone/home/CCR_SBL_Admin_Archive 'configuration_id' '7a4cd4a4-c900-4637-9b99-414a95bd246d'
