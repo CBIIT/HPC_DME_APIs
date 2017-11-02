@@ -339,32 +339,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      	}
     	
     	// Validate all data object paths requested exist and from the same DOC.
-    	String configurationId = null;
+    	Map<String, String> dataObjectPathsMap = new HashMap<>();
     	for(String path : downloadRequest.getDataObjectPaths()) {
     	    if(dataManagementService.getDataObject(path) == null) {
     	       throw new HpcException("Data object doesn't exist: " + path,
 	                                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	    }
     	    
-    	    // Get the System generated metadata.
+    	    // Get the System generated metadata, 
         	HpcSystemGeneratedMetadata metadata = 
         			 metadataService.getDataObjectSystemGeneratedMetadata(path);
-        	if(configurationId == null) {
-        		configurationId = metadata.getConfigurationId();
-        	} else {
-        		    if(!configurationId.equals(metadata.getConfigurationId())) {
-        		       throw new HpcException("Download files from different configuration (base path) not allowed",
-                                              HpcErrorType.INVALID_REQUEST_INPUT);	
-        		    }
-        	}
+        	
+        	// Populate the map data-object-path -> configuration ID.
+        	dataObjectPathsMap.put(path, metadata.getConfigurationId());
       	}
 
     	// Submit a data objects download task.
     	HpcCollectionDownloadTask collectionDownloadTask =
-    	   dataTransferService.downloadDataObjects(downloadRequest.getDataObjectPaths(), 
+    	   dataTransferService.downloadDataObjects(dataObjectPathsMap, 
     			                                   downloadRequest.getDestination(), 
-    		   	                                   securityService.getRequestInvoker().getNciAccount().getUserId(),
-    		   	                                   configurationId);
+    		   	                                   securityService.getRequestInvoker().getNciAccount().getUserId());
     	
     	// Create and return a DAO with the request receipt.
     	HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
@@ -1549,7 +1543,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         FileInputStream fileInputStream = null;
         try {
         	 fileInputStream = new FileInputStream(file);
-        	 String checksumComputed = DigestUtils.md5DigestAsHex(IOUtils.toByteArray(fileInputStream));
+        	 //String checksumComputed = DigestUtils.md5DigestAsHex(IOUtils.toByteArray(fileInputStream));
+        	 String checksumComputed = org.apache.commons.codec.digest.DigestUtils.md5Hex(fileInputStream);
         	 logger.info("checksum file: " + file.getAbsolutePath());
         	 logger.info("checksum given: " + checksum);
         	 logger.info("checksum computed: " + checksumComputed);
