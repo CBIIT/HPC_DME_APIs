@@ -13,4 +13,4 @@
 @ddblock_end copyright
 ******************************/
 
-Make sure that system generated metadata: "uuid", "doc", "userID" are added as part of the system generated metadata.
+Make sure that all system generated metadata are added as part of the system generated metadata.

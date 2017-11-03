@@ -1,3 +1,3 @@
 400
 INVALID_REQUEST_INPUT
-Invalid collection path: /
+Failed to determine data management configuration for: /

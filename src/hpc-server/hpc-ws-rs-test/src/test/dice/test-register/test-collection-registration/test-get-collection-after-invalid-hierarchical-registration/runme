@@ -29,7 +29,7 @@ then
 fi
 
 echo $REG_HTTP_CODE >&2
-EXPECTED_MSG="Invalid collection hierarchy for DOC"
+EXPECTED_MSG="Invalid collection hierarchy"
 get_json_value $RESPONSE_MSG message | sed "s#^$EXPECTED_MSG.*#$EXPECTED_MSG#" >&2
 
 
