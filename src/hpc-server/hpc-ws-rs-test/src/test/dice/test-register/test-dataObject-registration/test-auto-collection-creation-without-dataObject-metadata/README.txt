@@ -20,7 +20,7 @@ makeme:
 Change the DOC of the user to DUMMY_NO_HIER before running the test.
 
 runme:
-Cahnge the DOC of the user back to DUMMY DOC.
+Change the DOC of the user back to DUMMY DOC.
 
 This is done by setting the attribute "createParentCollections" to "true".
 The returned code should be 201

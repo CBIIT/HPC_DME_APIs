@@ -16,9 +16,6 @@ source $HPC_DM_TEST/utils/functions
 ../utils/runtest
 
 
-#Check if DOC update went through:
-RESPONSE_HEADER=update-no-hier-response-header.tmp
-verify_registration $RESPONSE_HEADER
 
 sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
@@ -26,9 +23,3 @@ USERID=`get_username $HPC_DM_TEST/utils/config`
 NEW_FOLDER_PATH=/TEST_NO_HIER_Archive/auto-collection/folder-${NAME}
 curl_register input.json $NEW_FOLDER_PATH/object-${NAME}.txt dataObject
 get_http_code $RESPONSE_HEADER
-
-#Reassign the DOC to DUMMY 
-RESPONSE_HEADER=update-dummy-response-header.tmp
-RESPONSE_MSG=update-dummy-response-message.json.tmp
-update_existing_user $USERID update-dummy.json  $RESPONSE_HEADER $RESPONSE_MSG
-verify_registration $RESPONSE_HEADER
