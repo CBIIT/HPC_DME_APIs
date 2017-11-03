@@ -200,7 +200,7 @@
 									<button class="btn btn-md btn-primary"
 										id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 									<button type="submit" class="btn btn-md btn-primary"
-										id="primaryButton" onClick="return validate()">Create</button>
+										id="primaryCreateButton" onClick="return validate()" th:disabled="${create == true} ?'false' : 'disabled'">Create</button>
 									<button type="submit" class="btn btn-primary"
 										id="cancel" onClick="cancelEdit()">Cancel</button>
 								</div>
@@ -336,6 +336,7 @@
 
 	function refreshAttributes()
     {
+		$('#primaryCreateButton').prop('disabled', true);
 		if(document.getElementById("basePath") != null && document.getElementById("basePath").value == "_select_null")
 			return false;
 
