@@ -18,11 +18,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Data Download Cleanup DAO Interface.
+ * HPC Data Download DAO Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -126,6 +127,48 @@ public interface HpcDataDownloadDAO
     public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
     		                                            HpcCollectionDownloadTaskStatus status) 
     		                                            throws HpcException;
+    
+    /**
+     * Get data object download requests for a user. 
+     *
+     * @param userId The user ID to query for.
+     * @return A list of active data object download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getDataObjectDownloadRequests(String userId) 
+    		                                                         throws HpcException;
+    
+    /**
+     * Get collection download requests for a user. 
+     *
+     * @param userId The user ID to query for.
+     * @return A list of active collection download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getCollectionDownloadRequests(String userId) 
+    		                                                         throws HpcException;
+    
+    /**
+     * Get download results for a user. 
+     *
+     * @param userId The user ID to query for.
+     * @param offset Skip that many download-results in the returned results.
+     * @param limit No more than 'limit' download-results will be returned.
+     * @return A list of completed download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getDownloadResults(String userId, int offset, 
+    		                                               int limit) 
+    		                                              throws HpcException;
+    
+    /**
+     * Get download results count for a user. 
+     *
+     * @param userId The user ID to query for.
+     * @return A total count of completed download requests.
+     * @throws HpcException on database error.
+     */
+    public int getDownloadResultsCount(String userId) throws HpcException;
 }
 
  

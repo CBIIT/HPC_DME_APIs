@@ -45,7 +45,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.report.HpcReportType;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
@@ -74,8 +73,8 @@ public class HpcReportsController extends AbstractHpcController {
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.user.active}")
 	private String activeUsersServiceURL;
-	@Value("${gov.nih.nci.hpc.server.docs}")
-	private String docsServiceURL;
+	@Value("${gov.nih.nci.hpc.server.model}")
+	private String hpcModelURL;
 
 	@Autowired
 	private Environment env;
@@ -99,7 +98,7 @@ public class HpcReportsController extends AbstractHpcController {
 	private String init(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (authToken == null) {
-			return "redirect:/";
+			return "redirect:/login?returnPath=reports";
 		}
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -107,7 +106,7 @@ public class HpcReportsController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "redirect:/";
+			return "redirect:/login?returnPath=reports";
 		}
 		model.addAttribute("userRole", user.getUserRole());
 		model.addAttribute("userDOC", user.getDoc());
@@ -119,10 +118,7 @@ public class HpcReportsController extends AbstractHpcController {
 		if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
 			docs.add(user.getDoc());
 		else if (user.getUserRole().equals("SYSTEM_ADMIN")) {
-			HpcDataManagementDocListDTO dto = HpcClientUtil.getDOCs(authToken, docsServiceURL, sslCertPath,
-					sslCertPassword);
-			if (dto != null)
-				docs.addAll(dto.getDocs());
+			docs.addAll(HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
 		}
 		model.addAttribute("docs", docs);
 		return "reports";

@@ -21,7 +21,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcUserDAO 
@@ -51,12 +50,14 @@ public interface HpcUserDAO
      *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case sensitive matching).
      *                                   SQL LIKE wildcards ('%', '_') are supported. 
-     * @param doc User DOC                       
+     * @param doc (Optional) The doc.  
+     * @param defaultConfigurationId (Optional) The default data management configuration ID.                    
      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
      * @return A list of users.
      * @throws HpcException on service failure.
      */
-    public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
+    public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
+    		                      String doc, String defaultConfigurationId, boolean active) 
     		                     throws HpcException;
 }
 

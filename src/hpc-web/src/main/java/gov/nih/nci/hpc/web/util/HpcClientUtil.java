@@ -1,6 +1,5 @@
 package gov.nih.nci.hpc.web.util;
 
-import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +24,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.transform.Source;
@@ -65,16 +65,22 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -92,7 +98,6 @@ import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
-import gov.nih.nci.hpc.web.model.HpcBookmark;
 
 public class HpcClientUtil {
 
@@ -116,6 +121,44 @@ public class HpcClientUtil {
 		return client;
 	}
 
+	public static String getBasePath(String authToken, String serviceURL, String parent, String sslCertPath, String sslCertPassword, HpcDataManagementModelDTO modelDTO)
+	{
+		HpcCollectionListDTO collectionListDTO = HpcClientUtil.getCollection(authToken, serviceURL, parent, true, sslCertPath, sslCertPassword);
+		if(collectionListDTO != null && collectionListDTO.getCollections() != null)
+		{
+			HpcCollectionDTO collection = collectionListDTO.getCollections().get(0);
+			String configurationId = null;
+			if(collection != null)
+			{
+				if(collection.getMetadataEntries() != null && collection.getMetadataEntries().getSelfMetadataEntries() != null)
+				{
+				for(HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
+					if(entry.getAttribute().equals("configuration_id"))
+					{
+						configurationId = entry.getValue();
+						break;
+					}
+				}
+			}
+			if(configurationId != null)
+			{
+				if(modelDTO != null)
+				{
+					//TODO
+					for(HpcDocDataManagementRulesDTO rulesDTO : modelDTO.getDocRules())
+					{
+						for(HpcDataManagementRulesDTO rule : rulesDTO.getRules())
+						{
+							if(rule.getId().equals(configurationId))
+								return rule.getBasePath();
+						}
+					}
+				}
+			}
+		}
+		return null;
+		
+	}
 	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL)
 			throws HpcWebException {
 
@@ -153,40 +196,38 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static HpcDataManagementModelDTO getDOCModel(String token, String hpcModelURL, String doc,
-			String hpcCertPath, String hpcCertPassword) {
-
-		WebClient client = HpcClientUtil.getWebClient(hpcModelURL + "/" + doc, hpcCertPath, hpcCertPassword);
-		client.header("Authorization", "Bearer " + token);
-
-		Response restResponse = client.get();
-
-		if (restResponse == null || restResponse.getStatus() != 200)
+	public static List<HpcDataManagementRulesDTO> getUserDOCManagementRules(HpcDataManagementModelDTO docModelDto, String userDoc)
+	{
+		if(docModelDto == null || docModelDto.getDocRules() == null)
 			return null;
-		MappingJsonFactory factory = new MappingJsonFactory();
-		JsonParser parser;
-		try {
-			parser = factory.createParser((InputStream) restResponse.getEntity());
-		} catch (IllegalStateException | IOException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
+		
+		for(HpcDocDataManagementRulesDTO docDTO : docModelDto.getDocRules())
+		{
+			if(docDTO.getDoc().equals(userDoc))
+				return docDTO.getRules();
 		}
-		try {
-			return parser.readValueAs(HpcDataManagementModelDTO.class);
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOC Model for: " + doc + " due to: " + e.getMessage());
-		}
+		return null;
 	}
 
-	public static HpcDataManagementDocListDTO getDOCs(String token, String hpcModelURL, String hpcCertPath,
-			String hpcCertPassword) {
+	
+	public static HpcDataManagementRulesDTO getBasePathManagementRules(HpcDataManagementModelDTO docModelDto, String basePath)
+	{
+		if(docModelDto == null || docModelDto.getDocRules() == null || basePath == null)
+			return null;
+		
+		for(HpcDocDataManagementRulesDTO docDTO : docModelDto.getDocRules())
+		{
+			for(HpcDataManagementRulesDTO rules : docDTO.getRules())
+			{
+			if(rules.getBasePath().equals(basePath))
+				return rules;
+			}
+		}
+		return null;
+	}
+
+	public static HpcDataManagementModelDTO getDOCModel(String token, String hpcModelURL,
+			String hpcCertPath, String hpcCertPassword) {
 
 		WebClient client = HpcClientUtil.getWebClient(hpcModelURL, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + token);
@@ -201,54 +242,83 @@ public class HpcClientUtil {
 			parser = factory.createParser((InputStream) restResponse.getEntity());
 		} catch (IllegalStateException | IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOCs due to: " + e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
 		}
 		try {
-			return parser.readValueAs(HpcDataManagementDocListDTO.class);
+			return parser.readValueAs(HpcDataManagementModelDTO.class);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOCs due to: " + e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOCs due to: " + e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get DOCs due to: " + e.getMessage());
+			throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
 		}
 	}
 
-	public static HpcDataManagementTreeDTO getDOCTree(String token, String serviceURL, String docName, boolean list,
-			String hpcCertPath, String hpcCertPassword) {
-		try {
-			WebClient client = HpcClientUtil.getWebClient(serviceURL + "/" + docName, hpcCertPath, hpcCertPassword);
-			client.header("Authorization", "Bearer " + token);
-
-			Response restResponse = client.invoke("GET", null);
-			// System.out.println("restResponse.getStatus():"
-			// +restResponse.getStatus());
-			if (restResponse.getStatus() == 200) {
-				ObjectMapper mapper = new ObjectMapper();
-				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-						new JacksonAnnotationIntrospector());
-				mapper.setAnnotationIntrospector(intr);
-				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-				MappingJsonFactory factory = new MappingJsonFactory(mapper);
-				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
-				HpcDataManagementTreeDTO tree = parser.readValueAs(HpcDataManagementTreeDTO.class);
-				return tree;
-			} else {
-				throw new HpcWebException("Collection not found!");
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new HpcWebException("Failed to get tree for: " + docName + " due to: " + e.getMessage());
+	public static List<String> getDOCs(String token, String hpcModelURL, String hpcCertPath,
+			String hpcCertPassword, HttpSession session) {
+		List<String> docs = new ArrayList<String>();
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+		if(modelDTO == null)
+		{
+			HpcUserDTO user = (HpcUserDTO)session.getAttribute("hpcUser");
+			modelDTO = HpcClientUtil.getDOCModel(token, hpcModelURL,
+					hpcCertPath, hpcCertPassword);
+			if (modelDTO != null)
+				session.setAttribute("userDOCModel", modelDTO);
 		}
+
+		for(HpcDocDataManagementRulesDTO docDTO : modelDTO.getDocRules())
+			docs.add(docDTO.getDoc());
+		return docs;
 	}
 
+//	public static HpcDataManagementTreeDTO getDOCTree(String token, String serviceURL, String docName, boolean list,
+//			String hpcCertPath, String hpcCertPassword) {
+//		try {
+//			WebClient client = HpcClientUtil.getWebClient(serviceURL + "/" + docName, hpcCertPath, hpcCertPassword);
+//			client.header("Authorization", "Bearer " + token);
+//
+//			Response restResponse = client.invoke("GET", null);
+//			// System.out.println("restResponse.getStatus():"
+//			// +restResponse.getStatus());
+//			if (restResponse.getStatus() == 200) {
+//				ObjectMapper mapper = new ObjectMapper();
+//				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+//						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+//						new JacksonAnnotationIntrospector());
+//				mapper.setAnnotationIntrospector(intr);
+//				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//
+//				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+//				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+//
+//				HpcDataManagementTreeDTO tree = parser.readValueAs(HpcDataManagementTreeDTO.class);
+//				return tree;
+//			} else {
+//				throw new HpcWebException("Collection not found!");
+//			}
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			throw new HpcWebException("Failed to get tree for: " + docName + " due to: " + e.getMessage());
+//		}
+//	}
+
+	public static String getBasePath(HttpServletRequest request)
+	{
+		String[] basePathValues = request.getParameterValues("basePath");
+		String basePath = null;
+		if (basePathValues == null || basePathValues.length == 0)
+			basePath = (String) request.getAttribute("basePath");
+		else 
+			basePath = basePathValues[0];
+		return basePath;
+	}
+	
 	public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL, String path, boolean list,
 			String hpcCertPath, String hpcCertPassword) {
 		return getCollection(token, hpcCollectionlURL, path, false, list, hpcCertPath, hpcCertPassword);
@@ -1184,6 +1254,140 @@ public class HpcClientUtil {
 			throw new HpcWebException("Failed to get notification subscriptions due to: " + e.getMessage());
 		}
 	}
+
+	public static HpcDownloadSummaryDTO getDownloadSummary(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+					new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+					new JacksonAnnotationIntrospector());
+			mapper.setAnnotationIntrospector(intr);
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+			MappingJsonFactory factory = new MappingJsonFactory(mapper);
+			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+			return parser.readValueAs(HpcDownloadSummaryDTO.class);
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcBulkDataObjectDownloadResponseDTO downloadFiles(String token, String hpcQueryURL, HpcBulkDataObjectDownloadRequestDTO dto,
+			String hpcCertPath, String hpcCertPassword) {
+		HpcBulkDataObjectDownloadResponseDTO response = null;
+		try {
+			WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+			Response restResponse = client.invoke("POST", dto);
+			if (restResponse.getStatus() == 200) {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+				response = parser.readValueAs(HpcBulkDataObjectDownloadResponseDTO.class);
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to submit download request: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to submit download request: " + e.getMessage());
+		}
+		return response;
+	}
+	
+	public static HpcDataObjectDownloadStatusDTO getDataObjectDownloadTask(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data object download tasks details due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcDataObjectDownloadStatusDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data object download tasks details due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data object download tasks details due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data object download tasks details due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcCollectionDownloadStatusDTO getDataObjectsDownloadTask(String token, String hpcQueryURL,
+			String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data objects download tasks details due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcCollectionDownloadStatusDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data objects download tasks details due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data objects download tasks details due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get data objects download tasks details due to: " + e.getMessage());
+		}
+	}
+
 
 	public static HpcMetadataAttributesListDTO getMetadataAttrNames(String token, String hpcMetadataAttrsURL,
 			String hpcCertPath, String hpcCertPassword) {

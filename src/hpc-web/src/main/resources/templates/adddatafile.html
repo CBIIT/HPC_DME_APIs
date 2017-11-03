@@ -102,6 +102,7 @@
 									th:object="${hpcDatafile}" enctype="multipart/form-data" method="POST">
 									<input type="hidden" name="actionType" id="actionType"/>
 									<input type="hidden" name="parent" id="parent" th:value="${parent}"/>
+									<input type="hidden" name="source" id="source" th:value="${source}"/>
 								<!--panel-body start-->
 								<div class="panel-body">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -112,12 +113,32 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>								
+								<div class="form-group" th:if="${basePaths != null and basePaths.size() &gt; 0}">
+									<div class="col-md-12 form-group">
+									<label id="rowId0">Base Path: </label>
+									<select size="1"
+										id="basePath" name="basePath" class="form-control"
+										th:required="required"
+										onChange="refreshAttributes()">
+											<option value="_select_null">----Select----</option>
+											<option
+												th:each="basePath : ${basePaths}"
+												th:value="${basePath}" th:text="${basePath}" th:selected="${basePath.equals(basePathSelected)}">
+												Wireframe</option>
+									</select>
+									</div>
+								</div>	
 									<div class="form-group">
 										<div class="col-md-12 form-group">
-											<label for="Name">Path:</label> 
+											<label for="Name">Data file Path:</label> 
 											<input type="text" name="path" id="path" size="100" th:value="${datafilePath}"/>
 										</div>
+										<div class="col-md-12 form-group">
+											<label for="checksum">Checksum (This value is used to validate data transfer):</label> 
+											<input type="text" name="checksum" id="checksum" size="50" th:value="${checksum}"/>
+										</div>
 								</div>
+								
 								<div class="form-inline">
 					              <div class="form-group">
 					                <input type="file" name="hpcDatafile" id="hpcDatafile"/>
@@ -158,7 +179,7 @@
 													</td>
 											</tr>
 										
-											<tr th:unless="${datafileAttrs != null}">
+											<tr th:if="${datafileAttrs != null and datafileAttrs.size() &gt; 0}">
 											<td align="left"><input type="text" name="_addAttrName1" id="_addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
 											<td align="left"><input type="text" name="_addAttrValue1" id="_addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>
 											</tr>
@@ -297,9 +318,15 @@
 	    return false;
 	}
 	
-	function cancelEdit()
+	function refreshAttributes()
     {
-		document.getElementById("action").value = "cancel";
+		document.getElementById("actionType").value = "refresh";
+		$("#dataFileForm").submit();
+    }
+	
+    function cancelEdit()
+    {
+		document.getElementById("actionType").value = "cancel";
 		$("#dataFileForm").submit();
     }
 //]]>	

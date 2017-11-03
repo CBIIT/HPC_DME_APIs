@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
@@ -44,6 +45,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
@@ -52,11 +54,18 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
-{      
+{     
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//
+	
+	// Invalid base path error message.
+	private static final String INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE = 
+			                    "Invalid default base path: ";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -68,6 +77,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 	
 	@Autowired
     private HpcDataManagementSecurityService dataManagementSecurityService = null;
+	
+	@Autowired
+    private HpcDataManagementService dataManagementService = null;
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -107,12 +119,25 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                  HpcRequestRejectReason.USER_ALREADY_EXISTS);	
     	}
     	
+    	// Get the configuration ID associated with the default base path.
+    	String configurationId = null;
+    	String defaultBasePath = userRegistrationRequest.getDefaultBasePath();
+    	if(!StringUtils.isEmpty(defaultBasePath)) {
+    	   configurationId = dataManagementService.getDataManagementConfigurationId(defaultBasePath);
+    	   if(StringUtils.isEmpty(configurationId)) {
+    	      throw new HpcException(INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE +
+    	                             userRegistrationRequest.getDefaultBasePath(),
+    	                             HpcErrorType.INVALID_REQUEST_INPUT);
+    	   }
+    	}
+    	
     	// Instantiate an NCI account domain object.
  	    HpcNciAccount nciAccount = new HpcNciAccount();
  	    nciAccount.setUserId(nciUserId);
  	    nciAccount.setFirstName(userRegistrationRequest.getFirstName());
  	    nciAccount.setLastName(userRegistrationRequest.getLastName());
  	    nciAccount.setDoc(userRegistrationRequest.getDoc());
+ 	    nciAccount.setDefaultConfigurationId(configurationId);
     	
     	// HPC-DM is integrated with a data management system (IRODS). When registering a user with HPC-DM, 
  	    // this service creates an account for the user with the data management system, unless an account
@@ -171,8 +196,23 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     			                 userUpdateRequest.getFirstName() : user.getNciAccount().getFirstName();
         String updateLastName = !StringUtils.isEmpty(userUpdateRequest.getLastName()) ?
         		                userUpdateRequest.getLastName() : user.getNciAccount().getLastName();
-    	String updateDOC = !StringUtils.isEmpty(userUpdateRequest.getDoc()) ?
-    			           userUpdateRequest.getDoc() : user.getNciAccount().getDoc();
+        String updateDoc = !StringUtils.isEmpty(userUpdateRequest.getDoc()) ?
+                		                        userUpdateRequest.getDoc() : user.getNciAccount().getDoc();
+    	String updateDefaultConfigurationId = user.getNciAccount().getDefaultConfigurationId();
+    	if(userUpdateRequest.getDefaultBasePath() != null) {
+    	   if(!userUpdateRequest.getDefaultBasePath().isEmpty()) 
+    	      updateDefaultConfigurationId = dataManagementService.getDataManagementConfigurationId(
+    			      		                     userUpdateRequest.getDefaultBasePath()); 
+      	      if(StringUtils.isEmpty(updateDefaultConfigurationId)) {
+     	         throw new HpcException(INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + 
+     			                        userUpdateRequest.getDefaultBasePath(),
+     	                                HpcErrorType.INVALID_REQUEST_INPUT);
+      	      }
+    	} else {
+    		    // The caller would like to remove default base path.
+    		    updateDefaultConfigurationId = null;
+     	}
+    	
     	HpcUserRole updateRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole()) ?
     		                     roleFromString(userUpdateRequest.getUserRole()) : currentUserRole;
     	boolean active = userUpdateRequest.getActive() != null ? 
@@ -191,7 +231,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	
 	    // Update User.
 	    securityService.updateUser(nciUserId, updateFirstName, updateLastName, 
-	    		                   updateDOC, active);
+	    		                   updateDoc, updateDefaultConfigurationId, active);
     }
     
     @Override
@@ -213,28 +253,60 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	   return null;
     	}
     	
+    	// Get the default data management configuration for this user.
+    	HpcDataManagementConfiguration dataManagementConfiguration = 
+    	    	   dataManagementService.getDataManagementConfiguration(
+    	    		   user.getNciAccount().getDefaultConfigurationId());
+    	
     	// Map it to the DTO.
     	HpcUserDTO userDTO = new HpcUserDTO();
     	userDTO.setFirstName(user.getNciAccount().getFirstName());
     	userDTO.setLastName(user.getNciAccount().getLastName());
     	userDTO.setDoc(user.getNciAccount().getDoc());
+    	userDTO.setDefaultBasePath(dataManagementConfiguration != null ? 
+    			                   dataManagementConfiguration.getBasePath() : null);
     	userDTO.setUserRole(dataManagementSecurityService.getUserRole(userId).value());
     	userDTO.setActive(user.getActive());
     	return userDTO;
     }
     
     @Override
-    public HpcUserListDTO getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
+    public HpcUserListDTO getUsers(String nciUserId, String firstNamePattern, 
+    		                       String doc, String lastNamePattern, String defaultBasePath, 
+    		                       boolean active) 
                                   throws HpcException
     {
     	// Get the users based on search criteria.
     	HpcUserListDTO users = new HpcUserListDTO();
-    	for(HpcUser user : securityService.getUsers(nciUserId, firstNamePattern, lastNamePattern, doc, active)) {
+    	
+    	// If search by 'default base path' requested, get the data management configuration ID.
+    	String defaultConfigurationId = null;
+    	if(!StringUtils.isEmpty(defaultBasePath)) {
+    		defaultConfigurationId = 
+    			   dataManagementService.getDataManagementConfigurationId(defaultBasePath);
+    		if(StringUtils.isEmpty(defaultConfigurationId)) {
+    		   throw new HpcException(INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + defaultBasePath,
+    				                  HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    	}
+    	
+    	// Perform the search and construct the return DTO.
+    	for(HpcUser user : securityService.getUsers(nciUserId, firstNamePattern, 
+    			                                    doc, lastNamePattern, 
+    			                                    defaultConfigurationId, active)) {
+    		// Get the default data management configuration for this user.
+        	HpcDataManagementConfiguration dataManagementConfiguration = 
+        	    	   dataManagementService.getDataManagementConfiguration(
+        	    		   user.getNciAccount().getDefaultConfigurationId());
+        	
+        	// Add user entry into the return list.
     		HpcUserListEntry userListEntry = new HpcUserListEntry();
     		userListEntry.setUserId(user.getNciAccount().getUserId());
     		userListEntry.setFirstName(user.getNciAccount().getFirstName());
     		userListEntry.setLastName(user.getNciAccount().getLastName());
     		userListEntry.setDoc(user.getNciAccount().getDoc());
+    		userListEntry.setDefaultBasePath(dataManagementConfiguration != null ? 
+	                         dataManagementConfiguration.getBasePath() : null);
     		if(!active) {
     		   // Set the active flag if the search is for all users.
     		   userListEntry.setActive(user.getActive());
@@ -592,6 +664,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 		List<Boolean> updateItems = new ArrayList<>(Arrays.asList(
 				                                    !StringUtils.isEmpty(userUpdateRequest.getFirstName()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getLastName()),
+				                                    !StringUtils.isEmpty(userUpdateRequest.getDefaultBasePath()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getDoc()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getUserRole()),
 				                                    userUpdateRequest.getActive() != null));

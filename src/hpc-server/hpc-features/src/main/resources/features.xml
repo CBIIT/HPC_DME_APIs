@@ -62,6 +62,7 @@
 		<!--  Dependent Bundles -->
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
 		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
+		<bundle>mvn:commons-codec/commons-codec/${commons-codec.version}</bundle>
 		<bundle>wrap:mvn:org.springframework.retry/spring-retry/${spring.retry.version}</bundle>
 		
 		<!-- Current version of JJWT 0.6 has a defect in the bundle manifest which requires

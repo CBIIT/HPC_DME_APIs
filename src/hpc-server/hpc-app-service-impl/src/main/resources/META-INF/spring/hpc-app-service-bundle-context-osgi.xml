@@ -35,6 +35,7 @@
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.operator">EQUAL</prop>
 		<prop key="hpc.service.dataManagement.systemAdminSubjects">rods rodsadmin</prop>
+		<prop key="hpc.service.dataManagement.downloadResultsPageSize">100</prop>
 		<prop key="hpc.service.event.invokerCollectionUpdateNotification">false</prop>
 	</osgix:cm-properties>
 
@@ -71,6 +72,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcSystemAccountDAO" />
 	<osgi:reference id="hpcDataDownloadDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDataDownloadDAO" />
+	<osgi:reference id="hpcDataRegistrationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataRegistrationDAO" />
 	<osgi:reference id="hpcDataObjectDeletionDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO" />
 	<osgi:reference id="hpcNotificationDAO" 
@@ -85,8 +88,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcUserNamedQueryDAO" />	
 	<osgi:reference id="hpcUserBookmarkDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcUserBookmarkDAO" />			
-	<osgi:reference id="hpcDocConfigurationDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcDocConfigurationDAO" />                 
+	<osgi:reference id="hpcDataManagementConfigurationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO" />                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>

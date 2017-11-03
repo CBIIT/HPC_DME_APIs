@@ -10,13 +10,6 @@
 
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
-import gov.nih.nci.hpc.exception.HpcException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,6 +19,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -48,7 +49,7 @@ public class HpcMetadataValidator
 	public static final String ID_ATTRIBUTE = "uuid";
 	public static final String REGISTRAR_ID_ATTRIBUTE = "registered_by";
 	public static final String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
-	public static final String REGISTRAR_DOC_ATTRIBUTE = "registered_by_doc";
+	public static final String CONFIGURATION_ID_ATTRIBUTE = "configuration_id";
 	public static final String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = "source_file_container_id"; 
 	public static final String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = "source_file_id"; 
 	public static final String ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE = "archive_file_container_id"; 
@@ -62,6 +63,7 @@ public class HpcMetadataValidator
 	public static final String CALLER_OBJECT_ID_ATTRIBUTE = "archive_caller_object_id";
 	public static final String CHECKSUM_ATTRIBUTE = "checksum";
 	public static final String METADATA_UPDATED_ATTRIBUTE = "metadata_updated";
+	public static final String REGISTRATION_COMPLETION_EVENT_ATTRIBUTE = "registration_completion_event";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -69,7 +71,7 @@ public class HpcMetadataValidator
 
 	// DOC configuration locator.
 	@Autowired
-	private HpcDocConfigurationLocator docConfigurationLocator = null;
+	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 	
 	// Set of system generated metadata attributes.
 	Set<String> systemGeneratedMetadataAttributes = new HashSet<>();
@@ -88,16 +90,17 @@ public class HpcMetadataValidator
     {
     	List<String> attributes = 
 	                 Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE, REGISTRAR_NAME_ATTRIBUTE,
-	              		           REGISTRAR_DOC_ATTRIBUTE, SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
+	              		           CONFIGURATION_ID_ATTRIBUTE, SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
 	            		           SOURCE_LOCATION_FILE_ID_ATTRIBUTE, ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
 	            		           ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, DATA_TRANSFER_REQUEST_ID_ATTRIBUTE,
 	            		           DATA_TRANSFER_STATUS_ATTRIBUTE, DATA_TRANSFER_TYPE_ATTRIBUTE,
 	            		           DATA_TRANSFER_STARTED_ATTRIBUTE, DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
 	            		           SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, 
-	            		           CHECKSUM_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
+	            		           CHECKSUM_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE, 
+	            		           REGISTRATION_COMPLETION_EVENT_ATTRIBUTE);
     	List<String> collectionAttributes = 
     			     Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE, REGISTRAR_NAME_ATTRIBUTE,
-		                           REGISTRAR_DOC_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
+		                           CONFIGURATION_ID_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
 	         
         systemGeneratedMetadataAttributes.addAll(attributes);
 	    collectionSystemGeneratedMetadataAttributeNames.addAll(collectionAttributes);
@@ -111,7 +114,7 @@ public class HpcMetadataValidator
     /**
      * Validate collection metadata. Null unit values are converted to empty strings.
      *
-     * @param doc The DOC to determine the validation rules (which are DOC specific). 
+     * @param configurationId Use validation rules of this data management configuration. 
      * @param existingMetadataEntries Optional (can be null). The metadata entries currently associated 
      *                                with the collection or data object.
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
@@ -119,45 +122,53 @@ public class HpcMetadataValidator
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    public void validateCollectionMetadata(String doc,
+    public void validateCollectionMetadata(String configurationId,
     		                               List<HpcMetadataEntry> existingMetadataEntries,
     		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
     		                              throws HpcException
     {
-    	HpcDocConfiguration docConfiguration = docConfigurationLocator.get(doc);
-    	if(docConfiguration == null) {
-    	   throw new HpcException("Invalid DOC: " + doc, HpcRequestRejectReason.INVALID_DOC);
+    	HpcDataManagementConfiguration dataManagementConfiguration = 
+    			                       dataManagementConfigurationLocator.get(configurationId);
+    	if(dataManagementConfiguration == null) {
+    	   throw new HpcException("Invalid Configuration: " + configurationId, 
+    			                  HpcRequestRejectReason.INVALID_DOC);
     	}
     	
     	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
-    			         docConfiguration.getCollectionMetadataValidationRules());
+    			         dataManagementConfiguration.getCollectionMetadataValidationRules(),
+    			         null);
     }
     
     /**
      * Validate data object metadata. Null unit values are converted to empty strings.
      *
-     * @param doc The DOC to determine the validation rules (which are DOC specific). 
+     * @param configurationId Use validation rules of this data management configuration. 
      * @param existingMetadataEntries Optional (can be null). The metadata entries currently associated 
      *                                with the collection or data object.
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
      *                                 that are being added or updated to 'metadataEntries'. 
+     * @param collectionType The type of collection containing the data object.
      * 
      * @throws HpcException If the metadata is invalid.
      */
-    public void validateDataObjectMetadata(String doc,
+    public void validateDataObjectMetadata(String configurationId,
     		                               List<HpcMetadataEntry> existingMetadataEntries,
-    		                               List<HpcMetadataEntry> addUpdateMetadataEntries) 
+    		                               List<HpcMetadataEntry> addUpdateMetadataEntries,
+    		                               String collectionType) 
     		                              throws HpcException
     {
-    	HpcDocConfiguration docConfiguration = docConfigurationLocator.get(doc);
-    	if(docConfiguration == null) {
-    	   throw new HpcException("Invalid DOC: " + doc, HpcRequestRejectReason.INVALID_DOC);
+    	HpcDataManagementConfiguration dataManagementConfiguration = 
+    			                       dataManagementConfigurationLocator.get(configurationId);
+    	if(dataManagementConfiguration == null) {
+     	   throw new HpcException("Invalid Configuration: " + configurationId, 
+	                              HpcRequestRejectReason.INVALID_DOC);
     	}
     	
     	validateMetadata(existingMetadataEntries, 
     			         addUpdateMetadataEntries,
-    			         docConfiguration.getDataObjectMetadataValidationRules());
+    			         dataManagementConfiguration.getDataObjectMetadataValidationRules(),
+    			         collectionType);
     }
     
     /**
@@ -202,12 +213,15 @@ public class HpcMetadataValidator
      * @param addUpdateMetadataEntries Optional (can be null) A list of metadata entries
      *                                 that are being added or updated to 'metadataEntries'. 
      * @param metadataValidationRules Validation rules to apply.
+     * @param collectionType (Optional) The collection type. In case of data object, the type of collection
+     *                       containing the data object.
      * 
      * @throws HpcException If the metadata is invalid.
      */
     private void validateMetadata(List<HpcMetadataEntry> existingMetadataEntries,
     		                      List<HpcMetadataEntry> addUpdateMetadataEntries,
-    		                      List<HpcMetadataValidationRule> metadataValidationRules) 
+    		                      List<HpcMetadataValidationRule> metadataValidationRules,
+    		                      String collectionType) 
     		                     throws HpcException
     {
     	// Crate a metadata <attribute, value> map. Put existing entries first.
@@ -247,10 +261,15 @@ public class HpcMetadataValidator
     		}
     	}
     	
+    	// Determining the collection type of this collection or collection containing this data object.
+    	if(StringUtils.isEmpty(collectionType)) {
+     	   collectionType = metadataEntriesMap.get(COLLECTION_TYPE_ATTRIBUTE);
+     	}
+    	
     	// Execute the validation rules.
 	    for(HpcMetadataValidationRule metadataValidationRule: metadataValidationRules) {
 	    	// Check if rules needs to be skipped.
-	    	if(skipRule(metadataValidationRule, metadataEntriesMap)) {
+	    	if(skipRule(metadataValidationRule, metadataEntriesMap, collectionType)) {
 	    	   continue;
 	    	}
 	    
@@ -292,10 +311,13 @@ public class HpcMetadataValidator
      *
      * @param metadataValidationRule The validation rule.
      * @param metadataEntriesMap The metadata entries.
+     * @param collectionType the collection type for collection metadata, 
+     *                       or the collection type hosting the data object.
      * @return true if the rule needs to be skipped.
      */
     private boolean skipRule(HpcMetadataValidationRule metadataValidationRule,
-    		                 Map<String, String> metadataEntriesMap)
+    		                 Map<String, String> metadataEntriesMap,
+    		                 String collectionType)
     {
 		// Skip disabled rules.
 		if(!metadataValidationRule.getRuleEnabled()) {
@@ -303,7 +325,6 @@ public class HpcMetadataValidator
 		}
 	
 	    // Skip rules for other collection types.
-		String collectionType = metadataEntriesMap.get(COLLECTION_TYPE_ATTRIBUTE);
 		if(collectionType != null &&
 		   metadataValidationRule.getCollectionTypes() != null &&
 		   !metadataValidationRule.getCollectionTypes().isEmpty() &&
