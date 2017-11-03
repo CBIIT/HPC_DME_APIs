@@ -27,7 +27,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * Globus connection via Nexus API. 
+ * Globus connection via client credentials token. 
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>

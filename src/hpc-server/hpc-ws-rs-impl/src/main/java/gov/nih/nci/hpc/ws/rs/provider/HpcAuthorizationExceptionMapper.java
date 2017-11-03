@@ -42,7 +42,7 @@ public class HpcAuthorizationExceptionMapper extends HpcExceptionMapper
      * @param stackTraceEnabled If set to true, stack trace will be attached to
      *                          exception DTO.
      */
-    private HpcAuthorizationExceptionMapper(boolean stackTraceEnabled)
+    public HpcAuthorizationExceptionMapper(boolean stackTraceEnabled)
     {
     	super(stackTraceEnabled);
     }  

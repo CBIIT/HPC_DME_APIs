@@ -94,7 +94,7 @@ public class HpcDatafileController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "index";
+				return "redirect:/login?returnPath=datafile&action="+action+"&path="+path;
 			}
 
 			if (path == null)
@@ -104,9 +104,10 @@ public class HpcDatafileController extends AbstractHpcController {
 					sslCertPassword);
 			if (datafiles != null && datafiles.getDataObjects() != null && datafiles.getDataObjects().size() > 0) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-				if (modelDTO == null)
-					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, user.getDoc(), sslCertPath,
-							sslCertPassword);
+				if (modelDTO == null) {
+					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+					session.setAttribute("userDOCModel", modelDTO);
+				}
 				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames());

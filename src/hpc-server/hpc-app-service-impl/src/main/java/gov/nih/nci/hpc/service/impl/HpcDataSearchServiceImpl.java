@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * <p>
@@ -37,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcDataSearchServiceImpl implements HpcDataSearchService
@@ -58,8 +58,10 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
 	@Autowired
     private HpcDataManagementProxy dataManagementProxy = null;
 	
-	// The max page size of search results.
-	private int searchResultsPageSize = 0;
+	// Pagination support.
+	@Autowired
+	@Qualifier("hpcDataSearchPagination")
+	private HpcPagination pagination = null;
 	
 	// Default level filters for collection and data object search.
 	HpcMetadataQueryLevelFilter defaultCollectionLevelFilter = null;
@@ -72,13 +74,11 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     /**
      * Constructor for Spring Dependency Injection.
      * 
-     * @param searchResultsPageSize The max page size of search results.
      * @param defaultCollectionLevelFilter The default collection search level filter.
      * @param defaultDataObjectLevelFilter The default data-object search level filter.
      * @throws HpcException on Spring configuration error.
      */
-    private HpcDataSearchServiceImpl(int searchResultsPageSize,
-    		                         HpcMetadataQueryLevelFilter defaultCollectionLevelFilter,
+    private HpcDataSearchServiceImpl(HpcMetadataQueryLevelFilter defaultCollectionLevelFilter,
     		                         HpcMetadataQueryLevelFilter defaultDataObjectLevelFilter) 
     		                         throws HpcException
     {
@@ -90,7 +90,6 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     	}
     	this.defaultCollectionLevelFilter = defaultCollectionLevelFilter;
     	this.defaultDataObjectLevelFilter = defaultDataObjectLevelFilter;
-    	this.searchResultsPageSize = searchResultsPageSize;
     }   
     
     /**
@@ -128,7 +127,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
        			   HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
        	return toRelativePaths(metadataDAO.getCollectionPaths(
        			                              compoundMetadataQuery, dataManagementUsername,
-       	 	                                  getOffset(page), searchResultsPageSize,
+       	 	                                  pagination.getOffset(page), pagination.getPageSize(),
        			                              defaultCollectionLevelFilter));
     }
     
@@ -165,7 +164,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
        	String dataManagementUsername = 
                    HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
         return toRelativePaths(metadataDAO.getDataObjectPaths(compoundMetadataQuery, dataManagementUsername,
-        		                                              getOffset(page), searchResultsPageSize,
+        		                                              pagination.getOffset(page), pagination.getPageSize(),
         		                                              defaultDataObjectLevelFilter));
     }
     
@@ -189,7 +188,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     @Override
     public int getSearchResultsPageSize()
     {
-    	return searchResultsPageSize;
+    	return pagination.getPageSize();
     }
     
     @Override
@@ -259,24 +258,6 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService
     // Helper Methods
     //---------------------------------------------------------------------//  
 	
-    /**
-     * Calculate search offset by requested page.
-     *
-     * @param page The requested page.
-     * @return The calculated offset
-     * @throws HpcException if the page is invalid.
-     * 
-     */
-    private int getOffset(int page) throws HpcException
-    {
-    	if(page < 1) {
-    	   throw new HpcException("Invalid search results page: " + page,
-    			                  HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    	
-    	return (page - 1) * searchResultsPageSize;
-    }
-    
     /**
      * Convert a list of absolute paths, to relative paths.
      *

@@ -56,8 +56,10 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -126,8 +128,9 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login?returnPath=criteria";
 		}
+		HpcSearchUtil.clearCachedSelectedRows(session);
 		populateHierarchy(session, model, authToken, user);
 		populateMetadata(model, authToken, user, "collection", session);
 		populateOperators(model);
@@ -162,21 +165,11 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		}
 
 		HpcSearch hpcSearch = null;
+		
 		if(search == null || (search.getActionType() != null && search.getActionType().equals("pagination")))
 		{
+			HpcSearchUtil.cacheSelectedRows(session, request, model);
 			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
-//			if(hpcSearch == null)
-//				hpcSearch = new HpcSearch();
-//
-//			hpcSearch.setAdvancedCriteria(search.getAdvancedCriteria());
-//			hpcSearch.setAttrName(search.getAttrName());
-//			hpcSearch.setAttrValue(search.getAttrValue());
-//			hpcSearch.setDetailed(search.isDetailed());
-//			hpcSearch.setLevel(search.getLevel());
-//			hpcSearch.setLevelOperator(search.getLevelOperator());
-//			hpcSearch.setOperator(search.getOperator());
-//			hpcSearch.setRowId(search.getRowId());
-//			hpcSearch.setSearchType(search.getSearchType());
 			hpcSearch.setPageNumber(search.getPageNumber());
 			search = hpcSearch;
 		}
@@ -215,7 +208,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				return "criteria";
 			}
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 			ObjectError error = new ObjectError("hpcLogin", "Failed to project: " + e.getMessage());
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search due to: " + e.getMessage());
@@ -242,6 +235,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			if (!success) {
 				HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 				String authToken = (String) session.getAttribute("hpcUserToken");
+				model.addAttribute("hpcSearch", search);
 				populateHierarchy(session, model, authToken, user);
 				populateMetadata(model, authToken, user, search.getSearchType(), session);
 				populateOperators(model);
@@ -535,15 +529,22 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		Map<String, String> hierarchiesMap = new HashMap<String, String>();
 		try {
 			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-			if (modelDTO == null)
-				modelDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, user.getDoc(), sslCertPath,
-						sslCertPassword);
+			if (modelDTO == null) {
+				modelDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, sslCertPath, sslCertPassword);
+				session.setAttribute("userDOCModel", modelDTO);
+			}
 
-			HpcDataHierarchy hierarchy = modelDTO.getDataHierarchy();
-
+			List<HpcDocDataManagementRulesDTO> docRules = modelDTO.getDocRules();
 			List<String> hierarchies = new ArrayList<String>();
-			getHierarchies(hierarchy, hierarchies);
-
+			
+			for(HpcDocDataManagementRulesDTO docDto : docRules)
+			{
+				if(docDto.getDoc().equals(user.getDoc()))
+				{
+					for(HpcDataManagementRulesDTO rulesDto : docDto.getRules())
+						getHierarchies(rulesDto.getDataHierarchy(), hierarchies);
+				}
+			}
 			int count = 1;
 			for (String name : hierarchies)
 				hierarchiesMap.put(name, ("" + count++));

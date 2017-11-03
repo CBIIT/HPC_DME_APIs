@@ -40,13 +40,14 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Data Object Download Cleanup DAO Implementation.
+ * HPC Data Download DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
@@ -61,7 +62,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
     // SQL Queries.
 	public static final String UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" ( " +
-                   "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " + 
+                   "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " + 
 				   "\"DATA_TRANSFER_STATUS\", \"DOWNLOAD_FILE_PATH\"," +
 				   "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", " + 
                    "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", " + 
@@ -69,7 +70,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
-                        "\"DOC\"=excluded.\"DOC\", " + 
+                        "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", " + 
                         "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
                         "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
                         "\"DATA_TRANSFER_STATUS\"=excluded.\"DATA_TRANSFER_STATUS\", " +
@@ -93,13 +94,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	
 	public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = 
 		   "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( " +
-                   "\"ID\", \"USER_ID\", \"PATH\", \"DOC\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " +
+                   "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", " +
                    "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"RESULT\", " +
-                   "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"CREATED\", \"COMPLETED\") " + 
+                   "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"CREATED\", \"COMPLETED\") " + 
                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict on constraint \"HPC_DOWNLOAD_TASK_RESULT_pkey\" do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
-                        "\"DOC\"=excluded.\"DOC\", " + 
                         "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", " + 
                         "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", " +
                         "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
@@ -108,6 +108,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                         "\"TYPE\"=excluded.\"TYPE\", " +
                         "\"MESSAGE\"=excluded.\"MESSAGE\", " +
                         "\"ITEMS\"=excluded.\"ITEMS\", " +
+                        "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", " +
                         "\"CREATED\"=excluded.\"CREATED\", " +
                         "\"COMPLETED\"=excluded.\"COMPLETED\"";
 	
@@ -140,6 +141,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		   "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"STATUS\" = ? " +
 	                 "order by \"CREATED\"";
 	
+	public static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = 
+		   "select \"ID\", \"PATH\", \"CREATED\", 'DATA_OBJECT' as \"TYPE\", null as \"COMPLETED\", " +
+	       "null as \"RESULT\", null as \"ITEMS\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where " +
+		   "\"USER_ID\" = ? and \"COMPLETION_EVENT\" = true order by \"CREATED\"";
+	
+	public static final String GET_COLLECTION_DOWNLOAD_REQUESTS_SQL = 
+		   "select \"ID\", \"PATH\", \"CREATED\", \"TYPE\", null as \"COMPLETED\", " +
+		   "null as \"RESULT\", \"ITEMS\" from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"USER_ID\" = ? order by \"CREATED\"";
+	
+	public static final String GET_DOWNLOAD_RESULTS_SQL = 
+		   "select \"ID\", \"PATH\", \"CREATED\", \"TYPE\", \"COMPLETED\", \"RESULT\", \"ITEMS\" " +
+	       "from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"USER_ID\" = ? and " +
+		   "\"COMPLETION_EVENT\" = true order by \"CREATED\" desc limit ? offset ?";
+	
+	public static final String GET_DOWNLOAD_RESULTS_COUNT_SQL = 
+		   "select count(*) from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"USER_ID\" = ? and " +
+		   "\"COMPLETION_EVENT\" = true";	
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -154,7 +173,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		HpcDataObjectDownloadTask dataObjectDownloadTask = new HpcDataObjectDownloadTask();
 		dataObjectDownloadTask.setId(rs.getString("ID"));
 		dataObjectDownloadTask.setUserId(rs.getString("USER_ID"));
-		dataObjectDownloadTask.setDoc(rs.getString("DOC"));
+		dataObjectDownloadTask.setConfigurationId(rs.getString("CONFIGURATION_ID"));
 		dataObjectDownloadTask.setPath(rs.getString("PATH"));
 		dataObjectDownloadTask.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
 		dataObjectDownloadTask.setDataTransferType(
@@ -197,7 +216,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		HpcDownloadTaskResult downloadTaskResult = new HpcDownloadTaskResult();
 		downloadTaskResult.setId(rs.getString("ID"));
 		downloadTaskResult.setUserId(rs.getString("USER_ID"));
-		downloadTaskResult.setDoc(rs.getString("DOC"));
 		downloadTaskResult.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 		downloadTaskResult.setPath(rs.getString("PATH"));
 		downloadTaskResult.setDataTransferRequestId(rs.getString("DATA_TRANSFER_REQUEST_ID"));
@@ -216,6 +234,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		downloadTaskResult.setResult(rs.getBoolean("RESULT"));
 		downloadTaskResult.setMessage(rs.getString("MESSAGE"));
 		downloadTaskResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+		downloadTaskResult.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
 		
     	Calendar created = Calendar.getInstance();
     	created.setTime(rs.getTimestamp("CREATED"));
@@ -266,6 +285,30 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
         return collectionDownloadTask;
 	};
 	
+	// HpcUserDownloadRequest table to object mapper.
+	private RowMapper<HpcUserDownloadRequest> userDownloadRequestRowMapper = (rs, rowNum) -> 
+	{
+		HpcUserDownloadRequest userDownloadRequest = new HpcUserDownloadRequest();
+		userDownloadRequest.setTaskId(rs.getString("ID"));
+		userDownloadRequest.setPath(rs.getString("PATH"));
+		userDownloadRequest.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
+		
+		if(rs.getObject("RESULT") != null) {
+		   userDownloadRequest.setResult(rs.getBoolean("RESULT"));
+		}
+    	Calendar created = Calendar.getInstance();
+    	created.setTime(rs.getTimestamp("CREATED"));
+    	userDownloadRequest.setCreated(created);
+    	
+    	if(rs.getTimestamp("COMPLETED") != null) {
+    	   Calendar completed = Calendar.getInstance();
+    	   completed.setTime(rs.getTimestamp("COMPLETED"));
+    	   userDownloadRequest.setCompleted(completed);
+    	}
+    	userDownloadRequest.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+        return userDownloadRequest;
+	};
+	
     //---------------------------------------------------------------------//
     // Constructors
     //---------------------------------------------------------------------//
@@ -299,7 +342,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		    		             dataObjectDownloadTask.getId(),
 					    		 dataObjectDownloadTask.getUserId(),
 					    		 dataObjectDownloadTask.getPath(),
-					    		 dataObjectDownloadTask.getDoc(),
+					    		 dataObjectDownloadTask.getConfigurationId(),
 					    		 dataObjectDownloadTask.getDataTransferRequestId(),
 					    		 dataObjectDownloadTask.getDataTransferType().value(),
 					    		 dataObjectDownloadTask.getDataTransferStatus().value(),
@@ -353,9 +396,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		     return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL, 
 		    		                   dataObjectDownloadTaskRowMapper, dataTransferType.value());
 		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
-			    return null;
-			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data object download tasks: " + 
 		                               e.getMessage(),
@@ -372,7 +412,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 taskResult.getId(),
 					    		 taskResult.getUserId(),
 					    		 taskResult.getPath(),
-					    		 taskResult.getDoc(),
 					    		 taskResult.getDataTransferRequestId(),
 					    		 taskResult.getDataTransferType() != null ? 
 					    		     taskResult.getDataTransferType().value() : null,
@@ -382,6 +421,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 taskResult.getType().value(),
 					    		 taskResult.getMessage(),
 					    		 toJSON(taskResult.getItems()),
+					    		 taskResult.getCompletionEvent(),
 					    		 taskResult.getCreated(),
 					    		 taskResult.getCompleted());
 		     
@@ -408,6 +448,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		}
 	}
 	
+	@Override
 	public void upsertCollectionDownloadTask(HpcCollectionDownloadTask collectionDownloadTask) 
                                                throws HpcException
     {
@@ -445,7 +486,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		} catch(SQLException se) {
 		        throw new HpcException("Failed to upsert a collection download request: " + se.getMessage(),
 		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, se);
-}
+		}
     }
 	
 	@Override 
@@ -485,15 +526,70 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		     return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_SQL, 
 		    		                   collectionDownloadTaskRowMapper, status.value());
 		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
-			    return null;
-			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get collection download tasks: " + 
 		                               e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
+	
+	@Override
+    public List<HpcUserDownloadRequest> getDataObjectDownloadRequests(String userId) 
+                                                                     throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL, 
+		    		                   userDownloadRequestRowMapper, userId);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get data object download requests: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+    }
+
+	@Override
+	public List<HpcUserDownloadRequest> getCollectionDownloadRequests(String userId) 
+                                                                     throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_REQUESTS_SQL, 
+		    		                   userDownloadRequestRowMapper, userId);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get collection download requests: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+    }
+
+	@Override
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int offset, 
+                                                           int limit) 
+                                                          throws HpcException
+	{
+		try {
+		     return jdbcTemplate.query(GET_DOWNLOAD_RESULTS_SQL, 
+		    		                   userDownloadRequestRowMapper, userId, limit, offset);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get download results: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+	
+	public int getDownloadResultsCount(String userId) throws HpcException
+	{
+		try {
+		     return jdbcTemplate.queryForObject(GET_DOWNLOAD_RESULTS_COUNT_SQL, Integer.class, userId);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to count download results: " + 
+		                               e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}	
+	}
 	
     //---------------------------------------------------------------------//
     // Helper Methods

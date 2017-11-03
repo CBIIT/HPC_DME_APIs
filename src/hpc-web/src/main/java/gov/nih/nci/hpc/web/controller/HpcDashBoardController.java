@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
 /**
  * <p>
@@ -63,6 +64,7 @@ public class HpcDashBoardController extends AbstractHpcController {
 		session.removeAttribute("permissionsPath");
 		session.removeAttribute("selectedUsers");
 		session.removeAttribute("permissions");
+		HpcSearchUtil.clearCachedSelectedRows(session);
 
 		String authToken = (String) session.getAttribute("hpcUserToken");
 

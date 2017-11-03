@@ -3,9 +3,7 @@ package gov.nih.nci.hpc.integration.globus.impl;
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
 
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,6 +32,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -75,6 +74,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	// The Globus connection instance.
 	@Autowired
     private HpcGlobusConnection globusConnection = null;
+	
+	// The Globus directory browser instance.
+	@Autowired
+    private HpcGlobusDirectoryBrowser globusDirectoryBrowser = null;
 	
 	// The Globus archive destination. Used to upload data objects.
 	@Autowired
@@ -316,6 +319,26 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	return getPathAttributes(fileLocation, client, getSize);
     }
     
+    public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken, 
+                                                    HpcFileLocation directoryLocation) 
+                                                   throws HpcException
+    {
+    	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+    	autoActivate(directoryLocation.getFileContainerId(), client);
+    	
+    	// Invoke the Globus directory scan service.
+    	HpcGlobusDirectoryScanFileVisitor directoryScanFileVisitor = new HpcGlobusDirectoryScanFileVisitor();
+        try {
+        	 globusDirectoryBrowser.scan(globusDirectoryBrowser.list(directoryLocation, client), client, 
+        			                     directoryScanFileVisitor);
+        	 return directoryScanFileVisitor.getScanItems();
+
+        } catch(Exception e) {
+	            throw new HpcException("[GLOBUS] Failed to scan a directory: " + directoryLocation, 
+       		                           HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+        }
+    }                                                   
+    
     @Override
     public String getFilePath(String fileId, boolean archive) throws HpcException
     {
@@ -547,7 +570,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	
     	// Invoke the Globus directory listing service.
         try {
-        	 Result dirContent = listDirectoryContent(fileLocation, client);
+        	 Result dirContent = globusDirectoryBrowser.list(fileLocation, client);
         	 pathAttributes.setExists(true);
         	 pathAttributes.setIsDirectory(true);
         	 pathAttributes.setSize(getSize ? getDirectorySize(dirContent, client) : -1);
@@ -591,17 +614,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	HpcFileLocation dirLocation = new HpcFileLocation();
     	dirLocation.setFileContainerId(fileLocation.getFileContainerId());
     	int fileNameIndex = fileLocation.getFileId().lastIndexOf('/');
-    	if(fileNameIndex != -1)
-    		dirLocation.setFileId(fileLocation.getFileId().substring(0, fileNameIndex));
-    	else
-    		dirLocation.setFileId(fileLocation.getFileId());
+    	if(fileNameIndex != -1) {
+    	   dirLocation.setFileId(fileLocation.getFileId().substring(0, fileNameIndex));
+    	} else {
+    		    dirLocation.setFileId(fileLocation.getFileId());
+    	}
     	
     	// Extract the file name from the path.
     	String fileName = fileLocation.getFileId().substring(fileNameIndex + 1);
     	
     	// List the directory content.
     	try {
-             Result dirContent = listDirectoryContent(dirLocation, client);  
+             Result dirContent = globusDirectoryBrowser.list(dirLocation, client);  
              JSONArray jsonFiles = dirContent.document.getJSONArray("DATA");
              if(jsonFiles != null) {
                 // Iterate through the directory files, and locate the file we look for.
@@ -634,35 +658,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      */
     private long getDirectorySize(Result dirContent, JSONTransferAPIClient client)
     {
+    	HpcGlobusDirectorySizeFileVisitor fileSizeVisitor = new HpcGlobusDirectorySizeFileVisitor();
     	try {
-             JSONArray jsonFiles = dirContent.document.getJSONArray("DATA");
-             if(jsonFiles != null) {
-                // Iterate through the directory files, and sum up the files size.
-            	int filesNum = jsonFiles.length();
-            	long size = 0;
-                for(int i = 0; i < filesNum; i++) {
-                	JSONObject jsonFile = jsonFiles.getJSONObject(i);
-                	String jsonFileType = jsonFile.getString("type");
-                	if(jsonFileType != null) {
-                	   if(jsonFileType.equals("file")) {
-                		  // This is a file. Add its size to the total;
-                	      size += jsonFile.getLong("size");
-                	      continue;
-                	   } else if(jsonFileType.equals("dir")) {
-                		         // It's a sub directory. Make a recursive call, to add its size.
-                		         HpcFileLocation subDirLocation = new HpcFileLocation();
-                		         subDirLocation.setFileContainerId(dirContent.document.getString("endpoint"));
-                		         subDirLocation.setFileId(dirContent.document.getString("path") +
-                		        		                '/' + jsonFile.getString("name"));
-                		         
-                		         size += getDirectorySize(listDirectoryContent(subDirLocation, 
-                		        		                                       client), 
-                		        		                  client);
-                	   }
-                	}
-                }
-                return size;
-             }
+             globusDirectoryBrowser.scan(dirContent, client, fileSizeVisitor);
+             return fileSizeVisitor.getSize();
              
     	} catch(Exception e) {
     		    // Unexpected error. Eat this.
@@ -672,30 +671,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	// Directory not found, or exception was caught. 
     	return 0;
     }	
-    
-    /**
-     * Call the Globus list directory content service.
-     * See: https://docs.globus.org/api/transfer/file_operations/#list_directory_contents
-     *
-     * @param dirLocation The directory endpoint/path.
-     * @param client Globus client API instance.
-     * @return The file size in bytes.
-     * @throws Exception 
-     * @throws HpcException on service failure.
-     */
-    private Result listDirectoryContent(HpcFileLocation dirLocation, 
-    		                            JSONTransferAPIClient client)
-    		                           throws Exception
-    {
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("path", dirLocation.getFileId());
-		
-		return retryTemplate.execute(arg0 -> 
-		{
-			String resource = BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()) + "/ls";
-		 	return client.getResult(resource, params);
-		});
-    }
     
     /**
      * Check if a Globus transfer request failed. It is also canceling the request if needed.

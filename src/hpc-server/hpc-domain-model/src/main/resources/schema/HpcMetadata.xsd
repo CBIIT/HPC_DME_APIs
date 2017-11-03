@@ -29,7 +29,7 @@
 				<xsd:element name="objectId" type="xsd:string" />
 				<xsd:element name="registrarId" type="xsd:string" />
 				<xsd:element name="registrarName" type="xsd:string" />
-				<xsd:element name="registrarDOC" type="xsd:string" />
+				<xsd:element name="configurationId" type="xsd:string" />
 				<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="dataTransferRequestId" type="xsd:string" />
@@ -37,10 +37,11 @@
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="dataTransferStarted" type="xsd:dateTime" />
 				<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
-				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" maxOccurs="1"/>
+				<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" maxOccurs="1" />
 				<xsd:element name="callerObjectId" type="xsd:string" />
 				<xsd:element name="checksum" type="xsd:string" />
 				<xsd:element name="metadataUpdated" type="xsd:dateTime" />
+				<xsd:element name="registrationCompletionEvent" type="xsd:boolean" minOccurs="0" maxOccurs="1" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

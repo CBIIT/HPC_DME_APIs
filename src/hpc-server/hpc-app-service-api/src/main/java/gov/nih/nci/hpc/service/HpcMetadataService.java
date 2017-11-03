@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -22,14 +23,12 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * <p>
  * HPC Metadata Application Service Interface.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcMetadataService 
@@ -39,12 +38,13 @@ public interface HpcMetadataService
      *
      * @param path The collection path.
      * @param metadataEntries The metadata entries to add.
-     * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
+     * @param configurationId The configuration to apply validation rules. 
+     *                        Metadata validation rules are configuration specific.
      * @throws HpcException on service failure.
      */
     public void addMetadataToCollection(String path, 
     		                            List<HpcMetadataEntry> metadataEntries,
-    		                            String doc) 
+    		                            String configurationId) 
     		                           throws HpcException; 
     
     /**
@@ -52,12 +52,13 @@ public interface HpcMetadataService
      *
      * @param path The collection path.
      * @param metadataEntries The metadata entries to update.
-     * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
+     * @param configurationId The configuration to apply validation rules. 
+     *                        Metadata validation rules are configuration specific.
      * @throws HpcException on service failure.
      */
     public void updateCollectionMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries,
-    		                             String doc) 
+    		                             String configurationId) 
     		                            throws HpcException; 
     
     /**
@@ -66,12 +67,16 @@ public interface HpcMetadataService
      * 		1. UUID.
      * 		2. Registrar user ID.
      * 		3. Registrar name.
-     *      4. Registrar DOC.
+     *      4. Configuration ID.
      *
      * @param path The collection path.
+     * @param userId The user ID.
+     * @param userName The user name.
+     * @param configurationId The configuration ID.
      * @throws HpcException on service failure.
      */
-    public void addSystemGeneratedMetadataToCollection(String path) 
+    public void addSystemGeneratedMetadataToCollection(String path, String userId, 
+    		                                           String userName, String configurationId) 
     		                                          throws HpcException; 
     
     /**
@@ -113,16 +118,26 @@ public interface HpcMetadataService
     public HpcMetadataEntries getCollectionMetadataEntries(String path) throws HpcException;
     
     /**
+     * Create (default) metadata entries for a file found in a directory scan. 
+     *
+     * @param scanItem The directory scan item to generate the default metadata for.
+     * @return The generated metadata.
+     */
+    public HpcMetadataEntries toMetadataEntries(HpcDirectoryScanItem scanItem);
+    
+    /**
      * Add metadata to a data object.
      *
      * @param path The data object path.
      * @param metadataEntries The metadata entries to add.
-     * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
+     * @param configurationId The configuration to apply validation rules. 
+     *                        Metadata validation rules are configuration specific.
+     * @param collectionType The collection type containing the data object.
      * @throws HpcException on service failure.
      */ 
     public void addMetadataToDataObject(String path, 
     		                            List<HpcMetadataEntry> metadataEntries,
-    		                            String doc) 
+    		                            String configurationId, String collectionType) 
     		                           throws HpcException; 
     
     /**
@@ -131,14 +146,17 @@ public interface HpcMetadataService
      *      1. UUID.
      * 		2. Registrar user ID.
      * 		3. Registrar name.
-     *      4. Registrar DOC.
-     * 		5. Source location (file-container-id and file-id). (Optional)
+     *      4. Configuration ID.
+     * 		5. Source location (file-container-id and file-id). (Optional).
      *      6. Archive location (file-container-id and file-id).
      *      7. Data Transfer Request ID. (Optional)
      *      8. Data Transfer Status.
      *      9. Data Transfer Type.
-     *      10. Data Object File(s) size. (Optional)
-     *      11. Metadata Origin
+     *      10. Data Transfer Started.
+     *      11. Data Transfer Completed (Optional).
+     *      12. Data Object File size. (Optional).
+     *      13. Caller Object ID (Optional).
+     *      14. Registration Completion Event Indicator.
      *
      * @param path The data object path.
      * @param archiveLocation The physical file archive location.
@@ -151,6 +169,12 @@ public interface HpcMetadataService
      * @param dataTransferCompleted (Optional) The time data transfer completed.
      * @param sourceSize (Optional) The data source size in bytes.
      * @param callerObjectId (Optional) The caller object ID.
+     * @param userId The user ID.
+     * @param userName The user name.
+     * @param configurationId The data management configuration ID.
+     * @param registrationCompletionEvent If set to true, an event will be generated when 
+     *                                    registration is completed or failed. 
+     * 
      * @throws HpcException on service failure.
      */
     public void addSystemGeneratedMetadataToDataObject(String path, 
@@ -162,7 +186,10 @@ public interface HpcMetadataService
     		                                           HpcDataTransferType dataTransferType,
     		                                           Calendar dataTransferStarted,
     		                                           Calendar dataTransferCompleted,
-    		                                           Long sourceSize, String callerObjectId) 
+    		                                           Long sourceSize, String callerObjectId,
+    		                                           String userId, String userName, 
+    		                                           String configurationId,
+    		                                           boolean registrationCompletionEvent) 
     		                                          throws HpcException; 
     
     /**
@@ -201,12 +228,14 @@ public interface HpcMetadataService
      *
      * @param path The data object path.
      * @param metadataEntries The metadata entries to update.
-     * @param doc The DOC to apply validation rules. Metadata validation rules are DOC specific.
+     * @param configurationId The configuration to apply validation rules. 
+     *                        Metadata validation rules are configuration specific.
+     * @param collectionType The collection type containing the data object.
      * @throws HpcException on service failure.
      */
     public void updateDataObjectMetadata(String path, 
     		                             List<HpcMetadataEntry> metadataEntries,
-    		                             String doc) 
+    		                             String configurationId, String collectionType) 
     		                            throws HpcException; 
     
     /**
@@ -242,7 +271,6 @@ public interface HpcMetadataService
      */
     public List<String> 
            getDataObjectSystemMetadataAttributeNames() throws HpcException;
-    
 }
 
  

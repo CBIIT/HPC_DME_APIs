@@ -59,8 +59,6 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 
 	@Value("${gov.nih.nci.hpc.server.group}")
 	private String groupServiceURL;
-	@Value("${gov.nih.nci.hpc.server.docs}")
-	private String docsServiceURL;
 
 	/**
 	 * Populate data for Update Group page
@@ -83,7 +81,7 @@ public class HpcUpdateGroupController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login?returnPath=updategroup";
 		}
 		session.removeAttribute("updategroup");
 		initialize(model, authToken, groupName, session);

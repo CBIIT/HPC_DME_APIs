@@ -10,6 +10,12 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import java.net.URLDecoder;
+
+import javax.ws.rs.core.Response;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
@@ -23,19 +29,12 @@ import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
-import java.net.URLDecoder;
-
-import javax.ws.rs.core.Response;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * <p>
  * HPC Security REST Service Implementation.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcSecurityRestServiceImpl.java 1015 2016-03-27 14:44:36Z rosenbergea $
  */
 
 public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
@@ -126,11 +125,13 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 	}
     
     @Override
-    public Response getActiveUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc)
+    public Response getActiveUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
+    		                       String doc, String defaultBasePath)
     {
 		HpcUserListDTO users = null;
 		try {
-			 users = securityBusService.getUsers(nciUserId, firstNamePattern, lastNamePattern, doc, true);
+			 users = securityBusService.getUsers(nciUserId, firstNamePattern, lastNamePattern, 
+					                             doc, defaultBasePath, true);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -140,11 +141,13 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getAllUsers(String nciUserId, String firstName, String lastName, String doc)
+    public Response getAllUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
+                                String doc, String defaultBasePath)
     {
 		HpcUserListDTO users = null;
 		try {
-			 users = securityBusService.getUsers(nciUserId, firstName, lastName, doc, false);
+			 users = securityBusService.getUsers(nciUserId, firstNamePattern, lastNamePattern, 
+					                             doc, defaultBasePath, false);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);

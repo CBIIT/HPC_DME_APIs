@@ -19,30 +19,31 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementDocListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementTreeDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -251,17 +252,34 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     
     @Override
     public Response registerDataObjects(
-	                        HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest)
+	                        HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest)
     {
-    	HpcDataObjectsRegistrationResponseDTO registrationResponse = null;
+    	HpcBulkDataObjectRegistrationResponseDTO registrationResponse = null;
 		try {
-			 registrationResponse = dataManagementBusService.registerDataObjects(dataObjectsRegistrationRequest);
+			 registrationResponse = 
+					     dataManagementBusService.registerDataObjects(bulkDataObjectRegistrationRequest);
 
 		} catch(HpcException e) {
 			    return errorResponse(e);
 		}
 
-		return okResponse(registrationResponse, false);    	
+		return !StringUtils.isEmpty(registrationResponse.getTaskId()) ?
+			   createdResponse(registrationResponse.getTaskId()) :
+			   okResponse(registrationResponse, false);    	
+    }
+    
+    @Override
+    public Response getDataObjectsRegistrationStatus(String taskId)
+    {
+    	HpcBulkDataObjectRegistrationStatusDTO registrationStatus = null;
+		try {
+			 registrationStatus = dataManagementBusService.getDataObjectsRegistrationStatus(taskId);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+    	return okResponse(registrationStatus, true);    	
     }
     
     @Override
@@ -370,9 +388,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-	public Response downloadDataObjects(HpcDataObjectsDownloadRequestDTO downloadRequest)
+	public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest)
     {
-    	HpcDataObjectsDownloadResponseDTO downloadResponse = null;
+    	HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
 		try {
 			 downloadResponse = dataManagementBusService.downloadDataObjects(downloadRequest);
 
@@ -398,11 +416,28 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDataManagementModel(String doc)
+    public Response getDownloadSummary(Integer page, Boolean totalCount)
+    {
+    	HpcDownloadSummaryDTO downloadSummary = null;
+		try {
+			downloadSummary = dataManagementBusService.getDownloadSummary(
+					                                      page != null ? page : 1,
+                                                          totalCount != null ? totalCount : false);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+    	return okResponse(downloadSummary.getActiveTasks().isEmpty() && 
+    			          downloadSummary.getCompletedTasks().isEmpty() ? null : downloadSummary , true);
+    }
+    
+    @Override
+    public Response getDataManagementModel()
     {
     	HpcDataManagementModelDTO docModel = null;
 		try {
-			 docModel = dataManagementBusService.getDataManagementModel(doc);
+			 docModel = dataManagementBusService.getDataManagementModel();
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -411,33 +446,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(docModel, true);
     }
     
-    @Override
-    public Response getDataManagementTree(String doc)
-    {
-    	HpcDataManagementTreeDTO docTree = null;
-		try {
-			 docTree = dataManagementBusService.getDataManagementTree(doc);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(docTree, true);
-    }
-    
-    @Override
-	public Response getDataManagementModelDOCs()
-	{
-    	HpcDataManagementDocListDTO docTree = null;
-		try {
-			 docTree = dataManagementBusService.getDataManagementDocs();
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(docTree, true);
-	}
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//

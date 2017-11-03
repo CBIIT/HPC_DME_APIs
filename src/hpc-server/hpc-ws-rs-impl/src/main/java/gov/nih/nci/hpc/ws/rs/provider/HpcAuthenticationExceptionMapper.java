@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs.provider;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
+import gov.nih.nci.hpc.exception.HpcException;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -23,7 +24,6 @@ import javax.ws.rs.ext.ExceptionMapper;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcExceptionMapper.java 522 2015-09-07 23:27:06Z rosenbergea $
  */
 
 public class HpcAuthenticationExceptionMapper extends HpcExceptionMapper
@@ -39,10 +39,21 @@ public class HpcAuthenticationExceptionMapper extends HpcExceptionMapper
      * @param stackTraceEnabled If set to true, stack trace will be attached to
      *                          exception DTO.
      */
-    private HpcAuthenticationExceptionMapper(boolean stackTraceEnabled)
+    public HpcAuthenticationExceptionMapper(boolean stackTraceEnabled)
     {
     	super(stackTraceEnabled);
     }  
+    
+    /**
+     * Default Constructor is disabled.
+     * 
+     * @throws HpcException Constructor is disabled.
+     */
+    public HpcAuthenticationExceptionMapper() throws HpcException
+    {
+    	throw new HpcException("Default Constructor Disabled", 
+    			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
+    }   
     
     //---------------------------------------------------------------------//
     // Methods

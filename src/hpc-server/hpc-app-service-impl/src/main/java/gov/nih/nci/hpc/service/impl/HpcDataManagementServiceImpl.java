@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -23,8 +24,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO;
+import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
@@ -36,7 +40,12 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -73,13 +82,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Autowired
 	private HpcDataHierarchyValidator dataHierarchyValidator = null;
 	
-	// DOC configuration locator.
+	// Data Management configuration locator.
 	@Autowired
-	private HpcDocConfigurationLocator docConfigurationLocator = null;
+	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 	
 	// Data Object Deletion DAO.
 	@Autowired
 	private HpcDataObjectDeletionDAO dataObjectDeletionDAO = null;
+	
+	// Data Registration DAO.
+	@Autowired
+	private HpcDataRegistrationDAO dataRegistrationDAO = null;
 	
 	// Prepared query to get data objects that have their data transfer in-progress to archive.
 	private List<HpcMetadataQuery> dataTransferReceivedQuery = new ArrayList<>();
@@ -163,8 +176,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     	String relativePath = dataManagementProxy.getRelativePath(path);
-    	// Validate the path is not a DOC base path.
-    	if(docConfigurationLocator.getBasePaths().contains(relativePath)) {
+    	// Validate the path is not a configured base path. 
+    	if(dataManagementConfigurationLocator.getBasePaths().contains(relativePath)) {
     	   throw new HpcException("Invalid collection path: " + path, 
 	                              HpcErrorType.INVALID_REQUEST_INPUT); 
     	}
@@ -320,7 +333,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
-    public void assignSystemAccountPermission(String path) throws HpcException
+    public void setCoOwnership(String path, String userId) throws HpcException
     {
     	HpcIntegratedSystemAccount dataManagementAccount = 
     	    	     systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
@@ -329,22 +342,30 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	      	                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
-        HpcSubjectPermission permissionRequest = new HpcSubjectPermission();
-        permissionRequest.setPermission(HpcPermission.OWN);
-        permissionRequest.setSubject(dataManagementAccount.getUsername());
-            
+    	// System account ownership request.
+        HpcSubjectPermission systemAccountPermissionRequest = new HpcSubjectPermission();
+        systemAccountPermissionRequest.setPermission(HpcPermission.OWN);
+        systemAccountPermissionRequest.setSubject(dataManagementAccount.getUsername());
+        
+        // User ownership request.
+        HpcSubjectPermission userPermissionRequest = new HpcSubjectPermission();
+        userPermissionRequest.setPermission(HpcPermission.OWN);
+        userPermissionRequest.setSubject(userId);
+        
         // Determine if it's a collection or data object.
         Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
         HpcPathAttributes pathAttributes = dataManagementProxy.getPathAttributes(authenticatedToken, path);
         if(pathAttributes.getIsDirectory()) {
-           dataManagementProxy.setCollectionPermission(authenticatedToken, path, permissionRequest);
+           dataManagementProxy.setCollectionPermission(authenticatedToken, path, systemAccountPermissionRequest);
+           dataManagementProxy.setCollectionPermission(authenticatedToken, path, userPermissionRequest);
         } else if(pathAttributes.getIsFile()) {
-        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, permissionRequest);
+        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, systemAccountPermissionRequest);
+        	      dataManagementProxy.setDataObjectPermission(authenticatedToken, path, userPermissionRequest);
         }
     }
     
     @Override
-    public void validateHierarchy(String path, String doc,
+    public void validateHierarchy(String path, String configurationId,
     		                      boolean dataObjectRegistration) 
     		                     throws HpcException
     {
@@ -369,7 +390,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 		}
 
 		// Perform the hierarchy validation.
-		dataHierarchyValidator.validateHierarchy(doc, collectionPathTypes, dataObjectRegistration);
+		dataHierarchyValidator.validateHierarchy(configurationId, collectionPathTypes, 
+				                                 dataObjectRegistration);
     }
     
     @Override
@@ -445,20 +467,166 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public HpcDocConfiguration getDocConfiguration(String doc)
+    public String registerDataObjects(String userId, 
+                                      Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+                                     throws HpcException
     {
-    	if(StringUtils.isEmpty(doc)) {
-    	   return null;
+    	// Input validation
+    	if(StringUtils.isEmpty(userId)) {
+    	   throw new HpcException("Null / Empty userId in registration list request", 
+    			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	return docConfigurationLocator.get(doc);
+    	// Create a bulk data object registration task.
+    	HpcBulkDataObjectRegistrationTask bulkDataObjectRegistrationTask = new HpcBulkDataObjectRegistrationTask();
+    	bulkDataObjectRegistrationTask.setUserId(userId);
+    	bulkDataObjectRegistrationTask.setCreated(Calendar.getInstance());
+    	bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED);
+    	
+    	// Iterate through the individual data object registration requests and add them as items to the 
+    	// list registration task.
+    	for(String path : dataObjectRegistrationRequests.keySet()) {
+    		HpcDataObjectRegistrationRequest registrationRequest = dataObjectRegistrationRequests.get(path);
+    	    // Validate registration request.
+    		if(!HpcDomainValidator.isValidFileLocation(registrationRequest.getSource())) {
+    			throw new HpcException("Invalid source in registration request for: " + path, 
+		                               HpcErrorType.INVALID_REQUEST_INPUT);
+    		}
+    		
+    		// Create a data object registration item.
+    		HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
+    		HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
+    		reqistrationTask.setPath(path);
+    		registrationItem.setTask(reqistrationTask);
+    		registrationItem.setRequest(registrationRequest);
+    		
+    		bulkDataObjectRegistrationTask.getItems().add(registrationItem);
+    	}
+    	
+    	// Persist the registration request.
+    	dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
+    	return bulkDataObjectRegistrationTask.getId();
     }
     
     @Override
-    public List<String> getDocs()
+    public List<HpcBulkDataObjectRegistrationTask> getBulkDataObjectRegistrationTasks(
+                                                      HpcBulkDataObjectRegistrationTaskStatus status) 
+                                                      throws HpcException
     {
-    	return new ArrayList<String>(docConfigurationLocator.keySet());
+    	return dataRegistrationDAO.getBulkDataObjectRegistrationTasks(status);
     }
+    
+	@Override
+	public void updateBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask)
+                                                    throws HpcException
+    {
+		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(registrationTask);
+    }
+	
+	@Override
+	public void completeBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask,
+			                                           boolean result, String message, Calendar completed)
+	                                                  throws HpcException
+	{
+		// Input validation
+		if(registrationTask == null) {
+		   throw new HpcException("Invalid data object list registration task", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		// Cleanup the DB record.
+		dataRegistrationDAO.deleteBulkDataObjectRegistrationTask(registrationTask.getId());
+		
+		// Create a registration result object.
+		HpcBulkDataObjectRegistrationResult registrationResult = new HpcBulkDataObjectRegistrationResult();
+		registrationResult.setId(registrationTask.getId());
+		registrationResult.setUserId(registrationTask.getUserId());
+		registrationResult.setResult(result);
+		registrationResult.setMessage(message);
+		registrationResult.setCreated(registrationTask.getCreated());
+		registrationResult.setCompleted(completed);	
+		registrationResult.getItems().addAll(registrationTask.getItems());
+		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
+	}
+	
+	@Override
+	public HpcBulkDataObjectRegistrationStatus getBulkDataObjectRegistrationTaskStatus(String taskId) 
+                                                                                      throws HpcException
+    {
+		if(StringUtils.isEmpty(taskId)) {
+		   throw new HpcException("Null / Empty task id", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+			
+		HpcBulkDataObjectRegistrationStatus taskStatus = new HpcBulkDataObjectRegistrationStatus();
+		HpcBulkDataObjectRegistrationResult taskResult = dataRegistrationDAO.getBulkDataObjectRegistrationResult(taskId);
+		if(taskResult != null) {
+		   // Task completed or failed. Return the result.
+		   taskStatus.setInProgress(false);
+		   taskStatus.setResult(taskResult);
+		   return taskStatus;
+		}
+	    
+		// Task still in-progress. 
+		taskStatus.setInProgress(true);
+		HpcBulkDataObjectRegistrationTask task = dataRegistrationDAO.getBulkDataObjectRegistrationTask(taskId);
+		if(task != null) {
+		   taskStatus.setTask(task);
+		   return taskStatus;	
+		}
+		
+		// Task not found.
+		return null;
+	}
+	
+	@Override
+    public String getCollectionType(String path) throws HpcException
+    {
+    	for(HpcMetadataEntry metadataEntry : 
+    		dataManagementProxy.getCollectionMetadata(
+    				               dataManagementAuthenticator.getAuthenticatedToken(), path)) {
+    		if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
+    		   return metadataEntry.getValue();
+    		}
+    	}
+    	
+    	return null;
+    }
+	
+    @Override
+    public List<HpcDataManagementConfiguration> getDataManagementConfigurations()
+    {
+    	return new ArrayList<>(dataManagementConfigurationLocator.values());
+    }
+    
+	@Override
+	public String findDataManagementConfigurationId(String path)
+    {
+		if(StringUtils.isEmpty(path)) {
+		   return null;
+		}
+		
+		String relativePath = dataManagementProxy.getRelativePath(path);
+		for(HpcDataManagementConfiguration dataManagementConfiguration : 
+			dataManagementConfigurationLocator.values()) {
+		    if(relativePath.startsWith(dataManagementConfiguration.getBasePath())) {
+			   return dataManagementConfiguration.getId();
+			}
+		}
+		
+		return null;
+    }
+	
+	@Override
+	public String getDataManagementConfigurationId(String basePath)
+	{
+		return dataManagementConfigurationLocator.getConfigurationId(basePath);
+	}
+	
+	@Override
+	public HpcDataManagementConfiguration getDataManagementConfiguration(String id)
+	{
+		return dataManagementConfigurationLocator.get(id);
+	}
     
     //---------------------------------------------------------------------//
     // Helper Methods
@@ -481,26 +649,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	    query.setValue(value);
 	    
 	    return query;
-    }
-    
-    /**
-     * Get a collection type of a path.
-     *
-     * @param path The collection path.
-     * @return The collection type.
-     * @throws HpcException on service failure.
-     */
-    private String getCollectionType(String path) throws HpcException
-    {
-    	for(HpcMetadataEntry metadataEntry : 
-    		dataManagementProxy.getCollectionMetadata(
-    				               dataManagementAuthenticator.getAuthenticatedToken(), path)) {
-    		if(metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
-    		   return metadataEntry.getValue();
-    		}
-    	}
-    	
-    	return null;
     }
     
     /**
