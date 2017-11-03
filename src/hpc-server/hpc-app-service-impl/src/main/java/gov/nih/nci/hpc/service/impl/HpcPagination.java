@@ -84,7 +84,7 @@ public class HpcPagination
     public int getOffset(int page) throws HpcException
     {
     	if(page < 1) {
-    	   throw new HpcException("Invalid page: " + page,
+    	   throw new HpcException("Invalid search results page: " + page,
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
