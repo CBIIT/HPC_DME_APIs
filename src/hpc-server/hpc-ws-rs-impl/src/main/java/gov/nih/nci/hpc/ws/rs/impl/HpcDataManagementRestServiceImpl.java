@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -262,7 +263,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 			    return errorResponse(e);
 		}
 
-		return okResponse(registrationResponse, false);    	
+		return !StringUtils.isEmpty(registrationResponse.getTaskId()) ?
+			   createdResponse(registrationResponse.getTaskId()) :
+			   okResponse(registrationResponse, false);    	
     }
     
     @Override

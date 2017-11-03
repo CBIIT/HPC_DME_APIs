@@ -75,6 +75,8 @@ public class HpcLocalDirectoryListQuery {
 					SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 					pathAttributes.setUpdatedDate(sdf.format(file.lastModified()));
 					pathAttributes.setAbsolutePath(file.getAbsolutePath());
+					if(file.isDirectory())
+						pathAttributes.setIsDirectory(true);
 					attributes.add(pathAttributes);
 				}
 			}
@@ -100,48 +102,14 @@ public class HpcLocalDirectoryListQuery {
 					HpcErrorType.DATA_TRANSFER_ERROR);
 		}
 
-		// resultList.addAll(Arrays.asList(fList));
 		Paths paths = getFileList(directoryName, excludePattern, includePattern);
 		for (String file : paths) {
-			System.out.println("Including: "+file);
-			resultList.add(new File(file));
+			String fileName = file.replace("\\", File.separator);
+			fileName = fileName.replace("/", File.separator);
+			System.out.println("Including: "+fileName);
+			resultList.add(new File(fileName));
 		}
 		return resultList;
-	}
-
-	private static boolean isExcludePattern(String fileName, List<Pattern> excludePatterns, List<Pattern> includePatterns) {
-		if ((includePatterns == null || includePatterns.isEmpty())
-				&& (excludePatterns == null || excludePatterns.isEmpty()))
-			return false;
-
-		boolean include = false;
-		if (includePatterns != null && !includePatterns.isEmpty()) {
-			for (Pattern pattern : includePatterns) {
-				Matcher matcher = pattern.matcher(fileName);
-				if (matcher.matches()) {
-					include = true;
-					break;
-				}
-			}
-		} else
-			include = true;
-
-		boolean exclude = false;
-		if (excludePatterns != null && !excludePatterns.isEmpty() && include) {
-
-			for (Pattern pattern : excludePatterns) {
-				Matcher matcher = pattern.matcher(fileName);
-				if (matcher.matches()) {
-					exclude = true;
-					break;
-				}
-			}
-		}
-		
-		if(fileName.indexOf(".metadata.json") >0)
-			return true;
-		
-		return exclude;
 	}
 
 	private static Paths getFileList(String basePath, List<String> excludePatterns, List<String> includePatterns) {
@@ -154,90 +122,12 @@ public class HpcLocalDirectoryListQuery {
 		
 		List<String> patterns = new ArrayList<String>();
 		patterns.addAll(includePatterns);
-//		System.out.println(patterns);
 		if(excludePatterns != null)
 		{
 			for (String pattern : excludePatterns)
 				patterns.add("!"+pattern);
 		}
-		//patterns.add("!*.metadata.json");
 		return paths.glob(basePath, patterns);
 		
 	}
-	
-	private static boolean isExclude(String fileName, List<String> excludePatterns, List<String> includePatterns) {
-		if ((includePatterns == null || includePatterns.isEmpty())
-				&& (excludePatterns == null || excludePatterns.isEmpty()))
-			return false;
-
-		boolean include = true;
-		if (includePatterns != null && !includePatterns.isEmpty()) {
-			for (String pattern : includePatterns) {
-				//Pattern regpattern = Pattern.compile(pattern, Pattern.UNICODE_CASE  | Pattern.CASE_INSENSITIVE);
-				Pattern regpattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-				Matcher matcher = regpattern.matcher(fileName);
-				include =matcher.matches();
-				System.out.println("fileName: "+fileName + " " +include);
-				if(include)
-					break;
-//				if(pattern.startsWith("*") || pattern.startsWith("."))
-//				{
-//					String matchingExt = pattern.substring(pattern.indexOf("*")+1, pattern.length());
-//					if(fileName.endsWith(matchingExt))
-//					{
-//						include = true;
-//						break;
-//					}
-//						
-//				}else
-//				{
-//					if(fileName.indexOf(pattern) != -1)
-//					{
-//						include = true;
-//						break;
-//					}
-//				}
-			}
-		} else
-			include = true;
-
-		if(!include)
-			return true;
-		
-		boolean exclude = false;
-		if (excludePatterns != null && !excludePatterns.isEmpty() && include) {
-			for (String pattern : excludePatterns) {
-				Pattern regpattern = Pattern.compile(pattern, Pattern.LITERAL);
-				Matcher matcher = regpattern.matcher(fileName);
-				exclude =matcher.matches();
-				System.out.println("fileName: "+fileName + " " +include);
-				if(exclude)
-					break;
-				
-//				if(pattern.startsWith("*") || pattern.startsWith("."))
-//				{
-//					String matchingExt = pattern.substring(pattern.indexOf("*")+1, pattern.length());
-//					if(fileName.endsWith(matchingExt))
-//					{
-//						exclude = true;
-//						break;
-//					}
-//						
-//				}else
-//				{
-//					if(fileName.indexOf(pattern) != -1)
-//					{
-//						exclude = true;
-//						break;
-//					}
-//				}
-			}
-		}
-		
-		if(fileName.indexOf(".metadata.json") >0)
-			return true;
-		
-		return exclude;
-	}
-
 }

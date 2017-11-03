@@ -57,7 +57,15 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  */
 
 public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
-{      
+{     
+    //---------------------------------------------------------------------//
+    // Constants
+    //---------------------------------------------------------------------//
+	
+	// Invalid base path error message.
+	private static final String INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE = 
+			                    "Invalid default base path: ";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -112,12 +120,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     	}
     	
     	// Get the configuration ID associated with the default base path.
-    	String configurationId = dataManagementService.getDataManagementConfigurationId(
-    			                     userRegistrationRequest.getDefaultBasePath());
-    	if(StringUtils.isEmpty(configurationId)) {
-    	   throw new HpcException("Invalid default base path: " + 
-    	                          userRegistrationRequest.getDefaultBasePath(),
-    	                          HpcErrorType.INVALID_REQUEST_INPUT);
+    	String configurationId = null;
+    	String defaultBasePath = userRegistrationRequest.getDefaultBasePath();
+    	if(!StringUtils.isEmpty(defaultBasePath)) {
+    	   configurationId = dataManagementService.getDataManagementConfigurationId(defaultBasePath);
+    	   if(StringUtils.isEmpty(configurationId)) {
+    	      throw new HpcException(INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE +
+    	                             userRegistrationRequest.getDefaultBasePath(),
+    	                             HpcErrorType.INVALID_REQUEST_INPUT);
+    	   }
     	}
     	
     	// Instantiate an NCI account domain object.
@@ -188,17 +199,19 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
         String updateDoc = !StringUtils.isEmpty(userUpdateRequest.getDoc()) ?
                 		                        userUpdateRequest.getDoc() : user.getNciAccount().getDoc();
     	String updateDefaultConfigurationId = user.getNciAccount().getDefaultConfigurationId();
-    	if(!StringUtils.isEmpty(userUpdateRequest.getDefaultBasePath())) {
-    	   updateDefaultConfigurationId = dataManagementService.getDataManagementConfigurationId(
-    			    		                  userUpdateRequest.getDefaultBasePath()); 
-      	   if(StringUtils.isEmpty(updateDefaultConfigurationId)) {
-     	      throw new HpcException("Invalid default base path: " + 
-     			                     userUpdateRequest.getDefaultBasePath(),
-     	                             HpcErrorType.INVALID_REQUEST_INPUT);
-      	   }
+    	if(userUpdateRequest.getDefaultBasePath() != null) {
+    	   if(!userUpdateRequest.getDefaultBasePath().isEmpty()) 
+    	      updateDefaultConfigurationId = dataManagementService.getDataManagementConfigurationId(
+    			      		                     userUpdateRequest.getDefaultBasePath()); 
+      	      if(StringUtils.isEmpty(updateDefaultConfigurationId)) {
+     	         throw new HpcException(INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + 
+     			                        userUpdateRequest.getDefaultBasePath(),
+     	                                HpcErrorType.INVALID_REQUEST_INPUT);
+      	      }
+    	} else {
+    		    // The caller would like to remove default base path.
+    		    updateDefaultConfigurationId = null;
      	}
-    	else
-    		updateDefaultConfigurationId = null;
     	
     	HpcUserRole updateRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole()) ?
     		                     roleFromString(userUpdateRequest.getUserRole()) : currentUserRole;
@@ -272,7 +285,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
     		defaultConfigurationId = 
     			   dataManagementService.getDataManagementConfigurationId(defaultBasePath);
     		if(StringUtils.isEmpty(defaultConfigurationId)) {
-    		   throw new HpcException("Invalid default base path: " + defaultBasePath,
+    		   throw new HpcException(INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + defaultBasePath,
     				                  HpcErrorType.INVALID_REQUEST_INPUT);
     		}
     	}
@@ -652,6 +665,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 				                                    !StringUtils.isEmpty(userUpdateRequest.getFirstName()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getLastName()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getDefaultBasePath()),
+				                                    !StringUtils.isEmpty(userUpdateRequest.getDoc()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getUserRole()),
 				                                    userUpdateRequest.getActive() != null));
 		if(!updateItems.contains(true)) {
