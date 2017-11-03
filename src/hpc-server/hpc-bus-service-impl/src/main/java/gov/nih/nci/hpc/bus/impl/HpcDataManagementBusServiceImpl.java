@@ -28,6 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -1543,7 +1546,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         FileInputStream fileInputStream = null;
         try {
         	 fileInputStream = new FileInputStream(file);
-        	 String checksumComputed = DigestUtils.md5DigestAsHex(IOUtils.toByteArray(fileInputStream));
+			 HashCode hash = com.google.common.io.Files
+					      .hash(file, Hashing.md5());
+			 String checksumComputed = hash.toString();
         	 logger.info("checksum file: " + file.getAbsolutePath());
         	 logger.info("checksum given: " + checksum);
         	 logger.info("checksum computed: " + checksumComputed);
