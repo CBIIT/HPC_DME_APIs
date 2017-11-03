@@ -1,9 +1,4 @@
 { 
-    "source": {
-        "fileContainerId": "globus-shared-endpoint-uid",
-        "fileId": "test.txt"
-    },
-    "filePath" :  "/",
     "metadataEntries": [
     {
         "attribute": "dx_system_attribute",

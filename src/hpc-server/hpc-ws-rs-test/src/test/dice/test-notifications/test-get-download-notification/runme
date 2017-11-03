@@ -18,6 +18,7 @@ $HPC_DM_TEST/test-notifications/utils/runtest
 verify_registration dataObject-registration-response-header.tmp 
 
 async_sleep
+async_sleep
 
 #Make sure the dataObject is archived
 
@@ -50,7 +51,7 @@ get_http_code $RESPONSE_HEADER
 
 PRESENT=$(grep $OBJECT_PATH $RESPONSE_MSG)
 
-if [ -z $PRESENT ]
+if [ -z "$PRESENT" ]
 then
     echo "ERROR: Can not find the notification related to $OBJECT_PATH" >&2
     exit 1

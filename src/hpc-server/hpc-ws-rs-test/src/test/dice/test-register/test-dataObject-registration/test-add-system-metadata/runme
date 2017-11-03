@@ -14,7 +14,6 @@
 source $HPC_DM_TEST/utils/functions
 source ../../utils/registration-functions
 ../utils/runtest
-
 #Check if collection registration went through:
 verify_registration collection-registration-response-header.tmp
 
@@ -35,7 +34,6 @@ then
     echo "HINT: run makeme first"
     exit
 fi
-
 SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username $HPC_DM_TEST/utils/config`
 PROJECT_PATH=`cat registered-project-path.tmp`
@@ -50,7 +48,7 @@ echo "$UPDATED_INPUT"  > input.json
 
 
 EXPECTED_MESSAGE="System generated metadata can't be set/changed"
-curl_register input.json $PROJECT_PATH/object-${NAME}.txt dataObject
+curl_register input.json $DATAOBJECT_PATH dataObject README.txt 
 get_http_code $RESPONSE_HEADER  >&2
 get_json_value $RESPONSE_MSG errorType  >&2
 get_json_value $RESPONSE_MSG message  | sed "s#$EXPECTED_MESSAGE.*#$EXPECTED_MESSAGE#" >&2
