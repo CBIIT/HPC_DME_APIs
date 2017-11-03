@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+
+#Clean previous files 
+../../utils/cleantest
+
+../../../utils/maketest
+#Register a project to add dataObjects to it
+../utils/maketest
