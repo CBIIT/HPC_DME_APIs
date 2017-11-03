@@ -112,7 +112,7 @@
 										<!-- /.modal-content -->
 									</div>
 									<!-- /.modal-dialog -->
-								</div>								
+								</div>
 								<div class="form-group" th:if="${basePaths != null and basePaths.size() &gt; 0}">
 									<div class="col-md-12 form-group">
 									<label id="rowId0">Base Path: </label>
@@ -127,23 +127,23 @@
 												Wireframe</option>
 									</select>
 									</div>
-								</div>	
+								</div>
 									<div class="form-group">
 										<div class="col-md-12 form-group">
-											<label for="Name">Data file Path:</label> 
+											<label for="Name">Data file Path:</label>
 											<input type="text" name="path" id="path" size="100" th:value="${datafilePath}"/>
 										</div>
 										<div class="col-md-12 form-group">
-											<label for="checksum">Checksum (This value is used to validate data transfer):</label> 
+											<label for="checksum">Checksum (This value is used to validate data transfer):</label>
 											<input type="text" name="checksum" id="checksum" size="50" th:value="${checksum}"/>
 										</div>
 								</div>
-								
+
 								<div class="form-inline">
 					              <div class="form-group">
 					                <input type="file" name="hpcDatafile" id="hpcDatafile"/>
 					              </div>
-					            </div>								
+					            </div>
 								</div>
 								<div class="panel-heading">
 									<h2>
@@ -175,10 +175,10 @@
 																th:each="validValue : ${hpcMetadataAttrEntry.getValidValues()}"
 																th:value="${validValue}" th:text="${validValue}" th:selected="${validValue.equals(hpcMetadataAttrEntry.getAttrValue())}">
 																Wireframe</option>
-														</select>													
+														</select>
 													</td>
 											</tr>
-										
+
 											<tr th:if="${datafileAttrs != null and datafileAttrs.size() &gt; 0}">
 											<td align="left"><input type="text" name="_addAttrName1" id="_addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
 											<td align="left"><input type="text" name="_addAttrValue1" id="_addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>
@@ -222,10 +222,10 @@
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
-	//<![CDATA[	
-	
+	//<![CDATA[
+
 	var rowId = 1;
-	
+
 	function addMetadata() {
 		rowId++;
 	    var table = document.getElementById("metaAttrTable");
@@ -237,7 +237,7 @@
 	    cell0.innerHTML = '<input type="text" id="_addAttrName'+(rows+1)+'" name="_addAttrName'+(rows+1)+'" placeholder="Attribute Name" class="form-control"/>';
 	    cell1.innerHTML = '<input type="text" id="_addAttrValue'+(rows+1)+'" name="_addAttrValue'+(rows+1)+'" placeholder="Attribute Value" class="form-control"/>';
 	    return false;
-	}	
+	}
 
 	function validate()
 	{
@@ -246,13 +246,13 @@
 			alert("Path is missng!")
 			return false;
 		}
-		
+
 		if (!(/^\S{3,}$/.test(document.getElementById("path").value)))
 		{
 			alert("Space is not allowed in the path!")
 			return false;
 		}
-		
+
 		if(attributeNames)
 		{
 			for(var i=0;i<attributeNames.length;i++)
@@ -266,7 +266,7 @@
 				}
 			}
 		}
-		
+
 		var form = document.getElementById("dataFileForm");
 		var inputs = form.getElementsByTagName("input");
 		var selects = form.getElementsByTagName("select");
@@ -280,20 +280,20 @@
 			}
 		}
 	}
-	
+
 	function getAttributeNames()
 	{
 		var form = document.getElementById("dataFileForm");
 		var inputs = form.getElementsByTagName("input");
 		var selects = form.getElementsByTagName("select");
-		
+
 		var attrs = new Array();
 		for(var j=0;j<inputs.length;j++)
 		{
 			if(inputs[j].name.startsWith("_addAttrName"))
 				attrs.push(inputs[j].value);
 		}
-		
+
 		if(attributeNames != null)
 		{
 			for(var k=0;k<attributeNames.length;k++)
@@ -303,7 +303,7 @@
 		attrs.push("actionType");
 		return attrs;
 	}
-	
+
 	function duplicate(list, obj) {
 	    var i = list.length;
 	    var first = false;
@@ -317,19 +317,22 @@
 	    }
 	    return false;
 	}
-	
+
 	function refreshAttributes()
     {
+    	if(document.getElementById("basePath") != null && document.getElementById("basePath").value == "_select_null")
+			return false;
+
 		document.getElementById("actionType").value = "refresh";
 		$("#dataFileForm").submit();
     }
-	
+
     function cancelEdit()
     {
 		document.getElementById("actionType").value = "cancel";
 		$("#dataFileForm").submit();
     }
-//]]>	
+//]]>
 </script>
 
 </body>

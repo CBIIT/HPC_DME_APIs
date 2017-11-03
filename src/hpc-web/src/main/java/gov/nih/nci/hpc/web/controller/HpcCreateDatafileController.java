@@ -3,7 +3,7 @@
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
- * 
+ *
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://ncisvn.nci.nih.gov/svn/HPC_Data_Management/branches/hpc-prototype-dev/LICENSE.txt for details.
  */
@@ -76,7 +76,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 
 	/**
 	 * Get selected collection details from its path
-	 * 
+	 *
 	 * @param body
 	 * @param path
 	 * @param action
@@ -120,7 +120,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 			else
 				basePath = HpcClientUtil.getBasePath(request);
 			// User Session validation
-			
+
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userId = (String) session.getAttribute("hpcUserId");
 			if (user == null || authToken == null) {
@@ -147,47 +147,62 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, String path) throws HpcWebException {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
+		String userId = (String) session.getAttribute("hpcUserId");
+		if(basePaths == null || basePaths.isEmpty())
+		{
+			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+			if (modelDTO == null) {
+				modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+				session.setAttribute("userDOCModel", modelDTO);
+			}
 
-		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-		if (modelDTO == null) {
-			modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-			session.setAttribute("userDOCModel", modelDTO);
+			basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+			List<HpcDataManagementRulesDTO> docRules = HpcClientUtil.getUserDOCManagementRules(modelDTO, user.getDoc());
+			for (HpcDataManagementRulesDTO docRule : docRules) {
+				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, docRule.getBasePath(),  userId,
+						collectionServiceURL, sslCertPath, sslCertPassword);
+				if(permission != null && permission.getPermission() != null && (permission.getPermission().equals(HpcPermission.WRITE) || permission.getPermission().equals(HpcPermission.OWN)))
+					basePaths.add(docRule.getBasePath());
+			}
+			session.setAttribute("basePaths", basePaths);
 		}
 
-		Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-		List<HpcDataManagementRulesDTO> docRules = HpcClientUtil.getUserDOCManagementRules(modelDTO, user.getDoc());
-		for (HpcDataManagementRulesDTO docRule : docRules) {
-			basePaths.add(docRule.getBasePath());
-		}
-		model.addAttribute("basePathSelected", HpcClientUtil.getBasePath(request));
+		String selectedBasePath = HpcClientUtil.getBasePath(request);
+		if (selectedBasePath == null)
+			selectedBasePath = (String) session.getAttribute("basePathSelected");
+		else
+			session.setAttribute("basePathSelected", selectedBasePath);
+		model.addAttribute("basePathSelected", selectedBasePath);
+
 		setDatafilePath(model, request, path);
 		model.addAttribute("basePaths", basePaths);
 	}
-	
+
 	private void setDatafilePath(Model model, HttpServletRequest request, String parentPath)
 	{
 		String path = request.getParameter("path");
 		if(path != null && !path.isEmpty())
 			model.addAttribute("datafilePath", request.getParameter("path"));
-		
+
 		if(parentPath == null || parentPath.isEmpty())
 		{
 			String[] basePathValues = request.getParameterValues("basePath");
 			String basePath = null;
 			if (basePathValues == null || basePathValues.length == 0)
 				basePath = (String) request.getAttribute("basePath");
-			else 
+			else
 				basePath = basePathValues[0];
 			model.addAttribute("datafilePath", basePath);
 		}
 		else
 			model.addAttribute("datafilePath", parentPath);
 	}
-	
+
 
 	/**
 	 * Post operation to update metadata
-	 * 
+	 *
 	 * @param hpcDatafile
 	 * @param model
 	 * @param bindingResult
@@ -221,7 +236,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 		if (source == null || source.isEmpty())
 			source = "dashboard";
 		model.addAttribute("source", source);
-		
+
 		String checksum = request.getParameter("checksum");
 		if (checksum == null || checksum.isEmpty())
 			checksum = (String) request.getAttribute("checksum");
@@ -326,7 +341,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 
 		return "adddatafile";
 	}
-	
+
 	private void populateFormAttributes(HttpServletRequest request, HttpSession session, Model model, String basePath, boolean refresh) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -337,7 +352,7 @@ public class HpcCreateDatafileController extends AbstractHpcController {
 			session.setAttribute("userDOCModel", modelDTO);
 		}
 		List<HpcDataManagementRulesDTO> docRules = HpcClientUtil.getUserDOCManagementRules(modelDTO, user.getDoc());
-		
+
 		List<HpcMetadataValidationRule> rules = null;
 		for (HpcDataManagementRulesDTO docRule : docRules) {
 			if (docRule.getBasePath().equals(basePath))
