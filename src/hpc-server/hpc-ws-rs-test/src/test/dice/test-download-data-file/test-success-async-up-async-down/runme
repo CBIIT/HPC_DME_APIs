@@ -39,20 +39,3 @@ fi
 
 
 ../utils/download-async
-exit
-
-RESPONSE_HEADER=download-response-header.tmp 
-RESPONSE_MSG=download-response-message.json.tmp
-download_async "dataObject/$OBJECT_PATH"
-
-HTTP_CODE=`get_http_code $RESPONSE_HEADER`
-echo $HTTP_CODE
-
-#Do not check the file is the code is not 200
-if [ "$HTTP_CODE" != 200 ] 
-then
-    exit
-fi
-
-GLOBUS_PATH=$(get_json_value input.json.tmp fileId)
-verify_globus_file  $GLOBUS_PATH

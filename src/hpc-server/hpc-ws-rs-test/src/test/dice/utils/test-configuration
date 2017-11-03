@@ -1,7 +1,6 @@
 {
-    "globus-shared-endpoint-uid":"49b3a4ee-c864-11e6-9c56-22000a1e3b52",
+    "globus-shared-endpoint-uid":"c546fe96-1dd1-11e6-bfc3-22000b1701d1",
     "username":"zakigf",
-    "globus-user":"georgezakinih",
     "base-folder":"TEST_Archive",
     "asynchronous-sleep":"80"
 }
