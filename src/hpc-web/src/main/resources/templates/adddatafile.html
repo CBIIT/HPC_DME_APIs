@@ -113,16 +113,6 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>								
-									<div class="form-group">
-										<div class="col-md-12 form-group">
-											<label for="Name">Data file Path:</label> 
-											<input type="text" name="path" id="path" size="100" th:value="${datafilePath}"/>
-										</div>
-										<div class="col-md-12 form-group">
-											<label for="checksum">Checksum (This value is used to validate data transfer):</label> 
-											<input type="text" name="checksum" id="checksum" size="50" th:value="${checksum}"/>
-										</div>
-								</div>
 								<div class="form-group" th:if="${basePaths != null and basePaths.size() &gt; 0}">
 									<div class="col-md-12 form-group">
 									<label id="rowId0">Base Path: </label>
@@ -138,6 +128,16 @@
 									</select>
 									</div>
 								</div>	
+									<div class="form-group">
+										<div class="col-md-12 form-group">
+											<label for="Name">Data file Path:</label> 
+											<input type="text" name="path" id="path" size="100" th:value="${datafilePath}"/>
+										</div>
+										<div class="col-md-12 form-group">
+											<label for="checksum">Checksum (This value is used to validate data transfer):</label> 
+											<input type="text" name="checksum" id="checksum" size="50" th:value="${checksum}"/>
+										</div>
+								</div>
 								
 								<div class="form-inline">
 					              <div class="form-group">
@@ -179,7 +179,7 @@
 													</td>
 											</tr>
 										
-											<tr th:unless="${datafileAttrs != null}">
+											<tr th:if="${datafileAttrs != null and datafileAttrs.size() &gt; 0}">
 											<td align="left"><input type="text" name="_addAttrName1" id="_addAttrName1" placeholder="Attribute Value" class="form-control"/></td>
 											<td align="left"><input type="text" name="_addAttrValue1" id="_addAttrValue1" placeholder="Attribute Value" class="form-control"/></td>
 											</tr>

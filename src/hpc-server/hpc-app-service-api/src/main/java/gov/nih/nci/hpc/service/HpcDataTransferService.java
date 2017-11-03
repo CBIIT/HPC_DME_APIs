@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service;
 import java.io.File;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
@@ -242,16 +243,15 @@ public interface HpcDataTransferService
     /** 
      * Submit a request to download data objects.
      * 
-     * @param dataObjectPaths The list of data objects to download.
+     * @param dataObjectPathsMap A map of data-object-path to its configuration ID.
      * @param destinationLocation The user requested destination.
      * @param userId The user ID submitting the download request.
-     * @param configurationId The configuration ID (needed to determine the archive connection config).
      * @return The submitted request download task.
      * @throws HpcException on service failure.
      */
-	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
+	public HpcCollectionDownloadTask downloadDataObjects(Map<String, String> dataObjectPathsMap,
 			                                             HpcFileLocation destinationLocation,
-			                                             String userId, String configurationId)
+			                                             String userId)
 			                                            throws HpcException;
 	
     /** 

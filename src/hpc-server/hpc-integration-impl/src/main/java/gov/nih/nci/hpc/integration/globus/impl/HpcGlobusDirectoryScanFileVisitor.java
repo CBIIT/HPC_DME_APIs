@@ -57,7 +57,7 @@ public class HpcGlobusDirectoryScanFileVisitor implements HpcGlobusFileVisitor
     {
     	HpcDirectoryScanItem scanItem = new HpcDirectoryScanItem();
     	scanItem.setFileName(jsonFile.getString("name"));
-    	scanItem.setFilePath(path + "/" + scanItem.getFileName());
+    	scanItem.setFilePath((path + scanItem.getFileName()).replaceAll("//", "/"));
     	scanItem.setLastModified(jsonFile.getString("last_modified"));
     	
     	scanItems.add(scanItem);

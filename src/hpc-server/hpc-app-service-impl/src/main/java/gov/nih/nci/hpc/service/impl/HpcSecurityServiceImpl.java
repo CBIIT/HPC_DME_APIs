@@ -161,15 +161,17 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	}
     	
     	if(!dataManagementConfigurationLocator.getDocs().contains(nciAccount.getDoc())) {
-    	   throw new HpcException("Invalid Doc. Valid values: " + 
+    	   throw new HpcException("Invalid DOC: " + nciAccount.getDoc()+". Valid values: " + 
     	                          Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	if(dataManagementConfigurationLocator.get(nciAccount.getDefaultConfigurationId()) == null) {
-  		  throw new HpcException("Invalid Configuration ID. Valid values: " + 
-                                 Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
-                                 HpcErrorType.INVALID_REQUEST_INPUT);
+    	String defaultConfigurationId = nciAccount.getDefaultConfigurationId();
+    	if(defaultConfigurationId != null && 
+    	   dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
+  		   throw new HpcException("Invalid Configuration ID. Valid values: " + 
+                                  Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
     	// Check if the user already exists.
@@ -226,7 +228,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	
     	if(!StringUtils.isEmpty(doc)) {
     	   if(!dataManagementConfigurationLocator.getDocs().contains(doc)) {
-    	      throw new HpcException("Invalid Doc. Valid values: " + 
+    	      throw new HpcException("Invalid DOC: "+ doc +". Valid values: " + 
     	                             Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
     	 	                         HpcErrorType.INVALID_REQUEST_INPUT);
     	   }
