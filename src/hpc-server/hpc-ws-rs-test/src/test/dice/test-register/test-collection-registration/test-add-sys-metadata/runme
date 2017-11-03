@@ -55,3 +55,6 @@ check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
 ATTRIBUTE="\"registered_by_doc\""
 check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
 
+ATTRIBUTE="\"metadata_updated\""
+check_attribute "$RESPONSE_MSG" "$ATTRIBUTE"
+

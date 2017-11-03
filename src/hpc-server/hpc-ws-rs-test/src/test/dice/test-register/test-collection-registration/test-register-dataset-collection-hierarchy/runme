@@ -31,7 +31,7 @@ echo $HTTP_CODE >&2
 
 if [ $HTTP_CODE -eq "400" ]
 then
-   EXPECTED_MESSAGE="Invalid collection hierarchy for DOC"
+   EXPECTED_MESSAGE="Invalid collection hierarchy"
    get_json_value $RESPONSE_MSG "errorType" >&2
    get_json_value $RESPONSE_MSG "message" | sed "s#^$EXPECTED_MESSAGE.*#$EXPECTED_MESSAGE#" >&2
 fi

@@ -10,6 +10,26 @@
 # Common functions used by the unit tests
 
 
+
+#Returns all task_ids for asynchronous download
+function get_async_download_tasks {
+
+
+  #Get the status of the download request and verify it is true
+  response_header=get-async-download-tasks-response-header.tmp
+  response_msg=get-async-download-tasks-response-message.json.tmp
+
+
+  SERVER=`cat $HPC_DM_TEST/utils/server`
+  CONFIG=$(get_curl_config)
+  set -x  
+  curl -X GET $SERVER/download $CONFIG -H "Accept: application/json" -D "$response_header" -o "$response_msg"  -s 2>curl-status
+  check_connection $response_header
+}
+
+
+
+
 #prints a message to stderr and exits
 #Input: <error_message>
 function fail_and_exit {
@@ -1182,10 +1202,19 @@ function download_async {
 }
 
 
+#Get the status of asynchronousl download request 
+#Input: <taskId>  a numerical id for the download receipt
+#Input: <type> dataObject, collection, or "" for list of dataObjects
+function get_download_status_wrapper {
+
+  get_download_status $*
+}
+
+
 
 #Get the status of asynchronousl download request 
 #Input: <taskId>  a numerical id for the download receipt
-#Input: <type> dataObject or collection
+#Input: <type> dataObject, collection, or "" for list of dataObjects
 function get_download_status {
 
     usage="USAGE: get_download_status <taskId> <type>"
@@ -1202,24 +1231,17 @@ function get_download_status {
 
     taskId="$1"
     request_type="$2"
+    SERVER=`cat $HPC_DM_TEST/utils/server`
 
     if [ "$request_type" != "" ]
     then
-      request_type=/${request_type}
+      #dataObject or collection
+      endpoint="${request_type}/download/?taskId=$taskId"
+    else 
+      endpoint=download/$taskId
     fi
-
-    
-    #Verify that taskId is a numerical value
-    #re='^[0-9]+$'
-    #if ! [[ "$taskId" =~ $re ]] ; then
-    #    echo "ERROR: taskId $taskId is not a number" >&2; 
-    #    exit 1
-    #fi
-
-    SERVER=`cat $HPC_DM_TEST/utils/server`
-
-    
-    curl -G -X GET ${SERVER}${request_type}/download?taskId="$taskId"  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+      
+    curl -G -X GET $SERVER/$endpoint  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG  -s 2> curl-status
     check_connection $RESPONSE_HEADER
 }
 
@@ -1269,7 +1291,7 @@ function subscribe_to_notifications {
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
-    curl -H "Content-Type: application/json" -d @$NOTIFICATION_INPUT -X POST ${SERVER}/notification  --config $HPC_DM_TEST/utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$NOTIFICATION_INPUT -X POST ${SERVER}/notification  $(get_curl_config)  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
@@ -2109,7 +2131,7 @@ function get_doc_policies {
     SERVER=`cat $HPC_DM_TEST/utils/server`
     CONFIG=$(get_curl_config)
 
-    curl -X GET $SERVER/dm/model/"$doc" $CONFIG -H "Accept: application/json" -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG"  -s 2>curl-status
+    curl -X GET $SERVER/dm/model/ $CONFIG -H "Accept: application/json" -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG"  -s 2>curl-status
     check_connection $RESPONSE_HEADER
 }
 
@@ -2359,7 +2381,7 @@ function verify_globus_download {
 
 
   #Sleep 50s and verify the status is updated
-  sleep 50
+  sleep 50 
   RESPONSE_HEADER=get-download-status-response-header.tmp
   RESPONSE_MSG=get-download-status-response-message.json.tmp
   get_download_status "$taskId" "$download_type"
@@ -2368,3 +2390,32 @@ function verify_globus_download {
   status=$(get_json_unquotted_value $RESPONSE_MSG inProgress)
   echo "in_progress:$status"
 }
+
+
+#Get download requests
+#Inputs:    <bookmark-name> 
+#           <response-header>
+#           <response-msg>
+function delete_bookmark {
+
+    USAGE="ERROR: using delete_bookmark.\nUSAGE: delete_bookmark <bookmark-name> <response-header> <response-message>"
+
+    if [ "$#" -ne  3 ] 
+    then    
+        echo "$USAGE"  1>&2
+        exit 1
+
+    fi
+
+    bookmark_name="$1"
+    RESPONSE_HEADER="$2"
+    RESPONSE_MSG="$3"
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    CONFIG=$(get_curl_config)
+    curl -X DELETE $SERVER/bookmark/"$bookmark_name" $CONFIG -H "Accept: application/json" -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG"  -s 2>curl-status
+    check_connection $RESPONSE_HEADER
+}
+
+
+
