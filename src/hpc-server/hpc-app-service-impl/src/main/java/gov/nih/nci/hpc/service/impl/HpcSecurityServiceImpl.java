@@ -12,6 +12,21 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidIntegratedSystemAccount;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
+
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -35,19 +50,6 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
-
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 /**
  * <p>
  * HPC Security Application Service Implementation.
@@ -100,10 +102,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	@Autowired
     private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 	
-	// DOC base paths.
+    // The Data Management Configuration Locator.
 	@Autowired
-	private HpcDocConfigurationLocator docBasePath = null;
-
+    private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
+	
 	// The authentication token signature key.
 	private String authenticationTokenSignatureKey = null;
 	
@@ -157,10 +159,19 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	   throw new HpcException("Invalid add user input",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
-    	if(!docBasePath.containsKey(nciAccount.getDoc())) {
-    	   throw new HpcException("Invalid DOC: " + nciAccount.getDoc() +
-    			                  ". Valid values: " + docBasePath.keySet(),
+    	
+    	if(!dataManagementConfigurationLocator.getDocs().contains(nciAccount.getDoc())) {
+    	   throw new HpcException("Invalid DOC: " + nciAccount.getDoc()+". Valid values: " + 
+    	                          Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	String defaultConfigurationId = nciAccount.getDefaultConfigurationId();
+    	if(defaultConfigurationId != null && 
+    	   dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
+  		   throw new HpcException("Invalid Configuration ID. Valid values: " + 
+                                  Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
 
     	// Check if the user already exists.
@@ -189,7 +200,8 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
 
     @Override
-    public void updateUser(String nciUserId, String firstName, String lastName, String doc, boolean active)
+    public void updateUser(String nciUserId, String firstName, String lastName, 
+    		               String doc, String defaultConfigurationId, boolean active)
 	                      throws HpcException
     {
     	// Input validation.
@@ -198,12 +210,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
-    	if(doc != null && !docBasePath.containsKey(doc)) {
-    	   throw new HpcException("Invalid DOC: " + doc +
-    			                  ". Valid values: " + docBasePath.keySet(),
-	                              HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-
     	// Get the user.
     	HpcUser user = getUser(nciUserId);
     	if(user == null) {
@@ -215,12 +221,31 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	if(!StringUtils.isEmpty(firstName)) {
     	   user.getNciAccount().setFirstName(firstName);
     	}
+    	
     	if(!StringUtils.isEmpty(lastName)) {
     		user.getNciAccount().setLastName(lastName);
     	}
+    	
     	if(!StringUtils.isEmpty(doc)) {
-    	   user.getNciAccount().setDoc(doc);
+    	   if(!dataManagementConfigurationLocator.getDocs().contains(doc)) {
+    	      throw new HpcException("Invalid DOC: "+ doc +". Valid values: " + 
+    	                             Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
+    	 	                         HpcErrorType.INVALID_REQUEST_INPUT);
+    	   }
+     	   user.getNciAccount().setDoc(doc);
+     	}
+    	
+    	if(!StringUtils.isEmpty(defaultConfigurationId)) {
+    	   if(dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
+    		  throw new HpcException("Invalid Configuration ID. Valid values: " + 
+                                     Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
+                                     HpcErrorType.INVALID_REQUEST_INPUT);
+    	   }
+    	   user.getNciAccount().setDefaultConfigurationId(defaultConfigurationId);
     	}
+    	else
+    		user.getNciAccount().setDefaultConfigurationId(null);
+    	
     	if(user.getActive() != active) {
     	   user.setActive(active);
     	   // Active indicator has changed. Update the invoker (admin) who changed it.
@@ -249,10 +274,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     }
     
     @Override
-    public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
+    public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
+    		                      String doc, String defaultConfigurationId, boolean active) 
                                  throws HpcException
     {
-    	return userDAO.getUsers(nciUserId, firstNamePattern, lastNamePattern, doc, active);
+    	return userDAO.getUsers(nciUserId, firstNamePattern, lastNamePattern, 
+    			                doc, defaultConfigurationId, active);
     }
                                  
 

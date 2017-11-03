@@ -134,7 +134,7 @@ public interface HpcNotificationService
      * @throws HpcException on service failure.
      */
     public HpcNotificationDeliveryReceipt getNotificationDeliveryReceipt(int eventId) 
-    		                                                                   throws HpcException;
+    		                                                            throws HpcException;
 
     /**
      * Get the notification delivery receipts page size.

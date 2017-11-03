@@ -38,7 +38,7 @@ public class HpcAPIVersionInterceptor
     //---------------------------------------------------------------------//    
     
     // API Version HEADER.
-	public final static String API_VERSION_HEADER = "HPC-API-Version"; 
+	public static final String API_VERSION_HEADER = "HPC-API-Version"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -103,7 +103,7 @@ public class HpcAPIVersionInterceptor
 		           (MetadataMap<String, Object>) message.get(Message.PROTOCOL_HEADERS);
 
         if(headers == null) {
-           headers = new MetadataMap<String, Object>();
+           headers = new MetadataMap<>();
         }             
 
         headers.add(API_VERSION_HEADER, version);

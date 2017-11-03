@@ -10,8 +10,14 @@
 
 package gov.nih.nci.hpc.bus.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import gov.nih.nci.hpc.bus.HpcReportBusService;
-import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.report.HpcReport;
@@ -26,13 +32,6 @@ import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>

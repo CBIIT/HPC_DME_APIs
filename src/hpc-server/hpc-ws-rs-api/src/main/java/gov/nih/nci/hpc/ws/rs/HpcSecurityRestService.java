@@ -32,7 +32,6 @@ import javax.ws.rs.core.Response;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id: HpcSecurityRestService.java 1013 2016-03-26 23:06:30Z rosenbergea $
  */
 
 @Path("/")
@@ -93,7 +92,8 @@ public interface HpcSecurityRestService
      *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
      *                                   SQL LIKE wildcards ('%', '_') are supported. 
-     * @param doc User DOC.                      
+     * @param doc (otional) The DOC.
+     * @param defaultBasePath (otional) The default base path.                      
      * @return The REST service response w/ HpcUserListDTO entity.
      */
     @GET
@@ -102,7 +102,8 @@ public interface HpcSecurityRestService
     public Response getActiveUsers(@QueryParam("nciUserId") String nciUserId,
     		                       @QueryParam("firstNamePattern") String firstNamePattern,
     		                       @QueryParam("lastNamePattern") String lastNamePattern,
-    		                       @QueryParam("doc") String doc);
+    		                       @QueryParam("doc") String doc,
+    		                       @QueryParam("defaultBasePath") String defaultBasePath);
     
     /**
      * Get users by search criterias. Note: All users are returned, both active and inactive
@@ -112,7 +113,8 @@ public interface HpcSecurityRestService
      *                                    SQL LIKE wildcards ('%', '_') are supported. 
      * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive matching).
      *                                   SQL LIKE wildcards ('%', '_') are supported. 
-     * @param doc User DOC 
+     * @param doc (otional) The DOC.
+     * @param defaultBasePath (otional) The default base path. 
      * @return The REST service response w/ HpcUserListDTO entity.
      */
     @GET
@@ -121,7 +123,8 @@ public interface HpcSecurityRestService
     public Response getAllUsers(@QueryParam("nciUserId") String nciUserId,
     		                    @QueryParam("firstNamePattern") String firstNamePattern,
     		                    @QueryParam("lastNamePattern") String lastNamePattern,
-    		                    @QueryParam("doc") String doc);
+    		                    @QueryParam("doc") String doc,
+    		                    @QueryParam("defaultBasePath") String defaultBasePath);
     
     /**
      * Authenticate a user.

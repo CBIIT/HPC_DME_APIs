@@ -62,6 +62,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var collectionTypes = [[${collectionTypes}]];
+    var basePaths = [[${basePaths}]];
     var attributeNames = [[${attributeNames}]];
 /*]]>*/
 </script>
@@ -103,6 +104,7 @@
 									th:object="${hpcCollection}" method="POST">
 									<input type="hidden" name="actionType" id="actionType"/>
 									<input type="hidden" name="parent" id="parent" th:value="${parent}"/>
+									<input type="hidden" name="source" id="source" th:value="${source}"/>
 								<!--panel-body start-->
 								<div class="panel-body">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -136,7 +138,21 @@
 											</tr>
 										</thead>
 										<tbody>
-										<tr id='attrRow0' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
+										<tr id='attrRow0' th:if="${basePaths != null and basePaths.size() &gt; 0}">
+											<td style="white-space: nowrap"><label id="rowId0">Base Path</label>
+											</td>
+											<td style="white-space: nowrap"><select size="1"
+												id="basePath" name="basePath" class="form-control"
+												th:required="required"
+												onChange="refreshAttributes()">
+													<option value="_select_null">----Select----</option>
+													<option
+														th:each="basePath : ${basePaths}"
+														th:value="${basePath}" th:text="${basePath}" th:selected="${basePath.equals(basePathSelected)}">
+														Wireframe</option>
+											</select></td>
+										</tr>	
+										<tr id='attrRow1' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
 											<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
@@ -184,7 +200,7 @@
 									<button class="btn btn-md btn-primary"
 										id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 									<button type="submit" class="btn btn-md btn-primary"
-										id="primaryButton" onClick="return validate()">Create</button>
+										id="primaryCreateButton" onClick="return validate()" th:disabled="${create == true} ?'false' : 'disabled'">Create</button>
 									<button type="submit" class="btn btn-primary"
 										id="cancel" onClick="cancelEdit()">Cancel</button>
 								</div>
@@ -320,6 +336,13 @@
 
 	function refreshAttributes()
     {
+		$('#primaryCreateButton').prop('disabled', true);
+		if(document.getElementById("basePath") != null && document.getElementById("basePath").value == "_select_null")
+			return false;
+
+		if(document.getElementById("zAttrStr_collection_type") != null && document.getElementById("zAttrStr_collection_type").value == "_select_null")
+			return false;
+		
 		document.getElementById("actionType").value = "refresh";
 		$("#collectionForm").submit();
     }
@@ -330,10 +353,10 @@
 		$("#collectionForm").submit();
     }
 	
-	
-	function cancelEdit()
+    function cancelEdit()
     {
-		window.history.back();
+		document.getElementById("actionType").value = "cancel";
+		$("#collectionForm").submit();
     }
 //]]>
 </script>

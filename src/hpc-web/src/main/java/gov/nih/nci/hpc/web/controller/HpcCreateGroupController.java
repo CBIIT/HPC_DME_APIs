@@ -53,8 +53,6 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcCreateGroupController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.group}")
 	private String groupServiceURL;
-	@Value("${gov.nih.nci.hpc.server.docs}")
-	private String docsServiceURL;
 
 	/**
 	 * Prepare Create Group page

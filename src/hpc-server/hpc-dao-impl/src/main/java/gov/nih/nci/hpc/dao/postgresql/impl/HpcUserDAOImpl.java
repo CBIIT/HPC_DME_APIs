@@ -46,11 +46,12 @@ public class HpcUserDAOImpl implements HpcUserDAO
     // SQL Queries.
 	private static final String UPSERT_USER_SQL = 
 		    "insert into public.\"HPC_USER\" ( " +
-                    "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", " +
+                    "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", \"DEFAULT_CONFIGURATION_ID\", " +
                     "\"ACTIVE\", \"CREATED\", \"LAST_UPDATED\", \"ACTIVE_UPDATED_BY\") " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?) " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
             "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", " +
                                                    "\"DOC\"=excluded.\"DOC\", " +
+                                                   "\"DEFAULT_CONFIGURATION_ID\"=excluded.\"DEFAULT_CONFIGURATION_ID\", " +
                                                    "\"LAST_NAME\"=excluded.\"LAST_NAME\", " +
                                                    "\"ACTIVE\"=excluded.\"ACTIVE\", " +
                                                    "\"ACTIVE_UPDATED_BY\"=excluded.\"ACTIVE_UPDATED_BY\", " +
@@ -68,6 +69,8 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	private static final String GET_USERS_LAST_NAME_PATTERN_FILTER = " and lower(\"LAST_NAME\") like lower(?) ";
 	
 	private static final String GET_USERS_DOC_FILTER = " and lower(\"DOC\") = lower(?) ";
+	
+	private static final String GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER = " and lower(\"DEFAULT_CONFIGURATION_ID\") = lower(?) ";
 	
 	private static final String GET_USERS_ACTIVE_FILTER = " and \"ACTIVE\" = true ";
 	
@@ -91,6 +94,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		nciAccount.setFirstName(rs.getString("FIRST_NAME"));
 		nciAccount.setLastName(rs.getString("LAST_NAME"));
 		nciAccount.setDoc(rs.getString("DOC"));
+		nciAccount.setDefaultConfigurationId(rs.getString("DEFAULT_CONFIGURATION_ID"));
 		
     	HpcUser user = new HpcUser();
     	Calendar created = Calendar.getInstance();
@@ -142,6 +146,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		                         user.getNciAccount().getFirstName(),
 		                         user.getNciAccount().getLastName(),
 		                         user.getNciAccount().getDoc(),
+		                         user.getNciAccount().getDefaultConfigurationId(),
 		                         user.getActive(),
 		                         user.getCreated(),
 		                         user.getLastUpdated(),
@@ -170,7 +175,8 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	}
 	
 	@Override
-	public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc, boolean active) 
+	public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
+			                      String doc, String defaultConfigurationId, boolean active) 
                                  throws HpcException
     {
 		// Build the query based on provided search criteria.
@@ -193,8 +199,12 @@ public class HpcUserDAOImpl implements HpcUserDAO
      	   args.add(lastNamePattern);
      	}
     	if(doc != null) {
-      	   sqlQueryBuilder.append(GET_USERS_DOC_FILTER);
-      	   args.add(doc);
+       	   sqlQueryBuilder.append(GET_USERS_DOC_FILTER);
+       	   args.add(doc);
+       	}
+    	if(defaultConfigurationId != null) {
+      	   sqlQueryBuilder.append(GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER);
+      	   args.add(defaultConfigurationId);
       	}
     	if(active) {
       	   sqlQueryBuilder.append(GET_USERS_ACTIVE_FILTER);
