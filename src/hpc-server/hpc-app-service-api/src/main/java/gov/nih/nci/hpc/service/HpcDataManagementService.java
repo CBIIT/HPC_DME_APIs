@@ -9,15 +9,21 @@
 
 package gov.nih.nci.hpc.service;
 
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
-import gov.nih.nci.hpc.domain.model.HpcDocConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
 
 /**
  * <p>
@@ -153,23 +159,25 @@ public interface HpcDataManagementService
     public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException;
 
     /**
-     * Assign system account as an additional owner of an entity.
+     * Set a co-ownership on an entity. Both the user-id and the system account will be assigned
+     * as owners.
      *
      * @param path The entity path.
+     * @param userId The user-id
      * @throws HpcException on service failure.
      */
-    public void assignSystemAccountPermission(String path) throws HpcException;
+    public void setCoOwnership(String path, String userId) throws HpcException;
     
     /**
      * Validate a path against a hierarchy definition.
      *
      * @param path The collection path.
-     * @param doc Use validation rules of this DOC.
+     * @param configurationId Use validation rules of this data management configuration.
      * @param dataObjectRegistration If true, the service validates if data object registration is allowed 
-     *                               in this collection
+     *                               in this collection.
      * @throws HpcException If the hierarchy is invalid.
      */
-    public void validateHierarchy(String path, String doc,
+    public void validateHierarchy(String path, String configurationId,
     		                      boolean dataObjectRegistration) 
     		                     throws HpcException;
     
@@ -231,19 +239,108 @@ public interface HpcDataManagementService
     public void closeConnection();
     
     /**
-     * Get DOC configuration.
-     * 
-     * @param doc The DOC to get the configuration for
-     * @return DOC configuration.
+     * Data objects registration.
+     *
+     * @param userId The user ID requested the registration.
+     * @param dataObjectRegistrationRequests The data object registration requests.
+     * @return The task ID created to register the data objects and can be used to track status
+     * @throws HpcException on service failure.
      */
-    public HpcDocConfiguration getDocConfiguration(String doc);
-
+    public String registerDataObjects(String userId,  
+    		                          Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+    				                 throws HpcException;
+    
     /**
-     * Get a list of all DOCs supported by the system.
-     * 
-     * @return List of DOCs.
+     * Get bulk object registration tasks. 
+     *
+     * @param status Get tasks in this status.
+     * @return A list of data object list registration tasks.
+     * @throws HpcException on service failure.
      */
-    public List<String> getDocs();
+    public List<HpcBulkDataObjectRegistrationTask> getBulkDataObjectRegistrationTasks(
+    		                                              HpcBulkDataObjectRegistrationTaskStatus status) 
+    		                                              throws HpcException;
+    
+    /** 
+     * Update a bulk data object registration task.
+     * 
+     * @param registrationTask The registration task to update.
+     * @throws HpcException on service failure.
+     */
+    public void updateBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask)
+                                                    throws HpcException;
+    
+    /**
+     * Complete a bulk data object registration task:
+     * 1. Update task info in DB with results info.
+     *
+     * @param registrationTask The registration task to complete.
+     * @param result The result of the task (true is successful, false is failed).
+     * @param message (Optional) If the task failed, a message describing the failure.
+     * @param completed (Optional) The download task completion timestamp.
+     * @throws HpcException on service failure.
+     */
+    public void completeBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask,
+    		                                           boolean result, String message, Calendar completed) 
+    		                                          throws HpcException;
+    
+    /**
+     * Get bulk data object registration task status. 
+     *
+     * @param taskId The registration task ID.
+     * @return A download status object, or null if the task can't be found.
+     *         Note: The returned object is associated with a 'task' object if the registration 
+     *         is in-progress. If the registration completed or failed, the returned object is associated with a 
+     *         'result' object. 
+     * @throws HpcException on service failure.
+     */
+    public HpcBulkDataObjectRegistrationStatus getBulkDataObjectRegistrationTaskStatus(String taskId) 
+    		                                                                          throws HpcException;
+    
+    /**
+     * Get a collection type of a path.
+     *
+     * @param path The collection path.
+     * @return The collection type.
+     * @throws HpcException on service failure.
+     */
+    public String getCollectionType(String path) throws HpcException;
+    
+    /**
+     * Get all Data Management Configurations.
+     * 
+     * @return Data management configuration.
+     */
+    public List<HpcDataManagementConfiguration> getDataManagementConfigurations();
+    
+	/**
+     * Find data management configuration ID for a given path. This is searched
+     * by matching the given path to all configuration base paths. If any configuration
+     * base path is found to be the 'base path' of the given path, then the corresponding configuration ID
+     * is returned
+     *
+     * @param path the path to find a config ID for.
+     * @return A configuration ID if matched by base path, or null otherwise
+     */
+	public String findDataManagementConfigurationId(String path);
+	
+	/**
+     * Get data management configuration ID by base path. 
+     * 
+     * @param basePath The base path to get the config for.
+     *
+     * @return A configuration ID, or null if not found.
+     */
+	public String getDataManagementConfigurationId(String basePath);
+	
+	/**
+     * Get data management configuration by ID. 
+     * 
+     * @param id The configuration ID.
+     *
+     * @return A configuration ID, or null if not found.
+     */
+	public HpcDataManagementConfiguration getDataManagementConfiguration(String id);
 }
 
  

@@ -28,10 +28,10 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectsRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
@@ -173,15 +173,26 @@ public interface HpcDataManagementRestService
     /**
      * Data objects registration.
      *
-     * @param dataObjectsRegistrationRequest The registration request of a list of data objects.
+     * @param bulkDataObjectRegistrationRequest The bulk registration request.
      * @return The REST service response.
      */
 	@PUT
-	@Path("/dataObject/")
+	@Path("/registration")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response registerDataObjects(
-			                HpcDataObjectsRegistrationRequestDTO dataObjectsRegistrationRequest);
+			                HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
+	
+    /**
+     * Get data objects list registration task status.
+     *
+     * @param taskId The registration task ID.
+     * @return The REST service response w/ HpcDataObjectListRegistrationStatusDTO entity.
+     */
+	@GET
+	@Path("/registration/{taskId}")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDataObjectsRegistrationStatus(@PathParam("taskId") String taskId);
 
     /**
      * Get a data object.
@@ -281,7 +292,7 @@ public interface HpcDataManagementRestService
 	@Path("/download")
 	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response downloadDataObjects(HpcDataObjectsDownloadRequestDTO downloadRequest);
+	public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest);
 	
     /**
      * Get data objects download task status.
@@ -290,40 +301,32 @@ public interface HpcDataManagementRestService
      * @return The REST service response w/ HpcCollectionDownloadStatusDTO entity.
      */
 	@GET
-	@Path("/download")
+	@Path("/download/{taskId}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataObjectsDownloadStatus(@QueryParam("taskId") String taskId);
+	public Response getDataObjectsDownloadStatus(@PathParam("taskId") String taskId);
 	
     /**
-     * Get data management model (metadata validation rules and hierarchy definition) configured for a DOC.
+     * Get download summary (for the request invoker).
      *
-     * @param doc The DOC to get the model for.
+     * @param page The requested results page.
+     * @param totalCount If set to true, return the total count of completed tasks. All active tasks
+     *                   are always returned.
+     * @return The REST service response w/ HpcDownloadSummaryDTO entity.
+     */
+	@GET
+	@Path("/download")
+	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getDownloadSummary(@QueryParam("page") Integer page,
+                                       @QueryParam("totalCount") Boolean totalCount);
+	
+    /**
+     * Get data management model. This includes all rules.
+     *
      * @return The REST service response w/ HpcDataManagementModelDTO entity.
      */
 	@GET
-	@Path("/dm/model/{doc}")
+	@Path("/dm/model")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataManagementModel(@PathParam("doc") String doc);
-	
-    /**
-     * Get data management tree (collections and data objects) from a DOC base path.
-     *
-     * @param doc The DOC to get the tree for.
-     * @return The REST service response w/ HpcDataManagementTreeDTO entity.
-     */
-	@GET
-	@Path("/dm/tree/{doc}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataManagementTree(@PathParam("doc") String doc);
-	
-    /**
-     * Get data management model DOCs.
-     *
-     * @return The REST service response w/ HpcDataManagementDocListDTO entity.
-     */
-	@GET
-	@Path("/dm/docs")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataManagementModelDOCs();
+	public Response getDataManagementModel();
 }
 

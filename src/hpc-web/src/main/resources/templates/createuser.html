@@ -20,6 +20,11 @@
 	src="js/jquery/3.1.1/jquery.min.js"></script>
 <script
 	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var basePaths = [[${basePaths}]];
+/*]]>*/
+</script>	
 </head>
 <body>
 
@@ -70,7 +75,7 @@
 										<label for="lastName">DOC:</label> 
 											<select size="1"
 												id="doc" name="doc" class="form-control"
-												th:required="required">
+												th:required="required" onChange="refreshBasePath(this.value)">
 													<option value="-1">----Select----</option>
 													<option
 														th:each="attrName : ${docs}"
@@ -78,6 +83,15 @@
 														Wireframe</option>
 											</select>																			
 									</div>
+									<div class="col-sm-12 column" th:if="${basePaths != null and basePaths.size() &gt; 0}">
+									<label for="basePath">Default Base Path: </label>
+									<select size="1"
+										id="basePath" name="basePath" class="form-control"
+										th:required="required">
+											<option value="_select_null">----Select----</option>
+									</select>
+									</div>
+									
 									<div class="col-sm-12 column">
 										<label for="role">Role:</label> 
 											<select size="1"
@@ -106,8 +120,25 @@
 	</div>
 
 	<script>
-	
-    function validate()
+	//<![CDATA[
+	function refreshBasePath(docName) {
+		var attrOptions="<option value='_select_null'>--Select--</option>";
+		if(basePaths != null && basePaths.length > 0)
+		{
+			for(var j=0;j<basePaths.length;j++)
+			{
+				var attr = basePaths[j];
+				var basePath = basePaths[j].substring(basePaths[j].indexOf(":")+1, basePaths[j].length);
+				var doc = basePaths[j].substring(0,basePaths[j].indexOf(":"));
+				if(doc == docName)
+					attrOptions = attrOptions + "<option value='"+basePath+"'>"+basePath+"</option>"
+			}
+		}
+	    $('#basePath').empty();
+	    $('#basePath').append(attrOptions);
+	}	
+
+	function validate()
     {
     	var userName = document.getElementById("nciUserId").value;
         if( /[^a-zA-Z0-9\-\_]/.test( userName ) ) {
@@ -159,6 +190,8 @@
 				$('#myModal-event').modal('hide');
 			});
 		});
+		
+	//]]>		
 	</script>
 
 </body>

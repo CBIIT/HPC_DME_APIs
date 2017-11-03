@@ -35,6 +35,8 @@ public class HpcLogoutController extends AbstractHpcController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model, HttpSession session) {
+		session.removeAttribute("hpcUser");
+		session.removeAttribute("hpcUserToken");
 		session.invalidate();
 		session = null;
 		HpcLogin hpcLogin = new HpcLogin();

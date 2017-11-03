@@ -251,27 +251,28 @@ $("body").mousemove(function(e) {
 
 function scrollWindow()
 {
-	var posX = Number(scrollLoc);
-	if(posX <= 500)
+	var posY = Number(scrollLoc);
+	if(posY) window.scrollTo(0, posY-100);
+/*	if(posY <= 500)
 	{
 		window.scrollBy(0, Number(scrollLoc) * 0.4);
 	}
-	else if(posX > 500 && posX <= 2000)
+	else if(posY > 500 && posY <= 2000)
 	{
 		window.scrollBy(0, Number(scrollLoc) * 0.6);
 	}
-	else if(posX > 200 && posX <= 4000)
+	else if(posY > 200 && posY <= 4000)
 	{
 		window.scrollBy(0, Number(scrollLoc) * 0.75);
 	}
-	else if(posX > 3000 && posX <= 5000)
+	else if(posY > 3000 && posY <= 5000)
 	{
 		window.scrollBy(0, Number(scrollLoc) * 0.85);
 	}
 	else
 	{
 		window.scrollBy(0, Number(scrollLoc));
-	}
+	}*/
 }
 
 $('#tree1').bind('tree.open', function (e,data) {  
@@ -281,15 +282,16 @@ $('#tree1').bind('tree.open', function (e,data) {
 	document.getElementById("selectedNodeId").value = node.id;
 	document.getElementById("scrollLoc").value = scrollLoc;
 	$("#browseForm").submit();
+	$('#tree1').tree('selectNode', node);
 }
 );
 
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "addCollection": function (node) { 
-    	window.location = "/addCollection?parent="+node.fullPath;
+    	window.location = "/addCollection?parent="+node.fullPath+"&source=browse";
     },
     "addDatafile": function (node) {
-    	window.location = "/addDatafile?parent="+node.fullPath;
+    	window.location = "/addDatafile?parent="+node.fullPath+"&source=browse";
     }
 
 }); 

@@ -24,7 +24,6 @@ import java.util.List;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public interface HpcNotificationDAO 
@@ -108,8 +107,8 @@ public interface HpcNotificationDAO
      * Get Notification Delivery Receipts for a user.
      *
      * @param userId The user ID to get the notification delivery receipts for. 
-     * @param offset Skip that many path in the returned results.
-     * @param limit No more than 'limit' paths will be returned.
+     * @param offset Skip that many receipts in the returned results.
+     * @param limit No more than 'limit' receipts will be returned.
      * @return A list of notification delivery receipts.
      * @throws HpcException on database failure.
      */
