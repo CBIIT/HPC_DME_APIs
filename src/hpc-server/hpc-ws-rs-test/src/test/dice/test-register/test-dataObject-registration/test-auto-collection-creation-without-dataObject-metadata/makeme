@@ -22,8 +22,4 @@
 #Register a project to add dataObjects to it
 
 source $HPC_DM_TEST/utils/functions
-USERID=`get_username $HPC_DM_TEST/utils/config`
-RESPONSE_HEADER=update-no-hier-response-header.tmp
-RESPONSE_MSG=update-no-hier-response-message.json.tmp
-update_existing_user $USERID update-no-hierarchy.json  $RESPONSE_HEADER $RESPONSE_MSG
 
