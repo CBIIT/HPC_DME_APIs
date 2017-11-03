@@ -36,9 +36,10 @@ get_doc_policies DUMMY "$RESPONSE_HEADER" "$POLICIES_FILE"
 METADATA_TYPE="dataObjectSystemGeneratedMetadataAttributeNames"
 get_system_added_metadata "$POLICIES_FILE" "$METADATA_TYPE"
 
-#As this is synchronous upload, it should have these two metadata: 
+#As this is synchronous upload, it should not have these metadata: 
 #source_file_container_id
 #source_file_id 
+#archive_caller_object_id
 
 cat system-generated-metadata.tmp | grep -v source_file_container_id | grep -v source_file_id  > temp.tmp
 

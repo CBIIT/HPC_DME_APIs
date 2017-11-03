@@ -1,5 +1,8 @@
 dev-server
+dev-ip-server
 uat-server
+uat-ip-server
 prod-server
 config
 globus-config
+.functions.*

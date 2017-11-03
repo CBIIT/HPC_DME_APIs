@@ -18,7 +18,7 @@ source $HPC_DM_TEST/utils/functions
 
 #Clean previous parsed policies file
 ../../utils/cleantest
-../../utils/maketest collectionMetadataValidationRules Dataset 
+#../../utils/maketest collectionMetadataValidationRules Dataset 
 
 #First register a project to respect the hierarchy:
 
