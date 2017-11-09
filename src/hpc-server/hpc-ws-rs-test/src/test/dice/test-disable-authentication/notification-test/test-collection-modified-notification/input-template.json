@@ -1,0 +1,93 @@
+{ 
+    "metadataEntries": [
+    {
+        "attribute": "name",
+        "value": "data-file"
+    },
+    {
+        "attribute": "description",
+        "value": "file-description"
+    },
+    {
+        "attribute": "source_lab_pi",
+        "value": "file-Source Lab PI"
+    },
+    {
+        "attribute": "lab_branch",
+        "value": "file-Lab / Branch Name"
+    },
+    {
+        "attribute": "pi_doc",
+        "value": "FNLCR"
+    },
+    {
+        "attribute":"original_date_created",             
+        "value":"System-Date"
+    },
+    {
+        "attribute": "xxxold_doc_attribute",
+        "value": "FNLCR"
+    },
+    {
+        "attribute": "phi_content",
+        "value": "PHI Present"
+    },
+    {
+        "attribute": "pii_content",
+        "value": "PII Present"
+    },
+    {
+        "attribute":"data_encryption_status",
+        "value":"Unspecified"
+    },
+    {
+        "attribute":"data_compression_status",
+        "value":"Unspecified"
+    },
+    {
+        "attribute": "flow_cell_id",
+        "value": "file-FlowCell ID"
+    },
+    {
+        "attribute": "run_id",
+        "value": "file-Run ID"
+    },
+    {
+        "attribute": "run_date",
+        "value": "10/11/2015"
+    },
+    {
+        "attribute": "sequencing_platform",
+        "value": "Unspecified"
+    },
+    {
+        "attribute": "sequencing_application_type",
+        "value": "Unspecified"
+    },
+    {
+        "attribute": "library_id",
+        "value": "file-Library ID"
+    },
+    {
+        "attribute": "library_name",
+        "value": "Unspecified"
+    },
+    {
+        "attribute": "library_type",
+        "value": "Unspecified"
+    },
+    {
+        "attribute": "library_protocol",
+        "value": "Unspecified"
+    }
+],
+    "createParentCollections": true,
+    "parentCollectionMetadataEntries": [
+        {
+            "attribute": "collection_type",
+            "value": "Folder"
+        }
+     ]
+
+
+}

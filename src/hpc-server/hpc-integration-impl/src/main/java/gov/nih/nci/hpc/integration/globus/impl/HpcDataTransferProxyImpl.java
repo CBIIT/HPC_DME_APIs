@@ -139,7 +139,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     		                   String urlNotUsed) 
 		                      throws HpcException
     {
-    	// Note: At this time, there is no DOC specific configuration for Globus connection.
+    	// Note: At this time, there is no Globus config items in data management configuration DB.
     	//       The Globus connection URL is configured via Spring. In the future, this may be 
     	//       a new requirement, so the 'url' parameter passed in will be used instead.
     	return globusConnection.authenticate(dataTransferAccount);
