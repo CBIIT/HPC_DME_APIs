@@ -62,7 +62,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 
 	@Value("${gov.nih.nci.hpc.server.collection.download}")
 	private String collectionDownloadServiceURL;
-	
+
 	@Value("${gov.nih.nci.hpc.server.dataObject.download}")
 	private String dataObjectDownloadServiceURL;
 
@@ -79,9 +79,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String home(@RequestBody(required = false) String body,
-			Model model, BindingResult bindingResult, HttpSession session,
-			HttpServletRequest request) {
+	public String home(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request) {
 		try {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String userId = (String) session.getAttribute("hpcUserId");
@@ -98,17 +97,13 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 
 			String searchType = request.getParameter("searchType");
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
-			if(selectedPathsStr.isEmpty())
-			{
+			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
-			}
-			else
-			{
+			} else {
 				StringTokenizer tokens = new StringTokenizer(selectedPathsStr, ",");
-				while(tokens.hasMoreTokens())
-				{
+				while (tokens.hasMoreTokens()) {
 					String pathStr = tokens.nextToken();
-					hpcDownloadDatafile.getSelectedPaths().add(pathStr.substring(pathStr.lastIndexOf(":")+1));
+					hpcDownloadDatafile.getSelectedPaths().add(pathStr.substring(pathStr.lastIndexOf(":") + 1));
 				}
 			}
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
@@ -125,7 +120,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		}
 		return "downloadfiles";
 	}
-	
+
 	/**
 	 * POST action to initiate asynchronous download.
 	 * 
@@ -153,15 +148,12 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 
 			HpcBulkDataObjectDownloadRequestDTO dto = new HpcBulkDataObjectDownloadRequestDTO();
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
-			if(selectedPathsStr.isEmpty())
-			{
+			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
-			}
-			else
-			{
-				selectedPathsStr = selectedPathsStr.substring(1, selectedPathsStr.length()-1);
+			} else {
+				selectedPathsStr = selectedPathsStr.substring(1, selectedPathsStr.length() - 1);
 				StringTokenizer tokens = new StringTokenizer(selectedPathsStr, ",");
-				while(tokens.hasMoreTokens())
+				while (tokens.hasMoreTokens())
 					dto.getDataObjectPaths().add(tokens.nextToken().trim());
 			}
 
@@ -170,15 +162,16 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			location.setFileId(downloadFile.getEndPointLocation());
 			dto.setDestination(location);
 
-				try {
-					HpcBulkDataObjectDownloadResponseDTO downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil.downloadFiles(authToken, dataObjectsDownloadServiceURL, dto, sslCertPath, sslCertPassword);
-					if(downloadDTO != null)
+			try {
+				HpcBulkDataObjectDownloadResponseDTO downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
+						.downloadFiles(authToken, dataObjectsDownloadServiceURL, dto, sslCertPath, sslCertPassword);
+				if (downloadDTO != null)
 					result.setMessage("Download request successfull.<br/> Task Id: " + downloadDTO.getTaskId());
-					return result;
-				} catch (Exception e) {
-					result.setMessage("Download request is not successfull: " + e.getMessage());
-					return result;
-				}
+				return result;
+			} catch (Exception e) {
+				result.setMessage("Download request is not successfull: " + e.getMessage());
+				return result;
+			}
 		} catch (HttpStatusCodeException e) {
 			result.setMessage("Download request is not successfull: " + e.getMessage());
 			return result;
@@ -189,5 +182,5 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			result.setMessage("Download request is not successfull: " + e.getMessage());
 			return result;
 		}
-	}	
+	}
 }

@@ -138,7 +138,8 @@ public class HpcCreateUserController extends AbstractHpcController {
 		return result;
 	}
 
-	private void initialize(Model model, String authToken, HpcUserDTO user, HttpSession session, HttpServletRequest request) {
+	private void initialize(Model model, String authToken, HpcUserDTO user, HttpSession session,
+			HttpServletRequest request) {
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
 		populateDOCs(model, authToken, user, session);
@@ -147,7 +148,8 @@ public class HpcCreateUserController extends AbstractHpcController {
 
 	}
 
-	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model) throws HpcWebException {
+	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model)
+			throws HpcWebException {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 
 		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
@@ -157,18 +159,17 @@ public class HpcCreateUserController extends AbstractHpcController {
 		}
 
 		Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-		if(modelDTO != null && modelDTO.getDocRules() != null)
-		{
+		if (modelDTO != null && modelDTO.getDocRules() != null) {
 			for (HpcDocDataManagementRulesDTO docRules : modelDTO.getDocRules()) {
 				String doc = docRules.getDoc();
-				for(HpcDataManagementRulesDTO ruleDTO : docRules.getRules())
+				for (HpcDataManagementRulesDTO ruleDTO : docRules.getRules())
 					basePaths.add(doc + ":" + ruleDTO.getBasePath());
 			}
 		}
 		model.addAttribute("basePathSelected", HpcClientUtil.getBasePath(request));
 		model.addAttribute("basePaths", basePaths);
 	}
-	
+
 	private void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {
 		List<String> userDOCs = new ArrayList<String>();
 		if (user.getUserRole().equals("SYSTEM_ADMIN")) {
