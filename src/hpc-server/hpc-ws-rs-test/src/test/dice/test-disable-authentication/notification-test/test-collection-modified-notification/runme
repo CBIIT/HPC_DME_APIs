@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# runme 
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#verify notification subscription
+verify_registration subscribe-notifications-response-header.tmp
+
+#verify dataObject registration
+verify_registration dataObject-registration-response-header.tmp 
+
+#get notification for dice_user_sys_admin after waiting
+sleep 60
+ACTING_USER=dice_user_sys_admin
+RESPONSE_HEADER=get-delivered-notifications-response-header.tmp 
+RESPONSE_MSG=get-delivered-notifications-response-message.json.tmp
+get_notification_receipts 
+echo "notificaton code" $(get_http_code $RESPONSE_HEADER)
+
+#verify notification include the new registered dataObject.
+folder_path=$(cat registered-folder-path.tmp)
+PRESENT=$(grep $folder_path  $RESPONSE_MSG)
+
+if [ -z "$PRESENT" ]
+then
+    echo "ERROR: Can not find the notification related to $folder_path" >&2
+    exit 1
+fi
