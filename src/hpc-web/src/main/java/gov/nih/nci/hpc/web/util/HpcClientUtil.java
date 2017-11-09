@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
@@ -52,6 +54,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
+import org.springframework.ui.Model;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,11 +68,13 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -923,16 +928,48 @@ public class HpcClientUtil {
 				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				throw new HpcWebException("Failed to update data file: " + exception.getMessage());
+				throw new HpcWebException(exception.getMessage());
 			}
 		} catch (HpcWebException e) {
 			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to update data file due to: " + e.getMessage());
+			throw new HpcWebException(e.getMessage());
 		}
 	}
 	
+	public static boolean registerBulkDatafiles(String token, String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
+			String hpcCertPath, String hpcCertPassword) {
+		try {
+			
+			WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("PUT", datafileDTO);
+			if (restResponse.getStatus() == 201) {
+				return true;
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcWebException("Failed to bulk register data files: " + exception.getMessage());
+			}
+		} catch (HpcWebException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to bulk register data files due to: " + e.getMessage());
+		}
+	}
+
 	public static boolean updateDatafile(String token, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
@@ -1567,4 +1604,22 @@ public class HpcClientUtil {
 			throw new HpcWebException("Failed to parse object: " + e.getMessage());
 		}
 	}
+	
+	public static void populateBasePaths(HttpSession session, Model model, HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL, 
+			String sslCertPath, String sslCertPassword)
+			throws HpcWebException {
+	
+		Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+			for(HpcDataManagementRulesDTO rule : docRule.getRules())
+			{
+				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, rule.getBasePath(),  userId,
+						collectionURL, sslCertPath, sslCertPassword);
+				if(permission != null && permission.getPermission() != null && (permission.getPermission().equals(HpcPermission.WRITE) || permission.getPermission().equals(HpcPermission.OWN)))
+					basePaths.add(rule.getBasePath());
+			}
+		}
+		session.setAttribute("basePaths", basePaths);
+	}
+	
 }
