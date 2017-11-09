@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Make sure the download request went through
+RESPONSE_HEADER=download-response-header.tmp
+RESPONSE_MSG=download-response-message.json.tmp
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo "download_async_code $HTTP_CODE"
+
+#Do not check the file is the code is not 200
+if [ $HTTP_CODE != 200 ] 
+then
+    echo "Unable to submit download request" >&2
+    exit 1
+fi
+
+#Make sure a task ID is returned
+taskId=$(get_json_value $RESPONSE_MSG taskId)
+
+if [ -z "$taskId" ]
+then
+  echo "ERROR: Can not retrieve download taskId from $RESPONSE_MSG" >&2
+  exit 1
+fi
+
+#Get the list of download requests
+response_header=get-async-download-tasks-response-header.tmp
+response_msg=get-async-download-tasks-response-message.json.tmp
+get_async_download_tasks
+
+#Verify the taskId is part of the results 
+EXISTS=$(grep "$taskId" "$response_msg" )
+if [ -z "$EXISTS" ]
+then
+  echo "ERROR: Can not find the task $taskId in the list of download tasks $response_msg" >&2
+  exit 1
+fi

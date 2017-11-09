@@ -9,7 +9,6 @@
 --
 --
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
--- @version $Id$
 --
 
 DROP TABLE IF EXISTS public."HPC_SYSTEM_ACCOUNT";
@@ -24,3 +23,14 @@ CREATE TABLE public."HPC_SYSTEM_ACCOUNT"
 WITH (
   OIDS=FALSE
 );
+
+COMMENT ON TABLE public."HPC_SYSTEM_ACCOUNT" IS 
+                 'System accounts';
+COMMENT ON COLUMN public."HPC_SYSTEM_ACCOUNT"."USERNAME" IS 
+                  'The user name';
+COMMENT ON COLUMN public."HPC_SYSTEM_ACCOUNT"."PASSWORD" IS 
+                  'The password';
+COMMENT ON COLUMN public."HPC_SYSTEM_ACCOUNT"."SYSTEM" IS 
+                  'The system';
+COMMENT ON COLUMN public."HPC_SYSTEM_ACCOUNT"."DATA_TRANSFER_TYPE" IS 
+                  'The data transfer type (S3 for Cleversafe etc)';
