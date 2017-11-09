@@ -102,6 +102,13 @@ public class HpcLocalDirectoryListQuery {
 					HpcErrorType.DATA_TRANSFER_ERROR);
 		}
 
+		if(includePattern == null || includePattern.isEmpty())
+		{
+			includePattern = new ArrayList<String>();
+			includePattern.add("*");
+			includePattern.add("*/**");
+		}
+		
 		Paths paths = getFileList(directoryName, excludePattern, includePattern);
 		for (String file : paths) {
 			String fileName = file.replace("\\", File.separator);

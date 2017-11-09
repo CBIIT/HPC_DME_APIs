@@ -165,15 +165,14 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		}
 
 		HpcSearch hpcSearch = null;
-		
-		if(search == null || (search.getActionType() != null && search.getActionType().equals("pagination")))
-		{
+
+		if (search == null || (search.getActionType() != null && search.getActionType().equals("pagination"))) {
 			HpcSearchUtil.cacheSelectedRows(session, request, model);
 			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
 			hpcSearch.setPageNumber(search.getPageNumber());
 			search = hpcSearch;
 		}
-		
+
 		model.addAttribute("source", "criteria");
 		model.addAttribute("pageNumber", search.getPageNumber());
 		boolean success = false;
@@ -182,7 +181,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			@SuppressWarnings("unchecked")
 			Map<String, String> hierarchy = (Map<String, String>) session.getAttribute("hierarchies");
 
-			HpcCompoundMetadataQueryDTO compoundQuery = constructCriteria(hierarchy, hpcSearch != null ? hpcSearch : search);
+			HpcCompoundMetadataQueryDTO compoundQuery = constructCriteria(hierarchy,
+					hpcSearch != null ? hpcSearch : search);
 			if (search.isDetailed())
 				compoundQuery.setDetailedResponse(true);
 
@@ -345,7 +345,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			model.addAttribute("searchType", "datafile");
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
 			model.addAttribute("currentPageSize", returnResults.size());
-			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(dataObjects.getTotalCount()));			
+			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(dataObjects.getTotalCount()));
 		}
 	}
 
@@ -400,13 +400,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				criteria.setOperator(HpcMetadataQueryOperator.fromValue(operator));
 				if (level != null) {
 					HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-					if(level.equals("ANY"))
-					{
+					if (level.equals("ANY")) {
 						levelFilter.setLevel(1);
 						levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
-					}
-					else
-					{
+					} else {
 						if (level.equals("Data file") || level.equals("DataObject"))
 							levelFilter.setLevel(1);
 						else
@@ -536,12 +533,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 			List<HpcDocDataManagementRulesDTO> docRules = modelDTO.getDocRules();
 			List<String> hierarchies = new ArrayList<String>();
-			
-			for(HpcDocDataManagementRulesDTO docDto : docRules)
-			{
-				if(docDto.getDoc().equals(user.getDoc()))
-				{
-					for(HpcDataManagementRulesDTO rulesDto : docDto.getRules())
+
+			for (HpcDocDataManagementRulesDTO docDto : docRules) {
+				if (docDto.getDoc().equals(user.getDoc())) {
+					for (HpcDataManagementRulesDTO rulesDto : docDto.getRules())
 						getHierarchies(rulesDto.getDataHierarchy(), hierarchies);
 				}
 			}
