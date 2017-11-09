@@ -9,7 +9,6 @@
 --
 --
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
--- @version $Id$
 --
 
 DROP TABLE IF EXISTS public."HPC_USER_QUERY";
@@ -28,3 +27,20 @@ CREATE TABLE public."HPC_USER_QUERY"
 WITH (
   OIDS=FALSE
 );
+
+COMMENT ON TABLE public."HPC_USER_QUERY" IS 
+                 'User queries';
+COMMENT ON COLUMN public."HPC_USER_QUERY"."USER_ID" IS 
+                  'The user ID that owns this query';
+COMMENT ON COLUMN public."HPC_USER_QUERY"."QUERY" IS 
+                  'The compound metadata query';
+COMMENT ON COLUMN public."HPC_USER_QUERY"."DETAILED_RESPONSE" IS 
+                  'Detailed response indicator to request when using this query';
+COMMENT ON COLUMN public."HPC_USER_QUERY"."TOTAL_COUNT" IS 
+                  'Total count parameter to set when using this query';
+COMMENT ON COLUMN public."HPC_USER_QUERY"."QUERY_TYPE" IS 
+                  'The query type - collection or data object';
+COMMENT ON COLUMN public."HPC_USER_QUERY"."CREATED" IS 
+                  'The date / time the query was created';
+COMMENT ON COLUMN public."HPC_USER_QUERY"."UPDATED" IS 
+                  'The date / time the query was updated';
