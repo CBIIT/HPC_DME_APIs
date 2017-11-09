@@ -36,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
@@ -94,7 +93,7 @@ public class HpcDatafileController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=datafile&action="+action+"&path="+path;
+				return "redirect:/login?returnPath=datafile&action=" + action + "&path=" + path;
 			}
 
 			if (path == null)
@@ -143,14 +142,13 @@ public class HpcDatafileController extends AbstractHpcController {
 		List<String> names = new ArrayList<String>();
 		if (dataFile == null || dataFile.getMetadataEntries() == null
 				|| dataFile.getMetadataEntries().getSelfMetadataEntries() == null
-				|| dataFile.getMetadataEntries().getParentMetadataEntries() == null
-				)
+				|| dataFile.getMetadataEntries().getParentMetadataEntries() == null)
 			return names;
-		for(HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries())
+		for (HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries())
 			names.add(entry.getAttribute());
 		return names;
 	}
-	
+
 	/**
 	 * Post operation to update metadata
 	 * 
@@ -210,13 +208,11 @@ public class HpcDatafileController extends AbstractHpcController {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
 			String path = request.getParameter("deletepath");
-			if(path == null)
-			{
+			if (path == null) {
 				result.setMessage("Invaliad Data object path!");
 				return result;
 			}
-			boolean deleted = HpcClientUtil.deleteDatafile(authToken, serviceURL, path, sslCertPath,
-					sslCertPassword);
+			boolean deleted = HpcClientUtil.deleteDatafile(authToken, serviceURL, path, sslCertPath, sslCertPassword);
 			if (deleted)
 				result.setMessage("Data object deleted!");
 		} catch (Exception e) {
@@ -272,17 +268,16 @@ public class HpcDatafileController extends AbstractHpcController {
 				entry.setAttribute(attrName);
 				entry.setValue(attrValue[0]);
 				metadataEntries.add(entry);
-			}else if(paramName.startsWith("addAttrName"))
-			{
+			} else if (paramName.startsWith("addAttrName")) {
 				HpcMetadataEntry entry = new HpcMetadataEntry();
 				String attrId = paramName.substring("addAttrName".length());
 				String[] attrName = request.getParameterValues(paramName);
-				String[] attrValue = request.getParameterValues("addAttrValue"+attrId);
-				if(attrName.length > 0 && !attrName[0].isEmpty())
+				String[] attrValue = request.getParameterValues("addAttrValue" + attrId);
+				if (attrName.length > 0 && !attrName[0].isEmpty())
 					entry.setAttribute(attrName[0]);
 				else
 					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
-				if(attrValue.length > 0 && !attrValue[0].isEmpty())
+				if (attrValue.length > 0 && !attrValue[0].isEmpty())
 					entry.setValue(attrValue[0]);
 				else
 					throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");

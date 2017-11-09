@@ -82,7 +82,7 @@ public class HpcBookmarkController extends AbstractHpcController {
 		model.addAttribute("bookmark", bookmark);
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
-		
+
 		return "bookmark";
 	}
 
@@ -107,16 +107,13 @@ public class HpcBookmarkController extends AbstractHpcController {
 		AjaxResponseBody result = new AjaxResponseBody();
 
 		try {
-			if (hpcBookmark.getName() == null || hpcBookmark.getPath() == null) 
-			{
+			if (hpcBookmark.getName() == null || hpcBookmark.getPath() == null) {
 				model.addAttribute("message", "Invald user input");
-			}
-			else
-			{
+			} else {
 				HpcBookmarkRequestDTO dto = new HpcBookmarkRequestDTO();
 				dto.setPath(hpcBookmark.getPath().trim());
-				boolean created = HpcClientUtil.createBookmark(authToken, bookmarkServiceURL, dto, hpcBookmark.getName(),
-					sslCertPath, sslCertPassword);
+				boolean created = HpcClientUtil.createBookmark(authToken, bookmarkServiceURL, dto,
+						hpcBookmark.getName(), sslCertPath, sslCertPassword);
 				if (created)
 					result.setMessage("Bookmark saved!");
 			}
