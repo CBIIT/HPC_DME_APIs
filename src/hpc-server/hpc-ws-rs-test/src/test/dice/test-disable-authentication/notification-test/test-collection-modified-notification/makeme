@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# maketest
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+#Clean previous results
+./cleanme
+
+#Call previous maketest
+$HPC_DM_TEST/utils/maketest
+
+source $HPC_DM_TEST/utils/functions
+
+#subscribe to notification for $BASE_PATH
+ACTING_USER=dice_user_sys_admin
+
+RESPONSE_HEADER=subscribe-notifications-response-header.tmp
+RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
+subscribe_to_template_notifications 
+
+
+#Register a dataObject using dice_user_group_admin at a unique collection
+PROJECT_PATH="$(get_basefolder)/project-add-dataobject"
+curl_register $HPC_DM_TEST/utils/templates/register-project-template.json "$PROJECT_PATH" collection
+
+#Create a unique folder
+sleep 1
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+NEW_FOLDER_PATH=$PROJECT_PATH/folder-${NAME}
+echo $NEW_FOLDER_PATH > registered-folder-path.tmp
+
+ACTING_USER=dice_user_group_admin
+curl_register input-template.json $NEW_FOLDER_PATH/object-${NAME}.txt dataObject README.txt
