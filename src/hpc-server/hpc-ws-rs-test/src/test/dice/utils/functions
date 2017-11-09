@@ -22,7 +22,6 @@ function get_async_download_tasks {
 
   SERVER=`cat $HPC_DM_TEST/utils/server`
   CONFIG=$(get_curl_config)
-  set -x  
   curl -X GET $SERVER/download $CONFIG -H "Accept: application/json" -D "$response_header" -o "$response_msg"  -s 2>curl-status
   check_connection $response_header
 }
@@ -48,6 +47,12 @@ function get_http_code {
         echo "ERROR: using get_http_code"
         echo "USAGE: get_http_code <http-response-file>"
         exit
+    fi
+
+    if [ ! -e "$1" ]
+    then
+      echo "ERROR can not find the file:$1" >&2
+      exit 1
     fi
     grep 'HTTP' $1  | grep '[02-9][0-9][0-9]' | sed 's/.*\([0-9][0-9][0-9]\).*/\1/'
 }
@@ -1149,15 +1154,36 @@ function download_dataobject_sync {
 
 
 #Download a dataObject or a collection asynchronously to the default globus endpoint
+#Option:  -g: Generate a unique name for download file
 #Input: <item-path> 
 #Input: [download-template]
 function download_async {
 
+    usage="${FUNCNAME} [-g] file_path [download-template]"
+    local OPTIND
+    while getopts ":g" option
+    do
+      case "${option}" in 
+        g)
+          sleep 1 
+          SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+          destination=object-$SUFFIX
+          ;;
+        *)
+          echo "ERROR: Unsupported option ${option}" >&2
+          echo "$usage" >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    shift $(( OPTIND-1 ))
+
     if [ "$#" -lt 1 ]
     then
         echo "ERROR: using download_async"
-        echo "USAGE: download_async <item-path> [download-template]"
-        exit
+        echo "$usage" >&2
+        exit 1
     fi
 
 
@@ -1176,8 +1202,13 @@ function download_async {
 
     if [ "$ITEM_PATH" != ""  ]
     then
-      ITEM_NAME=$(basename ${ITEM_PATH})
-      ITEM_PATH=/${ITEM_PATH}
+      if [ -z "$destination" ]
+      then
+        ITEM_NAME=$(basename ${ITEM_PATH})
+        ITEM_PATH=/${ITEM_PATH}
+      else
+        ITEM_NAME=$destination
+      fi
     else
       ITEM_NAME=""
     fi
@@ -1250,7 +1281,6 @@ function get_download_status {
 
 #Subscribe to all the notifications mentioned in the $HPC_DM_TEST/utils/templates/notifications-template.json
 #Inputs: notification_file 
-#        [userID]
 function subscribe_to_notifications {
 
 
@@ -1279,13 +1309,6 @@ function subscribe_to_notifications {
         RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
     fi
 
-    if [ -z "$2" ] 
-    then
-        USERID=`get_username $HPC_DM_TEST/utils/config`
-    else
-        USERID="$2"
-    fi
-
     NOTIFICATION_INPUT=dxdice-notification-input.json.tmp  
     cp $INPUT_FILE $NOTIFICATION_INPUT 
 
@@ -1309,11 +1332,9 @@ function get_notifications {
         RESPONSE_MSG=subscribe-notifications-response-message.json.tmp
     fi
 
-    USERID=`get_username $HPC_DM_TEST/utils/config`
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
-
-    curl -G -X GET $SERVER/notification --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -G -X GET $SERVER/notification $(get_curl_conifg)  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
@@ -1337,7 +1358,7 @@ function get_notification_receipts {
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
 
-    curl -G -X GET $SERVER/notification/deliveryReceipts?totalCount=true --config $HPC_DM_TEST/utils/config   -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -G -X GET $SERVER/notification/deliveryReceipts?totalCount=true $(get_curl_config) -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
