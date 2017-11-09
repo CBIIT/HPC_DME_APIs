@@ -148,8 +148,10 @@ public abstract class HpcRestServiceImpl
      */
 	protected String toAbsolutePath(String path)
 	{
+		// Normalize the path - i.e. remove duplicate and trailing '/'
+		String absolutePath = StringUtils.trimTrailingCharacter(path, '/').replaceAll("/+", "/");
+		
 		StringBuilder buf = new StringBuilder();
-		String absolutePath = StringUtils.trimTrailingCharacter(path, '/');
 		if(absolutePath.isEmpty() || absolutePath.charAt(0) != '/') {
 		   buf.append('/');
 		} 
