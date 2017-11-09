@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="HPC Data Management" />
+<meta name="author" content="SVG, Inc" />
+<link rel="shortcut icon" href="img/favicon.png" />
+
+
+<title>HPC Data Management Environment</title>
+
+<link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<!-- Bootstrap CSS -->
+<link href="css/bootstrap.min.css" rel="stylesheet" />
+<!-- bootstrap theme -->
+<link href="css/bootstrap-theme.css" rel="stylesheet" />
+<!-- font icon -->
+<link href="css/elegant-icons-style.css" rel="stylesheet" />
+<link href="css/font-awesome.min.css" rel="stylesheet" />
+<!-- Custom styles -->
+<link rel="stylesheet" href="css/fullcalendar.css" />
+<link href="css/widgets.css" rel="stylesheet" />
+<link href="css/style.css" rel="stylesheet" />
+<link href="css/style-responsive.css" rel="stylesheet" />
+<link href="css/xcharts.min.css" rel=" stylesheet" />
+<link href="css/jquery-ui-1.10.4.min.css" rel="stylesheet" />
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
+<!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+      <script src="js/respond.min.js"></script>
+      <script src="js/lte-ie7.js"></script>
+    <![endif]-->
+<script src="js/angular/1.5.0/angular.js"></script>
+<script src="js/angular/1.5.0/angular-touch.js"></script>
+<script src="js/angular/1.5.0/angular-animate.js"></script>
+<script src="js/ui-grid/csv.js"></script>
+<script src="js/ui-grid/pdfmake.js"></script>
+<script src="js/ui-grid/vfs_fonts.js"></script>
+
+<script src="js/ui-grid/4.0.2/ui-grid.js"></script>
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+
+<link rel="stylesheet" href="css/ui-grid.css" type="text/css" />
+<script src="js/jquery/3.1.1/jquery.min.js"></script>
+<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+
+<style>
+/*style.css*/
+.gridStyle {
+	border: 1px solid rgb(212, 212, 212);
+	height: 300px
+}
+</style>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var attributeNames = [[${attributeNames}]];
+/*]]>*/
+</script>
+
+</head>
+<body ng-controller="MyCtrl">
+
+	<!-- container section start -->
+	<section id="container" class="">
+		<div th:include="header :: header"></div>
+		<!--main content start-->
+		<section id="main-content">
+			<section class="wrapper">
+				<!--Title start-->
+				<div class="row">
+					<div class="col-lg-12">
+						<h3 class="page-header">
+							<i class="fa fa-dashboard"></i> Dashboard
+						</h3>
+						<ol class="breadcrumb">
+							<li><i class="fa fa-dashboard"></i><a
+								th:href="@{/dashboard}">Dashboard</a></li>
+							<li><i class="fa fa-list-alt"></i>Add Bulk Data</li>
+						</ol>
+					</div>
+				</div>
+				<!--Title End-->
+				<!--Row start-->
+				<div class="row">
+					<div class="col-lg-9 col-md-12">
+						<div class="panel panel-default">
+							<div th:if="${error != null}">
+								<div class="alert alert-error">
+									<a class="close" data-dismiss="alert">×</a> <label
+										for="${error}" th:text="${error}"></label>
+								</div>
+							</div>
+							<form class="form-horizontal" id="dataFileForm"
+								th:action="@{/addbulk}" th:object="${hpcDatafile}"
+								method="POST">
+								<input type="hidden" name="actionType" id="actionType" /> <input
+									type="hidden" name="parent" id="parent" th:value="${parent}" />
+								<input type="hidden" name="source" id="source"
+									th:value="${source}" />
+								<!--panel-body start-->
+								<div class="panel-body">
+									<table border="0">
+										<tr >
+											<td>
+												<table border="0">
+													<tr th:if="${basePaths != null and basePaths.size() &gt; 0}">
+														<td><label id="rowId0">Base Path: </label></td>
+														<td><select size="1" id="basePath" name="basePath"
+															class="form-control" th:required="required"
+															onChange="return refreshAttributes('refresh')">
+																<option value="_select_null">----Select----</option>
+																<option th:each="basePath : ${basePaths}"
+																	th:value="${basePath}" th:text="${basePath}"
+																	th:selected="${basePath.equals(basePathSelected)}">
+																	Wireframe</option>
+														</select></td>
+													</tr>
+													<tr id='attrRow1' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
+														<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
+														</td>
+														<td style="white-space: nowrap"><select size="1"
+															id="zAttrStr_collection_type" name="zAttrStr_collection_type" class="form-control"
+															th:required="required"
+															onChange="refreshAttributes('refresh')">
+																<option value="_select_null">----Select----</option>
+																<option
+																	th:each="collectionType : ${collectionTypes}"
+																	th:value="${collectionType}" th:text="${collectionType}" th:selected="${collectionType.equals(collection_type)}">
+																	Wireframe</option>
+														</select></td>
+													</tr>										
+													
+													<tr>
+														<td><label for="Name">Collection Path:</label></td>
+														<td><input type="text" name="path" id="path"
+															size="60" th:value="${datafilePath}" /></td>
+													</tr>
+												</table>
+											</td>
+										</tr>
+
+									<tr><td>&nbsp;</td></tr>
+									<tr><td>
+									<div class="form-group" id="AsyncDiv">
+										<div class="col-sm-12 column">
+										<button type="submit" class="btn btn-md btn-primary"
+										id="primaryGlobusButton" onClick="return refreshAttributes('Globus')">Browse Globus endpoint</button>
+										</div>
+										<div class="col-sm-12 column" th:if="${endpoint_id != null}">
+											<label for="Name">Globus Endpoint Id:</label> <label
+												for="${endpoint_id}"
+												th:text="${endpoint_id}"></label><br/>										
+											<label for="Name">Globus Endpoint Path:</label> <label
+												for="${endpoint_path}"
+												th:text="${endpoint_path}"></label><br/>										
+										</div>
+										<div class="col-sm-12 column" th:if="${fileNames != null}">
+											<label for="fileName">Selected Files:</label> 										
+											<label
+												th:text="${fileName}" th:each="fileName : ${fileNames}"><br/></label>										
+										</div>
+										<div class="col-sm-12 column" th:if="${folderNames != null}">
+											<label for="folderName">Selected Folders:</label> 										
+											<label
+												th:text="${folderName}" th:each="folderName : ${folderNames}"><br/></label>										
+										</div>
+									</div>
+									</td></tr>
+									</table>
+								</div>
+								<div class="panel-heading">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
+									</h2>
+								</div>
+								<div class="panel-body">
+									<div class="form-group">
+										<table class="table table-bordered  col-md-12"
+											id="metaAttrTable">
+											<thead>
+												<tr>
+													<th>Attribute Name</th>
+													<th>Value</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr th:each="hpcMetadataAttrEntry : ${datafileAttrs}"
+													th:if="${datafileAttrs != null}">
+													<td><label
+														th:text="${hpcMetadataAttrEntry.getAttrName()}"></label></td>
+													<td
+														th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input
+														type="text" class="form-control"
+														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
+													<td
+														th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
+														<select size="1"
+														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														class="form-control" th:required="required">
+															<option value="_select_null">----Select----</option>
+															<option
+																th:each="validValue : ${hpcMetadataAttrEntry.getValidValues()}"
+																th:value="${validValue}" th:text="${validValue}"
+																th:selected="${validValue.equals(hpcMetadataAttrEntry.getAttrValue())}">
+																Wireframe</option>
+													</select>
+													</td>
+												</tr>
+<!-- 
+												<tr
+													th:if="${datafileAttrs != null and datafileAttrs.size() &gt; 0}">
+													<td align="left"><input type="text"
+														name="_addAttrName1" id="_addAttrName1"
+														placeholder="Attribute Value" class="form-control" /></td>
+													<td align="left"><input type="text"
+														name="_addAttrValue1" id="_addAttrValue1"
+														placeholder="Attribute Value" class="form-control" /></td>
+												</tr>
+ -->												
+											</tbody>
+										</table>
+									</div>
+								</div>
+								<div class="panel-footer">
+									<button class="btn btn-md btn-primary" id="primaryButton"
+										onClick="return addMetadata()">Add Metadata</button>
+									<button type="submit" class="btn btn-md btn-primary"
+										id="primaryCreateButton" onClick="return validate()" th:disabled="${create == true} ?'false' : 'disabled'">Create</button>
+									<button type="submit" class="btn btn-primary" id="cancel"
+										onClick="cancelEdit()">Cancel</button>
+								</div>
+							</form>
+						</div>
+						<!--/col-->
+
+					</div>
+				</div>
+				<div class="row"></div>
+			</section>
+		</section>
+		<!--main content end-->
+	</section>
+	<!-- container section start -->
+
+	<!-- javascripts -->
+	<!-- bootstrap -->
+	<script src="js/bootstrap.min.js"></script>
+
+	<script src="js/jquery-ui-1.10.4.min.js"></script>
+	<script src="js/jquery.scrollTo.min.js"></script>
+	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
+	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
+	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
+	<script src="js/jquery.customSelect.min.js"></script>
+
+	<!--custome script for all page-->
+	<script src="js/scripts.js"></script>
+	<script type="text/javascript">
+	//<![CDATA[	
+	
+	var rowId = 1;
+	
+	function addMetadata() {
+		rowId++;
+	    var table = document.getElementById("metaAttrTable");
+	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+	    var row = table.insertRow(rows+1);
+	    row.id = "attrRow"+(rows+1);
+	    var cell0 = row.insertCell(0);
+	    var cell1 = row.insertCell(1);
+	    cell0.innerHTML = '<input type="text" id="_addAttrName'+(rows+1)+'" name="_addAttrName'+(rows+1)+'" placeholder="Attribute Name" class="form-control"/>';
+	    cell1.innerHTML = '<input type="text" id="_addAttrValue'+(rows+1)+'" name="_addAttrValue'+(rows+1)+'" placeholder="Attribute Value" class="form-control"/>';
+	    return false;
+	}	
+
+	function validate()
+	{
+		if(!document.getElementById("path").value)
+		{
+			alert("Path is missng!")
+			return false;
+		}
+		
+		if (!(/^\S{3,}$/.test(document.getElementById("path").value)))
+		{
+			alert("Space is not allowed in the path!")
+			return false;
+		}
+		
+		if(attributeNames)
+		{
+			for(var i=0;i<attributeNames.length;i++)
+			{
+				var attrName = attributeNames[i];
+				var defaultValue = "";
+				if((!document.getElementById("zAttrStr_"+attrName).value) || (document.getElementById("zAttrStr_"+attrName).value=="_select_null"))
+				{
+					alert("Attribute " + attrName + " value is missing!")
+					return false;
+				}
+			}
+		}
+		
+		var form = document.getElementById("dataFileForm");
+		var inputs = form.getElementsByTagName("input");
+		var selects = form.getElementsByTagName("select");
+		var attrs = getAttributeNames();
+		for(var j=0;j<attrs.length;j++)
+		{
+			if(attrs[j] == "")
+			{
+				alert("Attribute name is missing!")
+				return false;
+			}					
+			if(duplicate(attrs, attrs[j]))
+			{
+				alert("Duplicate attribute name: "+attrs[j]);
+				return false;
+			}
+		}
+		var attrValues = getAttributeValues();
+		for(var j=0;j<attrValues.length;j++)
+		{
+			if(attrValues[j] == "")
+			{
+				alert("Attribute value is missing!")
+				return false;
+			}					
+		}
+		
+	}
+	
+	function getAttributeNames()
+	{
+		var form = document.getElementById("dataFileForm");
+		var inputs = form.getElementsByTagName("input");
+		var selects = form.getElementsByTagName("select");
+		
+		var attrs = new Array();
+		for(var j=0;j<inputs.length;j++)
+		{
+			if(inputs[j].name.startsWith("_addAttrName"))
+				attrs.push(inputs[j].value);
+		}
+		
+		if(attributeNames != null)
+		{
+			for(var k=0;k<attributeNames.length;k++)
+				attrs.push(attributeNames[k]);
+		}
+		attrs.push("path");
+		attrs.push("actionType");
+		return attrs;
+	}
+	
+	function getAttributeValues()
+	{
+		var form = document.getElementById("collectionForm");
+		var inputs = form.getElementsByTagName("input");
+		var selects = form.getElementsByTagName("select");
+		
+		var attrs = new Array();
+		for(var j=0;j<inputs.length;j++)
+		{
+			if(inputs[j].name.startsWith("_addAttrValue"))
+				attrs.push(inputs[j].value);
+		}
+		
+		if(attributeNames != null)
+		{
+			for(var k=0;k<attributeNames.length;k++)
+				attrs.push(attributeNames[k]);
+		}
+		attrs.push("path");
+		attrs.push("actionType");
+		attrs.push("collection_type");
+		return attrs;
+	}
+	
+	function duplicate(list, obj) {
+	    var i = list.length;
+	    var first = false;
+	    while (i--) {
+	       if (list[i] === obj) {
+	    	   if(!first)
+		    	   first = true;
+	    	   else
+		           return true;
+	       }
+	    }
+	    return false;
+	}
+	
+	function refreshAttributes(type)
+    {
+		document.getElementById("actionType").value = type;
+		
+		$("#dataFileForm").submit();
+    }
+	
+    function cancelEdit()
+    {
+		document.getElementById("actionType").value = "cancel";
+		$("#dataFileForm").submit();
+    }
+//]]>	
+</script>
+
+</body>
+</html>
