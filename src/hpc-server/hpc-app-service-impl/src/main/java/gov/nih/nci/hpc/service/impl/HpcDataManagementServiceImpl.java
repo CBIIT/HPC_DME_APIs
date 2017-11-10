@@ -477,6 +477,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
+    	if(dataObjectRegistrationRequests.isEmpty()) {
+    	   throw new HpcException("Empty registration request", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
     	// Create a bulk data object registration task.
     	HpcBulkDataObjectRegistrationTask bulkDataObjectRegistrationTask = new HpcBulkDataObjectRegistrationTask();
     	bulkDataObjectRegistrationTask.setUserId(userId);
