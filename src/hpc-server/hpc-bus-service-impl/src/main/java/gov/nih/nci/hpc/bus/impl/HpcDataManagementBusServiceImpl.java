@@ -18,8 +18,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -615,6 +617,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// requests for all files found. Add these individual data object requests to the list provided by the caller.
     	bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().addAll(
     		toDataObjectRegistrationItems(bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()));
+    	
+    	// Filter the data object registration list if caller provided include/exclude patterns.
+    	if(!bulkDataObjectRegistrationRequest.getIncludePatterns().isEmpty() ||
+    	   !bulkDataObjectRegistrationRequest.getExcludePatterns().isEmpty()) {
+    	   filterDataObjectRegistrationItems(
+    			 bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems(),
+    			 bulkDataObjectRegistrationRequest.getIncludePatterns(),
+    	    	 bulkDataObjectRegistrationRequest.getExcludePatterns());
+    	}
     	
     	// If dry-run was requested, simply return the entire list of individual data object registrations.
     	// This is so that caller can see the result of the directories scan.
@@ -1656,6 +1667,58 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataObjectRegistration.setCallerObjectId(callerObjectId);
 		
 		return dataObjectRegistration;
+    }
+    
+	/** 
+     * Filter data object registration items based on include/exclude patterns.
+     * 
+     * @param dataObjectRegistrationItems The list of items to filter (items not matched will be removed
+                                          from this list).
+     * @param includePatterns The include patterns.
+     * @param excludePatterns The exclude patterns. 
+     */
+    private void filterDataObjectRegistrationItems(
+    	               List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems,
+			           List<String> includePatterns, List<String> excludePatterns)
+    {
+    	// Compile include regex expressions.
+    	List<Pattern> includeRegex = new ArrayList<>();
+    	includePatterns.forEach(pattern -> includeRegex.add(Pattern.compile(pattern)));
+    	
+    	// Compile exclude regex expressions.
+    	List<Pattern> excludeRegex = new ArrayList<>();
+    	excludePatterns.forEach(pattern -> excludeRegex.add(Pattern.compile(pattern)));
+    	
+    	// Match the items against the patterns.
+    	ListIterator<HpcDataObjectRegistrationItemDTO> iter = dataObjectRegistrationItems.listIterator();
+    	while(iter.hasNext()) {
+    		  // Get the path of this data object registration item.
+    		  String path = iter.next().getPath();
+    		  
+    		  // Match the patterns.
+    		  if(!((includeRegex.isEmpty() || matches(includeRegex, path)) &&
+    		       (excludeRegex.isEmpty() || !matches(excludeRegex, path)))) {
+    			 iter.remove();
+    		  }
+    	}
+    }
+    
+	/** 
+     * Regex matching on a list of patterns
+     * 
+     * @param patterns A list of patterns to match.
+     * @param input The string to match.
+     * @return true if the input matched at least one of the patterns, or false otherwise.
+     */
+    private boolean matches(List<Pattern> patterns, String input)
+    {
+    	for(Pattern pattern : patterns) {
+    		if(pattern.matcher(input).matches()) {
+   	           return true;
+    		}
+    	}
+    	
+    	return false;
     }
 }
 
