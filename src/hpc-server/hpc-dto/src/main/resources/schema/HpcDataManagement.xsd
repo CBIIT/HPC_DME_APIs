@@ -105,6 +105,10 @@
 		    <xsd:element name="basePath" type="xsd:string" />
 			<xsd:element name="scanDirectoryLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
+			<xsd:element name="includePatterns" type="xsd:string" 
+				         minOccurs="0" maxOccurs="unbounded" />
+		    <xsd:element name="excludePatterns" type="xsd:string" 
+			             minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -114,10 +118,6 @@
 				<xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO" 
 				             minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="directoryScanRegistrationItems" type="hpc-dto-datamanagement:HpcDirectoryScanRegistrationItemDTO" 
-				             minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="includePatterns" type="xsd:string" 
-				             minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="excludePatterns" type="xsd:string" 
 				             minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="dryRun" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
