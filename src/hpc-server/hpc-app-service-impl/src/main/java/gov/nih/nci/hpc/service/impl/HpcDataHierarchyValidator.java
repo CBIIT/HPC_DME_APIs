@@ -98,11 +98,15 @@ public class HpcDataHierarchyValidator
     		}
     		
     		if(!collectionTypeValidated) {
+    		   // Traverse the data hierarchy model and create a list of hierarchy paths.
+    		   List<String> validDataHierarchyPaths = new ArrayList<>();
+    		   toDataHierarchyPaths(validDataHierarchyPaths, "", dataHierarchy);
+
     		   throw new HpcException("Invalid collection hierarchy for: " +
     				                  dataManagementConfiguration.getBasePath() + 
-    				                  ". collection hirarchy: " 
+    				                  ". Registered hirarchy: " 
     		                          + toString(collectionPathTypes) +
-    				                  ". hierarchy definition: " + toString(dataHierarchy), 
+    				                  ". Valid Hierarchies: " + validDataHierarchyPaths.toString(), 
     				                  HpcErrorType.INVALID_REQUEST_INPUT);
     		}
     	}   
@@ -128,23 +132,6 @@ public class HpcDataHierarchyValidator
 		}
 		
 		return collectionPathTypesStr.toString();
-	}
-	
-    /**
-     * Return a string from data hierarchy. 
-     * 
-     * @param dataHierarchy The data hierarchy.
-     * @return a pretty string. 
-     */
-	private String toString(HpcDataHierarchy dataHierarchy) 
-	{
-		List<String> dataHierarchyPaths = new ArrayList<>();
-		String path = "/";
-		
-		// Traverse the data hierarchy model and create a list of hierarchy paths.
-		toDataHierarchyPaths(dataHierarchyPaths, path, dataHierarchy);
-
-		return dataHierarchyPaths.toString();
 	}
 	
     /**
