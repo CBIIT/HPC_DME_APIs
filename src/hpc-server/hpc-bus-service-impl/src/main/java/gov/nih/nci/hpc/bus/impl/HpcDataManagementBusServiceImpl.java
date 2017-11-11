@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,15 +22,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
-import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
@@ -869,7 +866,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		   throw new HpcException("Data object can only be deleted by its owner. Your permission: " + 
 		                          permission.value(), HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
-
 		
     	// Instantiate a response DTO
     	HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
@@ -1110,7 +1106,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                                    HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
 		
-		Set<String> userIds = new HashSet<String>(); 
+		Set<String> userIds = new HashSet<>(); 
 		for(HpcUserPermission userPermissionRequest : entityPermissionsRequest.getUserPermissions()) {
 			String userId = userPermissionRequest.getUserId();
 			HpcPermission permission = userPermissionRequest.getPermission();
@@ -1134,7 +1130,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 			
 		// Validate the group permission requests for this path. 
-		Set<String> groupNames = new HashSet<String>(); 
+		Set<String> groupNames = new HashSet<>(); 
 		for(HpcGroupPermission groupPermissionRequest : entityPermissionsRequest.getGroupPermissions()) {
 			String groupName = groupPermissionRequest.getGroupName();
 			HpcPermission permission = groupPermissionRequest.getPermission();
@@ -1545,16 +1541,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   return;
     	}
     	
-        FileInputStream fileInputStream = null;
         try {
-        	 fileInputStream = new FileInputStream(file);
-			 HashCode hash = com.google.common.io.Files
-					      .hash(file, Hashing.md5());
-			 String checksumComputed = hash.toString();
-        	 logger.info("checksum file: " + file.getAbsolutePath());
-        	 logger.info("checksum given: " + checksum);
-        	 logger.info("checksum computed: " + checksumComputed);
-             if(!checksum.equals(checksumComputed)) {
+             if(!checksum.equals(Files.hash(file, Hashing.md5()).toString())) {
             	throw new HpcException("Checksum validation failed",
 		                                HpcErrorType.INVALID_REQUEST_INPUT);	
              }
@@ -1562,10 +1550,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         } catch(IOException e) {
         	    throw new HpcException("Failed calculate checksum",
                                        HpcErrorType.UNEXPECTED_ERROR, e);	
-        	    
-        } finally {
-        	       IOUtils.closeQuietly(fileInputStream);
-        }
+        } 
     }
     
 	/** 
