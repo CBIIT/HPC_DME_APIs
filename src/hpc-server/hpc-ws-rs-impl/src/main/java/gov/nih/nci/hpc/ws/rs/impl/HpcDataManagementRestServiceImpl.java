@@ -264,7 +264,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 
 		return !StringUtils.isEmpty(registrationResponse.getTaskId()) ?
-			   createdResponse(registrationResponse.getTaskId()) :
+			   createdResponse(registrationResponse.getTaskId(), registrationResponse) :
 			   okResponse(registrationResponse, false);    	
     }
     
@@ -478,7 +478,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     
     /**
      * Create a Response object out of the DTO. Also set the download file path on the message context,
-     * so that the cleanup interceptor can remove it after rge file reached the caller. 
+     * so that the cleanup interceptor can remove it after requested file reached the caller. 
      * 
      * @param downloadResponse The download response.
      * @param messageContext The message context.
