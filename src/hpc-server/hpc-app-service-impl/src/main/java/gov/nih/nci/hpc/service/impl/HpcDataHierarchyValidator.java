@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -101,7 +102,7 @@ public class HpcDataHierarchyValidator
     				                  dataManagementConfiguration.getBasePath() + 
     				                  ". collection hirarchy: " 
     		                          + toString(collectionPathTypes) +
-    				                  ". hierarchy definition: " + dataHierarchy, 
+    				                  ". hierarchy definition: " + toString(dataHierarchy), 
     				                  HpcErrorType.INVALID_REQUEST_INPUT);
     		}
     	}   
@@ -127,6 +128,48 @@ public class HpcDataHierarchyValidator
 		}
 		
 		return collectionPathTypesStr.toString();
+	}
+	
+    /**
+     * Return a string from data hierarchy. 
+     * 
+     * @param dataHierarchy The data hierarchy.
+     * @return a pretty string. 
+     */
+	private String toString(HpcDataHierarchy dataHierarchy) 
+	{
+		List<String> dataHierarchyPaths = new ArrayList<>();
+		String path = "/";
+		
+		// Traverse the data hierarchy model and create a list of hierarchy paths.
+		toDataHierarchyPaths(dataHierarchyPaths, path, dataHierarchy);
+
+		return dataHierarchyPaths.toString();
+	}
+	
+    /**
+     * create a list of data hierarchy paths.
+     * 
+     * @param dataHierarchyPaths The list of paths to populate.
+     * @param path The current path traversed in the hierarchy.
+     * @param dataHierarchy The data hierarchy
+     */
+	private void toDataHierarchyPaths(List<String> dataHierarchyPaths, String path,  
+			                          HpcDataHierarchy dataHierarchy) 
+	{
+		String visitedPath = path + "/" + dataHierarchy.getCollectionType();
+		if(dataHierarchy.getSubCollectionsHierarchies().isEmpty()) {
+		   // This is a leaf in the data hierarchy - add this path
+		   dataHierarchyPaths.add(visitedPath);
+		   return;
+		   
+		} else {
+			    // This is not a leaf in the hierarchy. Traverse the childs.
+			    dataHierarchy.getSubCollectionsHierarchies().forEach(
+			    	subCollectionDataHierarchy -> toDataHierarchyPaths(dataHierarchyPaths, 
+			    			                                           visitedPath, 
+			    			                                           subCollectionDataHierarchy));
+		}
 	}
 }
 
