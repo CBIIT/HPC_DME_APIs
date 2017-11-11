@@ -125,7 +125,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
      * @param authenticationTokenSignatureKey The authentication token signature key.
      * @param authenticationTokenExpirationPeriod The authentication token expiration period in minutes.
      */
-    private HpcSecurityServiceImpl(String authenticationTokenSignatureKey,
+    public HpcSecurityServiceImpl(String authenticationTokenSignatureKey,
     		                       int authenticationTokenExpirationPeriod)
     {
     	this.authenticationTokenSignatureKey = authenticationTokenSignatureKey;
@@ -137,7 +137,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
      *
      * @throws HpcException Constructor is disabled.
      */
-    private HpcSecurityServiceImpl() throws HpcException
+    public HpcSecurityServiceImpl() throws HpcException
     {
     	throw new HpcException("Constructor disabled",
     			               HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -161,7 +161,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	}
     	
     	if(!dataManagementConfigurationLocator.getDocs().contains(nciAccount.getDoc())) {
-    	   throw new HpcException("Invalid DOC: " + nciAccount.getDoc()+". Valid values: " + 
+    	   throw new HpcException("Invalid DOC: " + nciAccount.getDoc() + ". Valid values: " + 
     	                          Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
 	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
@@ -228,7 +228,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService
     	
     	if(!StringUtils.isEmpty(doc)) {
     	   if(!dataManagementConfigurationLocator.getDocs().contains(doc)) {
-    	      throw new HpcException("Invalid DOC: "+ doc +". Valid values: " + 
+    	      throw new HpcException("Invalid DOC: " + doc + ". Valid values: " + 
     	                             Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
     	 	                         HpcErrorType.INVALID_REQUEST_INPUT);
     	   }
