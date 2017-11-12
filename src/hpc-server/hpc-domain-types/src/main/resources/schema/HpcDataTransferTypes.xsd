@@ -239,5 +239,12 @@
 			<xsd:element name="lastModified" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:simpleType name="HpcDirectoryScanPatternType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="SIMPLE" />
+			<xsd:enumeration value="REGEX" />
+		</xsd:restriction>
+	</xsd:simpleType>
 
 </xsd:schema>
