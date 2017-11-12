@@ -109,6 +109,7 @@
 				         minOccurs="0" maxOccurs="unbounded" />
 		    <xsd:element name="excludePatterns" type="xsd:string" 
 			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="patternType" type="hpc-domain-datatransfer:HpcDirectoryScanPatternType" />            
 		</xsd:sequence>
 	</xsd:complexType>
 	
