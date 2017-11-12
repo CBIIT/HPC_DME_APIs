@@ -183,6 +183,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+	public Response deleteCollection(String path)
+    {
+		try {
+			 dataManagementBusService.deleteCollection(toAbsolutePath(path));
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);
+    }
+    
+    @Override
     public Response setCollectionPermissions(String path, HpcEntityPermissionsDTO collectionPermissionsRequest)
     {
     	HpcEntityPermissionsResponseDTO permissionsResponse = null;
@@ -213,11 +226,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getCollectionPermissionForUser(String path, String userId)
+    public Response getCollectionPermission(String path, String userId)
     {
     	HpcUserPermissionDTO hpcUserPermissionDTO = null;
 		try {
-			hpcUserPermissionDTO = dataManagementBusService.getCollectionPermissionForUser(toAbsolutePath(path), userId);
+			hpcUserPermissionDTO = dataManagementBusService.getCollectionPermission(toAbsolutePath(path), userId);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -374,11 +387,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDataObjectPermissionForUser(String path, String userId)
+    public Response getDataObjectPermission(String path, String userId)
     {
     	HpcUserPermissionDTO hpcUserPermissionDTO = null;
 		try {
-			hpcUserPermissionDTO = dataManagementBusService.getDataObjectPermissionForUser(toAbsolutePath(path), userId);
+			hpcUserPermissionDTO = dataManagementBusService.getDataObjectPermission(toAbsolutePath(path), userId);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
