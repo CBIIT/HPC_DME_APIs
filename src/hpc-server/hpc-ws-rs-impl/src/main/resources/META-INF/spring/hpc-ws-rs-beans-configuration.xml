@@ -199,6 +199,7 @@
         		<entry key="getCollection" value="${hpc.ws.rs.auth.data-management.get-collection}"/>
         		<entry key="downloadCollection" value="${hpc.ws.rs.auth.data-management.download-collection}"/>
         		<entry key="getCollectionDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-collection-download-status}"/>
+        		<entry key="deleteCollection" value="${hpc.ws.rs.auth.data-management.delete-collection}"/>
         		<entry key="setCollectionPermissions" value="${hpc.ws.rs.auth.data-management.set-collection-permissions}"/>
         		<entry key="getCollectionPermissions" value="${hpc.ws.rs.auth.data-management.get-collection-permissions}"/>
         		<entry key="registerDataObject" value="${hpc.ws.rs.auth.data-management.register-data-object}"/>
