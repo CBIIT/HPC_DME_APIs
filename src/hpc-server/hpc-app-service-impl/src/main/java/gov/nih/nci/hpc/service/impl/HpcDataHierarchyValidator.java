@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.service.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -97,11 +98,15 @@ public class HpcDataHierarchyValidator
     		}
     		
     		if(!collectionTypeValidated) {
+    		   // Traverse the data hierarchy model and create a list of hierarchy paths.
+    		   List<String> validDataHierarchyPaths = new ArrayList<>();
+    		   toDataHierarchyPaths(validDataHierarchyPaths, "", dataHierarchy);
+
     		   throw new HpcException("Invalid collection hierarchy for: " +
     				                  dataManagementConfiguration.getBasePath() + 
-    				                  ". collection hirarchy: " 
+    				                  ". Registered hirarchy: " 
     		                          + toString(collectionPathTypes) +
-    				                  ". hierarchy definition: " + dataHierarchy, 
+    				                  ". Valid Hierarchies: " + validDataHierarchyPaths.toString(), 
     				                  HpcErrorType.INVALID_REQUEST_INPUT);
     		}
     	}   
@@ -127,6 +132,31 @@ public class HpcDataHierarchyValidator
 		}
 		
 		return collectionPathTypesStr.toString();
+	}
+	
+    /**
+     * create a list of data hierarchy paths.
+     * 
+     * @param dataHierarchyPaths The list of paths to populate.
+     * @param path The current path traversed in the hierarchy.
+     * @param dataHierarchy The data hierarchy
+     */
+	private void toDataHierarchyPaths(List<String> dataHierarchyPaths, String path,  
+			                          HpcDataHierarchy dataHierarchy) 
+	{
+		String visitedPath = path + "/" + dataHierarchy.getCollectionType();
+		if(dataHierarchy.getSubCollectionsHierarchies().isEmpty()) {
+		   // This is a leaf in the data hierarchy - add this path
+		   dataHierarchyPaths.add(visitedPath);
+		   return;
+		   
+		} else {
+			    // This is not a leaf in the hierarchy. Traverse the childs.
+			    dataHierarchy.getSubCollectionsHierarchies().forEach(
+			    	subCollectionDataHierarchy -> toDataHierarchyPaths(dataHierarchyPaths, 
+			    			                                           visitedPath, 
+			    			                                           subCollectionDataHierarchy));
+		}
 	}
 }
 

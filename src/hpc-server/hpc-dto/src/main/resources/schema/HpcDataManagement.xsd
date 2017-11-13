@@ -105,6 +105,11 @@
 		    <xsd:element name="basePath" type="xsd:string" />
 			<xsd:element name="scanDirectoryLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
+			<xsd:element name="includePatterns" type="xsd:string" 
+				         minOccurs="0" maxOccurs="unbounded" />
+		    <xsd:element name="excludePatterns" type="xsd:string" 
+			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="patternType" type="hpc-domain-datatransfer:HpcDirectoryScanPatternType" />            
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -299,6 +304,7 @@
 	<xsd:element name="HpcBulkDataObjectDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
+				<xsd:element name="path" type="xsd:string" /> 
 				<xsd:element name="dataObjectPaths" type="xsd:string" 
 			                 minOccurs="0" maxOccurs="unbounded" />
 			    <xsd:element name="destination"
@@ -312,6 +318,7 @@
 			<xsd:sequence>
 			    <xsd:element name="taskId" type="xsd:string" />
 			    <xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			    <xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	

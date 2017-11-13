@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.web.model.HpcNotificationReceipt;
@@ -92,14 +91,14 @@ public class HpcNotificationsListController extends AbstractHpcController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		//result.sort(Comparator.comparing(HpcNotificationReceipt::getEventCreated));
-		
+		// result.sort(Comparator.comparing(HpcNotificationReceipt::getEventCreated));
+
 		Collections.sort(result, new Comparator<HpcNotificationReceipt>() {
-	        @Override
-	        public int compare(HpcNotificationReceipt h1, HpcNotificationReceipt h2) {
-	            return h2.getEventCreated().compareTo(h1.getEventCreated());
-	        }
-	    });
+			@Override
+			public int compare(HpcNotificationReceipt h1, HpcNotificationReceipt h2) {
+				return h2.getEventCreated().compareTo(h1.getEventCreated());
+			}
+		});
 		return result;
 	}
 }

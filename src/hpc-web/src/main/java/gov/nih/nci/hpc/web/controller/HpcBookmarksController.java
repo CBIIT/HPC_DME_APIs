@@ -103,7 +103,7 @@ public class HpcBookmarksController extends AbstractHpcController {
 		}
 		return "bookmarks";
 	}
-	
+
 	/**
 	 * Delete Bookmark POST action
 	 * 
@@ -125,21 +125,17 @@ public class HpcBookmarksController extends AbstractHpcController {
 		AjaxResponseBody result = new AjaxResponseBody();
 
 		try {
-			if (hpcBookmark.getName() == null) 
-			{
+			if (hpcBookmark.getName() == null) {
 				model.addAttribute("message", "Invald user input");
-			}
-			else
-			{
+			} else {
 				HpcBookmarkRequestDTO dto = new HpcBookmarkRequestDTO();
 				dto.setPath(hpcBookmark.getPath().trim());
 				boolean deleted = HpcClientUtil.deleteBookmark(authToken, bookmarkServiceURL, hpcBookmark.getName(),
-					sslCertPath, sslCertPassword);
-				if (deleted)
-				{
+						sslCertPath, sslCertPassword);
+				if (deleted) {
 					result.setMessage("Bookmark deleted!");
-					HpcBookmarkListDTO bookmarksDTO = HpcClientUtil.getBookmarks(authToken, bookmarkServiceURL, sslCertPath,
-							sslCertPassword);
+					HpcBookmarkListDTO bookmarksDTO = HpcClientUtil.getBookmarks(authToken, bookmarkServiceURL,
+							sslCertPath, sslCertPassword);
 					List<HpcBookmark> bookmarks = bookmarksDTO.getBookmarks();
 					bookmarks.sort(Comparator.comparing(HpcBookmark::getName));
 					model.addAttribute("bookmarksList", bookmarks);
@@ -152,5 +148,5 @@ public class HpcBookmarksController extends AbstractHpcController {
 			model.addAttribute("hpcBookmark", hpcBookmark);
 		}
 		return result;
-	}	
+	}
 }
