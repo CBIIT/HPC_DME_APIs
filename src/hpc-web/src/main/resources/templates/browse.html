@@ -176,6 +176,8 @@
 											<li><a href="#addCollection">Add Collection</a></li>
  											<li class="divider"></li>
 											<li><a href="#addDatafile">Add Datafile</a></li>
+ 											<li class="divider"></li>
+											<li><a href="#addBulk">Add Bulk (Globus)</a></li>
 									</ul>	
 								</div>
 							</div>
@@ -288,10 +290,13 @@ $('#tree1').bind('tree.open', function (e,data) {
 
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "addCollection": function (node) { 
-    	window.location = "/addCollection?parent="+node.fullPath+"&source=browse";
+    	window.location = "/addCollection?parent="+node.fullPath+"&source=browse&init";
     },
     "addDatafile": function (node) {
-    	window.location = "/addDatafile?parent="+node.fullPath+"&source=browse";
+    	window.location = "/addDatafile?parent="+node.fullPath+"&source=browse&init";
+    },
+    "addBulk": function (node) {
+    	window.location = "/addbulk?parent="+node.fullPath+"&source=browse&init";
     }
 
 }); 

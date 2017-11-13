@@ -156,12 +156,14 @@ public class HpcDownloadController extends AbstractHpcController {
 
 			Response restResponse = client.invoke("POST", dto);
 			if (restResponse.getStatus() == 200) {
-				HpcDataObjectDownloadResponseDTO downloadDTO = (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse, HpcDataObjectDownloadResponseDTO.class);
+				HpcDataObjectDownloadResponseDTO downloadDTO = (HpcDataObjectDownloadResponseDTO) HpcClientUtil
+						.getObject(restResponse, HpcDataObjectDownloadResponseDTO.class);
 				String taskId = "Unknown";
-				if(downloadDTO != null)
+				if (downloadDTO != null)
 					taskId = downloadDTO.getTaskId();
 
-				result.setMessage("<strong>Asynchronous download request is submitted successfully! <br>TaskId: "+taskId+"<strong>");
+				result.setMessage("<strong>Asynchronous download request is submitted successfully! <br>TaskId: "
+						+ taskId + "<strong>");
 				return result;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();

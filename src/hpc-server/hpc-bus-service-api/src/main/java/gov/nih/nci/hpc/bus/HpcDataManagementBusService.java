@@ -128,6 +128,14 @@ public interface HpcDataManagementBusService
 			                                                         throws HpcException;
 	
     /**
+     * Delete collection.
+     *
+     * @param path The collection path.
+     * @throws HpcException on service failure.
+     */
+	public void deleteCollection(String path) throws HpcException;
+	
+    /**
      * Get data objects download task status.
      *
      * @param taskId The download task ID.
@@ -169,14 +177,14 @@ public interface HpcDataManagementBusService
 	public HpcEntityPermissionsDTO getCollectionPermissions(String path) throws HpcException;
     
     /**
-     * Get collection permission for user.
+     * Get collection permission for a given user.
      *
      * @param path The path of the collection.
      * @param userId The user to get permissions for.
      * @return permission on the collection.
      * @throws HpcException on service failure.
      */
-    public HpcUserPermissionDTO getCollectionPermissionForUser(String path, String userId) throws HpcException;
+    public HpcUserPermissionDTO getCollectionPermission(String path, String userId) throws HpcException;
 	
     /**
      * Register a Data object. 
@@ -326,7 +334,7 @@ public interface HpcDataManagementBusService
      * @return permission on the data object.
      * @throws HpcException on service failure.
      */
-    public HpcUserPermissionDTO getDataObjectPermissionForUser(String path, String userId) throws HpcException;
+    public HpcUserPermissionDTO getDataObjectPermission(String path, String userId) throws HpcException;
 	
     /**
      * Get the Data Management Model (Metadata validation rules and hierarchy definitions) 

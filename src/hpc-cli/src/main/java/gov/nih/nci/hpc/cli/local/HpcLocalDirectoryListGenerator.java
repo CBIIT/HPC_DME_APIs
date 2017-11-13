@@ -45,6 +45,8 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
 
 import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
@@ -327,8 +329,10 @@ public class HpcLocalDirectoryListGenerator {
 				ContentDisposition cd2 = new ContentDisposition(
 						"attachment;filename=" + hpcDataObjectRegistrationDTO.getSource().getFileId());
 				atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
-				String checksum = DigestUtils.md5DigestAsHex(IOUtils.toByteArray(checksumStream));
-				hpcDataObjectRegistrationDTO.setChecksum(checksum);
+				HashCode hash = com.google.common.io.Files
+					      .hash(new File(hpcDataObjectRegistrationDTO.getSource().getFileId()), Hashing.md5());
+				String md5 = hash.toString();
+				hpcDataObjectRegistrationDTO.setChecksum(md5);
 			}
 			hpcDataObjectRegistrationDTO.setSource(null);
 		} catch (FileNotFoundException e) {

@@ -82,10 +82,12 @@ public class HpcLoginController extends AbstractHpcController {
 					throw new HpcWebException("Invlaid User");
 				session.setAttribute("hpcUser", user);
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
-				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL,
-						sslCertPath, sslCertPassword);
+				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath,
+						sslCertPassword);
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
+				HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, hpcLogin.getUserId(),
+						collectionURL, sslCertPath, sslCertPassword);
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
 				model.addAttribute("loginOutput", "Invalid login");
@@ -105,43 +107,38 @@ public class HpcLoginController extends AbstractHpcController {
 		}
 		model.addAttribute("hpcLogin", hpcLogin);
 		model.addAttribute("queryURL", queryURL);
-		String callerPath =  (String)session.getAttribute("callerPath");
+		String callerPath = (String) session.getAttribute("callerPath");
 		session.removeAttribute("callerPath");
-		if(callerPath == null)
+		if (callerPath == null)
 			return "dashboard";
 		else
-			return "redirect:/"+callerPath;
+			return "redirect:/" + callerPath;
 	}
-	
-	private String getCallerPath(HttpServletRequest request)
-	{
+
+	private String getCallerPath(HttpServletRequest request) {
 		Map<String, String[]> params = request.getParameterMap();
 		StringBuffer buffer = new StringBuffer();
-		if(params.isEmpty())
+		if (params.isEmpty())
 			return null;
-		else
-		{
+		else {
 			String[] returnPath = params.get("returnPath");
-			if(returnPath == null || returnPath.length == 0)
+			if (returnPath == null || returnPath.length == 0)
 				return null;
 			else
 				buffer.append(returnPath[0]);
-			
+
 			Iterator<String> iter = params.keySet().iterator();
 			boolean first = true;
-			while(iter.hasNext())
-			{
+			while (iter.hasNext()) {
 				String key = iter.next();
-				if(key.equals("returnPath"))
+				if (key.equals("returnPath"))
 					continue;
 				String[] value = params.get(key);
-				if(first)
-				{
-					buffer.append("?"+key+"="+value[0]);
+				if (first) {
+					buffer.append("?" + key + "=" + value[0]);
 					first = false;
-				}
-				else
-					buffer.append("&"+key+"="+value[0]);
+				} else
+					buffer.append("&" + key + "=" + value[0]);
 			}
 		}
 		return buffer.toString();
