@@ -114,6 +114,16 @@ public interface HpcDataManagementRestService
 	public Response getCollectionDownloadStatus(@QueryParam("taskId") String taskId);
 	
     /**
+     * Delete a collection.
+     *
+     * @param path The collection path.
+     * @return The REST service response.
+     */
+	@DELETE
+	@Path("/collection/{path:.*}")
+	public Response deleteCollection(@PathParam("path") String path);
+	
+    /**
      * Set a collection's permissions.
      *
      * @param path The collection path.
@@ -139,7 +149,7 @@ public interface HpcDataManagementRestService
 	public Response getCollectionPermissions(@PathParam("path") String path);
 	
     /**
-     * Get a collection's permission for userId.
+     * Get a collection's permission for given a user.
      *
      * @param path The collection path.
      * @param userId The user id to get permissions for.
@@ -148,8 +158,8 @@ public interface HpcDataManagementRestService
 	@GET
 	@Path("/collection/{path:.*}/acl/user/{userId:.*}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getCollectionPermissionForUser(@PathParam("path") String path, 
-												   @PathParam("userId") String userId);
+	public Response getCollectionPermission(@PathParam("path") String path, 
+											@PathParam("userId") String userId);
 
     /**
      * Data object registration.
@@ -278,8 +288,8 @@ public interface HpcDataManagementRestService
 	@GET
 	@Path("/dataObject/{path:.*}/acl/user/{userId:.*}")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	public Response getDataObjectPermissionForUser(@PathParam("path") String path, 
-													@PathParam("userId") String userId);
+	public Response getDataObjectPermission(@PathParam("path") String path, 
+											@PathParam("userId") String userId);
 	
 	/**
      * Download a list of data objects.

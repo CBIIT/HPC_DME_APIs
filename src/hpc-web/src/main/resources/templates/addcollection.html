@@ -107,21 +107,46 @@
 									<input type="hidden" name="source" id="source" th:value="${source}"/>
 								<!--panel-body start-->
 								<div class="panel-body">
-								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
-									aria-labelledby="myModalLabel" aria-hidden="true">
-									<div class="modal-dialog">
-										<div class="modal-content"></div>
-										<!-- /.modal-content -->
-									</div>
-									<!-- /.modal-dialog -->
-								</div>								
-									<div class="form-group">
-										<div class="col-md-12 form-group">
-											<label for="Name">Collection Path:</label> 
-											<input type="text" name="path" id="path" size="100" th:value="${collectionPath}"/>
-											
-										</div>
-									</div>
+									<table border="0">
+										<tr >
+											<td>
+												<table border="0">
+													<tr th:if="${basePaths != null and basePaths.size() &gt; 0}">
+														<td><label id="rowId0">Base Path: </label></td>
+														<td><select size="1" id="basePath" name="basePath"
+															class="form-control" th:required="required"
+															onChange="return refreshAttributes('BasePath')">
+																<option value="_select_null">----Select----</option>
+																<option th:each="basePath : ${basePaths}"
+																	th:value="${basePath}" th:text="${basePath}"
+																	th:selected="${basePath.equals(basePathSelected)}">
+																	Wireframe</option>
+														</select></td>
+													</tr>
+													<tr id='attrRow1' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
+														<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
+														</td>
+														<td style="white-space: nowrap"><select size="1"
+															id="zAttrStr_collection_type" name="zAttrStr_collection_type" class="form-control"
+															th:required="required"
+															onChange="refreshAttributes('colltype')">
+																<option value="_select_null">----Select----</option>
+																<option
+																	th:each="collectionType : ${collectionTypes}"
+																	th:value="${collectionType}" th:text="${collectionType}" th:selected="${collectionType.equals(collection_type)}">
+																	Wireframe</option>
+														</select></td>
+													</tr>										
+													
+													<tr>
+														<td><label for="Name">Collection Path:</label></td>
+														<td><input type="text" name="path" id="path"
+															size="60" th:value="${collectionPath}" /></td>
+													</tr>
+												</table>
+											</td>
+										</tr>
+										</table>
 								</div>
 								<div class="panel-heading">
 									<h2>
@@ -138,34 +163,6 @@
 											</tr>
 										</thead>
 										<tbody>
-										<tr id='attrRow0' th:if="${basePaths != null and basePaths.size() &gt; 0}">
-											<td style="white-space: nowrap"><label id="rowId0">Base Path</label>
-											</td>
-											<td style="white-space: nowrap"><select size="1"
-												id="basePath" name="basePath" class="form-control"
-												th:required="required"
-												onChange="refreshAttributes()">
-													<option value="_select_null">----Select----</option>
-													<option
-														th:each="basePath : ${basePaths}"
-														th:value="${basePath}" th:text="${basePath}" th:selected="${basePath.equals(basePathSelected)}">
-														Wireframe</option>
-											</select></td>
-										</tr>	
-										<tr id='attrRow1' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
-											<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
-											</td>
-											<td style="white-space: nowrap"><select size="1"
-												id="zAttrStr_collection_type" name="zAttrStr_collection_type" class="form-control"
-												th:required="required"
-												onChange="refreshAttributes()">
-													<option value="_select_null">----Select----</option>
-													<option
-														th:each="collectionType : ${collectionTypes}"
-														th:value="${collectionType}" th:text="${collectionType}" th:selected="${collectionType.equals(collection_type)}">
-														Wireframe</option>
-											</select></td>
-										</tr>										
 											<tr
 												th:each="hpcMetadataAttrEntry : ${collectionAttrs}" th:if="${collectionAttrs != null}">
 													<td><label th:text="${hpcMetadataAttrEntry.getAttrName()}"></label></td>
@@ -273,6 +270,11 @@
 			for(var i=0;i<attributeNames.length;i++)
 			{
 				var attrName = attributeNames[i];
+				if(attrName == "")
+				{
+					alert("Attribute name is missing!")
+					return false;
+				}					
 				var defaultValue = "";
 				if((!document.getElementById("zAttrStr_"+attrName).value) || (document.getElementById("zAttrStr_"+attrName).value=="_select_null"))
 				{
@@ -288,12 +290,27 @@
 		var attrs = getAttributeNames();
 		for(var j=0;j<attrs.length;j++)
 		{
+			if(attrs[j] == "")
+			{
+				alert("Attribute name is missing!")
+				return false;
+			}					
 			if(duplicate(attrs, attrs[j]))
 			{
 				alert("Duplicate attribute name: "+attrs[j]);
 				return false;
 			}
 		}
+		var attrValues = getAttributeValues();
+		for(var j=0;j<attrValues.length;j++)
+		{
+			if(attrValues[j] == "")
+			{
+				alert("Attribute value is missing!")
+				return false;
+			}					
+		}
+
 	}
 	
 	function getAttributeNames()
@@ -320,6 +337,30 @@
 		return attrs;
 	}
 	
+	function getAttributeValues()
+	{
+		var form = document.getElementById("collectionForm");
+		var inputs = form.getElementsByTagName("input");
+		var selects = form.getElementsByTagName("select");
+		
+		var attrs = new Array();
+		for(var j=0;j<inputs.length;j++)
+		{
+			if(inputs[j].name.startsWith("_addAttrValue"))
+				attrs.push(inputs[j].value);
+		}
+		
+		if(attributeNames != null)
+		{
+			for(var k=0;k<attributeNames.length;k++)
+				attrs.push(attributeNames[k]);
+		}
+		attrs.push("path");
+		attrs.push("actionType");
+		attrs.push("collection_type");
+		return attrs;
+	}
+
 	function duplicate(list, obj) {
 	    var i = list.length;
 	    var first = false;
@@ -334,15 +375,15 @@
 	    return false;
 	}
 
-	function refreshAttributes()
+	function refreshAttributes(type)
     {
 		$('#primaryCreateButton').prop('disabled', true);
+		if(type != 'colltype' && document.getElementById("zAttrStr_collection_type") != null)
+			$('#zAttrStr_collection_type').prop('disabled', true);
+		
 		if(document.getElementById("basePath") != null && document.getElementById("basePath").value == "_select_null")
 			return false;
 
-		if(document.getElementById("zAttrStr_collection_type") != null && document.getElementById("zAttrStr_collection_type").value == "_select_null")
-			return false;
-		
 		document.getElementById("actionType").value = "refresh";
 		$("#collectionForm").submit();
     }
