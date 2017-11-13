@@ -111,14 +111,23 @@ public interface HpcDataManagementService
     public List<HpcSubjectPermission> getCollectionPermissions(String path) throws HpcException;
     
     /**
-     * Get collection permissions for userId. 
+     * Get collection permissions for a given user. 
      *
      * @param path The collection path.
      * @param userId The user-id to get permissions for.
      * @return permission on the collection.
      * @throws HpcException on service failure.
      */
-    public HpcSubjectPermission getCollectionPermissionForUser(String path, String userId) throws HpcException;
+    public HpcSubjectPermission getCollectionPermission(String path, String userId) throws HpcException;
+    
+    /**
+     * Get collection permission (for the request invoker) 
+     *
+     * @param path The data object path.
+     * @return permission on the data object.
+     * @throws HpcException on service failure.
+     */
+    public HpcSubjectPermission getCollectionPermission(String path) throws HpcException;
 
     /**
      * Set data object permission for a subject (user or group). 
@@ -140,14 +149,14 @@ public interface HpcDataManagementService
     public List<HpcSubjectPermission> getDataObjectPermissions(String path) throws HpcException;
     
     /**
-     * Get data object permission by userId. 
+     * Get data object permission for a given user. 
      *
      * @param path The data object path.
      * @param userId The user-id to get permissions for.
      * @return permission on the data object.
      * @throws HpcException on service failure.
      */
-    public HpcSubjectPermission getDataObjectPermissionForUser(String path, String userId) throws HpcException;
+    public HpcSubjectPermission getDataObjectPermission(String path, String userId) throws HpcException;
     
     /**
      * Get data object permission (for the request invoker) 
