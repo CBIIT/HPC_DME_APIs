@@ -84,6 +84,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionOnSingleCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionsOnMultipleCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -508,7 +510,40 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	return toUserPermissionDTO(permission);
     }
-    
+
+    @Override
+	public HpcUserPermissionsOnMultipleCollectionsDTO getUserPermissionsOnCollections(
+	        List<String> collectionPaths, String userId) throws HpcException {
+        HpcUserPermissionsOnMultipleCollectionsDTO usrPrmsOnClltcns = new HpcUserPermissionsOnMultipleCollectionsDTO();
+        for (String someCollectionPath : collectionPaths) {
+            HpcUserPermissionOnSingleCollectionDTO dtoResult =
+              _processPermsForOneOfManyCollections(userId, someCollectionPath);
+            if (null != dtoResult) {
+                usrPrmsOnClltcns.getPermissionsXCollections().add(dtoResult);
+            }
+        }
+        return usrPrmsOnClltcns;
+    }
+
+    private HpcUserPermissionOnSingleCollectionDTO _processPermsForOneOfManyCollections(
+                String userId, String someCollectionPath) throws HpcException {
+        try {
+            HpcUserPermissionOnSingleCollectionDTO finalDto = null;
+            HpcUserPermissionDTO initialDto = getCollectionPermission(someCollectionPath, userId);
+            if (null != initialDto) {
+                finalDto = new HpcUserPermissionOnSingleCollectionDTO();
+                finalDto.setCollectionPath(someCollectionPath);
+                finalDto.setPermission(initialDto.getPermission());
+                finalDto.setUserId(initialDto.getUserId());
+            }
+            return finalDto;
+        } catch (Exception e) {
+            String msg = String.format("Failed to get permissions of user [%s] on collection path [%s]",
+                                        userId, someCollectionPath);
+            throw new HpcException(msg, e);
+        }
+    }
+
     @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
