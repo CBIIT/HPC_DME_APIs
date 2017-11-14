@@ -1045,13 +1045,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// Convert the '**' to regex.
-    	regex = pattern.replaceAll("**", ".*");
+    	regex = pattern.replaceAll(Pattern.quote("**"), ".*");
     	
     	// Convert the '*' to regex
-    	regex = regex.replaceAll("*", "[^/]*");
+    	regex = regex.replaceAll(Pattern.quote("*"), "[^/]*");
     	
     	// Convert the '?' to regex.
-    	regex = regex.replaceAll("?", ".");
+    	regex = regex.replaceAll(Pattern.quote("?"), ".");
     	
     	logger.error("ERAN REGEX: " + regex);
     	
