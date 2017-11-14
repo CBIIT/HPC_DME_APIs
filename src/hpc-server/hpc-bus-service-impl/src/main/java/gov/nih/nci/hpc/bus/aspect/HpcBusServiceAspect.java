@@ -66,7 +66,7 @@ public class HpcBusServiceAspect
 	
     /**
      * Default Constructor disabled.
-     * 
+     * @throws HpcException if used.
      */
     public HpcBusServiceAspect() throws HpcException
     {
@@ -132,7 +132,6 @@ public class HpcBusServiceAspect
      * 
      * @param joinPoint The join point.
      * @param exception The exception to log.
-     * @throws Throwable The advised object exception.
      */
 	@AfterThrowing (pointcut = "busServices()", throwing = "exception")
     public void logException(JoinPoint joinPoint, HpcException exception)
@@ -146,7 +145,6 @@ public class HpcBusServiceAspect
      * 
      * @param joinPoint The join point.
      * @param exception The exception to log.
-     * @throws Throwable The advised object exception.
      */
 	@AfterThrowing (pointcut = "busServices()", throwing = "exception")
     public void notifySystemAdmin(JoinPoint joinPoint, HpcException exception)
