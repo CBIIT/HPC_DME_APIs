@@ -77,7 +77,7 @@
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Add Data File</li>
+							<li><i class="fa fa-list-alt"></i>Add Bulk Data</li>
 						</ol>
 					</div>
 				</div>
@@ -93,8 +93,8 @@
 								</div>
 							</div>
 							<form class="form-horizontal" id="dataFileForm"
-								th:action="@{/addDatafile}" th:object="${hpcDatafile}"
-								enctype="multipart/form-data" method="POST">
+								th:action="@{/addbulk}" th:object="${hpcDatafile}"
+								method="POST">
 								<input type="hidden" name="actionType" id="actionType" /> <input
 									type="hidden" name="parent" id="parent" th:value="${parent}" />
 								<input type="hidden" name="source" id="source"
@@ -109,7 +109,7 @@
 														<td><label id="rowId0">Base Path: </label></td>
 														<td><select size="1" id="basePath" name="basePath"
 															class="form-control" th:required="required"
-															onChange="return refreshAttributes('BasePath')">
+															onChange="return refreshAttributes('refresh')">
 																<option value="_select_null">----Select----</option>
 																<option th:each="basePath : ${basePaths}"
 																	th:value="${basePath}" th:text="${basePath}"
@@ -123,7 +123,7 @@
 														<td style="white-space: nowrap"><select size="1"
 															id="zAttrStr_collection_type" name="zAttrStr_collection_type" class="form-control"
 															th:required="required"
-															onChange="refreshAttributes('colltype')">
+															onChange="refreshAttributes('refresh')">
 																<option value="_select_null">----Select----</option>
 																<option
 																	th:each="collectionType : ${collectionTypes}"
@@ -133,7 +133,7 @@
 													</tr>										
 													
 													<tr>
-														<td><label for="Name">Data file Path:</label></td>
+														<td><label for="Name">Collection Path:</label></td>
 														<td><input type="text" name="path" id="path"
 															size="60" th:value="${datafilePath}" /></td>
 													</tr>
@@ -143,22 +143,32 @@
 
 									<tr><td>&nbsp;</td></tr>
 									<tr><td>
-									<div class="form-group" id="SyncDiv">
-										<table border="0">
-											<tr>
-												<td><label for="checksum">Checksum (This value
-														is used to validate data transfer):</label></td>
-												<td><input type="text" name="checksum" id="checksum"
-													size="50" th:value="${checksum}" /></td>
-											</tr>
-											<tr>
-												<td><input type="file" name="hpcDatafile"
-													id="hpcDatafile" /></td>
-												<td>&nbsp;</td>
-											</tr>
-										</table>
+									<div class="form-group" id="AsyncDiv">
+										<div class="col-sm-12 column">
+										<button type="submit" class="btn btn-md btn-primary"
+										id="primaryGlobusButton" onClick="return refreshAttributes('Globus')">Browse Globus endpoint</button>
+										</div>
+										<div class="col-sm-12 column" th:if="${endpoint_id != null}">
+											<label for="Name">Globus Endpoint Id:</label> <label
+												for="${endpoint_id}"
+												th:text="${endpoint_id}"></label><br/>										
+											<label for="Name">Globus Endpoint Path:</label> <label
+												for="${endpoint_path}"
+												th:text="${endpoint_path}"></label><br/>										
+										</div>
+										<div class="col-sm-12 column" th:if="${fileNames != null}">
+											<label for="fileName">Selected Files:</label> 										
+											<label
+												th:text="${fileName}" th:each="fileName : ${fileNames}"><br/></label>										
+										</div>
+										<div class="col-sm-12 column" th:if="${folderNames != null}">
+											<label for="folderName">Selected Folders:</label> 										
+											<label
+												th:text="${folderName}" th:each="folderName : ${folderNames}"><br/></label>										
+										</div>
 									</div>
-									</td></tr></table>
+									</td></tr>
+									</table>
 								</div>
 								<div class="panel-heading">
 									<h2>
@@ -276,13 +286,6 @@
 			return false;
 		}
 		
-		var fileName = document.getElementById("hpcDatafile").value;
-		if(fileName == null || fileName == "")
-		{
-			alert("Data file is missng!")
-			return false;
-		}
-
 		if (!(/^\S{3,}$/.test(document.getElementById("path").value)))
 		{
 			alert("Space is not allowed in the path!")
@@ -395,10 +398,7 @@
 	
 	function refreshAttributes(type)
     {
-		document.getElementById("actionType").value = "refresh";
-		
-		if(document.getElementById("basePath") != null && document.getElementById("basePath").value == "_select_null")
-			return false;
+		document.getElementById("actionType").value = type;
 		
 		$("#dataFileForm").submit();
     }

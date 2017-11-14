@@ -90,7 +90,7 @@ public class HpcCollectionController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=collection&action="+action+"&path="+path;
+				return "redirect:/login?returnPath=collection&action=" + action + "&path=" + path;
 			}
 
 			if (path == null)
@@ -143,15 +143,13 @@ public class HpcCollectionController extends AbstractHpcController {
 		List<String> names = new ArrayList<String>();
 		if (collection == null || collection.getMetadataEntries() == null
 				|| collection.getMetadataEntries().getSelfMetadataEntries() == null
-				|| collection.getMetadataEntries().getParentMetadataEntries() == null
-				)
+				|| collection.getMetadataEntries().getParentMetadataEntries() == null)
 			return names;
-		for(HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
+		for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries())
 			names.add(entry.getAttribute());
 		return names;
 	}
 
-	
 	/**
 	 * Update collection
 	 * 
