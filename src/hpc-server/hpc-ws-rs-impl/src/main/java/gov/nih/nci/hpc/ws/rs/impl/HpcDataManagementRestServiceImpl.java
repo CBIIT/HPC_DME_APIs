@@ -10,46 +10,25 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.UUID;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.datamanagement.*;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
+import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
-import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * <p>
@@ -237,6 +216,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		
 		return okResponse(hpcUserPermissionDTO, true);
     }
+
+
+    @Override
+	public Response getPermissionsOnCollectionsForUser(String[] collectionPaths, String userId) {
+        HpcUserPermsOnManyCollectionsDTO hpcUserPermsOnCollsDTO = null;
+        try {
+            List<String> theColPaths = Arrays.asList(collectionPaths);
+            hpcUserPermsOnCollsDTO = dataManagementBusService.getUserPermissionsOnCollections(theColPaths, userId);
+        } catch(HpcException e) {
+            return errorResponse(e);
+        }
+
+        return okResponse(hpcUserPermsOnCollsDTO, true);
+   }
 
     @Override
     public Response registerDataObject(String path, 
