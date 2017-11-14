@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+source $HPC_DM_TEST/utils/functions
+
+#Create a new destination directory
+sleep 1
+name=`date +"%b-%d-%G-%H-%M-%S"`
+new_folder_path=/TEST_NO_HIER_Archive/globus-bulk-registration/folder-${name}
+
+globus_dir=/test-bulk-registration
+include_pattern=".*.txt"
+
+#Run dry
+register_globus_directory -d -i "$include_pattern" $globus_dir $new_folder_path
+echo "bulk registration response: $(get_http_code $RESPONSE_HEADER)"
+
+#verify include pattern
+object1=${new_folder_path}${globus_dir}/test.txt
+object2=${new_folder_path}${globus_dir}/test.bam
+
+verify_contains $RESPONSE_MSG $object1
+verify_contains -r $RESPONSE_MSG $object2
