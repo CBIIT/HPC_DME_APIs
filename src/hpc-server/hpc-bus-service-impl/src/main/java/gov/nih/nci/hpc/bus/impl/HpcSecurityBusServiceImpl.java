@@ -660,7 +660,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 				                  HpcErrorType.INVALID_REQUEST_INPUT);	
 		}
 		
-		// Validate that at least one user attribute (out of firstName, lastName, DOC, role, active) is updated.
+		// Validate that at least one user attribute (out of firstName, lastName, default base path, 
+		//                                            DOC, role, active) is updated.
 		List<Boolean> updateItems = new ArrayList<>(Arrays.asList(
 				                                    !StringUtils.isEmpty(userUpdateRequest.getFirstName()),
 				                                    !StringUtils.isEmpty(userUpdateRequest.getLastName()),
@@ -669,8 +670,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService
 				                                    !StringUtils.isEmpty(userUpdateRequest.getUserRole()),
 				                                    userUpdateRequest.getActive() != null));
 		if(!updateItems.contains(true)) {
-	      throw new HpcException("Invalid update user request. Please provide firstName, lastName, doc, " + 
-		                         "userRole or active to update.",
+	      throw new HpcException("Invalid update user request. Please provide either firstName, lastName, " +
+		                         "default-base-path, doc, userRole or active to update",
 	 			                 HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		

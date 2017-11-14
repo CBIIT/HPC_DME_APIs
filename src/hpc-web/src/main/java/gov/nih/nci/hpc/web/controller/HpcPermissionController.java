@@ -151,7 +151,7 @@ public class HpcPermissionController extends AbstractHpcController {
 		if (authToken == null) {
 			return "redirect:/";
 		}
-		
+
 		String serviceAPIUrl = getServiceURL(model, permissionsRequest.getPath(), permissionsRequest.getType());
 		if (serviceAPIUrl == null)
 			return "permission";
@@ -165,7 +165,8 @@ public class HpcPermissionController extends AbstractHpcController {
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 			if (restResponse.getStatus() == 200) {
 				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				return "redirect:/permissions?assignType=User&type="+permissionsRequest.getType()+"&path=" + permissionsRequest.getPath();
+				return "redirect:/permissions?assignType=User&type=" + permissionsRequest.getType() + "&path="
+						+ permissionsRequest.getPath();
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(

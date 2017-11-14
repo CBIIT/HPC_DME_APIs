@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import java.io.File;
-
+import java.util.List;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -32,6 +32,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionOnSingleCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionsOnMultipleCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -128,6 +130,14 @@ public interface HpcDataManagementBusService
 			                                                         throws HpcException;
 	
     /**
+     * Delete collection.
+     *
+     * @param path The collection path.
+     * @throws HpcException on service failure.
+     */
+	public void deleteCollection(String path) throws HpcException;
+	
+    /**
      * Get data objects download task status.
      *
      * @param taskId The download task ID.
@@ -169,15 +179,27 @@ public interface HpcDataManagementBusService
 	public HpcEntityPermissionsDTO getCollectionPermissions(String path) throws HpcException;
     
     /**
-     * Get collection permission for user.
+     * Get collection permission for a given user.
      *
      * @param path The path of the collection.
      * @param userId The user to get permissions for.
      * @return permission on the collection.
      * @throws HpcException on service failure.
      */
-    public HpcUserPermissionDTO getCollectionPermissionForUser(String path, String userId) throws HpcException;
-	
+    public HpcUserPermissionDTO getCollectionPermission(String path, String userId) throws HpcException;
+
+
+    /**
+     * Given a user and some collection paths, get the user's permissions on those collections.
+     *
+     * @param collectionPaths The collections' paths.
+     * @param userId The user of interest.
+     * @return permissions of the user on the specified collections.
+     * @throws HpcException on service failure.
+     */
+    public HpcUserPermissionsOnMultipleCollectionsDTO getUserPermissionsOnCollections(
+            List<String> collectionPaths, String userId) throws HpcException;
+
     /**
      * Register a Data object. 
      *
@@ -326,7 +348,7 @@ public interface HpcDataManagementBusService
      * @return permission on the data object.
      * @throws HpcException on service failure.
      */
-    public HpcUserPermissionDTO getDataObjectPermissionForUser(String path, String userId) throws HpcException;
+    public HpcUserPermissionDTO getDataObjectPermission(String path, String userId) throws HpcException;
 	
     /**
      * Get the Data Management Model (Metadata validation rules and hierarchy definitions) 

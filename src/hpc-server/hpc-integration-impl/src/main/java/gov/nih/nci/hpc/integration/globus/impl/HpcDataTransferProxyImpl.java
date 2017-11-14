@@ -503,14 +503,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 		});
 	}
 	
-    /**
-     * Get a data transfer report.
-     *
-     * @param authenticatedToken An authenticated token.
-     * @param dataTransferRequestId The data transfer request ID.
-     * @return The data transfer report for the request.
-     * @throws HpcException on data transfer system failure.
-     */
     private class HpcGlobusDataTransferReport 
     {
     	private String status = null;
@@ -520,6 +512,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         private String rawError = null;
     }
     
+    /**
+     * Get a data transfer report.
+     *
+     * @param authenticatedToken An authenticated token.
+     * @param dataTransferRequestId The data transfer request ID.
+     * @return The data transfer report for the request.
+     * @throws HpcException on data transfer system failure.
+     */
     private HpcGlobusDataTransferReport getDataTransferReport(Object authenticatedToken,
                                                               String dataTransferRequestId) 
                                                              throws HpcException
@@ -677,7 +677,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
      *
      * @param authenticatedToken An authenticated token.
      * @param dataTransferRequestId The globus task ID.
-     * @param niceStatus The transfer task nice_status. 
+     * @param report The Globus transfer report. 
      * @return True if the transfer failed, or false otherwise
      */
     private boolean transferFailed(Object authenticatedToken,
