@@ -123,23 +123,22 @@ public class HpcUpdateUserController extends AbstractHpcController {
 			dto.setFirstName(hpcWebUser.getFirstName());
 			dto.setLastName(hpcWebUser.getLastName());
 			dto.setUserRole(hpcWebUser.getUserRole());
-			if(hpcWebUser.getBasePath() != null && !hpcWebUser.getBasePath().equals("_select_null"))
+			if (hpcWebUser.getBasePath() != null && !hpcWebUser.getBasePath().equals("_select_null"))
 				dto.setDefaultBasePath(hpcWebUser.getBasePath());
 			else
 				dto.setDefaultBasePath(null);
-			
+
 			dto.setActive((hpcWebUser.getActive() != null && hpcWebUser.getActive().equals("on")) ? true : false);
 
 			boolean created = HpcClientUtil.updateUser(authToken, userServiceURL, dto, hpcWebUser.getNciUserId(),
 					sslCertPath, sslCertPassword);
-			if (created)
-			{
+			if (created) {
 				result.setMessage("User account updated ");
 				String currentUserId = (String) session.getAttribute("hpcUserId");
-				//If self update, refresh user attributes
-				if(currentUserId.equals(hpcWebUser.getNciUserId()))
-				{
-					user.setActive((hpcWebUser.getActive() != null && hpcWebUser.getActive().equals("on")) ? true : false);
+				// If self update, refresh user attributes
+				if (currentUserId.equals(hpcWebUser.getNciUserId())) {
+					user.setActive(
+							(hpcWebUser.getActive() != null && hpcWebUser.getActive().equals("on")) ? true : false);
 					user.setDefaultBasePath(hpcWebUser.getBasePath());
 					user.setDoc(hpcWebUser.getDoc());
 					user.setFirstName(hpcWebUser.getFirstName());
@@ -156,7 +155,8 @@ public class HpcUpdateUserController extends AbstractHpcController {
 		return result;
 	}
 
-	private void init(String userId, Model model, String authToken, HpcUserDTO user, HttpSession session, HttpServletRequest request) {
+	private void init(String userId, Model model, String authToken, HpcUserDTO user, HttpSession session,
+			HttpServletRequest request) {
 		HpcUserDTO updateUser = getUser(userId, model, authToken);
 		HpcWebUser webUser = new HpcWebUser();
 		webUser.setNciUserId(userId);
@@ -195,7 +195,8 @@ public class HpcUpdateUserController extends AbstractHpcController {
 		model.addAttribute("roles", roles);
 	}
 
-	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, HpcUserDTO user) throws HpcWebException {
+	private void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, HpcUserDTO user)
+			throws HpcWebException {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 
 		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
@@ -206,13 +207,11 @@ public class HpcUpdateUserController extends AbstractHpcController {
 
 		Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 		Set<String> docPaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-		if(modelDTO != null && modelDTO.getDocRules() != null)
-		{
+		if (modelDTO != null && modelDTO.getDocRules() != null) {
 			for (HpcDocDataManagementRulesDTO docRules : modelDTO.getDocRules()) {
 				String doc = docRules.getDoc();
-				for(HpcDataManagementRulesDTO ruleDTO : docRules.getRules())
-				{
-					if(user.getDoc().equals(doc))
+				for (HpcDataManagementRulesDTO ruleDTO : docRules.getRules()) {
+					if (user.getDoc().equals(doc))
 						docPaths.add(ruleDTO.getBasePath());
 					basePaths.add(doc + ":" + ruleDTO.getBasePath());
 				}
@@ -222,5 +221,5 @@ public class HpcUpdateUserController extends AbstractHpcController {
 		model.addAttribute("basePaths", basePaths);
 		model.addAttribute("docPaths", docPaths);
 	}
-	
+
 }

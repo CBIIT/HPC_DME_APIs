@@ -554,9 +554,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
     
     @Override
-    public HpcSubjectPermission getCollectionPermissionForUser(Object authenticatedToken,
-                                                               String path, String userId) 
-                                                              throws HpcException
+    public HpcSubjectPermission getCollectionPermission(Object authenticatedToken,
+                                                        String path, String userId) 
+                                                       throws HpcException
     {
     	try {
     		 return toHpcSubjectPermission(
@@ -623,9 +623,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy
     }
 
     @Override
-    public HpcSubjectPermission getDataObjectPermissionForUser(Object authenticatedToken,
-                                                               String path, String userId) 
-                                                              throws HpcException
+    public HpcSubjectPermission getDataObjectPermission(Object authenticatedToken,
+                                                        String path, String userId) 
+                                                       throws HpcException
     {
     	try {
     		 return toHpcSubjectPermission(

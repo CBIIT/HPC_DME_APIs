@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -156,12 +157,18 @@ public interface HpcDataTransferService
      * @param dataTransferType The data transfer type.
      * @param directoryLocation The endpoint/directory to scan and get a list of files for.
      * @param configurationId The configuration ID (needed to determine the archive connection config).
+     * @param includePatterns The patterns to use to include files in the scan results.
+     * @param excludePatterns The patterns to use to exclude files from the scan results.
+     * @param patternType The type of the patterns provided.
      * @return A list of files found.
      * @throws HpcException on service failure.
      */
     public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
     		                                        HpcFileLocation directoryLocation,
-    		                                        String configurationId) 
+    		                                        String configurationId, 
+    		                                        List<String> includePatterns, 
+    		                                        List<String> excludePatterns,
+    		                                        HpcDirectoryScanPatternType patternType) 
     		                                       throws HpcException;
     
     /**
@@ -255,9 +262,9 @@ public interface HpcDataTransferService
 			                                            throws HpcException;
 	
     /** 
-     * Update a collection download request.
+     * Update a collection download task.
      * 
-     * @param downloadRequest The collection download request to update.
+     * @param downloadTask The collection download task to update.
      * @throws HpcException on service failure.
      */
 	public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
@@ -324,11 +331,12 @@ public interface HpcDataTransferService
     public int getDownloadResultsPageSize();
     
     /**
-     * Get a file container name.
+     * Get a file-container0name from a file-container-id
      *
      * @param dataTransferType The data transfer type.
      * @param configurationId The configuration ID (needed to determine the archive connection config).
      * @param fileContainerId The file container ID.
+     * @return The file container name of the provider id.
      * @throws HpcException on data transfer system failure.
      */
     public String getFileContainerName(HpcDataTransferType dataTransferType,

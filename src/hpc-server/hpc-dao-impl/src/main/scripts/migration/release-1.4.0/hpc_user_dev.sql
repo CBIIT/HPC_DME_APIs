@@ -21,4 +21,11 @@ update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '963f55b4-5910-42d2-9c
 update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '50a8d63b-2eef-47bb-af96-0e333a80eda5' where "DOC" = 'HiTIF';
 update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '0812a506-6e2f-4dcc-b11a-8a14cff00819' where "DOC" = 'DUMMY_NO_HIER';
 
-
+update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = 'a4574a94-7bb0-4540-a0d2-a4c1b17e60f3' where "DOC" = 'JDACS4C';
+update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = 'e58318ab-6a61-4478-9d72-f43f4a8257d9' where "DOC" = 'ATOM';
+update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '3ea3cacb-567c-46fe-bd84-db01e950991c' where "DOC" = 'MoCha';
+update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '4864e232-2fcb-4b9d-9144-d30473457575' where "DOC" = 'RAS_INF';
+update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = 'd4fdb3ca-f407-4d3e-9fc7-99fdb81431b6' where "DOC" = 'BIOWULF';
+update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '1e088147-4fcd-4282-975c-ee7229297a54' where "DOC" = 'DSITP_FNL';
+update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '7a4cd4a4-c900-4637-9b99-414a95bd246d' where "DOC" = 'CCR_SBL';
+update public."HPC_USER" set "DEFAULT_CONFIGURATION_ID" = '942b43f9-343c-4d96-b7b0-34f41571fb23' where "DOC" = 'NIEHS';

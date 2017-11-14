@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -43,6 +45,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -107,7 +110,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	@Qualifier("hpcDownloadResultsPagination")
 	private HpcPagination pagination = null;
 	
-	// The download directory
+	// The download directory.
 	private String downloadDirectory = null;
 	
 	// The logger instance.
@@ -300,7 +303,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	
 	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
                                                     HpcFileLocation directoryLocation,
-                                                    String configurationId) 
+                                                    String configurationId,
+                                                    List<String> includePatterns, 
+    		                                        List<String> excludePatterns,
+    		                                        HpcDirectoryScanPatternType patternType) 
                                                    throws HpcException
     {
        	// Input validation.
@@ -309,9 +315,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
        			                  HpcErrorType.INVALID_REQUEST_INPUT);
        	}	
        	
-       	return dataTransferProxies.get(dataTransferType).
-       			   scanDirectory(getAuthenticatedToken(dataTransferType, configurationId), 
-       					         directoryLocation);
+       	// Scan the directory to get a list of all files.
+       	List<HpcDirectoryScanItem> scanItems = 
+       		dataTransferProxies.get(dataTransferType).
+       		    scanDirectory(getAuthenticatedToken(dataTransferType, configurationId), 
+       			 	          directoryLocation);
+       	
+       	// Filter the list based on provided patterns.
+       	filterScanItems(scanItems, includePatterns, excludePatterns, patternType);
+       	
+       	return scanItems;
     }
 	
 	@Override
@@ -949,6 +962,93 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		return pathAttributes;
     }
     
+	/** 
+     * Filter scan items based on include/exclude patterns.
+     * 
+     * @param scanItems The list of items to filter (items not matched will be removed from this list).
+     * @param includePatterns The include patterns.
+     * @param excludePatterns The exclude patterns. 
+     * @param patternType The type of patterns provided.
+     * @throws HpcException on service failure
+     */
+    private void filterScanItems(List<HpcDirectoryScanItem> scanItems,
+			                     List<String> includePatterns, List<String> excludePatterns,
+			                     HpcDirectoryScanPatternType patternType)
+                                throws HpcException
+    {
+    	if(includePatterns.isEmpty() && excludePatterns.isEmpty()) {
+    	   // No patterns provided.
+    	   return;
+    	}
+    	
+    	// Validate pattern is provided.
+    	if(patternType == null) {
+    	   throw new HpcException("Null directory scan pattern type",
+                                  HpcErrorType.INVALID_REQUEST_INPUT);		
+    	}
+    	
+    	// Compile include regex expressions.
+    	List<Pattern> includeRegex = new ArrayList<>();
+    	includePatterns.forEach(pattern -> includeRegex.add(Pattern.compile(
+    			patternType.equals(HpcDirectoryScanPatternType.SIMPLE) ? 
+    			toRegex(pattern) : pattern)));
+    	
+    	// Compile exclude regex expressions.
+    	List<Pattern> excludeRegex = new ArrayList<>();
+    	excludePatterns.forEach(pattern -> excludeRegex.add(Pattern.compile(
+    		   patternType.equals(HpcDirectoryScanPatternType.SIMPLE) ? 
+    	       toRegex(pattern) : pattern)));
+    	
+    	// Match the items against the patterns.
+    	ListIterator<HpcDirectoryScanItem> iter = scanItems.listIterator();
+    	while(iter.hasNext()) {
+    		  // Get the path of this data object registration item.
+    		  String path = iter.next().getFilePath();
+    		  
+    		  // Match the patterns.
+    		  if(!((includeRegex.isEmpty() || matches(includeRegex, path)) &&
+    		       (excludeRegex.isEmpty() || !matches(excludeRegex, path)))) {
+    			 iter.remove();
+    		  }
+    	}
+    }
+    
+	/** 
+     * Regex matching on a list of patterns.
+     * 
+     * @param patterns A list of patterns to match.
+     * @param input The string to match.
+     * @return true if the input matched at least one of the patterns, or false otherwise.
+     */
+    private boolean matches(List<Pattern> patterns, String input)
+    {
+    	for(Pattern pattern : patterns) {
+    		if(pattern.matcher(input).matches()) {
+   	           return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
+	/** 
+     * Convert pattern from SIMPLE to REGEX.
+     * 
+     * @param pattern The SIMPLE pattern.
+     * @return The REGEX pattern.
+     */
+    private String toRegex(String pattern) 
+    {
+    	// Convert the '**' to regex.
+    	String regex = pattern.replaceAll(Pattern.quote("**"), ".*");
+    	
+    	// Convert the '*' to regex.
+    	regex = regex.replaceAll("([^\\.])\\*", "$1[^/]*");
+    	
+    	// Convert the '?' to regex.
+    	return regex.replaceAll(Pattern.quote("?"), ".");
+    }
+    
 	// Second hop download.
 	private class HpcSecondHopDownload implements HpcDataTransferProgressListener
 	{
@@ -1035,6 +1135,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		
 	    /**
 	     * Return the download task associated with this 2nd hop download.
+	     * @return The 2nd hop download task.
 	     */
 	    public HpcDataObjectDownloadTask getDownloadTask() 
 	    {
@@ -1136,11 +1237,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     * Create and store an entry in the DB to cleanup download file after 2nd hop async
 	     * transfer is complete. 
 	     * 
-	     * @param dataTransferType The data transfer type.
-	     * @param downloadFilePath The download file path to delete after download is complete.
-	     * @param path The data object path.
-	     * @param doc The DOC.
-	     * @param destinationLocation The download destination path.
 	     * @throws HpcException If it failed to persist the task.
 	     */
 	    private void createDownloadTask() throws HpcException
