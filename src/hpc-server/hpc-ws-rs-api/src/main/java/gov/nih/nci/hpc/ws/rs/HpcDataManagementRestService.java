@@ -92,7 +92,6 @@ public interface HpcDataManagementRestService
      *
      * @param path The collection path.
      * @param downloadRequest The download request.
-     * @param mc The message context.
      * @return The REST service response w/ HpcCollectionDownloadResponseDTO entity.
      */
 	@POST
@@ -295,7 +294,6 @@ public interface HpcDataManagementRestService
      * Download a list of data objects.
      *
      * @param downloadRequest The download request.
-     * @param mc The message context.
      * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO entity.
      */
 	@POST

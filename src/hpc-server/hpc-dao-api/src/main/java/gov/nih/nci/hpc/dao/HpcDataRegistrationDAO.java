@@ -70,7 +70,7 @@ public interface HpcDataRegistrationDAO
     /**
      * Store a new bulk data object registration result, or updated an task result.
      *
-     * @param registrationTaskResult The registration task result to persist.
+     * @param registrationResult The registration task result to persist.
      * @throws HpcException on database error.
      */
     public void upsertBulkDataObjectRegistrationResult(HpcBulkDataObjectRegistrationResult registrationResult) 
