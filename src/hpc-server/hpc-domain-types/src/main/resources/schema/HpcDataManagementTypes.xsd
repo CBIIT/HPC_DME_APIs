@@ -99,7 +99,23 @@
 			<xsd:element name="userId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
+    <xsd:complexType name="HpcUserPermissionOnCollection">
+        <xsd:sequence>
+            <xsd:element name="collectionPath" type="xsd:string" />
+            <xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" />
+            <xsd:element name="userId" type="xsd:string" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="HpcUserPermissionsOnMultipleCollections">
+        <xsd:sequence>
+            <xsd:element name="userPermissionsOnCollections"
+                         type="hpc-domain-datamanagement:HpcUserPermissionOnCollection"
+                         minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
 	<xsd:complexType name="HpcGroupPermission">
 		<xsd:sequence>
 			<xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" /> 
