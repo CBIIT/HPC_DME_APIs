@@ -1023,6 +1023,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     private boolean matches(List<Pattern> patterns, String input)
     {
     	for(Pattern pattern : patterns) {
+    		logger.error("ERAN MATCHES: " + input + ": " + pattern);
     		if(pattern.matcher(input).matches()) {
    	           return true;
     		}
@@ -1043,7 +1044,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	String regex = pattern.replaceAll(Pattern.quote("**"), ".*");
     	
     	// Convert the '*' to regex.
-    	regex = regex.replaceAll("[^\\.]\\*", "[^/]*");
+    	regex = regex.replaceAll("[^\\.]\\*", "$1[^/]*");
     	
     	// Convert the '?' to regex.
     	regex = regex.replaceAll(Pattern.quote("?"), ".");
