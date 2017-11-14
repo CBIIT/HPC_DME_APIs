@@ -1039,13 +1039,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      */
     private String toRegex(String pattern) 
     {
-    	String regex = pattern;
-    	if(!regex.startsWith("/")) {
-    	   regex = "/" + regex;
-    	}
-    	
     	// Convert the '**' to regex.
-    	regex = regex.replaceAll(Pattern.quote("**"), ".*");
+    	String regex = pattern.replaceAll(Pattern.quote("**"), ".*");
     	
     	// Convert the '*' to regex.
     	regex = regex.replaceAll("[^\\.]\\*", "[^/]*");
