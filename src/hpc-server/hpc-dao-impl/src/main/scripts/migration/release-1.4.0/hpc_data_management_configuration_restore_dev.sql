@@ -469,44 +469,6 @@ VALUES('63fdccdd-64b8-477f-9e5c-450c4dccf748', '/TEST_Archive', 'DUMMY', 'http:/
 				"ruleEnabled": true
 			},
 			{
-				"attribute": "source_lab_pi",
-				"mandatory": true,
-				"collectionTypes": [
-					"Project"
-				],
-				"ruleEnabled": true
-			},
-			{
-				"attribute": "lab_branch",
-				"mandatory": true,
-				"collectionTypes": [
-					"Project"
-				],
-				"ruleEnabled": true
-			},
-			{
-				"attribute": "pi_doc",
-				"mandatory": true,
-				"collectionTypes": [
-					"Project"
-				],
-				"validValues": [
-					"FNLCR",
-					"DUMMY",
-					"CCBR"
-				],
-				"ruleEnabled": true
-			},
-			{
-				"attribute": "original_date_created",
-				"mandatory": true,
-				"collectionTypes": [
-					"Project"
-				],
-				"defaultValue": "System-Date",
-				"ruleEnabled": true
-			},
-			{
 				"attribute": "name",
 				"mandatory": true,
 				"collectionTypes": [

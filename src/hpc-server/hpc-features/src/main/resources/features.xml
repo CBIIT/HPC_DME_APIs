@@ -61,10 +61,9 @@
 		
 		<!--  Dependent Bundles -->
 		<bundle>wrap:mvn:com.googlecode.json-simple/json-simple/${google-json-simple.version}</bundle>
+		<bundle>mvn:com.google.guava/guava/${google-guava.version}</bundle>
 		<bundle>mvn:commons-io/commons-io/${commons-io.version}</bundle>
-		<bundle>mvn:commons-codec/commons-codec/${commons-codec.version}</bundle>
 		<bundle>wrap:mvn:org.springframework.retry/spring-retry/${spring.retry.version}</bundle>
-		<bundle>mvn:com.google.guava/guava/20.0</bundle>
 		
 		<!-- Current version of JJWT 0.6 has a defect in the bundle manifest which requires
 		     Android jar. This is being fixed in 0.7. Remove the Android bundle when upgrading 
