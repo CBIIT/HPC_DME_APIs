@@ -180,7 +180,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	   throw new HpcException("Null path or metadata entries",
     			                  HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
-    	
+
+    	if(StringUtils.containsWhitespace(path)) {
+    		throw new HpcException("Path contains white space", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
     	// Create parent collections if requested to.
     	createParentCollections(path, collectionRegistration.getCreateParentCollections(), 
     			                collectionRegistration.getParentCollectionMetadataEntries(),
