@@ -268,8 +268,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO
     /** 
      * Convert a list of data object registration items into a JSON string.
      * 
-     * @param downloadItems The list of collection download items.
-     * @return A JSON representation of download items.
+     * @param registrationItems The list of data object registration items.
+     * @return A JSON representation of the registration items.
      */
 	@SuppressWarnings("unchecked")
 	private String toJSON(List<HpcBulkDataObjectRegistrationItem> registrationItems)

@@ -1418,8 +1418,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * Get collection download task status.
      *
      * @param taskId The collection download task ID.
-     * @param taskType COLLECTION or DATA_OBJECT_LIST
+     * @param taskType COLLECTION or DATA_OBJECT_LIST.
      * @return A collection download status DTO. Null if the task could not be found.
+     * @throws HpcException on service failure.
      */
     private HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId,
     		                                                           HpcDownloadTaskType taskType) 
@@ -1473,9 +1474,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * Split the list of download items into completed, failed and in-progress buckets.
      * 
      * @param downloadStatus The download status to populate the items into.
-     * @param items The collection download items.
-     * @return A data management tree .
-     * @throws HpcException on service failure.
+     * @param items The collection / bulk download items.
      */
     private void populateDownloadItems(HpcCollectionDownloadStatusDTO downloadStatus,
     		                           List<HpcCollectionDownloadTaskItem> items)
@@ -1524,7 +1523,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * 
      * @param path The data object path.
      * @param dataTransferStatus The data transfer upload system generetaed metadata.
-     * @param dataObjectDeleteResponse The deletion response DTO.
      */
     private void updateDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus)
     {
@@ -1543,8 +1541,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * 
      * @param registrationStatus The registration status to populate the items into.
      * @param items The registration items.
-     * @return A data management tree .
-     * @throws HpcException on service failure.
      */
     private void populateRegistrationItems(HpcBulkDataObjectRegistrationStatusDTO registrationStatus,
     		                               List<HpcBulkDataObjectRegistrationItem> items)

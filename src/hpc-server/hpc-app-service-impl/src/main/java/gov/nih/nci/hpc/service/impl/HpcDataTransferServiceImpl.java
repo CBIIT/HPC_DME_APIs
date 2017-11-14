@@ -110,7 +110,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	@Qualifier("hpcDownloadResultsPagination")
 	private HpcPagination pagination = null;
 	
-	// The download directory
+	// The download directory.
 	private String downloadDirectory = null;
 	
 	// The logger instance.
@@ -989,11 +989,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	
     	// Compile include regex expressions.
     	List<Pattern> includeRegex = new ArrayList<>();
-    	includePatterns.forEach(pattern -> includeRegex.add(Pattern.compile(pattern)));
+    	includePatterns.forEach(pattern -> includeRegex.add(Pattern.compile(
+    			patternType.equals(HpcDirectoryScanPatternType.SIMPLE) ? 
+    			toRegex(pattern) : pattern)));
     	
     	// Compile exclude regex expressions.
     	List<Pattern> excludeRegex = new ArrayList<>();
-    	excludePatterns.forEach(pattern -> excludeRegex.add(Pattern.compile(pattern)));
+    	excludePatterns.forEach(pattern -> excludeRegex.add(Pattern.compile(
+    		   patternType.equals(HpcDirectoryScanPatternType.SIMPLE) ? 
+    	       toRegex(pattern) : pattern)));
     	
     	// Match the items against the patterns.
     	ListIterator<HpcDirectoryScanItem> iter = scanItems.listIterator();
@@ -1010,7 +1014,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     }
     
 	/** 
-     * Regex matching on a list of patterns
+     * Regex matching on a list of patterns.
      * 
      * @param patterns A list of patterns to match.
      * @param input The string to match.
@@ -1025,6 +1029,33 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	return false;
+    }
+    
+	/** 
+     * Convert pattern from SIMPLE to REGEX.
+     * 
+     * @param pattern The SIMPLE pattern.
+     * @return The REGEX pattern.
+     */
+    private String toRegex(String pattern) 
+    {
+    	String regex = pattern;
+    	if(!regex.startsWith("/")) {
+    	   regex = "/" + regex;
+    	}
+    	
+    	// Convert the '**' to regex.
+    	regex = pattern.replaceAll("/**", "(/.*)*");
+    	
+    	// Convert the '*' to regex
+    	regex = regex.replaceAll("/*", "(/.*){1}?");
+    	
+    	// Convert the '?' to regex.
+    	regex = regex.replaceAll("?", ".");
+    	
+    	logger.error("ERAN REGEX: " + regex);
+    	
+    	return regex;
     }
     
 	// Second hop download.
@@ -1113,6 +1144,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 		
 	    /**
 	     * Return the download task associated with this 2nd hop download.
+	     * @return The 2nd hop download task.
 	     */
 	    public HpcDataObjectDownloadTask getDownloadTask() 
 	    {
@@ -1214,11 +1246,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
 	     * Create and store an entry in the DB to cleanup download file after 2nd hop async
 	     * transfer is complete. 
 	     * 
-	     * @param dataTransferType The data transfer type.
-	     * @param downloadFilePath The download file path to delete after download is complete.
-	     * @param path The data object path.
-	     * @param doc The DOC.
-	     * @param destinationLocation The download destination path.
 	     * @throws HpcException If it failed to persist the task.
 	     */
 	    private void createDownloadTask() throws HpcException
