@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+source $HPC_DM_TEST/utils/functions
+
+#Create a new destination directory
+sleep 1
+name=`date +"%b-%d-%G-%H-%M-%S"`
+new_folder_path=/TEST_NO_HIER_Archive/globus-bulk-registration/folder-${name}
+
+globus_dir=/test-bulk-registration
+register_globus_directory $globus_dir $new_folder_path
+echo "bulk registration response: $(get_http_code $RESPONSE_HEADER)"
+
+#wait for registration to take place 
+sleep 60
+
+#Get the new objects
+object1=dataObject/$new_folder_path/$globus_dir/test.txt
+object2=dataObject/$new_folder_path/$globus_dir/test.bam
+
+response_header=get-object1-response-header.tmp
+response_msg=get-object1-response-message.json.tmp
+get_item $object1 $response_header $response_msg
+echo "get object1 $(get_http_code $response_header)"
+
+response_header=get-object2-response-header.tmp
+response_msg=get-object2-response-message.json.tmp
+get_item $object2 $response_header $response_msg
+echo "get object2 $(get_http_code $response_header)"
+
+
+
