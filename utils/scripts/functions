@@ -451,11 +451,14 @@ function dm_show_register_directory_usage {
   read -d  '' usage <<- EOF
   Usage: dm_register_directory [OPTIONS]  <source-path> <destination-path> 
 
-  Recursively copy all files in the <source-path> to the archive's <destination-path>
+  Recursively copy all files in the <source-path> to the archive's <destination-path>. 
+  Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example the metatadata for the file foo.txt should be foo.txt.metadata.json
   OPTIONS:
   -d                      Print the files to be included in registration an exit 
   -e[EXCLUDE_FILE_PATH]   Exclude the files that match the patterns specified in the file EXCLUDE_FILE_PATH
-  -i[INCLUDE_FILE_PARH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
+  -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
+  -m                      Register metadata only. Do not register files.
+  -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
 EOF
   echo "$usage"
@@ -469,7 +472,7 @@ function dm_register_directory {
 
     local USAGE="USAGE: dm_register_directory <source-path> <destination-path>"
     local OPTIND
-    while getopts ":de:i:h" option
+    while getopts ":de:i:hms" option
     do
       case "${option}" in
         d)
@@ -493,6 +496,12 @@ function dm_register_directory {
             echo "ERROR: The include file $include_file does not exists" >&2
             exit 1
           fi
+          ;;
+        m)
+          metadata_only=1
+          ;;
+        s)
+          skip_confirmation=1
           ;;
         h)
           dm_show_register_directory_usage 
@@ -561,6 +570,18 @@ function dm_register_directory {
     if [ "$dry_run" ]
     then
       command_args+=" --test true"
+    fi
+
+    if [ ! "$skip_confirmation" ]
+    then
+      command_args+=" --confirm true "
+    else  
+      command_args+=" --confirm false "
+    fi
+
+    if [ "$metadata_only" ]
+    then
+      command_args+=" --metadata true "
     fi
 
     #Generate the command for the client: 
@@ -895,6 +916,8 @@ function dm_download_async {
         exit 1
     else
         echo "Download request sent to Globus." 
+        task_id=$(get_json_value $response_msg taskId)
+        echo "taskID:$task_id" 
         echo "Check the full download receipt at $response_msg"
     fi
 }

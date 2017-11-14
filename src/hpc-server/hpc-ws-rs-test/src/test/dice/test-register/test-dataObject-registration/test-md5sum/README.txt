@@ -13,5 +13,5 @@
 @ddblock_end copyright
 ******************************/
 
-Register a dataObject synchronously then get it.
+Register a dataObject synchronously with md5sum attribute set. 
 Make sure the md5sum field is set correctly.
