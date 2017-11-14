@@ -84,8 +84,9 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionOnSingleCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionsOnMultipleCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermOnOneCollection;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermOnOneCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsOnManyCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -512,31 +513,31 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     @Override
-	public HpcUserPermissionsOnMultipleCollectionsDTO getUserPermissionsOnCollections(
+	public HpcUserPermsOnManyCollectionsDTO getUserPermissionsOnCollections(
 	        List<String> collectionPaths, String userId) throws HpcException {
-        HpcUserPermissionsOnMultipleCollectionsDTO usrPrmsOnClltcns = new HpcUserPermissionsOnMultipleCollectionsDTO();
+        HpcUserPermsOnManyCollectionsDTO usrPrmsOnClltcns = new HpcUserPermsOnManyCollectionsDTO();
         for (String someCollectionPath : collectionPaths) {
-            HpcUserPermissionOnSingleCollectionDTO dtoResult =
+            HpcUserPermOnOneCollection permsResult =
               _processPermsForOneOfManyCollections(userId, someCollectionPath);
-            if (null != dtoResult) {
-                usrPrmsOnClltcns.getPermissionsXCollections().add(dtoResult);
+            if (null != permsResult) {
+                usrPrmsOnClltcns.getPermissionsXCollections().add(permsResult);
             }
         }
         return usrPrmsOnClltcns;
     }
 
-    private HpcUserPermissionOnSingleCollectionDTO _processPermsForOneOfManyCollections(
+    private HpcUserPermOnOneCollection _processPermsForOneOfManyCollections(
                 String userId, String someCollectionPath) throws HpcException {
         try {
-            HpcUserPermissionOnSingleCollectionDTO finalDto = null;
+            HpcUserPermOnOneCollection permsObj = null;
             HpcUserPermissionDTO initialDto = getCollectionPermission(someCollectionPath, userId);
             if (null != initialDto) {
-                finalDto = new HpcUserPermissionOnSingleCollectionDTO();
-                finalDto.setCollectionPath(someCollectionPath);
-                finalDto.setPermission(initialDto.getPermission());
-                finalDto.setUserId(initialDto.getUserId());
+                permsObj = new HpcUserPermOnOneCollection();
+                permsObj.setCollectionPath(someCollectionPath);
+                permsObj.setPermission(initialDto.getPermission());
+                permsObj.setUserId(initialDto.getUserId());
             }
-            return finalDto;
+            return permsObj;
         } catch (Exception e) {
             String msg = String.format("Failed to get permissions of user [%s] on collection path [%s]",
                                         userId, someCollectionPath);
