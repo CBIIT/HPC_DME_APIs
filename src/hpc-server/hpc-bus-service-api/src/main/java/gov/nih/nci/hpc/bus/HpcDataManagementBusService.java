@@ -32,8 +32,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionOnSingleCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionsOnMultipleCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsOnManyCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -197,7 +196,7 @@ public interface HpcDataManagementBusService
      * @return permissions of the user on the specified collections.
      * @throws HpcException on service failure.
      */
-    public HpcUserPermissionsOnMultipleCollectionsDTO getUserPermissionsOnCollections(
+    public HpcUserPermsOnManyCollectionsDTO getUserPermissionsOnCollections(
             List<String> collectionPaths, String userId) throws HpcException;
 
     /**
