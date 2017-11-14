@@ -38,7 +38,6 @@ public class HpcPagination
      * Default constructor disabled.
      * 
      * @throws HpcException Constructor disabled.
-     *
      */
     private HpcPagination() throws HpcException
     {
@@ -61,12 +60,9 @@ public class HpcPagination
     //---------------------------------------------------------------------//
 
     /**
-     * Get the page size
+     * Get the page size.
      *
-     * @param page The requested page.
-     * @return The calculated offset
-     * @throws HpcException if the page is invalid.
-     * 
+     * @return The page size.
      */
     public int getPageSize()
     {
@@ -79,7 +75,6 @@ public class HpcPagination
      * @param page The requested page.
      * @return The calculated offset
      * @throws HpcException if the page is invalid.
-     * 
      */
     public int getOffset(int page) throws HpcException
     {

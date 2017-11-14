@@ -262,9 +262,9 @@ public interface HpcDataTransferService
 			                                            throws HpcException;
 	
     /** 
-     * Update a collection download request.
+     * Update a collection download task.
      * 
-     * @param downloadRequest The collection download request to update.
+     * @param downloadTask The collection download task to update.
      * @throws HpcException on service failure.
      */
 	public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
@@ -331,11 +331,12 @@ public interface HpcDataTransferService
     public int getDownloadResultsPageSize();
     
     /**
-     * Get a file container name.
+     * Get a file-container0name from a file-container-id
      *
      * @param dataTransferType The data transfer type.
      * @param configurationId The configuration ID (needed to determine the archive connection config).
      * @param fileContainerId The file container ID.
+     * @return The file container name of the provider id.
      * @throws HpcException on data transfer system failure.
      */
     public String getFileContainerName(HpcDataTransferType dataTransferType,
