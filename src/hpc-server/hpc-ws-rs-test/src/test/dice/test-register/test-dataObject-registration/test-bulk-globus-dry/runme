@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+source $HPC_DM_TEST/utils/functions
+
+#Create a new destination directory
+sleep 1
+name=`date +"%b-%d-%G-%H-%M-%S"`
+new_folder_path=/TEST_NO_HIER_Archive/globus-bulk-registration/folder-${name}
+
+globus_dir=/test-bulk-registration
+#Run dry
+register_globus_directory -d $globus_dir $new_folder_path
+echo "bulk registration response: $(get_http_code $RESPONSE_HEADER)"
+
+#make sure the response message includes the two objects
+
+
+#Get the new objects, they should not exist as we are running dry.
+object1=${new_folder_path}${globus_dir}/test.txt
+object2=${new_folder_path}${globus_dir}/test.txt
+
+verify_contains $RESPONSE_MSG $object1
+verify_contains $RESPONSE_MSG $object2
+
+#wait for registration to take place, in case it happened
+sleep 60
+
+response_header=get-object1-response-header.tmp
+response_msg=get-object1-response-message.json.tmp
+get_item dataObject$object1 $response_header $response_msg
+echo "get object1 $(get_http_code $response_header)" >&2
+
+response_header=get-object2-response-header.tmp
+response_msg=get-object2-response-message.json.tmp
+get_item dataObject$object2 $response_header $response_msg
+echo "get object2 $(get_http_code $response_header)" >&2
+
+
+
