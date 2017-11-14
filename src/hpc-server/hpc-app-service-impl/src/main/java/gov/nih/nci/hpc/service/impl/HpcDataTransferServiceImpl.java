@@ -1045,10 +1045,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// Convert the '**' to regex.
-    	regex = pattern.replaceAll("/**", "(/.*)*");
+    	regex = pattern.replaceAll("**", ".*");
     	
     	// Convert the '*' to regex
-    	regex = regex.replaceAll("/*", "(/.*){1}?");
+    	regex = regex.replaceAll("*", "[^/]*");
     	
     	// Convert the '?' to regex.
     	regex = regex.replaceAll("?", ".");
