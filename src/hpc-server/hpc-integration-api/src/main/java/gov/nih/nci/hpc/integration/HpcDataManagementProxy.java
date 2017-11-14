@@ -309,9 +309,9 @@ public interface HpcDataManagementProxy
      * @return permission on the collection.
      * @throws HpcException on data management system failure.
      */
-    public HpcSubjectPermission getCollectionPermissionForUser(Object authenticatedToken,
-    														   String path, String userId) 
-    														   throws HpcException;
+    public HpcSubjectPermission getCollectionPermission(Object authenticatedToken,
+    													String path, String userId) 
+    												   throws HpcException;
     
     
     /**
@@ -348,9 +348,9 @@ public interface HpcDataManagementProxy
      * @return permission on the data object.
      * @throws HpcException on data management system failure.
      */
-    public HpcSubjectPermission getDataObjectPermissionForUser(Object authenticatedToken,
-    														   String path, String userId) 
-    														   throws HpcException;
+    public HpcSubjectPermission getDataObjectPermission(Object authenticatedToken,
+    													String path, String userId) 
+    												   throws HpcException;
     
 
     /**

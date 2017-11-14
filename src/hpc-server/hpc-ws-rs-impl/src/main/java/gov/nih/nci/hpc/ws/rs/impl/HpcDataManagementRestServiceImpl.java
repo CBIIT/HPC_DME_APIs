@@ -89,7 +89,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
      
     /**
      * Constructor for Spring Dependency Injection.
-     * 
      */
     private HpcDataManagementRestServiceImpl() 
     {
@@ -183,6 +182,19 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
+	public Response deleteCollection(String path)
+    {
+		try {
+			 dataManagementBusService.deleteCollection(toAbsolutePath(path));
+			 
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+		
+		return okResponse(null, false);
+    }
+    
+    @Override
     public Response setCollectionPermissions(String path, HpcEntityPermissionsDTO collectionPermissionsRequest)
     {
     	HpcEntityPermissionsResponseDTO permissionsResponse = null;
@@ -213,11 +225,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getCollectionPermissionForUser(String path, String userId)
+    public Response getCollectionPermission(String path, String userId)
     {
     	HpcUserPermissionDTO hpcUserPermissionDTO = null;
 		try {
-			hpcUserPermissionDTO = dataManagementBusService.getCollectionPermissionForUser(toAbsolutePath(path), userId);
+			hpcUserPermissionDTO = dataManagementBusService.getCollectionPermission(toAbsolutePath(path), userId);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -264,7 +276,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		}
 
 		return !StringUtils.isEmpty(registrationResponse.getTaskId()) ?
-			   createdResponse(registrationResponse.getTaskId()) :
+			   createdResponse(registrationResponse.getTaskId(), registrationResponse) :
 			   okResponse(registrationResponse, false);    	
     }
     
@@ -374,11 +386,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response getDataObjectPermissionForUser(String path, String userId)
+    public Response getDataObjectPermission(String path, String userId)
     {
     	HpcUserPermissionDTO hpcUserPermissionDTO = null;
 		try {
-			hpcUserPermissionDTO = dataManagementBusService.getDataObjectPermissionForUser(toAbsolutePath(path), userId);
+			hpcUserPermissionDTO = dataManagementBusService.getDataObjectPermission(toAbsolutePath(path), userId);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -478,7 +490,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     
     /**
      * Create a Response object out of the DTO. Also set the download file path on the message context,
-     * so that the cleanup interceptor can remove it after rge file reached the caller. 
+     * so that the cleanup interceptor can remove it after requested file reached the caller. 
      * 
      * @param downloadResponse The download response.
      * @param messageContext The message context.

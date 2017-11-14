@@ -911,7 +911,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param destinationLocation The download destination location.
      * @param userId The user ID who requested the collection download.
      * @return The download task item.
-     * @throws HpcException on service failure.
      */
 	private HpcCollectionDownloadTaskItem downloadDataObject(String path, 
 			                                                 HpcFileLocation destinationLocation, 
@@ -1049,7 +1048,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
      * @param dataTransferType The data transfer type.
      * @param configurationId The data management configuration ID.
      * @param fileLocation The file location.
-     * @throws HpcException on service failure.
      */
     private void setFileContainerName(HpcDataTransferType dataTransferType,
     		                          String configurationId, HpcFileLocation fileLocation) 

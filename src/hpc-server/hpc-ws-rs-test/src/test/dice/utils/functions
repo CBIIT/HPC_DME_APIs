@@ -2439,4 +2439,196 @@ function delete_bookmark {
 }
 
 
+#Bulk registration for dataObjects from the default Globus endpoint
+#inputs:
+#     <src-directory>:  The source directory on the globus endpoint
+#     <dst-collection>: The destination collection on the Archive
+function register_globus_directory {
+
+    usage="$FUNCNAME [-deih] <src-directory> <dst-collection>"
+    local OPTIND
+    while getopts ":de:i:h" option
+    do
+      case "${option}" in
+        d)
+          dry_run=1
+          ;;
+        e)
+          #space separated exclude patterns
+          exclude_option=1
+          exclude_patterns="${OPTARG}"
+          ;;
+        i)
+          #space separated include patterns
+          include_option=1
+          include_patterns="${OPTARG}"
+          ;;
+        h)
+          echo "$usage"
+          exit 1
+          ;;
+        *)
+          echo "ERROR: Unsoported option ${option}" >&2
+          echo "$usage" >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    shift $(( OPTIND-1 ))   
+
+    if [ "$#" -lt 2 ]
+    then
+        echo "ERROR: using ${FUNCNAME}" >&2
+        echo "Received $*" >&2
+        show_register_globus_directory_usage >&2
+        exit 1
+    fi
+
+    src_dir="$1"
+    dst_dir="$2"
+
+    if [ -z $RESPONSE_HEADER ] 
+    then
+        RESPONSE_HEADER=register-bulk-globus-response-header.tmp
+    fi
+
+    if [ -z $RESPONSE_MSG ] 
+    then
+        RESPONSE_MSG=register-bulk-globus-response-message.json.tmp
+    fi
+
+
+    #Prepare the request template
+    #Set dry run value
+    if [ "$dry_run" ]
+    then
+      dry_run_value=true
+    else
+      dry_run_value=false
+    fi
+  
+    #Set include patterns
+    if [ "$include_option" ]
+    then
+      include_values="\"includePatterns\":["
+      for include_value in "$include_patterns"
+      do
+        include_values+="\"$include_value\","
+      done    
+      #Remove the last comma
+      include_values=${include_values%?}
+      include_values+="],"
+    else
+      include_values=""
+    fi
+
+  
+    #Set exclude patterns
+    if [ "$exclude_option" ]
+    then
+      exclude_values="\"excludePatterns\":["
+      for exclude_value in "$exclude_patterns"
+      do
+        exclude_values+="\"$exclude_value\","
+      done    
+      #Remove the last comma
+      exclude_values=${exclude_values%?}
+      exclude_values+="],"
+    else
+      exclude_values=""
+    fi
+
+    TEMPLATE=$HPC_DM_TEST/utils/templates/globus-bulk-registration.json
+    TEMP=upload-input.json.tmp
+
+    #Update the globus endpoint
+    update_uid "$TEMPLATE" "$TEMP"
+
+    #Update the src, dst, include and exclude 
+    INPUT_JSON=$(cat $TEMP  \
+      | sed "s@dx_src_dir@$src_dir@" \
+      | sed "s@dx_dst_dir@$dst_dir@" \
+      | sed "s@dx_dry_run_value@$dry_run_value@" \
+      | sed "s@dx_include_patterns@$include_values@" \
+      | sed "s@dx_exclude_patterns@$exclude_values@")
+
+    echo "$INPUT_JSON" > input.json.tmp
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    curl -X PUT -H "Content-Type: application/json" -d @input.json.tmp ${SERVER}/registration  $(get_curl_config)  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
+
+
+#Check if a file contains a string 
+#inputs:
+#     <filename>
+#     <string>
+function verify_contains {
+
+  usage="$FUNCNAME [-r] <filename> <string>"
+
+  local OPTIND
+  reverse_check=""
+  while getopts ":rh" option
+  do
+    case "${option}" in
+      r)
+        #Check if the file does not contain
+        reverse_check=1
+        ;;
+     h)
+        echo "usage"
+        exit 1
+        ;;
+      *)
+        echo "ERROR: Unsoported option ${option}" >&2
+        echo "$usage" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  shift $(( OPTIND-1 ))   
+
+  if [ "$#" -lt 2 ]
+  then
+    echo "ERROR using $FUNCNAME" >&2
+    echo "RECEIVED: $*" >&2
+    echo "$usage"  >&2
+    exit 1
+  fi
+    
+  
+  filename="$1"
+  string="$2"
+
+  if [ ! -e "$filename" ]
+  then
+    echo "$FUNCNAME ERROR: Can not find the file $filename" >&2
+    exit 1
+  fi
+
+  string_exists=$(grep $string $filename)
+  if [ ! "$reverse_check" ]
+  then
+    if [ -z "$string_exists" ]
+    then
+      echo "ERROR: Can not find $string in the file $filename" >&2
+      exit 1
+    fi
+  else
+    if [ ! -z "$string_exists" ]
+    then
+      echo "ERROR: the $string exists in the file $filename" >&2
+      exit 1
+    fi
+  fi
+
+}
+
+
+
+
 

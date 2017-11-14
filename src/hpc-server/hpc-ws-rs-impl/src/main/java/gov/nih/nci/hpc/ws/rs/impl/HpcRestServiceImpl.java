@@ -32,7 +32,6 @@ import org.springframework.util.StringUtils;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public abstract class HpcRestServiceImpl
