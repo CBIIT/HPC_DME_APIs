@@ -1,0 +1,3 @@
+bulk registration response: 201
+get object1 200
+get object2 200

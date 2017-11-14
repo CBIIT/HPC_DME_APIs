@@ -296,9 +296,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
 
     @Override
-    public HpcSubjectPermission getCollectionPermissionForUser(String path, String userId) throws HpcException
+    public HpcSubjectPermission getCollectionPermission(String path, String userId) throws HpcException
     {
-    	return dataManagementProxy.getCollectionPermissionForUser(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    	return dataManagementProxy.getCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    }
+    
+    @Override
+    public HpcSubjectPermission getCollectionPermission(String path) throws HpcException
+    {
+    	return dataManagementProxy.getCollectionPermission(
+    			                      dataManagementAuthenticator.getAuthenticatedToken(), path, 
+    			                      HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
     }
 
     @Override
@@ -319,15 +327,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public HpcSubjectPermission getDataObjectPermissionForUser(String path, String userId) throws HpcException
+    public HpcSubjectPermission getDataObjectPermission(String path, String userId) throws HpcException
     {
-    	return dataManagementProxy.getDataObjectPermissionForUser(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    	return dataManagementProxy.getDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
     }
     
     @Override
     public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException
     {
-    	return dataManagementProxy.getDataObjectPermissionForUser(
+    	return dataManagementProxy.getDataObjectPermission(
     			                      dataManagementAuthenticator.getAuthenticatedToken(), path, 
     			                      HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
     }
@@ -475,6 +483,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     	if(StringUtils.isEmpty(userId)) {
     	   throw new HpcException("Null / Empty userId in registration list request", 
     			                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+    	if(dataObjectRegistrationRequests.isEmpty()) {
+    	   throw new HpcException("Empty registration request", 
+	                              HpcErrorType.INVALID_REQUEST_INPUT);
     	}
     	
     	// Create a bulk data object registration task.

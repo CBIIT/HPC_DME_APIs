@@ -35,11 +35,11 @@
 		<jargon.version>4.1.10.0-RELEASE</jargon.version>
 		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version>
 		<google-json-simple.version>1.1.1</google-json-simple.version>
+		<google-guava.version>20.0</google-guava.version>
+		<google-oauth-client.version>1.22.0</google-oauth-client.version>
 		<jjwt.version>0.6.0</jjwt.version>
 		<commons-io.version>2.5</commons-io.version>
-		<commons-codec.version>1.10</commons-codec.version>
 		<aspectj.version>1.7.4</aspectj.version>
-		<google-oauth-client.version>1.22.0</google-oauth-client.version>
 	</properties>
 
 	<modules>
@@ -161,11 +161,12 @@
 				<artifactId>commons-io</artifactId>
 				<version>${commons-io.version}</version>
 			</dependency>
+			<!--  
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
 				<version>${commons-codec.version}</version>
-			</dependency>
+			</dependency>-->
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
@@ -302,6 +303,21 @@
 				<version>${google-json-simple.version}</version>
 			</dependency>
 			<dependency>
+		    	<groupId>com.google.guava</groupId>
+		    	<artifactId>guava</artifactId>
+		    	<version>${google-guava.version}</version>
+			</dependency>
+			<dependency>
+  				<groupId>com.google.oauth-client</groupId>
+  				<artifactId>google-oauth-client</artifactId>
+  				<version>${google-oauth-client.version}</version>
+			</dependency>
+			<dependency>
+    			<groupId>com.google.http-client</groupId>
+    			<artifactId>google-http-client-jackson</artifactId>
+    			<version>${google-oauth-client.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>io.jsonwebtoken</groupId>
 				<artifactId>jjwt</artifactId>
 				<version>${jjwt.version}</version>
@@ -337,16 +353,6 @@
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
 				<version>3.1.0</version>
-			</dependency>
-			<dependency>
-  				<groupId>com.google.oauth-client</groupId>
-  				<artifactId>google-oauth-client</artifactId>
-  				<version>${google-oauth-client.version}</version>
-			</dependency>
-			<dependency>
-    			<groupId>com.google.http-client</groupId>
-    			<artifactId>google-http-client-jackson</artifactId>
-    			<version>${google-oauth-client.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
