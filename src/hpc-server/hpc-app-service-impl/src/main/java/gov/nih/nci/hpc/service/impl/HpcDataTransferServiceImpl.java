@@ -1044,7 +1044,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	String regex = pattern.replaceAll(Pattern.quote("**"), ".*");
     	
     	// Convert the '*' to regex.
-    	regex = regex.replaceAll("[^\\.]\\*", "$1[^/]*");
+    	regex = regex.replaceAll("([^\\.])\\*", "$1[^/]*");
     	
     	// Convert the '?' to regex.
     	regex = regex.replaceAll(Pattern.quote("?"), ".");
