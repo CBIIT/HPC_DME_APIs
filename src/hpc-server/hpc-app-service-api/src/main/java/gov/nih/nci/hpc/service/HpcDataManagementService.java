@@ -119,7 +119,18 @@ public interface HpcDataManagementService
      * @throws HpcException on service failure.
      */
     public HpcSubjectPermission getCollectionPermission(String path, String userId) throws HpcException;
-    
+
+    /**
+     * Acquire permission of given user on a given collection.  Ensures that even if given user has no permission
+     * on given collection, an instance of the return type is returned indicating permission set to level of "NONE".
+     *
+     * @param path Path of given collection.
+     * @param userId UserId of given user.
+     * @return <code>HpcSubjectPermission</code> representing permission that given user has on given collection.
+     * @throws HpcException on service failure.
+     */
+    public HpcSubjectPermission acquireCollectionPermission(String path, String userId) throws HpcException;
+
     /**
      * Get collection permission (for the request invoker) 
      *

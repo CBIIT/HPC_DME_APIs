@@ -10,30 +10,10 @@
 
 package gov.nih.nci.hpc.bus;
 
-import java.io.File;
-import java.util.List;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsOnManyCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.*;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.io.File;
 
 /**
  * <p>
@@ -193,11 +173,29 @@ public interface HpcDataManagementBusService
      *
      * @param collectionPaths The collections' paths.
      * @param userId The user of interest.
-     * @return permissions of the user on the specified collections.
+     * @return permissions of the user on the specified collections as
+     *          <code>HpcUserPermsOnManyCollectionsDTO</code> instance.
      * @throws HpcException on service failure.
      */
-    public HpcUserPermsOnManyCollectionsDTO getUserPermissionsOnCollections(
-            List<String> collectionPaths, String userId) throws HpcException;
+    public HpcUserPermsForCollectionsDTO getUserPermissionsOnCollections(
+            String[] collectionPaths, String userId) throws HpcException;
+
+//	public HpcUserPermsOnManyCollectionsDTO getUserPermissionsOnCollections(
+//			String[] collectionPaths, String userId) throws HpcException;
+
+    /**
+     * Given some collection paths, get all permissions on those collections across all users.
+     *
+     * Note that there is no representation of a user having no permission on a collection.  In
+     * other words, that scenario is represented by nothing/void/nil.
+     *
+     * @param collectionPaths The collections' paths.
+     * @return permissions on the specified collections encompassing all users, as a
+     *          <code>HpcUserPermsOnManyCollectionsDTO</code> instance.
+     * @throws HpcException on service failure.
+     */
+    public HpcUserPermsOnManyCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths)
+        throws HpcException;
 
     /**
      * Register a Data object. 
