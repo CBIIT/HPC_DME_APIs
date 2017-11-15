@@ -300,7 +300,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	return dataManagementProxy.getCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
     }
-    
+
+    @Override
+    public HpcSubjectPermission acquireCollectionPermission(String path, String userId) throws HpcException
+    {
+        return dataManagementProxy.acquireCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    }
+
     @Override
     public HpcSubjectPermission getCollectionPermission(String path) throws HpcException
     {
