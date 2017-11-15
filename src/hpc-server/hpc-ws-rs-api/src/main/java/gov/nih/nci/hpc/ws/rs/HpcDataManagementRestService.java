@@ -178,6 +178,18 @@ public interface HpcDataManagementRestService
                                                        @PathParam("userId") String userId);
 
     /**
+     * Get all permissions that are assigned for a given set of collections.
+     *
+     * @param collectionPaths The collections' paths.
+     * @return The REST service response based on <code>HpcPermsForCollectionsDTO</code> instance.
+     */
+    @GET
+    @Path("/collection-acl")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getAllPermissionsOnCollections(@QueryParam("collectionPath") String[] collectionPaths);
+
+
+    /**
      * Data object registration.
      *
      * @param path The data object path.

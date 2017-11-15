@@ -34,6 +34,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+//import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermissionOnCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
@@ -84,6 +85,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionsForCollection;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermOnOneCollection;
@@ -604,25 +607,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
 	@Override
-    public HpcUserPermsOnManyCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths)
-        throws HpcException {
-        List results = new ArrayList();
-        for (String singleCollectionPath : collectionPaths) {
-            List<HpcSubjectPermission> allPerms = dataManagementService.getCollectionPermissions(singleCollectionPath);
-            // TODO: processing allPerms to get collection of permissions information where each item combines
-            //       following 3 things: permission level, which user or group, and the collection
-
-            for (HpcSubjectPermission hsPerm : allPerms) {
-                HpcSubjectPermissionOnCollection hsPermOnColl = new HpcSubjectPermissionOnCollection();
-                hsPermOnColl.setSubject(hsPerm.getSubject());
-                hsPermOnColl.setSubjectType(hsPerm.getSubjectType());
-                hsPermOnColl.setPermission(hsPerm.getPermission());
-                hsPermOnColl.setCollectionPath(singleCollectionPath);
-                results.add(hsPermOnColl);
-            }
+    public HpcPermsForCollectionsDTO getAllPermissionsOnCollections(
+            String[] collectionPaths) throws HpcException {
+        HpcPermsForCollectionsDTO resultDto = new HpcPermsForCollectionsDTO();
+        for (String somePath : collectionPaths) {
+            HpcPermissionsForCollection perms4Coll = new
+              HpcPermissionsForCollection();
+            perms4Coll.setCollectionPath(somePath);
+            perms4Coll.getCollectionPermission().addAll(
+              dataManagementService.getCollectionPermissions(somePath));
+            resultDto.getCollectionPermissions().add(perms4Coll);
         }
-        // return results;
-        return null;
+
+        return resultDto;
+//        return null;
     }
 
 	@Override
