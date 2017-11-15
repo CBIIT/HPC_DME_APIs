@@ -191,10 +191,10 @@ public interface HpcDataManagementBusService
      *
      * @param collectionPaths The collections' paths.
      * @return permissions on the specified collections encompassing all users, as a
-     *          <code>HpcUserPermsOnManyCollectionsDTO</code> instance.
+     *          <code>HpcPermsForCollectionsDTO</code> instance.
      * @throws HpcException on service failure.
      */
-    public HpcUserPermsOnManyCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths)
+    public HpcPermsForCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths)
         throws HpcException;
 
     /**

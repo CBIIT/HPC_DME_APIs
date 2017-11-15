@@ -236,6 +236,16 @@
         </xsd:complexType>
     </xsd:element>
 
+    <xsd:element name="HpcPermsForCollectionsDTO">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="collectionPermissions"
+                             type="hpc-domain-datamanagement:HpcPermissionsForCollection"
+                             minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:complexType name="HpcUserPermissionResponseDTO">
 		<xsd:sequence>
 			<xsd:element name="userId" type="xsd:string" />
