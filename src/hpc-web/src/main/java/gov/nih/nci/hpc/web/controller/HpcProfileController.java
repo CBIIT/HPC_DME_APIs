@@ -63,6 +63,7 @@ public class HpcProfileController extends AbstractHpcController {
 		
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
+		model.addAttribute("profile", user);
         return "profile";
     }
 
