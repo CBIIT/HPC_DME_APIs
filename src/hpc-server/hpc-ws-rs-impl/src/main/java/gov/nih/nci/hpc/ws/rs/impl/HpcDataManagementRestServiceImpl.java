@@ -219,17 +219,32 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
 
     @Override
-	public Response getPermissionsOnCollectionsForUser(String[] collectionPaths, String userId) {
-        HpcUserPermsOnManyCollectionsDTO hpcUserPermsOnCollsDTO = null;
+	public Response getPermissionsOnCollectionsForUser(
+        String[] collectionPaths, String userId) {
+//        HpcUserPermsOnManyCollectionsDTO hpcUserPermsOnCollsDTO = null;
+        HpcUserPermsForCollectionsDTO hpcUserPermsOnCollsDTO = null;
         try {
-            List<String> theColPaths = Arrays.asList(collectionPaths);
-            hpcUserPermsOnCollsDTO = dataManagementBusService.getUserPermissionsOnCollections(theColPaths, userId);
+//            hpcUserPermsOnCollsDTO = dataManagementBusService.getUserPermissionsOnCollections(collectionPaths, userId);
+            hpcUserPermsOnCollsDTO =
+              dataManagementBusService.getUserPermissionsOnCollections(
+                collectionPaths, userId);
         } catch(HpcException e) {
             return errorResponse(e);
         }
 
         return okResponse(hpcUserPermsOnCollsDTO, true);
    }
+
+    public Response getAllPermissionsOnCollections(String[] collectionPaths) {
+        HpcUserPermsOnManyCollectionsDTO resultDto = null;
+        try {
+            resultDto = dataManagementBusService.getAllPermissionsOnCollections(collectionPaths);
+        } catch (HpcException he) {
+            return errorResponse(he);
+        }
+
+        return okResponse(resultDto, true);
+    }
 
     @Override
     public Response registerDataObject(String path, 

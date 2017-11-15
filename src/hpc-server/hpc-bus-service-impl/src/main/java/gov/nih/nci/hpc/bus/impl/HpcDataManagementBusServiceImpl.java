@@ -35,6 +35,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermissionOnCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
@@ -82,11 +83,13 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermOnOneCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermOnOneCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsOnManyCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -492,8 +495,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcUserPermissionDTO getCollectionPermission(String path, String userId) throws HpcException
-    {
+    public HpcUserPermissionDTO getCollectionPermission(
+        String path, String userId) throws HpcException {
     	// Input validation.
     	if(path == null) {
     	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
@@ -513,12 +516,48 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     @Override
-	public HpcUserPermsOnManyCollectionsDTO getUserPermissionsOnCollections(
-	        List<String> collectionPaths, String userId) throws HpcException {
+	public HpcUserPermsForCollectionsDTO getUserPermissionsOnCollections(
+        String[] collectionPaths, String userId) throws HpcException {
+        HpcUserPermsForCollectionsDTO usrPrmsOnClltcns = new
+          HpcUserPermsForCollectionsDTO();
+        usrPrmsOnClltcns.setUserId(userId);
+        for (String someCollectionPath : collectionPaths) {
+            HpcPermissionForCollection permForColl =
+              _fetchCollectionPermission(someCollectionPath, userId);
+            if (null != permForColl) {
+                usrPrmsOnClltcns.getPermissionsForCollections()
+                                .add(permForColl);
+            }
+        }
+        return usrPrmsOnClltcns;
+    }
+
+	private HpcPermissionForCollection _fetchCollectionPermission(
+        String path, String userId) throws HpcException {
+		// Input validation.
+		if (path == null) {
+			throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (userId == null) {
+			throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		// Validate the collection exists.
+		if (dataManagementService.getCollection(path, false) == null) {
+			return null;
+		}
+		HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
+        HpcPermissionForCollection resultHpcPermForColl = new HpcPermissionForCollection();
+        resultHpcPermForColl.setCollectionPath(path);
+        resultHpcPermForColl.setPermission(hsPerm.getPermission());
+		return resultHpcPermForColl;
+	}
+
+    public HpcUserPermsOnManyCollectionsDTO getUserPermissionsOnCollections_ORIGINAL(
+            String[] collectionPaths, String userId) throws HpcException {
         HpcUserPermsOnManyCollectionsDTO usrPrmsOnClltcns = new HpcUserPermsOnManyCollectionsDTO();
         for (String someCollectionPath : collectionPaths) {
             HpcUserPermOnOneCollection permsResult =
-              _processPermsForOneOfManyCollections(userId, someCollectionPath);
+                    _processPermsForOneOfManyCollections_ORIGINAL(userId, someCollectionPath);
             if (null != permsResult) {
                 usrPrmsOnClltcns.getPermissionsXCollections().add(permsResult);
             }
@@ -526,11 +565,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         return usrPrmsOnClltcns;
     }
 
-    private HpcUserPermOnOneCollection _processPermsForOneOfManyCollections(
-                String userId, String someCollectionPath) throws HpcException {
+    private HpcUserPermOnOneCollection _processPermsForOneOfManyCollections_ORIGINAL(
+            String userId, String someCollectionPath) throws HpcException {
         try {
             HpcUserPermOnOneCollection permsObj = null;
-            HpcUserPermissionDTO initialDto = getCollectionPermission(someCollectionPath, userId);
+            HpcUserPermissionDTO initialDto = _fetchCollectionPermission_ORIGINAL(someCollectionPath, userId);
             if (null != initialDto) {
                 permsObj = new HpcUserPermOnOneCollection();
                 permsObj.setCollectionPath(someCollectionPath);
@@ -540,12 +579,53 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             return permsObj;
         } catch (Exception e) {
             String msg = String.format("Failed to get permissions of user [%s] on collection path [%s]",
-                                        userId, someCollectionPath);
+                    userId, someCollectionPath);
             throw new HpcException(msg, e);
         }
     }
 
-    @Override
+    private HpcUserPermissionDTO _fetchCollectionPermission_ORIGINAL(String path, String userId)
+            throws HpcException
+    {
+        // Input validation.
+        if (path == null) {
+            throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+        if (userId == null) {
+            throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+        // Validate the collection exists.
+        if (dataManagementService.getCollection(path, false) == null) {
+            return null;
+        }
+
+        HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
+        return toUserPermissionDTO(hsPerm);
+    }
+
+	@Override
+    public HpcUserPermsOnManyCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths)
+        throws HpcException {
+        List results = new ArrayList();
+        for (String singleCollectionPath : collectionPaths) {
+            List<HpcSubjectPermission> allPerms = dataManagementService.getCollectionPermissions(singleCollectionPath);
+            // TODO: processing allPerms to get collection of permissions information where each item combines
+            //       following 3 things: permission level, which user or group, and the collection
+
+            for (HpcSubjectPermission hsPerm : allPerms) {
+                HpcSubjectPermissionOnCollection hsPermOnColl = new HpcSubjectPermissionOnCollection();
+                hsPermOnColl.setSubject(hsPerm.getSubject());
+                hsPermOnColl.setSubjectType(hsPerm.getSubjectType());
+                hsPermOnColl.setPermission(hsPerm.getPermission());
+                hsPermOnColl.setCollectionPath(singleCollectionPath);
+                results.add(hsPermOnColl);
+            }
+        }
+        // return results;
+        return null;
+    }
+
+	@Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
     		                          File dataObjectFile)  
