@@ -13,5 +13,11 @@
 @ddblock_end copyright
 ******************************/
 
-Register a dataObject synchronously with md5sum attribute set. 
-Make sure the md5sum field is set correctly.
+Add exclude pattern for .txt files
+Run dry to get the list of  multiple objects from globus using bulk registration.
+
+makeme:
+
+runme:
+Submit the dry run registration request.
+Verify the returned list

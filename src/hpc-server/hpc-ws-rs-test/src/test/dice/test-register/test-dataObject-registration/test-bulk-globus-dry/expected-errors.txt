@@ -1,0 +1,2 @@
+get object1 204
+get object2 204
