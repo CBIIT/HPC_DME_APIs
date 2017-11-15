@@ -84,6 +84,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionOnSingleCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionsOnMultipleCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -512,7 +514,40 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	
     	return toUserPermissionDTO(permission);
     }
-    
+
+    @Override
+	public HpcUserPermissionsOnMultipleCollectionsDTO getUserPermissionsOnCollections(
+	        List<String> collectionPaths, String userId) throws HpcException {
+        HpcUserPermissionsOnMultipleCollectionsDTO usrPrmsOnClltcns = new HpcUserPermissionsOnMultipleCollectionsDTO();
+        for (String someCollectionPath : collectionPaths) {
+            HpcUserPermissionOnSingleCollectionDTO dtoResult =
+              _processPermsForOneOfManyCollections(userId, someCollectionPath);
+            if (null != dtoResult) {
+                usrPrmsOnClltcns.getPermissionsXCollections().add(dtoResult);
+            }
+        }
+        return usrPrmsOnClltcns;
+    }
+
+    private HpcUserPermissionOnSingleCollectionDTO _processPermsForOneOfManyCollections(
+                String userId, String someCollectionPath) throws HpcException {
+        try {
+            HpcUserPermissionOnSingleCollectionDTO finalDto = null;
+            HpcUserPermissionDTO initialDto = getCollectionPermission(someCollectionPath, userId);
+            if (null != initialDto) {
+                finalDto = new HpcUserPermissionOnSingleCollectionDTO();
+                finalDto.setCollectionPath(someCollectionPath);
+                finalDto.setPermission(initialDto.getPermission());
+                finalDto.setUserId(initialDto.getUserId());
+            }
+            return finalDto;
+        } catch (Exception e) {
+            String msg = String.format("Failed to get permissions of user [%s] on collection path [%s]",
+                                        userId, someCollectionPath);
+            throw new HpcException(msg, e);
+        }
+    }
+
     @Override
     public boolean registerDataObject(String path,
     		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
@@ -1422,8 +1457,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * Get collection download task status.
      *
      * @param taskId The collection download task ID.
-     * @param taskType COLLECTION or DATA_OBJECT_LIST
+     * @param taskType COLLECTION or DATA_OBJECT_LIST.
      * @return A collection download status DTO. Null if the task could not be found.
+     * @throws HpcException on service failure.
      */
     private HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId,
     		                                                           HpcDownloadTaskType taskType) 
@@ -1477,9 +1513,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * Split the list of download items into completed, failed and in-progress buckets.
      * 
      * @param downloadStatus The download status to populate the items into.
-     * @param items The collection download items.
-     * @return A data management tree .
-     * @throws HpcException on service failure.
+     * @param items The collection / bulk download items.
      */
     private void populateDownloadItems(HpcCollectionDownloadStatusDTO downloadStatus,
     		                           List<HpcCollectionDownloadTaskItem> items)
@@ -1528,7 +1562,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * 
      * @param path The data object path.
      * @param dataTransferStatus The data transfer upload system generetaed metadata.
-     * @param dataObjectDeleteResponse The deletion response DTO.
      */
     private void updateDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus)
     {
@@ -1547,8 +1580,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
      * 
      * @param registrationStatus The registration status to populate the items into.
      * @param items The registration items.
-     * @return A data management tree .
-     * @throws HpcException on service failure.
      */
     private void populateRegistrationItems(HpcBulkDataObjectRegistrationStatusDTO registrationStatus,
     		                               List<HpcBulkDataObjectRegistrationItem> items)

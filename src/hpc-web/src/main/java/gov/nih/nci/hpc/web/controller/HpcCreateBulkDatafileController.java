@@ -63,6 +63,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	private String serverURL;
 	@Value("${gov.nih.nci.hpc.server.bulkregistration}")
 	private String bulkRegistrationURL;
+	@Value("${gov.nih.nci.hpc.web.server}")
+	private String webServerName;
 
 	/**
 	 * Get selected collection details from its path
@@ -233,8 +235,9 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			session.setAttribute("basePathSelected", basePath);
 			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
 					false);
-
-			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&action=" + request.getRequestURL();
+			
+			String returnURL = webServerName +"/addbulk";
+			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&action=" + returnURL;
 		}
 		boolean registered = false;
 

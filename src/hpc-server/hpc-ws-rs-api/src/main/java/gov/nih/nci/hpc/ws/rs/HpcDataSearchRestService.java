@@ -30,7 +30,6 @@ import javax.ws.rs.core.Response;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 @Path("/")

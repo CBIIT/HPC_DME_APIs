@@ -1,0 +1,1 @@
+bulk registration response: 200
