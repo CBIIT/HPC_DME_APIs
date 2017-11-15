@@ -47,7 +47,10 @@
 
 <script th:inline="javascript">
 /*<![CDATA[*/
-
+	var profile=[[${profile}]];
+	var webUser=[[${hpcWebUser}]];
+	console.log(JSON.stringify(profile));
+	console.log(JSON.stringify(webUser));
 /*]]>*/
 </script>
 
@@ -76,15 +79,27 @@
 				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
-					<h3>
-						<UL>Profile
-						</UL>
-					</h3>
-					<br /> <br />
-					<div th:if="${error != null}">
-						<div class="alert alert-danger">
-							<a class="close" data-dismiss="alert">×</a> <label for="${error}"
-								th:text="${error}"></label>
+					<div class="col-lg-9 col-md-12">
+						<div class="panel panel-default">
+							<div th:if="${error != null}">
+								<div class="alert alert-error">
+									<a class="close" data-dismiss="alert">×</a> <label
+										for="${error}" th:text="${error}"></label>
+								</div>
+							</div>
+							<div class="panel-body">
+								<label for="name">User Profile:</label>
+								<label id="name" th:text="${profile.lastName} + ', ' + ${profile.firstName}"></label>
+								<br/>
+								<label for="doc">DOC:</label>
+								<label id="doc" th:text="${profile.doc}"></label>
+								<br/>
+								<label for="basePath">Default Basepath:</label>
+								<label id="basePath" th:text="${profile.defaultBasePath}"></label>
+								<br/>
+								<label for="role">Role:</label>
+								<label id="role" th:text="${profile.userRole}"></label>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -192,322 +207,12 @@
 var rowId = 1;
 //<![CDATA[
            
-function refreshAttributes()
-{
-	document.getElementById("actionType").value = "refresh";
-	document.getElementById("simplesearchform").submit();
-}
-
-function populateLevelAttributes(level, id)
-{
-	var searchTypes = document.getElementsByName('searchType');
-	var type;
-
-	for (var i = 0, length = searchTypes.length; i < length; i++) {
-	    if (searchTypes[i].checked) {
-	        type = searchTypes[i].value;
-	        break;
-	    }
-	}	
-	var row = id.substring(5);
-	
-	var attrOptions="<option value='ANY'>ANY</option>";
-
-	if(level == "-1" || level == "ANY")
-	{
-		if(type == "collection")
-		{
-			for(var i=0;i<collattributes.length;i++)
-			{
-				var attr = collattributes[i];
-				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
-			}
-		}
-		else
-		{
-			for(var i=0;i<collattributes.length;i++)
-			{
-				var attr = collattributes[i];
-				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
-			}
-		}
-		
-	}
-	else
-	{
-		for(var i=0;i<attributes.length;i++)
-		{
-			var attr = attributes[i];
-			var attrLevel = attr.substring(0, attr.indexOf(":"));
-	
-			if(attrLevel != level)
-			{
-				continue;
-			}
-	
-			var attrType = attr.substring(attr.indexOf(":")+1, attr.lastIndexOf(":"));
-			if(attrType != type)
-			{
-				continue;
-			}
-	
-			var attrName = attr.substring(attr.lastIndexOf(":")+1);
-			attrOptions = attrOptions + "<option value='"+attrName+"'>"+attrName+"</option>"
-	
-		}
-	}
-
-	if(level == "datafile")
-	{
-		for(var i=0;i<dataattributes.length;i++)
-		{
-			var attr = dataattributes[i];
-			attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
-		}
-	
-	}
-    $('#attrName'+(row)).empty();
-    $('#attrName'+(row)).append(attrOptions);
-    $('#attrName'+(row)).val($('#attrName1').val());
-
-    var namesEle = document.getElementById('attrName'+row);
-	if (namesEle != null)
-		namesEle.selectedIndex = 0;
-
-}
-
-function resetRows()
-{
-    var table = document.getElementById("metaAttrTable");
-    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-	var searchTypes = document.getElementsByName('searchType');
-	var type;
-
-	for (var i = 0, length = searchTypes.length; i < length; i++) {
-	    if (searchTypes[i].checked) {
-	        type = searchTypes[i].value;
-	        break;
-	    }
-	}	
-	
-    for(var i=1;i<rows;i++)
-    {
-    	var namesEle = document.getElementById('attrName'+i);
-       	var levelsEle = document.getElementById('level1');
-    	if (namesEle != null)
-    	{
-    		if(type == "collection")
-    		{
-    			var attrOptions="<option value='ANY'>ANY</option>";
-    			for(var j=0;j<collattributes.length;j++)
-    			{
-    				var attr = collattributes[j];
-    				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
-    			}
-        	    $('#attrName'+(i)).empty();
-        	    $('#attrName'+(i)).append(attrOptions);
-
-        	    var levelOptions="<option value='ANY'>ANY</option>";
-    			for(var j=0;j<collectionLevels.length;j++)
-    			{
-    				var attr = collectionLevels[j];
-    				levelOptions = levelOptions + "<option value='"+attr+"'>"+attr+"</option>"
-    			}
-        	    $('#level'+(i)).empty();
-        	    $('#level'+(i)).append(levelOptions);
-    		}
-    		else
-    		{
-    			var attrOptions="<option value='ANY'>ANY</option>";
-    			for(var k=0;k<dataattributes.length;k++)
-    			{
-    				var attr = dataattributes[k];
-    				attrOptions = attrOptions + "<option value='"+attr+"'>"+attr+"</option>"
-    			}
-        	    $('#attrName'+(i)).empty();
-        	    $('#attrName'+(i)).append(attrOptions);
-
-        	    var levelOptions="<option value='ANY'>ANY</option>";
-    			for(var j=0;j<dataobjectLevels.length;j++)
-    			{
-    				var attr = dataobjectLevels[j];
-    				levelOptions = levelOptions + "<option value='"+attr+"'>"+attr+"</option>"
-    			}
-        	    $('#level'+(i)).empty();
-        	    $('#level'+(i)).append(levelOptions);
-    		}
-    		namesEle.selectedIndex = 0;
-    	}
-    	var levelEle = document.getElementById('level'+i);
-    	if (levelEle != null)
-    		levelEle.selectedIndex = 0;
-    	var operatorEle = document.getElementById('operator'+i);
-    	if (operatorEle != null)
-    		operatorEle.selectedIndex = 0;
-    	var levelOperatorEle = document.getElementById('levelOperator'+i);
-    	if (levelOperatorEle != null)
-    		levelOperatorEle.selectedIndex = 0;
-    	var valueEle = document.getElementById('attrValue'+i);
-    	if (valueEle != null)
-    		valueEle.value = null;
-    }
-}
-
-function addRow() {
-	rowId++;
-    var table = document.getElementById("metaAttrTable");
-    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-    rows = rows - 1;
-    var row = table.insertRow(rows+1);
-    row.id = "attrRow"+(rows+1);
-    var cell0 = row.insertCell(0);
-    var cell1 = row.insertCell(1);
-    var cell2 = row.insertCell(2);
-    var cell3 = row.insertCell(3);
-    var cell4 = row.insertCell(4);
-    var cell5 = row.insertCell(5);
-    cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
-    cell1.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
-    cell2.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
-    cell3.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
-    cell4.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/>';
-   	cell5.innerHTML = '<a id="deleteAttr" onClick="deleteRow(\''+(row.id)+'\')" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>';
-
-   	var levelsEle = document.getElementById('level1');
-   	var $leveloptions = $("#level1 > option").clone();
-    $('#level'+(rows+1)).empty();
-    $('#level'+(rows+1)).append($leveloptions);
-    $('#level'+(rows+1)).val($('#level1').val());
-
-   	var namesEle = document.getElementById('attrName1');
-   	var $attroptions = $("#attrName1 > option").clone();
-    $('#attrName'+(rows+1)).empty();
-    $('#attrName'+(rows+1)).append($attroptions);
-    $('#attrName'+(rows+1)).val($('#attrName1').val());
-    
-   	var operatorEle = document.getElementById('operator1');
-   	var $operatoroptions = $("#operator1 > option").clone();
-    $('#operator'+(rows+1)).empty();
-    $('#operator'+(rows+1)).append($operatoroptions);
-    $('#operator'+(rows+1)).val($('#operator1').val());
-
-	var namesEle = document.getElementById('attrName'+(rows+1));
-	if (namesEle != null)
-		namesEle.selectedIndex = 0;
-	var levelEle = document.getElementById('level'+(rows+1));
-	if (levelEle != null)
-		levelEle.selectedIndex = 0;
-	var operatorEle = document.getElementById('operator'+(rows+1));
-	if (operatorEle != null)
-		operatorEle.selectedIndex = 0;
-}
-
-function deleteRow(rowid) {
-    var table = document.getElementById("metaAttrTable");
-    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-	if(rows <= 2)
-		return;
-    var row = document.getElementById(rowid);
-    row.parentNode.removeChild(row);
-}
 
 function cancel() {
 	window.location.replace("/dashboard");
 	return false;
 }
 
-function validateAndSubmit()
-{
-	var inputs = new Array();
-	var valid = false;
-	inputs = document.getElementsByTagName("select");
-	for(var i = 0; i < inputs.length; i++)
-	{
-		var attrName = inputs[i].getAttribute("name");
-		if(attrName.startsWith("attrName"))
-		{
-			var suffix = attrName.substring("attrName".length);
-			var attrNameValue = document.getElementsByName(attrName)[0].value;
-			if(attrNameValue != "-1")
-			{
-				var attrOperValue = document.getElementsByName("operator"+suffix)[0].value;	
-				var attrValueValue = document.getElementsByName("attrValue"+suffix)[0].value;
-				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
-				{
-					alert("Invalid Valid criteria. Please enter operator and value");
-					return false;
-				}
-				valid = true;
-			}
-			else
-			{
-				var attrOperValue = document.getElementsByName("operator"+suffix)[0].value;	
-				var attrValueValue = document.getElementsByName("attrValue"+suffix)[0].value;
-				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
-				{
-					alert("Invalid Valid criteria. Please enter operator and value");
-					return false;
-				}
-				valid = true;
-			}
-		}
-	}
-	if(!valid)
-	{
-		alert("Invalid Valid criteria");
-		return false;
-	}
-	document.getElementById("simplesearchform").submit();
-}
-
-var toggle = true;
-function advancedSearch() {
-	var ele = document.getElementById("advancedarea");
-	var arrow = document.getElementById("arrow");
-	if(toggle)
-	{
-		document.getElementById('arrow').setAttribute("class","menu-arrow arrow_carrot-down");
-		toggle = false;
-	}
-	else
-	{
-		document.getElementById('arrow').setAttribute("class","menu-arrow arrow_carrot-right");
-		toggle = true;
-	}
-		
-	if(ele.style.display == "block") {
-    		ele.style.display = "none";
-  	}
-	else {
-		ele.style.display = "block";
-	}
-	window.scrollBy(0, 200);
-}
-
-if(advancedCriteriaExist) {
-	// if there are advanced search criteria, restore the advancedSearch
-	// box to the open state
-	advancedSearch();
-}
-
-if(searchError) {
-	resetRows();
-	// Process the hpcSearch object and restore the level criteria
-	for(var i = 0; i < searchCriteria.level.length; i++) {
-		
-		// The first row always exists.  Don't add it a second time.
-		if(i > 0) {
-			addRow();
-		}
-				
-		// The table is one-indexed, not zero-indexed.
-		var row_id = (i + 1);
-		$('#level' + row_id).val(searchCriteria.level[i]).change();
-		$('#attrName' + row_id).val(searchCriteria.attrName[i]);
-		$('#operator' + row_id).val(searchCriteria.operator[i]);
-		$('#attrValue' + row_id).val(searchCriteria.attrValue[i]);
-	}	
-}
 //]]>
 </script>
 </body>
