@@ -1,0 +1,3 @@
+400
+REQUEST_REJECTED
+Collection can only be deleted by its owner. Your permission: READ

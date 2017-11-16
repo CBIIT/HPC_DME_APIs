@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+#Make sure the registration and the update permission went through
+verify_registration  collection-registration-response-header.tmp
+
+dataset_path=$(cat registered-dataset-path.tmp)
+
+#Delete the collection as dice_user_group_admin
+ACTING_USER=dice_user
+RESPONSE_HEADER="delete-collection-response-header.tmp"
+RESPONSE_MSG="delete-collection-response-message.json.tmp"
+delete_collection "$dataset_path" $RESPONSE_HEADER $RESPONSE_MSG
+
+get_http_code $RESPONSE_HEADER  >&2
+get_json_value $RESPONSE_MSG errorType  >&2
+get_json_value $RESPONSE_MSG message >&2
