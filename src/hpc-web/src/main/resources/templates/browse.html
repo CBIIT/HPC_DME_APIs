@@ -229,7 +229,10 @@ $(function() {
             if (node.collection) {
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
                 $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
-                $li.find('.jqtree-element').append('<a href="#node-' + node.id + '" class="refresh" data-node-id="' + node.id + '">refresh</a>');
+//                $li.find('.jqtree-element').append('<a href="#' + node.id + '" class="refresh" data-node-id="' + node.id + '">refresh</i></a>');
+//                $li.find('.jqtree-element').append('<a href="#node-' + node.id + '" class="refresh" data-node-id="' + node.id + '"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
+                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
+
             }
         }        
     });
@@ -238,9 +241,13 @@ $(function() {
 
 $('#tree1').on('click', '.refresh', function(e) {	
 	e.stopImmediatePropagation();
-	var node = e.node;
 	var node_id = $(e.target).data('node-id');
-	console.log('refresh: ' + node_id);	
+    var node = $('#tree1').tree('getNodeById', node_id);
+
+    console.log('refresh: ' + node_id);
+	console.log('node: ' + node);
+    $('#tree1').tree('selectNode', node);
+    location.href = "browse?action=refresh&path=" + node.fullPath;
 });
 
 //bind 'tree.click' event
