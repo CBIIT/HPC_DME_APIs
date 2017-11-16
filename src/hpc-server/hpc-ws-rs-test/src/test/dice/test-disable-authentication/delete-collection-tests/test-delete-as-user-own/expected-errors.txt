@@ -1,0 +1,3 @@
+401
+REQUEST_AUTHENTICATION_FAILED
+Access Denied: Unauthorized

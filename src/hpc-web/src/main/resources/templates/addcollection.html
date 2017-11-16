@@ -85,7 +85,7 @@
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Add Collection</li>
+							<li><i class="fa fa-list-alt"></i>Register Collection</li>
 						</ol>
 					</div>
 				</div>
@@ -149,9 +149,16 @@
 										</table>
 								</div>
 								<div class="panel-heading">
-									<h2>
-										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
-									</h2>
+										<div class="col-md-3">
+										<h2>
+											<i class="fa fa-list-alt red"></i><strong>Collection Metadata</strong>
+										</h2>
+										</div>
+										<div class="col-md-3 col-md-offset-6">
+										<h2>
+											<strong> <a id="refreshBrowse" class="btn btn-link btn-sm" onClick="return addMetadata()"><i class="fa fa-plus-square-o" title="Add Metadata" aria-hidden="true"></i></a>Add Metadata</strong>
+										</h2>
+										</div>
 								</div>
 								<div class="panel-body">
 								<div class="form-group">
@@ -194,10 +201,8 @@
 								</div>
 								</div>
 								<div class="panel-footer">
-									<button class="btn btn-md btn-primary"
-										id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 									<button type="submit" class="btn btn-md btn-primary"
-										id="primaryCreateButton" onClick="return validate()" th:disabled="${create == true} ?'false' : 'disabled'">Create</button>
+										id="primaryCreateButton" onClick="return validate()" th:disabled="${create == true} ?'false' : 'disabled'">Register Collection</button>
 									<button type="submit" class="btn btn-primary"
 										id="cancel" onClick="cancelEdit()">Cancel</button>
 								</div>
