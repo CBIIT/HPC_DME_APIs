@@ -229,9 +229,18 @@ $(function() {
             if (node.collection) {
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
                 $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
+                $li.find('.jqtree-element').append('<a href="#node-' + node.id + '" class="refresh" data-node-id="' + node.id + '">refresh</a>');
             }
         }        
     });
+});
+
+
+$('#tree1').on('click', '.refresh', function(e) {	
+	e.stopImmediatePropagation();
+	var node = e.node;
+	var node_id = $(e.target).data('node-id');
+	console.log('refresh: ' + node_id);	
 });
 
 //bind 'tree.click' event
@@ -240,6 +249,7 @@ $('#tree1').bind(
     function(event) {
         // The clicked node is 'event.node'
         var node = event.node;
+        console.log("click: " + node.fullPath);
         if(node.collection)
         	location.href = "collection?action=view&path="+node.fullPath;
         else
