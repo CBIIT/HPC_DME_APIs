@@ -101,69 +101,103 @@
 									th:value="${source}" />
 								<!--panel-body start-->
 								<div class="panel-body">
-									<table border="0">
-										<tr >
-											<td>
-												<table border="0">
-													<tr th:if="${basePaths != null and basePaths.size() &gt; 0}">
-														<td><label id="rowId0">Base Path: </label></td>
-														<td><select size="1" id="basePath" name="basePath"
-															class="form-control" th:required="required"
-															onChange="return refreshAttributes('BasePath')">
-																<option value="_select_null">----Select----</option>
-																<option th:each="basePath : ${basePaths}"
-																	th:value="${basePath}" th:text="${basePath}"
-																	th:selected="${basePath.equals(basePathSelected)}">
-																	Wireframe</option>
-														</select></td>
-													</tr>
-													<tr id='attrRow1' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
-														<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
-														</td>
-														<td style="white-space: nowrap"><select size="1"
-															id="zAttrStr_collection_type" name="zAttrStr_collection_type" class="form-control"
-															th:required="required"
-															onChange="refreshAttributes('colltype')">
-																<option value="_select_null">----Select----</option>
-																<option
-																	th:each="collectionType : ${collectionTypes}"
-																	th:value="${collectionType}" th:text="${collectionType}" th:selected="${collectionType.equals(collection_type)}">
-																	Wireframe</option>
-														</select></td>
-													</tr>										
-													
-													<tr>
-														<td><label for="Name">Data file Path:</label></td>
-														<td><input type="text" name="path" id="path"
-															size="60" th:value="${datafilePath}" /></td>
-													</tr>
-												</table>
-											</td>
-										</tr>
-
-									<tr><td>&nbsp;</td></tr>
-									<tr><td>
-									<div class="form-group" id="SyncDiv">
-										<table border="0">
-											<tr>
-												<td><label for="checksum">Checksum (This value
-														is used to validate data transfer):</label></td>
-												<td><input type="text" name="checksum" id="checksum"
-													size="50" th:value="${checksum}" /></td>
-											</tr>
-											<tr>
-												<td><input type="file" name="hpcDatafile"
-													id="hpcDatafile" /></td>
-												<td>&nbsp;</td>
-											</tr>
-										</table>
+									<div class="panel-heading">
+										<div class="col-md-3">
+											<h2>
+												<i class="fa fa-list-alt red"></i><strong>Data
+													Destination</strong>
+											</h2>
+										</div>
 									</div>
-									</td></tr></table>
+									<div class="panel-body">
+										<div class="form-group">
+											<table border="0">
+												<tr>
+													<td>
+														<table border="0">
+															<tr
+																th:if="${basePaths != null and basePaths.size() &gt; 0}">
+																<td><label id="rowId0">Base Path: </label></td>
+																<td><select size="1" id="basePath" name="basePath"
+																	class="form-control" th:required="required"
+																	onChange="return refreshAttributes('BasePath')">
+																		<option value="_select_null">----Select----</option>
+																		<option th:each="basePath : ${basePaths}"
+																			th:value="${basePath}" th:text="${basePath}"
+																			th:selected="${basePath.equals(basePathSelected)}">
+																			Wireframe</option>
+																</select></td>
+															</tr>
+															<tr id='attrRow1'
+																th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
+																<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
+																</td>
+																<td style="white-space: nowrap"><select size="1"
+																	id="zAttrStr_collection_type"
+																	name="zAttrStr_collection_type" class="form-control"
+																	th:required="required"
+																	onChange="refreshAttributes('colltype')">
+																		<option value="_select_null">----Select----</option>
+																		<option th:each="collectionType : ${collectionTypes}"
+																			th:value="${collectionType}"
+																			th:text="${collectionType}"
+																			th:selected="${collectionType.equals(collection_type)}">
+																			Wireframe</option>
+																</select></td>
+															</tr>
+
+															<tr>
+																<td><label for="Name">Data file Path:</label></td>
+																<td><input type="text" name="path" id="path"
+																	size="60" th:value="${datafilePath}" /></td>
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</div>
+									<div class="panel-heading">
+										<div class="col-md-3">
+											<h2>
+												<i class="fa fa-list-alt red"></i><strong>Data
+													Source</strong>
+											</h2>
+										</div>
+									</div>
+									<div class="panel-body">
+										<div class="form-group">
+															<table border="0">
+																<tr>
+																	<td><label for="checksum">Checksum (This
+																			value is used to validate data transfer):</label></td>
+																	<td><input type="text" name="checksum"
+																		id="checksum" size="50" th:value="${checksum}" /></td>
+																</tr>
+																<tr>
+																	<td><input type="file" name="hpcDatafile"
+																		id="hpcDatafile" /></td>
+																	<td>&nbsp;</td>
+																</tr>
+															</table>
+										</div>
+									</div>
 								</div>
 								<div class="panel-heading">
-									<h2>
-										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
-									</h2>
+									<div class="col-md-3">
+										<h2>
+											<i class="fa fa-list-alt red"></i><strong>Destination File Metadata</strong>
+										</h2>
+									</div>
+									<div class="col-md-3 col-md-offset-6">
+										<h2>
+											<strong> <a id="refreshBrowse"
+												class="btn btn-link btn-sm" onClick="return addMetadata()"><i
+													class="fa fa-plus-square-o" title="Add Metadata"
+													aria-hidden="true"></i></a>Add Metadata
+											</strong>
+										</h2>
+									</div>
 								</div>
 								<div class="panel-body">
 									<div class="form-group">
@@ -201,7 +235,7 @@
 													</select>
 													</td>
 												</tr>
-<!-- 
+												<!-- 
 												<tr
 													th:if="${datafileAttrs != null and datafileAttrs.size() &gt; 0}">
 													<td align="left"><input type="text"
@@ -211,16 +245,15 @@
 														name="_addAttrValue1" id="_addAttrValue1"
 														placeholder="Attribute Value" class="form-control" /></td>
 												</tr>
- -->												
+ -->
 											</tbody>
 										</table>
 									</div>
 								</div>
 								<div class="panel-footer">
-									<button class="btn btn-md btn-primary" id="primaryButton"
-										onClick="return addMetadata()">Add Metadata</button>
 									<button type="submit" class="btn btn-md btn-primary"
-										id="primaryCreateButton" onClick="return validate()" th:disabled="${create == true} ?'false' : 'disabled'">Create</button>
+										id="primaryCreateButton" onClick="return validate()"
+										th:disabled="${create == true} ?'false' : 'disabled'">Register</button>
 									<button type="submit" class="btn btn-primary" id="cancel"
 										onClick="cancelEdit()">Cancel</button>
 								</div>
