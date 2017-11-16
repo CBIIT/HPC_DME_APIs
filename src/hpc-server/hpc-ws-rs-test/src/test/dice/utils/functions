@@ -456,11 +456,12 @@ function verify_get {
 # If the nvironment varialbe ACTING_USER  is set, it will use it a username
 function curl_register {
 
+    usage="ERROR using $FUNCNAME \n USAGE: $FUNCNAME <description.json> <destination-path> <[colleciton|dataObject]> [dataObject-file]" 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
     then
-        echo "ERROR: using curl_register"
-        echo "USAGE: curl_register <collection-description.json> destination-path <[colleciton|dataObject]>"
-        exit
+        echo "$usage" >&2
+        echo "Received: $*" >&2
+        exit 1
     fi
 
 
@@ -2092,13 +2093,42 @@ function async_sleep {
 
 
 
+#Delete an item (collection or dataObject)
+#Inputs:    <path> "Should have a prefix of dataObject or collection"
+#           <response-header>
+#           <response-message>
+function delete_item {
+
+    USAGE="ERROR: using $FUNCNAME.\nUSAGE: $FUNCNAME <path> <response-header> <response-message>"
+
+    if [ "$#" -ne  3 ] 
+    then    
+        echo "$USAGE"  >&2
+        exit 1
+
+    fi
+
+    ITEM_PATH="$1"
+    RESPONSE_HEADER="$2"
+    RESPONSE_MSG="$3"
+
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+    CONFIG="$(get_curl_config)"
+
+    curl -X DELETE ${SERVER}/$ITEM_PATH $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
+    check_connection $RESPONSE_HEADER
+}
+
+
+
+
 #Delete a dataObject 
 #Inputs:    <dataObject-path> 
 #           <response-header>
 #           <response-message>
 function delete_dataobject {
 
-    USAGE="ERROR: using delete_dataObject.\nUSAGE: delete_dataObject <path> <response-header> <response-message>"
+    USAGE="ERROR: using $FUNCNAME.\nUSAGE: $FUNCNAME  <path> <response-header> <response-message>"
 
     if [ "$#" -ne  3 ] 
     then    
@@ -2107,16 +2137,37 @@ function delete_dataobject {
 
     fi
 
-    DATAOBJECT_PATH="$1"
+    DATAOBJECT_PATH=dataObject/"$1"
     RESPONSE_HEADER="$2"
     RESPONSE_MSG="$3"
 
-    SERVER=`cat $HPC_DM_TEST/utils/server`
-    CONFIG="$(get_curl_config)"
-
-    curl -X DELETE ${SERVER}/dataObject/"$DATAOBJECT_PATH" $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status
-    check_connection $RESPONSE_HEADER
+    delete_item $DATAOBJECT_PATH $RESPONSE_HEADER $RESPONSE_MSG
 }
+
+
+#Delete a collection
+#Inputs:    <collection-path> 
+#           <response-header>
+#           <response-message>
+function delete_collection {
+
+    USAGE="ERROR: using $FUNCNAME.\nUSAGE: $FUNCNAME  <path> <response-header> <response-message>"
+
+    if [ "$#" -ne  3 ] 
+    then    
+        echo "$USAGE"  1>&2
+        exit 1
+
+    fi
+
+    COLLECTION_PATH=collection/"$1"
+    RESPONSE_HEADER="$2"
+    RESPONSE_MSG="$3"
+
+    delete_item $COLLECTION_PATH $RESPONSE_HEADER $RESPONSE_MSG
+}
+
+
 
 #Check if dataobject is archived
 #Inputs:	<dataobject-path>
