@@ -58,9 +58,7 @@ public class HpcProfileController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/login?returnPath=profile";
 		}
-		logger.debug("hpcUser: " + user);
-		logger.info("hpcUser: " + user);
-		
+
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
 		model.addAttribute("profile", user);
