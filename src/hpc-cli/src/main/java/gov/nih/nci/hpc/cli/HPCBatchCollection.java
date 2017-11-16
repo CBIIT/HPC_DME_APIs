@@ -25,6 +25,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.StringUtils;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -146,6 +147,9 @@ public class HPCBatchCollection extends HPCBatchClient {
 				HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(
 						collectionDTO, headers);
 				try {
+					if(collectionPath.trim().indexOf(' ') != -1) {
+						throw new Exception("Collection path cannot contain spaces.");
+					}
 					if (!collectionPath.startsWith("/"))
 						collectionPath = "/" + collectionPath;
 
