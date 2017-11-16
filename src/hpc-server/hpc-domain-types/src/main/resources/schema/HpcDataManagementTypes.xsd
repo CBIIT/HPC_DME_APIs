@@ -95,7 +95,7 @@
     <xsd:complexType name="HpcPermissionsForCollection">
         <xsd:sequence>
             <xsd:element name="collectionPath" type="xsd:string" />
-            <xsd:element name="collectionPermission"
+            <xsd:element name="collectionPermissions"
                          type="hpc-domain-datamanagement:HpcSubjectPermission"
                          minOccurs="0" maxOccurs="unbounded" />
         </xsd:sequence>
