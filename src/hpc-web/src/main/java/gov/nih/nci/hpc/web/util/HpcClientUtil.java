@@ -321,6 +321,8 @@ public class HpcClientUtil {
 			basePath = (String) request.getAttribute("basePath");
 		else 
 			basePath = basePathValues[0];
+		if(basePath != null && basePath.equals("_select_null"))
+			return null;
 		return basePath;
 	}
 	

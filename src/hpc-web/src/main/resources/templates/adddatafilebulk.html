@@ -93,87 +93,140 @@
 								</div>
 							</div>
 							<form class="form-horizontal" id="dataFileForm"
-								th:action="@{/addbulk}" th:object="${hpcDatafile}"
-								method="POST">
+								th:action="@{/addbulk}" th:object="${hpcDatafile}" method="POST">
 								<input type="hidden" name="actionType" id="actionType" /> <input
 									type="hidden" name="parent" id="parent" th:value="${parent}" />
 								<input type="hidden" name="source" id="source"
 									th:value="${source}" />
 								<!--panel-body start-->
 								<div class="panel-body">
-									<table border="0">
-										<tr >
-											<td>
-												<table border="0">
-													<tr th:if="${basePaths != null and basePaths.size() &gt; 0}">
-														<td><label id="rowId0">Base Path: </label></td>
-														<td><select size="1" id="basePath" name="basePath"
-															class="form-control" th:required="required"
-															onChange="return refreshAttributes('refresh')">
-																<option value="_select_null">----Select----</option>
-																<option th:each="basePath : ${basePaths}"
-																	th:value="${basePath}" th:text="${basePath}"
-																	th:selected="${basePath.equals(basePathSelected)}">
-																	Wireframe</option>
-														</select></td>
-													</tr>
-													<tr id='attrRow1' th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
-														<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
-														</td>
-														<td style="white-space: nowrap"><select size="1"
-															id="zAttrStr_collection_type" name="zAttrStr_collection_type" class="form-control"
-															th:required="required"
-															onChange="refreshAttributes('refresh')">
-																<option value="_select_null">----Select----</option>
-																<option
-																	th:each="collectionType : ${collectionTypes}"
-																	th:value="${collectionType}" th:text="${collectionType}" th:selected="${collectionType.equals(collection_type)}">
-																	Wireframe</option>
-														</select></td>
-													</tr>										
-													
-													<tr>
-														<td><label for="Name">Collection Path:</label></td>
-														<td><input type="text" name="path" id="path"
-															size="60" th:value="${datafilePath}" /></td>
-													</tr>
-												</table>
-											</td>
-										</tr>
-
-									<tr><td>&nbsp;</td></tr>
-									<tr><td>
-									<div class="form-group" id="AsyncDiv">
-										<div class="col-sm-12 column">
-										<button type="submit" class="btn btn-md btn-primary"
-										id="primaryGlobusButton" onClick="return refreshAttributes('Globus')">Browse Globus endpoint</button>
-										</div>
-										<div class="col-sm-12 column" th:if="${endpoint_id != null}">
-											<label for="Name">Globus Endpoint Id:</label> <label
-												for="${endpoint_id}"
-												th:text="${endpoint_id}"></label><br/>										
-											<label for="Name">Globus Endpoint Path:</label> <label
-												for="${endpoint_path}"
-												th:text="${endpoint_path}"></label><br/>										
-										</div>
-										<div class="col-sm-12 column" th:if="${fileNames != null}">
-											<label for="fileName">Selected Files:</label> 										
-											<label
-												th:text="${fileName}" th:each="fileName : ${fileNames}"><br/></label>										
-										</div>
-										<div class="col-sm-12 column" th:if="${folderNames != null}">
-											<label for="folderName">Selected Folders:</label> 										
-											<label
-												th:text="${folderName}" th:each="folderName : ${folderNames}"><br/></label>										
+											<p>
+												Use this form to bulk register folders/file from Globus Endpoint (Source) to HPC DME Data Archive (Destination). Source Globus Endpoint must be shared with READ permission to HPC DME Globus Application Account to enable data registration.  
+											</p>
+									<div class="panel-heading">
+										<div class="col-md-3">
+											<h2>
+												<i class="fa fa-list-alt red"></i><strong>Data
+													Destination</strong>
+											</h2>
 										</div>
 									</div>
-									</td></tr>
+									<div class="panel-body">
+										<div class="form-group">
+											<table border="0">
+												<tr>
+													<td>
+														<table border="0">
+															<tr
+																th:if="${basePaths != null and basePaths.size() &gt; 0}">
+																<td><label id="rowId0">Base Path: </label></td>
+																<td><select size="1" id="basePath" name="basePath"
+																	class="form-control" th:required="required"
+																	onChange="return refreshAttributes('refresh')">
+																		<option value="_select_null">----Select----</option>
+																		<option th:each="basePath : ${basePaths}"
+																			th:value="${basePath}" th:text="${basePath}"
+																			th:selected="${basePath.equals(basePathSelected)}">
+																			Wireframe</option>
+																</select></td>
+															</tr>
+															<tr id='attrRow1'
+																th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
+																<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
+																</td>
+																<td style="white-space: nowrap"><select size="1"
+																	id="zAttrStr_collection_type"
+																	name="zAttrStr_collection_type" class="form-control"
+																	th:required="required"
+																	onChange="refreshAttributes('refresh')">
+																		<option value="_select_null">----Select----</option>
+																		<option th:each="collectionType : ${collectionTypes}"
+																			th:value="${collectionType}"
+																			th:text="${collectionType}"
+																			th:selected="${collectionType.equals(collection_type)}">
+																			Wireframe</option>
+																</select></td>
+															</tr>
+
+															<tr>
+																<td><label for="Name">Collection Path:</label></td>
+																<td><input type="text" name="path" id="path"
+																	size="60" th:value="${datafilePath}" /></td>
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</div>
+									<table>
+										<tr>
+											<td>&nbsp;</td>
+										</tr>
 									</table>
+									<div class="panel-heading">
+										<div class="col-md-3">
+											<h2>
+												<i class="fa fa-list-alt red"></i><strong>Data
+													Source</strong>
+											</h2>
+										</div>
+									</div>
+									<div class="panel-body">
+										<div class="form-group">
+											<table border="0">
+												<tr>
+													<th>Data Source</th>
+												</tr>
+												<tr>
+													<td>
+														<div class="form-group" id="AsyncDiv">
+															<div class="col-sm-12 column">
+																<button type="submit" class="btn btn-md btn-link"
+																	id="primaryGlobusButton"
+																	onClick="return refreshAttributes('Globus')">Select File(s)/Folder from Browse
+																	Globus endpoint</button>
+															</div>
+															<div class="col-sm-12 column"
+																th:if="${endpoint_id != null}">
+																<label for="Name">Globus Endpoint Id:</label> <label
+																	for="${endpoint_id}" th:text="${endpoint_id}"></label><br />
+																<label for="Name">Globus Endpoint Path:</label> <label
+																	for="${endpoint_path}" th:text="${endpoint_path}"></label><br />
+															</div>
+															<div class="col-sm-12 column"
+																th:if="${fileNames != null}">
+																<label for="fileName">Selected Files:</label> <label
+																	th:text="${fileName}" th:each="fileName : ${fileNames}"><br /></label>
+															</div>
+															<div class="col-sm-12 column"
+																th:if="${folderNames != null}">
+																<label for="folderName">Selected Folders:</label> <label
+																	th:text="${folderName}"
+																	th:each="folderName : ${folderNames}"><br /></label>
+															</div>
+														</div>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</div>
 								</div>
 								<div class="panel-heading">
-									<h2>
-										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
-									</h2>
+									<div class="col-md-3">
+										<h2>
+											<i class="fa fa-list-alt red"></i><strong>Destination Collection Metadata</strong>
+										</h2>
+									</div>
+									<div class="col-md-3 col-md-offset-6">
+										<h2>
+											<strong> <a id="refreshBrowse"
+												class="btn btn-link btn-sm" onClick="return addMetadata()"><i
+													class="fa fa-plus-square-o" title="Add Metadata"
+													aria-hidden="true"></i></a>Add Metadata
+											</strong>
+										</h2>
+									</div>
 								</div>
 								<div class="panel-body">
 									<div class="form-group">
@@ -211,7 +264,7 @@
 													</select>
 													</td>
 												</tr>
-<!-- 
+												<!-- 
 												<tr
 													th:if="${datafileAttrs != null and datafileAttrs.size() &gt; 0}">
 													<td align="left"><input type="text"
@@ -221,16 +274,15 @@
 														name="_addAttrValue1" id="_addAttrValue1"
 														placeholder="Attribute Value" class="form-control" /></td>
 												</tr>
- -->												
+ -->
 											</tbody>
 										</table>
 									</div>
 								</div>
 								<div class="panel-footer">
-									<button class="btn btn-md btn-primary" id="primaryButton"
-										onClick="return addMetadata()">Add Metadata</button>
 									<button type="submit" class="btn btn-md btn-primary"
-										id="primaryCreateButton" onClick="return validate()" th:disabled="${create == true} ?'false' : 'disabled'">Create</button>
+										id="primaryCreateButton" onClick="return validate()"
+										th:disabled="${create == true} ?'false' : 'disabled'">Register</button>
 									<button type="submit" class="btn btn-primary" id="cancel"
 										onClick="cancelEdit()">Cancel</button>
 								</div>
