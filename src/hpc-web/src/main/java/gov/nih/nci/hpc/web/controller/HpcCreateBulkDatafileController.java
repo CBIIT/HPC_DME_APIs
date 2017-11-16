@@ -92,10 +92,19 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			} else
 				model.addAttribute("create", true);
 			String path = request.getParameter("path");
+			String endPoint = request.getParameter("endpoint_id");
 			String parent = request.getParameter("parent");
+			if(parent == null || parent.isEmpty())
+				parent = (String) session.getAttribute("parent");
+			else
+				session.setAttribute("parent", parent);
+			String selectedPath = (String) session.getAttribute("datafilePath");
 			if (parent != null)
 				model.addAttribute("parent", parent);
-			if (path != null)
+			
+			if(selectedPath != null && !selectedPath.isEmpty())
+				model.addAttribute("datafilePath", selectedPath);
+			else if (path != null && (endPoint == null || endPoint.isEmpty()))
 				model.addAttribute("datafilePath", path);
 			else
 				model.addAttribute("datafilePath", parent);
@@ -159,8 +168,16 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	}
 
 	private void setDatafilePath(Model model, HttpServletRequest request, HttpSession session, String parentPath) {
+		String selectedPath = (String) session.getAttribute("datafilePath");
+		if(selectedPath != null && !selectedPath.isEmpty())
+		{
+			model.addAttribute("datafilePath", selectedPath);
+			return;
+		}
+		
 		String path = request.getParameter("path");
-		if (path != null && !path.isEmpty()) {
+		String endPoint = request.getParameter("endpoint_id");
+		if (path != null && !path.isEmpty() && (endPoint == null || endPoint.isEmpty())) {
 			model.addAttribute("datafilePath", path);
 			session.setAttribute("datafilePath", path);
 			return;
@@ -200,17 +217,21 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		String[] action = request.getParameterValues("actionType");
 		String parent = request.getParameter("parent");
-		if (parent != null && !parent.isEmpty())
-			model.addAttribute("parent", parent);
-		String path = request.getParameter("path");
-		if (path != null && !path.isEmpty())
-			model.addAttribute("datafilePath", path);
-		else
-			model.addAttribute("datafilePath", parent);
-
 		String basePath = HpcClientUtil.getBasePath(request);
 		if (basePath == null)
 			basePath = (String) session.getAttribute("basePathSelected");
+
+		if (parent != null && !parent.isEmpty())
+			model.addAttribute("parent", parent);
+		String path = request.getParameter("path");
+		String endPoint = request.getParameter("endpoint_id");
+		setDatafilePath(model, request, session, parent);
+//		if (path != null && !path.isEmpty() && (endPoint == null || endPoint.isEmpty())) 
+//			model.addAttribute("datafilePath", path);
+//		else if(parent != null && !parent.isEmpty())
+//			model.addAttribute("datafilePath", parent);
+//		else
+//			model.addAttribute("datafilePath", basePath);
 
 		String source = request.getParameter("source");
 		if (source == null || source.isEmpty())
@@ -239,7 +260,6 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			String returnURL = webServerName +"/addbulk";
 			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&action=" + returnURL;
 		}
-		boolean registered = false;
 
 		try {
 			if (hpcDataModel.getPath() == null || hpcDataModel.getPath().trim().length() == 0)
@@ -247,34 +267,23 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			// Validate parent path
 			String parentPath = null;
 			hpcDataModel.setPath(hpcDataModel.getPath().trim());
-			// try {
-			// HpcClientUtil.getCollection(authToken, collectionServiceURL,
-			// hpcDataModel.getPath(), true, sslCertPath,
-			// sslCertPassword);
-			// } catch (HpcWebException e) {
-			// model.addAttribute("hpcDataModel", hpcDataModel);
-			// setDatafilePath(model, request, session, parent);
-			// model.addAttribute("error", "Invalid parent collection: " +
-			// e.getMessage());
-			// String collectionType = getParentCollectionType(request,
-			// session);
-			//
-			// List<HpcMetadataAttrEntry> metadataEntries =
-			// populateFormAttributes(request, session, model, basePath,
-			// collectionType, false, false);
-			// if (metadataEntries != null && !metadataEntries.isEmpty())
-			// model.addAttribute("datafileAttrs", metadataEntries);
-			// return "adddatafilebulk";
-			// }
 			HpcCollectionRegistrationDTO collectionRegistrationDTO = constructRequest(request, session,
 					hpcDataModel.getPath().trim(), null);
 
+			if(collectionRegistrationDTO.getMetadataEntries().isEmpty())
+			{
+				String collectionType = getParentCollectionType(request, session);
+				HpcMetadataEntry entry = new HpcMetadataEntry();
+				entry.setAttribute("collection_type");
+				entry.setValue(collectionType);
+				collectionRegistrationDTO.getMetadataEntries().add(entry);
+			}
 			HpcClientUtil.updateCollection(authToken, collectionServiceURL, collectionRegistrationDTO,
 					hpcDataModel.getPath().trim(), sslCertPath, sslCertPassword);
 
 			HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructBulkRequest(request, session,
 					hpcDataModel.getPath().trim());
-			registered = HpcClientUtil.registerBulkDatafiles(authToken, bulkRegistrationURL, registrationDTO,
+			HpcClientUtil.registerBulkDatafiles(authToken, bulkRegistrationURL, registrationDTO,
 					sslCertPath, sslCertPassword);
 			model.addAttribute("error", "Bulk Data file registration request is submmited!");
 			// clearSessionAttrs(session);
@@ -377,8 +386,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		populateBasePaths(request, session, model, path);
 		populateCollectionTypes(session, model, basePath, null);
 		String collectionType = getParentCollectionType(request, session);
-		model.addAttribute("collection_type", collectionType);
-		if (path != null && !path.equals(basePath))
+		if(collectionType.equals("_select_null"))
+			model.addAttribute("collection_type", "Folder");
+		else
+			model.addAttribute("collection_type", collectionType);
+		if (path != null && !path.isEmpty() && !path.equals(basePath))
 			model.addAttribute("datafilePath", path);
 		List<HpcMetadataAttrEntry> metadataEntries = populateFormAttributes(request, session, model, basePath,
 				collectionType, refresh, false);
