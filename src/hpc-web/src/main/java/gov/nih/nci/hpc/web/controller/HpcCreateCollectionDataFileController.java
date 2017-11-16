@@ -84,6 +84,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		session.removeAttribute("GlobusEndpointFolders");
 		session.removeAttribute("parentCollection");
 		session.removeAttribute("metadataEntries");
+		session.removeAttribute("parent");
 	}
 
 	protected void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, String path)
@@ -160,11 +161,11 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		if (folderNames != null && !folderNames.isEmpty())
 			model.addAttribute("folderNames", folderNames);
 
-		if (parent == null)
-			model.addAttribute("datafilePath", session.getAttribute("datafilePath"));
-
-		if (path == null && parent == null)
-			model.addAttribute("datafilePath", session.getAttribute("datafilePath"));
+//		if (parent == null)
+//			model.addAttribute("datafilePath", session.getAttribute("datafilePath"));
+//
+//		if (path == null && parent == null)
+//			model.addAttribute("datafilePath", session.getAttribute("datafilePath"));
 
 		if (source == null)
 			model.addAttribute("source", session.getAttribute("source"));
@@ -204,8 +205,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				HpcDirectoryScanRegistrationItemDTO folder = new HpcDirectoryScanRegistrationItemDTO();
 				HpcFileLocation source = new HpcFileLocation();
 				source.setFileContainerId(globusEndpoint);
-				source.setFileId(globusEndpointPath + "/" + folderName);
-				folder.setBasePath(selectedBasePath);
+				source.setFileId(globusEndpointPath.endsWith("/") ?  globusEndpointPath + folderName : globusEndpointPath + "/" + folderName);
+				folder.setBasePath(datafilePath);
 				folder.setScanDirectoryLocation(source);
 				folders.add(folder);
 			}
@@ -446,6 +447,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			model.addAttribute("attributeNames", attributeNames);
 		if (collectionType != null && !collectionType.isEmpty())
 			model.addAttribute("collection_type", collectionType);
+		else
+			model.addAttribute("collection_type", "Folder");
 
 		// if (!path.isEmpty())
 		// model.addAttribute("collectionPath", path);
