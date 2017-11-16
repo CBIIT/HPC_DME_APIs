@@ -149,7 +149,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 				collectionType, refresh, false);
 		if (metadataEntries != null && !metadataEntries.isEmpty())
 			model.addAttribute("collectionAttrs", metadataEntries);
-		if (collectionType != null && !collectionType.equals("_select_null"))
+		//if (collectionType != null && !collectionType.equals("_select_null"))
 			model.addAttribute("create", true);
 		return "addcollection";
 	}
