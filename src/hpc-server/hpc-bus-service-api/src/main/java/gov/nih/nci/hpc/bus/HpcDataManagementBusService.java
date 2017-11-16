@@ -180,9 +180,6 @@ public interface HpcDataManagementBusService
     public HpcUserPermsForCollectionsDTO getUserPermissionsOnCollections(
             String[] collectionPaths, String userId) throws HpcException;
 
-//	public HpcUserPermsOnManyCollectionsDTO getUserPermissionsOnCollections(
-//			String[] collectionPaths, String userId) throws HpcException;
-
     /**
      * Given some collection paths, get all permissions on those collections across all users.
      *

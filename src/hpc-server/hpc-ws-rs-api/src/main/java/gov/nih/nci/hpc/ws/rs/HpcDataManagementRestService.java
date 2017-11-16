@@ -172,7 +172,7 @@ public interface HpcDataManagementRestService
      * @return The REST service response with HpcUserPermissionsOnMultipleCollectionsDTO instance.
      */
 	@GET
-	@Path("/collection-acl/user/{userId:.*}")
+	@Path("/collection/acl/user/{userId:.*}")
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getPermissionsOnCollectionsForUser(@QueryParam("collectionPath")  String[] collectionsPaths,
                                                        @PathParam("userId") String userId);
@@ -184,7 +184,7 @@ public interface HpcDataManagementRestService
      * @return The REST service response based on <code>HpcPermsForCollectionsDTO</code> instance.
      */
     @GET
-    @Path("/collection-acl")
+    @Path("/collection/acl")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getAllPermissionsOnCollections(@QueryParam("collectionPath") String[] collectionPaths);
 
