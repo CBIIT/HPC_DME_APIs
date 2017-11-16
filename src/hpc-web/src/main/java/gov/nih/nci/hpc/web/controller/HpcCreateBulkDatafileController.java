@@ -92,6 +92,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			} else
 				model.addAttribute("create", true);
 			String path = request.getParameter("path");
+			String endPoint = request.getParameter("endpoint_id");
 			String parent = request.getParameter("parent");
 			if(parent == null || parent.isEmpty())
 				parent = (String) session.getAttribute("parent");
@@ -103,7 +104,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			
 			if(selectedPath != null && !selectedPath.isEmpty())
 				model.addAttribute("datafilePath", selectedPath);
-			else if (path != null)
+			else if (path != null && (endPoint == null || endPoint.isEmpty()))
 				model.addAttribute("datafilePath", path);
 			else
 				model.addAttribute("datafilePath", parent);
@@ -175,7 +176,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		}
 		
 		String path = request.getParameter("path");
-		if (path != null && !path.isEmpty()) {
+		String endPoint = request.getParameter("endpoint_id");
+		if (path != null && !path.isEmpty() && (endPoint == null || endPoint.isEmpty())) {
 			model.addAttribute("datafilePath", path);
 			session.setAttribute("datafilePath", path);
 			return;
@@ -222,13 +224,14 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		if (parent != null && !parent.isEmpty())
 			model.addAttribute("parent", parent);
 		String path = request.getParameter("path");
-		if (path != null && !path.isEmpty())
-			model.addAttribute("datafilePath", path);
-		else if(parent != null && !parent.isEmpty())
-			model.addAttribute("datafilePath", parent);
-		else
-			model.addAttribute("datafilePath", basePath);
-
+		String endPoint = request.getParameter("endpoint_id");
+		setDatafilePath(model, request, session, parent);
+//		if (path != null && !path.isEmpty() && (endPoint == null || endPoint.isEmpty())) 
+//			model.addAttribute("datafilePath", path);
+//		else if(parent != null && !parent.isEmpty())
+//			model.addAttribute("datafilePath", parent);
+//		else
+//			model.addAttribute("datafilePath", basePath);
 
 		String source = request.getParameter("source");
 		if (source == null || source.isEmpty())
