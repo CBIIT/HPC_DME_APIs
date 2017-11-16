@@ -1,0 +1,57 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "name",
+         "value": "Demo Project Name10"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Dataset"
+        },
+        {
+         "attribute": "description",
+         "value": "my data set"
+        },
+        {
+         "attribute": "internal_project_id",
+         "value": "ipi"
+        },
+        {
+         "attribute": "source_lab_pi",
+         "value": "Source Lab PI"
+        },
+        {
+         "attribute": "lab_branch",
+         "value": "Lab / Branch Name"
+        },
+        {
+         "attribute": "pi_doc",
+         "value": "FNLCR"
+        },
+        {
+         "attribute": "original_date_created",
+         "value": "10/25/2006"
+        },
+        {
+         "attribute": "old_doc_attribute",
+         "value": "CCBR"
+        },
+        {
+         "attribute":"flow_cell_id",   
+         "value": "flow_id"
+        },
+        {
+         "attribute":"run_id",   
+         "value": "id"
+        },
+        {
+         "attribute":"run_date",   
+         "value": "date"
+        },
+        {
+         "attribute":"library_id",   
+         "value": "lib_id"
+        }
+    ]
+}
+   
