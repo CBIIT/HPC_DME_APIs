@@ -77,7 +77,7 @@
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Add Data File</li>
+							<li><i class="fa fa-list-alt"></i>Register Data File</li>
 						</ol>
 					</div>
 				</div>
@@ -186,7 +186,7 @@
 								<div class="panel-heading">
 									<div class="col-md-3">
 										<h2>
-											<i class="fa fa-list-alt red"></i><strong>Destination File Metadata</strong>
+											<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
 										</h2>
 									</div>
 									<div class="col-md-3 col-md-offset-6">
@@ -210,8 +210,8 @@
 												</tr>
 											</thead>
 											<tbody>
-												<tr th:each="hpcMetadataAttrEntry : ${datafileAttrs}"
-													th:if="${datafileAttrs != null}">
+												<tr th:each="hpcMetadataAttrEntry : ${metadataEntries}"
+													th:if="${metadataEntries != null}">
 													<td><label
 														th:text="${hpcMetadataAttrEntry.getAttrName()}"></label></td>
 													<td
@@ -225,6 +225,32 @@
 														<select size="1"
 														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														class="form-control" th:required="required">
+															<option value="_select_null">----Select----</option>
+															<option
+																th:each="validValue : ${hpcMetadataAttrEntry.getValidValues()}"
+																th:value="${validValue}" th:text="${validValue}"
+																th:selected="${validValue.equals(hpcMetadataAttrEntry.getAttrValue())}">
+																Wireframe</option>
+													</select>
+													</td>
+												</tr>
+												<tr th:each="hpcMetadataAttrEntry : ${userMetadataEntries}"
+													th:if="${userMetadataEntries != null}">
+													<td><input type="text" class="form-control" th:id="@{'_addAttrName'+${hpcMetadataAttrEntry.getAttrName()}}"
+													    th:name="@{'_addAttrName'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrName()}"/></td>
+													<td
+														th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input
+														type="text" class="form-control"
+														th:id="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:name="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
+													<td
+														th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
+														<select size="1"
+														th:id="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:name="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}"
 														class="form-control" th:required="required">
 															<option value="_select_null">----Select----</option>
 															<option
