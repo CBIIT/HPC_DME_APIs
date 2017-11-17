@@ -123,6 +123,7 @@
           <value>docRules</value>
           <value>dataObjectRegistrationItems</value>
           <value>parentCollectionMetadataEntries</value>
+          <value>permissionsForCollections</value>
     </util:list>
 
 	<!-- JSON Provider -->
