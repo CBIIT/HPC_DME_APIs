@@ -121,6 +121,8 @@
           <value>items</value>
           <value>rules</value>
           <value>docRules</value>
+          <value>dataObjectRegistrationItems</value>
+          <value>parentCollectionMetadataEntries</value>
     </util:list>
 
 	<!-- JSON Provider -->
