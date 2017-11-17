@@ -101,6 +101,14 @@
 								</div>
 								<div th:case="'OWN'">
 									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../browse?refresh&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-sitemap" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${collection.getCollection().getCollectionName()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>
+									&nbsp;&nbsp;&nbsp;
+									<a id="deleteCollection"
+                                       class="btn btn-link btn-sm"
+                                       th:href="@{'/deleteCollection/confirmationView'}"
+                                       data-toggle="modal"
+                                       data-target="#deleteCollectionModal">
+										<i class="fa fa-trash-o" aria-hidden="true"></i>
+									</a>
 								</div>
 								</h2>
 							</div>
@@ -127,9 +135,16 @@
 											<!-- /.modal-content -->
 										</div>
 										<!-- /.modal-dialog -->
-									</div>								
-								
-									<div class="form-group">
+									</div>
+                                    <div class="modal fade" id="deleteCollectionModal" tabindex="-1" role="dialog"
+                                         aria-labelledby="myModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content"></div>
+                                            <!-- /.modal-content -->
+                                        </div>
+                                        <!-- /.modal-dialog -->
+                                    </div>
+                                    <div class="form-group">
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> <label
 												for="${collection.getCollection().getCollectionName()}"
