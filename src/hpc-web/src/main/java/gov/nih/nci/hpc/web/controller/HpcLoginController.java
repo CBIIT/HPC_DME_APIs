@@ -55,6 +55,9 @@ public class HpcLoginController extends AbstractHpcController {
 	private String queryURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
+	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
+	private String collectionAclURL;
+	
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model, HttpSession session, HttpServletRequest request) {
@@ -87,7 +90,7 @@ public class HpcLoginController extends AbstractHpcController {
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
 				HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, hpcLogin.getUserId(),
-						collectionURL, sslCertPath, sslCertPassword);
+						collectionAclURL, sslCertPath, sslCertPassword);
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
 				model.addAttribute("loginOutput", "Invalid login");
