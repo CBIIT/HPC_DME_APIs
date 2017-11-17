@@ -117,7 +117,7 @@
 														<table border="0">
 															<tr
 																th:if="${basePaths != null and basePaths.size() &gt; 0}">
-																<td><label id="rowId0">Base Path: </label></td>
+																<td><label id="basePathId">Base Path: </label></td>
 																<td><select size="1" id="basePath" name="basePath"
 																	class="form-control" th:required="required"
 																	onChange="return refreshAttributes('BasePath')">
@@ -130,7 +130,7 @@
 															</tr>
 															<tr id='attrRow1'
 																th:if="${collectionTypes != null and collectionTypes.size() &gt; 0}">
-																<td style="white-space: nowrap"><label id="rowId0">collection_type</label>
+																<td style="white-space: nowrap"><label id="collectionTypeId">collection_type</label>
 																</td>
 																<td style="white-space: nowrap"><select size="1"
 																	id="zAttrStr_collection_type"
@@ -312,18 +312,18 @@
 	<script type="text/javascript">
 	//<![CDATA[	
 	
-	var rowId = 1;
+	var rowId = 0;
 	
 	function addMetadata() {
 		rowId++;
 	    var table = document.getElementById("metaAttrTable");
 	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-	    var row = table.insertRow(rows+1);
-	    row.id = "attrRow"+(rows+1);
+	    var row = table.insertRow(rowId);
+	    row.id = "attrRow"+(rowId);
 	    var cell0 = row.insertCell(0);
 	    var cell1 = row.insertCell(1);
-	    cell0.innerHTML = '<input type="text" id="_addAttrName'+(rows+1)+'" name="_addAttrName'+(rows+1)+'" placeholder="Attribute Name" class="form-control"/>';
-	    cell1.innerHTML = '<input type="text" id="_addAttrValue'+(rows+1)+'" name="_addAttrValue'+(rows+1)+'" placeholder="Attribute Value" class="form-control"/>';
+	    cell0.innerHTML = '<input type="text" id="_addAttrName'+(rowId)+'" name="_addAttrName'+(rowId)+'" placeholder="Attribute Name" class="form-control"/>';
+	    cell1.innerHTML = '<input type="text" id="_addAttrValue'+(rowId)+'" name="_addAttrValue'+(rowId)+'" placeholder="Attribute Value" class="form-control"/>';
 	    return false;
 	}	
 
