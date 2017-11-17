@@ -94,6 +94,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermOnOneCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsOnManyCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
@@ -117,7 +118,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// The Data Management Application Service Instance.
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
-	
+
+	// The Data Management Security Service Instance.
+	@Autowired
+	private HpcDataManagementSecurityService dataManagementSecurityService = null;
+
 	// The Data Transfer Application Service Instance.
 	@Autowired
     private HpcDataTransferService dataTransferService = null;
@@ -133,7 +138,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// TheEvent Application Service Instance.
 	@Autowired
     private HpcEventService eventService = null;
-	
+
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -525,16 +530,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     @Override
 	public HpcUserPermsForCollectionsDTO getUserPermissionsOnCollections(
         String[] collectionPaths, String userId) throws HpcException {
-        HpcUserPermsForCollectionsDTO usrPrmsOnClltcns = new
-          HpcUserPermsForCollectionsDTO();
-        usrPrmsOnClltcns.setUserId(userId);
-        for (String someCollectionPath : collectionPaths) {
-            HpcPermissionForCollection permForColl =
-              _fetchCollectionPermission(someCollectionPath, userId);
-            if (null != permForColl) {
-                usrPrmsOnClltcns.getPermissionsForCollections()
-                                .add(permForColl);
+        HpcUserPermsForCollectionsDTO usrPrmsOnClltcns = null;
+        if (dataManagementSecurityService.userExists(userId)) {
+            usrPrmsOnClltcns = new HpcUserPermsForCollectionsDTO();
+            usrPrmsOnClltcns.setUserId(userId);
+            for (String someCollectionPath : collectionPaths) {
+                HpcPermissionForCollection permForColl =
+                        _fetchCollectionPermission(someCollectionPath, userId);
+                if (null != permForColl) {
+                    usrPrmsOnClltcns.getPermissionsForCollections()
+                            .add(permForColl);
+                }
             }
+        } else {
+            throw new HpcException("User not found: " + userId,
+              HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
         }
         return usrPrmsOnClltcns;
     }
@@ -559,57 +569,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return resultHpcPermForColl;
 	}
 
-    public HpcUserPermsOnManyCollectionsDTO getUserPermissionsOnCollections_ORIGINAL(
-            String[] collectionPaths, String userId) throws HpcException {
-        HpcUserPermsOnManyCollectionsDTO usrPrmsOnClltcns = new HpcUserPermsOnManyCollectionsDTO();
-        for (String someCollectionPath : collectionPaths) {
-            HpcUserPermOnOneCollection permsResult =
-                    _processPermsForOneOfManyCollections_ORIGINAL(userId, someCollectionPath);
-            if (null != permsResult) {
-                usrPrmsOnClltcns.getPermissionsXCollections().add(permsResult);
-            }
-        }
-        return usrPrmsOnClltcns;
-    }
-
-    private HpcUserPermOnOneCollection _processPermsForOneOfManyCollections_ORIGINAL(
-            String userId, String someCollectionPath) throws HpcException {
-        try {
-            HpcUserPermOnOneCollection permsObj = null;
-            HpcUserPermissionDTO initialDto = _fetchCollectionPermission_ORIGINAL(someCollectionPath, userId);
-            if (null != initialDto) {
-                permsObj = new HpcUserPermOnOneCollection();
-                permsObj.setCollectionPath(someCollectionPath);
-                permsObj.setPermission(initialDto.getPermission());
-                permsObj.setUserId(initialDto.getUserId());
-            }
-            return permsObj;
-        } catch (Exception e) {
-            String msg = String.format("Failed to get permissions of user [%s] on collection path [%s]",
-                    userId, someCollectionPath);
-            throw new HpcException(msg, e);
-        }
-    }
-
-    private HpcUserPermissionDTO _fetchCollectionPermission_ORIGINAL(String path, String userId)
-            throws HpcException
-    {
-        // Input validation.
-        if (path == null) {
-            throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
-        }
-        if (userId == null) {
-            throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
-        }
-        // Validate the collection exists.
-        if (dataManagementService.getCollection(path, false) == null) {
-            return null;
-        }
-
-        HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
-        return toUserPermissionDTO(hsPerm);
-    }
-
 	@Override
     public HpcPermsForCollectionsDTO getAllPermissionsOnCollections(
             String[] collectionPaths) throws HpcException {
@@ -618,13 +577,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             HpcPermissionsForCollection perms4Coll = new
               HpcPermissionsForCollection();
             perms4Coll.setCollectionPath(somePath);
-            perms4Coll.getCollectionPermission().addAll(
+            perms4Coll.getCollectionPermissions().addAll(
               dataManagementService.getCollectionPermissions(somePath));
             resultDto.getCollectionPermissions().add(perms4Coll);
         }
 
         return resultDto;
-//        return null;
     }
 
 	@Override
