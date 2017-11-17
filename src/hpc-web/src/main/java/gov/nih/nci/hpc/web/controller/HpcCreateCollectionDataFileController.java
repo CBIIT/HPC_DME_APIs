@@ -86,6 +86,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		session.removeAttribute("GlobusEndpointFolders");
 		session.removeAttribute("parentCollection");
 		session.removeAttribute("metadataEntries");
+		session.removeAttribute("userMetadataEntries");
 		session.removeAttribute("parent");
 		session.removeAttribute("includeCriteria");
 		session.removeAttribute("excludeCriteria");
@@ -437,6 +438,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 
 		HpcCollectionDTO collectionDTO = (HpcCollectionDTO) session.getAttribute("parentCollection");
 		List<HpcMetadataAttrEntry> cachedEntries = (List<HpcMetadataAttrEntry>) session.getAttribute("metadataEntries");
+		List<HpcMetadataAttrEntry> cachedUserEntries = (List<HpcMetadataAttrEntry>) session.getAttribute("userMetadataEntries");
 		// if (collectionType == null)
 		// collectionType = "Folder";
 
@@ -462,7 +464,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					entry.setAttrName(rule.getAttribute());
 					attributeNames.add(rule.getAttribute());
 					entry.setAttrValue(
-							getFormAttributeValue(request, "zAttrStr_" + rule.getAttribute(), cachedEntries));
+							getFormAttributeValue(request, "zAttrStr_" + rule.getAttribute(), cachedEntries, "zAttrStr_"));
 					if (entry.getAttrValue() == null) {
 						if (!refresh)
 							entry.setAttrValue(getCollectionAttrValue(collectionDTO, rule.getAttribute()));
@@ -489,11 +491,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					HpcMetadataAttrEntry entry = new HpcMetadataAttrEntry();
 					String[] attrName = request.getParameterValues(paramName);
 					String attrId = paramName.substring("_addAttrName".length());
-					String[] attrValue = request.getParameterValues("_addAttrValue" + attrId);
+					String attrValue = getFormAttributeValue(request, "_addAttrValue" + attrId, cachedEntries, "_addAttrValue"); 
 					if (attrName.length > 0 && !attrName[0].isEmpty())
 						entry.setAttrName(attrName[0]);
-					if (attrValue.length > 0 && !attrValue[0].isEmpty())
-						entry.setAttrValue(attrValue[0]);
+					entry.setAttrValue(attrValue);
 					userMetadataEntries.add(entry);
 				}
 			}
@@ -509,10 +510,26 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		// if (!path.isEmpty())
 		// model.addAttribute("collectionPath", path);
 		model.addAttribute("basePath", basePath);
-		session.setAttribute("metadataEntries", metadataEntries);
-		session.setAttribute("userMetadataEntries", userMetadataEntries);
-		model.addAttribute("metadataEntries", metadataEntries);
-		model.addAttribute("userMetadataEntries", userMetadataEntries);
+		if(metadataEntries.size() > 0)
+		{
+			session.setAttribute("metadataEntries", metadataEntries);
+			model.addAttribute("metadataEntries", metadataEntries);
+		}
+		else
+		{
+			session.setAttribute("metadataEntries", cachedEntries);
+			model.addAttribute("metadataEntries", cachedEntries);
+		}
+		if(userMetadataEntries.size() > 0)
+		{
+			session.setAttribute("userMetadataEntries", userMetadataEntries);
+			model.addAttribute("userMetadataEntries", userMetadataEntries);
+		}
+		else
+		{
+			session.setAttribute("userMetadataEntries", cachedUserEntries);
+			model.addAttribute("userMetadataEntries", cachedUserEntries);
+		}
 	}
 
 	private String getCollectionAttrValue(HpcCollectionDTO collectionDTO, String attrName) {
@@ -528,7 +545,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	}
 
 	private String getFormAttributeValue(HttpServletRequest request, String attributeName,
-			List<HpcMetadataAttrEntry> cachedEntries) {
+			List<HpcMetadataAttrEntry> cachedEntries, String prefix) {
 		String[] attrValue = request.getParameterValues(attributeName);
 		if (attrValue != null)
 			return attrValue[0];
@@ -536,7 +553,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			if (cachedEntries == null || cachedEntries.size() == 0)
 				return null;
 			for (HpcMetadataAttrEntry entry : cachedEntries) {
-				if (attributeName.equals("zAttrStr_" + entry.getAttrName()))
+				if (attributeName.equals(prefix + entry.getAttrName()))
 					return entry.getAttrValue();
 			}
 		}
