@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +26,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
@@ -85,6 +87,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		session.removeAttribute("parentCollection");
 		session.removeAttribute("metadataEntries");
 		session.removeAttribute("parent");
+		session.removeAttribute("includeCriteria");
+		session.removeAttribute("excludeCriteria");
+		session.removeAttribute("dryRun");
 	}
 
 	protected void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, String path)
@@ -114,7 +119,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		model.addAttribute("basePaths", basePaths);
 	}
 
-	protected void setGlobusParameters(Model model, HttpServletRequest request, HttpSession session, String path,
+	protected void setInputParameters(Model model, HttpServletRequest request, HttpSession session, String path,
 			String parent, String source, boolean refresh) {
 		String endPoint = request.getParameter("endpoint_id");
 		String globusPath = request.getParameter("path");
@@ -160,18 +165,40 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 
 		if (folderNames != null && !folderNames.isEmpty())
 			model.addAttribute("folderNames", folderNames);
-
-//		if (parent == null)
-//			model.addAttribute("datafilePath", session.getAttribute("datafilePath"));
-//
-//		if (path == null && parent == null)
-//			model.addAttribute("datafilePath", session.getAttribute("datafilePath"));
-
+		setCriteria(model, request, session);
 		if (source == null)
 			model.addAttribute("source", session.getAttribute("source"));
 
 	}
 
+	protected void setCriteria(Model model, HttpServletRequest request, HttpSession session)
+	{
+		String includeCriteria = request.getParameter("includeCriteria");
+		String excludeCriteria = request.getParameter("excludeCriteria");
+		String dryRun = request.getParameter("dryrun");
+
+		if (includeCriteria == null)
+			includeCriteria = (String) session.getAttribute("includeCriteria");
+		else
+			session.setAttribute("includeCriteria", includeCriteria);
+
+		model.addAttribute("includeCriteria", includeCriteria == null ? "":includeCriteria);
+		
+		if (excludeCriteria == null)
+			excludeCriteria = (String) session.getAttribute("excludeCriteria");
+		else
+			session.setAttribute("excludeCriteria", excludeCriteria);
+
+		model.addAttribute("excludeCriteria", excludeCriteria == null ? "":excludeCriteria);
+
+		if (dryRun == null)
+			dryRun = (String) session.getAttribute("dryRun");
+		else
+			session.setAttribute("dryRun", dryRun);
+
+		model.addAttribute("dryRun", (dryRun != null && dryRun.equals("on")) ? true:false);		
+	}
+	
 	protected HpcBulkDataObjectRegistrationRequestDTO constructBulkRequest(HttpServletRequest request,
 			HttpSession session, String path) {
 		HpcBulkDataObjectRegistrationRequestDTO dto = new HpcBulkDataObjectRegistrationRequestDTO();
@@ -179,6 +206,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		String globusEndpoint = (String) session.getAttribute("GlobusEndpoint");
 		String selectedBasePath = (String) session.getAttribute("basePathSelected");
 		String globusEndpointPath = (String) session.getAttribute("GlobusEndpointPath");
+		String includeCriteria = (String) session.getAttribute("includeCriteria");
+		String excludeCriteria = (String) session.getAttribute("excludeCriteria");
+		String dryRun = (String) request.getParameter("dryrun");
+		String criteriaType = (String)request.getParameter("criteriaType");
 		List<String> globusEndpointFiles = (List<String>) session.getAttribute("GlobusEndpointFiles");
 		List<String> globusEndpointFolders = (List<String>) session.getAttribute("GlobusEndpointFolders");
 
@@ -199,6 +230,22 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			dto.getDataObjectRegistrationItems().addAll(files);
 		}
 
+		List<String> include = new ArrayList<String>();
+		if(includeCriteria != null && !includeCriteria.isEmpty())
+		{
+			StringTokenizer tokens = new StringTokenizer(includeCriteria, "\r\n");
+			while(tokens.hasMoreTokens())
+				include.add(tokens.nextToken());
+		}
+		
+		List<String> exclude = new ArrayList<String>();
+		if(excludeCriteria != null && !excludeCriteria.isEmpty())
+		{
+			StringTokenizer tokens = new StringTokenizer(excludeCriteria, "\r\n");
+			while(tokens.hasMoreTokens())
+				exclude.add(tokens.nextToken());
+		}
+
 		if (globusEndpointFolders != null) {
 			List<HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<HpcDirectoryScanRegistrationItemDTO>();
 			for (String folderName : globusEndpointFolders) {
@@ -209,10 +256,18 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				folder.setBasePath(datafilePath);
 				folder.setScanDirectoryLocation(source);
 				folders.add(folder);
+				if(criteriaType != null && criteriaType.equals("Simple"))
+					folder.setPatternType(HpcDirectoryScanPatternType.SIMPLE);
+				else
+					folder.setPatternType(HpcDirectoryScanPatternType.REGEX);
+				if(exclude.size() > 0)
+					folder.getExcludePatterns().addAll(exclude);
+				if(include.size() > 0)
+					folder.getIncludePatterns().addAll(include);
 			}
 			dto.getDirectoryScanRegistrationItems().addAll(folders);
 		}
-
+		dto.setDryRun(dryRun != null && dryRun.equals("on"));
 		return dto;
 	}
 
@@ -361,7 +416,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		return types;
 	}
 
-	protected List<HpcMetadataAttrEntry> populateFormAttributes(HttpServletRequest request, HttpSession session,
+	protected void populateFormAttributes(HttpServletRequest request, HttpSession session,
 			Model model, String basePath, String collectionType, boolean refresh, boolean datafile) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -396,6 +451,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		// Build list as type1:attribute1:defaultValue,
 		// type2:attribute2:defaultValue
 		List<HpcMetadataAttrEntry> metadataEntries = new ArrayList<HpcMetadataAttrEntry>();
+		List<HpcMetadataAttrEntry> userMetadataEntries = new ArrayList<HpcMetadataAttrEntry>();
 		List<String> attributeNames = new ArrayList<String>();
 		if (rules != null && !rules.isEmpty()) {
 			for (HpcMetadataValidationRule rule : rules) {
@@ -425,7 +481,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		}
 
 		// Handle custom attributes. If refresh, ignore them
-		if (!refresh) {
+	//	if (!refresh) {
 			Enumeration<String> params = request.getParameterNames();
 			while (params.hasMoreElements()) {
 				String paramName = params.nextElement();
@@ -438,10 +494,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 						entry.setAttrName(attrName[0]);
 					if (attrValue.length > 0 && !attrValue[0].isEmpty())
 						entry.setAttrValue(attrValue[0]);
-					metadataEntries.add(entry);
+					userMetadataEntries.add(entry);
 				}
 			}
-		}
+		//}
 
 		if (!attributeNames.isEmpty())
 			model.addAttribute("attributeNames", attributeNames);
@@ -454,7 +510,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		// model.addAttribute("collectionPath", path);
 		model.addAttribute("basePath", basePath);
 		session.setAttribute("metadataEntries", metadataEntries);
-		return metadataEntries;
+		session.setAttribute("userMetadataEntries", userMetadataEntries);
+		model.addAttribute("metadataEntries", metadataEntries);
+		model.addAttribute("userMetadataEntries", userMetadataEntries);
 	}
 
 	private String getCollectionAttrValue(HpcCollectionDTO collectionDTO, String attrName) {
