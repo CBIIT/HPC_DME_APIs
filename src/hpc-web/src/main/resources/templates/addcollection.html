@@ -171,13 +171,33 @@
 										</thead>
 										<tbody>
 											<tr
-												th:each="hpcMetadataAttrEntry : ${collectionAttrs}" th:if="${collectionAttrs != null}">
+												th:each="hpcMetadataAttrEntry : ${metadataEntries}" th:if="${metadataEntries != null}">
 													<td><label th:text="${hpcMetadataAttrEntry.getAttrName()}"></label></td>
 													<td th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input type="text" class="form-control" th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
 													<td th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
 														<select size="1"
 														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}" class="form-control"
+														th:required="required"
+														>
+															<option value="_select_null">----Select----</option>
+															<option
+																th:each="validValue : ${hpcMetadataAttrEntry.getValidValues()}"
+																th:value="${validValue}" th:text="${validValue}" th:selected="${validValue.equals(hpcMetadataAttrEntry.getAttrValue())}">
+																Wireframe</option>
+														</select>													
+													</td>
+											</tr>
+											<tr
+												th:each="hpcMetadataAttrEntry : ${userMetadataEntries}" th:if="${userMetadataEntries != null}">
+													<td><input type="text" class="form-control" th:id="@{'_addAttrName'+${hpcMetadataAttrEntry.getAttrName()}}"
+													    th:name="@{'_addAttrName'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrName()}"/></td>
+													<td th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input type="text" class="form-control" th:id="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}" th:name="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
+													<td th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
+														<select size="1"
+														th:id="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}" th:name="@{'_addAttrValue'+${hpcMetadataAttrEntry.getAttrName()}}" class="form-control"
 														th:required="required"
 														>
 															<option value="_select_null">----Select----</option>

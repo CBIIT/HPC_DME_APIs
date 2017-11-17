@@ -138,10 +138,8 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 
 			String collectionType = getParentCollectionType(request, session);
 
-			List<HpcMetadataAttrEntry> metadataEntries = populateFormAttributes(request, session, model, basePath,
+			populateFormAttributes(request, session, model, basePath,
 					collectionType, false, true);
-			if (metadataEntries != null && !metadataEntries.isEmpty())
-				model.addAttribute("datafileAttrs", metadataEntries);
 
 			// setGlobusParameters(model, request, session, path, parent,
 			// source);
@@ -259,10 +257,8 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 				model.addAttribute("error", "Invalid parent collection: " + e.getMessage());
 				String collectionType = getParentCollectionType(request, session);
 
-				List<HpcMetadataAttrEntry> metadataEntries = populateFormAttributes(request, session, model, basePath,
+				populateFormAttributes(request, session, model, basePath,
 						collectionType, false, true);
-				if (metadataEntries != null && !metadataEntries.isEmpty())
-					model.addAttribute("datafileAttrs", metadataEntries);
 				return "adddatafile";
 			}
 			// if (uploadType != null && uploadType.equals("async")) {
@@ -301,10 +297,8 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 					setDatafilePath(model, request, parent);
 
 				String collectionType = getParentCollectionType(request, session);
-				List<HpcMetadataAttrEntry> metadataEntries = populateFormAttributes(request, session, model, basePath,
+				populateFormAttributes(request, session, model, basePath,
 						collectionType, false, true);
-				if (metadataEntries != null && !metadataEntries.isEmpty())
-					model.addAttribute("datafileAttrs", metadataEntries);
 				model.addAttribute("create", true);
 				model.addAttribute("serverURL", serverURL);
 
@@ -354,10 +348,8 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 		String collectionType = getParentCollectionType(request, session);
 		if (path != null && !path.equals(basePath))
 			model.addAttribute("datafilePath", basePath);
-		List<HpcMetadataAttrEntry> metadataEntries = populateFormAttributes(request, session, model, basePath,
+		populateFormAttributes(request, session, model, basePath,
 				collectionType, refresh, true);
-		if (metadataEntries != null && !metadataEntries.isEmpty())
-			model.addAttribute("datafileAttrs", metadataEntries);
 		model.addAttribute("create", true);
 		model.addAttribute("serverURL", serverURL);
 		return "adddatafile";
