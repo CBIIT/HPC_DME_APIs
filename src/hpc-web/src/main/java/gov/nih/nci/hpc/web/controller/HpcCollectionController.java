@@ -97,8 +97,11 @@ public class HpcCollectionController extends AbstractHpcController {
 				return "dashboard";
 
 			// Get collection
-			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
-					sslCertPath, sslCertPassword);
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(
+              authToken, serviceURL, path,true, false, sslCertPath,
+              sslCertPassword);
+//			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
+//					sslCertPath, sslCertPassword);
 			if (collections != null && collections.getCollections() != null
 					&& collections.getCollections().size() > 0) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
@@ -117,6 +120,8 @@ public class HpcCollectionController extends AbstractHpcController {
 				model.addAttribute("userpermission", (permission != null && permission.getPermission() != null)
 						? permission.getPermission().toString() : "null");
 				model.addAttribute("attributeNames", getMetadataAttributeNames(collection));
+                boolean canDeleteFlag = determineIfCollectionCanBeDelete(permission.getPermission(), collection);
+				model.addAttribute("canDelete", Boolean.valueOf(canDeleteFlag).toString());
 				if (action != null && action.equals("edit"))
 					if (permission == null || permission.getPermission().equals(HpcPermission.NONE)
 							|| permission.getPermission().equals(HpcPermission.READ)) {
@@ -138,6 +143,18 @@ public class HpcCollectionController extends AbstractHpcController {
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
 		return "collection";
 	}
+
+
+	private boolean determineIfCollectionCanBeDelete(
+      HpcPermission thePermission, HpcCollectionDTO theCollection) {
+	    // Delete is permissible if ownership permission and collection is
+        //  empty with no sub-collections and no data objects
+        return (
+          HpcPermission.OWN == thePermission &&
+          theCollection.getCollection().getSubCollections().isEmpty() &&
+          theCollection.getCollection().getDataObjects().isEmpty()
+        );
+    }
 
 	private List<String> getMetadataAttributeNames(HpcCollectionDTO collection) {
 		List<String> names = new ArrayList<String>();
