@@ -170,14 +170,10 @@ public interface HpcDataTransferProxy
      * @return The path attributes.
      * @throws HpcException on data transfer system failure.
      */
-    public default HpcPathAttributes getPathAttributes(Object authenticatedToken, 
-    		                                           HpcFileLocation fileLocation,
-    		                                           boolean getSize) 
-    		                                          throws HpcException
-    {
-    	throw new HpcException("getDataTransferStatus() not supported",
-                               HpcErrorType.UNEXPECTED_ERROR);
-    }
+    public HpcPathAttributes getPathAttributes(Object authenticatedToken, 
+    		                                   HpcFileLocation fileLocation,
+    		                                   boolean getSize) 
+    		                                  throws HpcException;
     
     /**
      * Scan a directory (recursively) and return a list of all its files.

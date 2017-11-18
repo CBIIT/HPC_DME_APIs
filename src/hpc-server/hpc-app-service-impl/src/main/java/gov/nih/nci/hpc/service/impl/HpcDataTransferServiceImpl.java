@@ -165,20 +165,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     @Override
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
 			                                            File sourceFile, 
+			                                            boolean generateUploadRequestURL,
 			                                            String path, String userId,
 			                                            String callerObjectId, 
 			                                            String configurationId)
 	                                                   throws HpcException
 	{
-    	// Validate one and only one data source is provided.
-    	if(sourceLocation == null && sourceFile == null) {
-    	   throw new HpcException("No data transfer source or data attachment provided",
+    	// Validate one and only one data source is provided, or request for an upload URL.
+    	if(sourceLocation == null && sourceFile == null && !generateUploadRequestURL) {
+    	   throw new HpcException("No data transfer source or data attachment provided or upload URL requested",
 	                              HpcErrorType.INVALID_REQUEST_INPUT);	
     	}
     	if(sourceLocation != null && sourceFile != null) {
      	   throw new HpcException("Both data transfer source and data attachment provided",
  	                              HpcErrorType.INVALID_REQUEST_INPUT);	
      	}
+    	if(generateUploadRequestURL && 
+    	   (sourceLocation != null || sourceFile != null)) {
+    	   throw new HpcException("Both data transfer source/file and URL upload request provided",
+                                  HpcErrorType.INVALID_REQUEST_INPUT);		
+    	}
     	
     	// Create an upload request.
     	HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
@@ -187,10 +193,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	uploadRequest.setCallerObjectId(callerObjectId);
     	uploadRequest.setSourceLocation(sourceLocation);
     	uploadRequest.setSourceFile(sourceFile);
-    	uploadRequest.setConfigurationId(configurationId);
+    	uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
+    	uploadRequest.setUploadRequestURLExpiration(
+    		  dataManagementConfigurationLocator.get(configurationId).getS3UploadRequestURLExpiration());
     	
 		// Upload the data object file.
-	    return uploadDataObject(uploadRequest);	
+	    return uploadDataObject(uploadRequest, configurationId);	
 	}
     
     @Override
@@ -760,10 +768,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
      * Upload a data object file.
      *
      * @param uploadRequest The data upload request.
+     * @param configurationId The data management configuration ID.
      * @return A data object upload response.
      * @throws HpcException on service failure.
      */
-    private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest) 
+    private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest,
+    		                                             String configurationId) 
                                                         throws HpcException
     {
     	// Input validation.
@@ -777,7 +787,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	if(uploadRequest.getSourceLocation() != null) {
     	   dataTransferType = HpcDataTransferType.GLOBUS;
     	   
-    	} else if(uploadRequest.getSourceFile() != null) {
+    	} else if(uploadRequest.getSourceFile() != null || uploadRequest.getGenerateUploadRequestURL()) {
     		      dataTransferType = HpcDataTransferType.S_3;
     		      
     	} else {
@@ -787,7 +797,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService
     	}
     	
     	// Validate source location exists and accessible.
-    	String configurationId = uploadRequest.getConfigurationId();
     	validateUploadSourceFileLocation(dataTransferType, uploadRequest.getSourceLocation(), 
     			                         configurationId);
     	

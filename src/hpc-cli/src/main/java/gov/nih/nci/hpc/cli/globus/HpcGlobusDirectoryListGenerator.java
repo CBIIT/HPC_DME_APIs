@@ -38,7 +38,7 @@ import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HpcGlobusDirectoryListGenerator {
@@ -86,7 +86,7 @@ public class HpcGlobusDirectoryListGenerator {
 			List<HpcPathAttributes> files = impl.getPathAttributes(authenticatedToken, fileLocation);
 			if (files != null) {
 				for (HpcPathAttributes file : files) {
-					HpcDataObjectRegistrationDTO dataObject = new HpcDataObjectRegistrationDTO();
+					HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
 					List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
 					HpcMetadataEntry nameEntry = new HpcMetadataEntry();
 					nameEntry.setAttribute("name");
@@ -151,7 +151,7 @@ public class HpcGlobusDirectoryListGenerator {
 		HpcLogWriter.getInstance().WriteLog(logFile, exceptionAsString);
 	}
 
-	public void processRecord(HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO, String basePath,
+	public void processRecord(HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO, String basePath,
 			String objectPath) throws RecordProcessingException {
 		// TODO Auto-generated method stub
 		InputStream inputStream = null;
