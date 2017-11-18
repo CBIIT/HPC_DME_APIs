@@ -47,6 +47,7 @@ public interface HpcDataTransferService
      * 
      * @param sourceLocation The source for data transfer.
      * @param sourceFile The source file.
+     * @param generateUploadRequestURL Generate an upload URL (so caller can directly upload file into archive).
      * @param path The data object registration path.
      * @param userId The user-id who requested the data upload.
      * @param callerObjectId The caller's provided data object ID.
@@ -56,6 +57,7 @@ public interface HpcDataTransferService
      */
 	public HpcDataObjectUploadResponse uploadDataObject(HpcFileLocation sourceLocation, 
                                                         File sourceFile, 
+                                                        boolean generateUploadRequestURL,
                                                         String path, String userId,
                                                         String callerObjectId, String configurationId)
                                                        throws HpcException;

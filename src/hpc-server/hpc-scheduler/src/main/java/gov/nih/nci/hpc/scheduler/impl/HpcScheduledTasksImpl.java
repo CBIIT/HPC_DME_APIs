@@ -77,6 +77,18 @@ public class HpcScheduledTasksImpl
     	executeTask("processDataTranferUploadInProgressTask()", 
     			    systemBusService::processDataTranferUploadInProgress);
     }
+    
+    /**
+     * Update the data transfer upload status of all data objects that users are responsible
+     * to upload with a generated upload URL.
+     * 
+     */    
+    @Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadInProgressWithGeneratedURL.delay}")
+    private void processDataTranferUploadInProgressWithGeneratedURL()
+    {
+    	executeTask("processDataTranferUploadInProgressWithGeneratedURL()", 
+    			    systemBusService::processDataTranferUploadInProgressWithGeneratedURL);
+    }
 
     /**
      * Process data objects in temporary archive task. This tasks transfers data from the temporary

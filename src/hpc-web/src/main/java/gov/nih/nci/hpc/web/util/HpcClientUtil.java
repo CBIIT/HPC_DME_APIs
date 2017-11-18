@@ -76,25 +76,24 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
@@ -892,7 +891,7 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
+	public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationRequestDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
 			try
@@ -977,7 +976,7 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static boolean updateDatafile(String token, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
+	public static boolean updateDatafile(String token, String hpcDatafileURL, HpcDataObjectRegistrationRequestDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
