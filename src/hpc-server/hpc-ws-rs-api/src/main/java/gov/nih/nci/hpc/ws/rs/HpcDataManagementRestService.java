@@ -31,7 +31,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
@@ -204,7 +204,7 @@ public interface HpcDataManagementRestService
 	public Response registerDataObject(
 			        @PathParam("path") String path,
 			        @Multipart(value = "dataObjectRegistration", type = "application/json")
-			        HpcDataObjectRegistrationDTO dataObjectRegistration,
+			        HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
 			        @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
 			        InputStream dataObjectInputStream);
 	

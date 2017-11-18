@@ -9,8 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -32,10 +30,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
-import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -269,7 +266,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			// hpcDatafile, bulkRegistrationURL,
 			// registrationDTO, sslCertPath, sslCertPassword);
 			// } else {
-			HpcDataObjectRegistrationDTO registrationDTO = constructSyncRequest(request, session,
+			HpcDataObjectRegistrationRequestDTO registrationDTO = constructSyncRequest(request, session,
 					hpcDataModel.getPath());
 
 			registrationDTO.setChecksum(checksum);
@@ -329,10 +326,10 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 		return null;
 	}
 
-	private HpcDataObjectRegistrationDTO constructSyncRequest(HttpServletRequest request, HttpSession session,
+	private HpcDataObjectRegistrationRequestDTO constructSyncRequest(HttpServletRequest request, HttpSession session,
 			String path) {
 
-		HpcDataObjectRegistrationDTO dto = new HpcDataObjectRegistrationDTO();
+		HpcDataObjectRegistrationRequestDTO dto = new HpcDataObjectRegistrationRequestDTO();
 		dto.getMetadataEntries().addAll(getMetadataEntries(request, session, path));
 		dto.setSource(null);
 		return dto;
