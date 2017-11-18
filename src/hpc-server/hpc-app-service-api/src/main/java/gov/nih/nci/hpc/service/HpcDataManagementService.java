@@ -238,12 +238,20 @@ public interface HpcDataManagementService
     public List<HpcDataObject> getDataObjectsUploadReceived() throws HpcException;
     
     /**
-     * Get data objects that have their data transfer in-progress.
+     * Get data objects that have their data transfer upload in-progress.
      *
      * @return A list of data objects.
      * @throws HpcException on service failure.
      */
     public List<HpcDataObject> getDataObjectsUploadInProgress() throws HpcException;
+    
+    /**
+     * Get data objects that have their data transfer upload by users via URL.
+     *
+     * @return A list of data objects.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException;
     
     /**
      * Get data objects that have their data stored in temporary archive.

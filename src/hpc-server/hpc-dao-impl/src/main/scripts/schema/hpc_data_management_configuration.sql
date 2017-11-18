@@ -21,6 +21,7 @@ CREATE TABLE public."HPC_DATA_MANAGEMENT_CONFIGURATION"
   "S3_VAULT" text NOT NULL,
   "S3_OBJECT_ID" text NOT NULL,
   "S3_ARCHIVE_TYPE" text NOT NULL,
+  "S3_UPLOAD_REQUEST_URL_EXPIRATION" integer NOT NULL,
   "DATA_HIERARCHY" text,
   "COLLECTION_METADATA_VALIDATION_RULES" text,
   "DATA_OBJECT_METADATA_VALIDATION_RULES" text
@@ -45,6 +46,8 @@ COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_OBJECT_ID" IS
                   'The S3 archive (Cleversafe) object id prefix';
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_ARCHIVE_TYPE" IS 
                   'The S3 archive type (Archive / Temp Archive). Note: Temp Archive is currently not used';  
+COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_UPLOAD_REQUEST_URL_EXPIRATION" IS 
+                  'The expiration period (in hours) to set when S3 upload request URL is generated'; 
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."DATA_HIERARCHY" IS 
                   'The data hierarchy policy';    
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."COLLECTION_METADATA_VALIDATION_RULES" IS 

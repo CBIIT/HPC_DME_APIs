@@ -20,7 +20,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -76,6 +75,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
 		s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("S3_ARCHIVE_TYPE")));
 		dataManagementConfiguration.setS3BaseArchiveDestination(s3BaseArchiveDestination);
+		dataManagementConfiguration.setS3UploadRequestURLExpiration(rs.getInt("S3_UPLOAD_REQUEST_URL_EXPIRATION"));
 		
 		try {
 			 dataManagementConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
@@ -117,9 +117,6 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		try {
 		     return jdbcTemplate.query(GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL, rowMapper);
 		     
-		} catch(IncorrectResultSizeDataAccessException irse) {
-			    return null;
-			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get data management configurations: " + e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
