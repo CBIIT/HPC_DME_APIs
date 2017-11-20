@@ -329,8 +329,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         		                               withMethod(HttpMethod.PUT).withExpiration(expiration);
         
         // Attach the metadata to the request URL.
-        objectMetadata.getUserMetadata().forEach(
-        	  (name, value) -> generatePresignedUrlRequest.putCustomRequestHeader(name, value));
+       // objectMetadata.getUserMetadata().forEach(
+        //	  (name, value) -> generatePresignedUrlRequest.putCustomRequestHeader(name, value));
         
         URL url = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest);
 		
