@@ -262,10 +262,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	
     	// Iterate through the data objects that their data transfer is in-progress.
     	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadInProgressWithGeneratedURL();
-    	logger.info(dataObjectsInProgress.size() + " Data Objects Upload In Progress with URL: " + dataObjectsInProgress);
+    	logger.info(dataObjectsInProgress.size() + " Data Objects Upload In Progress with URL");
     	for(HpcDataObject dataObject : dataObjectsInProgress) {
     		String path = dataObject.getAbsolutePath();
-    		logger.info("Processing data object upload in-progress with URL: " + path);
     		try {
     		     // Get the system metadata.
     			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
@@ -277,6 +276,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     				    systemGeneratedMetadata.getArchiveLocation(), false, 
     					systemGeneratedMetadata.getConfigurationId());
     			 if(archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
+    				logger.info("Data object uploaded via URL completed: " + path);
+    				
     				// The file is found in archive. i.e. user completed the upload.
                     Calendar dataTransferCompleted = Calendar.getInstance();
 	     			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
@@ -292,6 +293,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		                                          systemGeneratedMetadata.getDataTransferType(),
 		                                          systemGeneratedMetadata.getConfigurationId());
     			    }
+    			    
+    			 } else {
+    				     logger.info("Data object upload via URL in progress: " + path);
     			 }
     		     
     		} catch(HpcException e) {
