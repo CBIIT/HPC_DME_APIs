@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
+import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
@@ -322,20 +323,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     	Date expiration = new java.util.Date();
         expiration.setTime(expiration.getTime() + 1000 * 60 * 60 * uploadRequestURLExpiration);
 
-        // Generate the upload request URL.
+        // Create a URL generation request.
         GeneratePresignedUrlRequest generatePresignedUrlRequest = 
         		new GeneratePresignedUrlRequest(archiveDestinationLocation.getFileContainerId(), 
                                                 archiveDestinationLocation.getFileId()).
         		                               withMethod(HttpMethod.PUT).withExpiration(expiration);
         
-        // Attach the metadata to the request URL.
-       // objectMetadata.getUserMetadata().forEach(
-        //	  (name, value) -> generatePresignedUrlRequest.putCustomRequestHeader(name, value));
+        // Attach the metadata to the URL generation request.
+        // Note: This is not working. Awaiting resolution from Cleversafe.
+        objectMetadata.getUserMetadata().forEach(
+        	  (name, value) -> generatePresignedUrlRequest.addRequestParameter(
+        			                   Headers.S3_USER_METADATA_PREFIX + name, value));
         
+        // Generate the pre-signed URL.
         URL url = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest);
 		
-        //TODO - add metadata.
-        
 		// Create and populate the response object.
 		HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
 		uploadResponse.setArchiveLocation(archiveDestinationLocation);
