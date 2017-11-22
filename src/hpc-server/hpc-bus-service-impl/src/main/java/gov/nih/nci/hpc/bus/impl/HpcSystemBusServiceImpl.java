@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -55,7 +56,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -157,7 +158,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  				// Transfer the data file.
  		        HpcDataObjectUploadResponse uploadResponse = 
  		           dataTransferService.uploadDataObject(systemGeneratedMetadata.getSourceLocation(), 
- 		        		                                null, path, 
+ 		        		                                null, false, path, 
  		        		                                systemGeneratedMetadata.getRegistrarId(),
  		        		                                systemGeneratedMetadata.getCallerObjectId(), 
  		        		                                systemGeneratedMetadata.getConfigurationId());
@@ -253,6 +254,60 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     }
     
     @Override
+    public void processDataTranferUploadInProgressWithGeneratedURL() throws HpcException
+    {
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
+    	// Iterate through the data objects that their data transfer is in-progress.
+    	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadInProgressWithGeneratedURL();
+    	logger.info(dataObjectsInProgress.size() + " Data Objects Upload In Progress with URL");
+    	for(HpcDataObject dataObject : dataObjectsInProgress) {
+    		String path = dataObject.getAbsolutePath();
+    		try {
+    		     // Get the system metadata.
+    			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
+    			    metadataService.getDataObjectSystemGeneratedMetadata(path);
+    			 
+    			 // Lookup the archive for this data object.
+    			 HpcPathAttributes archivePathAttributes = 
+    			    dataTransferService.getPathAttributes(systemGeneratedMetadata.getDataTransferType(), 
+    				    systemGeneratedMetadata.getArchiveLocation(), false, 
+    					systemGeneratedMetadata.getConfigurationId());
+    			 if(archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
+    				logger.info("Data object uploaded via URL completed: " + path);
+    				
+    				// The file is found in archive. i.e. user completed the upload.
+                    Calendar dataTransferCompleted = Calendar.getInstance();
+	     			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
+	     					                                                HpcDataTransferUploadStatus.ARCHIVED, null, 
+	     			    		                                            dataTransferCompleted);
+    			 
+	     			// Data transfer upload completed successfully. Add an event if needed.
+    			    if(systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+    			       addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
+    			    		                      HpcDataTransferUploadStatus.ARCHIVED, 
+		                                          systemGeneratedMetadata.getSourceLocation(), 
+		                                          dataTransferCompleted, 
+		                                          systemGeneratedMetadata.getDataTransferType(),
+		                                          systemGeneratedMetadata.getConfigurationId());
+    			    }
+    			    
+    			 } else {
+    				     logger.info("Data object upload via URL in progress: " + path);
+    			 }
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to process data transfer upload in progress with URL:" + path, e);
+    			    
+    			    // Delete the data object.
+    			    deleteDataObject(path);
+    		}
+    	}
+    }
+    
+    @Override
     public void processTemporaryArchive() throws HpcException
     {
     	// Use system account to perform this service.
@@ -279,7 +334,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 
  				 // Transfer the data file from the temporary archive into the archive.
  		         HpcDataObjectUploadResponse uploadResponse = 
- 		        	dataTransferService.uploadDataObject(null, file, path, 
+ 		        	dataTransferService.uploadDataObject(null, file, false, path, 
  		        			                             systemGeneratedMetadata.getRegistrarId(),
  		        			                             systemGeneratedMetadata.getCallerObjectId(),
  		        			                             systemGeneratedMetadata.getConfigurationId());
@@ -1128,7 +1183,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			                         user.getNciAccount().getLastName() : "UNKNOWN";
           	
     	// Map request to a DTO.
-    	HpcDataObjectRegistrationDTO registrationDTO = new HpcDataObjectRegistrationDTO();
+    	HpcDataObjectRegistrationRequestDTO registrationDTO = new HpcDataObjectRegistrationRequestDTO();
     	registrationDTO.setCallerObjectId(registrationRequest.getCallerObjectId());
     	registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
     	registrationDTO.setSource(registrationRequest.getSource());

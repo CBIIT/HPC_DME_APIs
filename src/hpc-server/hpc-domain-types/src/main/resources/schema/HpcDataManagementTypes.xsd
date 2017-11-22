@@ -84,7 +84,23 @@
 			<xsd:enumeration value="NONE" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
+    <xsd:complexType name="HpcPermissionForCollection">
+        <xsd:sequence>
+            <xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" />
+            <xsd:element name="collectionPath" type="xsd:string" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="HpcPermissionsForCollection">
+        <xsd:sequence>
+            <xsd:element name="collectionPath" type="xsd:string" />
+            <xsd:element name="collectionPermissions"
+                         type="hpc-domain-datamanagement:HpcSubjectPermission"
+                         minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
 	<xsd:complexType name="HpcSubjectPermission">
 		<xsd:sequence>
 			<xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" /> 
@@ -92,7 +108,17 @@
 			<xsd:element name="subjectType" type="hpc-domain-datamanagement:HpcSubjectType" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
+	<xsd:complexType name="HpcSubjectPermissionOnCollection">
+        <xsd:complexContent>
+            <xsd:extension base="hpc-domain-datamanagement:HpcSubjectPermission">
+                <xsd:sequence>
+                    <xsd:element name="collectionPath" type="xsd:string" />
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
 	<xsd:complexType name="HpcUserPermission">
 		<xsd:sequence>
 			<xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" /> 
@@ -100,7 +126,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-    <xsd:complexType name="HpcUserPermissionOnCollection">
+    <xsd:complexType name="HpcUserPermOnOneCollection">
         <xsd:sequence>
             <xsd:element name="collectionPath" type="xsd:string" />
             <xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" />
@@ -108,10 +134,11 @@
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:complexType name="HpcUserPermissionsOnMultipleCollections">
+    <!-- TODO: Remove HpcUserPermsOnManyCollections ? -->
+    <xsd:complexType name="HpcUserPermsOnManyCollections">
         <xsd:sequence>
             <xsd:element name="userPermissionsOnCollections"
-                         type="hpc-domain-datamanagement:HpcUserPermissionOnCollection"
+                         type="hpc-domain-datamanagement:HpcUserPermOnOneCollection"
                          minOccurs="0" maxOccurs="unbounded" />
         </xsd:sequence>
     </xsd:complexType>

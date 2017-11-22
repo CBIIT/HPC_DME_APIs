@@ -38,7 +38,7 @@ import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcCSVFileWriter;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcLogWriter;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
@@ -49,7 +49,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		InputStream inputStream = null;
 		HpcExceptionDTO response = null;
 		HPCDataObject hpcObject = (HPCDataObject) record.getPayload();
-		HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = hpcObject.getDto();
+		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = hpcObject.getDto();
 		List<Attachment> atts = new LinkedList<Attachment>();
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {

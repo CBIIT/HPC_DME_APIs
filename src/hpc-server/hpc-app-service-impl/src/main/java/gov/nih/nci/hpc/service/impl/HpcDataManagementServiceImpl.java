@@ -103,6 +103,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	// Prepared query to get data objects that have their data transfer in-progress to temporary archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToTemporaryArchiveQuery = new ArrayList<>();
 	
+	// Prepared query to get data objects that have their data transfer upload by users via generated URL.
+	private List<HpcMetadataQuery> dataTransferInProgressWithGeneratedURLQuery = new ArrayList<>();
+	
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
 	
@@ -140,6 +143,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
         			        HpcMetadataQueryOperator.EQUAL, 
         			        HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value()));
+        
+    	// Prepared query to get data objects that have their data transfer upload by users via generated URL.
+        dataTransferInProgressWithGeneratedURLQuery.add(
+        	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
+        			        HpcMetadataQueryOperator.EQUAL, 
+        			        HpcDataTransferUploadStatus.URL_GENERATED.value()));
         
         // Prepare the query to get data objects in temporary archive.
         dataTransferInTemporaryArchiveQuery.add(
@@ -300,7 +309,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     {
     	return dataManagementProxy.getCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
     }
-    
+
+    @Override
+    public HpcSubjectPermission acquireCollectionPermission(String path, String userId) throws HpcException
+    {
+        return dataManagementProxy.acquireCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    }
+
     @Override
     public HpcSubjectPermission getCollectionPermission(String path) throws HpcException
     {
@@ -452,6 +467,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                                  dataTransferInProgressToTemporaryArchiveQuery));
     	
     	return objectsInProgress;
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException
+    {
+    	return dataManagementProxy.getDataObjects(
+	             dataManagementAuthenticator.getAuthenticatedToken(),
+	             dataTransferInProgressWithGeneratedURLQuery);
     }
     
     @Override

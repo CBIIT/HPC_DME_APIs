@@ -11,7 +11,7 @@
 package gov.nih.nci.hpc.bus;
 
 import java.io.File;
-import java.util.List;
+
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -26,14 +26,15 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionOnSingleCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionsOnMultipleCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -194,11 +195,26 @@ public interface HpcDataManagementBusService
      *
      * @param collectionPaths The collections' paths.
      * @param userId The user of interest.
-     * @return permissions of the user on the specified collections.
+     * @return permissions of the user on the specified collections as
+     *          <code>HpcUserPermsOnManyCollectionsDTO</code> instance.
      * @throws HpcException on service failure.
      */
-    public HpcUserPermissionsOnMultipleCollectionsDTO getUserPermissionsOnCollections(
-            List<String> collectionPaths, String userId) throws HpcException;
+    public HpcUserPermsForCollectionsDTO getUserPermissionsOnCollections(
+            String[] collectionPaths, String userId) throws HpcException;
+
+    /**
+     * Given some collection paths, get all permissions on those collections across all users.
+     *
+     * Note that there is no representation of a user having no permission on a collection.  In
+     * other words, that scenario is represented by nothing/void/nil.
+     *
+     * @param collectionPaths The collections' paths.
+     * @return permissions on the specified collections encompassing all users, as a
+     *          <code>HpcPermsForCollectionsDTO</code> instance.
+     * @throws HpcException on service failure.
+     */
+    public HpcPermsForCollectionsDTO getAllPermissionsOnCollections(String[] collectionPaths)
+        throws HpcException;
 
     /**
      * Register a Data object. 
@@ -208,14 +224,13 @@ public interface HpcDataManagementBusService
      * @param dataObjectFile (Optional) The data object file. 2 options are available to upload the data -
      *                         Specify a source in 'dataObjectRegistrationDTO' or provide this file. The caller
      *                         is expected to provide one and only one option.
-     * @return true if a new data object was registered, false if the collection already exists
-     *         and its metadata got updated.
+     * @return A DTO with an indicator whether the data object was registered and an upload URL if one was requested.
      * @throws HpcException on service failure.
      */
-    public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile) 
-    		                         throws HpcException;
+    public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
+    		                        HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+    		                        File dataObjectFile) 
+    		                        throws HpcException;
     
     /**
      * Register a Data object. In this overloaded method, the user-id, user Name, and DOC are explicitly provided.
@@ -230,15 +245,14 @@ public interface HpcDataManagementBusService
      * @param configurationId The data management configuration ID.
      * @param registrationCompletionEvent If set to true, an event will be generated when 
      *                                    registration is completed or failed. 
-     * @return true if a new data object was registered, false if the collection already exists
-     *         and its metadata got updated.
+     * @return A DTO with an indicator whether the data object was registered and an upload URL if one was requested.
      * @throws HpcException on service failure.
      */
-    public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile, String userId, String userName, 
-    		                          String configurationId, boolean registrationCompletionEvent) 
-    		                         throws HpcException;
+    public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
+    		                        HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+    		                        File dataObjectFile, String userId, String userName, 
+    		                        String configurationId, boolean registrationCompletionEvent) 
+    		                        throws HpcException;
     
     /**
      * Bulk Data object registration.
