@@ -634,7 +634,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Generate upload URL is defaulted to false.
     	boolean generateUploadRequestURL = 
     			dataObjectRegistration.getGenerateUploadRequestURL() != null ?
-    				dataObjectRegistration.getGenerateUploadRequestURL() : false;		
+    				dataObjectRegistration.getGenerateUploadRequestURL() : false;	
+    				
+        // Extract the source location. 
+        HpcFileLocation source = dataObjectRegistration.getSource();
+		if(source != null && 
+		   (source.getFileContainerId() == null && source.getFileId() == null)) {
+		   source = null;
+		}
     	
 	    if(responseDTO.getRegistered()) {
     	   boolean registrationCompleted = false; 
@@ -649,13 +656,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        metadataService.addMetadataToDataObject(path, 
 		    			                                dataObjectRegistration.getMetadataEntries(), 
 		    			                                configurationId, collectionType);
-		        
-		        // Extract the source location and size.
-		        HpcFileLocation source = dataObjectRegistration.getSource();
-				if(source != null && 
-				   (source.getFileContainerId() == null && source.getFileId() == null)) {
-				   source = null;
-				}
 				
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
@@ -696,18 +696,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	}
     	   
 	    } else {
-	    	    if(dataObjectFile != null || generateUploadRequestURL ||
-	    	       (dataObjectRegistration.getSource() != null && 
-	    	    	dataObjectRegistration.getSource().getFileContainerId() != null && 
-	    	    	dataObjectRegistration.getSource().getFileId() != null)) {
+	    	    // The data object is already registered. Update metadata and optionally re-generate
+	    	    // upload URL (if data was not uploaded yet).
+	    	    if(dataObjectFile != null || source != null) {
 	    		   throw new HpcException("Data object cannot be updated. Only updating metadata is allowed.",
 			                              HpcErrorType.REQUEST_REJECTED);
 	    	    }
-	    	
+				        
+	    	    // Update the metadata.
 	    	    metadataService.updateDataObjectMetadata(
 	    	    		path, dataObjectRegistration.getMetadataEntries(), 
 	    	    		metadataService.getDataObjectSystemGeneratedMetadata(path).getConfigurationId(),
 	    	    		collectionType); 
+	    	    
+	    	    if(generateUploadRequestURL) {
+	    	       // Validate the data is not archived yet.
+	    	       HpcSystemGeneratedMetadata metadata = 
+	    	    			metadataService.getDataObjectSystemGeneratedMetadata(path);
+	    	       if(metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+	    	    	  throw new HpcException("Data object already archived.",
+	                                         HpcErrorType.REQUEST_REJECTED);
+	    	       }
+	    	    	
+		    	   responseDTO.setUploadRequestURL( 
+					       dataTransferService.uploadDataObject(
+					         	                     source, dataObjectFile, generateUploadRequestURL,
+					        		                 path, userId,
+					        	                     dataObjectRegistration.getCallerObjectId(), 
+					        	                     configurationId).getUploadRequestURL());
+	    	    }
 	    }
 	    
 	    return responseDTO;
