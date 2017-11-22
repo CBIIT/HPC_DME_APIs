@@ -17,13 +17,15 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
-import gov.nih.nci.hpc.cli.HPCBatchCollection;
-import gov.nih.nci.hpc.cli.HPCBatchDatafile;
 import gov.nih.nci.hpc.cli.HPCCmdCollection;
 import gov.nih.nci.hpc.cli.HPCCmdDatafile;
-import gov.nih.nci.hpc.cli.HPCCmdRegisterGlobusFile;
-import gov.nih.nci.hpc.cli.HPCCmdRegisterLocalFile;
+import gov.nih.nci.hpc.cli.HPCCmdSignedS3URL;
+import gov.nih.nci.hpc.cli.HPCCmdUploadToS3;
 import gov.nih.nci.hpc.cli.HPCPermissions;
+import gov.nih.nci.hpc.cli.csv.HPCBatchCollection;
+import gov.nih.nci.hpc.cli.csv.HPCBatchDatafile;
+import gov.nih.nci.hpc.cli.globus.HPCCmdRegisterGlobusFile;
+import gov.nih.nci.hpc.cli.local.HPCBatchLocalfile;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
 @Component
@@ -40,12 +42,14 @@ public class HPCCommands implements CommandMarker {
 	private HPCCmdDatafile getDatafiles;
 	@Autowired
 	private HPCCmdRegisterGlobusFile getGlobusDatafiles;
-	@Autowired
-	private HPCCmdRegisterLocalFile getLocalDatafiles;
+//	@Autowired
+//	private HPCCmdRegisterLocalFile getLocalDatafiles;
 	@Autowired
 	private HPCBatchDatafile putDatafiles;
 	@Autowired
 	private HPCPermissions putPermissions;
+	@Autowired
+	private HPCBatchLocalfile batchLocalFiles;
 
 	protected final Logger LOG = Logger.getLogger(getClass().getName());
 
@@ -105,21 +109,34 @@ public class HPCCommands implements CommandMarker {
 		return getDatafiles.process("getDatafiles", criteriaMap, outputfile, format, detail);
 	}
 
-	@CliCommand(value = "registerFromGlobusPath", help = "Get Data files from HPC Archive. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusPath <Globus Endpoint Path> --destinationBasePath <Destination base path>")
+	@CliCommand(value = "registerFromGlobusPath", help = "Register Data files from Globus endpoint with HPC Archive. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>")
 	public String registerGlobusPath(
 			@CliOption(key = {
-					"globusEndpoint" }, mandatory = true, help = "Please provide Globus Endpoint. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusPath <Globus Endpoint Path> --destinationBasePath <Destination base path>") final String globusEndpoint,
+					"globusEndpoint" }, mandatory = true, help = "Please provide Globus Endpoint. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String globusEndpoint,
 			@CliOption(key = {
-					"globusPath" }, mandatory = false, help = "Please provide Globus path. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusPath <Globus Endpoint Path> --destinationBasePath <Destination base path>") final String globusPath,
+					"globusSourcePath" }, mandatory = true, help = "Please provide Globus source path. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String globusPath,
 			@CliOption(key = {
-					"destinationBasePath" }, mandatory = false, help = "Please provide destination base path. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusPath <Globus Endpoint Path> --destinationBasePath <Destination base path>") final String basePath) {
+			"excludePatternFile" }, mandatory = false, help = "Please provide exclude pattern file. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String excludePattern,
+			@CliOption(key = {
+			"includePatternFile" }, mandatory = false, help = "Please provide include pattern file. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String includePattern,
+			@CliOption(key = {
+			"patternType" }, mandatory = false, help = "Pattern Type. Valid values are 'Simple', 'RegEx'. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String patternType,
+			@CliOption(key = {
+			"dryRun" }, mandatory = false, help = "Dryrun to see the registration files. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String dryRun,
+			@CliOption(key = {
+					"destinationArchivePath" }, mandatory = true, help = "Please provide destination base path. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String basePath) {
 		Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put("globusEndpoint", globusEndpoint);
 		criteriaMap.put("globusPath", globusPath);
 		criteriaMap.put("basePath", basePath);
+		criteriaMap.put("dryRun", dryRun);
+		criteriaMap.put("patternType", patternType);
+		criteriaMap.put("excludePatternFile", excludePattern);
+		criteriaMap.put("includePatternFile", includePattern);
 		return getGlobusDatafiles.process("registerGlobusPath", criteriaMap, null, null, null);
 	}
 
+	/*
 	@CliCommand(value = "registerFromFilePath", help = "Get Data files from HPC Archive. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <User Base Path>")
 	public String registerFilePath(
 			@CliOption(key = {
@@ -137,6 +154,8 @@ public class HPCCommands implements CommandMarker {
 			@CliOption(key = {
 			"confirm" }, mandatory = false, help = "Ask for confirmation before processing a file. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false>") final String confirm,
 			@CliOption(key = {
+			"directUpload" }, mandatory = false, help = "Ask for confirmation before processing a file. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false>") final String directUpload,
+			@CliOption(key = {
 			"metadata" }, mandatory = false, help = "Update metadata only. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false>  --confirm <true|false>--metadata <true|false>") final String metadata
 			) {
 		Map<String, String> criteriaMap = new HashMap<String, String>();
@@ -148,14 +167,76 @@ public class HPCCommands implements CommandMarker {
 		criteriaMap.put("test", test);
 		criteriaMap.put("confirm", confirm);
 		criteriaMap.put("metadata", metadata);
+		criteriaMap.put("directUpload", directUpload);
 		return getLocalDatafiles.process("registerFromFilePath", criteriaMap, null, null, null);
 	}
+	*/
 
+	@CliCommand(value = "registerFromFilePath", help = "Register Data files with the HPC DME Archive from a local folder. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>")
+	public void registerFilePathS3(
+			@CliOption(key = {
+					"filePath" }, mandatory = true, help = "Please provide source file path. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String filePath,
+			@CliOption(key = {
+					"excludePatternFile" }, mandatory = false, help = "Please provide exclude pattern file. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String excludePattern,
+			@CliOption(key = {
+					"includePatternFile" }, mandatory = false, help = "Please provide include pattern file. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String includePattern,
+			@CliOption(key = {
+					"filePathBaseName" }, mandatory = false, help = "Please provide file base path name. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String filePathBaseName,
+			@CliOption(key = {
+					"destinationBasePath" }, mandatory = true, help = "Please provide destination base path. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String destinationBasePath,
+			@CliOption(key = {
+			"test" }, mandatory = false, help = "Test run to see the include and exclude files. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String test,
+			@CliOption(key = {
+			"confirm" }, mandatory = false, help = "Ask for confirmation before processing a file. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String confirm,
+			@CliOption(key = {
+			"metadata" }, mandatory = false, help = "Update metadata only. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false>  --confirm <true|false> --metadata <true|false> --threads <number>") final String metadata,
+			@CliOption(key = {
+			"threads" }, mandatory = false, help = "Number of threads to process. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationBasePath <Destination base path> --test <true|false>  --confirm <true|false> --metadata <true|false> --threads <number>") final String threads
+			) {
+		Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put("filePath", filePath);
+		criteriaMap.put("excludePatternFile", excludePattern);
+		criteriaMap.put("includePatternFile", includePattern);
+		criteriaMap.put("filePathBaseName", filePathBaseName);
+		criteriaMap.put("destinationBasePath", destinationBasePath);
+		criteriaMap.put("test", test);
+		criteriaMap.put("confirm", confirm);
+		criteriaMap.put("metadata", metadata);
+		criteriaMap.put("threads", threads);
+		batchLocalFiles.setCriteria("registerFromFilePathS3", criteriaMap);
+		batchLocalFiles.process(null);
+	}
+	
 	@CliCommand(value = "putCollections", help = "Batch upload Collections to HPC Archive. Usage: putCollections --source <file path>")
 	public String putCollections(@CliOption(key = {
 			"source" }, mandatory = true, help = "Please provide file location for collections. Usage: putCollections --source <file path>") final String source) {
 		return putCollections.process(source);
 	}
+/*
+	@CliCommand(value = "getSignedS3URL", help = "Get signed S3 URL to upload data object")
+	public String getSignedS3URL(@CliOption(key = {
+			"expiration" }, mandatory = true, help = "Please provide expiration time in minutes --expiration <Signed URL expiration>") final String expiration,
+			@CliOption(key = {
+			"objectPath" }, mandatory = true, help = "Please provide object path --objectPath <object path>") final String path) {
+		Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put("expiration", expiration);
+		criteriaMap.put("path", path);
+		return signedURL.process("getSignedS3URL", criteriaMap, null, null, null);
+	}
+
+
+	@CliCommand(value = "uploadtoS3", help = "Upload data object to S3")
+	public String uploadtoS3(
+			@CliOption(key = {
+			"filePath" }, mandatory = true, help = "Please provide file path --filePath <file path>") String filepath,
+			@CliOption(key = {
+			"signedURL" }, mandatory = true, help = "Please provide presigned URL --signedURL <Presigned URL>") String signedURL) {
+		Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put("filepath", filepath);
+		criteriaMap.put("signedURL", signedURL);
+		return uploadS3.process("uploadtoS3", criteriaMap, null, null, null);
+	}
+*/
 
 	@CliCommand(value = "putPermissions", help = "Batch assingment of permissions. Usage: putPermissions --source <file path>")
 	public String putPermissions(@CliOption(key = {

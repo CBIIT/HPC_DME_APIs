@@ -11,8 +11,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +50,8 @@ public class HpcLocalDirectoryListQuery {
 			getPathAttributes(pathAttributes, dirContent);
 			HpcPathAttributes rootPath = new HpcPathAttributes();
 			rootPath.setAbsolutePath(fileLocation);
-			String name = fileLocation.substring(fileLocation.lastIndexOf("/") > 0 ? fileLocation.lastIndexOf("/") : 0, fileLocation.length());
+			String name = fileLocation.substring(fileLocation.lastIndexOf("/") > 0 ? fileLocation.lastIndexOf("/") : 0,
+					fileLocation.length());
 			rootPath.setName(name);
 			rootPath.setIsDirectory(true);
 			rootPath.setPath(fileLocation);
@@ -75,7 +74,7 @@ public class HpcLocalDirectoryListQuery {
 					SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 					pathAttributes.setUpdatedDate(sdf.format(file.lastModified()));
 					pathAttributes.setAbsolutePath(file.getAbsolutePath());
-					if(file.isDirectory())
+					if (file.isDirectory())
 						pathAttributes.setIsDirectory(true);
 					attributes.add(pathAttributes);
 				}
@@ -95,25 +94,22 @@ public class HpcLocalDirectoryListQuery {
 
 		// get all the files from a directory
 		File[] fList = directory.listFiles();
-		if(fList == null)
-		{
+		if (fList == null) {
 			System.out.println("Invalid source folder");
-			throw new HpcException("Invalid source folder " + directoryName,
-					HpcErrorType.DATA_TRANSFER_ERROR);
+			throw new HpcException("Invalid source folder " + directoryName, HpcErrorType.DATA_TRANSFER_ERROR);
 		}
 
-		if(includePattern == null || includePattern.isEmpty())
-		{
+		if (includePattern == null || includePattern.isEmpty()) {
 			includePattern = new ArrayList<String>();
 			includePattern.add("*");
 			includePattern.add("*/**");
 		}
-		
+
 		Paths paths = getFileList(directoryName, excludePattern, includePattern);
 		for (String file : paths) {
 			String fileName = file.replace("\\", File.separator);
 			fileName = fileName.replace("/", File.separator);
-			System.out.println("Including: "+fileName);
+			System.out.println("Including: " + fileName);
 			resultList.add(new File(fileName));
 		}
 		return resultList;
@@ -121,20 +117,18 @@ public class HpcLocalDirectoryListQuery {
 
 	private static Paths getFileList(String basePath, List<String> excludePatterns, List<String> includePatterns) {
 		Paths paths = new Paths();
-		if (includePatterns == null || includePatterns.isEmpty())
-		{
+		if (includePatterns == null || includePatterns.isEmpty()) {
 			includePatterns = new ArrayList<String>();
 			includePatterns.add("*");
 		}
-		
+
 		List<String> patterns = new ArrayList<String>();
 		patterns.addAll(includePatterns);
-		if(excludePatterns != null)
-		{
+		if (excludePatterns != null) {
 			for (String pattern : excludePatterns)
-				patterns.add("!"+pattern);
+				patterns.add("!" + pattern);
 		}
 		return paths.glob(basePath, patterns);
-		
+
 	}
 }

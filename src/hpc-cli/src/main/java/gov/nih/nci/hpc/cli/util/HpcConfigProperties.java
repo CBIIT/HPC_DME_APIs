@@ -42,7 +42,6 @@ public class HpcConfigProperties {
 			// configuration.addConfiguration(pConfig);
 			configuration.addConfiguration(new PropertiesConfiguration(properties));
 		} catch (ConfigurationException e) {
-			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
@@ -59,7 +58,7 @@ public class HpcConfigProperties {
 		try {
 			pConfig.save();
 		} catch (ConfigurationException e) {
-			e.printStackTrace();
+			System.out.println("Failed to save: "+e.getMessage());
 		}
 	}
 
