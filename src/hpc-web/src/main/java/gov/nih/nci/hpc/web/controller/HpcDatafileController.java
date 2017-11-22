@@ -39,7 +39,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -182,7 +182,7 @@ public class HpcDatafileController extends AbstractHpcController {
 			if (hpcDatafile.getPath() == null || hpcDatafile.getPath().trim().length() == 0)
 				model.addAttribute("error", "Invald Data file path");
 
-			HpcDataObjectRegistrationDTO registrationDTO = constructRequest(request, session, hpcDatafile.getPath());
+			HpcDataObjectRegistrationRequestDTO registrationDTO = constructRequest(request, session, hpcDatafile.getPath());
 
 			boolean updated = HpcClientUtil.updateDatafile(authToken, serviceURL, registrationDTO,
 					hpcDatafile.getPath(), sslCertPath, sslCertPassword);
@@ -253,10 +253,10 @@ public class HpcDatafileController extends AbstractHpcController {
 		return model;
 	}
 
-	private HpcDataObjectRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session,
+	private HpcDataObjectRegistrationRequestDTO constructRequest(HttpServletRequest request, HttpSession session,
 			String path) {
 		Enumeration<String> params = request.getParameterNames();
-		HpcDataObjectRegistrationDTO dto = new HpcDataObjectRegistrationDTO();
+		HpcDataObjectRegistrationRequestDTO dto = new HpcDataObjectRegistrationRequestDTO();
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
 		while (params.hasMoreElements()) {

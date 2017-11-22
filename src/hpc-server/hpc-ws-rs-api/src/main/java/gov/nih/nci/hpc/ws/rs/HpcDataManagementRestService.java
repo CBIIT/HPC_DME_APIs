@@ -31,7 +31,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
@@ -160,6 +160,35 @@ public interface HpcDataManagementRestService
 	public Response getCollectionPermission(@PathParam("path") String path, 
 											@PathParam("userId") String userId);
 
+
+    /**
+     * Get the permissions that a given user has on a given set of collections.
+     *
+     * The userId is embedded in the URI, but the collections' paths are expected to be received as multiple query
+     * string parameters, one per collection and each named collectionPath.
+     *
+     * @param collectionPaths The collections' paths.
+     * @param userId The user id to get permissions for.
+     * @return The REST service response with HpcUserPermissionsOnMultipleCollectionsDTO instance.
+     */
+	@GET
+	@Path("/collection/acl/user/{userId:.*}")
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	public Response getPermissionsOnCollectionsForUser(@QueryParam("collectionPath")  String[] collectionsPaths,
+                                                       @PathParam("userId") String userId);
+
+    /**
+     * Get all permissions that are assigned for a given set of collections.
+     *
+     * @param collectionPaths The collections' paths.
+     * @return The REST service response based on <code>HpcPermsForCollectionsDTO</code> instance.
+     */
+    @GET
+    @Path("/collection/acl")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getAllPermissionsOnCollections(@QueryParam("collectionPath") String[] collectionPaths);
+
+
     /**
      * Data object registration.
      *
@@ -175,7 +204,7 @@ public interface HpcDataManagementRestService
 	public Response registerDataObject(
 			        @PathParam("path") String path,
 			        @Multipart(value = "dataObjectRegistration", type = "application/json")
-			        HpcDataObjectRegistrationDTO dataObjectRegistration,
+			        HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
 			        @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
 			        InputStream dataObjectInputStream);
 	

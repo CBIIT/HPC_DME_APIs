@@ -73,8 +73,9 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -82,11 +83,14 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionsForCollection;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionOnSingleCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionsOnMultipleCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
@@ -110,7 +114,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// The Data Management Application Service Instance.
 	@Autowired
     private HpcDataManagementService dataManagementService = null;
-	
+
+	// The Data Management Security Service Instance.
+	@Autowired
+	private HpcDataManagementSecurityService dataManagementSecurityService = null;
+
 	// The Data Transfer Application Service Instance.
 	@Autowired
     private HpcDataTransferService dataTransferService = null;
@@ -126,7 +134,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// TheEvent Application Service Instance.
 	@Autowired
     private HpcEventService eventService = null;
-	
+
     // The logger instance.
 	private final Logger logger = 
 			             LoggerFactory.getLogger(this.getClass().getName());
@@ -495,8 +503,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public HpcUserPermissionDTO getCollectionPermission(String path, String userId) throws HpcException
-    {
+    public HpcUserPermissionDTO getCollectionPermission(
+        String path, String userId) throws HpcException {
     	// Input validation.
     	if(path == null) {
     	   throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);	
@@ -516,43 +524,68 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     @Override
-	public HpcUserPermissionsOnMultipleCollectionsDTO getUserPermissionsOnCollections(
-	        List<String> collectionPaths, String userId) throws HpcException {
-        HpcUserPermissionsOnMultipleCollectionsDTO usrPrmsOnClltcns = new HpcUserPermissionsOnMultipleCollectionsDTO();
-        for (String someCollectionPath : collectionPaths) {
-            HpcUserPermissionOnSingleCollectionDTO dtoResult =
-              _processPermsForOneOfManyCollections(userId, someCollectionPath);
-            if (null != dtoResult) {
-                usrPrmsOnClltcns.getPermissionsXCollections().add(dtoResult);
+	public HpcUserPermsForCollectionsDTO getUserPermissionsOnCollections(
+        String[] collectionPaths, String userId) throws HpcException {
+        HpcUserPermsForCollectionsDTO usrPrmsOnClltcns = null;
+        if (dataManagementSecurityService.userExists(userId)) {
+            usrPrmsOnClltcns = new HpcUserPermsForCollectionsDTO();
+            usrPrmsOnClltcns.setUserId(userId);
+            for (String someCollectionPath : collectionPaths) {
+                HpcPermissionForCollection permForColl =
+                        _fetchCollectionPermission(someCollectionPath, userId);
+                if (null != permForColl) {
+                    usrPrmsOnClltcns.getPermissionsForCollections()
+                            .add(permForColl);
+                }
             }
+        } else {
+            throw new HpcException("User not found: " + userId,
+              HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
         }
         return usrPrmsOnClltcns;
     }
 
-    private HpcUserPermissionOnSingleCollectionDTO _processPermsForOneOfManyCollections(
-                String userId, String someCollectionPath) throws HpcException {
-        try {
-            HpcUserPermissionOnSingleCollectionDTO finalDto = null;
-            HpcUserPermissionDTO initialDto = getCollectionPermission(someCollectionPath, userId);
-            if (null != initialDto) {
-                finalDto = new HpcUserPermissionOnSingleCollectionDTO();
-                finalDto.setCollectionPath(someCollectionPath);
-                finalDto.setPermission(initialDto.getPermission());
-                finalDto.setUserId(initialDto.getUserId());
-            }
-            return finalDto;
-        } catch (Exception e) {
-            String msg = String.format("Failed to get permissions of user [%s] on collection path [%s]",
-                                        userId, someCollectionPath);
-            throw new HpcException(msg, e);
+	private HpcPermissionForCollection _fetchCollectionPermission(
+        String path, String userId) throws HpcException {
+		// Input validation.
+		if (path == null) {
+			throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (userId == null) {
+			throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		// Validate the collection exists.
+		if (dataManagementService.getCollection(path, false) == null) {
+			return null;
+		}
+		HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
+        HpcPermissionForCollection resultHpcPermForColl = new HpcPermissionForCollection();
+        resultHpcPermForColl.setCollectionPath(path);
+        resultHpcPermForColl.setPermission(hsPerm.getPermission());
+		return resultHpcPermForColl;
+	}
+
+	@Override
+    public HpcPermsForCollectionsDTO getAllPermissionsOnCollections(
+            String[] collectionPaths) throws HpcException {
+        HpcPermsForCollectionsDTO resultDto = new HpcPermsForCollectionsDTO();
+        for (String somePath : collectionPaths) {
+            HpcPermissionsForCollection perms4Coll = new
+              HpcPermissionsForCollection();
+            perms4Coll.setCollectionPath(somePath);
+            perms4Coll.getCollectionPermissions().addAll(
+              dataManagementService.getCollectionPermissions(somePath));
+            resultDto.getCollectionPermissions().add(perms4Coll);
         }
+
+        return resultDto;
     }
 
-    @Override
-    public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile)  
-    		                         throws HpcException
+	@Override
+    public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
+    		                        HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+    		                        File dataObjectFile)  
+    		                        throws HpcException
     {
     	// Determine the data management configuration to use based on the path.
     	String configurationId = dataManagementService.findDataManagementConfigurationId(path);
@@ -569,12 +602,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
     
     @Override
-    public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile, String userId, String userName, 
-    		                          String configurationId,
-    		                          boolean registrationCompletionEvent)  
-    		                         throws HpcException
+    public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
+    		                        HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+    		                        File dataObjectFile, String userId, String userName, 
+    		                        String configurationId,
+    		                        boolean registrationCompletionEvent)  
+    		                        throws HpcException
     {
     	// Input validation.
     	if(StringUtils.isEmpty(path) || dataObjectRegistration == null) {
@@ -591,13 +624,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     			                userId, userName, configurationId);
     	
     	// Create a data object file (in the data management system).
-	    boolean created = dataManagementService.createFile(path);
+    	HpcDataObjectRegistrationResponseDTO responseDTO = new HpcDataObjectRegistrationResponseDTO();
+    	responseDTO.setRegistered(dataManagementService.createFile(path));
 	    
     	// Get the collection type containing the data object.
     	String collectionPath = path.substring(0, path.lastIndexOf('/'));
     	String collectionType = dataManagementService.getCollectionType(collectionPath);
 	    
-	    if(created) {
+    	// Generate upload URL is defaulted to false.
+    	boolean generateUploadRequestURL = 
+    			dataObjectRegistration.getGenerateUploadRequestURL() != null ?
+    				dataObjectRegistration.getGenerateUploadRequestURL() : false;		
+    	
+	    if(responseDTO.getRegistered()) {
     	   boolean registrationCompleted = false; 
     	   try {
       	        // Validate the new data object meets the hierarchy definition.
@@ -620,9 +659,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				
 				// Transfer the data file.
 		        HpcDataObjectUploadResponse uploadResponse = 
-		           dataTransferService.uploadDataObject(source, dataObjectFile, path, userId,
-		        	                                    dataObjectRegistration.getCallerObjectId(), 
-		        	                                    configurationId);
+		           dataTransferService.uploadDataObject(
+		        		                     source, dataObjectFile, generateUploadRequestURL,
+		        		                     path, userId,
+		        	                         dataObjectRegistration.getCallerObjectId(), 
+		        	                         configurationId);
+		        
+		        // Set the upload request URL (if one was generated).
+		        responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 		        
 			    // Generate system metadata and attach to the data object.
 			    metadataService.addSystemGeneratedMetadataToDataObject(
@@ -652,7 +696,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	}
     	   
 	    } else {
-	    	    if(dataObjectFile != null || 
+	    	    if(dataObjectFile != null || generateUploadRequestURL ||
 	    	       (dataObjectRegistration.getSource() != null && 
 	    	    	dataObjectRegistration.getSource().getFileContainerId() != null && 
 	    	    	dataObjectRegistration.getSource().getFileId() != null)) {
@@ -666,7 +710,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	    	    		collectionType); 
 	    }
 	    
-	    return created;
+	    return responseDTO;
     }
     
     @Override
@@ -706,7 +750,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     				                         dataObjectRegistrationItem.getCreateParentCollections());
     		dataObjectRegistrationRequest.setSource(dataObjectRegistrationItem.getSource());
     		dataObjectRegistrationRequest.getMetadataEntries().addAll(
-    				                         dataObjectRegistrationItem.getMetadataEntries());
+    				                         dataObjectRegistrationItem.getSelfMetadataEntries());
     		dataObjectRegistrationRequest.getParentCollectionMetadataEntries().addAll(
     				                         dataObjectRegistrationItem.getParentCollectionMetadataEntries());
     		
@@ -1710,7 +1754,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	// Construct the registration DTO.
     	HpcDataObjectRegistrationItemDTO dataObjectRegistration = new HpcDataObjectRegistrationItemDTO();
     	dataObjectRegistration.setPath(basePath + scanItem.getFilePath());
-    	dataObjectRegistration.getMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
+    	dataObjectRegistration.getSelfMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
     	dataObjectRegistration.setCreateParentCollections(true);
 		dataObjectRegistration.getParentCollectionMetadataEntries().addAll(metadataEntries.getParentMetadataEntries());
 		HpcFileLocation source = new HpcFileLocation();
