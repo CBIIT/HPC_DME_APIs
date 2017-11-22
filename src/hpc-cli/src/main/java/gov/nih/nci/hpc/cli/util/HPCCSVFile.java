@@ -163,38 +163,15 @@ public class HPCCSVFile {
 				ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange("http://localhost:7737/hpc-server/dataObject/tempZone/home/rods/"+getAttributeValueByName("File name",hpcDataObjectRegistrationDTO), HttpMethod.PUT,entity , HpcExceptionDTO.class);
               	
 			}
-            
-            //Print the new student list
-//            for (HPCBatchCollection batchCollection : collections) {
-//				System.out.println(batchCollection.getCollectionName());
-//				
-//				HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
-//				getListOfMetadataElements(batchCollection);
-//				//hpcCollectionRegistrationDTO.getMetadataEntries().addAll();
-//				//hpcDataObjectRegistrationDTO.set
-//				
-//				RestTemplate restTemplate = new RestTemplate();
-//				HttpHeaders headers = new HttpHeaders();
-//				List <MediaType> mediaTypeList = new ArrayList<MediaType>();
-//				mediaTypeList.add(MediaType.APPLICATION_JSON);
-//				headers.setAccept(mediaTypeList);
-//				//headers.setContentType(MediaType.APPLICATION_JSON);
-//				HttpEntity<HpcDataObjectRegistrationDTO> entity = new HttpEntity<HpcDataObjectRegistrationDTO>(hpcDataObjectRegistrationDTO, headers);
-//				//System.out.println("Adding Metadata to .."+ hpcServerURL+"/"+hpcCollection+targetCollection);
-//
-//				ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange("http://localhost:7737/hpc-server/dataObject/"+batchCollection.getCollectionName(), HttpMethod.PUT,entity , HpcExceptionDTO.class);
-//			}
         } 
         catch (Exception e) {
         	System.out.println("Error in CsvFileReader !!!");
-            e.printStackTrace();
         } finally {
             try {
                 fileReader.close();
                 csvFileParser.close();
             } catch (IOException e) {
             	System.out.println("Error while closing fileReader/csvFileParser !!!");
-                e.printStackTrace();
             }
         }
 

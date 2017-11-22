@@ -5,7 +5,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
  ******************************************************************************/
-package gov.nih.nci.hpc.cli;
+package gov.nih.nci.hpc.cli.csv;
 
 import java.io.File;
 import java.io.FileReader;
@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import gov.nih.nci.hpc.cli.HPCBatchClient;
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
@@ -71,7 +72,6 @@ public class HPCBatchCollection extends HPCBatchClient {
 			csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
 		} catch (IOException e) {
 			System.out.println("Failed to initialize Batch process: " + e.getMessage());
-			e.printStackTrace();
 		}
 
 	}
@@ -128,6 +128,12 @@ public class HPCBatchCollection extends HPCBatchClient {
 				}
 				HpcCollectionRegistrationDTO collectionDTO = buildCollectionDTO(metadataAttributes,
 						parentMetadataAttributes, createParentCollection);
+				
+				if(HpcClientUtil.containsWhiteSpace(collectionPath.trim()))
+				{
+					throw new HpcBatchException("Whitespace is not allowed in collection path");
+				}
+				
 				System.out.println((i + 1) + ": Registering Collection " + collectionPath);
 
 				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
@@ -147,9 +153,6 @@ public class HPCBatchCollection extends HPCBatchClient {
 				HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(
 						collectionDTO, headers);
 				try {
-					if(collectionPath.trim().indexOf(' ') != -1) {
-						throw new Exception("Collection path cannot contain spaces.");
-					}
 					if (!collectionPath.startsWith("/"))
 						collectionPath = "/" + collectionPath;
 
@@ -220,15 +223,13 @@ public class HPCBatchCollection extends HPCBatchClient {
 			}
 
 		} catch (Exception e) {
-			System.out.println("Cannot read the input file");
-			e.printStackTrace();
+			System.out.println("Cannot read the input file: "+e.getMessage());
 		} finally {
 			try {
 				fileReader.close();
 				csvFileParser.close();
 			} catch (IOException e) {
 				System.out.println("Error while closing fileReader/csvFileParser !!!");
-				e.printStackTrace();
 			}
 		}
 		return success;
