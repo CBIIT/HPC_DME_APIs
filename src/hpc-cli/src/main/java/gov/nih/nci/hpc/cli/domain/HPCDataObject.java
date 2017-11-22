@@ -13,12 +13,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.csv.CSVRecord;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 
 @XmlRootElement
 public class HPCDataObject {
 	private String objectPath;
-	private HpcDataObjectRegistrationDTO dto;
+	private HpcDataObjectRegistrationRequestDTO dto;
 	private String basePath;
 	private String proxyURL;
 	private String proxyPort;
@@ -59,11 +59,11 @@ public class HPCDataObject {
 		this.objectPath = objectPath;
 	}
 
-	public HpcDataObjectRegistrationDTO getDto() {
+	public HpcDataObjectRegistrationRequestDTO getDto() {
 		return dto;
 	}
 
-	public void setDto(HpcDataObjectRegistrationDTO dto) {
+	public void setDto(HpcDataObjectRegistrationRequestDTO dto) {
 		this.dto = dto;
 	}
 

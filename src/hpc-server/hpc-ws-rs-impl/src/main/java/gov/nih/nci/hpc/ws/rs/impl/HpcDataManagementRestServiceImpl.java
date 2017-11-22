@@ -41,12 +41,15 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
@@ -238,18 +241,46 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 		return okResponse(hpcUserPermissionDTO, true);
     }
 
+
     @Override
+	public Response getPermissionsOnCollectionsForUser(
+        String[] collectionPaths, String userId) {
+        HpcUserPermsForCollectionsDTO hpcUserPermsOnCollsDTO = null;
+        try {
+            hpcUserPermsOnCollsDTO =
+              dataManagementBusService.getUserPermissionsOnCollections(
+                collectionPaths, userId);
+        } catch(HpcException e) {
+            return errorResponse(e);
+        }
+
+        return okResponse(hpcUserPermsOnCollsDTO, true);
+   }
+
+    @Override
+    public Response getAllPermissionsOnCollections(String[] collectionPaths) {
+        HpcPermsForCollectionsDTO resultDto = null;
+        try {
+            resultDto = dataManagementBusService.getAllPermissionsOnCollections(collectionPaths);
+        } catch (HpcException he) {
+            return errorResponse(he);
+        }
+
+        return okResponse(resultDto, true);
+    }
+
+	@Override
     public Response registerDataObject(String path, 
-    		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
+    		                           HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
     		                           InputStream dataObjectInputStream)
     {	
 		File dataObjectFile = null;
-		boolean dataObjectCreated = true;
+		HpcDataObjectRegistrationResponseDTO responseDTO = null;
 		try {
 			 dataObjectFile = toFile(dataObjectInputStream);
-			 dataObjectCreated = dataManagementBusService.registerDataObject(toAbsolutePath(path), 
-					                                                         dataObjectRegistration,
-					                                                         dataObjectFile);
+			 responseDTO = dataManagementBusService.registerDataObject(toAbsolutePath(path), 
+					                                                   dataObjectRegistration,
+					                                                   dataObjectFile);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -259,7 +290,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	    	       FileUtils.deleteQuietly(dataObjectFile);
 		}
 		
-		return dataObjectCreated ? createdResponse(null) : okResponse(null, false);
+		if(responseDTO.getRegistered()) {
+		   // Data object was registered. Return a 'created' response.
+		   responseDTO.setRegistered(null);
+		   return responseDTO.getUploadRequestURL() != null ? 
+				  createdResponse(path, responseDTO) : createdResponse(path);
+		} else {
+			    // Data object metadata was updated. Return 'ok' response.
+		        return okResponse(null, false);
+		}
 	}
     
     @Override

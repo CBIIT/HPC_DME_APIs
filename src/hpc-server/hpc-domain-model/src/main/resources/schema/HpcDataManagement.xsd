@@ -35,6 +35,7 @@
 			    <xsd:element name="basePath" type="xsd:string" />
 			    <xsd:element name="s3URL" type="xsd:string" />
 			    <xsd:element name="s3BaseArchiveDestination" type="hpc-domain-datatransfer:HpcArchive" />
+			    <xsd:element name="s3UploadRequestURLExpiration" type="xsd:int" />
 				<xsd:element name="collectionMetadataValidationRules"
 				             type="hpc-domain-metadata:HpcMetadataValidationRule"
 					         minOccurs="0" maxOccurs="unbounded" />

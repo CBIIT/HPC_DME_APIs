@@ -181,6 +181,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
     			                  HpcErrorType.UNEXPECTED_ERROR);
     	}
     	
+    	// Generating upload URL or direct file upload not supported.
+       	if(uploadRequest.getGenerateUploadRequestURL() || uploadRequest.getSourceFile() != null) {
+     	   throw new HpcException("Globus data transfer doesn't support upload URL or direct file upload", 
+     			                  HpcErrorType.UNEXPECTED_ERROR);
+     	}
+    	
     	JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
     	// Calculate the archive destination.

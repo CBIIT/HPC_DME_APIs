@@ -119,7 +119,18 @@ public interface HpcDataManagementService
      * @throws HpcException on service failure.
      */
     public HpcSubjectPermission getCollectionPermission(String path, String userId) throws HpcException;
-    
+
+    /**
+     * Acquire permission of given user on a given collection.  Ensures that even if given user has no permission
+     * on given collection, an instance of the return type is returned indicating permission set to level of "NONE".
+     *
+     * @param path Path of given collection.
+     * @param userId UserId of given user.
+     * @return <code>HpcSubjectPermission</code> representing permission that given user has on given collection.
+     * @throws HpcException on service failure.
+     */
+    public HpcSubjectPermission acquireCollectionPermission(String path, String userId) throws HpcException;
+
     /**
      * Get collection permission (for the request invoker) 
      *
@@ -227,12 +238,20 @@ public interface HpcDataManagementService
     public List<HpcDataObject> getDataObjectsUploadReceived() throws HpcException;
     
     /**
-     * Get data objects that have their data transfer in-progress.
+     * Get data objects that have their data transfer upload in-progress.
      *
      * @return A list of data objects.
      * @throws HpcException on service failure.
      */
     public List<HpcDataObject> getDataObjectsUploadInProgress() throws HpcException;
+    
+    /**
+     * Get data objects that have their data transfer upload by users via URL.
+     *
+     * @return A list of data objects.
+     * @throws HpcException on service failure.
+     */
+    public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException;
     
     /**
      * Get data objects that have their data stored in temporary archive.
