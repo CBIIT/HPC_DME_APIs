@@ -23,7 +23,7 @@ import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 
 public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 
@@ -99,7 +99,7 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 		dataObject.setCsvRecord(csvRecord);
 		dataObject.setObjectPath(objectPath);
 
-		HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
+		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationRequestDTO();
 
 		hpcDataObjectRegistrationDTO.setSource(source);
 		hpcDataObjectRegistrationDTO.setCallerObjectId("/");

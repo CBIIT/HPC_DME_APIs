@@ -1,11 +1,5 @@
 package gov.nih.nci.hpc.cli.util;
 
-import gov.nih.nci.hpc.cli.domain.HPCBatchCollection;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.FileReader;
@@ -24,6 +18,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import gov.nih.nci.hpc.cli.domain.HPCBatchCollection;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HPCCSVFile {
 	//CSV file header
@@ -147,7 +147,7 @@ public class HPCCSVFile {
     			source.setFileId(filePath);
     			              	
               	
-				HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
+				HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationRequestDTO();
 				hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
 				hpcDataObjectRegistrationDTO.setSource(source);
 				
@@ -157,7 +157,7 @@ public class HPCCSVFile {
 				mediaTypeList.add(MediaType.APPLICATION_JSON);
 				headers.setAccept(mediaTypeList);
 				//headers.setContentType(MediaType.APPLICATION_JSON);
-				HttpEntity<HpcDataObjectRegistrationDTO> entity = new HttpEntity<HpcDataObjectRegistrationDTO>(hpcDataObjectRegistrationDTO, headers);
+				HttpEntity<HpcDataObjectRegistrationRequestDTO> entity = new HttpEntity<HpcDataObjectRegistrationRequestDTO>(hpcDataObjectRegistrationDTO, headers);
 				//System.out.println("Adding Metadata to .."+ hpcServerURL+"/"+hpcCollection+targetCollection);
 
 				ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange("http://localhost:7737/hpc-server/dataObject/tempZone/home/rods/"+getAttributeValueByName("File name",hpcDataObjectRegistrationDTO), HttpMethod.PUT,entity , HpcExceptionDTO.class);
@@ -213,7 +213,7 @@ public class HPCCSVFile {
 	
 	
 	private String getAttributeValueByName(String collectionType,
-			HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO) {
+			HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO) {
 		for (HpcMetadataEntry hpcMetadataEntry : hpcDataObjectRegistrationDTO.getMetadataEntries()) {
 			if (collectionType.equalsIgnoreCase(hpcMetadataEntry.getAttribute()))
 				return hpcMetadataEntry.getValue();
