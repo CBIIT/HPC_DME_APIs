@@ -718,12 +718,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	                                         HpcErrorType.REQUEST_REJECTED);
 	    	       }
 	    	    	
-		    	   responseDTO.setUploadRequestURL( 
-					       dataTransferService.uploadDataObject(
-					         	                     source, dataObjectFile, generateUploadRequestURL,
-					        		                 path, userId,
-					        	                     dataObjectRegistration.getCallerObjectId(), 
-					        	                     configurationId).getUploadRequestURL());
+	    	       // Re-generate the upload request URL.
+	    	       HpcDataObjectUploadResponse uploadResponse = 
+					  dataTransferService.uploadDataObject(
+					   	                        source, dataObjectFile, generateUploadRequestURL,
+					        		            path, userId,
+					        	                dataObjectRegistration.getCallerObjectId(), 
+					        	                configurationId);
+				   responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
+		    	   
+		    	   // Update data-transfer-status system metadata accordingly.
+		    	   metadataService.updateDataObjectSystemGeneratedMetadata(
+ 			                                 path, null, null, null, 
+                                             HpcDataTransferUploadStatus.URL_GENERATED, null, 
+                                             uploadResponse.getDataTransferStarted(), null);
 	    	    }
 	    }
 	    
@@ -1628,7 +1636,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     {
     	try {
  		     metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
- 		    		                                                 dataTransferStatus, null, null);
+ 		    		                                                 dataTransferStatus, null, null, null);
  		 
     	} catch(HpcException e) {
  		        logger.error("Failed to update system metadata: " + path + ". Data transfer status: " +
