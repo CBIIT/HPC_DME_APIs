@@ -320,7 +320,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
 	{
     	
     	// Calculate the URL expiration date.
-    	Date expiration = new java.util.Date();
+    	Date expiration = new Date();
         expiration.setTime(expiration.getTime() + 1000 * 60 * 60 * uploadRequestURLExpiration);
 
         // Create a URL generation request.
