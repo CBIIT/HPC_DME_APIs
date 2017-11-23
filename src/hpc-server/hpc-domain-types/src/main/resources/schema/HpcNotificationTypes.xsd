@@ -23,6 +23,7 @@
 			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE" />
 			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_ARCHIVED" />
 			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_FAILED" />
+			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_URL_EXPIRED" />
 			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_COMPLETED" />
 			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_FAILED" />
 			<xsd:enumeration value="USAGE_SUMMARY_REPORT" />

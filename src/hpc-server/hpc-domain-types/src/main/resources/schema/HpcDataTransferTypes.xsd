@@ -29,6 +29,7 @@
 			<xsd:enumeration value="DELETED" />
 			<xsd:enumeration value="DELETE_FAILED" />
 			<xsd:enumeration value="URL_GENERATED" />
+			<xsd:enumeration value="URL_EXPIRED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	

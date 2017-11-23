@@ -219,6 +219,14 @@ public class HpcEventServiceImpl implements HpcEventService
     }
     
     @Override
+    public void addDataTransferUploadURLExpiredEvent(String userId, String path) 
+    		                                        throws HpcException
+    {
+    	addDataTransferEvent(userId, HpcEventType.DATA_TRANSFER_UPLOAD_URL_EXPIRED,
+                             null, null, path, null, null, null, null, null);
+    }
+    
+    @Override
     public void generateReportsEvents(List<String> userIds, HpcReportCriteria criteria) throws HpcException
     {
 		HpcEvent event = new HpcEvent();
