@@ -1323,8 +1323,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
         		           1000 * 60 * 60 * dataManagementConfiguration.getS3UploadRequestURLExpiration());
        
         // Return true if the current time is passed the expiration time.
-        //return expiration.before(new Date());
-        return expiration.after(new Date());
+        return expiration.before(new Date());
     }
 }
 
