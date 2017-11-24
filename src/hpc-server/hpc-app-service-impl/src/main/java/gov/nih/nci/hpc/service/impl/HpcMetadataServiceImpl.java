@@ -489,6 +489,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
                                                         String checksum,
                                                         HpcDataTransferUploadStatus dataTransferStatus,
                                                         HpcDataTransferType dataTransferType,
+                                                        Calendar dataTransferStarted,
                                                         Calendar dataTransferCompleted) 
                                                         throws HpcException
 	{
@@ -540,12 +541,19 @@ public class HpcMetadataServiceImpl implements HpcMetadataService
        		  	                            dataTransferType.value()));
        	}
        	
-       	if(dataTransferCompleted != null) {
-           // Update the Data Transfer Completed metadata.
+       	if(dataTransferStarted != null) {
+           // Update the Data Transfer Started metadata.
            addMetadataEntry(metadataEntries,
-             		        toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
-           			            	        dateFormat.format(dataTransferCompleted.getTime())));
+             		        toMetadataEntry(DATA_TRANSFER_STARTED_ATTRIBUTE, 
+           			            	        dateFormat.format(dataTransferStarted.getTime())));
        	}
+       	
+       	if(dataTransferCompleted != null) {
+            // Update the Data Transfer Completed metadata.
+            addMetadataEntry(metadataEntries,
+              		        toMetadataEntry(DATA_TRANSFER_COMPLETED_ATTRIBUTE, 
+            			            	        dateFormat.format(dataTransferCompleted.getTime())));
+        	}
        	
        	if(!metadataEntries.isEmpty()) {
 		   dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(),

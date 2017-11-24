@@ -10,6 +10,8 @@ package gov.nih.nci.hpc.cli.util;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -36,6 +38,7 @@ import javax.xml.transform.Source;
 
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.http.client.HttpClient;
@@ -46,6 +49,7 @@ import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -65,8 +69,11 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 
 public class HpcClientUtil {
@@ -145,7 +152,7 @@ public class HpcClientUtil {
 
 	public static String getAuthenticationToken(String userId, String passwd, String hpcServerURL, String proxyURL, String proxyPort, String hpcCertPath,
 			String hpcCertPassword) {
-		JsonParser parser;
+		JsonParser parser = null;
 
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
@@ -156,25 +163,29 @@ public class HpcClientUtil {
 				return null;
 			MappingJsonFactory factory = new MappingJsonFactory();
 			parser = factory.createParser((InputStream) restResponse.getEntity());
+			if (restResponse.getStatus() != 200) {
+				try {
+					HpcExceptionDTO response = parser.readValueAs(HpcExceptionDTO.class);
+					System.out.println("Unable to get authenticatio token: " + response.getMessage());
+					return null;
+				} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+					System.out.println("Unable to get authenticatio token: " + e.getMessage());
+					return null;
+				}
+			}
+			else
+			{
+				if(parser != null)
+				{
+					HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
+					return dto.getToken();
+				}
+				else
+					return null;
+			}
 		} catch (IllegalStateException | IOException e1) {
 			// TODO Auto-generated catch block
 			System.out.println("Unable to get authenticatio token: " + e1.getMessage());
-			return null;
-		}
-		try {
-			HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
-			return dto.getToken();
-		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-			System.out.println("Unable to get authenticatio token: JsonMappingException: " + e.getMessage());
-			// e.printStackTrace();
-			return null;
-		} catch (JsonProcessingException e) {
-			// e.printStackTrace();
-			System.out.println("Unable to get authenticatio token: JsonProcessingException: " + e.getMessage());
-			return null;
-		} catch (IOException e) {
-			System.out.println("Unable to get authenticatio token: IOException: " + e.getMessage());
-			// e.printStackTrace();
 			return null;
 		}
 	}
@@ -286,7 +297,6 @@ public class HpcClientUtil {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new HpcBatchException("Failed to get Collection due to: " + e.getMessage());
 		}
 	}
@@ -361,4 +371,84 @@ public class HpcClientUtil {
 			throw new HpcBatchException("Failed to get data file: "+path);
 		}
 	}	
+	
+	public static void writeException(Exception e, String message, String exceptionAsString, String logFile) {
+		HpcLogWriter.getInstance().WriteLog(logFile, message);
+		StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		if (exceptionAsString == null)
+			exceptionAsString = sw.toString();
+		HpcLogWriter.getInstance().WriteLog(logFile, exceptionAsString);
+	}
+
+	public static void writeRecord(String filePath, String logFile) {
+		HpcLogWriter.getInstance().WriteLog(logFile, filePath);
+	}
+
+	public static <T> Object getObject(Response response,
+			Class<T> objectClass) throws HpcBatchException {
+		ObjectMapper mapper = new ObjectMapper();
+		AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+				new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+				new JacksonAnnotationIntrospector());
+		mapper.setAnnotationIntrospector(intr);
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		MappingJsonFactory factory = new MappingJsonFactory(mapper);
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) response.getEntity());
+			return parser.readValueAs(objectClass);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			throw new HpcBatchException("Failed to parse object: " + e1.getMessage());
+		} catch (Exception e) {
+			throw new HpcBatchException("Failed to parse object: " + e.getMessage());
+		}
+	}
+	
+	public static boolean containsWhiteSpace(final String testCode){
+	    if(testCode != null){
+	        for(int i = 0; i < testCode.length(); i++){
+	            if(Character.isWhitespace(testCode.charAt(i))){
+	                return true;
+	            }
+	        }
+	    }
+	    return false;
+	}
+	
+	public static HpcBulkDataObjectRegistrationResponseDTO registerBulkDatafiles(String token, String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
+			String hpcCertPath, String hpcCertPassword, String proxyURL, String proxyPort) {
+		try {
+			
+			WebClient client = getWebClient(hpcDatafileURL, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
+			client.header("Authorization", "Bearer " + token);
+
+			Response restResponse = client.invoke("PUT", datafileDTO);
+			if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
+				return (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil
+						.getObject(restResponse, HpcBulkDataObjectRegistrationResponseDTO.class);
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+						new JacksonAnnotationIntrospector());
+				mapper.setAnnotationIntrospector(intr);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				MappingJsonFactory factory = new MappingJsonFactory(mapper);
+				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+				throw new HpcCmdException("Failed to bulk register data files: " + exception.getMessage());
+			}
+		} catch (HpcCmdException e) {
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new HpcCmdException("Failed to bulk register data files due to: " + e.getMessage());
+		}
+	}
+	
 }

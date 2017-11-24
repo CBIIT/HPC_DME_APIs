@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.csv.CSVRecord;
 
+import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 
 @XmlRootElement
@@ -20,6 +21,7 @@ public class HPCDataObject {
 	private String objectPath;
 	private HpcDataObjectRegistrationRequestDTO dto;
 	private String basePath;
+	private HpcPathAttributes dataFilePathAttrs;
 	private String proxyURL;
 	private String proxyPort;
 	private String hpcCertPath;
@@ -28,9 +30,28 @@ public class HPCDataObject {
 	private String password;
 	private String authToken;
 	private String logFile;
+	private int bufferSize;
 	private String errorRecordsFile;
 	private Map<String, Integer> headersMap;
+	private Map<String, String> criteriaMap;
 	private CSVRecord csvRecord;
+	private HpcServerConnection connection;
+
+	public HpcServerConnection getConnection() {
+		return connection;
+	}
+
+	public void setConnection(HpcServerConnection connection) {
+		this.connection = connection;
+	}
+
+	public int getBufferSize() {
+		return bufferSize;
+	}
+
+	public void setBufferSize(int bufferSize) {
+		this.bufferSize = bufferSize;
+	}
 
 	public CSVRecord getCsvRecord() {
 		return csvRecord;
@@ -146,5 +167,20 @@ public class HPCDataObject {
 	public void setProxyPort(String proxyPort) {
 		this.proxyPort = proxyPort;
 	}
-	
+
+	public HpcPathAttributes getDataFilePathAttrs() {
+		return dataFilePathAttrs;
+	}
+
+	public void setDataFilePathAttrs(HpcPathAttributes dataFilePathAttrs) {
+		this.dataFilePathAttrs = dataFilePathAttrs;
+	}
+
+	public Map<String, String> getCriteriaMap() {
+		return criteriaMap;
+	}
+
+	public void setCriteriaMap(Map<String, String> criteriaMap) {
+		this.criteriaMap = criteriaMap;
+	}
 }
