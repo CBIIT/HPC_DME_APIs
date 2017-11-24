@@ -36,5 +36,6 @@ hpc.login.token=tokens/hpcdme-auth.txt
 #Globus Login token file location
 hpc.globus.login.token=tokens/globus-auth.txt
 validate.md5.checksum=false
+upload.buffer.size=10000000
 # JAR version
-hpc.jar.version=hpc-cli-1.4.0.jar
+hpc.jar.version=hpc-cli-1.5.0.jar
