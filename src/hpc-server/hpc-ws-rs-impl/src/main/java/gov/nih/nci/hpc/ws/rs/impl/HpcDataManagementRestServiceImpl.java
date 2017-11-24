@@ -290,14 +290,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	    	       FileUtils.deleteQuietly(dataObjectFile);
 		}
 		
-		if(responseDTO.getRegistered()) {
+		boolean registered = responseDTO.getRegistered() != null && responseDTO.getRegistered();
+		
+		// Remove this indicator from the DTO returned to the caller. The response type (OK or
+		// CREATED will provide this information to the caller).
+		responseDTO.setRegistered(null);
+		
+		if(registered) {
 		   // Data object was registered. Return a 'created' response.
-		   responseDTO.setRegistered(null);
 		   return responseDTO.getUploadRequestURL() != null ? 
 				  createdResponse(path, responseDTO) : createdResponse(path);
 		} else {
 			    // Data object metadata was updated. Return 'ok' response.
-		        return okResponse(null, false);
+			    return okResponse(responseDTO.getUploadRequestURL() != null ? 
+			    		          responseDTO : null, false);
 		}
 	}
     

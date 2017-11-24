@@ -5,7 +5,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
  ******************************************************************************/
-package gov.nih.nci.hpc.cli;
+package gov.nih.nci.hpc.cli.csv;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;

@@ -68,7 +68,6 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				fileLogWriter = new FileWriter(file1, true);
 			} catch (IOException e) {
 				System.out.println("Failed to initialize Batch process: " + e.getMessage());
-				e.printStackTrace();
 			}
 		}
 	}
@@ -95,7 +94,6 @@ public class HPCCmdDatafile extends HPCCmdClient {
 			fileRecordWriter = new FileWriter(file2, false);
 		} catch (IOException e) {
 			System.out.println("Failed to initialize output file: " + e.getMessage());
-			e.printStackTrace();
 		}
 	}
 
@@ -249,8 +247,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 			}
 
 		} catch (Exception e) {
-			System.out.println("Cannot read the input file");
-			e.printStackTrace();
+			System.out.println("Cannot read the input file: "+e.getMessage());
 		}
 		return success;
 	}
@@ -298,7 +295,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				datafile.setCreatedAt(dateFormat.format(dto.getDataObject().getCreatedAt().getTime()));
 //				datafile.setModifiedAt(dateFormat.format(dto.getDataObject().getUpdatedAt().getTime()));
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println("Failed to format date: " + dto.getDataObject().getCreatedAt().getTime());
 			}
 			Map<String, HpcMetadataEntry> mapEntries = new HashMap<String, HpcMetadataEntry>();
 			List<HpcMetadataEntry> entries = dto.getMetadataEntries().getSelfMetadataEntries();
