@@ -23,8 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO;
+import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -86,9 +87,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 	
-	// Data Object Deletion DAO.
+	// Data Management Audit DAO.
 	@Autowired
-	private HpcDataObjectDeletionDAO dataObjectDeletionDAO = null;
+	private HpcDataManagementAuditDAO dataManagementAuditDAO = null;
 	
 	// Data Registration DAO.
 	@Autowired
@@ -276,15 +277,22 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void saveDataObjectDeletionRequest(String path, HpcFileLocation archiveLocation,
-    		                                  boolean archiveDeleteStatus, 
-    		                                  HpcMetadataEntries metadataEntries,
-    		                                  boolean dataManagementDeleteStatus, String message) 
-    		                                 throws HpcException
+    public void addAuditRecord(String path, HpcAuditRequestType requestType,
+                               HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
+                               HpcFileLocation archiveLocation, boolean dataManagementStatus,
+                               Boolean dataTransferStatus, String message) 
+    		                  throws HpcException
     {
-		dataObjectDeletionDAO.insert(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), 
-				                     path, metadataEntries, archiveLocation, archiveDeleteStatus, 
-				                     dataManagementDeleteStatus, Calendar.getInstance(), message);
+    	// Input validation.
+    	if(path == null || requestType == null || metadataBefore == null) {
+    	   throw new HpcException("Invalid audit record request", 
+                                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    	
+		dataManagementAuditDAO.insert(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), 
+				                      path, requestType, metadataBefore, metadataAfter,
+                                      archiveLocation, dataManagementStatus,
+                                      dataTransferStatus, message, Calendar.getInstance());
     }
     
     @Override
