@@ -56,6 +56,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.cli.local.HpcLocalDirectoryListGenerator;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HpcLocalDirectoryListGenerator {
@@ -261,16 +262,14 @@ public class HpcLocalDirectoryListGenerator {
 			metadataEntries.add(nameEntry);
 			HpcMetadataEntry dateEntry = new HpcMetadataEntry();
 			dateEntry.setAttribute("modified_date");
-			if(file.getUpdatedDate() != null)
+			if (file.getUpdatedDate() != null)
 				dateEntry.setValue(file.getUpdatedDate());
-			else
-			{
+			else {
 				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 				dateEntry.setValue(sdf.format(new Date()));
 			}
 			metadataEntries.add(dateEntry);
-			if(file.getIsDirectory())
-			{
+			if (file.getIsDirectory()) {
 				HpcMetadataEntry typeEntry = new HpcMetadataEntry();
 				typeEntry.setAttribute("collection_type");
 				typeEntry.setValue("Folder");
@@ -328,7 +327,7 @@ public class HpcLocalDirectoryListGenerator {
 						"attachment;filename=" + hpcDataObjectRegistrationDTO.getSource().getFileId());
 				atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
 				HashCode hash = com.google.common.io.Files
-					      .hash(new File(hpcDataObjectRegistrationDTO.getSource().getFileId()), Hashing.md5());
+						.hash(new File(hpcDataObjectRegistrationDTO.getSource().getFileId()), Hashing.md5());
 				String md5 = hash.toString();
 				hpcDataObjectRegistrationDTO.setChecksum(md5);
 			}
