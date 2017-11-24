@@ -74,8 +74,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcDataDownloadDAO" />
 	<osgi:reference id="hpcDataRegistrationDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDataRegistrationDAO" />
-	<osgi:reference id="hpcDataObjectDeletionDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO" />
+	<osgi:reference id="hpcDataManagementAuditDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO" />
 	<osgi:reference id="hpcNotificationDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcNotificationDAO" />	
 	<osgi:reference id="hpcEventDAO" 

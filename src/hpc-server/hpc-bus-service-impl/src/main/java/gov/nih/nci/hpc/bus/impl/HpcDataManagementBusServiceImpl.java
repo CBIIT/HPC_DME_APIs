@@ -29,6 +29,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
@@ -324,7 +325,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		   	                                  securityService.getRequestInvoker().getNciAccount().getUserId(),
     		   	                                  metadata.getConfigurationId());
     	
-    	// Create and resturn a DAO with the request receipt.
+    	// Create and return a DTO with the request receipt.
     	HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
     	responseDTO.setTaskId(collectionDownloadTask.getId());
     	responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
@@ -1049,12 +1050,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		        dataObjectDeleteResponse.setMessage(e.getMessage());
 		}
 		
-		// Keep a record of this data object deletion request and it's result.
-		dataManagementService.saveDataObjectDeletionRequest(
-				                  path, systemGeneratedMetadata.getArchiveLocation(), 
-				                  dataObjectDeleteResponse.getArchiveDeleteStatus(), metadataEntries, 
-				                  dataObjectDeleteResponse.getDataManagementDeleteStatus(),
-				                  dataObjectDeleteResponse.getMessage());
+		// Add an audit record of this deletion attempt.
+		dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_DATA_OBJECT, 
+				                             metadataEntries, null, systemGeneratedMetadata.getArchiveLocation(), 
+				                             dataObjectDeleteResponse.getDataManagementDeleteStatus(), 
+				                             dataObjectDeleteResponse.getArchiveDeleteStatus(), 
+				                             dataObjectDeleteResponse.getMessage());
 		
 		return dataObjectDeleteResponse;
     }
