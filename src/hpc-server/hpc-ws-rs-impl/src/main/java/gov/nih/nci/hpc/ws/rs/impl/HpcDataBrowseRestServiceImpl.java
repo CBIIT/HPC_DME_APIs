@@ -10,11 +10,24 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLDecoder;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataBrowseBusService;
@@ -144,6 +157,56 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
 		
     	return okResponse(!bookmarks.getBookmarks().isEmpty() ? bookmarks : null, true);
     }
+    
+    @PUT
+    @Path("/s3")
+    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    public Response uploadToS3(@QueryParam("file") String filePath,
+    		                   @QueryParam("url") String urlStr)
+    {
+    	InputStream inputStream = null;
+        HttpURLConnection connection;
+        try {
+        	   File file = new File(filePath);
+               URL url = new URL(urlStr);
+               inputStream = new FileInputStream(file);
+               connection = (HttpURLConnection) url.openConnection();
+               connection.setDoOutput(true);
+               connection.setRequestMethod("PUT");
+               connection.setChunkedStreamingMode(2048);
+               OutputStream out = connection.getOutputStream();
+
+               byte[] buf = new byte[1024];
+               int count;
+               int total = 0;
+               long fileSize = file.length();
+
+               while ((count = inputStream.read(buf)) != -1) {
+                     if (Thread.interrupted()) {
+                            throw new InterruptedException();
+                     }
+                     out.write(buf, 0, count);
+                     total += count;
+                     int pctComplete = new Double(new Double(total) / new Double(fileSize) * 100).intValue();
+                     System.out.print("\r");
+                     System.out.print(String.format("PCT Complete: %d of " + fileSize + " bytes", pctComplete));
+               }
+               out.close();
+               inputStream.close();
+
+               int responseCode = connection.getResponseCode();
+
+               if (responseCode == 200) {
+                     return okResponse(null, false);
+               }
+        } catch (Exception e) {
+               return errorResponse(new HpcException(e.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR));
+        } finally {
+        	IOUtils.closeQuietly(inputStream);
+        }
+        return null;
+ }
 }
 
  
