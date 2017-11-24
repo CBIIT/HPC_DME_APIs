@@ -64,6 +64,19 @@
 			]
 		},
 		{
+			"eventType": "DATA_TRANSFER_UPLOAD_URL_EXPIRED",
+			"subjectFormat": "HPC Data Transfer Upload URL Expired",
+			"subjectArguments": [
+			],
+			"textFormat": "Your data upload URL expired. \nData path: %1$s",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				}
+			]
+		},
+		{
 			"eventType": "DATA_TRANSFER_DOWNLOAD_COMPLETED",
 			"subjectFormat": "HPC %1$s Download Request Completed at %2$s",
 			"subjectArguments": [
