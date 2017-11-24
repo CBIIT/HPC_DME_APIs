@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -72,24 +73,27 @@ public interface HpcDataManagementService
     public void delete(String path, boolean quiet) throws HpcException;
     
     /**
-     * Save a record of the deletion in the DB.
+     * Add an audit record in the DB
      * Note: Currently, there is no 'audit trail' functionality implemented. iRODS has this capability, and there
-     * is a plan to use it. This is a temporary solution to have a record of what data objects deleted, by
-     * who and when. When the permanent solution is implemented (using iRODS capability) this API method and the
-     * DAO behind it should be retired.
+     * is a plan to use it. This is a temporary solution to have a record of user attempts to delete or update
+     * data objects and collections. When the permanent solution is implemented (using iRODS capability) this API 
+     * method and the DAO behind it should be retired.
      *
-     * @param path The path to delete.
-     * @param archiveLocation The physical file location in the archive.
-     * @param archiveDeleteStatus True if the physical file was successfully removed from archive.
-     * @param metadataEntries The metadata associated with this path.
-     * @param dataManagementDeleteStatus True if data object was removed from the data management system.
-     * @param message (Optional) Error message received in case the deletion request failed. 
+     * @param path The data object or collection path.
+     * @param requestType The request being recorded for audit.
+     * @param metadataBefore The collection or data object metadata before the request.
+     * @param metadataAfter (Optional) The collection or data object metadata after the request.
+     * @param archiveLocation (Optional) The location of the file in the archive (prior to deletion).
+     * @param dataManagementStatus Data management (iRODS) request completion status.
+     * @param dataTransferStatus (Optional) Data transfer (Cleversafe) request completion status.
+     * @param message (Optional) Error message if the request failed.
      * @throws HpcException on service failure.
      */
-    public void saveDataObjectDeletionRequest(String path, HpcFileLocation archiveLocation, 
-    		                                  boolean archiveDeleteStatus, HpcMetadataEntries metadataEntries,
-    		                                  boolean dataManagementDeleteStatus, String message) 
-    		                                 throws HpcException;
+    public void addAuditRecord(String path, HpcAuditRequestType requestType,
+    		                   HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
+    		                   HpcFileLocation archiveLocation, boolean dataManagementStatus,
+    		                   Boolean dataTransferStatus, String message) 
+    		                  throws HpcException;
     
     /**
      * Set collection permission for a subject (user or group). 
