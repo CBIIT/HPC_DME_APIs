@@ -8,6 +8,7 @@
 package gov.nih.nci.hpc.cli;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -29,6 +30,8 @@ public abstract class HPCBatchClient {
 	protected String hpcServerURL;
 	protected String hpcServerProxyURL;
 	protected String hpcServerProxyPort;
+	protected String globusNexusURL;
+	protected String globusURL;
 	protected String hpcCertPath;
 	protected String hpcCertPassword;
 	protected String hpcDataService;
@@ -38,25 +41,21 @@ public abstract class HPCBatchClient {
 	protected FileWriter fileRecordWriter = null;
 	protected CSVPrinter csvFilePrinter = null;
 	protected String loginFile = null;
+	protected String globusLoginFile = null;
 	protected String logFile = null;
+	protected String tokenFile = null;
 	protected String logRecordsFile = null;
 	protected boolean headerAdded = false;
-	protected int threadCount;
-
+	protected boolean validateMD5 = false;
+	protected boolean inputCredentials = true;
+	protected int bufferSize = 0;
+	protected int threadCount = 1;
+	
 	public HPCBatchClient() {
 
 	}
 
 	protected void preprocess() {
-		hpcServerURL = configProperties.getProperty("hpc.server.url");
-		hpcServerProxyURL = configProperties.getProperty("hpc.server.proxy.url");
-		hpcServerProxyPort = configProperties.getProperty("hpc.server.proxy.port");
-		hpcDataService = configProperties.getProperty("hpc.dataobject.service");
-		hpcCertPath = configProperties.getProperty("hpc.ssl.keystore.path");
-		hpcCertPassword = configProperties.getProperty("hpc.ssl.keystore.password");
-		logDir = configProperties.getProperty("hpc.error-log.dir");
-		loginFile = configProperties.getProperty("hpc.login.credentials");
-		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
 		try {
 			String threadStr = configProperties.getProperty("hpc.job.thread.count");
 			threadCount = Integer.parseInt(threadStr);
@@ -64,7 +63,41 @@ public abstract class HPCBatchClient {
 			threadCount = 3;
 		}
 
+		hpcServerURL = configProperties.getProperty("hpc.server.url");
+		hpcServerProxyURL = configProperties.getProperty("hpc.server.proxy.url");
+		hpcServerProxyPort = configProperties.getProperty("hpc.server.proxy.port");
+		globusNexusURL = configProperties.getProperty("globus.nexus.url");
+		String checkMD5 = configProperties.getProperty("validate.md5.checksum");
+		if(checkMD5 != null && checkMD5.equalsIgnoreCase("true"))
+			validateMD5 = true;	
+		globusURL = configProperties.getProperty("globus.url");
+		hpcServerURL = configProperties.getProperty("hpc.server.url");
+		hpcDataService = configProperties.getProperty("hpc.dataobject.service");
+		hpcCertPath = configProperties.getProperty("hpc.ssl.keystore.path");
+		hpcCertPassword = configProperties.getProperty("hpc.ssl.keystore.password");
+		logDir = configProperties.getProperty("hpc.error-log.dir");
+		loginFile = configProperties.getProperty("hpc.login.credentials");
+		tokenFile = configProperties.getProperty("hpc.login.token");
+		globusLoginFile = configProperties.getProperty("hpc.globus.login.token");
+		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
+		String bufferSizeStr = configProperties.getProperty("upload.buffer.size");
+		bufferSize = Integer.parseInt(bufferSizeStr);
+		
+		String basePath = System.getProperty("HPC_DM_UTILS");
+		if(basePath == null)
+		{
+			System.out.println("System Property HPC_DM_UTILS is missing");
+			System.exit(1);
+		}
+		if(tokenFile != null)
+			tokenFile = basePath + File.separator + tokenFile;
+		if(loginFile != null)
+			loginFile = basePath + File.separator + loginFile;
+		globusLoginFile = basePath + File.separator + globusLoginFile;
+		hpcCertPath = basePath + File.separator + hpcCertPath;
+		
 		initializeLog();
+		
 	}
 
 	protected abstract void initializeLog();
@@ -101,15 +134,13 @@ public abstract class HPCBatchClient {
 			else
 				return "Batch process is not Successful. Please error log for the records not processed.";
 		} catch (IOException e) {
-			e.printStackTrace();
 			return "Failed to run batch registration";
 		} finally {
 			if (bufferedReader != null) {
 				try {
 					bufferedReader.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.out.println("Failed to read Login credentials file. "+loginFile);
 				}
 			}
 			postProcess();
@@ -135,7 +166,6 @@ public abstract class HPCBatchClient {
 
 		} catch (IOException e) {
 			System.out.println("Error while flushing/closing fileWriter/csvPrinter !!!");
-			e.printStackTrace();
 		}
 
 	}
@@ -148,6 +178,11 @@ public abstract class HPCBatchClient {
 	protected void addErrorToLog(String path, String error) throws IOException {
 		fileLogWriter.write(path + ": " + error);
 		fileLogWriter.write("\n");
+	}
+
+	protected void addRecordToLog(String record) throws IOException {
+		fileRecordWriter.write(record);
+		fileRecordWriter.write("\n");
 	}
 
 	protected void addRecordToLog(CSVRecord record, Map<String, Integer> headers) throws IOException {

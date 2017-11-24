@@ -5,7 +5,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
  ******************************************************************************/
-package gov.nih.nci.hpc.cli;
+package gov.nih.nci.hpc.cli.csv;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -51,6 +51,16 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		HPCDataObject hpcObject = (HPCDataObject) record.getPayload();
 		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = hpcObject.getDto();
 		List<Attachment> atts = new LinkedList<Attachment>();
+		if(HpcClientUtil.containsWhiteSpace(hpcObject.getObjectPath().trim()))
+		{
+			HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
+					hpcObject.getHeadersMap());
+			HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
+					"Record: " + record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath()
+							+ "\n Invalid or missing fileContainerId or/and fileId.");
+			throw new RecordMappingException("Whitespace is not allowed in collection path");
+		}
+		
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
 				HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
@@ -111,12 +121,6 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 			System.out.println("Processing: " + hpcObject.getBasePath() + "/" + hpcObject.getObjectPath());
 			Response restResponse = client.put(new MultipartBody(atts));
 			long stop = System.currentTimeMillis();
-			// System.out.println("Processing: "+hpcObject.getBasePath() + "/"+
-			// hpcObject.getObjectPath() + " time: "+(stop-start)/1000 + "
-			// sec");
-			// System.out.println("Processing done: "+hpcObject.getBasePath() +
-			// hpcObject.getObjectPath() + " Status: " +
-			// restResponse.getStatus());
 			if (!(restResponse.getStatus() == 201 || restResponse.getStatus() == 200)) {
 				System.out.println("Failed!");
 				MappingJsonFactory factory = new MappingJsonFactory();
@@ -210,7 +214,6 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 				try {
 					inputStream.close();
 				} catch (IOException e) {
-					e.printStackTrace();
 				}
 		}
 		return null;

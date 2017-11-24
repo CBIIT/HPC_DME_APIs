@@ -12,12 +12,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.exception.HpcException;
 
 @Component
@@ -43,7 +46,8 @@ public abstract class HPCCmdClient {
 	protected String logRecordsFile = null;
 	protected boolean headerAdded = false;
 	protected boolean validateMD5 = false;
-
+	protected boolean inputCredentials = true;
+	protected int bufferSize = 0;
 	public HPCCmdClient() {
 
 	}
@@ -66,6 +70,8 @@ public abstract class HPCCmdClient {
 		tokenFile = configProperties.getProperty("hpc.login.token");
 		globusLoginFile = configProperties.getProperty("hpc.globus.login.token");
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
+		String bufferSizeStr = configProperties.getProperty("upload.buffer.size");
+		bufferSize = Integer.parseInt(bufferSizeStr);
 		
 		String basePath = System.getProperty("HPC_DM_UTILS");
 		if(basePath == null)
@@ -92,7 +98,7 @@ public abstract class HPCCmdClient {
 			String userId = null;
 			String password = null;
 			String authToken = null;
-			if (loginFile == null && tokenFile == null) {
+			if (loginFile == null && tokenFile == null && inputCredentials) {
 				jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
 				reader.setExpandEvents(false);
 				System.out.println("Enter NCI Login UserId:");
@@ -133,15 +139,12 @@ public abstract class HPCCmdClient {
 				return "Cmd process is not Successful. Please error log for details.";
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			return "Failed to run command";
+			return "Failed to run command: "+e.getMessage();
 		} finally {
 			if (bufferedReader != null) {
 				try {
 					bufferedReader.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			}
 			postProcess();
@@ -165,6 +168,29 @@ public abstract class HPCCmdClient {
 		} catch (IOException e) {
 		}
 
+	}
+
+	private void writeException(Exception e, String message, String exceptionAsString) {
+		HpcLogWriter.getInstance().WriteLog(logFile, message);
+		StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		if (exceptionAsString == null)
+			exceptionAsString = sw.toString();
+		HpcLogWriter.getInstance().WriteLog(logFile, exceptionAsString);
+	}
+
+	private void writeRecord(String filePath) {
+		HpcLogWriter.getInstance().WriteLog(logRecordsFile, filePath);
+	}
+	
+	protected void addErrorToLog(String error, int recordLineNumber) throws IOException {
+		fileLogWriter.write(recordLineNumber + ": " + error);
+		fileLogWriter.write("\n");
+	}
+
+	protected void addRecordToLog(String record) throws IOException {
+		fileRecordWriter.write(record);
+		fileRecordWriter.write("\n");
 	}
 
 	protected void addErrorToLog(String error, String cmd) throws IOException {
