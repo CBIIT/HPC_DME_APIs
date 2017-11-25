@@ -281,18 +281,22 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
                                HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
                                HpcFileLocation archiveLocation, boolean dataManagementStatus,
                                Boolean dataTransferStatus, String message) 
-    		                  throws HpcException
     {
     	// Input validation.
     	if(path == null || requestType == null || metadataBefore == null) {
-    	   throw new HpcException("Invalid audit record request", 
-                                  HpcErrorType.INVALID_REQUEST_INPUT);
+    	   return;
     	}
     	
-		dataManagementAuditDAO.insert(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), 
-				                      path, requestType, metadataBefore, metadataAfter,
-                                      archiveLocation, dataManagementStatus,
-                                      dataTransferStatus, message, Calendar.getInstance());
+    	try {
+		     dataManagementAuditDAO.insert(
+		    	 HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), 
+			  	 path, requestType, metadataBefore, metadataAfter,
+                 archiveLocation, dataManagementStatus,
+                 dataTransferStatus, message, Calendar.getInstance());
+		     
+    	} catch(HpcException e) {
+    		    logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);
+    	}
     }
     
     @Override
