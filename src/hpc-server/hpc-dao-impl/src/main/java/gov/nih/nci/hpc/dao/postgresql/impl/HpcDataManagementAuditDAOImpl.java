@@ -84,11 +84,17 @@ public class HpcDataManagementAuditDAOImpl implements HpcDataManagementAuditDAO
 	                   Boolean dataTransferStatus, String message, Calendar completed) 
 			          throws HpcException
     {
+		String fileContainerId = null;
+		String fileId = null;
+		if(archiveLocation != null) {
+		   fileContainerId = archiveLocation.getFileContainerId();
+		   fileId = archiveLocation.getFileId();
+		}
+		
 		try {
 		     jdbcTemplate.update(INSERT_SQL, userId, path, requestType.value(),
 		    		             toJSONString(metadataBefore), toJSONString(metadataAfter), 
-		    		             archiveLocation.getFileContainerId(), 
-		    		             archiveLocation.getFileId(), dataManagementStatus,
+		    		             fileContainerId, fileId, dataManagementStatus,
 		    		             dataTransferStatus, message, completed);
 		     
 		} catch(DataAccessException e) {
