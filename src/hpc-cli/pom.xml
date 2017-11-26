@@ -12,7 +12,7 @@
 	<artifactId>hpc-cli</artifactId>
 	<packaging>jar</packaging>
 
-	<name>HPC Command Line Interface (CLI)</name>
+	<name>HPC-DME Command Line Interface (CLI)</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
