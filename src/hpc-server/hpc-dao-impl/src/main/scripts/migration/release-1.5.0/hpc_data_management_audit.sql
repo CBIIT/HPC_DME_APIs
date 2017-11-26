@@ -54,3 +54,13 @@ COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_AUDIT"."MESSAGE" IS
                   'Error message if the operation failed (iRODS or Cleversafe)';
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_AUDIT"."COMPLETED" IS 
                   'The date/time the request was completed';
+                  
+                  
+INSERT INTO public."HPC_DATA_MANAGEMENT_AUDIT" ("USER_ID", "PATH", "REQUEST_TYPE", "METADATA_BEFORE", "METADATA_AFTER",
+                                                "ARCHIVE_FILE_CONTAINER_ID", "ARCHIVE_FILE_ID", "DATA_MANAGEMENT_STATUS",
+                                                "DATA_TRANSFER_STATUS", "MESSAGE", "COMPLETED")
+SELECT "USER_ID", "PATH", 'DELETE_DATA_OBJECT', "METADATA", null, "ARCHIVE_FILE_CONTAINER_ID", "ARCHIVE_FILE_ID", 
+       "DATA_MANAGEMENT_DELETE_STATUS", "ARCHIVE_DELETE_STATUS", "MESSAGE", "DELETED" from public."HPC_DATA_OBJECT_DELETION_HISTORY";
+
+DROP TABLE IF EXISTS public."HPC_DATA_OBJECT_DELETION_HISTORY";
+ 
