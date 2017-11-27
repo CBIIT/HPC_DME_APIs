@@ -28,13 +28,11 @@ import java.util.Properties;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.easybatch.core.processor.RecordProcessingException;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -57,7 +55,8 @@ import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.cli.local.HpcLocalDirectoryListGenerator;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HpcLocalDirectoryListGenerator {
@@ -108,7 +107,7 @@ public class HpcLocalDirectoryListGenerator {
 
 						File fileAbsolutePath = new File(file.getAbsolutePath());
 						if (!fileAbsolutePath.isDirectory()) {
-							HpcDataObjectRegistrationDTO dataObject = new HpcDataObjectRegistrationDTO();
+							HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
 
 							List<HpcMetadataEntry> metadataEntries = null;
 							try {
@@ -263,16 +262,14 @@ public class HpcLocalDirectoryListGenerator {
 			metadataEntries.add(nameEntry);
 			HpcMetadataEntry dateEntry = new HpcMetadataEntry();
 			dateEntry.setAttribute("modified_date");
-			if(file.getUpdatedDate() != null)
+			if (file.getUpdatedDate() != null)
 				dateEntry.setValue(file.getUpdatedDate());
-			else
-			{
+			else {
 				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 				dateEntry.setValue(sdf.format(new Date()));
 			}
 			metadataEntries.add(dateEntry);
-			if(file.getIsDirectory())
-			{
+			if (file.getIsDirectory()) {
 				HpcMetadataEntry typeEntry = new HpcMetadataEntry();
 				typeEntry.setAttribute("collection_type");
 				typeEntry.setValue("Folder");
@@ -314,7 +311,7 @@ public class HpcLocalDirectoryListGenerator {
 		HpcLogWriter.getInstance().WriteLog(recordFile, filePath);
 	}
 
-	public void processRecord(HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO, String basePath,
+	public void processRecord(HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO, String basePath,
 			String objectPath, boolean metadataOnly, boolean confirmation) throws RecordProcessingException {
 		InputStream inputStream = null;
 		InputStream checksumStream = null;
@@ -330,7 +327,7 @@ public class HpcLocalDirectoryListGenerator {
 						"attachment;filename=" + hpcDataObjectRegistrationDTO.getSource().getFileId());
 				atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
 				HashCode hash = com.google.common.io.Files
-					      .hash(new File(hpcDataObjectRegistrationDTO.getSource().getFileId()), Hashing.md5());
+						.hash(new File(hpcDataObjectRegistrationDTO.getSource().getFileId()), Hashing.md5());
 				String md5 = hash.toString();
 				hpcDataObjectRegistrationDTO.setChecksum(md5);
 			}

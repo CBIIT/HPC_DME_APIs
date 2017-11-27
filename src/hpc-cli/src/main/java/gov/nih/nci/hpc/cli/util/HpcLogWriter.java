@@ -18,7 +18,6 @@ public class HpcLogWriter {
 	public synchronized void WriteLog(String logFile, String entry) {
 
 		BufferedWriter bw = null;
-
 		try {
 
 			bw = new BufferedWriter(new FileWriter(logFile, true));
@@ -26,19 +25,13 @@ public class HpcLogWriter {
 			bw.newLine();
 
 		} catch (IOException e) {
-
-			e.printStackTrace();
-
+			System.out.println("Failed to write log file: "+e.getMessage());
 		} finally {
 
 			try {
-
 				bw.close();
-
 			} catch (IOException e) {
-
-				e.printStackTrace();
-
+				System.out.println("Failed to write log file: "+e.getMessage());
 			}
 
 		}
@@ -46,7 +39,6 @@ public class HpcLogWriter {
 	}
 
 	public static HpcLogWriter getInstance() {
-
 		return writer;
 
 	}

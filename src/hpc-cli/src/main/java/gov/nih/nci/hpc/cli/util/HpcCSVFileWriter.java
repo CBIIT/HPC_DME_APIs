@@ -42,7 +42,6 @@ public class HpcCSVFileWriter {
 				fileRecordWriter.flush();
 			} catch (IOException e) {
 				System.out.println("Failed to write batch record into the log: " + e.getMessage());
-				e.printStackTrace();
 			}
 		} finally {
 			try {
@@ -51,9 +50,7 @@ public class HpcCSVFileWriter {
 				csvFilePrinter.close();
 
 			} catch (IOException e) {
-
-				e.printStackTrace();
-
+				System.out.println("Failed to close writers: "+e.getMessage());
 			}
 		}
 

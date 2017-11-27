@@ -72,7 +72,6 @@ public class HPCPermissions extends HPCBatchClient {
 			csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
 		} catch (IOException e) {
 			System.out.println("Failed to initialize Batch process: " + e.getMessage());
-			e.printStackTrace();
 		}
 
 	}
@@ -145,15 +144,13 @@ public class HPCPermissions extends HPCBatchClient {
 			}
 
 		} catch (Exception e) {
-			System.out.println("Cannot read the input file");
-			e.printStackTrace();
+			System.out.println("Cannot read the input file: "+e.getMessage());
 		} finally {
 			try {
 				fileReader.close();
 				csvFileParser.close();
 			} catch (IOException e) {
 				System.out.println("Error while closing fileReader/csvFileParser !!!");
-				e.printStackTrace();
 			}
 		}
 		return success;

@@ -5,7 +5,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
  ******************************************************************************/
-package gov.nih.nci.hpc.cli;
+package gov.nih.nci.hpc.cli.csv;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -31,6 +31,8 @@ import org.easybatch.core.reader.BlockingQueueRecordReader;
 import org.easybatch.core.record.Record;
 import org.easybatch.extensions.apache.common.csv.ApacheCommonCsvRecordReader;
 
+import gov.nih.nci.hpc.cli.HPCJobReportMerger;
+import gov.nih.nci.hpc.cli.HpcJobReportFormatter;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 
@@ -83,7 +85,6 @@ public class HPCBatchDataFileProcessor {
 			// initialize CSVParser object
 			csvFileParser = new CSVParser(fileReader, csvFileFormat);
 		} catch (IOException e) {
-			e.printStackTrace();
 			throw new HpcBatchException(
 					"Failed to parse input csv file: " + inputFileName + " due to: " + e.getMessage());
 		}
@@ -91,10 +92,6 @@ public class HPCBatchDataFileProcessor {
 		// Build a master job that will read records from the data source
 		// and dispatch them to worker jobs
 		Job masterJob = JobBuilder.aNewJob().named("master-job").reader(new ApacheCommonCsvRecordReader(csvFileParser))
-				// .filter(new HeaderRecordFilter()).mapper(new
-				// HPCDataFileRecordMapper(HPCDataObject.class, headersMap,
-				// basePath, hpcCertPath, hpcCertPassword, userId, password,
-				// authToken))
 				.mapper(new HPCBatchDataFileRecordMapper(HPCDataObject.class, headersMap, basePath, hpcCertPath,
 						hpcCertPassword, userId, password, authToken, logFile, errorRecordsFile))
 				.dispatcher(roundRobinRecordDispatcher).jobListener(new PoisonRecordBroadcaster<>(queueList)).build();
@@ -125,42 +122,11 @@ public class HPCBatchDataFileProcessor {
 			JobReport finalReport = reportMerger.mergerReports(jobReports);
 			if (finalReport.getMetrics().getErrorCount() == 0)
 				success = true;
-			// String htmlReport = new
-			// HpcHtmlJobReportFormatter().formatReport(finalReport);
 			System.out.println(new HpcJobReportFormatter().formatReport(finalReport));
-			// //System.out.println(htmlReport);
-			// String logFile = File.separator + "putDatafiles_report" + new
-			// SimpleDateFormat("yyyyMMddhhmm'.html'").format(new Date());
-			// File file1 = new File(logFile);
-			// FileWriter fileLogWriter = null;
-			// try {
-			// if (!file1.exists()) {
-			// file1.createNewFile();
-			// }
-			// fileLogWriter = new FileWriter(file1, true);
-			// fileLogWriter.write(htmlReport);
-			// fileLogWriter.flush();
-			// } catch (IOException e) {
-			// System.out.println("Failed to initialize Batch process: " +
-			// e.getMessage());
-			// e.printStackTrace();
-			// }
-			// finally
-			// {
-			// if(fileLogWriter != null)
-			// try {
-			// fileLogWriter.close();
-			// } catch (IOException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-			// }
 		} catch (ExecutionException e) {
-			e.printStackTrace();
 			throw new HpcBatchException(
 					"Failed to process input csv file: " + inputFileName + " due to: " + e.getMessage());
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 			throw new HpcBatchException(
 					"Failed to process input csv file: " + inputFileName + " due to: " + e.getMessage());
 		}
@@ -171,11 +137,6 @@ public class HPCBatchDataFileProcessor {
 	}
 
 	public static Job buildWorkerJob(BlockingQueue<Record> queue, String jobName) {
-		// return
-		// JobBuilder.aNewJob().named(jobName).silentMode(true).reader(new
-		// BlockingQueueRecordReader(queue))
-		// .filter(new PoisonRecordFilter()).processor(new
-		// HPCDataFileRecordProcessor()).build();
 		return JobBuilder.aNewJob().named(jobName).silentMode(true).reader(new BlockingQueueRecordReader(queue))
 				.filter(new PoisonRecordFilter()).processor(new HPCBatchDataFileRecordProcessor()).build();
 
