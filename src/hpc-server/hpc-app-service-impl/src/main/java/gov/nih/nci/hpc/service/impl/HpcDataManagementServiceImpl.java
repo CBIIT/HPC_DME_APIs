@@ -23,8 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO;
+import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -86,9 +87,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 	
-	// Data Object Deletion DAO.
+	// Data Management Audit DAO.
 	@Autowired
-	private HpcDataObjectDeletionDAO dataObjectDeletionDAO = null;
+	private HpcDataManagementAuditDAO dataManagementAuditDAO = null;
 	
 	// Data Registration DAO.
 	@Autowired
@@ -102,6 +103,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
 	
 	// Prepared query to get data objects that have their data transfer in-progress to temporary archive.
 	private List<HpcMetadataQuery> dataTransferInProgressToTemporaryArchiveQuery = new ArrayList<>();
+	
+	// Prepared query to get data objects that have their data transfer upload by users via generated URL.
+	private List<HpcMetadataQuery> dataTransferInProgressWithGeneratedURLQuery = new ArrayList<>();
 	
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
@@ -140,6 +144,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
         	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
         			        HpcMetadataQueryOperator.EQUAL, 
         			        HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value()));
+        
+    	// Prepared query to get data objects that have their data transfer upload by users via generated URL.
+        dataTransferInProgressWithGeneratedURLQuery.add(
+        	toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, 
+        			        HpcMetadataQueryOperator.EQUAL, 
+        			        HpcDataTransferUploadStatus.URL_GENERATED.value()));
         
         // Prepare the query to get data objects in temporary archive.
         dataTransferInTemporaryArchiveQuery.add(
@@ -267,15 +277,26 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     }
     
     @Override
-    public void saveDataObjectDeletionRequest(String path, HpcFileLocation archiveLocation,
-    		                                  boolean archiveDeleteStatus, 
-    		                                  HpcMetadataEntries metadataEntries,
-    		                                  boolean dataManagementDeleteStatus, String message) 
-    		                                 throws HpcException
+    public void addAuditRecord(String path, HpcAuditRequestType requestType,
+                               HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
+                               HpcFileLocation archiveLocation, boolean dataManagementStatus,
+                               Boolean dataTransferStatus, String message) 
     {
-		dataObjectDeletionDAO.insert(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), 
-				                     path, metadataEntries, archiveLocation, archiveDeleteStatus, 
-				                     dataManagementDeleteStatus, Calendar.getInstance(), message);
+    	// Input validation.
+    	if(path == null || requestType == null || metadataBefore == null) {
+    	   return;
+    	}
+    	
+    	try {
+		     dataManagementAuditDAO.insert(
+		    	 HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), 
+			  	 path, requestType, metadataBefore, metadataAfter,
+                 archiveLocation, dataManagementStatus,
+                 dataTransferStatus, message, Calendar.getInstance());
+		     
+    	} catch(HpcException e) {
+    		    logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);
+    	}
     }
     
     @Override
@@ -458,6 +479,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService
     			                                  dataTransferInProgressToTemporaryArchiveQuery));
     	
     	return objectsInProgress;
+    }
+    
+    @Override
+    public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException
+    {
+    	return dataManagementProxy.getDataObjects(
+	             dataManagementAuthenticator.getAuthenticatedToken(),
+	             dataTransferInProgressWithGeneratedURLQuery);
     }
     
     @Override

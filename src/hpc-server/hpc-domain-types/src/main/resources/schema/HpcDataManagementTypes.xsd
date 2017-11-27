@@ -177,4 +177,13 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 	
+	<xsd:simpleType name="HpcAuditRequestType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="UPDATE_DATA_OBJECT" />
+			<xsd:enumeration value="DELETE_DATA_OBJECT" />
+			<xsd:enumeration value="UPDATE_COLLECTION" />
+			<xsd:enumeration value="DELETE_COLLECTION" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
 </xsd:schema>

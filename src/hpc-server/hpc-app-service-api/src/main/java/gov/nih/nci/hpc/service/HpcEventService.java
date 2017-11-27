@@ -129,6 +129,15 @@ public interface HpcEventService
     		                                     HpcFileLocation sourceLocation, 
     		                                     Calendar dataTransferCompleted, String errorMessage) 
                                                 throws HpcException;
+    
+    /**
+     * Add a data transfer upload URL expired event.
+     *
+     * @param userId The user ID.
+     * @param path The data object path.
+     * @throws HpcException on service failure.
+     */
+    public void addDataTransferUploadURLExpiredEvent(String userId, String path) throws HpcException;
 
     /**
      * Generate reports event.

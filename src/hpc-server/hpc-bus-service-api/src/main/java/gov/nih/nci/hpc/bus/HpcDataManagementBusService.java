@@ -10,10 +10,32 @@
 
 package gov.nih.nci.hpc.bus;
 
-import gov.nih.nci.hpc.dto.datamanagement.*;
-import gov.nih.nci.hpc.exception.HpcException;
-
 import java.io.File;
+
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -202,14 +224,13 @@ public interface HpcDataManagementBusService
      * @param dataObjectFile (Optional) The data object file. 2 options are available to upload the data -
      *                         Specify a source in 'dataObjectRegistrationDTO' or provide this file. The caller
      *                         is expected to provide one and only one option.
-     * @return true if a new data object was registered, false if the collection already exists
-     *         and its metadata got updated.
+     * @return A DTO with an indicator whether the data object was registered and an upload URL if one was requested.
      * @throws HpcException on service failure.
      */
-    public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile) 
-    		                         throws HpcException;
+    public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
+    		                        HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+    		                        File dataObjectFile) 
+    		                        throws HpcException;
     
     /**
      * Register a Data object. In this overloaded method, the user-id, user Name, and DOC are explicitly provided.
@@ -224,15 +245,14 @@ public interface HpcDataManagementBusService
      * @param configurationId The data management configuration ID.
      * @param registrationCompletionEvent If set to true, an event will be generated when 
      *                                    registration is completed or failed. 
-     * @return true if a new data object was registered, false if the collection already exists
-     *         and its metadata got updated.
+     * @return A DTO with an indicator whether the data object was registered and an upload URL if one was requested.
      * @throws HpcException on service failure.
      */
-    public boolean registerDataObject(String path,
-    		                          HpcDataObjectRegistrationDTO dataObjectRegistration,
-    		                          File dataObjectFile, String userId, String userName, 
-    		                          String configurationId, boolean registrationCompletionEvent) 
-    		                         throws HpcException;
+    public HpcDataObjectRegistrationResponseDTO registerDataObject(String path,
+    		                        HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+    		                        File dataObjectFile, String userId, String userName, 
+    		                        String configurationId, boolean registrationCompletionEvent) 
+    		                        throws HpcException;
     
     /**
      * Bulk Data object registration.

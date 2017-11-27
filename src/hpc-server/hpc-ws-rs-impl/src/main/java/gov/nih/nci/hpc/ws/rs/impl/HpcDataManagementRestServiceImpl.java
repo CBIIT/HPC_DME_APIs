@@ -10,25 +10,49 @@
 
 package gov.nih.nci.hpc.ws.rs.impl;
 
-import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.datamanagement.*;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
-import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.UUID;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
+import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
 
 /**
  * <p>
@@ -245,18 +269,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         return okResponse(resultDto, true);
     }
 
-    @Override
+	@Override
     public Response registerDataObject(String path, 
-    		                           HpcDataObjectRegistrationDTO dataObjectRegistration,
+    		                           HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
     		                           InputStream dataObjectInputStream)
     {	
 		File dataObjectFile = null;
-		boolean dataObjectCreated = true;
+		HpcDataObjectRegistrationResponseDTO responseDTO = null;
 		try {
 			 dataObjectFile = toFile(dataObjectInputStream);
-			 dataObjectCreated = dataManagementBusService.registerDataObject(toAbsolutePath(path), 
-					                                                         dataObjectRegistration,
-					                                                         dataObjectFile);
+			 responseDTO = dataManagementBusService.registerDataObject(toAbsolutePath(path), 
+					                                                   dataObjectRegistration,
+					                                                   dataObjectFile);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -266,7 +290,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 	    	       FileUtils.deleteQuietly(dataObjectFile);
 		}
 		
-		return dataObjectCreated ? createdResponse(null) : okResponse(null, false);
+		boolean registered = responseDTO.getRegistered() != null && responseDTO.getRegistered();
+		
+		// Remove this indicator from the DTO returned to the caller. The response type (OK or
+		// CREATED will provide this information to the caller).
+		responseDTO.setRegistered(null);
+		
+		if(registered) {
+		   // Data object was registered. Return a 'created' response.
+		   return responseDTO.getUploadRequestURL() != null ? 
+				  createdResponse(path, responseDTO) : createdResponse(path);
+		} else {
+			    // Data object metadata was updated. Return 'ok' response.
+			    return okResponse(responseDTO.getUploadRequestURL() != null ? 
+			    		          responseDTO : null, false);
+		}
 	}
     
     @Override

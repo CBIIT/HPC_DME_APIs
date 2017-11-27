@@ -5,7 +5,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
  ******************************************************************************/
-package gov.nih.nci.hpc.cli;
+package gov.nih.nci.hpc.cli.csv;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -41,7 +41,7 @@ import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HPCBatchDataFileThread implements Runnable {
@@ -108,7 +108,7 @@ public class HPCBatchDataFileThread implements Runnable {
 				listOfhpcCollection.add(hpcMetadataEntry);
 		}
 
-		HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
+		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationRequestDTO();
 		hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
 
 		System.out.println("Adding file from " + source.getFileId());

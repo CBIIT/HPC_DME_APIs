@@ -1116,7 +1116,7 @@ VALUES('963f55b4-5910-42d2-9cea-c2834ddd0a51', '/CCR_LEEMAX_Archive', 'CCR-LEEMA
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
-VALUES('50a8d63b-2eef-47bb-af96-0e333a80eda5', '/HiTIF_Archive', 'HiTIF', 'http://http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 'HiTIF_Archive',
+VALUES('50a8d63b-2eef-47bb-af96-0e333a80eda5', '/HiTIF_Archive', 'HiTIF', 'http://http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPCDME_HiTIF_PROD', 'HiTIF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
                                                   
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 

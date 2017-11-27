@@ -38,6 +38,14 @@ public interface HpcSystemBusService
 	public void processDataTranferUploadInProgress() throws HpcException;
 	
     /**
+     * Update the data transfer upload status of all data objects that users are responsible
+     * to upload with a generated upload URL.
+     *
+     * @throws HpcException on service failure.
+     */
+	public void processDataTranferUploadInProgressWithGeneratedURL() throws HpcException;
+	
+    /**
      * Transfer data objects currently in temporary archive to the (permanent) archive, 
      * and complete the registration process.
      *

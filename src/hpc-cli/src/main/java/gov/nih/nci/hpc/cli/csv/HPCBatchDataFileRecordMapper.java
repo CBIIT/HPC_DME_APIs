@@ -5,7 +5,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
  ******************************************************************************/
-package gov.nih.nci.hpc.cli;
+package gov.nih.nci.hpc.cli.csv;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +20,10 @@ import org.easybatch.extensions.apache.common.csv.ApacheCommonCsvRecord;
 import org.easybatch.extensions.apache.common.csv.ApacheCommonCsvRecordMapper;
 
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
 
 public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 
@@ -99,11 +99,11 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 		dataObject.setCsvRecord(csvRecord);
 		dataObject.setObjectPath(objectPath);
 
-		HpcDataObjectRegistrationDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationDTO();
-
+		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = new HpcDataObjectRegistrationRequestDTO();
 		hpcDataObjectRegistrationDTO.setSource(source);
 		hpcDataObjectRegistrationDTO.setCallerObjectId("/");
 		hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(metadataAttributes);
+		hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(true);
 		dataObject.setDto(hpcDataObjectRegistrationDTO);
 		hpcDataObjectRegistrationDTO.setCreateParentCollections(createParentCollection);
 		if (!parentMetadataAttributes.isEmpty())

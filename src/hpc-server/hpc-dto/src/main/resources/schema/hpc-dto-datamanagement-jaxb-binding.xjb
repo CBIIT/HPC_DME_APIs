@@ -71,6 +71,9 @@
 		<jxb:bindings node="//xsd:simpleType[@name='HpcBulkDataObjectRegistrationTaskStatus']">
         	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus"/>
         </jxb:bindings>
+        <jxb:bindings node="//xsd:simpleType[@name='HpcAuditRequestType']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType"/>
+        </jxb:bindings>
     </jxb:bindings>
     
 	<jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
