@@ -145,12 +145,9 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			setCollectionPath(model, request, parent);
 		populateCollectionTypes(session, model, basePath, parent);
 		String collectionType = getFormAttributeValue(request, "zAttrStr_collection_type");
-		List<HpcMetadataAttrEntry> metadataEntries = populateFormAttributes(request, session, model, basePath,
+		populateFormAttributes(request, session, model, basePath,
 				collectionType, refresh, false);
-		if (metadataEntries != null && !metadataEntries.isEmpty())
-			model.addAttribute("collectionAttrs", metadataEntries);
-		//if (collectionType != null && !collectionType.equals("_select_null"))
-			model.addAttribute("create", true);
+		model.addAttribute("create", true);
 		return "addcollection";
 	}
 
@@ -274,10 +271,8 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			if (originPath == null)
 				populateBasePaths(request, session, model, hpcCollection.getPath());
 			populateCollectionTypes(session, model, basePath, originPath);
-			List<HpcMetadataAttrEntry> metadataEntries = populateFormAttributes(request, session, model, basePath,
+			populateFormAttributes(request, session, model, basePath,
 					collectionType, false, false);
-			if (metadataEntries != null && !metadataEntries.isEmpty())
-				model.addAttribute("collectionAttrs", metadataEntries);
 			model.addAttribute("hpcCollection", hpcCollection);
 			setCollectionPath(model, request, originPath);
 		}

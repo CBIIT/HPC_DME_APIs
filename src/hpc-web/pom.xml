@@ -8,7 +8,7 @@
 	<version>1.5.0</version>
 	<packaging>war</packaging>
 
-	<name>hpc-web</name>
+	<name>HPC-DME Web Application</name>
 	<description>HPC Data Management</description>
 
 

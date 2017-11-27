@@ -75,6 +75,7 @@ import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -83,12 +84,14 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -972,7 +975,7 @@ public class HpcClientUtil {
 		}
 	}
 	
-	public static boolean registerBulkDatafiles(String token, String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
+	public static HpcBulkDataObjectRegistrationResponseDTO registerBulkDatafiles(String token, String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
 			String hpcCertPath, String hpcCertPassword) {
 		try {
 			
@@ -980,8 +983,9 @@ public class HpcClientUtil {
 			client.header("Authorization", "Bearer " + token);
 
 			Response restResponse = client.invoke("PUT", datafileDTO);
-			if (restResponse.getStatus() == 201) {
-				return true;
+			if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
+				return (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil
+						.getObject(restResponse, HpcBulkDataObjectRegistrationResponseDTO.class);
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -1004,7 +1008,7 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static boolean updateDatafile(String token, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
+	public static boolean updateDatafile(String token, String hpcDatafileURL, HpcDataObjectRegistrationRequestDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
@@ -1282,6 +1286,39 @@ public class HpcClientUtil {
 		}
 		try {
 			return parser.readValueAs(HpcUserPermissionDTO.class);
+		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+		}
+	}
+
+	public static HpcUserPermsForCollectionsDTO getPermissionForCollections(String token, String hpcServiceURL, String queryParam,
+			 String hpcCertPath, String hpcCertPassword) {
+
+		WebClient client = HpcClientUtil.getWebClient(hpcServiceURL + queryParam, hpcCertPath,
+				hpcCertPassword);
+
+		client.header("Authorization", "Bearer " + token);
+
+		Response restResponse = client.get();
+		if (restResponse == null || restResponse.getStatus() != 200)
+			return null;
+		MappingJsonFactory factory = new MappingJsonFactory();
+		JsonParser parser;
+		try {
+			parser = factory.createParser((InputStream) restResponse.getEntity());
+		} catch (IllegalStateException | IOException e) {
+			e.printStackTrace();
+			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+		}
+		try {
+			return parser.readValueAs(HpcUserPermsForCollectionsDTO.class);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
 			throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
@@ -1644,13 +1681,22 @@ public class HpcClientUtil {
 			throws HpcWebException {
 	
 		Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		String queryParams = "?";
 		for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
 			for(HpcDataManagementRulesDTO rule : docRule.getRules())
 			{
-				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, rule.getBasePath(),  userId,
-						collectionURL, sslCertPath, sslCertPassword);
+				queryParams += "collectionPath="+rule.getBasePath()+"&";
+			}
+		}
+		queryParams = queryParams.substring(0,  queryParams.length() - 1);
+		HpcUserPermsForCollectionsDTO permissions = HpcClientUtil.getPermissionForCollections(authToken, collectionURL+"/"+userId,  queryParams, 
+				sslCertPath, sslCertPassword);
+		if(permissions != null)
+		{
+			for(HpcPermissionForCollection permission : permissions.getPermissionsForCollections())
+			{
 				if(permission != null && permission.getPermission() != null && (permission.getPermission().equals(HpcPermission.WRITE) || permission.getPermission().equals(HpcPermission.OWN)))
-					basePaths.add(rule.getBasePath());
+					basePaths.add(permission.getCollectionPath());
 			}
 		}
 		session.setAttribute("basePaths", basePaths);

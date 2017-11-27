@@ -67,11 +67,12 @@
 	</xsd:element>	
 	
 	<!-- Data Object DTO -->
-	<xsd:element name="HpcDataObjectRegistrationDTO">
+    <xsd:element name="HpcDataObjectRegistrationRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="source"
 				             type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="generateUploadRequestURL" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="callerObjectId" type="xsd:string" />
 				<xsd:element name="metadataEntries" 
 				             type="hpc-domain-metadata:HpcMetadataEntry" 
@@ -85,12 +86,21 @@
 		</xsd:complexType>
 	</xsd:element>	
 	
+	<xsd:element name="HpcDataObjectRegistrationResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="registered" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="uploadRequestURL" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
 	<xsd:complexType name="HpcDataObjectRegistrationItemDTO">
 		<xsd:sequence>
 		    <xsd:element name="path" type="xsd:string" />
 			<xsd:element name="source" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
-			<xsd:element name="metadataEntries" 
+			<xsd:element name="selfMetadataEntries" 
 			             type="hpc-domain-metadata:HpcMetadataEntry" 
 				         maxOccurs="unbounded" />
 			<xsd:element name="createParentCollections" type="xsd:boolean" minOccurs="0" />

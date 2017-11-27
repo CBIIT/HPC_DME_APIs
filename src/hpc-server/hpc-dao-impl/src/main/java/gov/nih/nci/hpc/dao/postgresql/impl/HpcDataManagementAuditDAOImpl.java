@@ -1,5 +1,5 @@
 /**
- * HpcDataObjectDeletionDAOImpl.java
+ * HpcDataManagementAuditDAOImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -18,7 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import gov.nih.nci.hpc.dao.HpcDataObjectDeletionDAO;
+import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -34,7 +35,7 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 
-public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
+public class HpcDataManagementAuditDAOImpl implements HpcDataManagementAuditDAO
 { 
     //---------------------------------------------------------------------//
     // Constants
@@ -42,10 +43,11 @@ public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
     
     // SQL Queries.
 	public static final String INSERT_SQL = 
-		   "insert into public.\"HPC_DATA_OBJECT_DELETION_HISTORY\" ( " +
-                    "\"USER_ID\", \"PATH\", \"METADATA\", \"ARCHIVE_FILE_CONTAINER_ID\"," +
-                    "\"ARCHIVE_FILE_ID\", \"ARCHIVE_DELETE_STATUS\", \"DATA_MANAGEMENT_DELETE_STATUS\"," +
-                    "\"DELETED\", \"MESSAGE\") values (?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
+		   "insert into public.\"HPC_DATA_MANAGEMENT_AUDIT\" ( " +
+                    "\"USER_ID\", \"PATH\", \"REQUEST_TYPE\", \"METADATA_BEFORE\", " +
+				    "\"METADATA_AFTER\", \"ARCHIVE_FILE_CONTAINER_ID\"," +
+                    "\"ARCHIVE_FILE_ID\", \"DATA_MANAGEMENT_STATUS\", \"DATA_TRANSFER_STATUS\"," +
+                    "\"MESSAGE\", \"COMPLETED\") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -63,7 +65,7 @@ public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
      * Constructor for Spring Dependency Injection. 
      * 
      */
-    private HpcDataObjectDeletionDAOImpl()
+    private HpcDataManagementAuditDAOImpl()
     {
     }   
     
@@ -76,20 +78,27 @@ public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
     //---------------------------------------------------------------------//  
     
 	@Override
-	public void insert(String userId, String path, HpcMetadataEntries metadataEntries,
-	                   HpcFileLocation archiveLocation, boolean archiveDeleteStatus,
-    		           boolean dataManagementDeleteStatus, Calendar deleted, String message) 
+	public void insert(String userId, String path, HpcAuditRequestType requestType,
+	                   HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
+	                   HpcFileLocation archiveLocation, boolean dataManagementStatus,
+	                   Boolean dataTransferStatus, String message, Calendar completed) 
 			          throws HpcException
     {
+		String fileContainerId = null;
+		String fileId = null;
+		if(archiveLocation != null) {
+		   fileContainerId = archiveLocation.getFileContainerId();
+		   fileId = archiveLocation.getFileId();
+		}
+		
 		try {
-		     jdbcTemplate.update(INSERT_SQL, userId, path, 
-		    		             toJSONString(metadataEntries), 
-		    		             archiveLocation.getFileContainerId(), 
-		    		             archiveLocation.getFileId(), archiveDeleteStatus,
-		    		             dataManagementDeleteStatus, deleted, message);
+		     jdbcTemplate.update(INSERT_SQL, userId, path, requestType.value(),
+		    		             toJSONString(metadataBefore), toJSONString(metadataAfter), 
+		    		             fileContainerId, fileId, dataManagementStatus,
+		    		             dataTransferStatus, message, completed);
 		     
 		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to insert a data object deletion: " + e.getMessage(),
+			    throw new HpcException("Failed to insert a data management audit record: " + e.getMessage(),
 			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
@@ -107,6 +116,10 @@ public class HpcDataObjectDeletionDAOImpl implements HpcDataObjectDeletionDAO
 	@SuppressWarnings("unchecked")
 	private String toJSONString(HpcMetadataEntries metadataEntries)
 	{
+		if(metadataEntries == null) {
+		   return null;
+		}
+		
 		JSONObject jsonMetadata = new JSONObject();
 		
 		// Map the self metadata entries.
