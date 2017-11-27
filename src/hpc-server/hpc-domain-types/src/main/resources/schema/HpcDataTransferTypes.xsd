@@ -28,6 +28,8 @@
 			<xsd:enumeration value="DELETE_REQUESTED" />
 			<xsd:enumeration value="DELETED" />
 			<xsd:enumeration value="DELETE_FAILED" />
+			<xsd:enumeration value="URL_GENERATED" />
+			<xsd:enumeration value="URL_EXPIRED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -108,13 +110,15 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="sourceFile" type="hpc-domain-datatransfer:HpcFile" />
-			<xsd:element name="configurationId" type="xsd:string" />
+			<xsd:element name="generateUploadRequestURL" type="xsd:boolean" />
+			<xsd:element name="uploadRequestURLExpiration" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:complexType name="HpcDataObjectUploadResponse">
 		<xsd:sequence>
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
+			<xsd:element name="uploadRequestURL" type="xsd:string" />
 			<xsd:element name="checksum" type="xsd:string" />
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />

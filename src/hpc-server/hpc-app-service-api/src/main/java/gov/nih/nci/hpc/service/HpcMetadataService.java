@@ -211,6 +211,7 @@ public interface HpcMetadataService
      * @param checksum (Optional) The data checksum.
      * @param dataTransferStatus (Optional) The data transfer upload status.
      * @param dataTransferType (Optional) The data transfer type.
+     * @param dataTransferStarted (Optional) The time data transfer started.
      * @param dataTransferCompleted (Optional) The time data transfer completed.
      * @throws HpcException on service failure.
      */
@@ -220,6 +221,7 @@ public interface HpcMetadataService
     		                                            String checksum,
     		                                            HpcDataTransferUploadStatus dataTransferStatus,
     		                                            HpcDataTransferType dataTransferType,
+    		                                            Calendar dataTransferStarted,
     		                                            Calendar dataTransferCompleted) 
     		                                           throws HpcException; 
     

@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.bus.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -29,6 +30,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -45,6 +47,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcUser;
@@ -55,7 +58,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -145,10 +148,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	
     	// Iterate through the data objects that their data transfer is in-progress.
     	List<HpcDataObject> dataObjectsReceived = dataManagementService.getDataObjectsUploadReceived();
-    	logger.info(dataObjectsReceived.size() + " Data Objects Upload Received: " + dataObjectsReceived);
     	for(HpcDataObject dataObject : dataObjectsReceived) {
     		String path = dataObject.getAbsolutePath();
-    		logger.info("Processing data object upload queued: " + path);
+    		logger.info("Processing data object upload received: " + path);
     		try {
     		     // Get the system metadata.
     			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
@@ -157,7 +159,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  				// Transfer the data file.
  		        HpcDataObjectUploadResponse uploadResponse = 
  		           dataTransferService.uploadDataObject(systemGeneratedMetadata.getSourceLocation(), 
- 		        		                                null, path, 
+ 		        		                                null, false, path, 
  		        		                                systemGeneratedMetadata.getRegistrarId(),
  		        		                                systemGeneratedMetadata.getCallerObjectId(), 
  		        		                                systemGeneratedMetadata.getConfigurationId());
@@ -169,6 +171,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			    			                    uploadResponse.getChecksum(), 
  			    			                    uploadResponse.getDataTransferStatus(),
  			    			                    uploadResponse.getDataTransferType(),
+ 			    			                    null,
  			    			                    uploadResponse.getDataTransferCompleted()); 
     		     
     		} catch(HpcException e) {
@@ -190,7 +193,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	
     	// Iterate through the data objects that their data transfer is in-progress.
     	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataObjectsUploadInProgress();
-    	logger.info(dataObjectsInProgress.size() + " Data Objects Upload In Progress: " + dataObjectsInProgress);
     	for(HpcDataObject dataObject : dataObjectsInProgress) {
     		String path = dataObject.getAbsolutePath();
     		logger.info("Processing data object upload in-progress: " + path);
@@ -214,13 +216,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		            	 dataTransferCompleted = Calendar.getInstance();
 	     			         metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
 	     			    		                                                     dataTransferStatus, null, 
-	     			    		                                                     dataTransferCompleted);
+	     			    		                                                     null, dataTransferCompleted);
 	    		             break;
 
     		            case IN_TEMPORARY_ARCHIVE:
     			             // Data object is in temp archive. Update data transfer status.
     	     			     metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
-    	     			    		                                                 dataTransferStatus, null, null);
+    	     			    		                                                 dataTransferStatus, 
+    	     			    		                                                 null, null, null);
     	    		         break;
 	   	    		         
     			        case FAILED:
@@ -245,6 +248,75 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     		     
     		} catch(HpcException e) {
     			    logger.error("Failed to process data transfer upload in progress:" + path, e);
+    			    
+    			    // Delete the data object.
+    			    deleteDataObject(path);
+    		}
+    	}
+    }
+    
+    @Override
+    public void processDataTranferUploadInProgressWithGeneratedURL() throws HpcException
+    {
+    	// Use system account to perform this service.
+        // TODO: Make this AOP. 
+    	securityService.setSystemRequestInvoker();
+    	
+    	// Iterate through the data objects that their data transfer is in-progress.
+    	List<HpcDataObject> dataObjectsInProgress = dataManagementService.getDataTranferUploadInProgressWithGeneratedURL();
+    	for(HpcDataObject dataObject : dataObjectsInProgress) {
+    		String path = dataObject.getAbsolutePath();
+    		logger.info("Processing data object uploaded via URL: " + path);
+    		try {
+    		     // Get the system metadata.
+    			 HpcSystemGeneratedMetadata systemGeneratedMetadata = 
+    			    metadataService.getDataObjectSystemGeneratedMetadata(path);
+    			 
+    			 // Lookup the archive for this data object.
+    			 HpcPathAttributes archivePathAttributes = 
+    			    dataTransferService.getPathAttributes(systemGeneratedMetadata.getDataTransferType(), 
+    				    systemGeneratedMetadata.getArchiveLocation(), false, 
+    					systemGeneratedMetadata.getConfigurationId());
+    			 if(archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
+    				// The data object is found in archive. i.e. user completed the upload.
+                    Calendar dataTransferCompleted = Calendar.getInstance();
+	     			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
+	     					                                                HpcDataTransferUploadStatus.ARCHIVED, null, 
+	     			    		                                            null, dataTransferCompleted);
+    			 
+	     			// Add an event if needed.
+    			    if(systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+    			       addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
+    			    		                      HpcDataTransferUploadStatus.ARCHIVED, 
+		                                          systemGeneratedMetadata.getSourceLocation(), 
+		                                          dataTransferCompleted, 
+		                                          systemGeneratedMetadata.getDataTransferType(),
+		                                          systemGeneratedMetadata.getConfigurationId());
+    			    }
+    			    
+    			 } else {
+    				     // The data object not found in archive. i.e. user did not complete the upload.
+    				 
+    				     // Check if the URL has expired.
+    				     if(generatedURLExpired(systemGeneratedMetadata.getDataTransferStarted(),
+    				                            systemGeneratedMetadata.getConfigurationId())) {
+    				    	// The generated upload URL expired. Update the data transfer status and
+    				    	// add an event.
+    				    	metadataService.updateDataObjectSystemGeneratedMetadata(
+    				    			              path, null, null, null, 
+                                                  HpcDataTransferUploadStatus.URL_EXPIRED, 
+                                                  null, null, null);
+    				    	
+    				    	addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path, 
+	    		                                       HpcDataTransferUploadStatus.URL_EXPIRED, 
+                                                       null, null, 
+                                                       systemGeneratedMetadata.getDataTransferType(),
+                                                       systemGeneratedMetadata.getConfigurationId());
+    				     }
+    			 }
+    		     
+    		} catch(HpcException e) {
+    			    logger.error("Failed to process data transfer upload in progress with URL:" + path, e);
     			    
     			    // Delete the data object.
     			    deleteDataObject(path);
@@ -279,7 +351,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			 
  				 // Transfer the data file from the temporary archive into the archive.
  		         HpcDataObjectUploadResponse uploadResponse = 
- 		        	dataTransferService.uploadDataObject(null, file, path, 
+ 		        	dataTransferService.uploadDataObject(null, file, false, path, 
  		        			                             systemGeneratedMetadata.getRegistrarId(),
  		        			                             systemGeneratedMetadata.getCallerObjectId(),
  		        			                             systemGeneratedMetadata.getConfigurationId());
@@ -297,6 +369,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
  			    			               uploadResponse.getChecksum(), 
  			    			               uploadResponse.getDataTransferStatus(),
  			    			               uploadResponse.getDataTransferType(),
+ 			    			               null,
  			    			               uploadResponse.getDataTransferCompleted()); 
  			     
  			     // Data transfer upload completed (successfully or failed). Add an event if needed.
@@ -767,6 +840,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
 		                		                                       dataTransferType.value() + " failure");
 		                 break;
 		                 
+			        case URL_EXPIRED: 
+		                 eventService.addDataTransferUploadURLExpiredEvent(userId, path);
+		                 break;
+		                 
 		            default: 
 		                 logger.error("Unexpected data transfer status: " + dataTransferStatus); 
 			 }
@@ -1078,7 +1155,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     	HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
     	try {
     		 metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, 
-                                                                     HpcDataTransferUploadStatus.FAILED, null, null);
+                                                                     HpcDataTransferUploadStatus.FAILED, 
+                                                                     null, null, null);
     		 
     		 systemGeneratedMetadata =  metadataService.getDataObjectSystemGeneratedMetadata(path);
     		 
@@ -1128,7 +1206,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
     			                         user.getNciAccount().getLastName() : "UNKNOWN";
           	
     	// Map request to a DTO.
-    	HpcDataObjectRegistrationDTO registrationDTO = new HpcDataObjectRegistrationDTO();
+    	HpcDataObjectRegistrationRequestDTO registrationDTO = new HpcDataObjectRegistrationRequestDTO();
     	registrationDTO.setCallerObjectId(registrationRequest.getCallerObjectId());
     	registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
     	registrationDTO.setSource(registrationRequest.getSource());
@@ -1219,6 +1297,34 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService
                 registrationTask.setMessage(e.getMessage());
 		}
 	}
+    
+    /**
+     * Check if an upload URL expired.
+     *
+     * @param urlCreated The data/time the URL was generated
+     * @param configurationId The data management configuration ID. This is to get the expiration config.
+     */
+    private boolean generatedURLExpired(Calendar urlCreated, String configurationId)
+    {
+    	if(urlCreated == null || StringUtils.isEmpty(configurationId)) {
+    	   return true;
+    	}
+    	
+    	// Get the URL expiration period (in hours) from the configuration
+    	HpcDataManagementConfiguration dataManagementConfiguration = 
+    		   dataManagementService.getDataManagementConfiguration(configurationId);
+    	if(dataManagementConfiguration == null) {
+    	   return true;
+    	}
+    	
+    	// Calculate the expiration time.
+    	Date expiration = new Date();
+        expiration.setTime(urlCreated.getTimeInMillis() +
+        		           1000 * 60 * 60 * dataManagementConfiguration.getS3UploadRequestURLExpiration());
+       
+        // Return true if the current time is passed the expiration time.
+        return expiration.before(new Date());
+    }
 }
 
 

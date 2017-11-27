@@ -106,7 +106,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			}
 		}
 		String selectedBrowsePath = (String) session.getAttribute("selectedBrowsePath");
-		;
+		
 		if (selectedBrowsePath != null && (path == null || path.isEmpty()))
 			session.removeAttribute("browserEntry");
 		if (path == null || path.isEmpty() || request.getParameter("base") != null)

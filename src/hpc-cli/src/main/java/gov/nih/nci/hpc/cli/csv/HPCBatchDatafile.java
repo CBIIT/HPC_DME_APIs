@@ -5,7 +5,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://github.com/CBIIT/HPC_DME_APIs/LICENSE.txt for details.
  ******************************************************************************/
-package gov.nih.nci.hpc.cli;
+package gov.nih.nci.hpc.cli.csv;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -14,6 +14,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import gov.nih.nci.hpc.cli.HPCBatchClient;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
@@ -46,8 +47,7 @@ public class HPCBatchDatafile extends HPCBatchClient {
 			success = new HPCBatchDataFileProcessor(fileName, threadCount, hpcServerURL + "/" + hpcDataService,
 					hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile, authToken).processData();
 		} catch (Exception e) {
-			System.out.println("Cannot read the input file");
-			e.printStackTrace();
+			System.out.println("Cannot read the input file: "+e.getMessage());
 			return false;
 		}
 		return success;

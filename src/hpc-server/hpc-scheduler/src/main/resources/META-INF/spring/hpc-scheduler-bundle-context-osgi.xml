@@ -25,6 +25,7 @@
 		<prop key="hpc.scheduler.cron.summaryreport.delay">0 0 23 1/1 * ?</prop>
 		<prop key="hpc.scheduler.cron.weeklysummaryreport.delay">0 23 * * 7 ?</prop>
 		<prop key="hpc.scheduler.cron.processDataTranferUploadInProgress.delay">10 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processDataTranferUploadInProgressWithGeneratedURL.delay">15 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processDataTranferUploadReceived.delay">5 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processTemporaryArchive.delay">20 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
