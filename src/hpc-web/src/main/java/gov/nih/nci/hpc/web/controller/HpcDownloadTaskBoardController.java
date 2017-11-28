@@ -9,11 +9,16 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,9 +26,18 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
+import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.model.HpcTask;
+import gov.nih.nci.hpc.web.model.Views;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
 /**
  * <p>
@@ -42,6 +56,8 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 	private String collectionURL;
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryURL;
+	@Value("${gov.nih.nci.hpc.server.download}")
+	private String queryServiceURL;
 
 	/**
 	 * GET action to display dashboard page
@@ -53,7 +69,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		model.addAttribute("queryURL", queryURL);
@@ -71,7 +87,66 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/";
 		}
+		List<HpcTask> result = new ArrayList<HpcTask>();
+		try {
+			int page = 1;
+			String pageStr = request.getParameter("page");
+			if(pageStr != null && !pageStr.isEmpty())
+			{
+				page = Integer.parseInt(pageStr);
+			}
+			
+			String serviceURL = queryServiceURL + "?page=" + page + "&totalCount=true";
+			HpcDownloadSummaryDTO downloads = HpcClientUtil.getDownloadSummary(authToken, serviceURL, sslCertPath,
+					sslCertPassword);
 
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+			if (downloads.getActiveTasks() != null && !downloads.getActiveTasks().isEmpty())
+				for (HpcUserDownloadRequest download : downloads.getActiveTasks()) {
+					HpcTask task = new HpcTask();
+					task.setTaskId(download.getTaskId());
+					task.setPath(download.getPath());
+					task.setType(download.getType().name());
+					task.setCreated(
+							download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
+					task.setCompleted(
+							download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
+					String transferResult = "In Process";
+					if (download.getResult() != null) {
+						if (download.getResult())
+							transferResult = "Completed";
+						else
+							transferResult = "Failed";
+					}
+					task.setResult(transferResult);
+					result.add(task);
+				}
+			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
+				HpcTask task = new HpcTask();
+				task.setTaskId(download.getTaskId());
+				task.setPath(download.getPath());
+				task.setType(download.getType().name());
+				task.setCreated(download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
+				task.setCompleted(
+						download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
+				String transferResult = "In Process";
+				if (download.getResult() != null) {
+					if (download.getResult())
+						transferResult = "Completed";
+					else
+						transferResult = "Failed";
+				}
+				task.setResult(transferResult);
+				result.add(task);
+			}
+			model.addAttribute("currentPage", Integer.toString(page));
+			model.addAttribute("totalCount", downloads.getTotalCount());
+			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(downloads.getTotalCount(), downloads.getLimit()));
+			model.addAttribute("currentPageSize", result.size());
+			model.addAttribute("results", result);
+		} catch (Exception e) {
+			model.addAttribute("error", "Failed to get download tasks: "+e.getMessage());
+		}
 		return "downloadtaskboard";
 	}
 }

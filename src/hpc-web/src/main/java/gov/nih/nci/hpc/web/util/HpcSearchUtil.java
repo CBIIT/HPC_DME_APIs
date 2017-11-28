@@ -59,7 +59,7 @@ public class HpcSearchUtil {
 			model.addAttribute("searchType", "collection");
 			model.addAttribute("totalCount", collections.getTotalCount());
 			model.addAttribute("currentPageSize", returnResults.size());
-			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount()));
+			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount(), collections.getLimit()));
 			
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
@@ -82,15 +82,17 @@ public class HpcSearchUtil {
 			model.addAttribute("searchType", "collection");
 			model.addAttribute("totalCount", collections.getTotalCount());
 			model.addAttribute("currentPageSize", returnResults.size());
-			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount()));
+			model.addAttribute("totalPages", getTotalPages(collections.getTotalCount(), collections.getLimit()));
 		}
 	}
 
-	public static int getTotalPages(int totalCount)
+	public static int getTotalPages(int totalCount, int limit)
 	{
 		int total = 0;
-		total = totalCount / 100;
-		if(totalCount % 100 != 0)
+		if(limit <=0)
+			limit = 100;
+		total = totalCount / limit;
+		if(totalCount % limit != 0)
 			total++;
 		return total;
 	}
@@ -115,7 +117,7 @@ public class HpcSearchUtil {
 			model.addAttribute("searchType", "datafile");
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
 			model.addAttribute("currentPageSize", returnResults.size());
-			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount()));
+			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount(), dataObjects.getLimit()));
 		} else {
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			List<HpcDataObjectDTO> searchResults = dataObjects.getDataObjects();
@@ -137,7 +139,7 @@ public class HpcSearchUtil {
 			model.addAttribute("searchType", "datafile");
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
 			model.addAttribute("currentPageSize", returnResults.size());
-			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount()));
+			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount(), dataObjects.getLimit()));
 		}
 	}
 
