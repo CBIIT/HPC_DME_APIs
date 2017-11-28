@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * HpcDataManagement.xsd
- *
- * Copyright SVG,  Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- -->
+<!-- * HpcDataManagement.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
+	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
+	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
+	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
@@ -19,251 +12,289 @@
 	xmlns:hpc-dto-datamanagement="http://hpc.nci.nih.gov/dto/datamanagement"
 	targetNamespace="http://hpc.nci.nih.gov/dto/datamanagement"
 	elementFormDefault="unqualified">
-	
+
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datamanagement"
-		        schemaLocation="HpcDataManagementTypes.xsd" />
+		schemaLocation="HpcDataManagementTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
-		        schemaLocation="HpcDataTransferTypes.xsd" />
+		schemaLocation="HpcDataTransferTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
-		        schemaLocation="HpcMetadataTypes.xsd" />
+		schemaLocation="HpcMetadataTypes.xsd" />
 
 	<!-- Collection DTO -->
 	<xsd:element name="HpcCollectionRegistrationDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="metadataEntries" 
-				             type="hpc-domain-metadata:HpcMetadataEntry" 
-					         maxOccurs="unbounded" />
-				<xsd:element name="createParentCollections" type="xsd:boolean" minOccurs="0" />
-				<xsd:element name="parentCollectionMetadataEntries" 
-				             type="hpc-domain-metadata:HpcMetadataEntry" 
-					         maxOccurs="unbounded" />
+				<xsd:element name="metadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
+					maxOccurs="unbounded" />
+				<xsd:element name="createParentCollections" type="xsd:boolean"
+					minOccurs="0" />
+				<xsd:element name="parentCollectionMetadataEntries"
+					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:complexType name="HpcCollectionDTO">
 		<xsd:sequence>
-			<xsd:element name="collection" type="hpc-domain-datamanagement:HpcCollection" />
-			<xsd:element name="metadataEntries" type="hpc-domain-metadata:HpcMetadataEntries" />
+			<xsd:element name="collection"
+				type="hpc-domain-datamanagement:HpcCollection" />
+			<xsd:element name="metadataEntries"
+				type="hpc-domain-metadata:HpcMetadataEntries" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:element name="HpcCollectionListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:choice>
 					<xsd:element name="collections"
-					             type="hpc-dto-datamanagement:HpcCollectionDTO"
-						         minOccurs="0" maxOccurs="unbounded" />
+						type="hpc-dto-datamanagement:HpcCollectionDTO" minOccurs="0"
+						maxOccurs="unbounded" />
 					<xsd:element name="collectionPaths" type="xsd:string"
-						         minOccurs="0" maxOccurs="unbounded" />
+						minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
 				<xsd:element name="page" type="xsd:int" minOccurs="0" />
 				<xsd:element name="limit" type="xsd:int" minOccurs="0" />
 				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<!-- Data Object DTO -->
-    <xsd:element name="HpcDataObjectRegistrationRequestDTO">
+	<xsd:element name="HpcDataObjectRegistrationRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="source"
-				             type="hpc-domain-datatransfer:HpcFileLocation" />
-				<xsd:element name="generateUploadRequestURL" type="xsd:boolean" minOccurs="0" />
+					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="generateUploadRequestURL" type="xsd:boolean"
+					minOccurs="0" />
 				<xsd:element name="callerObjectId" type="xsd:string" />
-				<xsd:element name="metadataEntries" 
-				             type="hpc-domain-metadata:HpcMetadataEntry" 
-					         maxOccurs="unbounded" />
-				<xsd:element name="createParentCollections" type="xsd:boolean" minOccurs="0" />
-				<xsd:element name="parentCollectionMetadataEntries" 
-				             type="hpc-domain-metadata:HpcMetadataEntry" 
-					         maxOccurs="unbounded" />
+				<xsd:element name="metadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
+					maxOccurs="unbounded" />
+				<xsd:element name="createParentCollections" type="xsd:boolean"
+					minOccurs="0" />
+				<xsd:element name="parentCollectionMetadataEntries"
+					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
 				<xsd:element name="checksum" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:element name="HpcDataObjectRegistrationResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="registered" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="registered" type="xsd:boolean"
+					minOccurs="0" />
 				<xsd:element name="uploadRequestURL" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:complexType name="HpcDataObjectRegistrationItemDTO">
 		<xsd:sequence>
-		    <xsd:element name="path" type="xsd:string" />
-			<xsd:element name="source" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="source"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
-			<xsd:element name="selfMetadataEntries" 
-			             type="hpc-domain-metadata:HpcMetadataEntry" 
-				         maxOccurs="unbounded" />
-			<xsd:element name="createParentCollections" type="xsd:boolean" minOccurs="0" />
-			<xsd:element name="parentCollectionMetadataEntries" 
-			             type="hpc-domain-metadata:HpcMetadataEntry" 
-				         maxOccurs="unbounded" />
+			<xsd:element name="selfMetadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
+				maxOccurs="unbounded" />
+			<xsd:element name="createParentCollections" type="xsd:boolean"
+				minOccurs="0" />
+			<xsd:element name="parentCollectionMetadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
+				maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDirectoryScanRegistrationItemDTO">
 		<xsd:sequence>
-		    <xsd:element name="basePath" type="xsd:string" />
-			<xsd:element name="scanDirectoryLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="basePath" type="xsd:string" />
+			<xsd:element name="scanDirectoryLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
-			<xsd:element name="includePatterns" type="xsd:string" 
-				         minOccurs="0" maxOccurs="unbounded" />
-		    <xsd:element name="excludePatterns" type="xsd:string" 
-			             minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="patternType" type="hpc-domain-datatransfer:HpcDirectoryScanPatternType" />            
+			<xsd:element name="includePatterns" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="excludePatterns" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="patternType"
+				type="hpc-domain-datatransfer:HpcDirectoryScanPatternType" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:element name="HpcBulkDataObjectRegistrationRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO" 
-				             minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="directoryScanRegistrationItems" type="hpc-dto-datamanagement:HpcDirectoryScanRegistrationItemDTO" 
-				             minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="dataObjectRegistrationItems"
+					type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="directoryScanRegistrationItems"
+					type="hpc-dto-datamanagement:HpcDirectoryScanRegistrationItemDTO"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="dryRun" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="HpcBulkDataObjectRegistrationResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="taskId" type="xsd:string" />
-			    <xsd:element name="dataObjectRegistrationItems" type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO" 
-				             minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="taskId" type="xsd:string" />
+				<xsd:element name="dataObjectRegistrationItems"
+					type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO"
+					minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
+	<xsd:complexType name="HpcBulkDataObjectRegistrationTaskDTO">
+		<xsd:sequence>
+			<xsd:element name="taskId" type="xsd:string" />
+			<xsd:element name="taskStatus"
+				type="hpc-domain-datamanagement:HpcBulkDataObjectRegistrationTaskStatus" />
+			<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="completedItems"
+				type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="failedItems"
+				type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="inProgressItems"
+				type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="completed" type="xsd:dateTime" />
+		</xsd:sequence>
+	</xsd:complexType>
+
 	<xsd:element name="HpcBulkDataObjectRegistrationStatusDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="inProgress" type="xsd:boolean" />
-				<xsd:element name="taskStatus" type="hpc-domain-datamanagement:HpcBulkDataObjectRegistrationTaskStatus" />
-				<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
-				<xsd:element name="completedItems" type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="failedItems" type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="inProgressItems" type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="message" type="xsd:string" />
-				<xsd:element name="created" type="xsd:dateTime" />
-				<xsd:element name="completed" type="xsd:dateTime" />
+				<xsd:element name="task"
+					type="hpc-dto-datamanagement:HpcBulkDataObjectRegistrationTaskDTO" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-		
+
+	<xsd:element name="HpcRegistrationSummaryDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="activeTasks"
+					type="hpc-dto-datamanagement:HpcBulkDataObjectRegistrationTaskDTO"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="completedTasks"
+					type="hpc-dto-datamanagement:HpcBulkDataObjectRegistrationTaskDTO"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="page" type="xsd:int" />
+				<xsd:element name="limit" type="xsd:int" />
+				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
 	<xsd:complexType name="HpcDataObjectDTO">
 		<xsd:sequence>
-			<xsd:element name="dataObject" 
-			             type="hpc-domain-datamanagement:HpcDataObject" />
-			<xsd:element name="metadataEntries" type="hpc-domain-metadata:HpcMetadataEntries" />
+			<xsd:element name="dataObject"
+				type="hpc-domain-datamanagement:HpcDataObject" />
+			<xsd:element name="metadataEntries"
+				type="hpc-domain-metadata:HpcMetadataEntries" />
 			<xsd:element name="transferPercentCompletion" type="xsd:string"
-			             minOccurs="0" />
+				minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:element name="HpcDataObjectListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:choice>
 					<xsd:element name="dataObjects"
-				             	 type="hpc-dto-datamanagement:HpcDataObjectDTO"
-					             minOccurs="0" maxOccurs="unbounded" />
+						type="hpc-dto-datamanagement:HpcDataObjectDTO" minOccurs="0"
+						maxOccurs="unbounded" />
 					<xsd:element name="dataObjectPaths" type="xsd:string"
-					             minOccurs="0" maxOccurs="unbounded" />
+						minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
 				<xsd:element name="page" type="xsd:int" minOccurs="0" />
 				<xsd:element name="limit" type="xsd:int" minOccurs="0" />
 				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<!-- Permissions DTO -->
 	<xsd:element name="HpcEntityPermissionsDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="userPermissions"
-				             type="hpc-domain-datamanagement:HpcUserPermission"
-					         minOccurs="0" maxOccurs="unbounded" />
+					type="hpc-domain-datamanagement:HpcUserPermission" minOccurs="0"
+					maxOccurs="unbounded" />
 				<xsd:element name="groupPermissions"
-				             type="hpc-domain-datamanagement:HpcGroupPermission"
-					         minOccurs="0" maxOccurs="unbounded" />
+					type="hpc-domain-datamanagement:HpcGroupPermission" minOccurs="0"
+					maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:element name="HpcUserPermissionDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" />
+				<xsd:element name="permission"
+					type="hpc-domain-datamanagement:HpcPermission" />
 				<xsd:element name="userId" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 
-    <xsd:element name="HpcUserPermOnOneCollectionDTO">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element name="collectionPath" type="xsd:string" />
-                <xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" />
-                <xsd:element name="userId" type="xsd:string" />
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
+	<xsd:element name="HpcUserPermOnOneCollectionDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="collectionPath" type="xsd:string" />
+				<xsd:element name="permission"
+					type="hpc-domain-datamanagement:HpcPermission" />
+				<xsd:element name="userId" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 	<xsd:element name="HpcUserPermsOnManyCollectionsDTO">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element name="permissionsXCollections"
-                             type="hpc-domain-datamanagement:HpcUserPermOnOneCollection"
-                             minOccurs="0" maxOccurs="unbounded">
-                </xsd:element>
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="permissionsXCollections"
+					type="hpc-domain-datamanagement:HpcUserPermOnOneCollection"
+					minOccurs="0" maxOccurs="unbounded">
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 	<xsd:element name="HpcUserPermsForCollectionsDTO">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element name="userId" type="xsd:string" />
-                <xsd:element name="permissionsForCollections"
-                             type="hpc-domain-datamanagement:HpcPermissionForCollection"
-                             minOccurs="0" maxOccurs="unbounded" />
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="userId" type="xsd:string" />
+				<xsd:element name="permissionsForCollections"
+					type="hpc-domain-datamanagement:HpcPermissionForCollection"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
-    <xsd:element name="HpcPermsForCollectionsDTO">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element name="collectionPermissions"
-                             type="hpc-domain-datamanagement:HpcPermissionsForCollection"
-                             minOccurs="0" maxOccurs="unbounded" />
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
+	<xsd:element name="HpcPermsForCollectionsDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="collectionPermissions"
+					type="hpc-domain-datamanagement:HpcPermissionsForCollection"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
-    <xsd:complexType name="HpcUserPermissionResponseDTO">
+	<xsd:complexType name="HpcUserPermissionResponseDTO">
 		<xsd:sequence>
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="result" type="xsd:boolean" />
 			<xsd:element name="message" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcGroupPermissionResponseDTO">
 		<xsd:sequence>
 			<xsd:element name="groupName" type="xsd:string" />
@@ -273,46 +304,49 @@
 	</xsd:complexType>
 
 	<xsd:element name="HpcEntityPermissionsResponseDTO">
-		<xsd:complexType> 
+		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="userPermissionResponses"
-				             type="hpc-dto-datamanagement:HpcUserPermissionResponseDTO"
-					         minOccurs="0" maxOccurs="unbounded" />
+					type="hpc-dto-datamanagement:HpcUserPermissionResponseDTO"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="groupPermissionResponses"
-				             type="hpc-dto-datamanagement:HpcGroupPermissionResponseDTO"
-					         minOccurs="0" maxOccurs="unbounded" />
+					type="hpc-dto-datamanagement:HpcGroupPermissionResponseDTO"
+					minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<!-- Download DTO -->
 	<xsd:element name="HpcDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="destination"
-				             type="hpc-domain-datatransfer:HpcFileLocation" />
+					type="hpc-domain-datatransfer:HpcFileLocation" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:element name="HpcDataObjectDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="taskId" type="xsd:string" />
-				<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="taskId" type="xsd:string" />
+				<xsd:element name="destinationLocation"
+					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="HpcDataObjectDownloadStatusDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="inProgress" type="xsd:boolean" />
-			    <xsd:element name="path" type="xsd:string" />
+				<xsd:element name="path" type="xsd:string" />
 				<xsd:element name="dataTransferRequestId" type="xsd:string" />
-				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="dataTransferType"
+					type="hpc-domain-datatransfer:HpcDataTransferType" />
+				<xsd:element name="destinationLocation"
+					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="message" type="xsd:string" />
 				<xsd:element name="created" type="xsd:dateTime" />
@@ -320,134 +354,145 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="HpcCollectionDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="taskId" type="xsd:string" />
-			    <xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="taskId" type="xsd:string" />
+				<xsd:element name="destinationLocation"
+					type="hpc-domain-datatransfer:HpcFileLocation" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:element name="HpcCollectionDownloadStatusDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="inProgress" type="xsd:boolean" />
-				<xsd:element name="taskStatus" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
-			    <xsd:element name="path" type="xsd:string" />
-			    <xsd:element name="dataObjectPaths" type="xsd:string" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="taskStatus"
+					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
+				<xsd:element name="path" type="xsd:string" />
+				<xsd:element name="dataObjectPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="destinationLocation"
+					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
-				<xsd:element name="completedItems" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="failedItems" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="inProgressItems" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
-			                 minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="completedItems"
+					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="failedItems"
+					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="inProgressItems"
+					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="message" type="xsd:string" />
 				<xsd:element name="created" type="xsd:dateTime" />
 				<xsd:element name="completed" type="xsd:dateTime" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="HpcBulkDataObjectDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="path" type="xsd:string" /> 
-				<xsd:element name="dataObjectPaths" type="xsd:string" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="destination"
-				             type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="path" type="xsd:string" />
+				<xsd:element name="dataObjectPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="destination"
+					type="hpc-domain-datatransfer:HpcFileLocation" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:element name="HpcBulkDataObjectDownloadResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="taskId" type="xsd:string" />
-			    <xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
-			    <xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
+				<xsd:element name="taskId" type="xsd:string" />
+				<xsd:element name="destinationLocation"
+					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:element name="HpcDownloadSummaryDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="activeTasks" type="hpc-domain-datatransfer:HpcUserDownloadRequest" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="completedTasks" type="hpc-domain-datatransfer:HpcUserDownloadRequest" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="page" type="xsd:int" />
+				<xsd:element name="activeTasks"
+					type="hpc-domain-datatransfer:HpcUserDownloadRequest" minOccurs="0"
+					maxOccurs="unbounded" />
+				<xsd:element name="completedTasks"
+					type="hpc-domain-datatransfer:HpcUserDownloadRequest" minOccurs="0"
+					maxOccurs="unbounded" />
+				<xsd:element name="page" type="xsd:int" />
 				<xsd:element name="limit" type="xsd:int" />
 				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
-	<!--  Data Object Delete Response DTO -->
+
+	<!-- Data Object Delete Response DTO -->
 	<xsd:element name="HpcDataObjectDeleteResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="dataManagementDeleteStatus" type="xsd:boolean" />
-			    <xsd:element name="archiveDeleteStatus" type="xsd:boolean" />
-			    <xsd:element name="message" type="xsd:string" />
+				<xsd:element name="dataManagementDeleteStatus" type="xsd:boolean" />
+				<xsd:element name="archiveDeleteStatus" type="xsd:boolean" />
+				<xsd:element name="message" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
-	<!--  Data Management Model DTO -->
+	</xsd:element>
+
+	<!-- Data Management Model DTO -->
 	<xsd:complexType name="HpcDataManagementRulesDTO">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
-		    <xsd:element name="basePath" type="xsd:string" />
+			<xsd:element name="basePath" type="xsd:string" />
 			<xsd:element name="collectionMetadataValidationRules"
-			             type="hpc-domain-metadata:HpcMetadataValidationRule"
-				         minOccurs="0" maxOccurs="unbounded" />
+				type="hpc-domain-metadata:HpcMetadataValidationRule" minOccurs="0"
+				maxOccurs="unbounded" />
 			<xsd:element name="dataObjectMetadataValidationRules"
-			             type="hpc-domain-metadata:HpcMetadataValidationRule"
-				         minOccurs="0" maxOccurs="unbounded" />
+				type="hpc-domain-metadata:HpcMetadataValidationRule" minOccurs="0"
+				maxOccurs="unbounded" />
 			<xsd:element name="dataHierarchy"
-			             type="hpc-domain-datamanagement:HpcDataHierarchy" />
+				type="hpc-domain-datamanagement:HpcDataHierarchy" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDocDataManagementRulesDTO">
 		<xsd:sequence>
-		    <xsd:element name="doc" type="xsd:string" />
-			<xsd:element name="rules" type="hpc-dto-datamanagement:HpcDataManagementRulesDTO"
-				         minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="doc" type="xsd:string" />
+			<xsd:element name="rules"
+				type="hpc-dto-datamanagement:HpcDataManagementRulesDTO" minOccurs="0"
+				maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:element name="HpcDataManagementModelDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-			    <xsd:element name="docRules" type="hpc-dto-datamanagement:HpcDocDataManagementRulesDTO" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="collectionSystemGeneratedMetadataAttributeNames" type="xsd:string" 
-			                 minOccurs="0" maxOccurs="unbounded" />
-			    <xsd:element name="dataObjectSystemGeneratedMetadataAttributeNames" type="xsd:string" 
-			                 minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="docRules"
+					type="hpc-dto-datamanagement:HpcDocDataManagementRulesDTO"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="collectionSystemGeneratedMetadataAttributeNames"
+					type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="dataObjectSystemGeneratedMetadataAttributeNames"
+					type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:element name="HpcMetadataAttributesListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="collectionMetadataAttributes" 
-				             type="hpc-domain-metadata:HpcMetadataLevelAttributes"
-					         minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="dataObjectMetadataAttributes" 
-				             type="hpc-domain-metadata:HpcMetadataLevelAttributes"
-					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="collectionMetadataAttributes"
+					type="hpc-domain-metadata:HpcMetadataLevelAttributes" minOccurs="0"
+					maxOccurs="unbounded" />
+				<xsd:element name="dataObjectMetadataAttributes"
+					type="hpc-domain-metadata:HpcMetadataLevelAttributes" minOccurs="0"
+					maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 </xsd:schema>
