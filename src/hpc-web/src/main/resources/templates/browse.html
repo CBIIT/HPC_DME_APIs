@@ -241,16 +241,21 @@ $(function() {
 });
 
 
-//$('#tree1').on('click', '.refresh', function(e) {	
+$('#tree1').on('click', '.refresh', function(e) {	
+	e.stopImmediatePropagation();
+	var node_id = $(e.target).data('node-id');
+    var node = $('#tree1').tree('getNodeById', node_id);
+    refreshNode(node);
+)};
+
+
 function refreshNode(node) {
-	//e.stopImmediatePropagation();
-	//var node_id = $(e.target).data('node-id');
-    //var node = $('#tree1').tree('getNodeById', node_id);
     
     var node_id = node.id;
 
     console.log('refresh: ' + node_id);
 	console.log('node: ' + node);
+
 	document.getElementById("refreshNode").value = node_id;
 	document.getElementById("selectedNodePath").value = node.fullPath;
     document.getElementById("processingIcon"+node.id).style.visibility = "visible";
