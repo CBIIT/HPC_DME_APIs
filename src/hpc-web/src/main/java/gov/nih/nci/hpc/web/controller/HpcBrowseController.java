@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -126,7 +127,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					browserEntry.setFullPath(path);
 					browserEntry.setId(path);
 					browserEntry.setName(path);
-					browserEntry = getTreeNodes(path, browserEntry, authToken, model, false, true);
+					browserEntry = getTreeNodes(path, browserEntry, authToken, model, false, true, false);
 					if (request.getParameter("base") == null)
 						browserEntry = addPathEntries(path, browserEntry);
 					browserEntry = trimPath(browserEntry, browserEntry.getName());
@@ -193,7 +194,17 @@ public class HpcBrowseController extends AbstractHpcController {
 			final RedirectAttributes redirectAttributes, String refreshNode) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
-		log.info("refreshNode: " + refreshNode);
+		boolean getChildren = false;
+		boolean refresh = false;
+
+		if(!StringUtils.isBlank(refreshNode)) {
+			getChildren = true;
+			refresh = true;
+		}
+		log.info("refreshNode            : " + refreshNode);
+		log.info("browserEntry (session) : " + browserEntry);
+		log.info("browserEntry (model)   : " + hpcBrowserEntry);
+		log.info("getChildren            : " + getChildren);
 
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
@@ -201,7 +212,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				// session.setAttribute("selectedBrowsePath",
 				// hpcBrowserEntry.getSelectedNodePath());
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry, authToken,
-						model, false, hpcBrowserEntry.isPartial());
+						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
 				if (hpcBrowserEntry.isPartial())
 					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
 
@@ -229,19 +240,26 @@ public class HpcBrowseController extends AbstractHpcController {
 	 * @param authToken
 	 * @param model
 	 * @param getChildren
+	 * @param refresh
 	 * @return
 	 */
 	private HpcBrowserEntry getTreeNodes(String path, HpcBrowserEntry browserEntry, String authToken, Model model,
-			boolean getChildren, boolean partial) {
+										 boolean getChildren, boolean partial, boolean refresh) {
 		path = path.trim();
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
-		if (selectedEntry != null && selectedEntry.isPopulated())
+		log.info("selectedEntry: " + selectedEntry);
+		log.info("partial: " + partial);
+		log.info("populated: " + selectedEntry.isPopulated());
+
+		if (selectedEntry != null && selectedEntry.isPopulated() && !refresh)
 			return partial ? selectedEntry : browserEntry;
 		if (selectedEntry != null && selectedEntry.getChildren() != null)
+			log.info("clearing children");
 			selectedEntry.getChildren().clear();
 		if (selectedEntry == null)
 			selectedEntry = new HpcBrowserEntry();
 
+		log.info("getting collection at path: " + path);
 		HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionURL, path, true, false,
 				sslCertPath, sslCertPassword);
 
@@ -264,7 +282,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				listChildEntry.setPopulated(false);
 				if (getChildren)
 					listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false,
-							partial);
+							partial, false);
 				else {
 					HpcBrowserEntry emptyEntry = new HpcBrowserEntry();
 					emptyEntry.setName("");
