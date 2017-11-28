@@ -105,6 +105,9 @@
 		<constructor-arg value="${hpc.service.dataTransfer.downloadDirectory}" index="1" />
 	</bean>
 	
+	<bean id="hpcRegistrationResultsPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
+		<constructor-arg value="${hpc.service.dataManagement.registrationResultsPageSize}" />
+	</bean>
 	<bean id="hpcDataManagementService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementServiceImpl" >
 		<constructor-arg value="${hpc.service.dataManagement.systemAdminSubjects}" />
 	</bean>
