@@ -178,6 +178,7 @@
 											<li><a href="#addDatafile">Add Datafile</a></li>
  											<li class="divider"></li>
 											<li><a href="#addBulk">Add Bulk (Globus)</a></li>
+											<li class="divider"></li>
 											<li><a href="#refreshNode">Refresh Node</a></li>
 									</ul>	
 								</div>
@@ -233,7 +234,7 @@ $(function() {
                 $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
 //                $li.find('.jqtree-element').append('<a href="#' + node.id + '" class="refresh" data-node-id="' + node.id + '">refresh</i></a>');
 //                $li.find('.jqtree-element').append('<a href="#node-' + node.id + '" class="refresh" data-node-id="' + node.id + '"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
-//                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
+                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
 
             }
         }        
@@ -246,15 +247,13 @@ $('#tree1').on('click', '.refresh', function(e) {
 	var node_id = $(e.target).data('node-id');
     var node = $('#tree1').tree('getNodeById', node_id);
     refreshNode(node);
-)};
+});
 
-
-function refreshNode(node) {
-    
+function refreshNode(node) {    
     var node_id = node.id;
+    var parent_node = node.parent;
 
-    console.log('refresh: ' + node_id);
-	console.log('node: ' + node);
+    console.log('refresh : ' + node_id);
 
 	document.getElementById("refreshNode").value = node_id;
 	document.getElementById("selectedNodePath").value = node.fullPath;
@@ -262,7 +261,7 @@ function refreshNode(node) {
 	document.getElementById("selectedNodeId").value = node.id;
 	document.getElementById("scrollLoc").value = scrollLoc;
 
-	$('#tree').tree('loadDataFromUrl', node_id, node);
+	//$('#tree').tree('loadDataFromUrl', node_id, node);
 	$("#browseForm").submit();
 	$('#tree1').tree('openNode', node);
     $('#tree1').tree('selectNode', node);
@@ -335,11 +334,8 @@ $('#tree1').jqTreeContextMenu($('#myMenu'), {
     	window.location = "/addbulk?parent="+node.fullPath+"&source=browse&init";
     },
     "refreshNode": function (node) {
-    	console.log("refresh node: " + node.id);
     	refreshNode(node);
     }
-
-
 }); 
 
 /*]]>*/
