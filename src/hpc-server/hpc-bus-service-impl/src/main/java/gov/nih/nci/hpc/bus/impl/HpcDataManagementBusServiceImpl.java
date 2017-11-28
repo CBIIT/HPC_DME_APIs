@@ -54,7 +54,9 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -64,6 +66,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -87,6 +90,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
@@ -430,10 +434,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Override
 	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount) throws HpcException {
-		// Get the request invoker user-id
+		// Get the request invoker user-id.
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 
-		// Populate the DTO with active and completed sownload requests for this user.
+		// Populate the DTO with active and completed download requests for this user.
 		HpcDownloadSummaryDTO downloadSummary = new HpcDownloadSummaryDTO();
 		downloadSummary.getActiveTasks().addAll(dataTransferService.getDownloadRequests(userId));
 		downloadSummary.getCompletedTasks().addAll(dataTransferService.getDownloadResults(userId, page));
@@ -756,20 +760,40 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationStatus.setInProgress(taskStatus.getInProgress());
 		if (taskStatus.getInProgress()) {
 			// Registration in progress. Populate the DTO accordingly.
-			registrationStatus.setCreated(taskStatus.getTask().getCreated());
-			registrationStatus.setTaskStatus(taskStatus.getTask().getStatus());
-			populateRegistrationItems(registrationStatus, taskStatus.getTask().getItems());
+			registrationStatus.setTask(toBulkDataObjectRegistrationTaskDTO(taskStatus.getTask()));
 
 		} else {
 			// Download completed or failed. Populate the DTO accordingly.
-			registrationStatus.setCreated(taskStatus.getResult().getCreated());
-			registrationStatus.setCompleted(taskStatus.getResult().getCompleted());
-			registrationStatus.setMessage(taskStatus.getResult().getMessage());
-			registrationStatus.setResult(taskStatus.getResult().getResult());
-			populateRegistrationItems(registrationStatus, taskStatus.getResult().getItems());
+			registrationStatus.setTask(toBulkDataObjectRegistrationTaskDTO(taskStatus.getResult()));
 		}
 
 		return registrationStatus;
+	}
+
+	@Override
+	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount) throws HpcException {
+		// Get the request invoker user-id.
+		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
+
+		// Populate the DTO with active and completed registration requests for this
+		// user.
+		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
+		dataManagementService.getRegistrationTasks(userId).forEach(
+				task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task)));
+		dataManagementService.getRegistrationResults(userId, page).forEach(
+				result -> registrationSummary.getCompletedTasks().add(toBulkDataObjectRegistrationTaskDTO(result)));
+
+		int limit = dataManagementService.getRegistrationResultsPageSize();
+		registrationSummary.setPage(page);
+		registrationSummary.setLimit(limit);
+
+		if (totalCount) {
+			int count = registrationSummary.getCompletedTasks().size();
+			registrationSummary.setTotalCount(
+					(page == 1 && count < limit) ? count : dataManagementService.getRegistrationResultsCount(userId));
+		}
+
+		return registrationSummary;
 	}
 
 	@Override
@@ -1563,29 +1587,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	/**
-	 * Split the list of registration items into completed, failed and in-progress
-	 * buckets.
-	 * 
-	 * @param registrationStatus
-	 *            The registration status to populate the items into.
-	 * @param items
-	 *            The registration items.
-	 */
-	private void populateRegistrationItems(HpcBulkDataObjectRegistrationStatusDTO registrationStatus,
-			List<HpcBulkDataObjectRegistrationItem> items) {
-		for (HpcBulkDataObjectRegistrationItem item : items) {
-			Boolean result = item.getTask().getResult();
-			if (result == null) {
-				registrationStatus.getInProgressItems().add(item.getTask());
-			} else if (result) {
-				registrationStatus.getCompletedItems().add(item.getTask());
-			} else {
-				registrationStatus.getFailedItems().add(item.getTask());
-			}
-		}
-	}
-
-	/**
 	 * Calculate MD5 checksum of the file and compare it to the value provided.
 	 * 
 	 * @param file
@@ -1775,5 +1776,70 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		return null;
+	}
+
+	/**
+	 * Convert a bulk registration task DTO from a registration task domain object.
+	 * 
+	 * @param task
+	 *            bulk registration task domain object to convert The data object
+	 *            path.
+	 * @return a bulk registration task DTO.
+	 */
+	private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
+			HpcBulkDataObjectRegistrationTask task) {
+		HpcBulkDataObjectRegistrationTaskDTO taskDTO = new HpcBulkDataObjectRegistrationTaskDTO();
+		taskDTO.setTaskId(task.getId());
+		taskDTO.setCreated(task.getCreated());
+		taskDTO.setTaskStatus(task.getStatus());
+		populateRegistrationItems(taskDTO, task.getItems());
+		return taskDTO;
+	}
+
+	/**
+	 * Convert a bulk registration task DTO from a registration result domain
+	 * object.
+	 * 
+	 * @param result
+	 *            bulk registration result domain object to convert The data object
+	 *            path.
+	 * @return a bulk registration task DTO.
+	 */
+	private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
+			HpcBulkDataObjectRegistrationResult result) {
+		HpcBulkDataObjectRegistrationTaskDTO taskDTO = new HpcBulkDataObjectRegistrationTaskDTO();
+		taskDTO.setTaskId(result.getId());
+		taskDTO.setCreated(result.getCreated());
+		taskDTO.setCompleted(result.getCompleted());
+		taskDTO.setMessage(result.getMessage());
+		taskDTO.setResult(result.getResult());
+		populateRegistrationItems(taskDTO, result.getItems());
+		return taskDTO;
+
+		// Download completed or failed. Populate the DTO accordingly.
+
+	}
+
+	/**
+	 * Split the list of registration items into completed, failed and in-progress
+	 * buckets.
+	 * 
+	 * @param taskDTO
+	 *            The registration task DTO to populate the items into.
+	 * @param items
+	 *            The registration items.
+	 */
+	private void populateRegistrationItems(HpcBulkDataObjectRegistrationTaskDTO taskDTO,
+			List<HpcBulkDataObjectRegistrationItem> items) {
+		for (HpcBulkDataObjectRegistrationItem item : items) {
+			Boolean result = item.getTask().getResult();
+			if (result == null) {
+				taskDTO.getInProgressItems().add(item.getTask());
+			} else if (result) {
+				taskDTO.getCompletedItems().add(item.getTask());
+			} else {
+				taskDTO.getFailedItems().add(item.getTask());
+			}
+		}
 	}
 }
