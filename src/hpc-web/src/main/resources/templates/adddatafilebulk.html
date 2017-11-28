@@ -61,6 +61,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var attributeNames = [[${attributeNames}]];
+    var action = [[${useraction}]];
 /*]]>*/
 </script>
 
@@ -554,6 +555,11 @@
    	        content: 'Please see this link for the list of regular expression constructs: https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html',
    	        html: true
    	    }); 
+   	    
+   	    if(action != null && action != "" && action =="refresh")
+   	   	  	$("#basePath").focus();
+   	    else if (action != null && action != "" && action =="globus")  	  
+   	 		$("#includeCriteria").focus();
    	});
    	
 //]]>	
