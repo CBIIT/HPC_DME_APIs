@@ -172,7 +172,7 @@
 										<div id="tree1"></div>										
 									</div>
 									
-									<ul id="myMenu" class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+									<ul id="myMenu" class="dropdown-menu" style="position: fixed;" role="menu" aria-labelledby="dLabel">
 											<li><a href="#addCollection">Add Collection</a></li>
  											<li class="divider"></li>
 											<li><a href="#addDatafile">Add Datafile</a></li>
@@ -232,9 +232,7 @@ $(function() {
             if (node.collection) {
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
                 $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
-//                $li.find('.jqtree-element').append('<a href="#' + node.id + '" class="refresh" data-node-id="' + node.id + '">refresh</i></a>');
-//                $li.find('.jqtree-element').append('<a href="#node-' + node.id + '" class="refresh" data-node-id="' + node.id + '"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
-                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
+//                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
 
             }
         }        
@@ -251,21 +249,23 @@ $('#tree1').on('click', '.refresh', function(e) {
 
 function refreshNode(node) {    
     var node_id = node.id;
-    var parent_node = node.parent;
+    //console.log('refresh : ' + node_id);
 
-    console.log('refresh : ' + node_id);
+    if(node.parent.id) { 
+        console.log('parent: ' + node.parent.id);
+        document.getElementById("refreshNode").value = node_id;
+    
+        document.getElementById("selectedNodePath").value = node.fullPath;
+        document.getElementById("processingIcon"+node.id).style.visibility = "visible";
+        document.getElementById("selectedNodeId").value = node.id;
+        document.getElementById("scrollLoc").value = scrollLoc;
 
-	document.getElementById("refreshNode").value = node_id;
-	document.getElementById("selectedNodePath").value = node.fullPath;
-    document.getElementById("processingIcon"+node.id).style.visibility = "visible";
-	document.getElementById("selectedNodeId").value = node.id;
-	document.getElementById("scrollLoc").value = scrollLoc;
-
-	//$('#tree').tree('loadDataFromUrl', node_id, node);
-	$("#browseForm").submit();
-	$('#tree1').tree('openNode', node);
-    $('#tree1').tree('selectNode', node);
-    //location.href = "browse?refresh&refreshNode=" + node.fullPath;
+        $("#browseForm").submit();
+        $('#tree1').tree('openNode', node);
+        $('#tree1').tree('selectNode', node);
+    } else {
+        location.href = "browse?base";
+    }
 }//);
 
 //bind 'tree.click' event
@@ -274,7 +274,6 @@ $('#tree1').bind(
     function(event) {
         // The clicked node is 'event.node'
         var node = event.node;
-        console.log("click: " + node.fullPath);
         if(node.collection)
         	location.href = "collection?action=view&path="+node.fullPath;
         else
