@@ -190,9 +190,10 @@ public class HpcBrowseController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.POST)
 	public String browse(@Valid @ModelAttribute("hpcBrowse") HpcBrowserEntry hpcBrowserEntry, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
-			final RedirectAttributes redirectAttributes) {
+			final RedirectAttributes redirectAttributes, String refreshNode) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
+		log.info("refreshNode: " + refreshNode);
 
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
