@@ -71,7 +71,7 @@
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Data Objects (Collection)
+							<li><i class="fa fa-list-alt"></i>Data Objects Bulk
 								Upload Task Details</li>
 						</ol>
 					</div>
@@ -82,7 +82,7 @@
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading"
-								th:if="${hpcDataObjectsUploadStatusDTO != null}">
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO != null}">
 								<i class="fa fa-list-alt red"></i><strong>Task Details</strong>
 							</div>
 							<div th:if="${error != null}">
@@ -93,137 +93,114 @@
 							</div>
 							<!--panel-body start-->
 							<div class="panel-body"
-								th:if="${hpcDataObjectsUploadStatusDTO != null}">
-								<div class="modal fade" id="downloadModal" tabindex="-1"
-									role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-									<div class="modal-dialog">
-										<div class="modal-content"></div>
-										<!-- /.modal-content -->
-									</div>
-									<!-- /.modal-dialog -->
-								</div>
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO != null}">
 								<div class="form-group">
 									<div class="col-md-12 form-group">
-										<label for="Name">Path:</label> <label
-											for="${hpcDataObjectsUploadStatusDTO.getPath()}"
-											th:text="${hpcDataObjectsUploadStatusDTO.getPath()}"></label>
+										<label for="Name">Task Id:</label> <label
+											for="${hpcBulkDataObjectRegistrationTaskDTO.getTaskId()}"
+											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getTaskId()}"></label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsUploadStatusDTO.getTaskStatus() != null}">
+									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getTaskStatus() != null}">
 										<label for="Name">Task Status:</label> <label
-											for="${hpcDataObjectsUploadStatusDTO.getTaskStatus().value()}"
-											th:text="${hpcDataObjectsUploadStatusDTO.getTaskStatus().value()}"></label>
+											for="${hpcBulkDataObjectRegistrationTaskDTO.getTaskStatus().value()}"
+											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getTaskStatus().value()}"></label>
 									</div>
-									<div class="col-md-12 form-group">
-										<label for="Name">Destination Endpoint:</label> <label
-											for="${hpcDataObjectsUploadStatusDTO.getDestinationLocation().getFileContainerId()}"
-											th:text="${hpcDataObjectsUploadStatusDTO.getDestinationLocation().getFileContainerId()}"></label>
+									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getResult() != null}">
+										<label for="Name">Registration Completed:</label> <label
+											for="${hpcBulkDataObjectRegistrationTaskDTO.getResult()}"
+											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getResult()}"></label>
 									</div>
-									<div class="col-md-12 form-group">
-										<label for="Name">Destination Endpoint Path:</label> <label
-											for="${hpcDataObjectsUploadStatusDTO.getDestinationLocation().getFileId()}"
-											th:text="${hpcDataObjectsUploadStatusDTO.getDestinationLocation().getFileId()}"></label>
+									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getResult() == null}">
+										<label for="Name">Registration Completed:</label> <label>In Progress</label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsUploadStatusDTO.getResult() != null}">
-										<label for="Name">Transfer Completed:</label> <label
-											for="${hpcDataObjectsUploadStatusDTO.getResult()}"
-											th:text="${hpcDataObjectsUploadStatusDTO.getResult()}"></label>
-									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsUploadStatusDTO.getResult() == null}">
-										<label for="Name">Transfer Completed:</label> <label>In Progress</label>
-									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsUploadStatusDTO.getMessage() != null}">
+									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getMessage() != null}">
 										<label for="Name">Message:</label> <label
-											for="${hpcDataObjectsUploadStatusDTO.getMessage()}"
-											th:text="${hpcDataObjectsUploadStatusDTO.getMessage()}"></label>
+											for="${hpcBulkDataObjectRegistrationTaskDTO.getMessage()}"
+											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getMessage()}"></label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsUploadStatusDTO.getCreated() != null}">
-										<label for="textbox1">Transfer Created on:</label> <label
-											for="${hpcDataObjectsUploadStatusDTO.getCreated()}"
-											th:text="${#calendars.format(hpcDataObjectsUploadStatusDTO.getCreated(),'dd MMMM yyyy hh:mm:ss')}"></label>
+									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCreated() != null}">
+										<label for="textbox1">Registration Created on:</label> <label
+											for="${hpcBulkDataObjectRegistrationTaskDTO.getCreated()}"
+											th:text="${#calendars.format(hpcBulkDataObjectRegistrationTaskDTO.getCreated(),'dd MMMM yyyy hh:mm:ss')}"></label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${hpcDataObjectsUploadStatusDTO.getCompleted() != null}">
-										<label for="textbox1">Transfer Completed on:</label> <label
-											for="${hpcDataObjectsUploadStatusDTO.getCompleted()}"
-											th:text="${#calendars.format(hpcDataObjectsUploadStatusDTO.getCompleted(),'dd MMMM yyyy hh:mm:ss')}"></label>
+									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCompleted() != null}">
+										<label for="textbox1">Registration Completed on:</label> <label
+											for="${hpcBulkDataObjectRegistrationTaskDTO.getCompleted()}"
+											th:text="${#calendars.format(hpcBulkDataObjectRegistrationTaskDTO.getCompleted(),'dd MMMM yyyy hh:mm:ss')}"></label>
 									</div>
 								</div>
 
 							</div>
-							<div class="panel-heading" th:if="${hpcDataObjectsUploadStatusDTO.getInProgressItems().size() > 0}">
+							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() > 0}">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
 								</h2>
 							</div>
 							<div class="panel-body"
-								th:if="${hpcDataObjectsUploadStatusDTO.getInProgressItems().size() > 0}">
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionUploadTaskItem : ${hpcDataObjectsUploadStatusDTO.getInProgressItems()}" style="margin-top:5px" >
+									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems()}" style="margin-top:5px" >
 									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> <label
-											for="${hpcCollectionUploadTaskItem.getPath()}"
-											th:text="${hpcCollectionUploadTaskItem.getPath()}"></label>
+											for="${hpcUploadTaskItem.getPath()}"
+											th:text="${hpcUploadTaskItem.getPath()}"></label>
 									</div>
-									<div class="col-md-12 form-group">
-										<label for="Name">Task Id:</label><a th:href="@{'/task?type=DATA_OBJECT&amp;taskId=' + ${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}}"> <label
-											for="${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}"
-											th:text="${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}"></label></a>
-									</div>
-									<div class="col-md-12 form-group" th:if="${hpcCollectionUploadTaskItem.getMessage() != null}">
+									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getMessage() != null}">
 										<label for="Name">Message:</label> <label
-											for="${hpcCollectionUploadTaskItem.getMessage()}"
-											th:text="${hpcCollectionUploadTaskItem.getMessage()}"></label>
+											for="${hpcUploadTaskItem.getMessage()}"
+											th:text="${hpcUploadTaskItem.getMessage()}"></label>
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcDataObjectsUploadStatusDTO.getFailedItems().size() > 0}">
+							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() > 0}">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
 								</h2>
 							</div>
 							<div class="panel-body"
-								th:if="${hpcDataObjectsUploadStatusDTO.getFailedItems().size() > 0}">
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionUploadTaskItem : ${hpcDataObjectsUploadStatusDTO.getFailedItems()}"  style="margin-top:5px">
+									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems()}"  style="margin-top:5px">
 									<div class="col-md-12 form-group">
-										<label for="Name">Path:</label> <a th:href="@{'/task?type=DATA_OBJECT&amp;taskId=' + ${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}}"> <label
-											for="${hpcCollectionUploadTaskItem.getPath()}"
-											th:text="${hpcCollectionUploadTaskItem.getPath()}"></label></a>
+										<label for="Name">Path:</label> <label
+											for="${hpcUploadTaskItem.getPath()}"
+											th:text="${hpcUploadTaskItem.getPath()}"></label>
 									</div>
-									<div class="col-md-12 form-group">
-										<label for="Name">Task Id:</label> <label
-											for="${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}"
-											th:text="${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}"></label>
-									</div>
-									<div class="col-md-12 form-group" th:if="${hpcCollectionUploadTaskItem.getMessage() != null}">
+									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getMessage() != null}">
 										<label for="Name">Message:</label> <label
-											for="${hpcCollectionUploadTaskItem.getMessage()}"
-											th:text="${hpcCollectionUploadTaskItem.getMessage()}"></label>
+											for="${hpcUploadTaskItem.getMessage()}"
+											th:text="${hpcUploadTaskItem.getMessage()}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getCompleted() != null}">
+										<label for="textbox1">Registration Failed on:</label> <label
+											for="${hpcUploadTaskItem.getCompleted()}"
+											th:text="${#calendars.format(hpcUploadTaskItem.getCompleted(),'dd MMMM yyyy hh:mm:ss')}"></label>
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcDataObjectsUploadStatusDTO.getCompletedItems().size() > 0}">
+							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCompletedItems().size() > 0}">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Completed</strong>
 								</h2>
 							</div>
 							<div class="panel-body"
-								th:if="${hpcDataObjectsUploadStatusDTO.getCompletedItems().size() > 0}">
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCompletedItems().size() > 0}">
 								<div class="panel panel-default"
-									th:each="hpcCollectionUploadTaskItem : ${hpcDataObjectsUploadStatusDTO.getCompletedItems()}"  style="margin-top:5px">
+									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getCompletedItems()}"  style="margin-top:5px">
 									<div class="col-md-12 form-group">
-										<label for="Name">Path:</label> <a th:href="@{'/task?type=DATA_OBJECT&amp;taskId=' + ${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}}"> <label
-											for="${hpcCollectionUploadTaskItem.getPath()}"
-											th:text="${hpcCollectionUploadTaskItem.getPath()}"></label></a>
+										<label for="Name">Path:</label><a th:href="@{'/datafile?action=view&amp;path=' + ${hpcUploadTaskItem.getPath()}}"> <label
+											for="${hpcUploadTaskItem.getPath()}"
+											th:text="${hpcUploadTaskItem.getPath()}"></label></a>
 									</div>
-									<div class="col-md-12 form-group">
-										<label for="Name">Task Id:</label> <label
-											for="${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}"
-											th:text="${hpcCollectionUploadTaskItem.getDataObjectDownloadTaskId()}"></label>
-									</div>
-									<div class="col-md-12 form-group" th:if="${hpcCollectionUploadTaskItem.getMessage() != null}">
+									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getMessage() != null}">
 										<label for="Name">Message:</label> <label
-											for="${hpcCollectionUploadTaskItem.getMessage()}"
-											th:text="${hpcCollectionUploadTaskItem.getMessage()}"></label>
+											for="${hpcUploadTaskItem.getMessage()}"
+											th:text="${hpcUploadTaskItem.getMessage()}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getCompleted() != null}">
+										<label for="textbox1">Registration Completed on:</label> <label
+											for="${hpcUploadTaskItem.getCompleted()}"
+											th:text="${#calendars.format(hpcUploadTaskItem.getCompleted(),'dd MMMM yyyy hh:mm:ss')}"></label>
 									</div>
 								</div>
 							</div>
