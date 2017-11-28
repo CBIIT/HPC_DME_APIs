@@ -250,10 +250,14 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
 			return "redirect:/" + source;
 		else if (action != null && action.length > 0 && action[0].equals("refresh"))
+		{
+			model.addAttribute("useraction", "refresh");
 			return updateView(session, request, model, basePath, hpcDataModel.getPath(), true);
+		}
 		else if (action != null && action.length > 0 && action[0].equals("Globus")) {
 			session.setAttribute("datafilePath", hpcDataModel.getPath());
 			session.setAttribute("basePathSelected", basePath);
+			model.addAttribute("useraction", "globus");
 			setCriteria(model, request, session);
 			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
 					false);
