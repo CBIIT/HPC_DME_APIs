@@ -389,8 +389,11 @@ public class HpcCollectionController extends AbstractHpcController {
     {
         final Map<String,?> inputFlashMap =
                               RequestContextUtils.getInputFlashMap(req);
-        final Set<String> inputFlashAttrKeys = inputFlashMap.keySet();
         int numAttrsCopied = 0;
+        if(inputFlashMap != null)
+        {
+        final Set<String> inputFlashAttrKeys = inputFlashMap.keySet();
+        
         for (String someKey : inputFlashAttrKeys) {
             Object someVal = inputFlashMap.get(someKey);
             if (null == attrNmPrefix) {
@@ -401,6 +404,7 @@ public class HpcCollectionController extends AbstractHpcController {
                 model.addAttribute(altKey, someVal);
                 numAttrsCopied += 1;
             }
+        }
         }
         final boolean retVal = (numAttrsCopied > 0);
         return retVal;
