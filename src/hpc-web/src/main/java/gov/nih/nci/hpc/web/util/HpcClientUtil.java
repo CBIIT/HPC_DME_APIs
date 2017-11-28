@@ -891,7 +891,39 @@ public class HpcClientUtil {
 		}
 	}
 
-	public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationRequestDTO datafileDTO,
+    public static boolean deleteCollection(String token, String hpcCollectionURL,
+             String collectionPath, String hpcCertPath, String hpcCertPassword) {
+        try {
+            WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + "/" + collectionPath, hpcCertPath,
+                    hpcCertPassword);
+            client.header("Authorization", "Bearer " + token);
+
+            Response restResponse = client.delete();
+            if (restResponse.getStatus() == 200) {
+                return true;
+            } else {
+                ObjectMapper mapper = new ObjectMapper();
+                AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+                        new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+                        new JacksonAnnotationIntrospector());
+                mapper.setAnnotationIntrospector(intr);
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+                MappingJsonFactory factory = new MappingJsonFactory(mapper);
+                JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+                HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+                throw new HpcWebException("Failed to delete collection: " + exception.getMessage());
+            }
+        } catch (HpcWebException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new HpcWebException("Failed to delete collection due to: " + e.getMessage());
+        }
+    }
+
+    public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationRequestDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
 			try
