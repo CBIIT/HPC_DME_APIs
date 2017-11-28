@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -273,6 +274,16 @@ public interface HpcDataManagementBusService
      */
 	public HpcBulkDataObjectRegistrationStatusDTO getDataObjectsRegistrationStatus(String taskId) 
 			                                                                      throws HpcException;
+	
+    /**
+     * Get data objects registration summary. Note: the summary is for the request invoker.
+     *
+     * @param page The requested results page.
+     * @param totalCount If set to true, return the total count of completed tasks. All active tasks
+     *                   are always returned.
+     * @return A summary of registration tasks for the request invoker
+     */
+	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount) throws HpcException;
     
     /**
      * Get Data Object.
