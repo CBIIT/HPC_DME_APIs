@@ -178,6 +178,7 @@
 											<li><a href="#addDatafile">Add Datafile</a></li>
  											<li class="divider"></li>
 											<li><a href="#addBulk">Add Bulk (Globus)</a></li>
+											<li><a href="#refreshNode">Refresh Node</a></li>
 									</ul>	
 								</div>
 							</div>
@@ -198,6 +199,7 @@
 		<input type="hidden" id="selectedNodePath" name="selectedNodePath"/>
 		<input type="hidden" id="selectedNodeId" name="selectedNodeId"/>
 		<input type="hidden" id="scrollLoc" name="scrollLoc"/>
+		<input type="hidden" id="refreshNode" name="refreshNode"/>
 	</form>
 	
 	<!-- container section start -->
@@ -231,7 +233,7 @@ $(function() {
                 $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
 //                $li.find('.jqtree-element').append('<a href="#' + node.id + '" class="refresh" data-node-id="' + node.id + '">refresh</i></a>');
 //                $li.find('.jqtree-element').append('<a href="#node-' + node.id + '" class="refresh" data-node-id="' + node.id + '"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
-                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
+//                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
 
             }
         }        
@@ -239,16 +241,28 @@ $(function() {
 });
 
 
-$('#tree1').on('click', '.refresh', function(e) {	
-	e.stopImmediatePropagation();
-	var node_id = $(e.target).data('node-id');
-    var node = $('#tree1').tree('getNodeById', node_id);
+//$('#tree1').on('click', '.refresh', function(e) {	
+function refreshNode(node) {
+	//e.stopImmediatePropagation();
+	//var node_id = $(e.target).data('node-id');
+    //var node = $('#tree1').tree('getNodeById', node_id);
+    
+    var node_id = node.id;
 
     console.log('refresh: ' + node_id);
 	console.log('node: ' + node);
+	document.getElementById("refreshNode").value = node_id;
+	document.getElementById("selectedNodePath").value = node.fullPath;
+    document.getElementById("processingIcon"+node.id).style.visibility = "visible";
+	document.getElementById("selectedNodeId").value = node.id;
+	document.getElementById("scrollLoc").value = scrollLoc;
+
+	$('#tree').tree('loadDataFromUrl', node_id, node);
+	$("#browseForm").submit();
+	$('#tree1').tree('openNode', node);
     $('#tree1').tree('selectNode', node);
-    location.href = "browse?action=refresh&path=" + node.fullPath;
-});
+    //location.href = "browse?refresh&refreshNode=" + node.fullPath;
+}//);
 
 //bind 'tree.click' event
 $('#tree1').bind(
@@ -314,7 +328,12 @@ $('#tree1').jqTreeContextMenu($('#myMenu'), {
     },
     "addBulk": function (node) {
     	window.location = "/addbulk?parent="+node.fullPath+"&source=browse&init";
+    },
+    "refreshNode": function (node) {
+    	console.log("refresh node: " + node.id);
+    	refreshNode(node);
     }
+
 
 }); 
 
