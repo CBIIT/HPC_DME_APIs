@@ -252,15 +252,14 @@
 					</div>
 				</div>
 				<div class="row">
-                    <!--
-					<span id="hiddenCollectionPath"
-						  style="display: none"
-                          th:text="${collection.getCollection().getCollectionName()}">
-                    </span>
-                    -->
                     <form id="deleteCollectionForm" method="POST" th:action="@{/collection/delete}">
                         <input type="hidden" id="collectionPath4Delete"
-                               name="collectionPath4Delete" th:value="${collection.getCollection().getCollectionName()}" />
+                               name="collectionPath4Delete"
+							   th:value="${(null == collection or null == collection.getCollection() or
+							                null == collection.getCollection().getCollectionName()) ?
+							                '' : collection.getCollection().getCollectionName()}" />
+						<input type="hidden" id="action4Delete"
+							   name="action4Delete" th:value="${action}" />
                     </form>
                 </div>
 			</section>

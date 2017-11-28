@@ -923,7 +923,7 @@ public class HpcClientUtil {
         }
     }
 
-    public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationDTO datafileDTO,
+    public static boolean registerDatafile(String token, MultipartFile hpcDatafile, String hpcDatafileURL, HpcDataObjectRegistrationRequestDTO datafileDTO,
 			String path, String hpcCertPath, String hpcCertPassword) {
 		try {
 			try
