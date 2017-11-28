@@ -9,9 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +18,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -59,10 +59,21 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/collection")
 public class HpcCollectionController extends AbstractHpcController {
+    private static final String
+      ERROR_MSG__$DELETE_FAILED = "Failed to delete collection.",
+      ERROR_MSG_TEMPLATE__$DELETE_FAILED_WITH_REASON =
+        ERROR_MSG__$DELETE_FAILED.concat("  Reason: %s"),
+      FEEDBACK_MSG__$DELETE_SUCCEEDED = "Collection has been deleted!",
+      KEY_PREFIX = "fdc-",
+      NAV_OUTCOME_FORWARD_PREFIX = "forward:",
+      NAV_OUTCOME_REDIRECT_PREFIX = "redirect:",
+      URI_PATTERN__$COLLECTION_DETAIL_VIEW = "/collection?path=%s&action=%s";
+
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
+
 
 	/**
 	 * Get selected collection details from its path
@@ -79,7 +90,7 @@ public class HpcCollectionController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String body, @RequestParam String path,
 			@RequestParam String action, Model model, BindingResult bindingResult, HttpSession session,
-			HttpServletRequest request) {
+			HttpServletRequest request, RedirectAttributes redirAttrs) {
 		try {
 			// User Session validation
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -93,12 +104,23 @@ public class HpcCollectionController extends AbstractHpcController {
 				return "redirect:/login?returnPath=collection&action=" + action + "&path=" + path;
 			}
 
-			if (path == null)
-				return "dashboard";
+			if (path == null) {
+                return "dashboard";
+            } else if (copyInputFlashMap2Model(request, model, KEY_PREFIX)) {
+                // This point reached if arrived at this controller action via
+                // forward from controller action handling collection item
+                // delete.  In this case, copyInputFlashMap2Model method
+                // has populated Model with state found in request object that
+                // was provided by the other controller action.
+                return "collection";
+            }
 
 			// Get collection
-			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
-					sslCertPath, sslCertPassword);
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(
+              authToken, serviceURL, path,true, false, sslCertPath,
+              sslCertPassword);
+//			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
+//					sslCertPath, sslCertPassword);
 			if (collections != null && collections.getCollections() != null
 					&& collections.getCollections().size() > 0) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
@@ -117,6 +139,8 @@ public class HpcCollectionController extends AbstractHpcController {
 				model.addAttribute("userpermission", (permission != null && permission.getPermission() != null)
 						? permission.getPermission().toString() : "null");
 				model.addAttribute("attributeNames", getMetadataAttributeNames(collection));
+                boolean canDeleteFlag = determineIfCollectionCanBeDelete(permission, collection);
+				model.addAttribute("canDelete", Boolean.valueOf(canDeleteFlag).toString());
 				if (action != null && action.equals("edit"))
 					if (permission == null || permission.getPermission().equals(HpcPermission.NONE)
 							|| permission.getPermission().equals(HpcPermission.READ)) {
@@ -138,6 +162,36 @@ public class HpcCollectionController extends AbstractHpcController {
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
 		return "collection";
 	}
+
+    /**
+     * Finds out whether specified collection item may be deleted by current
+     * user.
+     *
+     * @param theUserPermDto  HpcUserPermissionDTO instance representing
+     *                        current user
+     * @param theCollection  HpcCollectionDTO instance representing specified
+     *                       collection
+     * @return true if specified collection may be deleted by current user;
+     *         false otherwise
+     */
+	private boolean determineIfCollectionCanBeDelete(
+      HpcUserPermissionDTO theUserPermDto, HpcCollectionDTO theCollection) {
+        boolean retVal = false;
+        if (null != theUserPermDto &&
+              null != theCollection &&
+              null != theCollection.getCollection() &&
+              null != theCollection.getCollection().getSubCollections() &&
+              null != theCollection.getCollection().getDataObjects())
+        {
+            // Delete is permissible if ownership permission and collection is
+            //  empty with no sub-collections and no data objects
+            retVal =
+              HpcPermission.OWN.equals(theUserPermDto.getPermission()) &&
+              theCollection.getCollection().getSubCollections().isEmpty() &&
+              theCollection.getCollection().getDataObjects().isEmpty();
+        }
+        return retVal;
+    }
 
 	private List<String> getMetadataAttributeNames(HpcCollectionDTO collection) {
 		List<String> names = new ArrayList<String>();
@@ -256,5 +310,445 @@ public class HpcCollectionController extends AbstractHpcController {
 		dto.getMetadataEntries().addAll(metadataEntries);
 		return dto;
 	}
+
+
+	@RequestMapping(
+			path = "/delete", method = RequestMethod.POST,
+			produces = MediaType.TEXT_HTML_VALUE
+	)
+	public String processDeleteCollection(
+			@RequestBody(required = false) String body,
+			@RequestParam("collectionPath4Delete") String collPath,
+			@RequestParam("action4Delete") String collAction,
+			Model model,
+			BindingResult bindingResult,
+			HttpServletRequest request,
+			RedirectAttributes redirAttrs,
+			HttpSession session)
+	{
+		String retNavOutcome = null;
+		try {
+			retNavOutcome = prelimCheckForAuthSessionAndPath(
+					collPath, collAction, model, session, bindingResult);
+			if (retNavOutcome.isEmpty()) {
+				retNavOutcome = doDeleteCollection(
+                    collPath, collAction, model, request, redirAttrs, session);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.addAttribute("error", String.format(
+					ERROR_MSG_TEMPLATE__$DELETE_FAILED_WITH_REASON, e.getMessage()));
+			copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
+            retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat(
+                    String.format(URI_PATTERN__$COLLECTION_DETAIL_VIEW,
+                            collPath, collAction));
+		}
+		return retNavOutcome;
+	}
+
+
+	private String doDeleteCollection(
+      @RequestParam("collectionPath4Delete") String collPath,
+      @RequestParam("action") String collAction,
+      Model model,
+      HttpServletRequest request,
+      RedirectAttributes redirAttrs,
+      HttpSession session)
+    {
+        String retNavOutcome = "";
+        final String authToken = (String) session.getAttribute("hpcUserToken");
+        // Populate model based on collection item's state
+        populateModelForCollectionDetailView(
+                authToken, collPath, collAction, session, model);
+        if (HpcClientUtil.deleteCollection(authToken, serviceURL, collPath,
+                                              sslCertPath, sslCertPassword)) {
+            model.addAttribute("error", FEEDBACK_MSG__$DELETE_SUCCEEDED);
+            // At this point, retain populated model attributes based on just
+            // deleted collection item.
+            // After successful deletion,
+            //   1) user permission not applicable
+            //   2) can no longer delete
+            //   3) can only view info about just deleted collection
+            model.addAttribute("userpermission", "null");
+            model.addAttribute("canDelete", Boolean.FALSE.toString());
+            model.addAttribute("action", "view");
+        } else {
+            model.addAttribute("error", ERROR_MSG__$DELETE_FAILED);
+        }
+        copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
+        final String allowedAction = (String) model.asMap().get("action");
+        retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat(
+                String.format(URI_PATTERN__$COLLECTION_DETAIL_VIEW,
+                        collPath, allowedAction));
+        return retNavOutcome;
+    }
+
+
+    private boolean copyInputFlashMap2Model(
+      HttpServletRequest req, Model model, String attrNmPrefix)
+    {
+        final Map<String,?> inputFlashMap =
+                              RequestContextUtils.getInputFlashMap(req);
+        final Set<String> inputFlashAttrKeys = inputFlashMap.keySet();
+        int numAttrsCopied = 0;
+        for (String someKey : inputFlashAttrKeys) {
+            Object someVal = inputFlashMap.get(someKey);
+            if (null == attrNmPrefix) {
+                model.addAttribute(someKey, someVal);
+                numAttrsCopied += 1;
+            } else if (someKey.startsWith(attrNmPrefix)) {
+                final String altKey = someKey.substring(attrNmPrefix.length());
+                model.addAttribute(altKey, someVal);
+                numAttrsCopied += 1;
+            }
+        }
+        final boolean retVal = (numAttrsCopied > 0);
+        return retVal;
+    }
+
+
+    private void copyModelState2FlashScope(
+      Model model, RedirectAttributes redirAttrs, String keyPrefix)
+    {
+        for (Map.Entry<String, Object> modelItem : model.asMap().entrySet()) {
+            final String targetReqAttrName = (null == keyPrefix) ?
+                    modelItem.getKey() : keyPrefix.concat(modelItem.getKey());
+            redirAttrs.addFlashAttribute(targetReqAttrName, modelItem.getValue());
+        }
+    }
+
+
+    /**
+     * Checks if authenticated session is present and if so, returns empty string.
+     * Otherwise, returns controller navigation outcome for going to applicable page.
+     *
+     * @param collectionPath  Path of collection item
+     * @param collectionAction  Action on collection item (edit, view)
+     * @param model  The model instance
+     * @param session  The HTTP session
+     * @param bindingResult  The binding result instance
+     * @return Empty string if authenticated session is present; otherwise, string representing navigation outcome to take
+     */
+	private String checkIfAuthenticatedSessionExists(
+      String collectionPath,
+      String collectionAction,
+      Model model,
+      HttpSession session,
+      BindingResult bindingResult)
+    {
+	    String retNavOutcome = "";
+        if (!(session.getAttribute("hpcUser") instanceof HpcUserDTO) ||
+              !(session.getAttribute("hpcUserToken") instanceof String))
+        {
+            bindingResult.addError(new ObjectError("hpcLogin",
+                                        "Invalid user session!"));
+            model.addAttribute("hpcLogin", new HpcLogin());
+            retNavOutcome = String.format(
+              "redirect:/login?returnPath=collection&action=%s&path=%s",
+              collectionAction, collectionPath
+            );
+        }
+        return retNavOutcome;
+    }
+
+
+    /**
+     * Checks if given collection path is missing (null) or blank (empty).  If so, returns controller navigation
+     * outcome for going to applicable page.  If not, returns empty string.
+     *
+     * @param collectionPath  Path of collection item
+     * @return String representing navigation outcome to take if missing or blank collection path; otherwise, empty string
+     */
+    private String checkIfMissingOrBlankPath(String collectionPath) {
+	    final String retNavOutcome =
+          (null == collectionPath || collectionPath.isEmpty()) ?
+          "dashboard" : "";
+        return retNavOutcome;
+    }
+
+
+    /**
+     * Checks for authenticated session and provided, non-empty collection path.
+     * If both are detected, returns empty string.  Otherwise, returns string representing
+     * navigation outcome to take.
+     *
+     * @param aCollectionPath  Path of collection item
+     * @param aCollectionAction  Action on collection item (edit, view)
+     * @param theModel  The model instance
+     * @param theSession  The HTTP session
+     * @param theBindingResult  The binding result instance
+     * @return Empty string if checks pass; otherwise, string representing navigation outcome to take
+     */
+    private String prelimCheckForAuthSessionAndPath(
+      String aCollectionPath,
+      String aCollectionAction,
+      Model theModel,
+      HttpSession theSession,
+      BindingResult theBindingResult)
+    {
+        String retNavOutcome = checkIfAuthenticatedSessionExists(
+          aCollectionPath,
+          aCollectionAction,
+          theModel,
+          theSession,
+          theBindingResult
+        );
+        if (retNavOutcome.isEmpty()) {
+            retNavOutcome = checkIfMissingOrBlankPath(aCollectionPath);
+        }
+        return retNavOutcome;
+    }
+
+
+    /**
+     * Selectively puts into HTTP session attribute named "userDOCModel" which
+     * is an instance of HpcDataManagementModelDTO.  If attribute already
+     * exists, does nothing.  If attribute does not exist, fetches DTO from
+     * applicable HPC API rest service and creates the session attribute.
+     *
+     * @param authToken  Auth token
+     * @param session  HTTP session
+     */
+    private void putUserDocModelIntoSession(
+      String authToken, HttpSession session) {
+        putUserDocModelIntoSession(authToken, session, false);
+    }
+
+
+    /**
+     * Puts into HTTP session the attribute named "userDOCModel" which is an
+     * instance of HpcDataManagementModelDTO, with control over whether to
+     * retain the attribute if it already exists.
+     *
+     * If the parameter fetchFreshModel is true, then the session attribute is
+     * set to new value using freshly fetched HpcDataManagementModelDTO object.
+     * Any existing value is replaced.
+     *
+     * If the parameter fetchFreshModel is false, then the session attribute is
+     * set to new value using freshly fetched HpcDataManagementModelDTO object
+     * only if the attribute does not already exist.
+     *
+     * Any freshly fetched HpcDataManagementModelDTO object is obtained via
+     * request to applicable HPC API rest service.
+     *
+     * @param authToken  Auth token
+     * @param session  HTTP session
+     * @param fetchFreshModel  boolean to indicate whether to set session
+     *                         attribute using freshly obtained DTO
+     */
+    private void putUserDocModelIntoSession(
+      String authToken, HttpSession session, boolean fetchFreshModel) {
+        if (!(session.getAttribute("userDOCModel") instanceof
+                HpcDataManagementModelDTO) || fetchFreshModel) {
+            HpcDataManagementModelDTO retDtoObj = HpcClientUtil.getDOCModel(
+              authToken, hpcModelURL, sslCertPath, sslCertPassword);
+            session.setAttribute("userDOCModel", retDtoObj);
+        }
+    }
+
+
+    /**
+     * Attempts to obtain 1 collection item's data in 2 forms and returns
+     * the 2 forms as a 2-element Object array.  First form would be at
+     * index 0 in the array and is a HpcCollectionModel object.  Second form
+     * would be at index 1 in the array and is a HpcCollectionDTO object.
+     *
+     * @param authToken  Auth token
+     * @param collectionPath  Path to collection item
+     * @param session  HTTP session
+     * @return Object array of size 2.  If collection item could not be
+     *          resolved, both elements in the array are null.  Otherwise, the
+     *          element at index 0 is a HpcCollectionModel instance
+     *          representing the collection item, while the element at index 1
+     *          is a HpcCollectionDTO instance representing the collection
+     *          item.
+     */
+    private Object[] obtainHpcCollectionIn2Forms(
+      String authToken, String collectionPath, HttpSession session) {
+        HpcCollectionModel retHpcCollObj = null;
+        HpcCollectionDTO theCollectionDto = null;
+        putUserDocModelIntoSession(authToken, session);
+        final HpcCollectionListDTO collections = HpcClientUtil.getCollection(
+          authToken, serviceURL, collectionPath, true, false,
+          sslCertPath, sslCertPassword);
+        if (null != collections && null != collections.getCollections() &&
+              0 < collections.getCollections().size()) {
+            theCollectionDto = collections.getCollections().get(0);
+            final HpcDataManagementModelDTO modelDTO =
+              (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+            retHpcCollObj = buildHpcCollection(theCollectionDto,
+              modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
+        }
+
+        return new Object[] { retHpcCollObj, theCollectionDto };
+    }
+
+
+    /**
+     * Converts a HpcUserPermissionDTO instance to a String form conveying
+     * simple permission text (ex. "READ", "WRITE", "OWN").
+     *
+     * @param permDto  HpcUserPermissionDTO object
+     * @return  String conveying simple permission text
+     */
+    private String convertPermDto2String(HpcUserPermissionDTO permDto) {
+        String retVal = (null == permDto || null == permDto.getPermission()) ?
+          "null" : permDto.getPermission().toString();
+        return retVal;
+    }
+
+
+    /**
+     * Determines action on collection item that user should have, returning
+     * Map<String,String> for which there is at least one entry indicating
+     * that action.  That entry has key "action", and its value is the action
+     * user should have.
+     *
+     * Also, if attempted action is forbidden, the returned Map contains entry
+     * having key "error" and whose value is string conveying error message.
+     *
+     * @param collAction  Attempted action on collection item
+     * @param permDto  HpcUserPermissionDTO instance representing user's
+     *                 permission on collection item
+     * @return Map<String,String> as described in description above
+     */
+    private Map<String, String> determineActionWithOptError(
+      String collAction, HpcUserPermissionDTO permDto) {
+        String theAction = "view";
+        String errMsg = "";
+        if (null != collAction && "edit".equals(collAction)) {
+            if (null == permDto ||
+                  HpcPermission.NONE.equals(permDto.getPermission()) ||
+                  HpcPermission.READ.equals(permDto.getPermission())) {
+                errMsg = "No edit permission. Please contact ".concat(
+                  "collection owner for write access.");
+            }
+            else { theAction = "edit"; }
+        }
+        final Map<String, String> retMap = new HashMap<>();
+        retMap.put("action", theAction);
+        if (!errMsg.isEmpty()) { retMap.put("error", errMsg); }
+        return retMap;
+    }
+
+
+    /**
+     * Populates Model instance for passing state to view object with info
+     * about collection item, if resolvable.  If so, returns Object array of
+     * length 2 such that element at index 0 is HpcCollectionModel instance
+     * representing the collection item and element at index 1 is
+     * HpcCollectionDTO instance representing the collection item.  If
+     * collection item not resolvable, the returns Object array of length 2
+     * with both elements set to null.
+     *
+     * @param model  Model instance
+     * @param authToken  Auth token
+     * @param collPath  Path to collection
+     * @param session  HTTP session
+     * @return  Object array of length 2 as described above
+     */
+    private Object[] populateModelWithCollectionInfo(
+      Model model, String authToken, String collPath, HttpSession session) {
+        final Object[] hpcCollReps =
+                obtainHpcCollectionIn2Forms(authToken, collPath, session);
+        if (hpcCollReps[0] instanceof HpcCollectionModel) {
+            model.addAttribute("collection", hpcCollReps[0]);
+        }
+        if (hpcCollReps[1] instanceof HpcCollectionDTO) {
+            final List<String> attribNames = getMetadataAttributeNames(
+                                        (HpcCollectionDTO) hpcCollReps[1]);
+            model.addAttribute("attributeNames", attribNames);
+        }
+        model.addAttribute("hpcCollection", new HpcCollectionModel());
+        return hpcCollReps;
+    }
+
+
+    /**
+     * Populates Model instance for passing state to view object with info
+     * related to current user's permission on specified collection item.
+     * Returns HpcUserPermissionDto instance representing current user's
+     * permission on collection item.
+     *
+     * @param model  Model instance
+     * @param authToken  Auth token
+     * @param collPath  Path to collection
+     * @param collDto  HpcCollectionDTO instance
+     * @param session  HTTP session
+     * @return HpcUserPermissionDTO instance representing current user's
+     *          permission on specified collection item
+     */
+    private HpcUserPermissionDTO populateModelWithPermInfo(
+      Model model,
+      String authToken,
+      String collPath,
+      HpcCollectionDTO collDto,
+      HttpSession session)
+    {
+        final String userId = (String) session.getAttribute("hpcUserId");
+        final HpcUserPermissionDTO permissionDto =
+          HpcClientUtil.getPermissionForUser(authToken, collPath, userId,
+                          serviceURL, sslCertPath, sslCertPassword);
+        final String permAsStr = convertPermDto2String(permissionDto);
+        final String canDeleteFlag = Boolean.toString(
+          determineIfCollectionCanBeDelete(permissionDto, collDto)
+        );
+        model.addAttribute("userpermission", permAsStr);
+        model.addAttribute("canDelete", canDeleteFlag);
+        return permissionDto;
+    }
+
+
+    /**
+     * Populates Model instance for passing state to view object with info
+     * about the action current user may take on collection item in context.
+     *
+     * This method could add "error" attribute to Model instance.
+     *
+     * @param model  Model instance
+     * @param collAction  Desired action on collection item in context
+     * @param permDto  Current user's permission on collection item in context
+     * @return Map<String,String> containing 2 entries having keys "action" and
+     *          "error" such that former entry has value conveying current
+     *          user's allowed action and latter entry has value conveying
+     *          error message, if any.
+     */
+    private Map<String,String> populateModelWithActionInfo(
+      Model model, String collAction, HpcUserPermissionDTO permDto) {
+        final Map<String,String> actionCheckResult =
+                determineActionWithOptError(collAction, permDto);
+        final String actionAllowed = actionCheckResult.get("action");
+        final String actionErrorMsg = actionCheckResult.get("error");
+        model.addAttribute("action", actionAllowed);
+        if (null != actionErrorMsg) {
+            model.addAttribute("error", actionErrorMsg);
+        }
+        return actionCheckResult;
+    }
+
+
+    /**
+     * Populates Model instance state that provides state for the
+     * view object.
+     *
+     * @param authToken  Auth token
+     * @param collPath  Path to collection item
+     * @param session  HTTP session
+     * @param model  Model instance
+     */
+    private void populateModelForCollectionDetailView(
+      String authToken,
+      String collPath,
+      String collAction,
+      HttpSession session,
+      Model model)
+    {
+        final Object[] hpcCollReps =
+          populateModelWithCollectionInfo(model, authToken, collPath, session);
+        final HpcCollectionDTO collDto = (HpcCollectionDTO) hpcCollReps[1];
+        final HpcUserPermissionDTO permDto = populateModelWithPermInfo(
+          model, authToken, collPath, collDto, session);
+        populateModelWithActionInfo(model, collAction, permDto);
+    }
 
 }
