@@ -178,6 +178,8 @@
 											<li><a href="#addDatafile">Add Datafile</a></li>
  											<li class="divider"></li>
 											<li><a href="#addBulk">Add Bulk (Globus)</a></li>
+											<li class="divider"></li>
+											<li><a href="#refreshNode">Refresh Node</a></li>
 									</ul>	
 								</div>
 							</div>
@@ -198,6 +200,7 @@
 		<input type="hidden" id="selectedNodePath" name="selectedNodePath"/>
 		<input type="hidden" id="selectedNodeId" name="selectedNodeId"/>
 		<input type="hidden" id="scrollLoc" name="scrollLoc"/>
+		<input type="hidden" id="refreshNode" name="refreshNode"/>
 	</form>
 	
 	<!-- container section start -->
@@ -243,12 +246,27 @@ $('#tree1').on('click', '.refresh', function(e) {
 	e.stopImmediatePropagation();
 	var node_id = $(e.target).data('node-id');
     var node = $('#tree1').tree('getNodeById', node_id);
-
-    console.log('refresh: ' + node_id);
-	console.log('node: ' + node);
-    $('#tree1').tree('selectNode', node);
-    location.href = "browse?action=refresh&path=" + node.fullPath;
+    refreshNode(node);
 });
+
+function refreshNode(node) {    
+    var node_id = node.id;
+    var parent_node = node.parent;
+
+    console.log('refresh : ' + node_id);
+
+	document.getElementById("refreshNode").value = node_id;
+	document.getElementById("selectedNodePath").value = node.fullPath;
+    document.getElementById("processingIcon"+node.id).style.visibility = "visible";
+	document.getElementById("selectedNodeId").value = node.id;
+	document.getElementById("scrollLoc").value = scrollLoc;
+
+	//$('#tree').tree('loadDataFromUrl', node_id, node);
+	$("#browseForm").submit();
+	$('#tree1').tree('openNode', node);
+    $('#tree1').tree('selectNode', node);
+    //location.href = "browse?refresh&refreshNode=" + node.fullPath;
+}//);
 
 //bind 'tree.click' event
 $('#tree1').bind(
@@ -314,8 +332,10 @@ $('#tree1').jqTreeContextMenu($('#myMenu'), {
     },
     "addBulk": function (node) {
     	window.location = "/addbulk?parent="+node.fullPath+"&source=browse&init";
+    },
+    "refreshNode": function (node) {
+    	refreshNode(node);
     }
-
 }); 
 
 /*]]>*/
