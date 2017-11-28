@@ -101,22 +101,18 @@
 								</div>
 								<div th:case="'OWN'">
 									<i class="fa fa-list-alt red"></i><strong>Collection</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=collection&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-users" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../collection?action=edit&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-edit" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../browse?refresh&amp;path=' + ${collection.getCollection().getCollectionName()}}"><i class="fa fa-sitemap" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${collection.getCollection().getCollectionName()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a>
-									&nbsp;&nbsp;&nbsp;
-									<a id="deleteCollection"
-                                       class="btn btn-link btn-sm"
-                                       th:href="@{'/deleteCollection/confirmationView'}"
-                                       data-toggle="modal"
-                                       data-target="#deleteCollectionModal">
-										<i class="fa fa-trash-o" aria-hidden="true"></i>
-									</a>
+                                    <span th:if="${canDelete == 'true'}">
+                                        &nbsp;&nbsp;&nbsp;<a id="deleteCollection" class="btn btn-link btn-sm" th:onclick="'deleteCollection()'"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+                                    </span>
 								</div>
 								</h2>
 							</div>
-							<div th:if="${error != null}">
-								<div class="alert alert-error">
+							<div id="errorsFeedback">
+								<div class="alert alert-error" th:if="${error != null}">
 									<a class="close" data-dismiss="alert">×</a> <label
 										for="${error}" th:text="${error}"></label>
 								</div>
+                                <div id="auxError" class="alert alert-error d-none"></div>
 							</div>
 								<!--panel-body start-->
 								<div class="panel-body"  th:if="${collection != null}">
@@ -136,14 +132,6 @@
 										</div>
 										<!-- /.modal-dialog -->
 									</div>
-                                    <div class="modal fade" id="deleteCollectionModal" tabindex="-1" role="dialog"
-                                         aria-labelledby="myModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content"></div>
-                                            <!-- /.modal-content -->
-                                        </div>
-                                        <!-- /.modal-dialog -->
-                                    </div>
                                     <div class="form-group">
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> <label
@@ -182,7 +170,7 @@
 								<div class="panel-body"  th:if="${collection != null}">
 								<form class="form-horizontal" id="collectionForm" th:action="@{/collection}"
 									th:object="${hpcCollection}" method="POST">
-								
+
 								<div class="form-group">
 									<table class="table table-bordered  col-md-12" id="metaAttrTable">
 										<thead>
@@ -257,13 +245,23 @@
 											</tr>
 										</tbody>
 									</table>
-								</div>								
+								</div>
 							</div>
 						<!--/col-->
 
 					</div>
 				</div>
-				<div class="row"></div>
+				<div class="row">
+                    <form id="deleteCollectionForm" method="POST" th:action="@{/collection/delete}">
+                        <input type="hidden" id="collectionPath4Delete"
+                               name="collectionPath4Delete"
+							   th:value="${(null == collection or null == collection.getCollection() or
+							                null == collection.getCollection().getCollectionName()) ?
+							                '' : collection.getCollection().getCollectionName()}" />
+						<input type="hidden" id="action4Delete"
+							   name="action4Delete" th:value="${action}" />
+                    </form>
+                </div>
 			</section>
 		</section>
 		<!--main content end-->
@@ -287,7 +285,7 @@
 	/*<![CDATA[*/
 
 	var rowId = 1;
-	
+
 	function addMetadata() {
 		rowId++;
 	    var table = document.getElementById("metaAttrTable");
@@ -350,6 +348,35 @@
 			ele.style.display = "block";
 		}
 	}
+
+    function deleteCollection()
+    {
+        //var collectionPath = $('#collectionPath4Delete').value;
+        //var collectionPath = $('#hiddenCollectionPath').text();
+        var promptQuestion = 'Are you sure you want to delete this collection?';
+    	if (confirm(promptQuestion) == true) {
+    	    $('#deleteCollectionForm').submit();
+    	/*
+            var serviceUri = "/collection/" + encodeURIComponent(collectionPath);
+            $.ajax({
+                type : "DELETE",
+                url : serviceUri,
+              //data : $form.serialize(),
+                success : function(msg) {
+                    // navigate to browse view
+                    location.replace("/browse");
+                },
+                error : function(e) {
+                    var errorMsg = e.errorType + ': ' + e.message;
+                    $('#auxError').innerHTML = errorMsg;
+                    $('#auxError').removeClass('d-none');
+                    $('#auxError').addClass('d-block');
+                }
+            });
+        */
+    	}
+    }
+
 	/*]]>*/
 </script>
 

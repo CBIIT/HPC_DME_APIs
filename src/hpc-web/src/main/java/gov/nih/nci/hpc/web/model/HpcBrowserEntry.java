@@ -117,4 +117,20 @@ public class HpcBrowserEntry {
 	public void setScrollLoc(String scrollLoc) {
 		this.scrollLoc = scrollLoc;
 	}
+
+	@Override
+	public String toString() {
+		return "HpcBrowserEntry{" +
+			"scrollLoc='" + scrollLoc + '\'' +
+			", name='" + name + '\'' +
+			", id='" + id + '\'' +
+			", fullPath='" + fullPath + '\'' +
+			", selectedNodePath='" + selectedNodePath + '\'' +
+			", selectedNodeId='" + selectedNodeId + '\'' +
+			", children=" + children +
+			", isCollection=" + isCollection +
+			", populated=" + populated +
+			", partial=" + partial +
+			'}';
+	}
 }
