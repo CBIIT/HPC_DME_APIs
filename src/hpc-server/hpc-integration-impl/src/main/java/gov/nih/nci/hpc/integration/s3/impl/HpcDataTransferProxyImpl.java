@@ -331,9 +331,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy
         
         // Attach the metadata to the URL generation request.
         // Note: This is not working. Awaiting resolution from Cleversafe.
-        objectMetadata.getUserMetadata().forEach(
-        	  (name, value) -> generatePresignedUrlRequest.addRequestParameter(
-        			                   Headers.S3_USER_METADATA_PREFIX + name, value));
+        objectMetadata.getUserMetadata().forEach(generatePresignedUrlRequest::putCustomRequestHeader);
         
         // Generate the pre-signed URL.
         URL url = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest);
