@@ -249,23 +249,18 @@ $('#tree1').on('click', '.refresh', function(e) {
 
 function refreshNode(node) {    
     var node_id = node.id;
-    //console.log('refresh : ' + node_id);
 
-    if(node.parent.id) { 
-        console.log('parent: ' + node.parent.id);
-        document.getElementById("refreshNode").value = node_id;
-    
-        document.getElementById("selectedNodePath").value = node.fullPath;
-        document.getElementById("processingIcon"+node.id).style.visibility = "visible";
-        document.getElementById("selectedNodeId").value = node.id;
-        document.getElementById("scrollLoc").value = scrollLoc;
+	console.log('parent: ' + node.parent.id);
+	document.getElementById("refreshNode").value = node_id;
 
-        $("#browseForm").submit();
-        $('#tree1').tree('openNode', node);
-        $('#tree1').tree('selectNode', node);
-    } else {
-        location.href = "browse?base";
-    }
+	document.getElementById("selectedNodePath").value = node.fullPath;
+	document.getElementById("processingIcon"+node.id).style.visibility = "visible";
+	document.getElementById("selectedNodeId").value = node.id;
+	document.getElementById("scrollLoc").value = scrollLoc;
+
+	$("#browseForm").submit();
+	$('#tree1').tree('openNode', node);
+	$('#tree1').tree('selectNode', node);
 }//);
 
 //bind 'tree.click' event
