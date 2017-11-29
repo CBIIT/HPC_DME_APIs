@@ -3,20 +3,21 @@
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
- * 
+ *
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://ncisvn.nci.nih.gov/svn/HPC_Data_Management/branches/hpc-prototype-dev/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
-
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
+import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -31,15 +32,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
-import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -62,7 +60,7 @@ public class HpcBrowseController extends AbstractHpcController {
 
 	/**
 	 * GET operation on Browse. Builds initial tree
-	 * 
+	 *
 	 * @param q
 	 * @param model
 	 * @param bindingResult
@@ -107,7 +105,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			}
 		}
 		String selectedBrowsePath = (String) session.getAttribute("selectedBrowsePath");
-		
+
 		if (selectedBrowsePath != null && (path == null || path.isEmpty()))
 			session.removeAttribute("browserEntry");
 		if (path == null || path.isEmpty() || request.getParameter("base") != null)
@@ -178,7 +176,7 @@ public class HpcBrowseController extends AbstractHpcController {
 	/**
 	 * POST Action. When a tree node is expanded, this action fetches its child
 	 * nodes
-	 * 
+	 *
 	 * @param hpcBrowserEntry
 	 * @param model
 	 * @param bindingResult
@@ -191,20 +189,18 @@ public class HpcBrowseController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.POST)
 	public String browse(@Valid @ModelAttribute("hpcBrowse") HpcBrowserEntry hpcBrowserEntry, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
-			final RedirectAttributes redirectAttributes, String refreshNode) {
+			final RedirectAttributes redirectAttributes, final String refreshNode) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
+
 		boolean getChildren = false;
 		boolean refresh = false;
 
 		if(!StringUtils.isBlank(refreshNode)) {
-			getChildren = true;
+			log.info("refreshing node: " + refreshNode);
 			refresh = true;
+			getChildren = true;
 		}
-		log.info("refreshNode            : " + refreshNode);
-		log.info("browserEntry (session) : " + browserEntry);
-		log.info("browserEntry (model)   : " + hpcBrowserEntry);
-		log.info("getChildren            : " + getChildren);
 
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
@@ -234,7 +230,7 @@ public class HpcBrowseController extends AbstractHpcController {
 	/**
 	 * Get child Tree nodes for selected tree node and merge it with cached
 	 * nodes
-	 * 
+	 *
 	 * @param path
 	 * @param browserEntry
 	 * @param authToken
@@ -246,20 +242,23 @@ public class HpcBrowseController extends AbstractHpcController {
 	private HpcBrowserEntry getTreeNodes(String path, HpcBrowserEntry browserEntry, String authToken, Model model,
 										 boolean getChildren, boolean partial, boolean refresh) {
 		path = path.trim();
-		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
-		log.info("selectedEntry: " + selectedEntry);
-		log.info("partial: " + partial);
-		log.info("populated: " + selectedEntry.isPopulated());
+        HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
 
-		if (selectedEntry != null && selectedEntry.isPopulated() && !refresh)
-			return partial ? selectedEntry : browserEntry;
-		if (selectedEntry != null && selectedEntry.getChildren() != null)
-			log.info("clearing children");
-			selectedEntry.getChildren().clear();
-		if (selectedEntry == null)
-			selectedEntry = new HpcBrowserEntry();
+        if (refresh && selectedEntry != null) {
+            selectedEntry.setPopulated(false);
+        }
 
-		log.info("getting collection at path: " + path);
+        if (selectedEntry != null && selectedEntry.isPopulated()) {
+            return partial ? selectedEntry : browserEntry;
+        }
+        if (selectedEntry != null && selectedEntry.getChildren() != null) {
+            selectedEntry.getChildren().clear();
+        }
+        if (selectedEntry == null) {
+            selectedEntry = new HpcBrowserEntry();
+        }
+
+		log.info("retrieving collection(s) at path: " + path);
 		HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionURL, path, true, false,
 				sslCertPath, sslCertPassword);
 
@@ -310,6 +309,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				selectedEntry.getChildren().add(listChildEntry);
 			}
 		}
+
 		return partial ? selectedEntry : browserEntry;
 	}
 
