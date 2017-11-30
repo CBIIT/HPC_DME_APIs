@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
@@ -97,23 +98,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				baseArchiveDestination.getFileLocation(), uploadRequest.getPath(), uploadRequest.getCallerObjectId(),
 				baseArchiveDestination.getType());
 
-		// Create a metadata to associate with the data object.
-		ObjectMetadata objectMetadata = new ObjectMetadata();
-		if (metadataEntries != null) {
-			for (HpcMetadataEntry metadataEntry : metadataEntries) {
-				objectMetadata.addUserMetadata(metadataEntry.getAttribute(), metadataEntry.getValue());
-			}
-		}
-
 		if (uploadRequest.getGenerateUploadRequestURL()) {
 			// Generate an upload request URL for the caller to use to upload directly.
-			return generateUploadRequestURL(authenticatedToken, archiveDestinationLocation, objectMetadata,
+			return generateUploadRequestURL(authenticatedToken, archiveDestinationLocation,
 					uploadRequest.getUploadRequestURLExpiration());
 
 		} else {
 			// Upload a file
 			return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(), archiveDestinationLocation,
-					objectMetadata, progressListener, baseArchiveDestination.getType());
+					toS3Metadata(metadataEntries), progressListener, baseArchiveDestination.getType());
 		}
 	}
 
@@ -154,19 +147,41 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
-		// Create a S3 delete request.
-		DeleteObjectRequest request = new DeleteObjectRequest(fileLocation.getFileContainerId(),
-				fileLocation.getFileId());
+	public void copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile, HpcFileLocation destinationFile,
+			List<HpcMetadataEntry> metadataEntries) throws HpcException {
+
+		// Create a S3 update request w/ new metadata. Copy the file to itself.
+		CopyObjectRequest copyRequest = new CopyObjectRequest(sourceFile.getFileContainerId(), sourceFile.getFileId(),
+				destinationFile.getFileContainerId(), destinationFile.getFileId())
+						.withNewObjectMetadata(toS3Metadata(metadataEntries));
+
 		try {
-			s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().deleteObject(request);
+			s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().copyObject(copyRequest);
 
 		} catch (AmazonServiceException ase) {
-			throw new HpcException("[S3] Failed to delete file: " + request, HpcErrorType.DATA_TRANSFER_ERROR,
+			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
 					HpcIntegratedSystem.CLEVERSAFE, ase);
 
 		} catch (AmazonClientException ace) {
-			throw new HpcException("[S3] Failed to delete file: " + request, HpcErrorType.DATA_TRANSFER_ERROR,
+			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+					HpcIntegratedSystem.CLEVERSAFE, ace);
+		}
+	}
+
+	@Override
+	public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
+		// Create a S3 delete request.
+		DeleteObjectRequest deleteRequest = new DeleteObjectRequest(fileLocation.getFileContainerId(),
+				fileLocation.getFileId());
+		try {
+			s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().deleteObject(deleteRequest);
+
+		} catch (AmazonServiceException ase) {
+			throw new HpcException("[S3] Failed to delete file: " + deleteRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+					HpcIntegratedSystem.CLEVERSAFE, ase);
+
+		} catch (AmazonClientException ace) {
+			throw new HpcException("[S3] Failed to delete file: " + deleteRequest, HpcErrorType.DATA_TRANSFER_ERROR,
 					HpcIntegratedSystem.CLEVERSAFE, ace);
 		}
 	}
@@ -294,8 +309,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 *             on data transfer system failure.
 	 */
 	private HpcDataObjectUploadResponse generateUploadRequestURL(Object authenticatedToken,
-			HpcFileLocation archiveDestinationLocation, ObjectMetadata objectMetadata, int uploadRequestURLExpiration)
-			throws HpcException {
+			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration) throws HpcException {
 
 		// Calculate the URL expiration date.
 		Date expiration = new Date();
@@ -305,10 +319,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
 				archiveDestinationLocation.getFileContainerId(), archiveDestinationLocation.getFileId())
 						.withMethod(HttpMethod.PUT).withExpiration(expiration);
-
-		// Attach the metadata to the URL generation request.
-		// Note: This is not working. Awaiting resolution from Cleversafe.
-		//objectMetadata.getUserMetadata().forEach(generatePresignedUrlRequest::putCustomRequestHeader);
 
 		// Generate the pre-signed URL.
 		URL url = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
@@ -326,6 +336,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
 
 		return uploadResponse;
+	}
+
+	/**
+	 * Convert HPC metadata entries into S3 metadata object
+	 *
+	 * @param metadataEntries
+	 *            The metadata entries to convert
+	 * @return A S3 metadata object
+	 */
+	private ObjectMetadata toS3Metadata(List<HpcMetadataEntry> metadataEntries) {
+		ObjectMetadata objectMetadata = new ObjectMetadata();
+		if (metadataEntries != null) {
+			for (HpcMetadataEntry metadataEntry : metadataEntries) {
+				objectMetadata.addUserMetadata(metadataEntry.getAttribute(), metadataEntry.getValue());
+			}
+		}
+
+		return objectMetadata;
 	}
 
 }
