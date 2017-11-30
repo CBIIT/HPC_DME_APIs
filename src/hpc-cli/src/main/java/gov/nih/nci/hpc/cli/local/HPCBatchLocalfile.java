@@ -63,7 +63,7 @@ public class HPCBatchLocalfile extends HPCBatchClient {
 			success = new HPCBatchLocalFolderExecutor(criteriaMap, connection, logFile, logRecordsFile, authToken)
 					.processData();
 		} catch (Exception e) {
-			System.out.println("Cannot read the input file: " + e.getMessage());
+			System.out.println(e.getMessage());
 			return false;
 		}
 		return success;

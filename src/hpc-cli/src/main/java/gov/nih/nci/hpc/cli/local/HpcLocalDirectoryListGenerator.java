@@ -523,10 +523,9 @@ public class HpcLocalDirectoryListGenerator {
 			try {
 				parser = factory.createParser((InputStream) restResponse.getEntity());
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				System.out.println("Failed to process collection: " + exception.getMessage());
-				throw new RecordProcessingException("Failed to process collection: " + exception.getMessage());
+				throw new RecordProcessingException(exception.getMessage());
 			} catch (IllegalStateException | IOException e) {
-				throw new RecordProcessingException("Failed to process collection: " + e.getMessage());
+				throw new RecordProcessingException(e.getMessage());
 			}
 		}
 	}
