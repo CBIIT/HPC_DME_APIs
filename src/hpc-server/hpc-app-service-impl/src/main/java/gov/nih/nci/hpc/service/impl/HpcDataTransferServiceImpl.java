@@ -218,6 +218,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public void updateDataObjectSystemGeneratedMetadata(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String path, String userId)
+			throws HpcException {
+		// The update of metadata is performed by copying the data file to itself w/
+		// generated metadata.
+		dataTransferProxies.get(dataTransferType).copyDataObject(
+				getAuthenticatedToken(dataTransferType, configurationId), fileLocation, fileLocation,
+				this.generateMetadata(path, userId));
+	}
+
+	@Override
 	public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
 			String configurationId) throws HpcException {
 		// Input validation.
