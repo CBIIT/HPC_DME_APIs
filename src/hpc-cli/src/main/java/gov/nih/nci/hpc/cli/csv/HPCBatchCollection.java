@@ -223,7 +223,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 			}
 
 		} catch (Exception e) {
-			System.out.println("Cannot read the input file: "+e.getMessage());
+			System.out.println(e.getMessage());
 		} finally {
 			try {
 				fileReader.close();

@@ -247,7 +247,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 			}
 
 		} catch (Exception e) {
-			System.out.println("Cannot read the input file: "+e.getMessage());
+			System.out.println(e.getMessage());
 		}
 		return success;
 	}
