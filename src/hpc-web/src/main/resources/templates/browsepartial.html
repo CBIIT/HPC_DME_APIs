@@ -59,7 +59,7 @@
 						type="text" class="form-control"
 						id="selectedNodePath" name="selectedNodePath" placeholder="Enter Path" />
 					<button type="submit" class="btn btn-md btn-primary"
-						id="primaryButton" onClick="prepareAndSubmit()">Browse</button>
+						id="primaryButton" onClick="return prepareAndSubmit()">Browse</button>
 					<input type="hidden" id="selectedNodeId" name="selectedNodeId"/>
 					<input type="hidden" id="partial" name="partial" value="true"/>
 				</form>
@@ -70,8 +70,11 @@
 		//<![CDATA[
 		function prepareAndSubmit()
 		{
-			// There is no such element in the page, so this next line was causing an error.
-			//document.getElementById("actionType").value = "search";
+			if (!(/^\S{3,}$/.test(document.getElementById("selectedNodePath").value)))
+			{
+				alert("Space is not allowed in the path!")
+				return false;
+			}
 			
 			// Clear the local storage to reset the state of the tree
 			// when they browse a new node. 
