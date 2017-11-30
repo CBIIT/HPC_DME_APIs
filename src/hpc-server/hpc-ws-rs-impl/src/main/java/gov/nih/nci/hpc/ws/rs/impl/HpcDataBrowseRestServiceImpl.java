@@ -163,7 +163,9 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
     @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
     public Response uploadToS3(@QueryParam("file") String filePath,
-    		                   @QueryParam("url") String urlStr)
+    		                   @QueryParam("url") String urlStr,
+    		                   @QueryParam("path") String path,
+    		                   @QueryParam("userId") String userId)
     {
     	InputStream inputStream = null;
         HttpURLConnection connection;
@@ -175,6 +177,8 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
                connection.setDoOutput(true);
                connection.setRequestMethod("PUT");
                connection.setChunkedStreamingMode(2048);
+               connection.setRequestProperty("path", path);
+               connection.setRequestProperty("user_id", userId);
                OutputStream out = connection.getOutputStream();
 
                byte[] buf = new byte[1024];
