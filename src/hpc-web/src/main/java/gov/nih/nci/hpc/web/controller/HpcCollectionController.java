@@ -16,6 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import gov.nih.nci.hpc.web.util.HpcCollectionUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -139,7 +141,7 @@ public class HpcCollectionController extends AbstractHpcController {
 				model.addAttribute("userpermission", (permission != null && permission.getPermission() != null)
 						? permission.getPermission().toString() : "null");
 				model.addAttribute("attributeNames", getMetadataAttributeNames(collection));
-                boolean canDeleteFlag = determineIfCollectionCanBeDelete(permission, collection);
+                boolean canDeleteFlag = determineIfCollectionCanBeDelete(session, collection);
 				model.addAttribute("canDelete", Boolean.valueOf(canDeleteFlag).toString());
 				if (action != null && action.equals("edit"))
 					if (permission == null || permission.getPermission().equals(HpcPermission.NONE)
@@ -164,34 +166,32 @@ public class HpcCollectionController extends AbstractHpcController {
 	}
 
     /**
-     * Finds out whether specified collection item may be deleted by current
-     * user.
+     * Finds out whether specified Collection be deleted by current
+     * (authenticated) User.
+     *
+     * Delete on a Collection is allowed if following 2 conditions are
+     * satisfied:
+     *   1. Current user is in the role of either Group Admin or System
+     *      Admin and has Own permission on the Collection.
+     *   2. Collection is empty, having zero sub-collections and zero
+     *      data objects.
      *
      * @param theUserPermDto  HpcUserPermissionDTO instance representing
      *                        current user
-     * @param theCollection  HpcCollectionDTO instance representing specified
+     * @param collection  HpcCollectionDTO instance representing specified
      *                       collection
      * @return true if specified collection may be deleted by current user;
      *         false otherwise
      */
 	private boolean determineIfCollectionCanBeDelete(
-      HpcUserPermissionDTO theUserPermDto, HpcCollectionDTO theCollection) {
-        boolean retVal = false;
-        if (null != theUserPermDto &&
-              null != theCollection &&
-              null != theCollection.getCollection() &&
-              null != theCollection.getCollection().getSubCollections() &&
-              null != theCollection.getCollection().getDataObjects())
-        {
-            // Delete is permissible if ownership permission and collection is
-            //  empty with no sub-collections and no data objects
-            retVal =
-              HpcPermission.OWN.equals(theUserPermDto.getPermission()) &&
-              theCollection.getCollection().getSubCollections().isEmpty() &&
-              theCollection.getCollection().getDataObjects().isEmpty();
-        }
+      HttpSession session, HpcCollectionDTO collection) {
+        final boolean retVal =
+          HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session) &&
+          HpcCollectionUtil.isUserCollectionOwner(session, collection) &&
+          HpcCollectionUtil.isCollectionEmpty(collection);
         return retVal;
     }
+
 
 	private List<String> getMetadataAttributeNames(HpcCollectionDTO collection) {
 		List<String> names = new ArrayList<String>();
@@ -695,7 +695,7 @@ public class HpcCollectionController extends AbstractHpcController {
                           serviceURL, sslCertPath, sslCertPassword);
         final String permAsStr = convertPermDto2String(permissionDto);
         final String canDeleteFlag = Boolean.toString(
-          determineIfCollectionCanBeDelete(permissionDto, collDto)
+          determineIfCollectionCanBeDelete(session, collDto)
         );
         model.addAttribute("userpermission", permAsStr);
         model.addAttribute("canDelete", canDeleteFlag);
