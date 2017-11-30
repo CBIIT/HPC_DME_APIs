@@ -37,6 +37,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
@@ -107,7 +108,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			}
 		}
 		String selectedBrowsePath = (String) session.getAttribute("selectedBrowsePath");
-		
+
 		if (selectedBrowsePath != null && (path == null || path.isEmpty()))
 			session.removeAttribute("browserEntry");
 		if (path == null || path.isEmpty() || request.getParameter("base") != null)
@@ -198,7 +199,7 @@ public class HpcBrowseController extends AbstractHpcController {
 		boolean getChildren = false;
 		boolean refresh = false;
 
-		if(!StringUtils.isBlank(refreshNode)) {
+		if (!StringUtils.isBlank(refreshNode)) {
 			refresh = true;
 			getChildren = true;
 		}
@@ -222,7 +223,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				session.setAttribute("browserEntry", browserEntry);
 			}
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
+			redirectAttributes.addFlashAttribute("error", "Failed to browse: " + e.getMessage());
 			model.addAttribute("error", e.getMessage());
 		} finally {
 		}
@@ -242,15 +243,15 @@ public class HpcBrowseController extends AbstractHpcController {
 	 * @return
 	 */
 	private HpcBrowserEntry getTreeNodes(String path, HpcBrowserEntry browserEntry, String authToken, Model model,
-										 boolean getChildren, boolean partial, boolean refresh) {
+			boolean getChildren, boolean partial, boolean refresh) {
 		log.info("partial: " + partial);
 		log.info("refresh: " + refresh);
 		log.info("getChildren: " + getChildren);
 		HpcBrowserEntry selectedEntry;
 
 		path = path.trim();
-		if(!refresh) {
-			 selectedEntry = getSelectedEntry(path, browserEntry);
+		if (!refresh) {
+			selectedEntry = getSelectedEntry(path, browserEntry);
 			if (selectedEntry != null && selectedEntry.isPopulated())
 				return partial ? selectedEntry : browserEntry;
 			if (selectedEntry != null && selectedEntry.getChildren() != null)
@@ -262,56 +263,63 @@ public class HpcBrowseController extends AbstractHpcController {
 		}
 
 		log.info("retrieving collection(s) at path: " + path);
-		HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionURL, path, true, false,
-				sslCertPath, sslCertPassword);
-
-		for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
-			HpcCollection collection = collectionDTO.getCollection();
-			log.info("processing collection at path: " + collection.getAbsolutePath());
-			selectedEntry.setFullPath(collection.getAbsolutePath());
-			selectedEntry.setId(collection.getAbsolutePath());
-			selectedEntry.setName(collection.getCollectionName());
-			if (getChildren)
-				selectedEntry.setPopulated(true);
-			else
-				selectedEntry.setPopulated(false);
-			selectedEntry.setCollection(true);
-			for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
-				HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
-				listChildEntry.setCollection(true);
-				listChildEntry.setFullPath(listEntry.getPath());
-				listChildEntry.setId(listEntry.getPath());
-				listChildEntry.setName(listEntry.getPath());
-				listChildEntry.setPopulated(false);
+		try
+		{
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionURL, path, true, false,
+					sslCertPath, sslCertPassword);
+	
+			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
+				HpcCollection collection = collectionDTO.getCollection();
+				log.info("processing collection at path: " + collection.getAbsolutePath());
+				selectedEntry.setFullPath(collection.getAbsolutePath());
+				selectedEntry.setId(collection.getAbsolutePath());
+				selectedEntry.setName(collection.getCollectionName());
 				if (getChildren)
-					listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false,
-							partial, false);
-				else {
-					HpcBrowserEntry emptyEntry = new HpcBrowserEntry();
-					emptyEntry.setName("");
-					listChildEntry.getChildren().add(emptyEntry);
-				}
-				selectedEntry.getChildren().add(listChildEntry);
-			}
-			for (HpcCollectionListingEntry listEntry : collection.getDataObjects()) {
+					selectedEntry.setPopulated(true);
+				else
+					selectedEntry.setPopulated(false);
 				selectedEntry.setCollection(true);
-				HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
-				listChildEntry.setCollection(false);
-				listChildEntry.setFullPath(listEntry.getPath());
-				listChildEntry.setId(listEntry.getPath());
-				listChildEntry.setName(listEntry.getPath());
-				listChildEntry.setPopulated(true);
-				selectedEntry.getChildren().add(listChildEntry);
+				for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
+					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
+					listChildEntry.setCollection(true);
+					listChildEntry.setFullPath(listEntry.getPath());
+					listChildEntry.setId(listEntry.getPath());
+					listChildEntry.setName(listEntry.getPath());
+					listChildEntry.setPopulated(false);
+					if (getChildren)
+						listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false, partial,
+								false);
+					else {
+						HpcBrowserEntry emptyEntry = new HpcBrowserEntry();
+						emptyEntry.setName("");
+						listChildEntry.getChildren().add(emptyEntry);
+					}
+					selectedEntry.getChildren().add(listChildEntry);
+				}
+				for (HpcCollectionListingEntry listEntry : collection.getDataObjects()) {
+					selectedEntry.setCollection(true);
+					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
+					listChildEntry.setCollection(false);
+					listChildEntry.setFullPath(listEntry.getPath());
+					listChildEntry.setId(listEntry.getPath());
+					listChildEntry.setName(listEntry.getPath());
+					listChildEntry.setPopulated(true);
+					selectedEntry.getChildren().add(listChildEntry);
+				}
+				if (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty()) {
+					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
+					listChildEntry.setCollection(false);
+					listChildEntry.setFullPath(" ");
+					listChildEntry.setId(" ");
+					listChildEntry.setName(" ");
+					listChildEntry.setPopulated(true);
+					selectedEntry.getChildren().add(listChildEntry);
+				}
 			}
-			if (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty()) {
-				HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
-				listChildEntry.setCollection(false);
-				listChildEntry.setFullPath(" ");
-				listChildEntry.setId(" ");
-				listChildEntry.setName(" ");
-				listChildEntry.setPopulated(true);
-				selectedEntry.getChildren().add(listChildEntry);
-			}
+		}
+		catch(HpcWebException e)
+		{
+			model.addAttribute("error", e.getMessage());
 		}
 		return partial ? selectedEntry : browserEntry;
 	}
