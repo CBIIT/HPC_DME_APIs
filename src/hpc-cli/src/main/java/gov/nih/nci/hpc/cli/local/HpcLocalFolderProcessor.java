@@ -68,6 +68,9 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
 		System.out.println("Registering Collection " + collectionPath);
 
+		if(!basePath.startsWith("/"))
+			basePath = "/"+basePath;
+		
 		WebClient client = HpcClientUtil.getWebClient(
 				connection.getHpcServerURL() + "/collection" + basePath + "/" + collectionPath,
 				connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(), connection.getHpcCertPath(),
@@ -91,10 +94,9 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 			try {
 				parser = factory.createParser((InputStream) restResponse.getEntity());
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				System.out.println("Failed to process collection: " + exception.getMessage());
-				throw new RecordProcessingException("Failed to process collection: " + exception.getMessage());
+				throw new RecordProcessingException(exception.getMessage());
 			} catch (IllegalStateException | IOException e) {
-				throw new RecordProcessingException("Failed to process collection: " + e.getMessage());
+				throw new RecordProcessingException(e.getMessage());
 			}
 		}
 	}
