@@ -286,38 +286,6 @@ public class HpcClientUtil {
 		return docs;
 	}
 
-//	public static HpcDataManagementTreeDTO getDOCTree(String token, String serviceURL, String docName, boolean list,
-//			String hpcCertPath, String hpcCertPassword) {
-//		try {
-//			WebClient client = HpcClientUtil.getWebClient(serviceURL + "/" + docName, hpcCertPath, hpcCertPassword);
-//			client.header("Authorization", "Bearer " + token);
-//
-//			Response restResponse = client.invoke("GET", null);
-//			// System.out.println("restResponse.getStatus():"
-//			// +restResponse.getStatus());
-//			if (restResponse.getStatus() == 200) {
-//				ObjectMapper mapper = new ObjectMapper();
-//				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-//						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-//						new JacksonAnnotationIntrospector());
-//				mapper.setAnnotationIntrospector(intr);
-//				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-//
-//				MappingJsonFactory factory = new MappingJsonFactory(mapper);
-//				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-//
-//				HpcDataManagementTreeDTO tree = parser.readValueAs(HpcDataManagementTreeDTO.class);
-//				return tree;
-//			} else {
-//				throw new HpcWebException("Collection not found!");
-//			}
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new HpcWebException("Failed to get tree for: " + docName + " due to: " + e.getMessage());
-//		}
-//	}
-
 	public static String getBasePath(HttpServletRequest request)
 	{
 		String[] basePathValues = request.getParameterValues("basePath");
@@ -367,12 +335,12 @@ public class HpcClientUtil {
 				HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
 				return collections;
 			} else {
-				throw new HpcWebException("Collection not found!");
+				throw new HpcWebException("Failed to get collection! No READ access!");
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get Collection for: " + path + " due to: " + e.getMessage());
+			throw new HpcWebException(path + ": " + e.getMessage());
 		}
 	}
 
@@ -400,12 +368,12 @@ public class HpcClientUtil {
 				HpcDataObjectListDTO datafiles = parser.readValueAs(HpcDataObjectListDTO.class);
 				return datafiles;
 			} else {
-				throw new HpcWebException("Collection not found!");
+				throw new HpcWebException("Failed to get Data file! It could be because you don't have READ access!");
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new HpcWebException("Failed to get Collection for: " + path + " due to: " + e.getMessage());
+			throw new HpcWebException(path + " : " + e.getMessage());
 		}
 	}
 
@@ -932,7 +900,7 @@ public class HpcClientUtil {
 			{
 				HpcDataObjectListDTO datafile = getDatafiles(token, hpcDatafileURL, path, false, hpcCertPath, hpcCertPassword);
 				if(datafile != null && datafile.getDataObjectPaths() != null && datafile.getDataObjectPaths().size() >0)
-					throw new HpcWebException("Failed to create. Collection already exists: " + path);
+					throw new HpcWebException("Failed to create. Data file already exists: " + path);
 			}
 			catch(HpcWebException e)
 			{
