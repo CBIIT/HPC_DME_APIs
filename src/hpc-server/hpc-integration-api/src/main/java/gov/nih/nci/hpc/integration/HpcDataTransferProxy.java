@@ -121,7 +121,7 @@ public interface HpcDataTransferProxy {
 	 */
 	public default String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
 			HpcFileLocation destinationFile, List<HpcMetadataEntry> metadataEntries) throws HpcException {
-		return null;
+		throw new HpcException("copyDataObject() not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
 	/**
