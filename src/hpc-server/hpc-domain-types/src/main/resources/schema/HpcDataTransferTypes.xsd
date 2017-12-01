@@ -107,7 +107,6 @@
 		<xsd:sequence>
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
-			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="sourceFile" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="generateUploadRequestURL" type="xsd:boolean" />
@@ -119,7 +118,6 @@
 		<xsd:sequence>
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="uploadRequestURL" type="xsd:string" />
-			<xsd:element name="checksum" type="xsd:string" />
 			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
