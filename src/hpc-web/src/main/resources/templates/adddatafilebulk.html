@@ -547,12 +547,12 @@
    	    }); 
    	    $("#simplePopover").popover({
    	        title: '<h6 class="custom-title"><span class="glyphicon glyphicon-info-sign"></span>Simple Criteria</h6>',
-   	        content: '<table border="1"><tr><td>?</td><td>Matches any single character. Eg, &quot;something?&quot; collects any path that is named &quot;something&quot; plus any character.</td></tr><tr><td>*</td><td>Matches any characters up to the next slash. Eg, &quot;*/*/something*&quot; collects any path that has two directories, then a file or directory that starts with the name &quot;something&quot; </td></tr><tr><td>**</td><td>Matches any characters. Eg, &quot;**/something/**&quot; collects any path that contains a directory named &quot;something&quot;</td></tr></table>',
+   	        content: '<table border="1"><tr><td>?</td><td>Matches any single character. Eg, &quot;something?&quot; collects any path that is named &quot;something&quot; plus any character.</td></tr><tr><td>*</td><td>Matches any characters <b>up to the next slash</b>. Eg, &quot;*/*/something*&quot; collects any path that has two directories, then a file or directory that starts with the name &quot;something&quot; </td></tr><tr><td>**</td><td>Matches any characters. The difference between * and ** is that * only matches up to next slash on the path where as ** matches across the entire path. Eg, &quot;**/something/**&quot; collects any path that contains a directory named &quot;something&quot;</td></tr></table>',
    	        html: true
    	    }); 
    	    $("#regexPopover").popover({
    	        title: '<h6 class="custom-title"><span class="glyphicon glyphicon-info-sign"></span>RegEx Criteria</h6>',
-   	        content: 'Please see this link for the list of regular expression constructs: https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html',
+   	        content: 'Please see this link for the list of regular expression constructs: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html" target="_blank">https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html</a>',
    	        html: true
    	    }); 
    	    
