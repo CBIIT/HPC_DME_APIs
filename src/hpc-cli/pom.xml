@@ -137,11 +137,6 @@
 			<version>2.12.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-bundle-jaxrs</artifactId>
 			<version>2.7.18</version>
@@ -154,17 +149,17 @@
 		<dependency>
 			<groupId>org.easybatch</groupId>
 			<artifactId>easybatch-core</artifactId>
-			<version>4.0.0</version>
+			<version>4.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.easybatch</groupId>
 			<artifactId>easybatch-apache-commons-csv</artifactId>
-			<version>4.0.0</version>
+			<version>4.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.easybatch</groupId>
 			<artifactId>easybatch-tools</artifactId>
-			<version>4.0.0</version>
+			<version>4.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
@@ -206,6 +201,23 @@
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.52</version>
 		</dependency>
+<dependency>
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-api</artifactId>
+  <version>1.7.1</version>
+</dependency>
+
+<dependency>
+  <groupId>org.slf4j</groupId>
+  <artifactId>jcl-over-slf4j</artifactId>
+  <version>1.7.1</version>
+</dependency>
+
+<dependency>
+  <groupId>ch.qos.logback</groupId>
+  <artifactId>logback-classic</artifactId>
+  <version>1.0.7</version>
+</dependency>		
 		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->
 	</dependencies>
 
