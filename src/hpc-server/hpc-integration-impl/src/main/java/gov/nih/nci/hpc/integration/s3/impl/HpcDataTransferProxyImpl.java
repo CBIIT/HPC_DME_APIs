@@ -14,6 +14,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
@@ -22,7 +23,6 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.s3.transfer.model.UploadResult;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -85,8 +85,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-			HpcDataObjectUploadRequest uploadRequest, List<HpcMetadataEntry> metadataEntries,
-			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener) throws HpcException {
+			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
+			HpcDataTransferProgressListener progressListener) throws HpcException {
 		// Upload from remote endpoint not supported.
 		if (uploadRequest.getSourceLocation() != null) {
 			throw new HpcException("S3 data transfer doesn't support upload from remote endpoint",
@@ -106,7 +106,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		} else {
 			// Upload a file
 			return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(), archiveDestinationLocation,
-					toS3Metadata(metadataEntries), progressListener, baseArchiveDestination.getType());
+					progressListener, baseArchiveDestination.getType());
 		}
 	}
 
@@ -147,7 +147,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public void copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile, HpcFileLocation destinationFile,
+	public String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile, HpcFileLocation destinationFile,
 			List<HpcMetadataEntry> metadataEntries) throws HpcException {
 
 		// Create a S3 update request w/ new metadata. Copy the file to itself.
@@ -156,7 +156,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						.withNewObjectMetadata(toS3Metadata(metadataEntries));
 
 		try {
-			s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client().copyObject(copyRequest);
+			CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+					.copyObject(copyRequest);
+			return copyResult != null ? copyResult.getETag() : null;
 
 		} catch (AmazonServiceException ase) {
 			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
@@ -234,8 +236,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 *            The file to upload.
 	 * @param archiveDestinationLocation
 	 *            The archive destination location.
-	 * @param objectMetadata
-	 *            The S3 object metadata.
 	 * @param progressListener
 	 *            (Optional) a progress listener for async notification on transfer
 	 *            completion.
@@ -246,22 +246,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 *             on data transfer system failure.
 	 */
 	private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken, File sourceFile,
-			HpcFileLocation archiveDestinationLocation, ObjectMetadata objectMetadata,
-			HpcDataTransferProgressListener progressListener, HpcArchiveType archiveType) throws HpcException {
+			HpcFileLocation archiveDestinationLocation, HpcDataTransferProgressListener progressListener,
+			HpcArchiveType archiveType) throws HpcException {
 		// Create a S3 upload request.
 		PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
-				archiveDestinationLocation.getFileId(), sourceFile).withMetadata(objectMetadata);
+				archiveDestinationLocation.getFileId(), sourceFile);
 
 		// Upload the data.
 		Upload s3Upload = null;
-		UploadResult s3UploadResult = null;
 		Calendar dataTransferStarted = Calendar.getInstance();
 		Calendar dataTransferCompleted = null;
 		try {
 			s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request);
 			if (progressListener == null) {
 				// Upload synchronously.
-				s3UploadResult = s3Upload.waitForUploadResult();
+				s3Upload.waitForUploadResult();
 				dataTransferCompleted = Calendar.getInstance();
 			} else {
 				// Upload asynchronously.
@@ -283,7 +282,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		uploadResponse.setDataTransferStarted(dataTransferStarted);
 		uploadResponse.setDataTransferCompleted(dataTransferCompleted);
 		uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
-		uploadResponse.setChecksum(s3UploadResult != null ? s3UploadResult.getETag() : "Unknown");
 		if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
 			uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
 		} else {
@@ -332,7 +330,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		uploadResponse.setDataTransferCompleted(null);
 		uploadResponse.setDataTransferRequestId(String.valueOf(generatePresignedUrlRequest.hashCode()));
 		uploadResponse.setUploadRequestURL(url.toString());
-		uploadResponse.setChecksum("Unknown");
 		uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
 
 		return uploadResponse;

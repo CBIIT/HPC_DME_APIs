@@ -96,7 +96,7 @@ public interface HpcDataTransferService {
 			String userId, boolean completionEvent) throws HpcException;
 
 	/**
-	 * Update a data object file with generated metadata (path and userId).
+	 * Add system generated metadata to the data object in the archive.
 	 * 
 	 * @param fileLocation
 	 *            The file location.
@@ -105,11 +105,16 @@ public interface HpcDataTransferService {
 	 * @param configurationId
 	 *            The configuration ID (needed to determine the archive connection
 	 *            config).
+	 * @param objectId
+	 *            The data object id from the data management system (UUID).
+	 * @param registrarId
+	 *            The user-id of the data registrar.
+	 * @return The checksum of the data object object.
 	 * @throws HpcException
 	 *             on service failure.
 	 */
-	public void updateDataObjectSystemGeneratedMetadata(HpcFileLocation fileLocation,
-			HpcDataTransferType dataTransferType, String configurationId, String path, String userId)
+	public String addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String objectId, String registrarId)
 			throws HpcException;
 
 	/**
