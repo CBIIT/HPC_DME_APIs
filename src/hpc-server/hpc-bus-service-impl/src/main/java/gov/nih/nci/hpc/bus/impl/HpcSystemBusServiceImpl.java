@@ -263,16 +263,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
 					// The data object is found in archive. i.e. user completed the upload.
 
-					// Update the data management (iRODS) data object's system-metadata.
-					Calendar dataTransferCompleted = Calendar.getInstance();
-					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-							HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted);
-
 					// Update the archive (Cleversafe) data object's system-metadata.
-					dataTransferService.addSystemGeneratedMetadataToDataObject(
+					String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
 							systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
 							systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
 							systemGeneratedMetadata.getRegistrarId());
+
+					// Update the data management (iRODS) data object's system-metadata.
+					Calendar dataTransferCompleted = Calendar.getInstance();
+					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
+							HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted);
 
 					// Add an event if needed.
 					if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
