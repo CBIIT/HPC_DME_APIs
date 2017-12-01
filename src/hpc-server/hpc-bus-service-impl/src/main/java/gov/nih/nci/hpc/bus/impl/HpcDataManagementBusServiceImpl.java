@@ -653,17 +653,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 								registrationCompletionEvent);
 
 				// Generate archive (Cleversafe) system generated metadata. Note: This is only
-				// performed if the file has
-				// transfered to the archive (Cleversafe), i.e. it is a synchronous data
-				// registration.
-				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
-						systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
-						systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
-						systemGeneratedMetadata.getRegistrarId());
+				// performed for synchronous data registration.
+				if (dataObjectFile != null) {
+					// transfered to the archive (Cleversafe), i.e. it is a synchronous data
+					// registration.
+					String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+							systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
+							systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
+							systemGeneratedMetadata.getRegistrarId());
 
-				// Update the data management system generated data with calculated checksum of
-				// the archived file.
-				if (!StringUtils.isEmpty(checksum)) {
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum, null, null,
 							null, null);
 				}
