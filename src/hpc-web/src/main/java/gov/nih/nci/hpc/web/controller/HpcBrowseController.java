@@ -244,25 +244,20 @@ public class HpcBrowseController extends AbstractHpcController {
 	 */
 	private HpcBrowserEntry getTreeNodes(String path, HpcBrowserEntry browserEntry, String authToken, Model model,
 			boolean getChildren, boolean partial, boolean refresh) {
-		log.info("partial: " + partial);
-		log.info("refresh: " + refresh);
-		log.info("getChildren: " + getChildren);
-		HpcBrowserEntry selectedEntry;
-
+		
 		path = path.trim();
-		if (!refresh) {
-			selectedEntry = getSelectedEntry(path, browserEntry);
-			if (selectedEntry != null && selectedEntry.isPopulated())
-				return partial ? selectedEntry : browserEntry;
-			if (selectedEntry != null && selectedEntry.getChildren() != null)
-				selectedEntry.getChildren().clear();
-			if (selectedEntry == null)
-				selectedEntry = new HpcBrowserEntry();
-		} else {
-			selectedEntry = new HpcBrowserEntry();
-		}
+		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
+		if refresh & selectedEntry != null) {
+			selectedEntry.setPopulated(false);
+		} 
+		
+		if (selectedEntry != null && selectedEntry.isPopulated())
+			return partial ? selectedEntry : browserEntry;
+		if (selectedEntry != null && selectedEntry.getChildren() != null)
+			selectedEntry.getChildren().clear();
+		if (selectedEntry == null)
+			selectedEntry = new HpcBrowserEntry();		
 
-		log.info("retrieving collection(s) at path: " + path);
 		try
 		{
 			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionURL, path, true, false,
@@ -270,7 +265,6 @@ public class HpcBrowseController extends AbstractHpcController {
 	
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
 				HpcCollection collection = collectionDTO.getCollection();
-				log.info("processing collection at path: " + collection.getAbsolutePath());
 				selectedEntry.setFullPath(collection.getAbsolutePath());
 				selectedEntry.setId(collection.getAbsolutePath());
 				selectedEntry.setName(collection.getCollectionName());
