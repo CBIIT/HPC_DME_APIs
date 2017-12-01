@@ -78,8 +78,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	// Data transfer system generated metadata attributes (attach to files in
 	// archive)
-	private static final String PATH_ATTRIBUTE = "path";
-	private static final String USER_ID_ATTRIBUTE = "user_id";
+	private static final String OBJECT_ID_ATTRIBUTE = "uuid";
+	private static final String REGISTRAR_ID_ATTRIBUTE = "user_id";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -183,7 +183,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Create an upload request.
 		HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
 		uploadRequest.setPath(path);
-		uploadRequest.setUserId(userId);
 		uploadRequest.setCallerObjectId(callerObjectId);
 		uploadRequest.setSourceLocation(sourceLocation);
 		uploadRequest.setSourceFile(sourceFile);
@@ -218,14 +217,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void updateDataObjectSystemGeneratedMetadata(HpcFileLocation fileLocation,
-			HpcDataTransferType dataTransferType, String configurationId, String path, String userId)
+	public String addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+			HpcDataTransferType dataTransferType, String configurationId, String objectId, String registrarId)
 			throws HpcException {
-		// The update of metadata is performed by copying the data file to itself w/
-		// generated metadata.
-		dataTransferProxies.get(dataTransferType).copyDataObject(
+		// Add metadata is done by copying the object to itself w/ attached metadata.
+		return dataTransferProxies.get(dataTransferType).copyDataObject(
 				getAuthenticatedToken(dataTransferType, configurationId), fileLocation, fileLocation,
-				this.generateMetadata(path, userId));
+				generateMetadata(objectId, registrarId));
 	}
 
 	@Override
@@ -638,29 +636,29 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Generate metadata to attach to the data object in the archive: 1. Path - the
-	 * data object path in the DM system (iRODS) 2. User ID - the user id that
-	 * registers the data object.
+	 * Generate metadata to attach to the data object in the archive: 1. UUID - the
+	 * data object UUID in the DM system (iRODS) 2. User ID - the user id that
+	 * registered the data object.
 	 * 
-	 * @param path
-	 *            The data object logical path.
-	 * @param userId
+	 * @param objectId
+	 *            The data object UUID.
+	 * @param registrarId
 	 *            The user-id uploaded the data.
 	 * @return a List of the 2 metadata.
 	 */
-	private List<HpcMetadataEntry> generateMetadata(String path, String userId) {
+	private List<HpcMetadataEntry> generateMetadata(String objectId, String registrarId) {
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
 		// Create the user-id metadata.
 		HpcMetadataEntry entry = new HpcMetadataEntry();
-		entry.setAttribute(USER_ID_ATTRIBUTE);
-		entry.setValue(userId);
+		entry.setAttribute(REGISTRAR_ID_ATTRIBUTE);
+		entry.setValue(registrarId);
 		metadataEntries.add(entry);
 
 		// Create the path metadata.
 		entry = new HpcMetadataEntry();
-		entry.setAttribute(PATH_ATTRIBUTE);
-		entry.setValue(path);
+		entry.setAttribute(OBJECT_ID_ATTRIBUTE);
+		entry.setValue(objectId);
 		metadataEntries.add(entry);
 
 		return metadataEntries;
@@ -712,8 +710,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private HpcDataObjectUploadResponse uploadDataObject(HpcDataObjectUploadRequest uploadRequest,
 			String configurationId) throws HpcException {
 		// Input validation.
-		if (uploadRequest.getPath() == null || uploadRequest.getUserId() == null) {
-			throw new HpcException("Null data object path or user-id", HpcErrorType.INVALID_REQUEST_INPUT);
+		if (StringUtils.isEmpty(uploadRequest.getPath())) {
+			throw new HpcException("Null/Empty data object path", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Determine the data transfer type.
@@ -747,7 +745,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Upload the data object using the appropriate data transfer system proxy.
 		return dataTransferProxies.get(dataTransferType).uploadDataObject(authenticatedToken, uploadRequest,
-				generateMetadata(uploadRequest.getPath(), uploadRequest.getUserId()),
 				dataManagementConfigurationLocator.getBaseArchiveDestination(configurationId, dataTransferType), null);
 	}
 
