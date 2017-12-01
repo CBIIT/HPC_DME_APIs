@@ -149,7 +149,6 @@ public class HPCBatchLocalFolderExecutor {
 				queueList.add(queue);
 			}
 			RoundRobinRecordDispatcher<Record> roundRobinRecordDispatcher = new RoundRobinRecordDispatcher<>(queueList);
-
 			// Build a master job that will read records from the data source
 			// and dispatch them to worker jobs
 			Job masterJob = JobBuilder.aNewJob().named("master-job").reader(new HPCBatchLocalRecordReader(files))
@@ -181,6 +180,7 @@ public class HPCBatchLocalFolderExecutor {
 
 			HPCJobReportMerger reportMerger = new HPCJobReportMerger();
 			JobReport finalReport = reportMerger.mergerReports(jobReports);
+
 			if (finalReport.getMetrics().getErrorCount() == 0)
 				success = true;
 			System.out.println(new HpcJobReportFormatter().formatReport(finalReport));
