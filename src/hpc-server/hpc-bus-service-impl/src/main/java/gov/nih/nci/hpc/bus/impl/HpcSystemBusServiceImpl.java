@@ -158,9 +158,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
 
-				// Generate system metadata and attach to the data object.
+				// Update system metadata of the data object.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
-						uploadResponse.getDataTransferRequestId(), uploadResponse.getChecksum(),
+						uploadResponse.getDataTransferRequestId(), null,
 						uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(), null,
 						uploadResponse.getDataTransferCompleted());
 
@@ -270,9 +270,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted);
 
 					// Update the archive (Cleversafe) data object's system-metadata.
-					dataTransferService.updateDataObjectSystemGeneratedMetadata(
+					dataTransferService.addSystemGeneratedMetadataToDataObject(
 							systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
-							systemGeneratedMetadata.getConfigurationId(), path,
+							systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
 							systemGeneratedMetadata.getRegistrarId());
 
 					// Add an event if needed.
@@ -337,6 +337,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, file, false,
 						path, systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
+				
+				// Generate archive (Cleversafe) system generated metadata. 
+				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+						systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
+						systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
+						systemGeneratedMetadata.getRegistrarId());
 
 				// Delete the file.
 				if (!FileUtils.deleteQuietly(file)) {
@@ -345,7 +351,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Update system metadata of the data object.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
-						uploadResponse.getDataTransferRequestId(), uploadResponse.getChecksum(),
+						uploadResponse.getDataTransferRequestId(), checksum,
 						uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(), null,
 						uploadResponse.getDataTransferCompleted());
 

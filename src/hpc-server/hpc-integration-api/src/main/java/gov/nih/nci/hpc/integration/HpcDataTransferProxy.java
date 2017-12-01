@@ -73,9 +73,6 @@ public interface HpcDataTransferProxy {
 	 *            An authenticated token.
 	 * @param uploadRequest
 	 *            The data upload request
-	 * @param metadataEntries
-	 *            (Optional) a list of metadata to attach to the physical file
-	 *            storage.
 	 * @param baseArchiveDestination
 	 *            The archive's base destination location.
 	 * @param progressListener
@@ -86,8 +83,8 @@ public interface HpcDataTransferProxy {
 	 *             on data transfer system failure.
 	 */
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-			HpcDataObjectUploadRequest uploadRequest, List<HpcMetadataEntry> metadataEntries,
-			HpcArchive baseArchiveDestination, HpcDataTransferProgressListener progressListener) throws HpcException;
+			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
+			HpcDataTransferProgressListener progressListener) throws HpcException;
 
 	/**
 	 * Download a data object file.
@@ -118,12 +115,13 @@ public interface HpcDataTransferProxy {
 	 *            The destination file
 	 * @param metadataEntries
 	 *            The metadata to attach.
+	 * @return The copied object checksum.
 	 * @throws HpcException
 	 *             on data transfer system failure.
 	 */
-	public default void copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
+	public default String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
 			HpcFileLocation destinationFile, List<HpcMetadataEntry> metadataEntries) throws HpcException {
-		throw new HpcException("copyDataObject(Object() not supported", HpcErrorType.UNEXPECTED_ERROR);
+		return null;
 	}
 
 	/**

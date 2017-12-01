@@ -640,14 +640,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Set the upload request URL (if one was generated).
 				responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 
-				// Generate system metadata and attach to the data object.
-				metadataService.addSystemGeneratedMetadataToDataObject(path, uploadResponse.getArchiveLocation(),
-						source, uploadResponse.getDataTransferRequestId(), uploadResponse.getChecksum(),
-						uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(),
-						uploadResponse.getDataTransferStarted(), uploadResponse.getDataTransferCompleted(),
-						getSourceSize(source, uploadResponse.getDataTransferType(), dataObjectFile, configurationId),
-						dataObjectRegistration.getCallerObjectId(), userId, userName, configurationId,
-						registrationCompletionEvent);
+				// Generate data management (iRODS) system metadata and attach to the data
+				// object.
+				HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+						.addSystemGeneratedMetadataToDataObject(path, uploadResponse.getArchiveLocation(), source,
+								uploadResponse.getDataTransferRequestId(), uploadResponse.getDataTransferStatus(),
+								uploadResponse.getDataTransferType(), uploadResponse.getDataTransferStarted(),
+								uploadResponse.getDataTransferCompleted(),
+								getSourceSize(source, uploadResponse.getDataTransferType(), dataObjectFile,
+										configurationId),
+								dataObjectRegistration.getCallerObjectId(), userId, userName, configurationId,
+								registrationCompletionEvent);
+
+				// Generate archive (Cleversafe) system generated metadata. Note: This is only
+				// performed if the file has
+				// transfered to the archive (Cleversafe), i.e. it is a synchronous data
+				// registration.
+				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+						systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
+						systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
+						systemGeneratedMetadata.getRegistrarId());
+
+				// Update the data management system generated data with calculated checksum of
+				// the archived file.
+				if (!StringUtils.isEmpty(checksum)) {
+					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum, null, null,
+							null, null);
+				}
 
 				// Add collection update event.
 				addCollectionUpdatedEvent(path, false, true);
@@ -778,8 +797,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Populate the DTO with active and completed registration requests for this
 		// user.
 		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
-		dataManagementService.getRegistrationTasks(userId).forEach(
-				task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task)));
+		dataManagementService.getRegistrationTasks(userId)
+				.forEach(task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task)));
 		dataManagementService.getRegistrationResults(userId, page).forEach(
 				result -> registrationSummary.getCompletedTasks().add(toBulkDataObjectRegistrationTaskDTO(result)));
 
