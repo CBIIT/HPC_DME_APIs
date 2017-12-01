@@ -160,9 +160,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Update system metadata of the data object.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
-						uploadResponse.getDataTransferRequestId(), null,
-						uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(), null,
-						uploadResponse.getDataTransferCompleted());
+						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(),
+						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted());
 
 			} catch (HpcException e) {
 				logger.error("Failed to process queued data transfer upload :" + path, e);
@@ -337,10 +336,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, file, false,
 						path, systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
-				
-				// Generate archive (Cleversafe) system generated metadata. 
+
+				// Generate archive (Cleversafe) system generated metadata.
 				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
-						systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
+						uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
 						systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId());
 
@@ -351,9 +350,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Update system metadata of the data object.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
-						uploadResponse.getDataTransferRequestId(), checksum,
-						uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(), null,
-						uploadResponse.getDataTransferCompleted());
+						uploadResponse.getDataTransferRequestId(), checksum, uploadResponse.getDataTransferStatus(),
+						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted());
 
 				// Data transfer upload completed (successfully or failed). Add an event if
 				// needed.
