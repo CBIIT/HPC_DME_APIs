@@ -247,6 +247,7 @@ public class HpcBrowseController extends AbstractHpcController {
 		
 		path = path.trim();
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
+
 		if(refresh & selectedEntry != null) {
 			selectedEntry.setPopulated(false);
 		} 
