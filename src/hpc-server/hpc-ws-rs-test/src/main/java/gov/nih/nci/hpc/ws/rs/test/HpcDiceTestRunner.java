@@ -13,12 +13,10 @@ package gov.nih.nci.hpc.ws.rs.test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -39,17 +37,11 @@ public class HpcDiceTestRunner
     // Instance members
     //---------------------------------------------------------------------//
 
-	// Date formatter to format report timestamp.
-	static private DateFormat tsDateFormat = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss");
-	
-	// Date formatter to format report run time.
-	static private DateFormat runDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-	
 	// Report mail sender
-	static private HpcTestReportEmailSender mailSender = new HpcTestReportEmailSender();
+	private static HpcTestReportEmailSender mailSender = new HpcTestReportEmailSender();
 	
 	// An indicator whether the test failed.
-	static private boolean testFailed = false;
+	private static boolean testFailed = false;
 	
     //---------------------------------------------------------------------//
     // constructors
@@ -87,12 +79,12 @@ public class HpcDiceTestRunner
     	
     	// Create a report file.
     	Date runDate = Calendar.getInstance().getTime();
-    	File reportFile = new File(testReportBaseDir + "/AutoTestReport." + tsDateFormat.format(runDate) + ".html");
+    	File reportFile = new File(testReportBaseDir + "/AutoTestReport." + new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss").format(runDate) + ".html");
     	
     	// Build the report header and table.
     	StringBuilder reportBuilder = new StringBuilder();
     	reportBuilder.append("<h1>HPC-DM Test Report</h1>");
-    	reportBuilder.append("<p>Date: " + runDateFormat.format(runDate) + "</p>");
+    	reportBuilder.append("<p>Date: " + new SimpleDateFormat("MM/dd/yyyy HH:mm").format(runDate) + "</p>");
     	
     	// Run the tests.
     	try {
