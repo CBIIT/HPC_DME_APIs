@@ -76,18 +76,18 @@ public interface HpcSystemBusService
 	public void completeCollectionDownloadTasks() throws HpcException;
 	
     /**
-     * Process data object list registration tasks that received. 
+     * Process bulk data object registration tasks that received. 
      *
      * @throws HpcException on service failure.
      */
-	public void processDataObjectListRegistrationTasks() throws HpcException;
+	public void processBulkDataObjectRegistrationTasks() throws HpcException;
 	
     /**
-     * Check status of all active data object list registration tasks and complete these that are no longer in progress. 
+     * Check status of all active bulk data object registration tasks and complete these that are no longer in progress. 
      *
      * @throws HpcException on service failure.
      */
-	public void completeDataObjectListRegistrationTasks() throws HpcException;
+	public void completeBulkDataObjectRegistrationTasks() throws HpcException;
 	
     /**
      * Process all (active) events.
