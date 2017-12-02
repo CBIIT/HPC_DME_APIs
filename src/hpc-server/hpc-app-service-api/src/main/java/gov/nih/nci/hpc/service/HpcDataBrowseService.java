@@ -1,13 +1,11 @@
 /**
  * HpcDataBrowseService.java
  *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ *
+ * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
-
 package gov.nih.nci.hpc.service;
 
 import java.util.List;
@@ -15,54 +13,46 @@ import java.util.List;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.exception.HpcException;
 
-
 /**
- * <p>
  * HPC Data Browse Application Service Interface.
- * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
+public interface HpcDataBrowseService {
+  /**
+   * Save a bookmark for a user.
+   *
+   * @param nciUserId The user ID to save the bookmark for.
+   * @param bookmark The bookmark.
+   * @throws HpcException on service failure.
+   */
+  public void saveBookmark(String nciUserId, HpcBookmark bookmark) throws HpcException;
 
-public interface HpcDataBrowseService 
-{  
-    /**
-     * Save a bookmark for a user.
-     *
-     * @param nciUserId The user ID to save the bookmark for.
-     * @param bookmark The bookmark.
-     * @throws HpcException on service failure.
-     */
-    public void saveBookmark(String nciUserId, HpcBookmark bookmark) 
-    		                throws HpcException;
-    
-    /**
-     * Delete a bookmark for a user.
-     *
-     * @param nciUserId The user ID to delete the bookmark for.
-     * @param bookmarkName The bookmark name.
-     * @throws HpcException on service failure.
-     */
-    public void deleteBookmark(String nciUserId, String bookmarkName) throws HpcException;
+  /**
+   * Delete a bookmark for a user.
+   *
+   * @param nciUserId The user ID to delete the bookmark for.
+   * @param bookmarkName The bookmark name.
+   * @throws HpcException on service failure.
+   */
+  public void deleteBookmark(String nciUserId, String bookmarkName) throws HpcException;
 
-    /**
-     * Get all saved bookmarks for a user.
-     *
-     * @param nciUserId The registered user ID.
-     * @return A list of bookmarks
-     * @throws HpcException on service failure.
-     */
-    public List<HpcBookmark> getBookmarks(String nciUserId) throws HpcException;
-    
-    /**
-     * Get a saved bookmark by name for a user.
-     *
-     * @param nciUserId The registered user ID.
-     * @param bookmarkName The bookmark name.
-     * @return The requested bookmark. 
-     * @throws HpcException on service failure.
-     */
-    public HpcBookmark getBookmark(String nciUserId, String bookmarkName) throws HpcException;
+  /**
+   * Get all saved bookmarks for a user.
+   *
+   * @param nciUserId The registered user ID.
+   * @return A list of bookmarks
+   * @throws HpcException on service failure.
+   */
+  public List<HpcBookmark> getBookmarks(String nciUserId) throws HpcException;
+
+  /**
+   * Get a saved bookmark by name for a user.
+   *
+   * @param nciUserId The registered user ID.
+   * @param bookmarkName The bookmark name.
+   * @return The requested bookmark.
+   * @throws HpcException on service failure.
+   */
+  public HpcBookmark getBookmark(String nciUserId, String bookmarkName) throws HpcException;
 }
-
- 

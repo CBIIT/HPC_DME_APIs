@@ -521,7 +521,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	@Override
-	public void processDataObjectListRegistrationTasks() throws HpcException {
+	public void processBulkDataObjectRegistrationTasks() throws HpcException {
 		// Use system account to perform this service.
 		securityService.setSystemRequestInvoker();
 
@@ -550,7 +550,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 
 	@Override
-	public void completeDataObjectListRegistrationTasks() throws HpcException {
+	public void completeBulkDataObjectRegistrationTasks() throws HpcException {
 		// Use system account to perform this service.
 		securityService.setSystemRequestInvoker();
 
