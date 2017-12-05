@@ -13,6 +13,7 @@
 @ddblock_end copyright
 ******************************/
 
-Register a project with valid inputs. 
-At the time this test is checked, the input file follows the policies file.  The returned HTTP code should equal 201.
-
+1. Create two collections and validate successful creation
+2. Update permission on one the collection to READ to dice_group_admin_user.
+3. Use API to get permissions on these two collections. Validate response.
+4. Delete two collections created
