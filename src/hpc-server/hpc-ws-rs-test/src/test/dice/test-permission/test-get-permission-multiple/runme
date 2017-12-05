@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+source $HPC_DM_TEST/utils/functions
+sleep 1
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username ../../utils/config`
+
+source $HPC_DM_TEST/test-permission/utils/functions
+
+#Run the common runtest
+$HPC_DM_TEST/test-permission/utils/runtest
+
+
+RESPONSE_HEADER=get-permission-multiple-response-header.tmp
+RESPONSE_MSG=get-permission-multiple-response-message.json.tmp
+get_permission_multiple "collection/acl?collectionPath=$(get_basefolder)/test-multiple-path-permissions-1&collectionPath=$(get_basefolder)/test-multiple-path-permissions-2"
+
+if grep -q "\"permission\":\"READ\",\"subject\":\"dice_user_group_admin\",\"subjectType\":\"USER\"" get-permission-multiple-response-message.json.tmp
+then
+     echo "SUCCESS"
+fi
+
