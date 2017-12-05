@@ -1,0 +1,41 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "name",
+         "value": "Demo Project Name10"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Project"
+        },
+        {
+         "attribute": "description",
+         "value": "Project desc"
+        },
+        {
+         "attribute": "internal_project_id",
+         "value": "ipi"
+        },
+        {
+         "attribute": "source_lab_pi",
+         "value": "Source Lab PI"
+        },
+        {
+         "attribute": "lab_branch",
+         "value": "Lab / Branch Name"
+        },
+        {
+         "attribute": "pi_doc",
+         "value": "FNLCR"
+        },
+        {
+         "attribute": "original_date_created",
+         "value": "10/25/2006"
+        },
+        {
+         "attribute": "old_doc_attribute",
+         "value": "CCBR"
+        }
+    ]
+}
+
