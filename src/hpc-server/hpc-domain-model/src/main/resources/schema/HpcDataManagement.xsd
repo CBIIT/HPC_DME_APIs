@@ -27,15 +27,23 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
 		        schemaLocation="HpcDataTransferTypes.xsd" />
 
+	<xsd:complexType name="HpcDataTransferConfiguration">
+		<xsd:sequence>
+				<xsd:element name="url" type="xsd:string" />
+			    <xsd:element name="baseArchiveDestination" type="hpc-domain-datatransfer:HpcArchive" />
+			    <xsd:element name="baseDownloadSource" type="hpc-domain-datatransfer:HpcArchive" />
+			    <xsd:element name="uploadRequestURLExpiration" type="xsd:int" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+				         
 	<xsd:element name="HpcDataManagementConfiguration">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="id" type="xsd:string" />
 				<xsd:element name="doc" type="xsd:string" />
 			    <xsd:element name="basePath" type="xsd:string" />
-			    <xsd:element name="s3URL" type="xsd:string" />
-			    <xsd:element name="s3BaseArchiveDestination" type="hpc-domain-datatransfer:HpcArchive" />
-			    <xsd:element name="s3UploadRequestURLExpiration" type="xsd:int" />
+			    <xsd:element name="s3Configuration" type="hpc-domain-model:HpcDataTransferConfiguration" />
+			    <xsd:element name="globusConfiguration" type="hpc-domain-model:HpcDataTransferConfiguration" />
 				<xsd:element name="collectionMetadataValidationRules"
 				             type="hpc-domain-metadata:HpcMetadataValidationRule"
 					         minOccurs="0" maxOccurs="unbounded" />

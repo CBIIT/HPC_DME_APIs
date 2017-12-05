@@ -158,6 +158,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Override
 	public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
 			HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestinationNotUsed,
+			Integer uploadRequestURLExpiration,
 			HpcDataTransferProgressListener progressListener) throws HpcException {
 		// Note: At this time, there is no DOC specific configuration for Globus base
 		// archive destination.
