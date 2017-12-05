@@ -120,9 +120,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
                    "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
 				   "\"DESTINATION_LOCATION_FILE_ID\", \"ITEMS\", \"STATUS\", \"TYPE\", " + 
                    "\"DATA_OBJECT_PATHS\", \"CREATED\") " + 
-                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
            "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + 
                         "\"PATH\"=excluded.\"PATH\", " + 
+                        "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", " + 
                         "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " +
                         "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", " +
                         "\"ITEMS\"=excluded.\"ITEMS\", " +
