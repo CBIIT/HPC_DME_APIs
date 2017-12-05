@@ -1010,6 +1010,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
         metadataService.getDataObjectSystemGeneratedMetadata(path);
+    if (metadata == null) {
+      throw new HpcException(
+          "Failed to get system generated data: " + path, HpcErrorType.UNEXPECTED_ERROR);
+    }
 
     // Validate the file is archived.
     if (!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
