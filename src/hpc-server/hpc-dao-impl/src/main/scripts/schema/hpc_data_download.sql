@@ -40,7 +40,7 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."ID" IS
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."USER_ID" IS 
                   'The user ID who submitted the download request';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."CONFIGURATION_ID" IS 
-                  'The configuration ID to use in the downloading the data object';
+                  'The configuration ID to use in downloading the data object';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_REQUEST_ID" IS 
                   'The data transfer (S3 or Globus) request ID that is currently in progress';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_TYPE" IS 
@@ -69,6 +69,7 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "USER_ID" text,
   "TYPE" text NOT NULL,
   "PATH" text,
+  "CONFIGURATION_ID" text,
   "DATA_OBJECT_PATHS" text[],
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text,
   "DESTINATION_LOCATION_FILE_ID" text,
@@ -90,6 +91,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."TYPE" IS
                   'The type of the request - collection or bulk (list of data objects)';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."PATH" IS 
                   'The collection path to download';
+COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."CONFIGURATION_ID" IS 
+                  'The configuration ID to use in downloading the collection';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DATA_OBJECT_PATHS" IS 
                   'The list of data object paths to download';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_CONTAINER_ID" IS 

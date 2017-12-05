@@ -117,7 +117,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 	
 	public static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = 
 		   "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( " +
-                   "\"ID\", \"USER_ID\", \"PATH\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
+                   "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", " + 
 				   "\"DESTINATION_LOCATION_FILE_ID\", \"ITEMS\", \"STATUS\", \"TYPE\", " + 
                    "\"DATA_OBJECT_PATHS\", \"CREATED\") " + 
                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
@@ -254,6 +254,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 		collectionDownloadTask.setId(rs.getString("ID"));
 		collectionDownloadTask.setUserId(rs.getString("USER_ID"));
 		collectionDownloadTask.setPath(rs.getString("PATH"));
+		collectionDownloadTask.setConfigurationId(rs.getString("CONFIGURATION_ID"));
 		collectionDownloadTask.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 		collectionDownloadTask.setStatus(
 				  HpcCollectionDownloadTaskStatus.fromValue(rs.getString(("STATUS"))));
@@ -472,6 +473,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO
 					    		 collectionDownloadTask.getId(),
 					    		 collectionDownloadTask.getUserId(),
 					    		 collectionDownloadTask.getPath(),
+					    		 collectionDownloadTask.getConfigurationId(),
 					    		 collectionDownloadTask.getDestinationLocation().getFileContainerId(),
 					    		 collectionDownloadTask.getDestinationLocation().getFileId(),
 					    		 toJSON(collectionDownloadTask.getItems()),
