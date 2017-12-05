@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# runme
+# @author: William Liu
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+
+source ../../../utils/functions
+source ../../utils/registration-functions
+
+POLICIES_FILE=../../../../../hpc-server/hpc-app-service-impl/src/main/resources/metadataValidationRules.json
+#Run common script
+../../../utils/runtest
+
+#Clean previous results
+./cleanme
+
+# Encoded destination storage path for collection
+DESTINATION_PATH=%2FTEST_NO_HIER_Archive%2Fthis-is%20%20bad-path-to-try
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+SERVER=`cat ../../../utils/server`
+
+# add -D <filename> to dump the header
+curl -H "Content-Type: application/json" -d @input.json -X PUT ${SERVER}/collection/${DESTINATION_PATH}  --config ../../../utils/config  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+
+check_connection $RESPONSE_HEADER
+
+RETURN_CODE=`get_http_code $RESPONSE_HEADER`
+echo $RETURN_CODE 1>&2
+
+ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
+echo $ERROR_TYPE 1>&2
+
+ERROR_MSG=`get_json_value $RESPONSE_MSG message`
+echo $ERROR_MSG 1>&2
