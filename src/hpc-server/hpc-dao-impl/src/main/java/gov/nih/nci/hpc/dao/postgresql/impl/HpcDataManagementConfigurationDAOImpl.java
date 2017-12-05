@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -67,15 +68,23 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		dataManagementConfiguration.setId(rs.getString("ID"));
 		dataManagementConfiguration.setBasePath(rs.getString("BASE_PATH"));
 		dataManagementConfiguration.setDoc(rs.getString("DOC"));
-		dataManagementConfiguration.setS3URL(rs.getString("S3_URL"));
+		
+		// Map the S3 Configuration.
+		HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
+		s3Configuration.setUrl(rs.getString("S3_URL"));
 		HpcArchive s3BaseArchiveDestination = new HpcArchive();
 		HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
 		s3ArchiveLocation.setFileContainerId(rs.getString("S3_VAULT"));
 		s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
 		s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
 		s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("S3_ARCHIVE_TYPE")));
-		dataManagementConfiguration.setS3BaseArchiveDestination(s3BaseArchiveDestination);
-		dataManagementConfiguration.setS3UploadRequestURLExpiration(rs.getInt("S3_UPLOAD_REQUEST_URL_EXPIRATION"));
+		s3Configuration.setBaseArchiveDestination(s3BaseArchiveDestination);
+		s3Configuration.setUploadRequestURLExpiration(rs.getInt("S3_UPLOAD_REQUEST_URL_EXPIRATION"));
+		dataManagementConfiguration.setS3Configuration(s3Configuration);
+		
+		// Map the Globus configuration.
+		HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
+		dataManagementConfiguration.setGlobusConfiguration(globusConfiguration);
 		
 		try {
 			 dataManagementConfiguration.setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
