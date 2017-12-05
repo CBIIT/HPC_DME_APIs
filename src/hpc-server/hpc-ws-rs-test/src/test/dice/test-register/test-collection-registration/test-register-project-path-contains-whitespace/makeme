@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# makeme
+# @author: William Liu
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to build the executable for this test
+# Usage: makeme [no arguments]
+
+../../../utils/maketest
+
+#Clean previous parsed policies file
+../../utils/cleantest
