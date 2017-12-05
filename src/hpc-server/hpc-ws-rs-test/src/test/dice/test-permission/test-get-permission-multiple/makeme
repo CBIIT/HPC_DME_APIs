@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+../../utils/maketest
+
+#Clean previous parsed policies file
+../../utils/cleantest
+
+source $HPC_DM_TEST/utils/functions
+sleep 1
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username ../../utils/config`
+
+PROJECT_PATH=$(get_basefolder)/test-multiple-path-permissions-1
+register_collection_from_template  $PROJECT_PATH
+echo "$PROJECT_PATH"  > registered-project1-path.tmp
+verify_registration  collection-registration-response-header.tmp
+
+PROJECT_PATH=$(get_basefolder)/test-multiple-path-permissions-2
+register_collection_from_template  $PROJECT_PATH
+echo "$PROJECT_PATH"  > registered-project2-path.tmp
+verify_registration  collection-registration-response-header.tmp
+
+update_permission "permission-input.json" "collection/$(get_basefolder)/test-multiple-path-permissions-2"
