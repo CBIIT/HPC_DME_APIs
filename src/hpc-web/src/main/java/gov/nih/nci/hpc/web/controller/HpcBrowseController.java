@@ -257,7 +257,10 @@ public class HpcBrowseController extends AbstractHpcController {
 		if (selectedEntry != null && selectedEntry.getChildren() != null)
 			selectedEntry.getChildren().clear();
 		if (selectedEntry == null)
-			selectedEntry = new HpcBrowserEntry();		
+		{
+			selectedEntry = new HpcBrowserEntry();	
+			selectedEntry.setName(path);
+		}
 
 		try
 		{
