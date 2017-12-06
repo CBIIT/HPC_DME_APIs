@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to clean the resutls of this test
+# Usage: cleanme [no arguments]
+source $HPC_DM_TEST/utils/functions
+../../utils/cleantest
+../utils/cleantest
+rm *.tmp  2>/dev/null
+
+RESPONSE_HEADER="delete-collection-response-header.tmp"
+RESPONSE_MSG="delete-collection-response-message.json.tmp"
+delete_collection $(get_basefolder)/test-multiple-path-permissions-1 $RESPONSE_HEADER $RESPONSE_MSG
+delete_collection $(get_basefolder)/test-multiple-path-permissions-2 $RESPONSE_HEADER $RESPONSE_MSG
+
+
