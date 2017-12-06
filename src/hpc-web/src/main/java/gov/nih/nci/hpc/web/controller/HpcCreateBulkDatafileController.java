@@ -221,6 +221,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	public String createDatafile(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDataModel, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
+		
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		String[] action = request.getParameterValues("actionType");
 		String parent = request.getParameter("parent");
@@ -246,7 +247,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			checksum = (String) request.getAttribute("checksum");
 
 		model.addAttribute("checksum", checksum);
-
+		setInputParameters(model, request, session, path, parent, source, true);
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
 			return "redirect:/" + source;
 		else if (action != null && action.length > 0 && action[0].equals("refresh"))
@@ -258,6 +259,10 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			session.setAttribute("datafilePath", hpcDataModel.getPath());
 			session.setAttribute("basePathSelected", basePath);
 			model.addAttribute("useraction", "globus");
+			session.removeAttribute("GlobusEndpoint");
+			session.removeAttribute("GlobusEndpointPath");
+			session.removeAttribute("GlobusEndpointFiles");
+			session.removeAttribute("GlobusEndpointFolders");
 			setCriteria(model, request, session);
 			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
 					false);
@@ -274,6 +279,9 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			hpcDataModel.setPath(hpcDataModel.getPath().trim());
 			HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructBulkRequest(request, session,
 					hpcDataModel.getPath().trim());
+			
+			if(registrationDTO.getDataObjectRegistrationItems().size() == 0 && registrationDTO.getDirectoryScanRegistrationItems().size() == 0)
+				throw new HpcWebException("No input file(s) / folder(s) are selected");
 			if (!registrationDTO.getDryRun()) {
 				HpcCollectionRegistrationDTO collectionRegistrationDTO = constructRequest(request, session,
 						hpcDataModel.getPath().trim(), null);
@@ -296,7 +304,12 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 					info.append(responseItem.getPath()).append("<br/>");
 				}
 				if (registrationDTO.getDryRun())
-					model.addAttribute("message", "Here are the dry run list of files: <br/> " + info.toString());
+				{
+					if(info.toString().isEmpty())
+						model.addAttribute("message", "No files found! ");
+					else
+						model.addAttribute("message", "Here are the dry run list of files: <br/> " + info.toString());
+				}
 				else
 					model.addAttribute("error",
 							"Bulk Data file registration request is submmited! Task Id: " + responseDTO.getTaskId());
@@ -318,7 +331,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			model.addAttribute("create", true);
 			model.addAttribute("serverURL", serverURL);
 
-			setInputParameters(model, request, session, path, parent, source, true);
+			
 		}
 		return "adddatafilebulk";
 	}
