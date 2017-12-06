@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+
+#Register the original dataOject
+register_dataobject_sync_presignurl $PROJECT_PATH
