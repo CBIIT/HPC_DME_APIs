@@ -150,9 +150,15 @@
 															</tr>
 															<tr>
 																<td>Criteria Type:</td>
-																<td><label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="Simple" checked="checked"/>Simple</label>
+																
+																<td th:if="${criteriaType != 'RegEx'}"><label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="Simple" checked="checked"/>Simple</label>
 																	<a href="#" id="simplePopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
 																<label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="RegEx" />RegEx</label>
+																<a href="#" id="regexPopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
+																</td>
+																<td th:if="${criteriaType == 'RegEx'}"><label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="Simple" />Simple</label>
+																	<a href="#" id="simplePopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
+																<label class="radio-inline"><input type="radio" name="criteriaType" id="criteriaType" value="RegEx" checked="checked"/>RegEx</label>
 																<a href="#" id="regexPopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
 																</td>
 															</tr>
@@ -542,12 +548,12 @@
    	$(document).ready(function(){
    	    $("#includePopover").popover({
    	        title: '<h6 class="custom-title"><span class="glyphicon glyphicon-info-sign"></span>Include/Exclude Criteria</h6>',
-   	        content: 'Add list of include and/or exclude patterns to match source files in the selected folders. In the case of multiple patterns given, union of all patterns is considered. Please put each criteria in a new line. You may use "Simple" or "RegEx" based patterns.',
+   	        content: 'Add list of include and/or exclude patterns to match source files in the selected folders. These patterns are not applied to individual files selected. In the case of multiple patterns given, union of all patterns is considered. Please put each criteria in a new line. You may use "Simple" or "RegEx" based patterns.',
    	        html: true
    	    }); 
    	    $("#simplePopover").popover({
    	        title: '<h6 class="custom-title"><span class="glyphicon glyphicon-info-sign"></span>Simple Criteria</h6>',
-   	        content: '<table border="1"><tr><td>?</td><td>Matches any single character. Eg, &quot;something?&quot; collects any path that is named &quot;something&quot; plus any character.</td></tr><tr><td>*</td><td>Matches any characters <b>up to the next slash</b>. Eg, &quot;*/*/something*&quot; collects any path that has two directories, then a file or directory that starts with the name &quot;something&quot; </td></tr><tr><td>**</td><td>Matches any characters. The difference between * and ** is that * only matches up to next slash on the path where as ** matches across the entire path. Eg, &quot;**/something/**&quot; collects any path that contains a directory named &quot;something&quot;</td></tr></table>',
+   	        content: '<table border="1"><tr><td>?</td><td>Matches any single character. Eg, &quot;something?&quot; collects any path that is named &quot;something&quot; plus any character.</td></tr><tr><td>*</td><td>Matches any characters <b>up to the next slash</b>. Eg, &quot;*/*/something*&quot; collects any path that has two directories, then a file or directory that starts with the name &quot;something&quot; </td></tr><tr><td>**</td><td>Matches any characters. The difference between * and ** is that * only matches up to next slash on the path where as ** matches across the entire path. Eg, &quot;**/something/**&quot; collects any path that contains a directory named &quot;something&quot;</td></tr><tr><td colspan="2">Ex: prod* - Get all files starts with prod in the base folder <br/> prod*/* - Get all files from folders starts with prod. This would not include sub folders<br/>prod*/** - Get all contents including subfolder contents from the folders starts with prod <br/>**/prod*/* - Get all contents from the folders starts with prod anywhere in the given path </td></tr></table>',
    	        html: true
    	    }); 
    	    $("#regexPopover").popover({
