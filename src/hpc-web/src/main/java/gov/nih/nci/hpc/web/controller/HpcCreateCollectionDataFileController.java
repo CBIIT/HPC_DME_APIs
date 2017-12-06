@@ -530,6 +530,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			session.setAttribute("userMetadataEntries", cachedUserEntries);
 			model.addAttribute("userMetadataEntries", cachedUserEntries);
 		}
+		
+		String criteriaType = (String)request.getParameter("criteriaType");
+		model.addAttribute("criteriaType", criteriaType);
 	}
 
 	private String getCollectionAttrValue(HpcCollectionDTO collectionDTO, String attrName) {
