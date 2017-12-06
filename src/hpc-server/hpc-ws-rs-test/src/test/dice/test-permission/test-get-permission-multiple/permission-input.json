@@ -1,0 +1,8 @@
+{
+            "userPermissions": [
+                {
+                        "userId": "dice_user_group_admin",
+                        "permission": "READ"
+                }
+            ]
+}
