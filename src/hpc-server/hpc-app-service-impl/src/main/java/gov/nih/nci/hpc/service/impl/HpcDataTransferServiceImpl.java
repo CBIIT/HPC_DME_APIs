@@ -1078,7 +1078,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     regex = regex.replaceAll("([^\\.])\\*", "$1[^/]*");
 
     // Convert the '?' to regex.
-    return regex.replaceAll(Pattern.quote("?"), ".");
+    regex = regex.replaceAll(Pattern.quote("?"), ".");
+
+    // Ensure the pattern starts with '/'.
+    if (!regex.startsWith("/")) {
+      regex = "/" + regex;
+    }
+
+    return regex;
   }
 
   // Second hop download.
