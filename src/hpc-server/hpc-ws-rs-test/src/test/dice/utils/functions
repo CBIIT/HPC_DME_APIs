@@ -456,7 +456,7 @@ function verify_get {
 # If the nvironment varialbe ACTING_USER  is set, it will use it a username
 function curl_register {
 
-    usage="ERROR using $FUNCNAME \n USAGE: $FUNCNAME <description.json> <destination-path> <[colleciton|dataObject]> [dataObject-file]" 
+    usage="ERROR using $FUNCNAME \n USAGE: $FUNCNAME <description.json> <destination-path> <[colleciton|dataObject|preSigned]> [dataObject-file]" 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
     then
         echo "$usage" >&2
@@ -464,8 +464,11 @@ function curl_register {
         exit 1
     fi
 
+    DESCRIPTION="$1"
+    DESTINATION_PATH="$2"
+    TYPE="$3"
 
-    if [ ! -z "$4" ]
+    if [ "$TYPE" == "dataObject" ] && [ ! -z "$4" ]
     then
         DATAOBJECT_FILE="$4"
         if [ ! -e "$DATAOBJECT_FILE" ]
@@ -475,9 +478,6 @@ function curl_register {
         fi
     fi
         
-    DESCRIPTION="$1"
-    DESTINATION_PATH="$2"
-    TYPE="$3"
     USERID=`get_username $HPC_DM_TEST/utils/config`
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
@@ -504,6 +504,10 @@ function curl_register {
         else
             curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> curl-status 
         fi
+    elif [ "$TYPE" == "preSigned" ]
+    then
+     	    CURL_FLAGS="-X PUT ${SERVER}/dataObject/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS  -H "Accept: application/json"  2> curl-status 
     elif [ "$TYPE" == "collection" ]
     then
 
@@ -1121,6 +1125,52 @@ function register_dataobject_sync_from_template {
     curl_register input.json.tmp  "$DATAOBJECT_PATH" dataObject "$OBJECT_FILE" 
 
 
+}
+
+#Register a new dataObject synchronously using a template 
+#Input: <collection-path> "The parent collection for the dataObject"
+#Input: [object-name] "The name of the dataObject"
+function register_dataobject_sync_presignurl {
+
+    USAGE="USAGE: register_dataobject_sync_presignurl  <collection-path> [object-name]"
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using register_dataobject_sync_from_template"
+        echo "$USAGE"
+        exit
+    fi
+
+    if [ ! -z "$2" ] 
+    then
+        OBJECT_NAME="$2" 
+    else 
+        sleep 1
+        SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+        OBJECT_NAME="object-${SUFFIX}.txt"
+    fi
+
+
+    COLLECTION_PATH="$1"
+    SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+    DATAOBJECT_PATH="${COLLECTION_PATH}/${OBJECT_NAME}"
+    echo "$DATAOBJECT_PATH" > registered-data-object-path.tmp
+
+    TEMPLATE=$HPC_DM_TEST/utils/templates/upload-input-presigned-template.json
+    update_uid $TEMPLATE input.json.tmp
+
+    OBJECT_FILE="test-object.tmp"
+    echo "test file" > $OBJECT_FILE 
+    PRESIGNED="preSigned"
+    curl_register input.json.tmp  "$DATAOBJECT_PATH" "$PRESIGNED"
+    verify_registration preSigned-registration-response-header.tmp
+    response_msg=preSigned-registration-response-message.json.tmp
+    PRESIGNED_URL=`get_json_value $response_msg uploadRequestURL`
+    fileName="test-object.tmp"
+    RESPONSE_HEADER=presignedURL-registration-response-header.tmp
+    RESPONSE_MSG=presignedURL-registration-response-message.tmp
+    curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${fileName}" "${PRESIGNED_URL}" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s
+    verify_registration presignedURL-registration-response-header.tmp
 }
 
 #Download a dataObject synchronously 
@@ -1745,6 +1795,35 @@ function get_permission {
 }
 
 
+#Get a permisson on multiple collections from the archive
+#Inputs: <item-path> (should have a prefix of "dataObject" or "collection:)
+function get_permission_multiple {
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using get_permission_multiple"
+        echo "USAGE: get_permission_multiple  <item-path>"
+        exit 1
+    fi
+
+    CONFIG=$(get_curl_config) 
+    ITEM_PATH="$1"
+
+    if [[ "$ITEM_PATH" !=  "collection"* ]]
+    then 
+        echo "ERROR: get_permission" >&2
+        echo "PATH \"$ITEM_PATH\" does not contain the prefix \"collection\"" >&2
+        exit 1
+    fi
+
+
+    RESPONSE_HEADER=get-permission-multiple-response-header.tmp
+    RESPONSE_MSG=get-permission-multiple-response-message.json.tmp
+    SERVER=`cat $HPC_DM_TEST/utils/server`
+
+    curl -X GET "$SERVER/$ITEM_PATH"  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    check_connection $RESPONSE_HEADER
+}
 
 
 #Update the premission using an input json file
