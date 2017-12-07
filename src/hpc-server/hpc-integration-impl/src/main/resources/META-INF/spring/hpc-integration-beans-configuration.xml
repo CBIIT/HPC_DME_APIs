@@ -64,8 +64,7 @@
 	
 	<!--  Globus Connection  -->
 	<bean id="hpcGlobusConnection" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusConnection">
-		<constructor-arg value="${hpc.integration.globus.globusAuthUrl}" index="0" />
-		<constructor-arg value="${hpc.integration.globus.globusAuthScope}" index="1" />
+		<constructor-arg value="${hpc.integration.globus.globusAuthScope}" index="0" />
 	</bean>
 	
 	<!--  Globus Directory Browser  -->
