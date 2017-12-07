@@ -80,10 +80,30 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("S3_ARCHIVE_TYPE")));
 		s3Configuration.setBaseArchiveDestination(s3BaseArchiveDestination);
 		s3Configuration.setUploadRequestURLExpiration(rs.getInt("S3_UPLOAD_REQUEST_URL_EXPIRATION"));
+		
 		dataManagementConfiguration.setS3Configuration(s3Configuration);
 		
 		// Map the Globus configuration.
 		HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
+		globusConfiguration.setUrl(rs.getString("GLOBUS_URL"));
+		
+		HpcArchive globusBaseArchiveDestination = new HpcArchive();
+        HpcFileLocation globusArchiveLocation = new HpcFileLocation();
+        globusArchiveLocation.setFileContainerId(rs.getString("GLOBUS_ARCHIVE_ENDPOINT"));
+        globusArchiveLocation.setFileId(rs.getString("GLOBUS_ARCHIVE_PATH"));
+        globusBaseArchiveDestination.setFileLocation(globusArchiveLocation);
+        globusBaseArchiveDestination.setType(HpcArchiveType.fromValue(rs.getString("GLOBUS_ARCHIVE_TYPE")));
+        globusBaseArchiveDestination.setDirectory(rs.getString("GLOBUS_ARCHIVE_DIRECTORY"));
+        globusConfiguration.setBaseArchiveDestination(globusBaseArchiveDestination);
+        
+        HpcArchive globusBaseDownloadSource = new HpcArchive();
+        HpcFileLocation globusDownloadLocation = new HpcFileLocation();
+        globusDownloadLocation.setFileContainerId(rs.getString("GLOBUS_DOWNLOAD_ENDPOINT"));
+        globusDownloadLocation.setFileId(rs.getString("GLOBUS_DOWNLOAD_PATH"));
+        globusBaseDownloadSource.setFileLocation(globusArchiveLocation);
+        globusBaseDownloadSource.setDirectory(rs.getString("GLOBUS_DOWNLOAD_DIRECTORY"));
+        globusConfiguration.setBaseDownloadSource(globusBaseDownloadSource);
+		
 		dataManagementConfiguration.setGlobusConfiguration(globusConfiguration);
 		
 		try {
