@@ -576,7 +576,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       usrPrmsOnClltcns.setUserId(userId);
       for (String someCollectionPath : collectionPaths) {
         HpcPermissionForCollection permForColl =
-            _fetchCollectionPermission(someCollectionPath, userId);
+            fetchCollectionPermission(someCollectionPath, userId);
         if (null != permForColl) {
           usrPrmsOnClltcns.getPermissionsForCollections().add(permForColl);
         }
@@ -586,26 +586,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           "User not found: " + userId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
     }
     return usrPrmsOnClltcns;
-  }
-
-  private HpcPermissionForCollection _fetchCollectionPermission(String path, String userId)
-      throws HpcException {
-    // Input validation.
-    if (path == null) {
-      throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    if (userId == null) {
-      throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    // Validate the collection exists.
-    if (dataManagementService.getCollection(path, false) == null) {
-      return null;
-    }
-    HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
-    HpcPermissionForCollection resultHpcPermForColl = new HpcPermissionForCollection();
-    resultHpcPermForColl.setCollectionPath(path);
-    resultHpcPermForColl.setPermission(hsPerm.getPermission());
-    return resultHpcPermForColl;
   }
 
   @Override
@@ -2075,5 +2055,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         taskDTO.getFailedItems().add(item.getTask());
       }
     }
+  }
+
+  private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
+      throws HpcException {
+    // Input validation.
+    if (path == null) {
+      throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    if (userId == null) {
+      throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    // Validate the collection exists.
+    if (dataManagementService.getCollection(path, false) == null) {
+      return null;
+    }
+    HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
+    HpcPermissionForCollection resultHpcPermForColl = new HpcPermissionForCollection();
+    resultHpcPermForColl.setCollectionPath(path);
+    resultHpcPermForColl.setPermission(hsPerm.getPermission());
+    return resultHpcPermForColl;
   }
 }
