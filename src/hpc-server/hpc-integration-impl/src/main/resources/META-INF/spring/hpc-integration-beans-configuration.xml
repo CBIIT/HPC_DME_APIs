@@ -41,27 +41,6 @@
         <property name="multiplier" value="${hpc.integration.globus.retry.intervalMultiplier}" />
     </bean>
     
-	<!--  Globus Archive Destination. -->	
-	<bean id="hpcGlobusArchiveDestinationLocation" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
-		<property name="fileContainerId" value="${hpc.integration.globus.archive.endpoint}" />
-		<property name="fileId" value="${hpc.integration.globus.archive.path}" />
-	</bean>
-	<bean id="hpcGlobusArchiveDestination" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" >
-		<property name="fileLocation" ref="hpcGlobusArchiveDestinationLocation" />
-		<property name="type" value="${hpc.integration.globus.archive.type}" />
-		<property name="directory" value="${hpc.integration.globus.archive.directory}" />
-	</bean>
-	
-	<!--  Globus Download Source. -->	
-	<bean id="hpcGlobusDownloadSourceLocation" class="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" >
-		<property name="fileContainerId" value="${hpc.integration.globus.download.endpoint}" />
-		<property name="fileId" value="${hpc.integration.globus.download.path}" />
-	</bean>
-	<bean id="hpcGlobusDownloadSource" class="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" >
-		<property name="fileLocation" ref="hpcGlobusDownloadSourceLocation" />
-		<property name="directory" value="${hpc.integration.globus.download.directory}" />
-	</bean>
-	
 	<!--  Globus Connection  -->
 	<bean id="hpcGlobusConnection" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusConnection">
 		<constructor-arg value="${hpc.integration.globus.globusAuthScope}" index="0" />

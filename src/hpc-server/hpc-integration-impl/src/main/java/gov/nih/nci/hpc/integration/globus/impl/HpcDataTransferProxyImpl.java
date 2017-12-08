@@ -1,11 +1,8 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
-
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
-
 import org.apache.commons.lang.StringUtils;
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
@@ -17,9 +14,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.support.RetryTemplate;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -72,16 +67,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // The Globus directory browser instance.
   @Autowired private HpcGlobusDirectoryBrowser globusDirectoryBrowser = null;
 
-  // The Globus archive destination. Used to upload data objects.
-  @Autowired
-  @Qualifier("hpcGlobusArchiveDestination")
-  private HpcArchive baseArchiveDestination = null;
-
-  // The Globus download source. Used to download data objects.
-  @Autowired
-  @Qualifier("hpcGlobusDownloadSource")
-  private HpcArchive baseDownloadSource = null;
-
   // Retry template. Used to automatically retry Globus service calls.
   @Autowired private RetryTemplate retryTemplate = null;
 
@@ -100,7 +85,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    *
    * @param globusQueueSize The Globus active tasks queue size.
    */
-  private HpcDataTransferProxyImpl(int globusQueueSize) {
+  public HpcDataTransferProxyImpl(int globusQueueSize) {
     this.globusQueueSize = globusQueueSize;
   }
 
@@ -109,6 +94,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    *
    * @throws HpcException Constructor is disabled.
    */
+  @SuppressWarnings("unused")
   private HpcDataTransferProxyImpl() throws HpcException {
     throw new HpcException("Default Constructor Disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
   }
@@ -152,17 +138,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   public HpcDataObjectUploadResponse uploadDataObject(
       Object authenticatedToken,
       HpcDataObjectUploadRequest uploadRequest,
-      HpcArchive baseArchiveDestinationNotUsed,
+      HpcArchive baseArchiveDestination,
       Integer uploadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
-    // Note: At this time, there is no DOC specific configuration for Globus base
-    // archive destination.
-    // The Globus base archive destination is configured via Spring. In the future,
-    // this may be
-    // a new requirement, so the parameter passed in will be used instead of the
-    // spring injected one.
-
     // Progress listener not supported.
     if (progressListener != null) {
       throw new HpcException(
@@ -233,7 +212,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public HpcDataTransferUploadReport getDataTransferUploadStatus(
-      Object authenticatedToken, String dataTransferRequestId) throws HpcException {
+      Object authenticatedToken, String dataTransferRequestId, HpcArchive baseArchiveDestination)
+      throws HpcException {
     HpcGlobusDataTransferReport report =
         getDataTransferReport(authenticatedToken, dataTransferRequestId);
 
@@ -307,6 +287,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     return getPathAttributes(fileLocation, client, getSize);
   }
 
+  @Override
   public List<HpcDirectoryScanItem> scanDirectory(
       Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException {
     JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
@@ -327,27 +308,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           HpcIntegratedSystem.GLOBUS,
           e);
     }
-  }
-
-  @Override
-  public String getFilePath(String fileId, boolean archive) throws HpcException {
-    return archive
-        ? fileId.replaceFirst(
-            baseArchiveDestination.getFileLocation().getFileId(),
-            baseArchiveDestination.getDirectory())
-        : fileId.replaceFirst(
-            baseDownloadSource.getFileLocation().getFileId(), baseDownloadSource.getDirectory());
-  }
-
-  @Override
-  public HpcFileLocation getDownloadSourceLocation(String path) throws HpcException {
-    // Create a source location. (This is a local GLOBUS endpoint).
-    HpcFileLocation sourceLocation = new HpcFileLocation();
-    sourceLocation.setFileContainerId(baseDownloadSource.getFileLocation().getFileContainerId());
-    sourceLocation.setFileId(
-        baseDownloadSource.getFileLocation().getFileId() + "/" + UUID.randomUUID().toString());
-
-    return sourceLocation;
   }
 
   @Override
@@ -695,11 +655,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       // Globus task requires some manual intervention. We cancel it and consider it a
       // failure.
       logger.error(
-          "Globus transfer deemed failed: task-id: "
-              + dataTransferRequestId
-              + "["
-              + report.rawError
-              + "]");
+          "Globus transfer deemed failed: task-id: {0} [{1}]", dataTransferRequestId, report.rawError);
       try {
         cancelTransferRequest(authenticatedToken, dataTransferRequestId);
 
