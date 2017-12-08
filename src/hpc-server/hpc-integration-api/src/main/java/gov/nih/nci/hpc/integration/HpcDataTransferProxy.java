@@ -10,7 +10,6 @@ package gov.nih.nci.hpc.integration;
 
 import java.util.List;
 import java.util.UUID;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -130,11 +129,13 @@ public interface HpcDataTransferProxy {
    *
    * @param authenticatedToken An authenticated token.
    * @param dataTransferRequestId The data transfer request ID.
+   * @param baseArchiveDestination The archive's base destination location.
    * @return The data transfer request status.
    * @throws HpcException on data transfer system failure.
    */
   public default HpcDataTransferUploadReport getDataTransferUploadStatus(
-      Object authenticatedToken, String dataTransferRequestId) throws HpcException {
+      Object authenticatedToken, String dataTransferRequestId, HpcArchive baseArchiveDestination)
+      throws HpcException {
     throw new HpcException(
         "getDataTransferUploadStatus() not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
@@ -189,31 +190,6 @@ public interface HpcDataTransferProxy {
   public default List<HpcDirectoryScanItem> scanDirectory(
       Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException {
     throw new HpcException("scanDirectory() not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
-
-  /**
-   * Get a file path for a given file ID
-   *
-   * @param fileId The file ID.
-   * @param archive If true, the archive path is returned, otherwise the download/share path is
-   *     returned.
-   * @return a file path.
-   * @throws HpcException on data transfer system failure.
-   */
-  public default String getFilePath(String fileId, boolean archive) throws HpcException {
-    throw new HpcException("getFilePath not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
-
-  /**
-   * Get download source location.
-   *
-   * @param path The data object logical path.
-   * @return The download source location.
-   * @throws HpcException on data transfer system failure.
-   */
-  public default HpcFileLocation getDownloadSourceLocation(String path) throws HpcException {
-    throw new HpcException(
-        "getDownloadSourceLocation not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
 
   /**

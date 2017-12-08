@@ -9,16 +9,13 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import java.util.Arrays;
-
 import org.globusonline.transfer.JSONTransferAPIClient;
-
 import com.google.api.client.auth.oauth2.ClientCredentialsTokenRequest;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.BasicAuthentication;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
-
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -46,7 +43,7 @@ public class HpcGlobusConnection {
    * @param globusAuthUrl The Globus auth/token URL.
    * @param globusAuthScope The Globus authentication scope.
    */
-  private HpcGlobusConnection(String globusAuthScope) {
+  public HpcGlobusConnection(String globusAuthScope) {
     this.globusAuthScope = globusAuthScope;
   }
 
@@ -55,6 +52,7 @@ public class HpcGlobusConnection {
    *
    * @throws HpcException Constructor is disabled.
    */
+  @SuppressWarnings("unused")
   private HpcGlobusConnection() throws HpcException {
     throw new HpcException("Constructor Disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
   }
