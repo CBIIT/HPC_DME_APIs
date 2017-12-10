@@ -100,7 +100,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
         HpcFileLocation globusDownloadLocation = new HpcFileLocation();
         globusDownloadLocation.setFileContainerId(rs.getString("GLOBUS_DOWNLOAD_ENDPOINT"));
         globusDownloadLocation.setFileId(rs.getString("GLOBUS_DOWNLOAD_PATH"));
-        globusBaseDownloadSource.setFileLocation(globusArchiveLocation);
+        globusBaseDownloadSource.setFileLocation(globusDownloadLocation);
         globusBaseDownloadSource.setDirectory(rs.getString("GLOBUS_DOWNLOAD_DIRECTORY"));
         globusConfiguration.setBaseDownloadSource(globusBaseDownloadSource);
 		
