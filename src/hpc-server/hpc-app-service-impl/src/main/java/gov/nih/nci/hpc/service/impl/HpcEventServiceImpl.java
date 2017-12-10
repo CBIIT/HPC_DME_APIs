@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportEntry;
 import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcEventService;
@@ -587,10 +588,13 @@ public class HpcEventServiceImpl implements HpcEventService {
               updateDescriptionPayloadValue));
     }
 
-    // If configured to - Exclude the invoker from the list.
+    // If configured to - Exclude the invoker from the list. 
     // (No need to notify the invoker of a collection update they requested).
-    if (!invokerCollectionUpdateNotification) {
-      userIds.remove(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
+    if(!invokerCollectionUpdateNotification) {
+       HpcNciAccount nciAccount = HpcRequestContext.getRequestInvoker().getNciAccount();
+       if(nciAccount != null) {
+          userIds.remove(nciAccount.getUserId());
+       }
     }
 
     return userIds;
