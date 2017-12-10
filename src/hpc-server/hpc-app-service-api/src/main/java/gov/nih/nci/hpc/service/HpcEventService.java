@@ -160,23 +160,27 @@ public interface HpcEventService {
    * Add a collection updated event.
    *
    * @param path The collection path.
+   * @param userId The user ID who initiated the action resulted in collection update event.
    * @throws HpcException on service failure.
    */
-  public void addCollectionUpdatedEvent(String path) throws HpcException;
+  public void addCollectionUpdatedEvent(String path, String userId) throws HpcException;
 
   /**
    * Add a collection registration event.
    *
    * @param path The collection path.
+   * @param userId The user ID who initiated the action resulted in collection update event.
    * @throws HpcException on service failure.
    */
-  public void addCollectionRegistrationEvent(String path) throws HpcException;
+  public void addCollectionRegistrationEvent(String path, String dataObject) throws HpcException;
 
   /**
    * Add a data object registration event.
    *
    * @param collectionPath The collection path to which the data object was registered under.
+   * @param userId The user ID who initiated the action resulted in data object registration event.
    * @throws HpcException on service failure.
    */
-  public void addDataObjectRegistrationEvent(String collectionPath) throws HpcException;
+  public void addDataObjectRegistrationEvent(String collectionPath, String userId)
+      throws HpcException;
 }
