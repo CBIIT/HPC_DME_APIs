@@ -8,6 +8,17 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcEventDAO;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
@@ -22,23 +33,9 @@ import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportEntry;
 import gov.nih.nci.hpc.domain.report.HpcReportEntryAttribute;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
-import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcEventService;
-
-import java.text.DateFormat;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
 /**
  * HPC Event Application Service Implementation.
@@ -337,27 +334,30 @@ public class HpcEventServiceImpl implements HpcEventService {
   }
 
   @Override
-  public void addCollectionUpdatedEvent(String path) throws HpcException {
+  public void addCollectionUpdatedEvent(String path, String userId) throws HpcException {
     addCollectionUpdatedEvent(
         path,
         COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE,
-        COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE);
+        COLLECTION_METADATA_UPDATE_DESCRIPTION_PAYLOAD_VALUE,
+        userId);
   }
 
   @Override
-  public void addCollectionRegistrationEvent(String path) throws HpcException {
+  public void addCollectionRegistrationEvent(String path, String userId) throws HpcException {
     addCollectionUpdatedEvent(
         path,
         COLLECTION_REGISTRATION_PAYLOAD_VALUE,
-        COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE);
+        COLLECTION_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE,
+        userId);
   }
 
   @Override
-  public void addDataObjectRegistrationEvent(String path) throws HpcException {
+  public void addDataObjectRegistrationEvent(String path, String userId) throws HpcException {
     addCollectionUpdatedEvent(
         path,
         DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE,
-        DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE);
+        DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE,
+        userId);
   }
 
   //---------------------------------------------------------------------//
@@ -523,10 +523,11 @@ public class HpcEventServiceImpl implements HpcEventService {
    *     payload.
    * @param updateDescriptionPayloadValue The value to set on
    *     COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE event payload.
+   * @param userId The user ID who initiated the action resulted in collection update event.
    * @throws HpcException on service failure.
    */
   private void addCollectionUpdatedEvent(
-      String path, String updatePayloadValue, String updateDescriptionPayloadValue)
+      String path, String updatePayloadValue, String updateDescriptionPayloadValue, String userId)
       throws HpcException {
     // Input Validation.
     if (path == null || path.isEmpty()) {
@@ -545,7 +546,7 @@ public class HpcEventServiceImpl implements HpcEventService {
         .getUserIds()
         .addAll(
             getCollectionUpdatedEventSubscribedUsers(
-                path, updatePayloadValue, updateDescriptionPayloadValue));
+                path, updatePayloadValue, updateDescriptionPayloadValue, userId));
 
     // Add the event if found subscriber(s).
     if (!event.getUserIds().isEmpty()) {
@@ -561,12 +562,13 @@ public class HpcEventServiceImpl implements HpcEventService {
    *     payload.
    * @param updateDescriptionPayloadValue The value to set on
    *     COLLECTION_UPDATE_DESCRIPTION_PAYLOAD_ATTRIBUTE event payload.
+   * @param userId The user ID who initiated the action resulted in collection update event.
    * @return A list of user Ids subscribed to this event. This includes users registered to the
    *     collection path itself and anywhere in the hierarchy up to the root.
    * @throws HpcException on service failure.
    */
   private HashSet<String> getCollectionUpdatedEventSubscribedUsers(
-      String path, String updatePayloadValue, String updateDescriptionPayloadValue)
+      String path, String updatePayloadValue, String updateDescriptionPayloadValue, String userId)
       throws HpcException {
 
     HashSet<String> userIds = new HashSet<>();
@@ -585,16 +587,13 @@ public class HpcEventServiceImpl implements HpcEventService {
           getCollectionUpdatedEventSubscribedUsers(
               parentCollectionIndex > 0 ? path.substring(0, parentCollectionIndex) : "/",
               updatePayloadValue,
-              updateDescriptionPayloadValue));
+              updateDescriptionPayloadValue,
+              userId));
     }
 
-    // If configured to - Exclude the invoker from the list. 
-    // (No need to notify the invoker of a collection update they requested).
-    if(!invokerCollectionUpdateNotification) {
-       HpcNciAccount nciAccount = HpcRequestContext.getRequestInvoker().getNciAccount();
-       if(nciAccount != null) {
-          userIds.remove(nciAccount.getUserId());
-       }
+    // If configured to - Exclude the user triggered the collection update event from the list.
+    if (!invokerCollectionUpdateNotification) {
+      userIds.remove(userId);
     }
 
     return userIds;
