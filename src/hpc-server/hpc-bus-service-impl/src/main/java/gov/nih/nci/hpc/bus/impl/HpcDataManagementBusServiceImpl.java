@@ -214,7 +214,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         dataManagementService.validateHierarchy(path, configurationId, false);
 
         // Add collection update event.
-        addCollectionUpdatedEvent(path, true, false);
+        addCollectionUpdatedEvent(path, true, false, userId);
 
         registrationCompleted = true;
 
@@ -259,7 +259,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             message);
       }
 
-      addCollectionUpdatedEvent(path, false, false);
+      addCollectionUpdatedEvent(path, false, false, userId);
     }
 
     return created;
@@ -760,7 +760,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         }
 
         // Add collection update event.
-        addCollectionUpdatedEvent(path, false, true);
+        addCollectionUpdatedEvent(path, false, true, userId);
 
         registrationCompleted = true;
 
@@ -1429,11 +1429,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param dataObjectRegistered An indicator if a data object was registered.
    */
   private void addCollectionUpdatedEvent(
-      String path, boolean collectionRegistered, boolean dataObjectRegistered) {
+      String path, boolean collectionRegistered, boolean dataObjectRegistered, String userId) {
     try {
       if (!collectionRegistered && !dataObjectRegistered) {
         // Add collection metadata updated event.
-        eventService.addCollectionUpdatedEvent(path);
+        eventService.addCollectionUpdatedEvent(path, userId);
         return;
       }
 
@@ -1445,9 +1445,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           parentCollectionIndex <= 0 ? "/" : parentCollection.substring(0, parentCollectionIndex);
 
       if (collectionRegistered) {
-        eventService.addCollectionRegistrationEvent(parentCollection);
+        eventService.addCollectionRegistrationEvent(parentCollection, userId);
       } else {
-        eventService.addDataObjectRegistrationEvent(parentCollection);
+        eventService.addDataObjectRegistrationEvent(parentCollection, userId);
       }
 
     } catch (HpcException e) {
