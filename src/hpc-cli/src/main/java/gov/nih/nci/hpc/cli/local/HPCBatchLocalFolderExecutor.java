@@ -62,7 +62,7 @@ public class HPCBatchLocalFolderExecutor {
 		boolean success = false;
 		boolean testRun = false;
 		boolean metadataOnly = false;
-		boolean confirmation = false;
+		boolean confirmation = true;
 		String localPath = (String) criteriaMap.get("filePath");
 		String excludePattern = (String) criteriaMap.get("excludePatternFile");
 		String includePattern = (String) criteriaMap.get("includePatternFile");
@@ -82,8 +82,8 @@ public class HPCBatchLocalFolderExecutor {
 		if (criteriaMap.get("test") != null && criteriaMap.get("test").equalsIgnoreCase("true"))
 			testRun = true;
 
-		if (criteriaMap.get("confirm") != null && criteriaMap.get("confirm").equalsIgnoreCase("true"))
-			confirmation = true;
+		if (criteriaMap.get("confirm") != null && criteriaMap.get("confirm").equalsIgnoreCase("false"))
+			confirmation = false;
 
 		try {
 			HpcLocalDirectoryListQuery impl = new HpcLocalDirectoryListQuery();
