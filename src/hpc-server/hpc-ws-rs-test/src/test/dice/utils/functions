@@ -1385,7 +1385,7 @@ function get_notifications {
 
     SERVER=`cat $HPC_DM_TEST/utils/server`
 
-    curl -G -X GET $SERVER/notification $(get_curl_conifg)  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -G -X GET $SERVER/notification $(get_curl_config)  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
 
     check_connection $RESPONSE_HEADER
 }
