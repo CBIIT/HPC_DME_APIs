@@ -750,20 +750,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Null/Empty data object path", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Determine the data transfer type.
-    HpcDataTransferType dataTransferType;
-    if (uploadRequest.getSourceLocation() != null) {
-      dataTransferType = HpcDataTransferType.GLOBUS;
-
-    } else if (uploadRequest.getSourceFile() != null
-        || uploadRequest.getGenerateUploadRequestURL()) {
-      dataTransferType = HpcDataTransferType.S_3;
-
-    } else {
-      // Could not determine data transfer type.
-      throw new HpcException(
-          "Could not determine data transfer type", HpcErrorType.UNEXPECTED_ERROR);
-    }
+    // Determine the data transfer type to use in this upload request (i.e. Globus or S3).
+    HpcDataTransferType dataTransferType = getUploadDataTransferType(uploadRequest, configurationId);
 
     // Validate source location exists and accessible.
     validateUploadSourceFileLocation(
@@ -1070,6 +1058,43 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         baseArchive.getFileLocation().getFileId(), baseArchive.getDirectory());
   }
 
+  /**
+   * Determine the data transfer type to use on an upload request.
+   *
+   * @param uploadRequest The upload request to determine the data transfer type to use.
+   * @param configurationId The data management configuration ID.
+   * @return The appropriate data transfer type to use in this upload request.
+   * @throws HpcException on service failure.
+   */
+  private HpcDataTransferType getUploadDataTransferType(
+      HpcDataObjectUploadRequest uploadRequest, String configurationId) throws HpcException {
+    // Determine the data transfer type to use in this upload request (i.e. Globus or S3).
+    HpcDataTransferType archiveDataTransferType =
+        dataManagementConfigurationLocator.getArchiveDataTransferType(configurationId);
+    if (uploadRequest.getSourceLocation() != null) {
+      // It's an asynchronous upload request - always performed with Globus.
+      return HpcDataTransferType.GLOBUS;
+    }
+    if (uploadRequest.getSourceFile() != null) {
+      // It's a synchrnous upload request - use the configured archive (S3/Cleversafe or Globus/Isilon).
+      return archiveDataTransferType;
+
+    } else if (uploadRequest.getGenerateUploadRequestURL()) {
+      // It's a request to generate upload URL - Only supported by S3.
+      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+        throw new HpcException(
+            "Generate upload URL not supported by " + HpcDataTransferType.GLOBUS.value(),
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      return HpcDataTransferType.S_3;
+
+    } else {
+      // Could not determine data transfer type.
+      throw new HpcException(
+          "Could not determine data transfer type", HpcErrorType.UNEXPECTED_ERROR);
+    }
+  }
+
   // Second hop download.
   private class HpcSecondHopDownload implements HpcDataTransferProgressListener {
     // ---------------------------------------------------------------------//
@@ -1339,7 +1364,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       return sourceLocation;
     }
-    
+
     /**
      * Calculate download destination location.
      *
