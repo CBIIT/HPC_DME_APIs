@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -218,6 +219,32 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     response.setDestinationLocation(downloadRequest.getDestinationLocation());
 
     return response;
+  }
+
+  @Override
+  public String copyDataObject(
+      Object authenticatedToken,
+      HpcFileLocation sourceFile,
+      HpcFileLocation destinationFile,
+      List<HpcMetadataEntry> metadataEntries)
+      throws HpcException {
+    throw new HpcException("ERAN TEST", HpcErrorType.DATA_TRANSFER_ERROR);
+  }
+
+  @Override
+  public void deleteDataObject(
+      Object authenticatedToken, HpcFileLocation fileLocation, HpcArchive baseArchiveDestination)
+      throws HpcException {
+    String archiveFilePath =
+        fileLocation
+            .getFileId()
+            .replaceFirst(
+                baseArchiveDestination.getFileLocation().getFileId(),
+                baseArchiveDestination.getDirectory());
+    // Delete the staged download file.
+    if (!FileUtils.deleteQuietly(new File(archiveFilePath))) {
+      logger.error("Failed to delete file: {}", archiveFilePath);
+    }
   }
 
   @Override
