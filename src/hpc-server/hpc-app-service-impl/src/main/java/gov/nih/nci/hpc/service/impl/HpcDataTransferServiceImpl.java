@@ -249,7 +249,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     dataTransferProxies
         .get(dataTransferType)
-        .deleteDataObject(getAuthenticatedToken(dataTransferType, configurationId), fileLocation);
+        .deleteDataObject(
+            getAuthenticatedToken(dataTransferType, configurationId),
+            fileLocation,
+            dataManagementConfigurationLocator
+                .getDataTransferConfiguration(configurationId, dataTransferType)
+                .getBaseArchiveDestination());
   }
 
   @Override
@@ -751,7 +756,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Determine the data transfer type to use in this upload request (i.e. Globus or S3).
-    HpcDataTransferType dataTransferType = getUploadDataTransferType(uploadRequest, configurationId);
+    HpcDataTransferType dataTransferType =
+        getUploadDataTransferType(uploadRequest, configurationId);
 
     // Validate source location exists and accessible.
     validateUploadSourceFileLocation(
