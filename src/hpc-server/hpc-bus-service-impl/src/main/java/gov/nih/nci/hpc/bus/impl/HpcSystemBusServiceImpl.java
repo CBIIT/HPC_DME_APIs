@@ -129,7 +129,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<HpcDataObject> dataObjectsReceived = dataManagementService.getDataObjectsUploadReceived();
     for (HpcDataObject dataObject : dataObjectsReceived) {
       String path = dataObject.getAbsolutePath();
-      logger.info("Processing data object upload received: {0}", path);
+      logger.info("Processing data object upload received: {}", path);
       try {
         // Get the system metadata.
         HpcSystemGeneratedMetadata systemGeneratedMetadata =
@@ -177,7 +177,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         dataManagementService.getDataObjectsUploadInProgress();
     for (HpcDataObject dataObject : dataObjectsInProgress) {
       String path = dataObject.getAbsolutePath();
-      logger.info("Processing data object upload in-progress: {0}", path);
+      logger.info("Processing data object upload in-progress: {}", path);
       try {
         // Get the system metadata.
         HpcSystemGeneratedMetadata systemGeneratedMetadata =
@@ -250,7 +250,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         dataManagementService.getDataTranferUploadInProgressWithGeneratedURL();
     for (HpcDataObject dataObject : dataObjectsInProgress) {
       String path = dataObject.getAbsolutePath();
-      logger.info("Processing data object uploaded via URL: {0}", path);
+      logger.info("Processing data object uploaded via URL: {}", path);
       try {
         // Get the system metadata.
         HpcSystemGeneratedMetadata systemGeneratedMetadata =
@@ -341,11 +341,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<HpcDataObject> dataObjectsInTemporaryArchive =
         dataManagementService.getDataObjectsUploadInTemporaryArchive();
     logger.info(
-        "{0} Data Objects Upload In Temporary Archive: {1}",
+        "{} Data Objects Upload In Temporary Archive: {}",
         dataObjectsInTemporaryArchive.size(), dataObjectsInTemporaryArchive);
     for (HpcDataObject dataObject : dataObjectsInTemporaryArchive) {
       String path = dataObject.getAbsolutePath();
-      logger.info("Process Temporary Archive for: {0}", path);
+      logger.info("Process Temporary Archive for: {}", path);
       HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
       try {
         // Get the data object system generated metadata.
@@ -888,7 +888,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           break;
 
         default:
-          logger.error("Unexpected data transfer status: {0}", dataTransferStatus);
+          logger.error("Unexpected data transfer status: {}", dataTransferStatus);
       }
 
     } catch (HpcException e) {

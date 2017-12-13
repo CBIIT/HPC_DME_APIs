@@ -102,7 +102,7 @@ public class HpcBusServiceAspect {
   public Object profileService(ProceedingJoinPoint joinPoint) throws Throwable {
     long start = System.currentTimeMillis();
     String businessService = joinPoint.getSignature().toShortString();
-    logger.info("{0} business service invoked.", businessService);
+    logger.info("{} business service invoked.", businessService);
 
     try {
       return joinPoint.proceed();
@@ -110,7 +110,7 @@ public class HpcBusServiceAspect {
     } finally {
       long executionTime = System.currentTimeMillis() - start;
       logger.debug(
-          "{0} business service completed in {1} milliseconds.", businessService, executionTime);
+          "{} business service completed in {} milliseconds.", businessService, executionTime);
     }
   }
 
@@ -124,7 +124,7 @@ public class HpcBusServiceAspect {
   public void logException(JoinPoint joinPoint, HpcException exception) {
     String businessService = joinPoint.getSignature().toShortString();
     logger.error(
-        "{0} business service error: {1}", businessService, exception.getMessage(), exception);
+        "{} business service error: {}", businessService, exception.getMessage(), exception);
   }
 
   /**
