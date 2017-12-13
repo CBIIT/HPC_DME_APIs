@@ -202,7 +202,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation)
+  public void deleteDataObject(
+      Object authenticatedToken, HpcFileLocation fileLocation, HpcArchive baseArchiveDestination)
       throws HpcException {
     // Create a S3 delete request.
     DeleteObjectRequest deleteRequest =
