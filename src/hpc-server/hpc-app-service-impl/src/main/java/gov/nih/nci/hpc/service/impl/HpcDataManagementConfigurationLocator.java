@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
@@ -121,6 +122,25 @@ public class HpcDataManagementConfigurationLocator
   }
 
   /**
+   * Get the Archive Data Transfer type.
+   *
+   * @param configurationId The data management configuration ID.
+   * @return The archive data transfer type for this configuration ID.
+   * @throws HpcException if the configuration was not found.
+   */
+  public HpcDataTransferType getArchiveDataTransferType(String configurationId)
+      throws HpcException {
+    HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
+    if (dataManagementConfiguration != null) {
+      return dataManagementConfiguration.getArchiveDataTransferType();
+    }
+
+    // Configuration was not found.
+    throw new HpcException(
+        "Could not locate configuration: " + configurationId, HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
    * Load the data management configurations from the DB. Called by spring as init-method.
    *
    * @throws HpcException On configuration error.
@@ -146,6 +166,29 @@ public class HpcDataManagementConfigurationLocator
       if (basePathConfigurations.put(basePath, dataManagementConfiguration) != null) {
         throw new HpcException(
             "Duplicate base-path in data management configurations:"
+                + dataManagementConfiguration.getBasePath(),
+            HpcErrorType.UNEXPECTED_ERROR);
+      }
+
+      // Determine the archive data transfer type. Note: the system supports either a S3 archive (Cleversafe)
+      // or Globus archive (Isilon file system).
+      HpcArchiveType globusArchiveType =
+          dataManagementConfiguration
+              .getGlobusConfiguration()
+              .getBaseArchiveDestination()
+              .getType();
+      HpcArchiveType s3ArchiveType =
+          dataManagementConfiguration.getS3Configuration().getBaseArchiveDestination().getType();
+      if ((s3ArchiveType != null && s3ArchiveType.equals(HpcArchiveType.ARCHIVE))
+          && (globusArchiveType == null
+              || globusArchiveType.equals(HpcArchiveType.TEMPORARY_ARCHIVE))) {
+        dataManagementConfiguration.setArchiveDataTransferType(HpcDataTransferType.S_3);
+      } else if ((globusArchiveType != null && globusArchiveType.equals(HpcArchiveType.ARCHIVE))
+          && (s3ArchiveType == null || s3ArchiveType.equals(HpcArchiveType.TEMPORARY_ARCHIVE))) {
+        dataManagementConfiguration.setArchiveDataTransferType(HpcDataTransferType.GLOBUS);
+      } else {
+        throw new HpcException(
+            "Invalid S3/Globus archive type configuration: "
                 + dataManagementConfiguration.getBasePath(),
             HpcErrorType.UNEXPECTED_ERROR);
       }
