@@ -235,6 +235,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             getAuthenticatedToken(dataTransferType, configurationId),
             fileLocation,
             fileLocation,
+            dataManagementConfigurationLocator
+                .getDataTransferConfiguration(configurationId, dataTransferType)
+                .getBaseArchiveDestination(),
             generateMetadata(objectId, registrarId));
   }
 
