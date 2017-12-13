@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.support.RetryTemplate;
+import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -226,9 +228,27 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Object authenticatedToken,
       HpcFileLocation sourceFile,
       HpcFileLocation destinationFile,
+      HpcArchive baseArchiveDestination,
       List<HpcMetadataEntry> metadataEntries)
       throws HpcException {
-    throw new HpcException("ERAN TEST", HpcErrorType.DATA_TRANSFER_ERROR);
+    if (sourceFile.getFileContainerId().equals(destinationFile.getFileContainerId())
+        && sourceFile.getFileId().equals(destinationFile.getFileContainerId())) {
+      // We currently support a 'copy of file to itself, in which we do nothing but returning the checksum.
+      String archiveFilePath =
+          destinationFile
+              .getFileId()
+              .replaceFirst(
+                  baseArchiveDestination.getFileLocation().getFileId(),
+                  baseArchiveDestination.getDirectory());
+      try {
+        return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
+
+      } catch (IOException e) {
+        throw new HpcException("Failed calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
+      }
+    }
+
+    throw new HpcException("Copy data object not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
 
   @Override
@@ -242,7 +262,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 baseArchiveDestination.getFileLocation().getFileId(),
                 baseArchiveDestination.getDirectory());
     // Delete the archive file.
-    logger.error("ERAN delete: {}", archiveFilePath);
     if (!FileUtils.deleteQuietly(new File(archiveFilePath))) {
       logger.error("Failed to delete file: {}", archiveFilePath);
     }

@@ -98,7 +98,8 @@ public interface HpcDataTransferProxy {
    *
    * @param authenticatedToken An authenticated token.
    * @param sourceFile The source file.
-   * @param destinationFile The destination file
+   * @param destinationFile The destination file.
+   * @param baseArchiveDestination The archive's base destination location.
    * @param metadataEntries The metadata to attach.
    * @return The copied object checksum.
    * @throws HpcException on data transfer system failure.
@@ -107,6 +108,7 @@ public interface HpcDataTransferProxy {
       Object authenticatedToken,
       HpcFileLocation sourceFile,
       HpcFileLocation destinationFile,
+      HpcArchive baseArchiveDestination,
       List<HpcMetadataEntry> metadataEntries)
       throws HpcException;
 
