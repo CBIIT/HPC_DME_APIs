@@ -232,7 +232,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       List<HpcMetadataEntry> metadataEntries)
       throws HpcException {
     if (sourceFile.getFileContainerId().equals(destinationFile.getFileContainerId())
-        && sourceFile.getFileId().equals(destinationFile.getFileContainerId())) {
+        && sourceFile.getFileId().equals(destinationFile.getFileId())) {
       // We currently support a 'copy of file to itself, in which we do nothing but returning the checksum.
       String archiveFilePath =
           destinationFile
