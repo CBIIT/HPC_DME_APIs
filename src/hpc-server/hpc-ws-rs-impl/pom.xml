@@ -76,8 +76,8 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
-							<storepass>***REMOVED***</storepass>
-							<keypass>***REMOVED***</keypass>
+							<storepass>hpc-server-store-pwd</storepass>
+							<keypass>hpc-server-store-pwd</keypass>
 							<alias>hpc-server-key</alias>
 							<dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
 							<validity>365</validity>
@@ -92,8 +92,8 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore>
-							<storepass>***REMOVED***</storepass>
-							<keypass>***REMOVED***</keypass>
+							<storepass>hpc-client-pwd</storepass>
+							<keypass>hpc-client-pwd</keypass>
 							<alias>hpc-client-key</alias>
 							<dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
 							<validity>365</validity>
@@ -110,7 +110,7 @@
 							<keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore>
 							<file>${basedir}/src/main/resources/hpc-client.cer</file>
 							<rfc>true</rfc>
-							<storepass>***REMOVED***</storepass>
+							<storepass>hpc-client-pwd</storepass>
 							<alias>hpc-client-key</alias>
 						</configuration>
 					</execution>
@@ -123,7 +123,7 @@
 						<configuration>
 							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
 							<file>${basedir}/src/main/resources/hpc-client.cer</file>
-							<storepass>***REMOVED***</storepass>
+							<storepass>hpc-server-store-pwd</storepass>
 							<alias>hpc-client-key</alias>
 							<trustcacerts>true</trustcacerts>
 							<noprompt>true</noprompt>
