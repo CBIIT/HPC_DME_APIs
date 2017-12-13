@@ -779,7 +779,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     } catch (IOException e) {
       throw new HpcException(
           "Failed to move file to file system storage: " + archiveFilePath,
-          HpcErrorType.DATA_TRANSFER_ERROR);
+          HpcErrorType.DATA_TRANSFER_ERROR, e);
     }
 
     // Package and return the response.
