@@ -241,7 +241,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             .replaceFirst(
                 baseArchiveDestination.getFileLocation().getFileId(),
                 baseArchiveDestination.getDirectory());
-    // Delete the staged download file.
+    // Delete the archive file.
+    logger.error("ERAN delete: {}", archiveFilePath);
     if (!FileUtils.deleteQuietly(new File(archiveFilePath))) {
       logger.error("Failed to delete file: {}", archiveFilePath);
     }
