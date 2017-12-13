@@ -1,8 +1,11 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+import java.io.File;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
@@ -149,13 +152,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     // Generating upload URL or direct file upload not supported.
-    if (uploadRequest.getGenerateUploadRequestURL() || uploadRequest.getSourceFile() != null) {
+    if (uploadRequest.getGenerateUploadRequestURL()) {
       throw new HpcException(
-          "Globus data transfer doesn't support upload URL or direct file upload",
-          HpcErrorType.UNEXPECTED_ERROR);
+          "Globus data transfer doesn't support upload URL", HpcErrorType.UNEXPECTED_ERROR);
     }
-
-    JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
     // Calculate the archive destination.
     HpcFileLocation archiveDestinationLocation =
@@ -165,9 +165,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             uploadRequest.getCallerObjectId(),
             baseArchiveDestination.getType());
 
+    if (uploadRequest.getSourceFile() != null) {
+      // This is a synchronous upload request. Simply store the data to the file-system.
+      // No Globus action is required here.
+      return saveFile(
+          uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination);
+    }
+
     // Submit a request to Globus to transfer the data.
     String requestId =
-        transferData(client, uploadRequest.getSourceLocation(), archiveDestinationLocation);
+        transferData(
+            globusConnection.getTransferClient(authenticatedToken),
+            uploadRequest.getSourceLocation(),
+            archiveDestinationLocation);
 
     // Package and return the response.
     HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
@@ -655,7 +665,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       // Globus task requires some manual intervention. We cancel it and consider it a
       // failure.
       logger.error(
-          "Globus transfer deemed failed: task-id: {} [{}]", dataTransferRequestId, report.rawError);
+          "Globus transfer deemed failed: task-id: {} [{}]",
+          dataTransferRequestId,
+          report.rawError);
       try {
         cancelTransferRequest(authenticatedToken, dataTransferRequestId);
 
@@ -694,5 +706,44 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 e);
           }
         });
+  }
+
+  /**
+   * Cancel a transfer request.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param dataTransferRequestId The globus task ID.
+   * @throws HpcException on data transfer system failure.
+   */
+  private HpcDataObjectUploadResponse saveFile(
+      File sourceFile,
+      HpcFileLocation archiveDestinationLocation,
+      HpcArchive baseArchiveDestination)
+      throws HpcException {
+    Calendar transferStarted = Calendar.getInstance();
+    String archiveFilePath =
+        archiveDestinationLocation
+            .getFileId()
+            .replaceFirst(
+                baseArchiveDestination.getFileLocation().getFileId(),
+                baseArchiveDestination.getDirectory());
+    try {
+      FileUtils.moveFile(sourceFile, new File(archiveFilePath));
+    } catch (IOException e) {
+      throw new HpcException(
+          "Failed to move file to file system storage: " + archiveFilePath,
+          HpcErrorType.DATA_TRANSFER_ERROR);
+    }
+
+    // Package and return the response.
+    HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+    uploadResponse.setArchiveLocation(archiveDestinationLocation);
+    uploadResponse.setDataTransferRequestId(String.valueOf(archiveDestinationLocation.hashCode()));
+    uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
+    uploadResponse.setDataTransferStarted(transferStarted);
+    uploadResponse.setDataTransferCompleted(Calendar.getInstance());
+    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
+
+    return uploadResponse;
   }
 }

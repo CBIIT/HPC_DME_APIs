@@ -13,7 +13,7 @@
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
 VALUES('cd8ffbe3-d2b7-4125-a1ca-acb808fc90f0', '/NO_HIERARCHY', 'NOHIERARCHY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'NO_HIERARCHY',
-       'ARCHIVE', NULL, NULL, NULL);
+       'ARCHIVE', NULL, NULL, NULL, 24, 'https://auth.globus.org/v2/oauth2/token', 'c6790626-aab4-11e7-aef3-22000a92523b', '/ServiceFolderFor2Hop', '/mnt/IRODsTest/FNL_SF_Share/ServiceFolderFor2Hop', 'TEMPORARY_ARCHIVE', 'c6790626-aab4-11e7-aef3-22000a92523b', '/FNL_SF_S3_Download', '/mnt/IRODsTest/FNL_SF_Share/FNL_SF_S3_Download');
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
 VALUES('c93e82ba-7c66-4463-8376-1c7cb0b1a598', '/FNL_SF_Archive', 'FNLCR', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'FNL_SF_Archive', 'ARCHIVE',
@@ -383,11 +383,11 @@ VALUES('c93e82ba-7c66-4463-8376-1c7cb0b1a598', '/FNL_SF_Archive', 'FNLCR', 'http
 				"ruleEnabled": true
 			}
 		 ]
-	    }');
+	    }', 24, 'https://auth.globus.org/v2/oauth2/token', 'c6790626-aab4-11e7-aef3-22000a92523b', '/ServiceFolderFor2Hop', '/mnt/IRODsTest/FNL_SF_Share/ServiceFolderFor2Hop', 'TEMPORARY_ARCHIVE', 'c6790626-aab4-11e7-aef3-22000a92523b', '/FNL_SF_S3_Download', '/mnt/IRODsTest/FNL_SF_Share/FNL_SF_S3_Download');
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
 VALUES('be21cdf5-cdd3-4282-a78f-0d817285394a', '/CCBR_SF_Archive', 'CCBR', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 
-       'CCBR_SF_Archive', 'ARCHIVE', NULL, NULL, NULL);
+       'CCBR_SF_Archive', 'ARCHIVE', NULL, NULL, NULL, 24, 'https://auth.globus.org/v2/oauth2/token', 'c6790626-aab4-11e7-aef3-22000a92523b', '/ServiceFolderFor2Hop', '/mnt/IRODsTest/FNL_SF_Share/ServiceFolderFor2Hop', 'TEMPORARY_ARCHIVE', 'c6790626-aab4-11e7-aef3-22000a92523b', '/FNL_SF_S3_Download', '/mnt/IRODsTest/FNL_SF_Share/FNL_SF_S3_Download');
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
 VALUES('63fdccdd-64b8-477f-9e5c-450c4dccf748', '/TEST_Archive', 'DUMMY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'DUMMY_Archive', 'ARCHIVE',
@@ -908,17 +908,23 @@ VALUES('63fdccdd-64b8-477f-9e5c-450c4dccf748', '/TEST_Archive', 'DUMMY', 'http:/
 				"ruleEnabled": true
 			}
 		 ]
-	    }');
+	    }', 24, 'https://auth.globus.org/v2/oauth2/token', 'c6790626-aab4-11e7-aef3-22000a92523b', '/ServiceFolderFor2Hop', '/mnt/IRODsTest/FNL_SF_Share/ServiceFolderFor2Hop', 'TEMPORARY_ARCHIVE', 'c6790626-aab4-11e7-aef3-22000a92523b', '/FNL_SF_S3_Download', '/mnt/IRODsTest/FNL_SF_Share/FNL_SF_S3_Download');
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
 VALUES('963f55b4-5910-42d2-9cea-c2834ddd0a51', '/CCR_LEEMAX_Archive', 'CCR-LEEMAX', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'CCR_LEEMAX_Archive',
-       'ARCHIVE', NULL, NULL, NULL);
+       'ARCHIVE', NULL, NULL, NULL, 24, 'https://auth.globus.org/v2/oauth2/token', 'c6790626-aab4-11e7-aef3-22000a92523b', '/ServiceFolderFor2Hop', '/mnt/IRODsTest/FNL_SF_Share/ServiceFolderFor2Hop', 'TEMPORARY_ARCHIVE', 'c6790626-aab4-11e7-aef3-22000a92523b', '/FNL_SF_S3_Download', '/mnt/IRODsTest/FNL_SF_Share/FNL_SF_S3_Download');
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
 VALUES('50a8d63b-2eef-47bb-af96-0e333a80eda5', '/HiTIF_Archive', 'HiTIF', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'HiTIF_Archive',
-       'ARCHIVE', NULL, NULL, NULL);
+       'ARCHIVE', NULL, NULL, NULL, 24, 'https://auth.globus.org/v2/oauth2/token', 'c6790626-aab4-11e7-aef3-22000a92523b', '/ServiceFolderFor2Hop', '/mnt/IRODsTest/FNL_SF_Share/ServiceFolderFor2Hop', 'TEMPORARY_ARCHIVE', 'c6790626-aab4-11e7-aef3-22000a92523b', '/FNL_SF_S3_Download', '/mnt/IRODsTest/FNL_SF_Share/FNL_SF_S3_Download');
                                                   
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
 VALUES('0812a506-6e2f-4dcc-b11a-8a14cff00819', '/TEST_NO_HIER_Archive', 'DUMMY_NO_HIER', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'DSE-TestVault1', 'NO_HIER_Archive',
-       'ARCHIVE', NULL, NULL, NULL);
+       'ARCHIVE', NULL, NULL, NULL, 24, 'https://auth.globus.org/v2/oauth2/token', 'c6790626-aab4-11e7-aef3-22000a92523b', '/ServiceFolderFor2Hop', '/mnt/IRODsTest/FNL_SF_Share/ServiceFolderFor2Hop', 'TEMPORARY_ARCHIVE', 'c6790626-aab4-11e7-aef3-22000a92523b', '/FNL_SF_S3_Download', '/mnt/IRODsTest/FNL_SF_Share/FNL_SF_S3_Download');
+       
+       
+INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
+VALUES('41ff9b3a-dfb1-11e7-80c1-9a214cf093ae', '/FS_ARCHIVE', 'FS_ARCHIVE', NULL, NULL, NULL,
+       NULL, NULL, NULL, NULL, NULL, 'https://auth.globus.org/v2/oauth2/token', 'c6790626-aab4-11e7-aef3-22000a92523b', '/FS_ARCHIVE', '/mnt/IRODsTest/FNL_SF_Share/FS_ARCHIVE', 'ARCHIVE', NULL,  NULL, NULL);
+
 
