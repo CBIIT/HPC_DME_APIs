@@ -165,6 +165,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Object authenticatedToken,
       HpcFileLocation sourceFile,
       HpcFileLocation destinationFile,
+      HpcArchive baseArchiveDestination,
       List<HpcMetadataEntry> metadataEntries)
       throws HpcException {
 
