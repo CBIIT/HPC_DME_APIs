@@ -103,26 +103,24 @@ public interface HpcDataTransferProxy {
    * @return The copied object checksum.
    * @throws HpcException on data transfer system failure.
    */
-  public default String copyDataObject(
+  public String copyDataObject(
       Object authenticatedToken,
       HpcFileLocation sourceFile,
       HpcFileLocation destinationFile,
       List<HpcMetadataEntry> metadataEntries)
-      throws HpcException {
-    throw new HpcException("copyDataObject() not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
+      throws HpcException;
 
   /**
    * Delete a data object file.
    *
    * @param authenticatedToken An authenticated token.
    * @param fileLocation The file location.
+   * @param baseArchiveDestination The archive's base destination location.
    * @throws HpcException on data transfer system failure.
    */
-  public default void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation)
-      throws HpcException {
-    throw new HpcException("deleteDataObject() not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
+  public void deleteDataObject(
+      Object authenticatedToken, HpcFileLocation fileLocation, HpcArchive baseArchiveDestination)
+      throws HpcException;
 
   /**
    * Get a data transfer upload request status.
