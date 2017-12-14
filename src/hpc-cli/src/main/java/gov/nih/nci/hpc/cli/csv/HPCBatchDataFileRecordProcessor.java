@@ -105,6 +105,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 			throw new RecordMappingException("Invalid or missing file source location");
 		}
 
+		hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(false);
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
 				hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();

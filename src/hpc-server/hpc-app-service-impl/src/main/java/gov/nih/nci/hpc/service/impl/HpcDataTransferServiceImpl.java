@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -234,6 +235,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             getAuthenticatedToken(dataTransferType, configurationId),
             fileLocation,
             fileLocation,
+            dataManagementConfigurationLocator
+                .getDataTransferConfiguration(configurationId, dataTransferType)
+                .getBaseArchiveDestination(),
             generateMetadata(objectId, registrarId));
   }
 
@@ -248,7 +252,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     dataTransferProxies
         .get(dataTransferType)
-        .deleteDataObject(getAuthenticatedToken(dataTransferType, configurationId), fileLocation);
+        .deleteDataObject(
+            getAuthenticatedToken(dataTransferType, configurationId),
+            fileLocation,
+            dataManagementConfigurationLocator
+                .getDataTransferConfiguration(configurationId, dataTransferType)
+                .getBaseArchiveDestination());
   }
 
   @Override
@@ -259,10 +268,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    // Get the data transfer configuration.
+    HpcDataTransferConfiguration dataTransferConfiguration =
+        dataManagementConfigurationLocator.getDataTransferConfiguration(
+            configurationId, dataTransferType);
+
     return dataTransferProxies
         .get(dataTransferType)
         .getDataTransferUploadStatus(
-            getAuthenticatedToken(dataTransferType, configurationId), dataTransferRequestId);
+            getAuthenticatedToken(dataTransferType, configurationId),
+            dataTransferRequestId,
+            dataTransferConfiguration.getBaseArchiveDestination());
   }
 
   @Override
@@ -338,14 +354,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public File getArchiveFile(HpcDataTransferType dataTransferType, String fileId)
+  public File getArchiveFile(
+      String configurationId, HpcDataTransferType dataTransferType, String fileId)
       throws HpcException {
     // Input validation.
     if (fileId == null) {
       throw new HpcException("Invalid file id", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    File file = new File(dataTransferProxies.get(dataTransferType).getFilePath(fileId, true));
+    // Get the data transfer configuration.
+    HpcDataTransferConfiguration dataTransferConfiguration =
+        dataManagementConfigurationLocator.getDataTransferConfiguration(
+            configurationId, dataTransferType);
+
+    // Instantiate the file.
+    File file =
+        new File(getFilePath(fileId, dataTransferConfiguration.getBaseArchiveDestination()));
     if (!file.exists()) {
       throw new HpcException(
           "Archive file could not be found: " + file.getAbsolutePath(),
@@ -664,48 +688,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   /**
-   * Calculate download destination location.
-   *
-   * @param destinationLocation The destination location requested by the caller..
-   * @param dataTransferType The data transfer type to create the request.
-   * @param sourcePath The source path.
-   * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
-   * @return The calculated destination file location. The source file name is added if the caller
-   *     provided a directory destination.
-   * @throws HpcException on service failure.
-   */
-  private HpcFileLocation calculateDownloadDestinationFileLocation(
-      HpcFileLocation destinationLocation,
-      HpcDataTransferType dataTransferType,
-      String sourcePath,
-      String configurationId)
-      throws HpcException {
-    // Validate the download destination location.
-    HpcPathAttributes pathAttributes =
-        validateDownloadDestinationFileLocation(
-            dataTransferType, destinationLocation, false, configurationId);
-
-    // Calculate the destination.
-    if (pathAttributes.getIsDirectory()) {
-      // Caller requested to download to a directory. Append the source file name.
-      HpcFileLocation calcDestination = new HpcFileLocation();
-      calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
-      calcDestination.setFileId(
-          destinationLocation.getFileId() + sourcePath.substring(sourcePath.lastIndexOf('/')));
-
-      // Validate the calculated download destination.
-      validateDownloadDestinationFileLocation(
-          dataTransferType, calcDestination, true, configurationId);
-
-      return calcDestination;
-
-    } else {
-      return destinationLocation;
-    }
-  }
-
-  /**
    * Generate metadata to attach to the data object in the archive: 1. UUID - the data object UUID
    * in the DM system (iRODS) 2. User ID - the user id that registered the data object.
    *
@@ -776,20 +758,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Null/Empty data object path", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Determine the data transfer type.
-    HpcDataTransferType dataTransferType;
-    if (uploadRequest.getSourceLocation() != null) {
-      dataTransferType = HpcDataTransferType.GLOBUS;
-
-    } else if (uploadRequest.getSourceFile() != null
-        || uploadRequest.getGenerateUploadRequestURL()) {
-      dataTransferType = HpcDataTransferType.S_3;
-
-    } else {
-      // Could not determine data transfer type.
-      throw new HpcException(
-          "Could not determine data transfer type", HpcErrorType.UNEXPECTED_ERROR);
-    }
+    // Determine the data transfer type to use in this upload request (i.e. Globus or S3).
+    HpcDataTransferType dataTransferType =
+        getUploadDataTransferType(uploadRequest, configurationId);
 
     // Validate source location exists and accessible.
     validateUploadSourceFileLocation(
@@ -1084,6 +1055,55 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     return regex.replaceAll(Pattern.quote("?"), ".");
   }
 
+  /**
+   * Get a file path for a given file ID and baseArchive.
+   *
+   * @param fileId The file ID.
+   * @param baseArchive The base archive.
+   * @return a file path.
+   */
+  private String getFilePath(String fileId, HpcArchive baseArchive) {
+    return fileId.replaceFirst(
+        baseArchive.getFileLocation().getFileId(), baseArchive.getDirectory());
+  }
+
+  /**
+   * Determine the data transfer type to use on an upload request.
+   *
+   * @param uploadRequest The upload request to determine the data transfer type to use.
+   * @param configurationId The data management configuration ID.
+   * @return The appropriate data transfer type to use in this upload request.
+   * @throws HpcException on service failure.
+   */
+  private HpcDataTransferType getUploadDataTransferType(
+      HpcDataObjectUploadRequest uploadRequest, String configurationId) throws HpcException {
+    // Determine the data transfer type to use in this upload request (i.e. Globus or S3).
+    HpcDataTransferType archiveDataTransferType =
+        dataManagementConfigurationLocator.getArchiveDataTransferType(configurationId);
+    if (uploadRequest.getSourceLocation() != null) {
+      // It's an asynchronous upload request - always performed with Globus.
+      return HpcDataTransferType.GLOBUS;
+    }
+    if (uploadRequest.getSourceFile() != null) {
+      // It's a synchrnous upload request - use the configured archive (S3/Cleversafe or Globus/Isilon).
+      return archiveDataTransferType;
+
+    } else if (uploadRequest.getGenerateUploadRequestURL()) {
+      // It's a request to generate upload URL - Only supported by S3.
+      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+        throw new HpcException(
+            "Generate upload URL not supported by " + HpcDataTransferType.GLOBUS.value(),
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      return HpcDataTransferType.S_3;
+
+    } else {
+      // Could not determine data transfer type.
+      throw new HpcException(
+          "Could not determine data transfer type", HpcErrorType.UNEXPECTED_ERROR);
+    }
+  }
+
   // Second hop download.
   private class HpcSecondHopDownload implements HpcDataTransferProgressListener {
     // ---------------------------------------------------------------------//
@@ -1130,12 +1150,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
               firstHopDownloadRequest.getUserId(),
               firstHopDownloadRequest.getCompletionEvent());
 
-      // Create the source file for the second hop download
+      // Get the data transfer configuration.
+      HpcDataTransferConfiguration dataTransferConfiguration =
+          dataManagementConfigurationLocator.getDataTransferConfiguration(
+              firstHopDownloadRequest.getConfigurationId(), HpcDataTransferType.GLOBUS);
+
+      // Create the source file for the second hop download.
       sourceFile =
           createFile(
-              dataTransferProxies
-                  .get(HpcDataTransferType.GLOBUS)
-                  .getFilePath(secondHopDownloadRequest.getArchiveLocation().getFileId(), false));
+              getFilePath(
+                  secondHopDownloadRequest.getArchiveLocation().getFileId(),
+                  dataTransferConfiguration.getBaseDownloadSource()));
 
       // Create an persist a download task. This object tracks the download request
       // through the 2-hop async
@@ -1255,15 +1280,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         String userId,
         boolean completionEvent)
         throws HpcException {
-      // Create a source location.
-      HpcFileLocation sourceLocation =
-          dataTransferProxies.get(dataTransferType).getDownloadSourceLocation(path);
-
-      // Create and return a download request, from the local GLOBUS endpoint, to the
-      // caller's
-      // destination.
+      // Create and return a download request, from the local GLOBUS endpoint, to the caller's destination.
       HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
-      downloadRequest.setArchiveLocation(sourceLocation);
+      downloadRequest.setArchiveLocation(
+          getDownloadSourceLocation(configurationId, dataTransferType));
       downloadRequest.setDestinationLocation(destinationLocation);
       downloadRequest.setDataTransferType(dataTransferType);
       downloadRequest.setPath(path);
@@ -1326,6 +1346,73 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       } catch (HpcException ex) {
         logger.error("Failed to cleanup download task", ex);
+      }
+    }
+
+    /**
+     * Get download source location.
+     *
+     * @param configurationId The data management configuration ID.
+     * @param dataTransferType The data transfer type.
+     * @return The download source location.
+     * @throws HpcException on data transfer system failure.
+     */
+    private HpcFileLocation getDownloadSourceLocation(
+        String configurationId, HpcDataTransferType dataTransferType) throws HpcException {
+      // Get the data transfer configuration.
+      HpcArchive baseDownloadSource =
+          dataManagementConfigurationLocator
+              .getDataTransferConfiguration(configurationId, dataTransferType)
+              .getBaseDownloadSource();
+
+      // Create a source location. (This is a local GLOBUS endpoint).
+      HpcFileLocation sourceLocation = new HpcFileLocation();
+      sourceLocation.setFileContainerId(baseDownloadSource.getFileLocation().getFileContainerId());
+      sourceLocation.setFileId(
+          baseDownloadSource.getFileLocation().getFileId() + "/" + UUID.randomUUID().toString());
+
+      return sourceLocation;
+    }
+
+    /**
+     * Calculate download destination location.
+     *
+     * @param destinationLocation The destination location requested by the caller..
+     * @param dataTransferType The data transfer type to create the request.
+     * @param sourcePath The source path.
+     * @param configurationId The configuration ID (needed to determine the archive connection
+     *     config).
+     * @return The calculated destination file location. The source file name is added if the caller
+     *     provided a directory destination.
+     * @throws HpcException on service failure.
+     */
+    private HpcFileLocation calculateDownloadDestinationFileLocation(
+        HpcFileLocation destinationLocation,
+        HpcDataTransferType dataTransferType,
+        String sourcePath,
+        String configurationId)
+        throws HpcException {
+      // Validate the download destination location.
+      HpcPathAttributes pathAttributes =
+          validateDownloadDestinationFileLocation(
+              dataTransferType, destinationLocation, false, configurationId);
+
+      // Calculate the destination.
+      if (pathAttributes.getIsDirectory()) {
+        // Caller requested to download to a directory. Append the source file name.
+        HpcFileLocation calcDestination = new HpcFileLocation();
+        calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
+        calcDestination.setFileId(
+            destinationLocation.getFileId() + sourcePath.substring(sourcePath.lastIndexOf('/')));
+
+        // Validate the calculated download destination.
+        validateDownloadDestinationFileLocation(
+            dataTransferType, calcDestination, true, configurationId);
+
+        return calcDestination;
+
+      } else {
+        return destinationLocation;
       }
     }
   }

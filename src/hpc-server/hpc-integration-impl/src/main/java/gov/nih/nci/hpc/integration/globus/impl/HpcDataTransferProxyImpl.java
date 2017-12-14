@@ -1,11 +1,12 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
-
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.globusonline.transfer.APIError;
 import org.globusonline.transfer.BaseTransferAPIClient;
@@ -17,9 +18,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.support.RetryTemplate;
-
+import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -35,6 +36,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -72,16 +74,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // The Globus directory browser instance.
   @Autowired private HpcGlobusDirectoryBrowser globusDirectoryBrowser = null;
 
-  // The Globus archive destination. Used to upload data objects.
-  @Autowired
-  @Qualifier("hpcGlobusArchiveDestination")
-  private HpcArchive baseArchiveDestination = null;
-
-  // The Globus download source. Used to download data objects.
-  @Autowired
-  @Qualifier("hpcGlobusDownloadSource")
-  private HpcArchive baseDownloadSource = null;
-
   // Retry template. Used to automatically retry Globus service calls.
   @Autowired private RetryTemplate retryTemplate = null;
 
@@ -100,7 +92,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    *
    * @param globusQueueSize The Globus active tasks queue size.
    */
-  private HpcDataTransferProxyImpl(int globusQueueSize) {
+  public HpcDataTransferProxyImpl(int globusQueueSize) {
     this.globusQueueSize = globusQueueSize;
   }
 
@@ -109,6 +101,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    *
    * @throws HpcException Constructor is disabled.
    */
+  @SuppressWarnings("unused")
   private HpcDataTransferProxyImpl() throws HpcException {
     throw new HpcException("Default Constructor Disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
   }
@@ -152,17 +145,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   public HpcDataObjectUploadResponse uploadDataObject(
       Object authenticatedToken,
       HpcDataObjectUploadRequest uploadRequest,
-      HpcArchive baseArchiveDestinationNotUsed,
+      HpcArchive baseArchiveDestination,
       Integer uploadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
-    // Note: At this time, there is no DOC specific configuration for Globus base
-    // archive destination.
-    // The Globus base archive destination is configured via Spring. In the future,
-    // this may be
-    // a new requirement, so the parameter passed in will be used instead of the
-    // spring injected one.
-
     // Progress listener not supported.
     if (progressListener != null) {
       throw new HpcException(
@@ -170,13 +156,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     // Generating upload URL or direct file upload not supported.
-    if (uploadRequest.getGenerateUploadRequestURL() || uploadRequest.getSourceFile() != null) {
+    if (uploadRequest.getGenerateUploadRequestURL()) {
       throw new HpcException(
-          "Globus data transfer doesn't support upload URL or direct file upload",
-          HpcErrorType.UNEXPECTED_ERROR);
+          "Globus data transfer doesn't support upload URL", HpcErrorType.UNEXPECTED_ERROR);
     }
-
-    JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
     // Calculate the archive destination.
     HpcFileLocation archiveDestinationLocation =
@@ -186,9 +169,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             uploadRequest.getCallerObjectId(),
             baseArchiveDestination.getType());
 
+    if (uploadRequest.getSourceFile() != null) {
+      // This is a synchronous upload request. Simply store the data to the file-system.
+      // No Globus action is required here.
+      return saveFile(
+          uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination);
+    }
+
     // Submit a request to Globus to transfer the data.
     String requestId =
-        transferData(client, uploadRequest.getSourceLocation(), archiveDestinationLocation);
+        transferData(
+            globusConnection.getTransferClient(authenticatedToken),
+            uploadRequest.getSourceLocation(),
+            archiveDestinationLocation);
 
     // Package and return the response.
     HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
@@ -232,8 +225,67 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
+  public String copyDataObject(
+      Object authenticatedToken,
+      HpcFileLocation sourceFile,
+      HpcFileLocation destinationFile,
+      HpcArchive baseArchiveDestination,
+      List<HpcMetadataEntry> metadataEntries)
+      throws HpcException {
+    if (sourceFile.getFileContainerId().equals(destinationFile.getFileContainerId())
+        && sourceFile.getFileId().equals(destinationFile.getFileId())) {
+      // We currently support a 'copy of file to itself', in which don't copy the file but rather generate and store
+      // metadata and return a calculated checksum.
+      String archiveFilePath =
+          destinationFile
+              .getFileId()
+              .replaceFirst(
+                  baseArchiveDestination.getFileLocation().getFileId(),
+                  baseArchiveDestination.getDirectory());
+
+      try {
+        // Creating the metadata file.
+        List<String> metadata = new ArrayList<>();
+        metadataEntries.forEach(
+            metadataEntry ->
+                metadata.add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
+        FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
+
+        // Returning a calculated checksum.
+        return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
+
+      } catch (IOException e) {
+        throw new HpcException("Failed calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
+      }
+    }
+
+    throw new HpcException("Copy data object not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  @Override
+  public void deleteDataObject(
+      Object authenticatedToken, HpcFileLocation fileLocation, HpcArchive baseArchiveDestination)
+      throws HpcException {
+    String archiveFilePath =
+        fileLocation
+            .getFileId()
+            .replaceFirst(
+                baseArchiveDestination.getFileLocation().getFileId(),
+                baseArchiveDestination.getDirectory());
+    // Delete the archive file.
+    if (!FileUtils.deleteQuietly(new File(archiveFilePath))) {
+      logger.error("Failed to delete file: {}", archiveFilePath);
+    }
+    // Delete the metadata file.
+    if (!FileUtils.deleteQuietly(getMetadataFile(archiveFilePath))) {
+      logger.error("Failed to delete metadata for file: {}", archiveFilePath);
+    }
+  }
+
+  @Override
   public HpcDataTransferUploadReport getDataTransferUploadStatus(
-      Object authenticatedToken, String dataTransferRequestId) throws HpcException {
+      Object authenticatedToken, String dataTransferRequestId, HpcArchive baseArchiveDestination)
+      throws HpcException {
     HpcGlobusDataTransferReport report =
         getDataTransferReport(authenticatedToken, dataTransferRequestId);
 
@@ -307,6 +359,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     return getPathAttributes(fileLocation, client, getSize);
   }
 
+  @Override
   public List<HpcDirectoryScanItem> scanDirectory(
       Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException {
     JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
@@ -327,27 +380,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           HpcIntegratedSystem.GLOBUS,
           e);
     }
-  }
-
-  @Override
-  public String getFilePath(String fileId, boolean archive) throws HpcException {
-    return archive
-        ? fileId.replaceFirst(
-            baseArchiveDestination.getFileLocation().getFileId(),
-            baseArchiveDestination.getDirectory())
-        : fileId.replaceFirst(
-            baseDownloadSource.getFileLocation().getFileId(), baseDownloadSource.getDirectory());
-  }
-
-  @Override
-  public HpcFileLocation getDownloadSourceLocation(String path) throws HpcException {
-    // Create a source location. (This is a local GLOBUS endpoint).
-    HpcFileLocation sourceLocation = new HpcFileLocation();
-    sourceLocation.setFileContainerId(baseDownloadSource.getFileLocation().getFileContainerId());
-    sourceLocation.setFileId(
-        baseDownloadSource.getFileLocation().getFileId() + "/" + UUID.randomUUID().toString());
-
-    return sourceLocation;
   }
 
   @Override
@@ -695,11 +727,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       // Globus task requires some manual intervention. We cancel it and consider it a
       // failure.
       logger.error(
-          "Globus transfer deemed failed: task-id: "
-              + dataTransferRequestId
-              + "["
-              + report.rawError
-              + "]");
+          "Globus transfer deemed failed: task-id: {} [{}]",
+          dataTransferRequestId,
+          report.rawError);
       try {
         cancelTransferRequest(authenticatedToken, dataTransferRequestId);
 
@@ -738,5 +768,61 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 e);
           }
         });
+  }
+
+  /**
+   * Save a file to the local file system archive
+   *
+   * @param sourceFile The source file to store.
+   * @param archiveDestinationLocation The archive destination location.
+   * @param baseArchiveDestination The base archive destination.
+   * @return A data object upload response object.
+   * @throws HpcException on IO exception.
+   */
+  private HpcDataObjectUploadResponse saveFile(
+      File sourceFile,
+      HpcFileLocation archiveDestinationLocation,
+      HpcArchive baseArchiveDestination)
+      throws HpcException {
+    Calendar transferStarted = Calendar.getInstance();
+    String archiveFilePath =
+        archiveDestinationLocation
+            .getFileId()
+            .replaceFirst(
+                baseArchiveDestination.getFileLocation().getFileId(),
+                baseArchiveDestination.getDirectory());
+    try {
+      FileUtils.moveFile(sourceFile, new File(archiveFilePath));
+    } catch (IOException e) {
+      throw new HpcException(
+          "Failed to move file to file system storage: " + archiveFilePath,
+          HpcErrorType.DATA_TRANSFER_ERROR,
+          e);
+    }
+
+    // Package and return the response.
+    HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+    uploadResponse.setArchiveLocation(archiveDestinationLocation);
+    uploadResponse.setDataTransferRequestId(String.valueOf(archiveDestinationLocation.hashCode()));
+    uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
+    uploadResponse.setDataTransferStarted(transferStarted);
+    uploadResponse.setDataTransferCompleted(Calendar.getInstance());
+    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
+
+    return uploadResponse;
+  }
+
+  /**
+   * Return a metadata file for a given path.
+   *
+   * @param archiveFilePath The file path in the file system archive.
+   * @return The metadata file associated with this path.
+   */
+  private File getMetadataFile(String archiveFilePath) {
+    int lastSlashIndex = archiveFilePath.lastIndexOf('/');
+    return new File(
+        archiveFilePath.substring(0, lastSlashIndex)
+            + "/."
+            + archiveFilePath.substring(lastSlashIndex + 1));
   }
 }

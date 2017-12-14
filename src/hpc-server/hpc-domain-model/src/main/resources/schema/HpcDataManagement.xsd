@@ -42,6 +42,7 @@
 				<xsd:element name="id" type="xsd:string" />
 				<xsd:element name="doc" type="xsd:string" />
 			    <xsd:element name="basePath" type="xsd:string" />
+			    <xsd:element name="archiveDataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			    <xsd:element name="s3Configuration" type="hpc-domain-model:HpcDataTransferConfiguration" />
 			    <xsd:element name="globusConfiguration" type="hpc-domain-model:HpcDataTransferConfiguration" />
 				<xsd:element name="collectionMetadataValidationRules"
