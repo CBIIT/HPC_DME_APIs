@@ -3,6 +3,7 @@ package gov.nih.nci.hpc.integration.globus.impl;
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -244,7 +245,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
       try {
         // Creating the metadata file.
-        FileUtils.writeLines(getMetadataFile(archiveFilePath), metadataEntries);
+        List<String> metadata = new ArrayList<>();
+        metadataEntries.forEach(
+            metadataEntry ->
+                metadata.add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
+        FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
 
         // Returning a calculated checksum.
         return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
@@ -816,7 +821,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   private File getMetadataFile(String archiveFilePath) {
     int lastSlashIndex = archiveFilePath.lastIndexOf('/');
     return new File(
-        archiveFilePath.substring(0, lastSlashIndex - 1)
+        archiveFilePath.substring(0, lastSlashIndex)
             + "/."
             + archiveFilePath.substring(lastSlashIndex + 1));
   }
