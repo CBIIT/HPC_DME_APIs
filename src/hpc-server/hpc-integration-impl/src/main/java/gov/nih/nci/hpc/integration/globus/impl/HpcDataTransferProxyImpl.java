@@ -233,14 +233,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       throws HpcException {
     if (sourceFile.getFileContainerId().equals(destinationFile.getFileContainerId())
         && sourceFile.getFileId().equals(destinationFile.getFileId())) {
-      // We currently support a 'copy of file to itself, in which we do nothing but returning the checksum.
+      // We currently support a 'copy of file to itself', in which don't copy the file but rather generate and store
+      // metadata and return a calculated checksum.
       String archiveFilePath =
           destinationFile
               .getFileId()
               .replaceFirst(
                   baseArchiveDestination.getFileLocation().getFileId(),
                   baseArchiveDestination.getDirectory());
+
       try {
+        // Creating the metadata file.
+        FileUtils.writeLines(getMetadataFile(archiveFilePath), metadataEntries);
+
+        // Returning a calculated checksum.
         return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
 
       } catch (IOException e) {
@@ -264,6 +270,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     // Delete the archive file.
     if (!FileUtils.deleteQuietly(new File(archiveFilePath))) {
       logger.error("Failed to delete file: {}", archiveFilePath);
+    }
+    // Delete the metadata file.
+    if (!FileUtils.deleteQuietly(getMetadataFile(archiveFilePath))) {
+      logger.error("Failed to delete metadata for file: {}", archiveFilePath);
     }
   }
 
@@ -756,11 +766,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   /**
-   * Cancel a transfer request.
+   * Save a file to the local file system archive
    *
-   * @param authenticatedToken An authenticated token.
-   * @param dataTransferRequestId The globus task ID.
-   * @throws HpcException on data transfer system failure.
+   * @param sourceFile The source file to store.
+   * @param archiveDestinationLocation The archive destination location.
+   * @param baseArchiveDestination The base archive destination.
+   * @return A data object upload response object.
+   * @throws HpcException on IO exception.
    */
   private HpcDataObjectUploadResponse saveFile(
       File sourceFile,
@@ -779,7 +791,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     } catch (IOException e) {
       throw new HpcException(
           "Failed to move file to file system storage: " + archiveFilePath,
-          HpcErrorType.DATA_TRANSFER_ERROR, e);
+          HpcErrorType.DATA_TRANSFER_ERROR,
+          e);
     }
 
     // Package and return the response.
@@ -792,5 +805,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
 
     return uploadResponse;
+  }
+
+  /**
+   * Return a metadata file for a given path.
+   *
+   * @param archiveFilePath The file path in the file system archive.
+   * @return The metadata file associated with this path.
+   */
+  private File getMetadataFile(String archiveFilePath) {
+    int lastSlashIndex = archiveFilePath.lastIndexOf('/');
+    return new File(
+        archiveFilePath.substring(0, lastSlashIndex - 1)
+            + "/."
+            + archiveFilePath.substring(lastSlashIndex + 1));
   }
 }
