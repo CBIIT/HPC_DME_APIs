@@ -129,7 +129,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<HpcDataObject> dataObjectsReceived = dataManagementService.getDataObjectsUploadReceived();
     for (HpcDataObject dataObject : dataObjectsReceived) {
       String path = dataObject.getAbsolutePath();
-      logger.info("Processing data object upload received: " + path);
+      logger.info("Processing data object upload received: {}", path);
       try {
         // Get the system metadata.
         HpcSystemGeneratedMetadata systemGeneratedMetadata =
@@ -177,7 +177,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         dataManagementService.getDataObjectsUploadInProgress();
     for (HpcDataObject dataObject : dataObjectsInProgress) {
       String path = dataObject.getAbsolutePath();
-      logger.info("Processing data object upload in-progress: " + path);
+      logger.info("Processing data object upload in-progress: {}", path);
       try {
         // Get the system metadata.
         HpcSystemGeneratedMetadata systemGeneratedMetadata =
@@ -194,14 +194,29 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         Calendar dataTransferCompleted = null;
         switch (dataTransferStatus) {
           case ARCHIVED:
-            // Data object is archived. Update data transfer status and completion time.
+            // Data object is archived. Note: This is a configured filesystem archive.
+
+            // Generate archive (File System) system generated metadata.
+            String checksum =
+                dataTransferService.addSystemGeneratedMetadataToDataObject(
+                    systemGeneratedMetadata.getArchiveLocation(),
+                    systemGeneratedMetadata.getDataTransferType(),
+                    systemGeneratedMetadata.getConfigurationId(),
+                    systemGeneratedMetadata.getObjectId(),
+                    systemGeneratedMetadata.getRegistrarId());
+
+            //Update data management w/ data transfer status, checksum and completion time.
             dataTransferCompleted = Calendar.getInstance();
             metadataService.updateDataObjectSystemGeneratedMetadata(
-                path, null, null, null, dataTransferStatus, null, null, dataTransferCompleted);
+                path, null, null, checksum, dataTransferStatus, null, null, dataTransferCompleted);
             break;
 
           case IN_TEMPORARY_ARCHIVE:
-            // Data object is in temp archive. Update data transfer status.
+            // Data object is in temporary archive. Note - This is a configured Cleversafe archive. Globus completed
+            // transfer to the temporary archive. File will be uploaded to Cleversafe next when
+            // the processTemporaryArchive() scheduled task is called.
+
+            // Update data transfer status.
             metadataService.updateDataObjectSystemGeneratedMetadata(
                 path, null, null, null, dataTransferStatus, null, null, null);
             break;
@@ -250,7 +265,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         dataManagementService.getDataTranferUploadInProgressWithGeneratedURL();
     for (HpcDataObject dataObject : dataObjectsInProgress) {
       String path = dataObject.getAbsolutePath();
-      logger.info("Processing data object uploaded via URL: " + path);
+      logger.info("Processing data object uploaded via URL: {}", path);
       try {
         // Get the system metadata.
         HpcSystemGeneratedMetadata systemGeneratedMetadata =
@@ -341,12 +356,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<HpcDataObject> dataObjectsInTemporaryArchive =
         dataManagementService.getDataObjectsUploadInTemporaryArchive();
     logger.info(
-        dataObjectsInTemporaryArchive.size()
-            + " Data Objects Upload In Temporary Archive: "
-            + dataObjectsInTemporaryArchive);
+        "{} Data Objects Upload In Temporary Archive: {}",
+        dataObjectsInTemporaryArchive.size(),
+        dataObjectsInTemporaryArchive);
     for (HpcDataObject dataObject : dataObjectsInTemporaryArchive) {
       String path = dataObject.getAbsolutePath();
-      logger.info("Process Temporary Archive for: " + path);
+      logger.info("Process Temporary Archive for: {}", path);
       HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
       try {
         // Get the data object system generated metadata.
@@ -355,6 +370,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Get the file associated with the data object in the temporary archive.
         File file =
             dataTransferService.getArchiveFile(
+                systemGeneratedMetadata.getConfigurationId(),
                 systemGeneratedMetadata.getDataTransferType(),
                 systemGeneratedMetadata.getArchiveLocation().getFileId());
 
@@ -711,7 +727,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
     List<String> summaryReportUsers =
         notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_REPORT);
-    if (summaryReportUsers != null && summaryReportUsers.size() > 0) {
+    if (summaryReportUsers != null && !summaryReportUsers.isEmpty()) {
       HpcReportCriteria criteria = new HpcReportCriteria();
       criteria.setType(HpcReportType.USAGE_SUMMARY);
       eventService.generateReportsEvents(summaryReportUsers, criteria);
@@ -727,7 +743,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<String> summaryReportByDateUsers =
         notificationService.getNotificationSubscribedUsers(
             HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT);
-    if (summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0) {
+    if (summaryReportByDateUsers != null && !summaryReportByDateUsers.isEmpty()) {
       HpcReportCriteria criteria = new HpcReportCriteria();
       criteria.setType(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE);
       Calendar today = Calendar.getInstance();
@@ -748,7 +764,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<String> summaryReportUsers =
         notificationService.getNotificationSubscribedUsers(
             HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT);
-    if (summaryReportUsers != null && summaryReportUsers.size() > 0) {
+    if (summaryReportUsers != null && !summaryReportUsers.isEmpty()) {
       HpcReportCriteria criteria = new HpcReportCriteria();
       criteria.setType(HpcReportType.USAGE_SUMMARY_BY_DOC);
       eventService.generateReportsEvents(summaryReportUsers, criteria);
@@ -764,7 +780,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<String> summaryReportByDateUsers =
         notificationService.getNotificationSubscribedUsers(
             HpcEventType.USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT);
-    if (summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0) {
+    if (summaryReportByDateUsers != null && !summaryReportByDateUsers.isEmpty()) {
       HpcReportCriteria criteria = new HpcReportCriteria();
       criteria.setType(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE);
       Calendar today = Calendar.getInstance();
@@ -785,7 +801,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<String> summaryReportUsers =
         notificationService.getNotificationSubscribedUsers(
             HpcEventType.USAGE_SUMMARY_BY_USER_REPORT);
-    if (summaryReportUsers != null && summaryReportUsers.size() > 0) {
+    if (summaryReportUsers != null && !summaryReportUsers.isEmpty()) {
       HpcReportCriteria criteria = new HpcReportCriteria();
       criteria.setType(HpcReportType.USAGE_SUMMARY_BY_USER);
       eventService.generateReportsEvents(summaryReportUsers, criteria);
@@ -801,7 +817,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     List<String> summaryReportByDateUsers =
         notificationService.getNotificationSubscribedUsers(
             HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT);
-    if (summaryReportByDateUsers != null && summaryReportByDateUsers.size() > 0) {
+    if (summaryReportByDateUsers != null && !summaryReportByDateUsers.isEmpty()) {
       HpcReportCriteria criteria = new HpcReportCriteria();
       criteria.setType(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE);
       Calendar today = Calendar.getInstance();
@@ -888,7 +904,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           break;
 
         default:
-          logger.error("Unexpected data transfer status: " + dataTransferStatus);
+          logger.error("Unexpected data transfer status: {}", dataTransferStatus);
       }
 
     } catch (HpcException e) {
@@ -1022,11 +1038,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param userId The user ID who requested the collection download.
    * @return The download task items (each item represent a data-object download from the requested
    *     list).
-   * @throws HpcException on service failure.
    */
   private List<HpcCollectionDownloadTaskItem> downloadDataObjects(
-      List<String> dataObjectPaths, HpcFileLocation destinationLocation, String userId)
-      throws HpcException {
+      List<String> dataObjectPaths, HpcFileLocation destinationLocation, String userId) {
     List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
     // Iterate through the data objects in the collection and download them.
@@ -1116,7 +1130,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     } else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
       path = StringUtils.join(downloadTask.getDataObjectPaths(), ", ");
     }
-    
+
     // Send download completed/failed event.
     addDataTransferDownloadEvent(
         downloadTask.getUserId(),
@@ -1283,7 +1297,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       // Determine the data management configuration to use based on the path.
       String configurationId =
           dataManagementService.findDataManagementConfigurationId(registrationTask.getPath());
-      if (StringUtils.isEmpty(configurationId.toString())) {
+      if (StringUtils.isEmpty(configurationId)) {
         throw new HpcException(
             "Failed to determine data management configuration.",
             HpcErrorType.INVALID_REQUEST_INPUT);

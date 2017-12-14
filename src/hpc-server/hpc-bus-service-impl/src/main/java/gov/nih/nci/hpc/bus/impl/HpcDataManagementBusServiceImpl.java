@@ -214,7 +214,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         dataManagementService.validateHierarchy(path, configurationId, false);
 
         // Add collection update event.
-        addCollectionUpdatedEvent(path, true, false);
+        addCollectionUpdatedEvent(path, true, false, userId);
 
         registrationCompleted = true;
 
@@ -259,7 +259,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             message);
       }
 
-      addCollectionUpdatedEvent(path, false, false);
+      addCollectionUpdatedEvent(path, false, false, userId);
     }
 
     return created;
@@ -576,7 +576,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       usrPrmsOnClltcns.setUserId(userId);
       for (String someCollectionPath : collectionPaths) {
         HpcPermissionForCollection permForColl =
-            _fetchCollectionPermission(someCollectionPath, userId);
+            fetchCollectionPermission(someCollectionPath, userId);
         if (null != permForColl) {
           usrPrmsOnClltcns.getPermissionsForCollections().add(permForColl);
         }
@@ -586,26 +586,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           "User not found: " + userId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
     }
     return usrPrmsOnClltcns;
-  }
-
-  private HpcPermissionForCollection _fetchCollectionPermission(String path, String userId)
-      throws HpcException {
-    // Input validation.
-    if (path == null) {
-      throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    if (userId == null) {
-      throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    // Validate the collection exists.
-    if (dataManagementService.getCollection(path, false) == null) {
-      return null;
-    }
-    HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
-    HpcPermissionForCollection resultHpcPermForColl = new HpcPermissionForCollection();
-    resultHpcPermForColl.setCollectionPath(path);
-    resultHpcPermForColl.setPermission(hsPerm.getPermission());
-    return resultHpcPermForColl;
   }
 
   @Override
@@ -760,7 +740,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         }
 
         // Add collection update event.
-        addCollectionUpdatedEvent(path, false, true);
+        addCollectionUpdatedEvent(path, false, true, userId);
 
         registrationCompleted = true;
 
@@ -1432,13 +1412,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param path The path of the entity trigger this event.
    * @param collectionRegistered An indicator if a collection was registered.
    * @param dataObjectRegistered An indicator if a data object was registered.
+   * @param userId The user ID who initiated the action resulted in collection update event.
    */
   private void addCollectionUpdatedEvent(
-      String path, boolean collectionRegistered, boolean dataObjectRegistered) {
+      String path, boolean collectionRegistered, boolean dataObjectRegistered, String userId) {
     try {
       if (!collectionRegistered && !dataObjectRegistered) {
         // Add collection metadata updated event.
-        eventService.addCollectionUpdatedEvent(path);
+        eventService.addCollectionUpdatedEvent(path, userId);
         return;
       }
 
@@ -1450,9 +1431,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           parentCollectionIndex <= 0 ? "/" : parentCollection.substring(0, parentCollectionIndex);
 
       if (collectionRegistered) {
-        eventService.addCollectionRegistrationEvent(parentCollection);
+        eventService.addCollectionRegistrationEvent(parentCollection, userId);
       } else {
-        eventService.addDataObjectRegistrationEvent(parentCollection);
+        eventService.addDataObjectRegistrationEvent(parentCollection, userId);
       }
 
     } catch (HpcException e) {
@@ -2075,5 +2056,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         taskDTO.getFailedItems().add(item.getTask());
       }
     }
+  }
+
+  private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
+      throws HpcException {
+    // Input validation.
+    if (path == null) {
+      throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    if (userId == null) {
+      throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    // Validate the collection exists.
+    if (dataManagementService.getCollection(path, false) == null) {
+      return null;
+    }
+    HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
+    HpcPermissionForCollection resultHpcPermForColl = new HpcPermissionForCollection();
+    resultHpcPermForColl.setCollectionPath(path);
+    resultHpcPermForColl.setPermission(hsPerm.getPermission());
+    return resultHpcPermForColl;
   }
 }
