@@ -26,7 +26,7 @@ CREATE SERVER hpc_dm_dev
 
 CREATE USER MAPPING FOR postgres
        SERVER hpc_dm_dev
-       OPTIONS (user 'postgres', password 'postgres');
+       OPTIONS (user 'postgres', password '<configure me>');
 
 CREATE FOREIGN TABLE r_coll_hierarchy_meta_attr_name (
        level_label text,
