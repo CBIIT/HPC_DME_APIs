@@ -194,14 +194,29 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         Calendar dataTransferCompleted = null;
         switch (dataTransferStatus) {
           case ARCHIVED:
-            // Data object is archived. Update data transfer status and completion time.
+            // Data object is archived. Note: This is a configured filesystem archive.
+
+            // Generate archive (File System) system generated metadata.
+            String checksum =
+                dataTransferService.addSystemGeneratedMetadataToDataObject(
+                    systemGeneratedMetadata.getArchiveLocation(),
+                    systemGeneratedMetadata.getDataTransferType(),
+                    systemGeneratedMetadata.getConfigurationId(),
+                    systemGeneratedMetadata.getObjectId(),
+                    systemGeneratedMetadata.getRegistrarId());
+
+            //Update data management w/ data transfer status, checksum and completion time.
             dataTransferCompleted = Calendar.getInstance();
             metadataService.updateDataObjectSystemGeneratedMetadata(
-                path, null, null, null, dataTransferStatus, null, null, dataTransferCompleted);
+                path, null, null, checksum, dataTransferStatus, null, null, dataTransferCompleted);
             break;
 
           case IN_TEMPORARY_ARCHIVE:
-            // Data object is in temp archive. Update data transfer status.
+            // Data object is in temporary archive. Note - This is a configured Cleversafe archive. Globus completed
+            // transfer to the temporary archive. File will be uploaded to Cleversafe next when
+            // the processTemporaryArchive() scheduled task is called.
+
+            // Update data transfer status.
             metadataService.updateDataObjectSystemGeneratedMetadata(
                 path, null, null, null, dataTransferStatus, null, null, null);
             break;
@@ -342,7 +357,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         dataManagementService.getDataObjectsUploadInTemporaryArchive();
     logger.info(
         "{} Data Objects Upload In Temporary Archive: {}",
-        dataObjectsInTemporaryArchive.size(), dataObjectsInTemporaryArchive);
+        dataObjectsInTemporaryArchive.size(),
+        dataObjectsInTemporaryArchive);
     for (HpcDataObject dataObject : dataObjectsInTemporaryArchive) {
       String path = dataObject.getAbsolutePath();
       logger.info("Process Temporary Archive for: {}", path);
