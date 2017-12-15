@@ -72,7 +72,7 @@ VALUES('942b43f9-343c-4d96-b7b0-34f41571fb23', '/NIEHS_Archive', 'NIEHS', 'http:
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
-VALUES('c93e82ba-7c66-4463-8376-1c7cb0b1a598', '/FNL_SF_Archive', 'FNLCR', 'http://http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 'FNL_SF_Archive', 'ARCHIVE',
+VALUES('c93e82ba-7c66-4463-8376-1c7cb0b1a598', '/FNL_SF_Archive', 'FNLCR', 'http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 'FNL_SF_Archive', 'ARCHIVE',
        '{
        "collectionType": "PI_Lab",
        "isDataObjectContainer": false,
@@ -474,11 +474,11 @@ VALUES('c93e82ba-7c66-4463-8376-1c7cb0b1a598', '/FNL_SF_Archive', 'FNLCR', 'http
     }');
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
-VALUES('be21cdf5-cdd3-4282-a78f-0d817285394a', '/CCBR_Archive', 'CCBR', 'http://http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 
+VALUES('be21cdf5-cdd3-4282-a78f-0d817285394a', '/CCBR_Archive', 'CCBR', 'http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 
        'CCBR_Archive', 'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
-VALUES('63fdccdd-64b8-477f-9e5c-450c4dccf748', '/TEST_Archive', 'DUMMY', 'http://http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 'DUMMY_Archive', 'ARCHIVE',
+VALUES('63fdccdd-64b8-477f-9e5c-450c4dccf748', '/TEST_Archive', 'DUMMY', 'http://fr-s-clvrsf-01.ncifcrf.gov', 'HPC_DME_Production_Vault', 'HPC_DME_Prod_Archive', 'ARCHIVE',
        '{
       	 "collectionType": "Project",
       	 "isDataObjectContainer": true,
@@ -605,44 +605,6 @@ VALUES('63fdccdd-64b8-477f-9e5c-450c4dccf748', '/TEST_Archive', 'DUMMY', 'http:/
             "collectionTypes": [
                 "Dataset"
             ],
-            "mandatory": true,
-            "ruleEnabled": true
-        },
-        {
-            "attribute": "source_lab_pi",
-            "collectionTypes": [
-                "Project"
-            ],
-            "mandatory": true,
-            "ruleEnabled": true
-        },
-        {
-            "attribute": "lab_branch",
-            "collectionTypes": [
-                "Project"
-            ],
-            "mandatory": true,
-            "ruleEnabled": true
-        },
-        {
-            "attribute": "pi_doc",
-            "collectionTypes": [
-                "Project"
-            ],
-            "mandatory": true,
-            "ruleEnabled": true,
-            "validValues": [
-                "FNLCR",
-                "DUMMY",
-                "CCBR"
-            ]
-        },
-        {
-            "attribute": "original_date_created",
-            "collectionTypes": [
-                "Project"
-            ],
-            "defaultValue": "System-Date",
             "mandatory": true,
             "ruleEnabled": true
         },
@@ -1109,16 +1071,16 @@ VALUES('63fdccdd-64b8-477f-9e5c-450c4dccf748', '/TEST_Archive', 'DUMMY', 'http:/
             ]
         }
     ]
-	    }');
+	    }', 24);
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
-VALUES('963f55b4-5910-42d2-9cea-c2834ddd0a51', '/CCR_LEEMAX_Archive', 'CCR-LEEMAX', 'http://http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 'CCR_LEEMAX_Archive',
+VALUES('963f55b4-5910-42d2-9cea-c2834ddd0a51', '/CCR_LEEMAX_Archive', 'CCR-LEEMAX', 'http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 'CCR_LEEMAX_Archive',
        'ARCHIVE', NULL, NULL, NULL);
 
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
-VALUES('50a8d63b-2eef-47bb-af96-0e333a80eda5', '/HiTIF_Archive', 'HiTIF', 'http://http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPCDME_HiTIF_PROD', 'HiTIF_Archive',
+VALUES('50a8d63b-2eef-47bb-af96-0e333a80eda5', '/HiTIF_Archive', 'HiTIF', 'http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPCDME_HiTIF_PROD', 'HiTIF_Archive',
        'ARCHIVE', NULL, NULL, NULL);
                                                   
 INSERT INTO public."HPC_DATA_MANAGEMENT_CONFIGURATION" 
-VALUES('0812a506-6e2f-4dcc-b11a-8a14cff00819', '/TEST_NO_HIER_Archive', 'DUMMY_NO_HIER', 'http://http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 'NO_HIER_Archive',
+VALUES('0812a506-6e2f-4dcc-b11a-8a14cff00819', '/TEST_NO_HIER_Archive', 'DUMMY_NO_HIER', 'http://fr-s-clvrsf-01.ncifcrf.gov.ncifcrf.gov', 'HPC_DME_Production_Vault', 'NO_HIER_Archive',
        'ARCHIVE', NULL, NULL, NULL);
