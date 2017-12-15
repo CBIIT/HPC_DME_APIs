@@ -1,0 +1,11 @@
+\i hpc_user.sql
+\i hpc_user_bookmark.sql
+\i hpc_user_query.sql
+\i hpc_data_management_configuration.sql
+\i hpc_system_account.sql
+\i hpc_data_download.sql
+\i hpc_data_management_audit.sql
+\i hpc_data_registration.sql
+\i hpc_hierarchical_metadata.sql
+\i hpc_notification.sql
+\i hpc_report_views.sql
