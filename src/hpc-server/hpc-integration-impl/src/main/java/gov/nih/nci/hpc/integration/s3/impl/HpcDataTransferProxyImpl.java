@@ -1,15 +1,12 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
-
 import java.io.File;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
@@ -23,12 +20,10 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -116,7 +111,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public HpcDataObjectDownloadResponse downloadDataObject(
+  public String downloadDataObject(
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcDataTransferProgressListener progressListener)
@@ -153,11 +148,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Thread.currentThread().interrupt();
     }
 
-    HpcDataObjectDownloadResponse downloadResponse = new HpcDataObjectDownloadResponse();
-    downloadResponse.setDataTransferRequestId(String.valueOf(s3Download.hashCode()));
-    downloadResponse.setDestinationFile(downloadRequest.getDestinationFile());
-
-    return downloadResponse;
+    return String.valueOf(s3Download.hashCode());
   }
 
   @Override

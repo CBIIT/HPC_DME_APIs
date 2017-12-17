@@ -25,7 +25,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
@@ -200,7 +199,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public HpcDataObjectDownloadResponse downloadDataObject(
+  public String downloadDataObject(
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcDataTransferProgressListener progressListener)
@@ -211,17 +210,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           "Globus data transfer doesn't support progress listener", HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
-
     // Submit a request to Globus to transfer the data.
-    response.setDataTransferRequestId(
+    return 
         transferData(
             globusConnection.getTransferClient(authenticatedToken),
             downloadRequest.getArchiveLocation(),
-            downloadRequest.getDestinationLocation()));
-    response.setDestinationLocation(downloadRequest.getDestinationLocation());
-
-    return response;
+            downloadRequest.getDestinationLocation());
   }
 
   @Override
