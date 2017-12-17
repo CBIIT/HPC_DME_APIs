@@ -14,7 +14,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
@@ -84,10 +83,10 @@ public interface HpcDataTransferProxy {
    * @param downloadRequest The data object download request.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
-   * @return A data object download response.
+   * @return A data transfer request Id.
    * @throws HpcException on data transfer system failure.
    */
-  public HpcDataObjectDownloadResponse downloadDataObject(
+  public String downloadDataObject(
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcDataTransferProgressListener progressListener)
