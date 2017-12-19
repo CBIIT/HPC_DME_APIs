@@ -212,16 +212,27 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     if (downloadRequest.getDestinationFile() != null) {
-      // This is a synchronous download request. Sym link the destination file to the data object in the file system archive.
-      /*String archiveFilePath =
-      downloadRequest
-           .getArchiveLocation()
-           .getFileId()
-           .replaceFirst(
-               baseArchiveDestination.getFileLocation().getFileId(),
-               baseArchiveDestination.getDirectory());*/
-      // TODO - create sym link.
+      // This is a synchronous download request. 
+      String archiveFilePath =
+          downloadRequest
+              .getArchiveLocation()
+              .getFileId()
+              .replaceFirst(
+                  baseArchiveDestination.getFileLocation().getFileId(),
+                  baseArchiveDestination.getDirectory());
+      try {
+        // Copy the file to the dowmload stage area.
+        FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getDestinationFile());
+      } catch (IOException e) {
+        throw new HpcException(
+            "Failed to stage file from file system archive: " + archiveFilePath,
+            HpcErrorType.DATA_TRANSFER_ERROR,
+            e);
+      }
+      logger.error("ERAN PATH: " + archiveFilePath);
+
       return String.valueOf(downloadRequest.getDestinationFile().hashCode());
+      
     } else {
       // This is an asynchrnous download request. Submit a request to Globus to transfer the data.
       return transferData(
