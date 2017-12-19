@@ -81,6 +81,7 @@ public interface HpcDataTransferProxy {
    *
    * @param authenticatedToken An authenticated token.
    * @param downloadRequest The data object download request.
+   * @param baseArchiveDestination The archive's base destination location.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
    * @return A data transfer request Id.
@@ -89,6 +90,7 @@ public interface HpcDataTransferProxy {
   public String downloadDataObject(
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
+      HpcArchive baseArchiveDestination,
       HpcDataTransferProgressListener progressListener)
       throws HpcException;
 

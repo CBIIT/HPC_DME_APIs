@@ -202,6 +202,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   public String downloadDataObject(
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
+      HpcArchive baseArchiveDestination,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Progress listener not supported.
@@ -210,12 +211,35 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           "Globus data transfer doesn't support progress listener", HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    // Submit a request to Globus to transfer the data.
-    return 
-        transferData(
-            globusConnection.getTransferClient(authenticatedToken),
-            downloadRequest.getArchiveLocation(),
-            downloadRequest.getDestinationLocation());
+    if (downloadRequest.getDestinationFile() != null) {
+      // This is a synchronous download request. 
+      String archiveFilePath =
+          downloadRequest
+              .getArchiveLocation()
+              .getFileId()
+              .replaceFirst(
+                  baseArchiveDestination.getFileLocation().getFileId(),
+                  baseArchiveDestination.getDirectory());
+      try {
+        // Copy the file to the dowmload stage area.
+        FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getDestinationFile());
+      } catch (IOException e) {
+        throw new HpcException(
+            "Failed to stage file from file system archive: " + archiveFilePath,
+            HpcErrorType.DATA_TRANSFER_ERROR,
+            e);
+      }
+      logger.error("ERAN PATH: " + downloadRequest.getDestinationFile().getAbsolutePath());
+
+      return String.valueOf(downloadRequest.getDestinationFile().hashCode());
+      
+    } else {
+      // This is an asynchrnous download request. Submit a request to Globus to transfer the data.
+      return transferData(
+          globusConnection.getTransferClient(authenticatedToken),
+          downloadRequest.getArchiveLocation(),
+          downloadRequest.getDestinationLocation());
+    }
   }
 
   @Override
