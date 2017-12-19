@@ -202,6 +202,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   public String downloadDataObject(
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
+      HpcArchive baseArchiveDestination,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Progress listener not supported.
@@ -210,12 +211,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           "Globus data transfer doesn't support progress listener", HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    // Submit a request to Globus to transfer the data.
-    return 
-        transferData(
-            globusConnection.getTransferClient(authenticatedToken),
-            downloadRequest.getArchiveLocation(),
-            downloadRequest.getDestinationLocation());
+    if (downloadRequest.getDestinationFile() != null) {
+      // This is a synchronous download request. Sym link the destination file to the data object in the file system archive.
+      /*String archiveFilePath =
+      downloadRequest
+           .getArchiveLocation()
+           .getFileId()
+           .replaceFirst(
+               baseArchiveDestination.getFileLocation().getFileId(),
+               baseArchiveDestination.getDirectory());*/
+      // TODO - create sym link.
+      return String.valueOf(downloadRequest.getDestinationFile().hashCode());
+    } else {
+      // This is an asynchrnous download request. Submit a request to Globus to transfer the data.
+      return transferData(
+          globusConnection.getTransferClient(authenticatedToken),
+          downloadRequest.getArchiveLocation(),
+          downloadRequest.getDestinationLocation());
+    }
   }
 
   @Override
