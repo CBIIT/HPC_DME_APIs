@@ -114,6 +114,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   public String downloadDataObject(
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
+      HpcArchive baseArchiveDestination,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Create a S3 download request.

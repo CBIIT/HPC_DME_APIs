@@ -220,6 +220,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Create a download response.
     HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
 
+    // Get the base archive destination.
+    HpcArchive baseArchiveDestination =
+        dataManagementConfigurationLocator
+            .getDataTransferConfiguration(configurationId, dataTransferType)
+            .getBaseArchiveDestination();
+
     if (destinationLocation == null) {
       // This is a synchronous download request. Create a destination file on the local file system.
       downloadRequest.setDestinationFile(createDownloadFile());
@@ -231,6 +237,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           .downloadDataObject(
               getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
               downloadRequest,
+              baseArchiveDestination,
               null);
 
     } else if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
@@ -273,6 +280,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             .downloadDataObject(
                 getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
                 downloadRequest,
+                baseArchiveDestination,
                 secondHopDownload);
 
         response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
@@ -508,7 +516,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Delete the staged download file.
-    if (!FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
+
+    if (downloadTask.getDownloadFilePath() != null
+        && !FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
       logger.error("Failed to delete file: " + downloadTask.getDownloadFilePath());
     }
 
@@ -552,6 +562,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setPath(downloadTask.getPath());
       downloadRequest.setUserId(downloadTask.getUserId());
 
+      // Update the download task with the Globus request ID.
       downloadTask.setDataTransferRequestId(
           dataTransferProxies
               .get(downloadRequest.getDataTransferType())
@@ -559,6 +570,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
                   getAuthenticatedToken(
                       downloadRequest.getDataTransferType(), downloadRequest.getConfigurationId()),
                   downloadRequest,
+                  dataManagementConfigurationLocator
+                      .getDataTransferConfiguration(
+                          downloadRequest.getConfigurationId(),
+                          downloadRequest.getDataTransferType())
+                      .getBaseArchiveDestination(),
                   null));
 
       // Persist the download task.
