@@ -2,5 +2,7 @@
     "globus-shared-endpoint-uid":"c546fe96-1dd1-11e6-bfc3-22000b1701d1",
     "username":"zakigf",
     "base-folder":"TEST_Archive",
+    "fs-base-folder":"TEST_FS_Archive",
+    "no-hier-base-folder":"TEST_NO_HIER_Archive",
     "asynchronous-sleep":"80"
 }
