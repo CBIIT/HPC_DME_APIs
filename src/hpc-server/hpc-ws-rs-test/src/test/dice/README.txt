@@ -24,8 +24,10 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
   I- General configuration:
      Edit the configuration file:  ./utils/test-configuration:
         1- Edit your NCI "username"
-        2- Edit the "base-folder" for your test DOC
-        3- Edit the "globus-shared-endpoint-uid" as mentioned in step II
+        2- Edit the "base-folder" with a base path that follows the policies mentioned below and is mapped to Cleversafe backend.
+        3- Edit the "fs-base-folder" with a base path that has no associated policies is mapped to a file system.
+        4- Edit the "no-hier-base-folder" with a base path that has no associated policies is mapped to Cleversafe. 
+        5- Edit the "globus-shared-endpoint-uid" as mentioned in step II
 
 
   II- Globus configuraton:
@@ -77,10 +79,10 @@ For more information about the ITS, check the DICE documentation.
 
 
 Appendix:
-Dummy DOC policies:
+base-folder path policies:
 {
       "DOC": [
-        "DUMMY"
+        "TEST"
       ],
       "collectionType": "Project",
       "isDataObjectContainer": true,
