@@ -91,7 +91,7 @@ function get_json_value {
     INPUT="$1"
     ATTRIBUTE="$2"
     INPUT=`get_file_value "$INPUT"`
-    echo "$INPUT" | grep "$ATTRIBUTE" | sed "s/.*${ATTRIBUTE}\"[ 	]*:[ 	]*\"\([^\"]*\)\".*/\1/"
+    echo "$INPUT" | grep \""$ATTRIBUTE"\" | sed "s/.*${ATTRIBUTE}\"[ 	]*:[ 	]*\"\([^\"]*\)\".*/\1/"
 }
 
 #Return a single unquotted value for a given attribute in a json file 
@@ -354,23 +354,16 @@ function get_globus_user {
 
 
 #Get the basefolder 
+#If the environment varialbe DX_BASE_FOLDER_NAME is not defined, the defaut collection with hierarchy is returned.
+#Otherwise, the defined collection in the environment variable is returned
 function get_basefolder {
 
-#    BASE_FILE="$HPC_DM_TEST/utils/base-folder"
-#    if [ ! -e "$BASE_FILE" ]
-#    then
-#        echo "ERROR: can not find the base-folder file $BASE_FILE" 1>&2
-#        exit
-#    fi
-#
-#    BASE_FOLDER=$(cat $BASE_FILE)
-#    if [ -z "$BASE_FOLDER" ]
-#    then
-#        echo "ERROR: the base-folder file $BASE_FILE is empyt" >&2
-#        exit
-#    fi
-
-    BASE_FOLDER=$(get_json_value $HPC_DM_TEST/utils/test-configuration base-folder)
+    if [ -z "$DX_BASE_FOLDER_NAME" ]
+    then
+      BASE_FOLDER=$(get_json_value $HPC_DM_TEST/utils/test-configuration base-folder)
+    else
+      BASE_FOLDER=$(get_json_value $HPC_DM_TEST/utils/test-configuration $DX_BASE_FOLDER_NAME)
+    fi
 
     if [ -z "$BASE_FOLDER" ]
     then 

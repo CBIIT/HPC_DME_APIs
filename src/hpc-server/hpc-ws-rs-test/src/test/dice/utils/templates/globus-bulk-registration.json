@@ -1,0 +1,12 @@
+{
+    "dryRun": dx_dry_run_value,
+    "directoryScanRegistrationItems": [{
+      "basePath": "dx_dst_dir",
+      dx_include_patterns
+      dx_exclude_patterns
+      "scanDirectoryLocation": {
+        "fileContainerId": "globus-shared-endpoint-uid",
+        "fileId": "dx_src_dir"
+      },
+    }]
+}
