@@ -7,7 +7,10 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.local;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +18,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 import gov.nih.nci.hpc.cli.util.Paths;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -64,6 +68,45 @@ public class HpcLocalDirectoryListQuery {
 		return pathAttributes;
 	}
 
+	/**
+	 * Get attributes of a file/directory.
+	 *
+	 * @param fileLocation
+	 *            The endpoint/path to check.
+	 * @param client
+	 *            Globus client API instance.
+	 * @param getSize
+	 *            If set to true, the file/directory size will be returned.
+	 * @return The path attributes.
+	 * @throws HpcException
+	 *             on data transfer system failure.
+	 */
+	public List<HpcPathAttributes> getFileListPathAttributes(String fileLocation, List<String> excludePattern,
+			List<String> includePattern) throws HpcException {
+		List<HpcPathAttributes> pathAttributes = new ArrayList<HpcPathAttributes>();
+
+		try {
+			List<String> files = readFileListfromFile(fileLocation);
+			for(String filePath : files)
+			{
+				HpcPathAttributes filePathAttr = new HpcPathAttributes();
+				filePathAttr.setAbsolutePath(filePath);
+				String name = filePath.substring(filePath.lastIndexOf("/") > 0 ? filePath.lastIndexOf("/") : 0,
+						filePath.length());
+				filePathAttr.setName(name);
+				File fileToCheckDir = new File(filePath);
+				filePathAttr.setIsDirectory(fileToCheckDir.isDirectory());
+				filePathAttr.setPath(filePath);
+				System.out.println("Including: " + filePath);
+				pathAttributes.add(filePathAttr);
+			}
+		} catch (Exception e) {
+			throw new HpcException("Failed to get path attributes: " + fileLocation,
+					HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
+
+		return pathAttributes;
+	}
 	private void getPathAttributes(List<HpcPathAttributes> attributes, List<File> dirContent) {
 		try {
 			if (dirContent != null) {
@@ -84,6 +127,30 @@ public class HpcLocalDirectoryListQuery {
 			// Unexpected error. Eat this.
 			logger.error("Failed to build directory listing", e);
 		}
+	}
+
+	private List<String> readFileListfromFile(String fileName) {
+		if (fileName == null || fileName.isEmpty())
+			return null;
+		BufferedReader reader = null;
+		List<String> patterns = new ArrayList<String>();
+		try {
+			reader = new BufferedReader(new FileReader(fileName));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				patterns.add(line);
+			}
+
+		} catch (IOException e) {
+			throw new HpcCmdException("Failed to read files list due to: " + e.getMessage());
+		} finally {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+				}
+		}
+		return patterns;
 	}
 
 	public static List<File> listDirectory(String directoryName, List<String> excludePattern,

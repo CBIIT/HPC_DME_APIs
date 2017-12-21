@@ -76,11 +76,16 @@ public class HPCBatchCollection extends HPCBatchClient {
 
 	}
 
-	protected boolean processFile(String fileName, String userId, String password) {
+	protected boolean processFile(String fileName, String userId, String password, String authToken) {
 		boolean success = true;
 		FileReader fileReader = null;
 		CSVParser csvFileParser = null;
 		String hpcDataService = null;
+		
+		if (authToken == null && (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0)) {
+			System.out.println("Invalid login credentials");
+			return false;
+		}
 
 		// Create the CSVFormat object with the header mapping
 		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader();
@@ -101,7 +106,8 @@ public class HPCBatchCollection extends HPCBatchClient {
 			ResponseEntity<HpcExceptionDTO> response = null;
 			// Read the CSV file records starting from the second record to skip
 			// the header
-			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
+			if(authToken == null)
+				authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 					hpcCertPassword);
 			for (int i = 0; i < csvRecords.size(); i++) {
 				boolean processedRecordFlag = true;

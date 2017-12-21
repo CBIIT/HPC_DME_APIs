@@ -36,7 +36,7 @@ public class HPCBatchLocalfile extends HPCBatchClient {
 		logFile = logDir + File.separator + "putDatafiles_errorLog"
 				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
 		logRecordsFile = logDir + File.separator + "putDatafiles_errorRecords"
-				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
+				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
 	}
 
 	public void setCriteria(String cmd, Map<String, String> criteriaMap) {
@@ -44,10 +44,10 @@ public class HPCBatchLocalfile extends HPCBatchClient {
 		this.cmd = cmd;
 	}
 
-	protected boolean processFile(String fileName, String userId, String password) {
+	protected boolean processFile(String fileName, String userId, String password, String authToken) {
 		boolean success = true;
 
-		if (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0) {
+		if (authToken == null && (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0)) {
 			System.out.println("Invalid login credentials");
 			return false;
 		}
@@ -55,7 +55,8 @@ public class HPCBatchLocalfile extends HPCBatchClient {
 			if (criteriaMap == null || criteriaMap.isEmpty())
 				return false;
 
-			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL,
+			if(authToken == null)
+				authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL,
 					hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 			HpcServerConnection connection = new HpcServerConnection(hpcServerURL, hpcServerProxyURL,
 					hpcServerProxyPort, authToken, hpcCertPath, hpcCertPassword);
