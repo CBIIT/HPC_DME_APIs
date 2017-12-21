@@ -56,8 +56,7 @@
 						<fileset>
 							<directory>${basedir}/src/main/resources</directory>
 							<includes>
-								<include>hpc-client.cer</include>
-								<inlucde>hpc-client-keystore.jks</inlucde>
+								<!-- <include>hpc-client.cer</include> <inlucde>hpc-client-keystore.jks</inlucde> -->
 								<inlucde>keystore.jks</inlucde>
 							</includes>
 						</fileset>
@@ -65,71 +64,134 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-java-default-cacerts</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/src/main/resources</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${JAVA_HOME}/jre/lib/security</directory>
+									<includes>
+										<include>cacerts</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>rename-java-default-cacerts</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>rename</goal>
+						</goals>
+						<configuration>
+							<sourceFile>${basedir}/src/main/resources/cacerts</sourceFile>
+							<destinationFile>${basedir}/src/main/resources/keystore.jks</destinationFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>keytool-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>generateServerKeystore</id>
+						<id>generateServerKeystore-new</id>
 						<goals>
 							<goal>generateKeyPair</goal>
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
 							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
-							<storepass>hpc-server-store-pwd</storepass>
-							<keypass>hpc-server-store-pwd</keypass>
+							<storepass>changeit</storepass>
+							<keypass>changeit</keypass>
 							<alias>hpc-server-key</alias>
 							<dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
 							<validity>365</validity>
-							<skipIfExist>true</skipIfExist>
+							<skipIfExist>false</skipIfExist>
 						</configuration>
 					</execution>
 					<execution>
-						<id>generateClientCertificate</id>
-						<goals>
-							<goal>generateKeyPair</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore>
-							<storepass>hpc-client-pwd</storepass>
-							<keypass>hpc-client-pwd</keypass>
-							<alias>hpc-client-key</alias>
-							<dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
-							<validity>365</validity>
-							<skipIfExist>true</skipIfExist>
-						</configuration>
-					</execution>
-					<execution>
-						<id>exportClientCertificate</id>
-						<goals>
-							<goal>exportCertificate</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore>
-							<file>${basedir}/src/main/resources/hpc-client.cer</file>
-							<rfc>true</rfc>
-							<storepass>hpc-client-pwd</storepass>
-							<alias>hpc-client-key</alias>
-						</configuration>
-					</execution>
-					<execution>
-						<id>importClientCertificate</id>
+						<id>importLdapRootCertificate</id>
 						<goals>
 							<goal>importCertificate</goal>
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
 							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
-							<file>${basedir}/src/main/resources/hpc-client.cer</file>
-							<storepass>hpc-server-store-pwd</storepass>
-							<alias>hpc-client-key</alias>
+							<file>${basedir}/src/main/resources/certs/ldap-root.crt</file>
+							<storepass>changeit</storepass>
+							<alias>NIH-DPKI-ROOT-1A</alias>
 							<trustcacerts>true</trustcacerts>
 							<noprompt>true</noprompt>
-							<skipIfExist>true</skipIfExist>
+							<skipIfExist>false</skipIfExist>
 						</configuration>
 					</execution>
+					<execution>
+						<id>importLdapIntermediateCertificate</id>
+						<goals>
+							<goal>importCertificate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
+							<file>${basedir}/src/main/resources/certs/ldap-intermediate.crt</file>
+							<storepass>changeit</storepass>
+							<alias>NIH-DPKI-CA-1A</alias>
+							<trustcacerts>true</trustcacerts>
+							<noprompt>true</noprompt>
+							<skipIfExist>false</skipIfExist>
+						</configuration>
+					</execution>
+					<execution>
+						<id>importIrodsCertificate</id>
+						<goals>
+							<goal>importCertificate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
+							<file>${basedir}/src/main/resources/certs/irods.crt</file>
+							<storepass>changeit</storepass>
+							<alias>NIH-IRODS</alias>
+							<trustcacerts>true</trustcacerts>
+							<noprompt>true</noprompt>
+							<skipIfExist>false</skipIfExist>
+						</configuration>
+					</execution>
+					<!-- <execution> <id>generateServerKeystore</id> <goals> <goal>generateKeyPair</goal> 
+						</goals> <phase>generate-resources</phase> <configuration> <keystore>${basedir}/src/main/resources/keystore.jks</keystore> 
+						<storepass>hpc-server-store-pwd</storepass> <keypass>hpc-server-store-pwd</keypass> 
+						<alias>hpc-server-key</alias> <dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, 
+						ST=MD, C=US</dname> <validity>365</validity> <skipIfExist>true</skipIfExist> 
+						</configuration> </execution> <execution> <id>generateClientCertificate</id> 
+						<goals> <goal>generateKeyPair</goal> </goals> <phase>generate-resources</phase> 
+						<configuration> <keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore> 
+						<storepass>hpc-client-pwd</storepass> <keypass>hpc-client-pwd</keypass> <alias>hpc-client-key</alias> 
+						<dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname> <validity>365</validity> 
+						<skipIfExist>true</skipIfExist> </configuration> </execution> <execution> 
+						<id>exportClientCertificate</id> <goals> <goal>exportCertificate</goal> </goals> 
+						<phase>generate-resources</phase> <configuration> <keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore> 
+						<file>${basedir}/src/main/resources/hpc-client.cer</file> <rfc>true</rfc> 
+						<storepass>hpc-client-pwd</storepass> <alias>hpc-client-key</alias> </configuration> 
+						</execution> <execution> <id>importClientCertificate</id> <goals> <goal>importCertificate</goal> 
+						</goals> <phase>generate-resources</phase> <configuration> <keystore>${basedir}/src/main/resources/keystore.jks</keystore> 
+						<file>${basedir}/src/main/resources/hpc-client.cer</file> <storepass>hpc-server-store-pwd</storepass> 
+						<alias>hpc-client-key</alias> <trustcacerts>true</trustcacerts> <noprompt>true</noprompt> 
+						<skipIfExist>true</skipIfExist> </configuration> </execution> -->
 				</executions>
 			</plugin>
 			<plugin>
