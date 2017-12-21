@@ -36,10 +36,10 @@
 		
 		<prop key="hpc.ws.rs.ssl.keystore.path">${karaf.base}/etc/hpc-server/keystore.jks</prop>
 		<prop key="hpc.ws.rs.ssl.keystore.type">JKS</prop>
-		<prop key="hpc.ws.rs.ssl.keystore.password">hpc-server-store-pwd</prop>
+		<prop key="hpc.ws.rs.ssl.keystore.password">changeit</prop>
 		<prop key="hpc.ws.rs.ssl.truststore.path">${karaf.base}/etc/hpc-server/keystore.jks</prop>
 		<prop key="hpc.ws.rs.ssl.truststore.type">JKS</prop>
-		<prop key="hpc.ws.rs.ssl.truststore.password">hpc-server-store-pwd</prop>
+		<prop key="hpc.ws.rs.ssl.truststore.password">changeit</prop>
 		<prop key="hpc.ws.rs.ssl.wantClientAuth">false</prop>
 		<prop key="hpc.ws.rs.ssl.needClientAuth">false</prop>
 		

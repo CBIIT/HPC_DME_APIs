@@ -229,7 +229,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             HpcErrorType.DATA_TRANSFER_ERROR,
             e);
       }
-      logger.error("ERAN PATH: " + downloadRequest.getDestinationFile().getAbsolutePath());
 
       return String.valueOf(downloadRequest.getDestinationFile().hashCode());
       

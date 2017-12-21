@@ -12,17 +12,13 @@
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:util="http://www.springframework.org/schema/util" 
-	   xmlns:cxf="http://cxf.apache.org/core"
-	   xmlns:wsa="http://cxf.apache.org/ws/addressing" 
-	   xmlns:jaxws="http://cxf.apache.org/jaxws"
-	   xmlns:jaxrs="http://cxf.apache.org/jaxrs" 
-	   xmlns:sec="http://cxf.apache.org/configuration/security"
-	   xmlns:http="http://cxf.apache.org/transports/http/configuration"
-	   xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
-	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	   xmlns:context="http://www.springframework.org/schema/context"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:cxf="http://cxf.apache.org/core"
+	xmlns:wsa="http://cxf.apache.org/ws/addressing" xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:sec="http://cxf.apache.org/configuration/security"
+	xmlns:http="http://cxf.apache.org/transports/http/configuration"
+	xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
                            http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
 	                       http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd
@@ -33,33 +29,32 @@
                            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 	<context:annotation-config />
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
-	
-	<!--  HTTP-JETTY SSL Configuration -->
+
+	<!-- HTTP-JETTY SSL Configuration -->
 	<httpj:engine-factory bus="cxf">
-    	<httpj:identifiedTLSServerParameters id="hpcTLSServerParameters">
-      		<httpj:tlsServerParameters>
-        		<sec:keyManagers keyPassword="${hpc.ws.rs.ssl.keystore.password}">
-         			<sec:keyStore type="${hpc.ws.rs.ssl.keystore.type}" 
-         	                      password="${hpc.ws.rs.ssl.keystore.password}" 
-         	                      file="${hpc.ws.rs.ssl.keystore.path}" />
-        		</sec:keyManagers>
-        		<sec:trustManagers>
-        			<sec:keyStore type="${hpc.ws.rs.ssl.keystore.type}" 
-        			              password="${hpc.ws.rs.ssl.keystore.password}" 
-        			              file="${hpc.ws.rs.ssl.keystore.path}" />
-    			</sec:trustManagers>
-    			<sec:clientAuthentication want="${hpc.ws.rs.ssl.wantClientAuth}" 
-    			                          required="${hpc.ws.rs.ssl.needClientAuth}" />
-      		</httpj:tlsServerParameters>
-    	</httpj:identifiedTLSServerParameters>
- 
-    	<httpj:engine port="${hpc.ws.rs.secured-port}">
-      		<httpj:tlsServerParametersRef id="hpcTLSServerParameters" />
-      		<httpj:threadingParameters minThreads="${hpc.ws.rs.jetty-engine.minThreads}"
-                                       maxThreads="${hpc.ws.rs.jetty-engine.maxThreads}" />
-    	</httpj:engine>
-  	</httpj:engine-factory>
-        
+		<httpj:identifiedTLSServerParameters
+			id="hpcTLSServerParameters">
+			<httpj:tlsServerParameters>
+				<sec:keyManagers keyPassword="${hpc.ws.rs.ssl.keystore.password}">
+					<sec:keyStore type="${hpc.ws.rs.ssl.keystore.type}"
+						password="${hpc.ws.rs.ssl.keystore.password}" file="${hpc.ws.rs.ssl.keystore.path}" />
+				</sec:keyManagers>
+				<sec:trustManagers>
+					<sec:keyStore type="${hpc.ws.rs.ssl.keystore.type}"
+						password="${hpc.ws.rs.ssl.keystore.password}" file="${hpc.ws.rs.ssl.keystore.path}" />
+				</sec:trustManagers>
+				<sec:clientAuthentication want="${hpc.ws.rs.ssl.wantClientAuth}"
+					required="${hpc.ws.rs.ssl.needClientAuth}" />
+			</httpj:tlsServerParameters>
+		</httpj:identifiedTLSServerParameters>
+
+		<httpj:engine port="${hpc.ws.rs.secured-port}">
+			<httpj:tlsServerParametersRef id="hpcTLSServerParameters" />
+			<httpj:threadingParameters minThreads="${hpc.ws.rs.jetty-engine.minThreads}"
+				maxThreads="${hpc.ws.rs.jetty-engine.maxThreads}" />
+		</httpj:engine>
+	</httpj:engine-factory>
+
 	<!-- JAXB Provider -->
 	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
 		<property name="marshallerProperties" ref="jaxbProviderMarshallerProperties" />
@@ -70,61 +65,61 @@
 		</entry>
 	</util:map>
 
-    <!-- http://cxf.apache.org/docs/jax-rs-data-bindings.html#JAX-RSDataBindings-WrappingandUnwrappingJSONsequences -->
+	<!-- http://cxf.apache.org/docs/jax-rs-data-bindings.html#JAX-RSDataBindings-WrappingandUnwrappingJSONsequences -->
 	<!-- Dealing with Jettison array serialization issues -->
-    <util:list id="jsonKeys">
-          <value>collections</value>
-          <value>collectionPaths</value>
-          <value>dataObjects</value>
-          <value>dataObjectPaths</value>
-          <value>parentMetadataEntries</value>
-          <value>selfMetadataEntries</value>
-          <value>userPermissionResponses</value>
-          <value>groupPermissionResponses</value>
-          <value>entityPermissionResponses</value>
-          <value>collectionMetadataValidationRules</value>
-          <value>dataObjectMetadataValidationRules</value>
-          <value>collectionMetadataAttributes</value>
-          <value>dataObjectMetadataAttributes</value>
-          <value>validValues</value>
-          <value>collectionTypes</value>
-          <value>subCollectionsHierarchies</value>
-          <value>metadataAttributes</value>
-          <value>docs</value>
-          <value>namedCompoundQueries</value>
-          <value>compoundQueries</value>
-          <value>queries</value>
-          <value>subscriptions</value>
-          <value>notificationDeliveryReceipts</value>
-          <value>eventPayloadEntries</value>
-          <value>notificationDeliveryMethods</value>
-          <value>reports</value>
-          <value>reportEntries</value>
-          <value>notificationTriggers</value>
-          <value>payloadEntries</value>
-          <value>subCollections</value>
-          <value>nciAccounts</value>
-          <value>groups</value>
-          <value>users</value>
-          <value>userIds</value>
-          <value>groupPermissions</value>
-          <value>userPermissions</value>
-          <value>deleteGroupMemberResponses</value>
-          <value>addGroupMemberResponses</value>
-          <value>bookmarks</value>
-          <value>activeTasks</value>
-          <value>completedTasks</value>
-          <value>completedItems</value>
-          <value>failedItems</value>
-          <value>inProgressItems</value>
-          <value>dataObjectPaths</value>
-          <value>items</value>
-          <value>rules</value>
-          <value>docRules</value>
-          <value>dataObjectRegistrationItems</value>
-          <value>parentCollectionMetadataEntries</value>
-          <value>permissionsForCollections</value>
-    </util:list>
+	<util:list id="jsonKeys">
+		<value>collections</value>
+		<value>collectionPaths</value>
+		<value>dataObjects</value>
+		<value>dataObjectPaths</value>
+		<value>parentMetadataEntries</value>
+		<value>selfMetadataEntries</value>
+		<value>userPermissionResponses</value>
+		<value>groupPermissionResponses</value>
+		<value>entityPermissionResponses</value>
+		<value>collectionMetadataValidationRules</value>
+		<value>dataObjectMetadataValidationRules</value>
+		<value>collectionMetadataAttributes</value>
+		<value>dataObjectMetadataAttributes</value>
+		<value>validValues</value>
+		<value>collectionTypes</value>
+		<value>subCollectionsHierarchies</value>
+		<value>metadataAttributes</value>
+		<value>docs</value>
+		<value>namedCompoundQueries</value>
+		<value>compoundQueries</value>
+		<value>queries</value>
+		<value>subscriptions</value>
+		<value>notificationDeliveryReceipts</value>
+		<value>eventPayloadEntries</value>
+		<value>notificationDeliveryMethods</value>
+		<value>reports</value>
+		<value>reportEntries</value>
+		<value>notificationTriggers</value>
+		<value>payloadEntries</value>
+		<value>subCollections</value>
+		<value>nciAccounts</value>
+		<value>groups</value>
+		<value>users</value>
+		<value>userIds</value>
+		<value>groupPermissions</value>
+		<value>userPermissions</value>
+		<value>deleteGroupMemberResponses</value>
+		<value>addGroupMemberResponses</value>
+		<value>bookmarks</value>
+		<value>activeTasks</value>
+		<value>completedTasks</value>
+		<value>completedItems</value>
+		<value>failedItems</value>
+		<value>inProgressItems</value>
+		<value>dataObjectPaths</value>
+		<value>items</value>
+		<value>rules</value>
+		<value>docRules</value>
+		<value>dataObjectRegistrationItems</value>
+		<value>parentCollectionMetadataEntries</value>
+		<value>permissionsForCollections</value>
+	</util:list>
 
 	<!-- JSON Provider -->
 	<bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
@@ -133,7 +128,7 @@
 		<property name="dropCollectionWrapperElement" value="true" />
 		<property name="serializeAsArray" value="true" />
 		<property name="supportUnwrapped" value="true" />
-		<property name="arrayKeys" ref="jsonKeys"/>
+		<property name="arrayKeys" ref="jsonKeys" />
 	</bean>
 	<util:map id="jsonProviderNamespaceMap" map-class="java.util.Hashtable">
 		<entry key="http://hpc.nci.nih.gov/dto/error" value="gov.nih.nci.hpc.dto.error" />
@@ -152,130 +147,152 @@
 		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
 	</util:map>
 
-	<!--  Multipart Provider -->
+	<!-- Multipart Provider -->
 	<bean id="hpcMultipartProvider" class="gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider">
 		<property name="attachmentDirectory" value="${hpc.ws.rs.attachment-tmp-directory}" />
 		<property name="attachmentThreshold" value="${hpc.ws.rs.attachment-memory-threshold}" />
 	</bean>
-	
+
 	<!-- Exception Mapper Providers -->
-	<bean id="hpcExceptionMapper" 
-	      class="gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper">
+	<bean id="hpcExceptionMapper" class="gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper">
 		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
-	<bean id="hpcAuthenticationExceptionMapper" 
-	      class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthenticationExceptionMapper">
+	<bean id="hpcAuthenticationExceptionMapper"
+		class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthenticationExceptionMapper">
 		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
-	<bean id="hpcAuthorizationExceptionMapper" 
-	      class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthorizationExceptionMapper">
+	<bean id="hpcAuthorizationExceptionMapper"
+		class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthorizationExceptionMapper">
 		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
-	
+
 	<!-- Authentication Interceptor -->
-	<bean id="hpcAuthenticationInterceptor" 
-	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor">
-	      <constructor-arg value="${hpc.ws.rs.ldapAuthentication}" />
+	<bean id="hpcAuthenticationInterceptor"
+		class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor">
+		<constructor-arg value="${hpc.ws.rs.ldapAuthentication}" />
 	</bean>
-	
+
 	<!-- Authorization Interceptor -->
-	<bean id="hpcAuthorizationInterceptor" class="org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor">
-   		<property name="methodRolesMap">
-      		<map>
-      			<!-- Security Service Authorizations -->
-      			<entry key="registerUser" value="${hpc.ws.rs.auth.security.register-user}"/>
-      			<entry key="updateUser" value="${hpc.ws.rs.auth.security.update-user}"/>
-        		<entry key="getUser" value="${hpc.ws.rs.auth.security.get-user}"/>
-        		<entry key="getInvoker" value="${hpc.ws.rs.auth.security.get-invoker}"/>
-        		<entry key="getActiveUsers" value="${hpc.ws.rs.auth.security.get-active-users}"/>
-        		<entry key="getAllUsers" value="${hpc.ws.rs.auth.security.get-all-users}"/>
-        		<entry key="authenticate" value="${hpc.ws.rs.auth.security.authenticate}"/>
-        		<entry key="registerGroup" value="${hpc.ws.rs.auth.security.register-group}"/>
-        		<entry key="updateGroup" value="${hpc.ws.rs.auth.security.update-group}"/>
-        		<entry key="getGroup" value="${hpc.ws.rs.auth.security.get-group}"/>
-        		<entry key="getGroups" value="${hpc.ws.rs.auth.security.get-groups}"/>
-        		<entry key="deleteGroup" value="${hpc.ws.rs.auth.security.delete-group}"/>
-        		<entry key="registerSystemAccount" value="${hpc.ws.rs.auth.security.register-system-account}"/>
-        		
-        		<!--  Data Management Service Authorizations -->
-        		<entry key="registerCollection" value="${hpc.ws.rs.auth.data-management.register-collection}"/>
-        		<entry key="getCollection" value="${hpc.ws.rs.auth.data-management.get-collection}"/>
-        		<entry key="downloadCollection" value="${hpc.ws.rs.auth.data-management.download-collection}"/>
-        		<entry key="getCollectionDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-collection-download-status}"/>
-        		<entry key="deleteCollection" value="${hpc.ws.rs.auth.data-management.delete-collection}"/>
-        		<entry key="setCollectionPermissions" value="${hpc.ws.rs.auth.data-management.set-collection-permissions}"/>
-        		<entry key="getCollectionPermissions" value="${hpc.ws.rs.auth.data-management.get-collection-permissions}"/>
-        		<entry key="registerDataObject" value="${hpc.ws.rs.auth.data-management.register-data-object}"/>
-        		<entry key="registerDataObjects" value="${hpc.ws.rs.auth.data-management.register-data-objects}"/>
-        		<entry key="getDataObjectsRegistrationDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-data-objects-registration-status}"/>
-        		<entry key="getDataObject" value="${hpc.ws.rs.auth.data-management.get-data-object}"/>
-        		<entry key="downloadDataObject" value="${hpc.ws.rs.auth.data-management.download-data-object}"/>
-        		<entry key="getDataObjectDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-data-object-download-status}"/>
-        		<entry key="deleteDataObject" value="${hpc.ws.rs.auth.data-management.delete-data-object}"/>
-        		<entry key="setDataObjectPermissions" value="${hpc.ws.rs.auth.data-management.set-data-object-permissions}"/>
-        		<entry key="getDataObjectPermissions" value="${hpc.ws.rs.auth.data-management.get-data-object-permissions}"/>
-        		<entry key="downloadDataObjects" value="${hpc.ws.rs.auth.data-management.download-data-objects}"/>
-        		<entry key="getDataObjectsDownloadStatus" value="${hpc.ws.rs.auth.data-management.get-data-objects-download-status}"/>
-        		<entry key="getDataManagementModel" value="${hpc.ws.rs.auth.data-management.get-data-management-model}"/>
-        		
-        		<!--  Data Search Service Authorizations -->
-        		<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}"/>
-        		<entry key="queryDataObjects" value="${hpc.ws.rs.auth.data-search.query-data-objects}"/>
-        		<entry key="addQuery" value="${hpc.ws.rs.auth.data-search.add-query}"/>
-        		<entry key="updateQuery" value="${hpc.ws.rs.auth.data-search.update-query}"/>
-        		<entry key="deleteQuery" value="${hpc.ws.rs.auth.data-search.delete-query}"/>
-        		<entry key="getQuery" value="${hpc.ws.rs.auth.data-search.get-query}"/>
-        		<entry key="getQueries" value="${hpc.ws.rs.auth.data-search.get-queries}"/>
-        		<entry key="getMetadataAttributes" value="${hpc.ws.rs.auth.data-search.get-metadata-attributes}"/>
-        		<entry key="refreshMetadataViews" value="${hpc.ws.rs.auth.data-search.refresh-metadata-views}"/>
-        		
-        		<!--  Data Browse Service Authorizations -->
-        		<entry key="addBookmark" value="${hpc.ws.rs.auth.data-browse.add-bookmark}"/>
-        		<entry key="updateBookmark" value="${hpc.ws.rs.auth.data-browse.update-bookmark}"/>
-        		<entry key="deleteBookmark" value="${hpc.ws.rs.auth.data-browse.delete-bookmark}"/>
-        		<entry key="getBookmark" value="${hpc.ws.rs.auth.data-browse.get-bookmark}"/>
-        		<entry key="getBookmarks" value="${hpc.ws.rs.auth.data-browse.get-bookmarks}"/>
-        		
-        		<!--  Notification Service Authorizations -->
-        		<entry key="subscribeNotifications" value="${hpc.ws.rs.auth.notification.subscribe-notifications}"/>
-        		<entry key="getNotificationSubscriptions" value="${hpc.ws.rs.auth.notification.get-notification-subscriptions}"/>
-        		
-        		<!--  Report Service Authorizations -->
-        		<entry key="generateReport" value="${hpc.ws.rs.auth.report.generate-report}"/>
-      		</map>
-   		</property>
+	<bean id="hpcAuthorizationInterceptor"
+		class="org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor">
+		<property name="methodRolesMap">
+			<map>
+				<!-- Security Service Authorizations -->
+				<entry key="registerUser" value="${hpc.ws.rs.auth.security.register-user}" />
+				<entry key="updateUser" value="${hpc.ws.rs.auth.security.update-user}" />
+				<entry key="getUser" value="${hpc.ws.rs.auth.security.get-user}" />
+				<entry key="getInvoker" value="${hpc.ws.rs.auth.security.get-invoker}" />
+				<entry key="getActiveUsers" value="${hpc.ws.rs.auth.security.get-active-users}" />
+				<entry key="getAllUsers" value="${hpc.ws.rs.auth.security.get-all-users}" />
+				<entry key="authenticate" value="${hpc.ws.rs.auth.security.authenticate}" />
+				<entry key="registerGroup" value="${hpc.ws.rs.auth.security.register-group}" />
+				<entry key="updateGroup" value="${hpc.ws.rs.auth.security.update-group}" />
+				<entry key="getGroup" value="${hpc.ws.rs.auth.security.get-group}" />
+				<entry key="getGroups" value="${hpc.ws.rs.auth.security.get-groups}" />
+				<entry key="deleteGroup" value="${hpc.ws.rs.auth.security.delete-group}" />
+				<entry key="registerSystemAccount"
+					value="${hpc.ws.rs.auth.security.register-system-account}" />
+
+				<!-- Data Management Service Authorizations -->
+				<entry key="registerCollection"
+					value="${hpc.ws.rs.auth.data-management.register-collection}" />
+				<entry key="getCollection" value="${hpc.ws.rs.auth.data-management.get-collection}" />
+				<entry key="downloadCollection"
+					value="${hpc.ws.rs.auth.data-management.download-collection}" />
+				<entry key="getCollectionDownloadStatus"
+					value="${hpc.ws.rs.auth.data-management.get-collection-download-status}" />
+				<entry key="deleteCollection"
+					value="${hpc.ws.rs.auth.data-management.delete-collection}" />
+				<entry key="setCollectionPermissions"
+					value="${hpc.ws.rs.auth.data-management.set-collection-permissions}" />
+				<entry key="getCollectionPermissions"
+					value="${hpc.ws.rs.auth.data-management.get-collection-permissions}" />
+				<entry key="registerDataObject"
+					value="${hpc.ws.rs.auth.data-management.register-data-object}" />
+				<entry key="registerDataObjects"
+					value="${hpc.ws.rs.auth.data-management.register-data-objects}" />
+				<entry key="getDataObjectsRegistrationDownloadStatus"
+					value="${hpc.ws.rs.auth.data-management.get-data-objects-registration-status}" />
+				<entry key="getDataObject" value="${hpc.ws.rs.auth.data-management.get-data-object}" />
+				<entry key="downloadDataObject"
+					value="${hpc.ws.rs.auth.data-management.download-data-object}" />
+				<entry key="getDataObjectDownloadStatus"
+					value="${hpc.ws.rs.auth.data-management.get-data-object-download-status}" />
+				<entry key="deleteDataObject"
+					value="${hpc.ws.rs.auth.data-management.delete-data-object}" />
+				<entry key="setDataObjectPermissions"
+					value="${hpc.ws.rs.auth.data-management.set-data-object-permissions}" />
+				<entry key="getDataObjectPermissions"
+					value="${hpc.ws.rs.auth.data-management.get-data-object-permissions}" />
+				<entry key="downloadDataObjects"
+					value="${hpc.ws.rs.auth.data-management.download-data-objects}" />
+				<entry key="getDataObjectsDownloadStatus"
+					value="${hpc.ws.rs.auth.data-management.get-data-objects-download-status}" />
+				<entry key="getDataManagementModel"
+					value="${hpc.ws.rs.auth.data-management.get-data-management-model}" />
+
+				<!-- Data Search Service Authorizations -->
+				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />
+				<entry key="queryDataObjects" value="${hpc.ws.rs.auth.data-search.query-data-objects}" />
+				<entry key="addQuery" value="${hpc.ws.rs.auth.data-search.add-query}" />
+				<entry key="updateQuery" value="${hpc.ws.rs.auth.data-search.update-query}" />
+				<entry key="deleteQuery" value="${hpc.ws.rs.auth.data-search.delete-query}" />
+				<entry key="getQuery" value="${hpc.ws.rs.auth.data-search.get-query}" />
+				<entry key="getQueries" value="${hpc.ws.rs.auth.data-search.get-queries}" />
+				<entry key="getMetadataAttributes"
+					value="${hpc.ws.rs.auth.data-search.get-metadata-attributes}" />
+				<entry key="refreshMetadataViews"
+					value="${hpc.ws.rs.auth.data-search.refresh-metadata-views}" />
+
+				<!-- Data Browse Service Authorizations -->
+				<entry key="addBookmark" value="${hpc.ws.rs.auth.data-browse.add-bookmark}" />
+				<entry key="updateBookmark" value="${hpc.ws.rs.auth.data-browse.update-bookmark}" />
+				<entry key="deleteBookmark" value="${hpc.ws.rs.auth.data-browse.delete-bookmark}" />
+				<entry key="getBookmark" value="${hpc.ws.rs.auth.data-browse.get-bookmark}" />
+				<entry key="getBookmarks" value="${hpc.ws.rs.auth.data-browse.get-bookmarks}" />
+
+				<!-- Notification Service Authorizations -->
+				<entry key="subscribeNotifications"
+					value="${hpc.ws.rs.auth.notification.subscribe-notifications}" />
+				<entry key="getNotificationSubscriptions"
+					value="${hpc.ws.rs.auth.notification.get-notification-subscriptions}" />
+
+				<!-- Report Service Authorizations -->
+				<entry key="generateReport" value="${hpc.ws.rs.auth.report.generate-report}" />
+			</map>
+		</property>
 	</bean>
-	      
+
 	<!-- API Version Interceptor -->
-	<bean id="hpcAPIVersionInterceptor" 
-	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor">
+	<bean id="hpcAPIVersionInterceptor"
+		class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor">
 		<constructor-arg value="${hpc.ws.rs.api-version}" />
 	</bean>
-	
+
 	<!-- Cleanup Interceptor -->
-	<bean id="hpcCleanupInterceptor" 
-	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcCleanupInterceptor" />
-	
-	<!--  Service Profiling Interceptors -->      
-	<bean id="hpcProfileInInterceptor" 
-	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor">
+	<bean id="hpcCleanupInterceptor" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcCleanupInterceptor" />
+
+	<!-- Service Profiling Interceptors -->
+	<bean id="hpcProfileInInterceptor" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor">
 		<constructor-arg value="receive" />
 	</bean>
-	<bean id="hpcProfileOutInterceptor" 
-	      class="gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor">
+	<bean id="hpcProfileOutInterceptor" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor">
 		<constructor-arg value="send-ending" />
 	</bean>
-	
+
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
-	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
+	<bean id="hpcDataManagementRestService"
+		class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
 	<bean id="hpcDataSearchRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataSearchRestServiceImpl" />
 	<bean id="hpcDataBrowseRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataBrowseRestServiceImpl" />
-	<bean id="hpcNotificationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
+	<bean id="hpcNotificationRestService"
+		class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
 	<bean id="hpcReportRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReportRestServiceImpl" />
-	
+
 	<!-- CXF JAX-RS Server Config -->
-	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}" bus="cxf">
+	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}"
+		bus="cxf">
 		<jaxrs:serviceBeans>
 			<ref bean="hpcSecurityRestService" />
 			<ref bean="hpcDataManagementRestService" />
@@ -295,16 +312,17 @@
 			<ref bean="hpcProfileInInterceptor" />
 			<ref bean="hpcAuthenticationInterceptor" />
 			<ref bean="hpcAuthorizationInterceptor" />
-      	</jaxrs:inInterceptors>
-      	<jaxrs:outInterceptors>
-      		<ref bean="hpcAPIVersionInterceptor" />
-      		<ref bean="hpcCleanupInterceptor" />
-      		<ref bean="hpcProfileOutInterceptor" />
-      	</jaxrs:outInterceptors>
+		</jaxrs:inInterceptors>
+		<jaxrs:outInterceptors>
+			<ref bean="hpcAPIVersionInterceptor" />
+			<ref bean="hpcCleanupInterceptor" />
+			<ref bean="hpcProfileOutInterceptor" />
+		</jaxrs:outInterceptors>
 	</jaxrs:server>
-	
+
 	<!-- CXF JAX-RS Secured Server Config -->
-	<jaxrs:server id="hpc-secured-server" address="${hpc.ws.rs.secured-url}" bus="cxf">
+	<jaxrs:server id="hpc-secured-server" address="${hpc.ws.rs.secured-url}"
+		bus="cxf">
 		<jaxrs:serviceBeans>
 			<ref bean="hpcSecurityRestService" />
 			<ref bean="hpcDataManagementRestService" />
@@ -324,12 +342,12 @@
 			<ref bean="hpcProfileInInterceptor" />
 			<ref bean="hpcAuthenticationInterceptor" />
 			<ref bean="hpcAuthorizationInterceptor" />
-      	</jaxrs:inInterceptors>
-      	<jaxrs:outInterceptors>
-      		<ref bean="hpcAPIVersionInterceptor" />
-      		<ref bean="hpcCleanupInterceptor" />
-      		<ref bean="hpcProfileOutInterceptor" />
-      	</jaxrs:outInterceptors>
-    </jaxrs:server>
-    
+		</jaxrs:inInterceptors>
+		<jaxrs:outInterceptors>
+			<ref bean="hpcAPIVersionInterceptor" />
+			<ref bean="hpcCleanupInterceptor" />
+			<ref bean="hpcProfileOutInterceptor" />
+		</jaxrs:outInterceptors>
+	</jaxrs:server>
+
 </beans>

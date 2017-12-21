@@ -99,6 +99,7 @@
 		
 		<!-- Config files -->
 		<configfile finalname="/etc/hpc-server/keystore.jks" override="false">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/jks/keystore</configfile>
+		<configfile finalname="/etc/hpc-server/cacerts.jks" override="true">mvn:${project.groupId}/hpc-ws-rs-impl/${project.version}/jks/cacerts</configfile>
 
 		<!-- Server Bundles -->
 		<bundle>mvn:${project.groupId}/hpc-ws-rs-api/${project.version}</bundle>
