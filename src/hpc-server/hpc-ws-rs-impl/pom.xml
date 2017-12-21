@@ -1,14 +1,6 @@
-<!--  
- * pom.xml
- *
- * Copyright SVG,  Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- -->
+<!-- * pom.xml * * Copyright SVG, Inc. * Copyright Leidos Biomedical Research, 
+	Inc * * Distributed under the OSI-approved BSD 3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt 
+	for details. * * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -56,7 +48,9 @@
 						<fileset>
 							<directory>${basedir}/src/main/resources</directory>
 							<includes>
-								<!-- <include>hpc-client.cer</include> <inlucde>hpc-client-keystore.jks</inlucde> -->
+								<include>hpc-client.crt</include>
+								<inlucde>hpc-client-keystore.jks</inlucde>
+								-->
 								<inlucde>keystore.jks</inlucde>
 								<inlucde>cacerts.jks</inlucde>
 								<inlucde>cacerts</inlucde>
@@ -127,6 +121,52 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>generateClientCertificate</id>
+						<goals>
+							<goal>generateKeyPair</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore>
+							<storepass>hpc-client-pwd</storepass>
+							<keypass>hpc-client-pwd</keypass>
+							<alias>hpc-client-key</alias>
+							<dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
+							<validity>365</validity>
+							<skipIfExist>true</skipIfExist>
+						</configuration>
+					</execution>
+					<execution>
+						<id>exportClientCertificate</id>
+						<goals>
+							<goal>exportCertificate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore>
+							<file>${basedir}/src/main/resources/hpc-client.crt</file>
+							<rfc>true</rfc>
+							<storepass>hpc-client-pwd</storepass>
+							<alias>hpc-client-key</alias>
+						</configuration>
+					</execution>
+					<execution>
+						<id>importClientCertificate</id>
+						<goals>
+							<goal>importCertificate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
+							<file>${basedir}/src/main/resources/hpc-client.crt</file>
+							<storepass>hpc-server-store-pwd</storepass>
+							<alias>hpc-client-key</alias>
+							<trustcacerts>true</trustcacerts>
+							<noprompt>true</noprompt>
+							<skipIfExist>true</skipIfExist>
+						</configuration>
+					</execution>
+					<execution>
 						<id>importLdapRootCertificate</id>
 						<goals>
 							<goal>importCertificate</goal>
@@ -174,26 +214,6 @@
 							<skipIfExist>false</skipIfExist>
 						</configuration>
 					</execution>
-					<!-- <execution> <id>generateServerKeystore</id> <goals> <goal>generateKeyPair</goal> 
-						</goals> <phase>generate-resources</phase> <configuration> <keystore>${basedir}/src/main/resources/keystore.jks</keystore> 
-						<storepass>hpc-server-store-pwd</storepass> <keypass>hpc-server-store-pwd</keypass> 
-						<alias>hpc-server-key</alias> <dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, 
-						ST=MD, C=US</dname> <validity>365</validity> <skipIfExist>true</skipIfExist> 
-						</configuration> </execution> <execution> <id>generateClientCertificate</id> 
-						<goals> <goal>generateKeyPair</goal> </goals> <phase>generate-resources</phase> 
-						<configuration> <keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore> 
-						<storepass>hpc-client-pwd</storepass> <keypass>hpc-client-pwd</keypass> <alias>hpc-client-key</alias> 
-						<dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname> <validity>365</validity> 
-						<skipIfExist>true</skipIfExist> </configuration> </execution> <execution> 
-						<id>exportClientCertificate</id> <goals> <goal>exportCertificate</goal> </goals> 
-						<phase>generate-resources</phase> <configuration> <keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore> 
-						<file>${basedir}/src/main/resources/hpc-client.cer</file> <rfc>true</rfc> 
-						<storepass>hpc-client-pwd</storepass> <alias>hpc-client-key</alias> </configuration> 
-						</execution> <execution> <id>importClientCertificate</id> <goals> <goal>importCertificate</goal> 
-						</goals> <phase>generate-resources</phase> <configuration> <keystore>${basedir}/src/main/resources/keystore.jks</keystore> 
-						<file>${basedir}/src/main/resources/hpc-client.cer</file> <storepass>hpc-server-store-pwd</storepass> 
-						<alias>hpc-client-key</alias> <trustcacerts>true</trustcacerts> <noprompt>true</noprompt> 
-						<skipIfExist>true</skipIfExist> </configuration> </execution> -->
 				</executions>
 			</plugin>
 			<plugin>
