@@ -1,3 +1,6 @@
 /hpc-client-keystore.jks
 /hpc-client.cer
 /keystore.jks
+/cacerts
+/cacerts.jks
+/hpc-client.crt

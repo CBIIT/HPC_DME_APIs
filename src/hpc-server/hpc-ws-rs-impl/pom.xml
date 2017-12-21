@@ -1,14 +1,6 @@
-<!--  
- * pom.xml
- *
- * Copyright SVG,  Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- -->
+<!-- * pom.xml * * Copyright SVG, Inc. * Copyright Leidos Biomedical Research, 
+	Inc * * Distributed under the OSI-approved BSD 3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt 
+	for details. * * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -56,13 +48,57 @@
 						<fileset>
 							<directory>${basedir}/src/main/resources</directory>
 							<includes>
-								<include>hpc-client.cer</include>
+								<include>hpc-client.crt</include>
 								<inlucde>hpc-client-keystore.jks</inlucde>
+								-->
 								<inlucde>keystore.jks</inlucde>
+								<inlucde>cacerts.jks</inlucde>
+								<inlucde>cacerts</inlucde>
 							</includes>
 						</fileset>
 					</filesets>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-java-default-cacerts</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/src/main/resources</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${JAVA_HOME}/jre/lib/security</directory>
+									<includes>
+										<include>cacerts</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>rename-java-default-cacerts</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<sourceFile>${basedir}/src/main/resources/cacerts</sourceFile>
+							<destinationFile>${basedir}/src/main/resources/cacerts.jks</destinationFile>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -76,8 +112,8 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
-							<storepass>hpc-server-store-pwd</storepass>
-							<keypass>hpc-server-store-pwd</keypass>
+							<storepass>changeit</storepass>
+							<keypass>changeit</keypass>
 							<alias>hpc-server-key</alias>
 							<dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
 							<validity>365</validity>
@@ -108,7 +144,7 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<keystore>${basedir}/src/main/resources/hpc-client-keystore.jks</keystore>
-							<file>${basedir}/src/main/resources/hpc-client.cer</file>
+							<file>${basedir}/src/main/resources/hpc-client.crt</file>
 							<rfc>true</rfc>
 							<storepass>hpc-client-pwd</storepass>
 							<alias>hpc-client-key</alias>
@@ -122,12 +158,60 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<keystore>${basedir}/src/main/resources/keystore.jks</keystore>
-							<file>${basedir}/src/main/resources/hpc-client.cer</file>
+							<file>${basedir}/src/main/resources/hpc-client.crt</file>
 							<storepass>hpc-server-store-pwd</storepass>
 							<alias>hpc-client-key</alias>
 							<trustcacerts>true</trustcacerts>
 							<noprompt>true</noprompt>
 							<skipIfExist>true</skipIfExist>
+						</configuration>
+					</execution>
+					<execution>
+						<id>importLdapRootCertificate</id>
+						<goals>
+							<goal>importCertificate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<keystore>${basedir}/src/main/resources/cacerts.jks</keystore>
+							<file>${basedir}/src/main/resources/certs/ldap-root.crt</file>
+							<storepass>changeit</storepass>
+							<alias>NIH-DPKI-ROOT-1A</alias>
+							<trustcacerts>true</trustcacerts>
+							<noprompt>true</noprompt>
+							<skipIfExist>false</skipIfExist>
+						</configuration>
+					</execution>
+					<execution>
+						<id>importLdapIntermediateCertificate</id>
+						<goals>
+							<goal>importCertificate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<keystore>${basedir}/src/main/resources/cacerts.jks</keystore>
+							<file>${basedir}/src/main/resources/certs/ldap-intermediate.crt</file>
+							<storepass>changeit</storepass>
+							<alias>NIH-DPKI-CA-1A</alias>
+							<trustcacerts>true</trustcacerts>
+							<noprompt>true</noprompt>
+							<skipIfExist>false</skipIfExist>
+						</configuration>
+					</execution>
+					<execution>
+						<id>importIrodsCertificate</id>
+						<goals>
+							<goal>importCertificate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<keystore>${basedir}/src/main/resources/cacerts.jks</keystore>
+							<file>${basedir}/src/main/resources/certs/irods.crt</file>
+							<storepass>changeit</storepass>
+							<alias>NIH-IRODS</alias>
+							<trustcacerts>true</trustcacerts>
+							<noprompt>true</noprompt>
+							<skipIfExist>false</skipIfExist>
 						</configuration>
 					</execution>
 				</executions>
@@ -148,6 +232,11 @@
 									<file>${basedir}/src/main/resources/keystore.jks</file>
 									<type>jks</type>
 									<classifier>keystore</classifier>
+								</artifact>
+								<artifact>
+									<file>${basedir}/src/main/resources/cacerts.jks</file>
+									<type>jks</type>
+									<classifier>cacerts</classifier>
 								</artifact>
 							</artifacts>
 						</configuration>
