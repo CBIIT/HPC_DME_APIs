@@ -8,6 +8,7 @@
 package gov.nih.nci.hpc.cli.local;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ public class HPCBatchLocalFolderExecutor {
 		boolean metadataOnly = false;
 		boolean confirmation = true;
 		String localPath = (String) criteriaMap.get("filePath");
+		String fileList = (String) criteriaMap.get("fileList");
 		String excludePattern = (String) criteriaMap.get("excludePatternFile");
 		String includePattern = (String) criteriaMap.get("includePatternFile");
 		String destinationBasePath = criteriaMap.get("destinationBasePath");
@@ -89,10 +91,14 @@ public class HPCBatchLocalFolderExecutor {
 			HpcLocalDirectoryListQuery impl = new HpcLocalDirectoryListQuery();
 			List<String> excludePatterns = readPatternStringsfromFile(excludePattern);
 			List<String> includePatterns = readPatternStringsfromFile(includePattern);
-			List<HpcPathAttributes> paths = impl.getPathAttributes(localPath, excludePatterns, includePatterns);
+			List<HpcPathAttributes> paths = null;
+			if(fileList != null)
+				paths = impl.getFileListPathAttributes(fileList, excludePatterns, includePatterns);
+			else
+				paths = impl.getPathAttributes(localPath, excludePatterns, includePatterns);
 			if (testRun)
 				return true;
-
+			
 			List<HpcPathAttributes> folders = new ArrayList<HpcPathAttributes>();
 			List<HpcPathAttributes> files = new ArrayList<HpcPathAttributes>();
 			if (paths.isEmpty()) {
@@ -118,7 +124,7 @@ public class HPCBatchLocalFolderExecutor {
 					String confirm = reader.readLine();
 					if (confirm != null && !confirm.equalsIgnoreCase("Y")) {
 						System.out.println("Skipped registering data files!");
-						return false;
+						return true;
 					}
 				} catch (IOException e) {
 					throw new HpcBatchException("Failed to get confirmation " + e.getMessage());
@@ -140,6 +146,15 @@ public class HPCBatchLocalFolderExecutor {
 							+ " registration due to: " + e.getMessage());
 				}
 			}
+			//Measure appx transfer speed
+			//Get total size of the files and get total time to process
+			long filesSize = 0L;
+			for (HpcPathAttributes fileAttr : files) {
+				File file = new File(fileAttr.getPath());
+				if(file.exists())
+					filesSize += file.length();
+			}
+			Long start = System.currentTimeMillis();
 
 			// Process all files with multiple threads
 			List<BlockingQueue<Record>> queueList = new ArrayList<BlockingQueue<Record>>();
@@ -180,7 +195,14 @@ public class HPCBatchLocalFolderExecutor {
 
 			HPCJobReportMerger reportMerger = new HPCJobReportMerger();
 			JobReport finalReport = reportMerger.mergerReports(jobReports);
-
+			Long stop = System.currentTimeMillis();
+			
+			long secs = (stop-start)/1000;
+			if(filesSize > 0)
+			{
+				System.out.println("Total bytes attempted: " + filesSize);
+				//System.out.println("Average transfer speed: " + (filesSize/secs) + " (bytes/sec)");
+			}
 			if (finalReport.getMetrics().getErrorCount() == 0)
 				success = true;
 			System.out.println(new HpcJobReportFormatter().formatReport(finalReport));

@@ -170,39 +170,60 @@ public class HPCCommands implements CommandMarker {
 	}
 	*/
 
-	@CliCommand(value = "registerFromFilePath", help = "Register Data files with the HPC DME Archive from a local folder. Usage: registerFromFilePath --filePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>")
-	public void registerFilePathS3(
+	@CliCommand(value = "registerFromFilePath", help = "Register Data files with the HPC DME Archive from a local folder. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>")
+	public String registerFilePathS3(
 			@CliOption(key = {
-					"sourceFilePath" }, mandatory = true, help = "Please provide source file path. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String filePath,
+					"sourceFilePath" }, mandatory = false, help = "Please provide source file path. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String filePath,
 			@CliOption(key = {
-					"excludePatternFile" }, mandatory = false, help = "Please provide exclude pattern file. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String excludePattern,
+					"sourceFileList" }, mandatory = false, help = "Please provide source file list. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String fileList,
 			@CliOption(key = {
-					"includePatternFile" }, mandatory = false, help = "Please provide include pattern file. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String includePattern,
+					"excludePatternFile" }, mandatory = false, help = "Please provide exclude pattern file. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String excludePattern,
 			@CliOption(key = {
-					"filePathBaseName" }, mandatory = false, help = "Please provide file base path name. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String filePathBaseName,
+					"includePatternFile" }, mandatory = false, help = "Please provide include pattern file. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String includePattern,
 			@CliOption(key = {
-					"destinationArchivePath" }, mandatory = true, help = "Please provide destination base path. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String destinationBasePath,
+					"filePathBaseName" }, mandatory = false, help = "Please provide file base path name. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String filePathBaseName,
 			@CliOption(key = {
-			"dryRun" }, mandatory = false, help = "Dryrun run to see the include and exclude files. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String test,
+					"destinationArchivePath" }, mandatory = true, help = "Please provide destination base path. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String destinationBasePath,
 			@CliOption(key = {
-			"confirm" }, mandatory = false, help = "Ask for confirmation before processing a file. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String confirm,
+					"archiveType" }, mandatory = false, help = "Please provide archive type <S3 | POSIX>. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String archiveType,
 			@CliOption(key = {
-			"metadata" }, mandatory = false, help = "Update metadata only. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false>  --confirm <true|false> --metadata <true|false> --threads <number>") final String metadata,
+			"dryRun" }, mandatory = false, help = "Dryrun run to see the include and exclude files. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String test,
 			@CliOption(key = {
-			"threads" }, mandatory = false, help = "Number of threads to process. Usage: registerFromFilePath --sourceFilePath <Souce file path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false>  --confirm <true|false> --metadata <true|false> --threads <number>") final String threads
+			"confirm" }, mandatory = false, help = "Ask for confirmation before processing a file. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --metadata <true|false> --threads <number>") final String confirm,
+			@CliOption(key = {
+			"metadata" }, mandatory = false, help = "Update metadata only. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --dryRun <true|false>  --archiveType<S3|POSIX> --confirm <true|false> --metadata <true|false> --threads <number>") final String metadata,
+			@CliOption(key = {
+			"threads" }, mandatory = false, help = "Number of threads to process. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false>  --confirm <true|false> --metadata <true|false> --threads <number>") final String threads
 			) {
 		Map<String, String> criteriaMap = new HashMap<String, String>();
+		if(filePath != null && fileList != null)
+		{
+			System.out.println("Invalid options. Specify either sourceFilePath or sourceFileList without include and exclude criteria.");
+			return "1";
+		}
+		if(fileList != null && (excludePattern != null || includePattern != null))
+		{
+			System.out.println("Invalid options. Specify sourceFileList without include and exclude criteria.");
+			return "1";
+		}
+		if(filePath == null && fileList == null)
+		{
+			System.out.println("Invalid options. Specify either sourceFilePath or sourceFileList without include and exclude criteria.");
+			return "1";
+		}
 		criteriaMap.put("filePath", filePath);
+		criteriaMap.put("fileList", fileList);
 		criteriaMap.put("excludePatternFile", excludePattern);
 		criteriaMap.put("includePatternFile", includePattern);
 		criteriaMap.put("filePathBaseName", filePathBaseName);
 		criteriaMap.put("destinationBasePath", destinationBasePath);
 		criteriaMap.put("test", test);
 		criteriaMap.put("confirm", confirm);
+		criteriaMap.put("archiveType", archiveType);
 		criteriaMap.put("metadata", metadata);
 		criteriaMap.put("threads", threads);
 		batchLocalFiles.setCriteria("registerFromFilePathS3", criteriaMap);
-		batchLocalFiles.process(null);
+		return batchLocalFiles.process(null);
 	}
 	
 	@CliCommand(value = "putCollections", help = "Batch upload Collections to HPC Archive. Usage: putCollections --source <file path>")

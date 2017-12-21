@@ -90,8 +90,16 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		dataObject.setSource(fileLocation);
 		dataObject.setCallerObjectId(null);
 		String objectPath = getObjectPath(filePathBaseName, entity.getPath());
-		if (HpcClientUtil.containsWhiteSpace(objectPath)) {
-			String message = "Whitespace is not allowed in object path. Skipping: " + entity.getAbsolutePath();
+		if(HpcClientUtil.containsWhiteSpace(objectPath))
+		{
+			System.out.println("White space in the file path "+ objectPath + " is replaced with underscore _ ");
+			objectPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(objectPath);
+		}
+		File file = new File(entity.getAbsolutePath());
+		
+		if(!file.exists())
+		{
+			String message = "File does not exist. Skipping: " + entity.getAbsolutePath();
 			HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
 			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);

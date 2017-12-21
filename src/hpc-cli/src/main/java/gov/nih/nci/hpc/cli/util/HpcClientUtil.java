@@ -418,6 +418,13 @@ public class HpcClientUtil {
 	    return false;
 	}
 	
+	public static String replaceWhiteSpaceWithUnderscore(final String testCode){
+	    if(testCode != null){
+	    	return testCode.replaceAll("\\s+", "_");
+	    }
+	    return testCode;
+	}
+
 	public static HpcBulkDataObjectRegistrationResponseDTO registerBulkDatafiles(String token, String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
 			String hpcCertPath, String hpcCertPassword, String proxyURL, String proxyPort) {
 		try {

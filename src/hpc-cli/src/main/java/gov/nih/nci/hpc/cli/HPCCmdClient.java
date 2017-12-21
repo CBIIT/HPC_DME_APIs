@@ -110,7 +110,10 @@ public abstract class HPCCmdClient {
 				bufferedReader = new BufferedReader(new FileReader(tokenFile));
 				String line = bufferedReader.readLine();
 				if (line.isEmpty())
-					return "Invalid Login token in " + tokenFile;
+				{
+					System.out.println("Invalid Login token in " + tokenFile);
+					return "1";
+				}
 				else {
 					authToken = line;
 				}
@@ -118,7 +121,10 @@ public abstract class HPCCmdClient {
 				bufferedReader = new BufferedReader(new FileReader(loginFile));
 				String line = bufferedReader.readLine();
 				if (line.indexOf(":") == -1)
-					return "Invalid Login credentials in " + loginFile;
+				{
+					System.out.println("Invalid Login credentials in " + loginFile);
+					return "1";
+				}
 				else {
 					userId = line.substring(0, line.indexOf(":"));
 					password = line.substring(line.indexOf(":") + 1);
@@ -129,17 +135,25 @@ public abstract class HPCCmdClient {
 			boolean success = processCmd(cmd, criteria, outputFile, format, detail, userId, password, authToken);
 
 			if (success)
-				return "Cmd process Successful";
+			{
+				System.out.println("Cmd process Successful");
+				return "0";
+			}
 			else
-				return "Cmd process is not Successful. Please error log for details.";
+			{
+				System.out.println("Cmd process is not Successful. Please error log for details.");
+				return "1";
+			}
 			}
 			catch(HpcException e)
 			{
 				addErrorToLog("Faile to process: " +e.getMessage(), cmd);
-				return "Cmd process is not Successful. Please error log for details.";
+				System.out.println("Cmd process is not Successful. Please error log for details.");
+				return "1";
 			}
 		} catch (IOException e) {
-			return "Failed to run command: "+e.getMessage();
+			System.out.println("Failed to run command: "+e.getMessage());
+			return "1";
 		} finally {
 			if (bufferedReader != null) {
 				try {

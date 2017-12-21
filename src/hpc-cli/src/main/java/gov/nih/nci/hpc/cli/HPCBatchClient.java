@@ -108,7 +108,8 @@ public abstract class HPCBatchClient {
 		try {
 			String userId = null;
 			String password = null;
-			if (loginFile == null) {
+			String authToken = null;
+			if (loginFile == null && tokenFile == null && inputCredentials) {
 				jline.console.ConsoleReader reader = new jline.console.ConsoleReader();
 				reader.setExpandEvents(false);
 				System.out.println("Enter NCI Login UserId:");
@@ -116,25 +117,45 @@ public abstract class HPCBatchClient {
 
 				System.out.println("Enter NCI Login password:");
 				password = reader.readLine(new Character('*'));
-				System.out.println("Initiating batch process as NCI Login UserId:" + userId);
-			} else {
+			} else if ( tokenFile != null){
+				bufferedReader = new BufferedReader(new FileReader(tokenFile));
+				String line = bufferedReader.readLine();
+				if (line.isEmpty())
+				{
+					System.out.println("Invalid Login token in " + tokenFile);
+					return "1";
+				}
+				else {
+					authToken = line;
+				}
+			} else if ( loginFile != null){
 				bufferedReader = new BufferedReader(new FileReader(loginFile));
 				String line = bufferedReader.readLine();
 				if (line.indexOf(":") == -1)
-					return "Invalid Login credentials in " + loginFile;
+				{
+					System.out.println("Invalid Login credentials in " + tokenFile);
+					return "1";
+				}
 				else {
 					userId = line.substring(0, line.indexOf(":"));
 					password = line.substring(line.indexOf(":") + 1);
 				}
 			}
 
-			boolean success = processFile(fileName, userId, password);
+			boolean success = processFile(fileName, userId, password, authToken);
 			if (success)
-				return "Batch process Successful";
+			{
+				System.out.println("Cmd process Successful");
+				return "0";
+			}
 			else
-				return "Batch process is not Successful. Please error log for the records not processed.";
+			{
+				System.out.println("Cmd process is not Successful. Please error log for details.");
+				return "1";
+			}
 		} catch (IOException e) {
-			return "Failed to run batch registration";
+			System.out.println("Failed to run batch registration" + e.getMessage());
+			return "1";
 		} finally {
 			if (bufferedReader != null) {
 				try {
@@ -147,7 +168,7 @@ public abstract class HPCBatchClient {
 		}
 	}
 
-	protected abstract boolean processFile(String fileName, String userId, String password);
+	protected abstract boolean processFile(String fileName, String userId, String password, String authToken);
 
 	protected void postProcess() {
 		try {

@@ -34,15 +34,16 @@ public class HPCBatchDatafile extends HPCBatchClient {
 				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
 	}
 
-	protected boolean processFile(String fileName, String userId, String password) {
+	protected boolean processFile(String fileName, String userId, String password, String authToken) {
 		boolean success = true;
 
-		if (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0) {
+		if (authToken == null && (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0)) {
 			System.out.println("Invalid login credentials");
 			return false;
 		}
 		try {
-			String authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
+			if(authToken == null)
+				authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 					hpcCertPassword);
 			success = new HPCBatchDataFileProcessor(fileName, threadCount, hpcServerURL + "/" + hpcDataService,
 					hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile, authToken).processData();
