@@ -460,6 +460,7 @@ function dm_show_register_directory_usage {
   -m                      Register metadata only. Do not register files.
   -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
+  -t[NUM_THREADS]         The number of threads to use while uploading files to cleversafe. This should be between 0 and 10.
 EOF
   echo "$usage"
 }
@@ -472,7 +473,10 @@ function dm_register_directory {
 
     local USAGE="USAGE: dm_register_directory <source-path> <destination-path>"
     local OPTIND
-    while getopts ":de:i:hms" option
+    
+    #set the default number of threads to 1
+    numthreads=1
+    while getopts ":de:i:hmst:" option
     do
       case "${option}" in
         d)
@@ -506,6 +510,18 @@ function dm_register_directory {
         h)
           dm_show_register_directory_usage 
           exit 1
+          ;;
+        t)
+          numthreads="${OPTARG}"
+          re='^[0-9]+$'
+          if ! [[ "$numthreads" =~ $re ]] ; then
+             echo "ERROR: The number of threads $numthreads is not a number" >&2; exit 1
+          fi
+
+          if ! [ "$numthreads" -gt "0" && "$numthreads"-lt 10 ]
+          then
+             echo "ERROR: The number of threads $numthreads should be between 0 and 10" >&2; exit 1
+          fi
           ;;
         *)
           echo "ERROR: Unsoported option ${option}" >&2
@@ -569,7 +585,7 @@ function dm_register_directory {
 
     if [ "$dry_run" ]
     then
-      command_args+=" --test true"
+      command_args+=" --dryRun true"
     fi
 
     if [ ! "$skip_confirmation" ]
@@ -584,10 +600,12 @@ function dm_register_directory {
       command_args+=" --metadata true "
     fi
 
+    command_args+=" --threads $numthreads"
+
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file
     local basedir=$(basename $full_src_path)
-    echo "registerFromFilePath --filePath $full_src_path --filePathBaseName $basedir --destinationBasePath $dst_path" $command_args >  $command_file
+    echo "registerFromFilePath --sourceFilePath $full_src_path --filePathBaseName $basedir --destinationArchivePath $dst_path" $command_args >  $command_file
 
     local log_file=./dm_log
     local error_file=./dm_error
