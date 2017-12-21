@@ -108,8 +108,9 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>keytool-maven-plugin</artifactId>
 				<executions>
+				<!--  
 					<execution>
-						<id>generateServerKeystore-new</id>
+						<id>generateServerKeystore</id>
 						<goals>
 							<goal>generateKeyPair</goal>
 						</goals>
@@ -123,7 +124,7 @@
 							<validity>365</validity>
 							<skipIfExist>false</skipIfExist>
 						</configuration>
-					</execution>
+					</execution>-->
 					<execution>
 						<id>importLdapRootCertificate</id>
 						<goals>
