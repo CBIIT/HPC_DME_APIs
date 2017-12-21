@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
+
+
+verify_registration  collection-registration-response-header.tmp
+verify_registration  dataObject-registration-response-header.tmp
+
+async_sleep
+
+
+OBJECT_PATH=`cat registered-dataobject-path.tmp`
+
+#Make sure the dataObject is archived
+OBJECT_GET_PATH=dataObject/$OBJECT_PATH
+RESPONSE_HEADER=get-item-response-header.tmp 
+RESPONSE_MSG=get-item-response-message.json.tmp
+get_item "$OBJECT_GET_PATH"  "$RESPONSE_HEADER" "$RESPONSE_MSG"
+ARCH_STATUS=$(get_json_attribute_value "$RESPONSE_MSG" "data_transfer_status")
+
+if [ "$ARCH_STATUS" != "ARCHIVED" ]
+then
+    echo "Can not verify the archive status to be ARCHIVED. The data object can not be downloaded" 1>&2
+    echo "data_transfer_status=$ARCH_STATUS" 1>&2
+    exit
+fi
+
+
+../utils/download-async
