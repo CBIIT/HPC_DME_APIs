@@ -36,6 +36,7 @@ import gov.nih.nci.hpc.cli.HPCJobReportMerger;
 import gov.nih.nci.hpc.cli.HpcJobReportFormatter;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
@@ -58,11 +59,12 @@ public class HPCBatchLocalFolderExecutor {
 		this.connection = connection;
 	}
 
-	public boolean processData() throws HpcBatchException {
+	public String processData() throws HpcBatchException {
 		ExecutorService executorService = null;
 		boolean success = false;
 		boolean testRun = false;
 		boolean metadataOnly = false;
+		boolean checksum = true;
 		boolean confirmation = true;
 		String localPath = (String) criteriaMap.get("filePath");
 		String fileList = (String) criteriaMap.get("fileList");
@@ -76,7 +78,7 @@ public class HPCBatchLocalFolderExecutor {
 				threadPoolSize = Integer.parseInt(threadStr);
 		} catch (NumberFormatException e) {
 			System.out.println("Failed to process number of threads input: " + threadStr);
-			return false;
+			return Constants.CLI_2;
 		}
 		if (criteriaMap.get("metadata") != null && criteriaMap.get("metadata").equalsIgnoreCase("true"))
 			metadataOnly = true;
@@ -87,6 +89,9 @@ public class HPCBatchLocalFolderExecutor {
 		if (criteriaMap.get("confirm") != null && criteriaMap.get("confirm").equalsIgnoreCase("false"))
 			confirmation = false;
 
+		if (criteriaMap.get("checksum") != null && criteriaMap.get("checksum").equalsIgnoreCase("false"))
+			checksum = false;
+		
 		try {
 			HpcLocalDirectoryListQuery impl = new HpcLocalDirectoryListQuery();
 			List<String> excludePatterns = readPatternStringsfromFile(excludePattern);
@@ -97,13 +102,13 @@ public class HPCBatchLocalFolderExecutor {
 			else
 				paths = impl.getPathAttributes(localPath, excludePatterns, includePatterns);
 			if (testRun)
-				return true;
+				return Constants.CLI_0;
 			
 			List<HpcPathAttributes> folders = new ArrayList<HpcPathAttributes>();
 			List<HpcPathAttributes> files = new ArrayList<HpcPathAttributes>();
 			if (paths.isEmpty()) {
 				System.out.println("No files/folders found!");
-				return true;
+				return Constants.CLI_3;
 			} else {
 				for (HpcPathAttributes pathAttr : paths) {
 					if (pathAttr.getIsDirectory())
@@ -124,10 +129,11 @@ public class HPCBatchLocalFolderExecutor {
 					String confirm = reader.readLine();
 					if (confirm != null && !confirm.equalsIgnoreCase("Y")) {
 						System.out.println("Skipped registering data files!");
-						return true;
+						return Constants.CLI_0;
 					}
 				} catch (IOException e) {
-					throw new HpcBatchException("Failed to get confirmation " + e.getMessage());
+					System.out.println("Failed to get confirmation " + e.getMessage());
+					return Constants.CLI_2;
 				}
 			}
 
@@ -137,13 +143,15 @@ public class HPCBatchLocalFolderExecutor {
 				try {
 					folderProcessor = new HpcLocalFolderProcessor(connection);
 					folderProcessor.process(folder, fileBasePath, destinationBasePath, logFile, errorRecordsFile,
-							metadataOnly, true);
+							metadataOnly, true, checksum);
 				} catch (IOException e) {
-					throw new HpcBatchException("Failed to process collection " + folder.getAbsolutePath()
+					System.out.println("Failed to process collection " + folder.getAbsolutePath()
 							+ " registration due to: " + e.getMessage());
+					return Constants.CLI_4;
 				} catch (RecordProcessingException e) {
-					throw new HpcBatchException("Failed to process collection " + folder.getAbsolutePath()
+					System.out.println("Failed to process collection " + folder.getAbsolutePath()
 							+ " registration due to: " + e.getMessage());
+					return Constants.CLI_4;
 				}
 			}
 			//Measure appx transfer speed
@@ -201,23 +209,26 @@ public class HPCBatchLocalFolderExecutor {
 			if(filesSize > 0)
 			{
 				System.out.println("Total bytes attempted: " + filesSize);
-				//System.out.println("Average transfer speed: " + (filesSize/secs) + " (bytes/sec)");
+				System.out.println("Average processing speed: " + (filesSize/secs) + " (bytes/sec)");
 			}
 			if (finalReport.getMetrics().getErrorCount() == 0)
 				success = true;
 			System.out.println(new HpcJobReportFormatter().formatReport(finalReport));
 		} catch (ExecutionException e) {
-			throw new HpcBatchException("Failed to process file registration due to: " + e.getMessage());
+			System.out.println("Failed to process file registration due to: " + e.getMessage());
+			return Constants.CLI_5;
 		} catch (InterruptedException e) {
-			throw new HpcBatchException("Failed to process file registration due to: " + e.getMessage());
+			System.out.println("Failed to process file registration due to: " + e.getMessage());
+			return Constants.CLI_5;
 		} catch (HpcException e) {
-			throw new HpcBatchException("Failed to process file registration due to: " + e.getMessage());
+			System.out.println("Failed to process file registration due to: " + e.getMessage());
+			return Constants.CLI_5;
 		}
 
 		// Shutdown executor service
 		if (executorService != null)
 			executorService.shutdown();
-		return success;
+		return Constants.CLI_0;
 	}
 
 	private List<String> readPatternStringsfromFile(String fileName) {

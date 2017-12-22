@@ -76,14 +76,14 @@ public class HPCPermissions extends HPCBatchClient {
 
 	}
 
-	protected boolean processFile(String fileName, String userId, String password, String authToken) {
+	protected String processFile(String fileName, String userId, String password, String authToken) {
 		boolean success = true;
 		FileReader fileReader = null;
 		CSVParser csvFileParser = null;
 
 		if (authToken == null && (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0)) {
 			System.out.println("Invalid login credentials");
-			return false;
+			return Constants.CLI_1;
 		}
 
 		// Create the CSVFormat object with the header mapping
@@ -151,6 +151,7 @@ public class HPCPermissions extends HPCBatchClient {
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
+			return Constants.CLI_5;
 		} finally {
 			try {
 				fileReader.close();
@@ -159,14 +160,14 @@ public class HPCPermissions extends HPCBatchClient {
 				System.out.println("Error while closing fileReader/csvFileParser !!!");
 			}
 		}
-		return success;
+		return Constants.CLI_0;
 
 	}
 
-	private boolean updatePermissions(String type, String path, String authToken,
+	private String updatePermissions(String type, String path, String authToken,
 			List<HpcUserPermission> userPermissions, List<HpcGroupPermission> groupPermissions, CSVRecord record,
 			Map<String, Integer> headersMap) throws IOException {
-		boolean success = true;
+		String returnCode = null;
 		HpcEntityPermissionsDTO dto = new HpcEntityPermissionsDTO();
 		if (userPermissions != null && userPermissions.size() > 0)
 			dto.getUserPermissions().addAll(userPermissions);
@@ -184,7 +185,7 @@ public class HPCPermissions extends HPCBatchClient {
 					+ "/acl";
 			restTemplate.postForEntity(url, entity, null);
 		} catch (HttpStatusCodeException e) {
-			success = false;
+			returnCode = Constants.CLI_5;
 			String message = "Failed to process record due to: " + e.getMessage();
 			// System.out.println(message);
 			addErrorToLog(path, message);
@@ -195,7 +196,7 @@ public class HPCPermissions extends HPCBatchClient {
 			addRecordToLog(record, headersMap);
 
 		} catch (RestClientException e) {
-			success = false;
+			returnCode = Constants.CLI_5;
 			String message = "Failed to process record due to: " + e.getMessage();
 			// System.out.println(message);
 			addErrorToLog(path, message);
@@ -205,7 +206,7 @@ public class HPCPermissions extends HPCBatchClient {
 			addErrorToLog(path, exceptionAsString);
 			addRecordToLog(record, headersMap);
 		} catch (Exception e) {
-			success = false;
+			returnCode = Constants.CLI_5;
 			String message = "Failed to process record due to: " + e.getMessage();
 			// System.out.println(message);
 			addErrorToLog(path, message);
@@ -215,7 +216,7 @@ public class HPCPermissions extends HPCBatchClient {
 			addErrorToLog(path, exceptionAsString);
 			addRecordToLog(record, headersMap);
 		}
-		return success;
+		return returnCode;
 	}
 
 }

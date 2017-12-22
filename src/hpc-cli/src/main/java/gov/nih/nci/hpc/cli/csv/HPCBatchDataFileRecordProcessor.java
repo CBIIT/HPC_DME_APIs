@@ -51,14 +51,11 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		HPCDataObject hpcObject = (HPCDataObject) record.getPayload();
 		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = hpcObject.getDto();
 		List<Attachment> atts = new LinkedList<Attachment>();
-		if(HpcClientUtil.containsWhiteSpace(hpcObject.getObjectPath().trim()))
+		String objectPath = hpcObject.getObjectPath().trim();
+		if(HpcClientUtil.containsWhiteSpace(objectPath))
 		{
-			HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
-					hpcObject.getHeadersMap());
-			HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
-					"Record: " + record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath()
-							+ "\n Invalid or missing fileContainerId or/and fileId.");
-			throw new RecordMappingException("Whitespace is not allowed in collection path");
+			System.out.println("White space in the file path "+ objectPath + " is replaced with underscore _ ");
+			objectPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(objectPath);
 		}
 		
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
@@ -66,7 +63,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 				HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
 						hpcObject.getHeadersMap());
 				HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
-						"Record: " + record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath()
+						"Record: " + record.getHeader().getNumber() + " with path: " + objectPath
 								+ "\n Invalid or missing fileContainerId or/and fileId.");
 				throw new RecordMappingException("Invalid or missing file source location");
 			} else {
@@ -82,7 +79,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 					HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(),
 							hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
 					HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
-							"Record: " + record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath()
+							"Record: " + record.getHeader().getNumber() + " with path: " + objectPath
 									+ "\n Invalid or missing file source location. Message: " + e.getMessage());
 					throw new RecordMappingException(
 							"Invalid or missing file source location. Message: " + e.getMessage());
@@ -90,7 +87,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 					HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(),
 							hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
 					HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
-							"Record: " + record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath()
+							"Record: " + record.getHeader().getNumber() + " with path: " + objectPath
 									+ "\n Invalid or missing file source location. Message: " + e.getMessage());
 					throw new RecordMappingException(
 							"Invalid or missing file source location. Message: " + e.getMessage());
@@ -100,7 +97,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 			HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
 					hpcObject.getHeadersMap());
 			HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
-					"Record: " + record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath()
+					"Record: " + record.getHeader().getNumber() + " with path: " + objectPath
 							+ "\n Invalid or missing fileContainerId or/and fileId");
 			throw new RecordMappingException("Invalid or missing file source location");
 		}
@@ -109,7 +106,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
 				hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();
-		WebClient client = HpcClientUtil.getWebClient(hpcObject.getBasePath() + "/" + hpcObject.getObjectPath(), hpcObject.getProxyURL(), hpcObject.getProxyPort(),
+		WebClient client = HpcClientUtil.getWebClient(hpcObject.getBasePath() + "/" + objectPath, hpcObject.getProxyURL(), hpcObject.getProxyPort(),
 				hpcObject.getHpcCertPath(), hpcObject.getHpcCertPassword());
 		// String token =
 		// DatatypeConverter.printBase64Binary((hpcObject.getUserId() + ":" +
@@ -119,7 +116,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		// client.type(MediaType.MULTIPART_FORM_DATA);
 
 		try {
-			System.out.println("Processing: " + hpcObject.getBasePath() + "/" + hpcObject.getObjectPath());
+			System.out.println("Processing: " + hpcObject.getBasePath() + "/" + objectPath);
 			Response restResponse = client.put(new MultipartBody(atts));
 			long stop = System.currentTimeMillis();
 			if (!(restResponse.getStatus() == 201 || restResponse.getStatus() == 200)) {
@@ -135,13 +132,13 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 
 						HpcLogWriter.getInstance()
 								.WriteLog(hpcObject.getLogFile(), "Record: " + record.getHeader().getNumber()
-										+ " with path: " + hpcObject.getObjectPath()
+										+ " with path: " + objectPath
 										+ "\n Unauthorized access: response status is: " + restResponse.getStatus());
 						throw new RecordProcessingException(
 								"Unauthorized access: response status is: " + restResponse.getStatus());
 					} else {
 						HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
-								"Record: " + record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath()
+								"Record: " + record.getHeader().getNumber() + " with path: " + objectPath
 										+ "\n Unalbe process error response: response status is: "
 										+ restResponse.getStatus());
 						throw new RecordProcessingException(
@@ -164,14 +161,14 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 					HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(),
 							hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
 					HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
-							"Record: " + record.getHeader().getNumber() + " with path: " + hpcObject.getObjectPath()
+							"Record: " + record.getHeader().getNumber() + " with path: " + objectPath
 									+ " \n " + buffer.toString());
 					throw new RecordProcessingException(buffer.toString());
 				} else {
 					HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(),
 							hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
 					HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
-							"Record: " + record.getHeader().getNumber() + "with path: " + hpcObject.getObjectPath()
+							"Record: " + record.getHeader().getNumber() + "with path: " + objectPath
 									+ "\n Failed to process record due to unknown error. Return code: "
 									+ restResponse.getStatus());
 					throw new RecordProcessingException(
@@ -188,7 +185,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionAsString = sw.toString();
 			HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(), "Record: " + record.getHeader().getNumber()
-					+ " with path: " + hpcObject.getObjectPath() + "\n" + exceptionAsString);
+					+ " with path: " + objectPath + "\n" + exceptionAsString);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (RestClientException e) {
 			HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
@@ -198,7 +195,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionAsString = sw.toString();
 			HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(), "Record: " + record.getHeader().getNumber()
-					+ " with path: " + hpcObject.getObjectPath() + "\n" + exceptionAsString);
+					+ " with path: " + objectPath + "\n" + exceptionAsString);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (Exception e) {
 			HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
@@ -208,7 +205,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionAsString = sw.toString();
 			HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(), "Record: " + record.getHeader().getNumber()
-					+ " with path: " + hpcObject.getObjectPath() + "\n" + exceptionAsString);
+					+ " with path: " + objectPath + "\n" + exceptionAsString);
 			throw new RecordProcessingException(exceptionAsString);
 		} finally {
 			if (inputStream != null)
