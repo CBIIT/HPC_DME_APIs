@@ -110,6 +110,7 @@
 			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="sourceFile" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="generateUploadRequestURL" type="xsd:boolean" />
+			<xsd:element name="checksum" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

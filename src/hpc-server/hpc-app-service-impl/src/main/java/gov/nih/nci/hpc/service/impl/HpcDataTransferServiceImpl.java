@@ -157,6 +157,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcFileLocation sourceLocation,
       File sourceFile,
       boolean generateUploadRequestURL,
+      String checksum,
       String path,
       String userId,
       String callerObjectId,
@@ -186,6 +187,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     uploadRequest.setCallerObjectId(callerObjectId);
     uploadRequest.setSourceLocation(sourceLocation);
     uploadRequest.setSourceFile(sourceFile);
+    uploadRequest.setChecksum(checksum);
     uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
 
     // Upload the data object file.

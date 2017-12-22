@@ -55,6 +55,7 @@ public interface HpcDataTransferService {
       HpcFileLocation sourceLocation,
       File sourceFile,
       boolean generateUploadRequestURL,
+      String checksum,
       String path,
       String userId,
       String callerObjectId,

@@ -694,6 +694,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 source,
                 dataObjectFile,
                 generateUploadRequestURL,
+                dataObjectRegistration.getChecksum(),
                 path,
                 userId,
                 dataObjectRegistration.getCallerObjectId(),
@@ -768,6 +769,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               dataObjectRegistration.getMetadataEntries(),
               collectionType,
               generateUploadRequestURL,
+              dataObjectRegistration.getChecksum(),
               userId,
               dataObjectRegistration.getCallerObjectId()));
     }
@@ -1928,6 +1930,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       List<HpcMetadataEntry> metadataEntries,
       String collectionType,
       boolean generateUploadRequestURL,
+      String checksum,
       String userId,
       String callerObjectId)
       throws HpcException {
@@ -1979,6 +1982,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               null,
               null,
               true,
+              checksum,
               path,
               userId,
               callerObjectId,
