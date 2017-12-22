@@ -28,7 +28,7 @@ public abstract class HpcLocalEntityProcessor {
 	}
 
 	public abstract boolean process(HpcPathAttributes entity, String filePathBaseName, String destinationBasePath,
-			String logFile, String recordFile, boolean metadataOnly, boolean directUpload)
+			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException;
 
 	protected List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly) throws HpcCmdException {

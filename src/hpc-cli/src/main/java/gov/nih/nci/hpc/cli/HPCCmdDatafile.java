@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.google.gson.Gson;
 
 import gov.nih.nci.hpc.cli.domain.HPCDataFileRecord;
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.CsvFileWriter;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
@@ -97,16 +98,16 @@ public class HPCCmdDatafile extends HPCCmdClient {
 		}
 	}
 
-	protected boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
+	protected String processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
 			String detail, String userId, String password, String authToken) {
-		boolean success = true;
+		String returnCode = null;
 
 		try {
 			String serviceURL = hpcServerURL + "/" + hpcDataService;
 
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {
 				System.out.println("Invlaid Command");
-				return false;
+				return Constants.CLI_2;
 			}
 
 			try {
@@ -129,7 +130,6 @@ public class HPCCmdDatafile extends HPCCmdClient {
 						criteriaClause = buildCriteria(criteria);
 					} catch (Exception e) {
 						createErrorLog();
-						success = false;
 						String message = "Failed to parse criteria input file: " + criteria + " Error: "
 								+ e.getMessage();
 						addErrorToLog(message, cmd);
@@ -137,7 +137,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 						e.printStackTrace(new PrintWriter(sw));
 						String exceptionAsString = sw.toString();
 						addErrorToLog(exceptionAsString, cmd);
-						return false;
+						return Constants.CLI_2;
 					}
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
@@ -171,7 +171,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 								System.out.println("Wrote results into " + logRecordsFile);
 							} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 								createErrorLog();
-								success = false;
+								returnCode = Constants.CLI_5;
 								String message = "Failed to process cmd due to: " + e.getMessage();
 								// System.out.println(message);
 								addErrorToLog(message, cmd);
@@ -191,7 +191,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 								System.out.println("Wrote results into " + logRecordsFile);
 							} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 								createErrorLog();
-								success = false;
+								returnCode = Constants.CLI_5;
 								String message = "Failed to process cmd due to: " + e.getMessage();
 								// System.out.println(message);
 								addErrorToLog(message, cmd);
@@ -217,7 +217,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				logRecordsFile = null;
 			} catch (HpcCmdException e) {
 				createErrorLog();
-				success = false;
+				returnCode = Constants.CLI_5;
 				String message = "Failed to process cmd due to: " + e.getMessage();
 				// System.out.println(message);
 				addErrorToLog(message, cmd);
@@ -227,7 +227,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				addErrorToLog(exceptionAsString, cmd);
 			} catch (RestClientException e) {
 				createErrorLog();
-				success = false;
+				returnCode = Constants.CLI_5;
 				String message = "Failed to process cmd due to: " + e.getMessage();
 				addErrorToLog(message, cmd);
 				StringWriter sw = new StringWriter();
@@ -236,7 +236,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				addErrorToLog(exceptionAsString, cmd);
 			} catch (Exception e) {
 				createErrorLog();
-				success = false;
+				returnCode = Constants.CLI_5;
 				String message = "Failed to process cmd due to: " + e.getMessage();
 				// System.out.println(message);
 				addErrorToLog(message, cmd);
@@ -249,7 +249,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-		return success;
+		return returnCode;
 	}
 
 	private HpcCompoundMetadataQueryDTO buildCriteria(Map<String, String> criteria)

@@ -76,15 +76,15 @@ public class HPCBatchCollection extends HPCBatchClient {
 
 	}
 
-	protected boolean processFile(String fileName, String userId, String password, String authToken) {
-		boolean success = true;
+	protected String processFile(String fileName, String userId, String password, String authToken) {
+		String returnCode = null;
 		FileReader fileReader = null;
 		CSVParser csvFileParser = null;
 		String hpcDataService = null;
 		
 		if (authToken == null && (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0)) {
 			System.out.println("Invalid login credentials");
-			return false;
+			return Constants.CLI_1;
 		}
 
 		// Create the CSVFormat object with the header mapping
@@ -135,9 +135,11 @@ public class HPCBatchCollection extends HPCBatchClient {
 				HpcCollectionRegistrationDTO collectionDTO = buildCollectionDTO(metadataAttributes,
 						parentMetadataAttributes, createParentCollection);
 				
-				if(HpcClientUtil.containsWhiteSpace(collectionPath.trim()))
+				collectionPath = collectionPath.trim();
+				if(HpcClientUtil.containsWhiteSpace(collectionPath))
 				{
-					throw new HpcBatchException("Whitespace is not allowed in collection path");
+					System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
+					collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
 				}
 				
 				System.out.println((i + 1) + ": Registering Collection " + collectionPath);
@@ -145,7 +147,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 				RestTemplate restTemplate = HpcClientUtil.getRestTemplate(hpcCertPath, hpcCertPassword);
 				if (authToken == null) {
 					System.out.println("Invalid authenticaiton. Aborting the batch processing.");
-					return false;
+					return Constants.CLI_1;
 				}
 				// System.out.println("token: "+authToken);
 				HttpHeaders headers = new HttpHeaders();
@@ -172,20 +174,20 @@ public class HPCBatchCollection extends HPCBatchClient {
 									+ ": Error Type:" + exception.getErrorType().value() + ": Request reject reason: "
 									+ exception.getRequestRejectReason().value();
 							addErrorToLog(message, i + 1);
-							success = false;
+							returnCode = Constants.CLI_5;
 							processedRecordFlag = false;
 							addRecordToLog(record, headersMap);
 						} else if (!(response.getStatusCode().equals(HttpStatus.CREATED)
 								|| response.getStatusCode().equals(HttpStatus.OK))) {
 							addErrorToLog("Failed to process record due to unknown error. Return code: "
 									+ response.getStatusCode(), i + 1);
-							success = false;
+							returnCode = Constants.CLI_5;
 							processedRecordFlag = false;
 							addRecordToLog(record, headersMap);
 						}
 					}
 				} catch (HpcBatchException e) {
-					success = false;
+					returnCode = Constants.CLI_5;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: " + e.getMessage();
 					// System.out.println(message);
@@ -197,7 +199,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 					addRecordToLog(record, headersMap);
 				} catch (RestClientException e) {
 					// e.printStackTrace();
-					success = false;
+					returnCode = Constants.CLI_5;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: " + e.getMessage();
 					// System.out.println(message);
@@ -209,7 +211,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 					addRecordToLog(record, headersMap);
 				} catch (Exception e) {
 					// e.printStackTrace();
-					success = false;
+					returnCode = Constants.CLI_5;
 					processedRecordFlag = false;
 					String message = "Failed to process record due to: " + e.getMessage();
 					// System.out.println(message);
@@ -238,7 +240,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 				System.out.println("Error while closing fileReader/csvFileParser !!!");
 			}
 		}
-		return success;
+		return returnCode;
 
 	}
 

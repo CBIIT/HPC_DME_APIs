@@ -22,4 +22,25 @@ public final class Constants {
 	public static final String TYPE = "Type";
 	public static final String GROUP_ID = "GroupId";
 	public static final String OBJECT_PATH = "object_path";
+	
+	//Authentication error
+	public static final String CLI_0 = "CLI_0";
+	
+	//Error reading authentication token files
+	public static final String CLI_1 = "CLI_1";
+	
+	//Invalid user input
+	public static final String CLI_2 = "CLI_2";
+	
+	//No input files to process
+	public static final String CLI_3 = "CLI_3";
+	
+	//Failed to process collection
+	public static final String CLI_4 = "CLI_4";
+	
+	//System Error
+	public static final String CLI_5 = "CLI_5";
+	
+	
+	public static final String CLI_6 = "CLI_6";
 }

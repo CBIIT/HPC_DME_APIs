@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.cli.HPCCmdClient;
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -59,9 +60,9 @@ public class HPCCmdRegisterGlobusFile extends HPCCmdClient {
 			logRecordsFile = logRecordsFile + ".txt";
 	}
 
-	protected boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
+	protected String processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
 			String detail, String userId, String password, String authToken) throws HpcException {
-		boolean success = true;
+		String returnCode = null;
 		String globusUserId = null;
 		String globusPassword = null;
 		String globusToken = null;
@@ -77,7 +78,7 @@ public class HPCCmdRegisterGlobusFile extends HPCCmdClient {
 			basePath = (String) criteria.get("basePath");
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {
 				System.out.println("Invlaid Command");
-				return false;
+				return Constants.CLI_2;
 			}
 			try {
 				if (authToken == null)
@@ -86,11 +87,11 @@ public class HPCCmdRegisterGlobusFile extends HPCCmdClient {
 				HpcServerConnection connection = new HpcServerConnection(hpcServerURL, hpcServerProxyURL, hpcServerProxyPort,
 						authToken, hpcCertPath, hpcCertPassword);
 				HpcGlobusDirectoryListProcessor generator = new HpcGlobusDirectoryListProcessor(connection);
-				success = generator.run(criteria, basePath, logFile, logRecordsFile);
+				returnCode = generator.run(criteria, basePath, logFile, logRecordsFile);
 				logRecordsFile = null;
 			} catch (Exception e) {
 				createErrorLog();
-				success = false;
+				returnCode = Constants.CLI_5;
 				String message = "Failed to process cmd due to: " + e.getMessage();
 				// System.out.println(message);
 				addErrorToLog(message, cmd);
@@ -103,7 +104,7 @@ public class HPCCmdRegisterGlobusFile extends HPCCmdClient {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-		return success;
+		return returnCode;
 	}
 
 	protected void addErrorToLog(String error, String cmd) throws IOException {

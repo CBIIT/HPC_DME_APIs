@@ -34,6 +34,7 @@ import org.easybatch.extensions.apache.common.csv.ApacheCommonCsvRecordReader;
 import gov.nih.nci.hpc.cli.HPCJobReportMerger;
 import gov.nih.nci.hpc.cli.HpcJobReportFormatter;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 
 public class HPCBatchDataFileProcessor {
@@ -64,8 +65,8 @@ public class HPCBatchDataFileProcessor {
 		this.authToken = authToken;
 	}
 
-	public boolean processData() throws HpcBatchException {
-		boolean success = false;
+	public String processData() throws HpcBatchException {
+		String returnCode = null;
 		List<BlockingQueue<Record>> queueList = new ArrayList<BlockingQueue<Record>>();
 		// Create queues
 		for (int i = 0; i < threadPoolSize; i++) {
@@ -121,19 +122,21 @@ public class HPCBatchDataFileProcessor {
 			HPCJobReportMerger reportMerger = new HPCJobReportMerger();
 			JobReport finalReport = reportMerger.mergerReports(jobReports);
 			if (finalReport.getMetrics().getErrorCount() == 0)
-				success = true;
+				returnCode = null;
 			System.out.println(new HpcJobReportFormatter().formatReport(finalReport));
 		} catch (ExecutionException e) {
-			throw new HpcBatchException(
+			System.out.println(
 					"Failed to process input csv file: " + inputFileName + " due to: " + e.getMessage());
+			returnCode = Constants.CLI_5;
 		} catch (InterruptedException e) {
-			throw new HpcBatchException(
+			System.out.println(
 					"Failed to process input csv file: " + inputFileName + " due to: " + e.getMessage());
+			returnCode = Constants.CLI_5;
 		}
 
 		// Shutdown executor service
 		executorService.shutdown();
-		return success;
+		return returnCode;
 	}
 
 	public static Job buildWorkerJob(BlockingQueue<Record> queue, String jobName) {

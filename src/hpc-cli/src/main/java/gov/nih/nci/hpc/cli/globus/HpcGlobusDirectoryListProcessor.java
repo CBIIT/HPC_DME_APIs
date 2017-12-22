@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
@@ -69,9 +70,9 @@ public class HpcGlobusDirectoryListProcessor {
 		this.connection = connection;
 	}
 
-	public boolean run(Map<String, String> criteriaMap, String basePath, String logFile, String recordFile) {
+	public String run(Map<String, String> criteriaMap, String basePath, String logFile, String recordFile) {
 		this.logFile = logFile;
-		boolean success = true;
+		String returnCode = null;
 		String globusEndpoint = null;
 		String globusPath = null;
 		HpcFileLocation fileLocation = new HpcFileLocation();
@@ -101,17 +102,17 @@ public class HpcGlobusDirectoryListProcessor {
 		} catch (HpcCmdException e) {
 			String message = "Failed to process Globus registration: " + e.getMessage();
 			writeException(e, message, null);
-			success = false;
+			returnCode = Constants.CLI_5;
 		} catch (RestClientException e) {
 			String message = "Failed to process Globus registration: " + e.getMessage();
 			writeException(e, message, null);
-			success = false;
+			returnCode = Constants.CLI_5;
 		} catch (Exception e) {
 			String message = "Failed to process Globus registration: " + e.getMessage();
 			writeException(e, message, null);
-			success = false;
+			returnCode = Constants.CLI_5;
 		}
-		return success;
+		return returnCode;
 	}
 
 	private void writeException(Exception e, String message, String exceptionAsString) {

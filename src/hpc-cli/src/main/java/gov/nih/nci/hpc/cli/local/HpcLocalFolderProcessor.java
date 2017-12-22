@@ -35,14 +35,13 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
 	@Override
 	public boolean process(HpcPathAttributes entity, String filePathBaseName, String destinationBasePath,
-			String logFile, String recordFile, boolean metadataOnly, boolean directUpload)
+			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException {
 		String collectionPath = getCollectionPath(filePathBaseName, entity.getPath());
-		if (HpcClientUtil.containsWhiteSpace(collectionPath)) {
-			String message = "Whitespace is not allowed in collection path. Skipping: " + entity.getAbsolutePath();
-			HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
-			throw new RecordProcessingException(message);
+		if(HpcClientUtil.containsWhiteSpace(collectionPath))
+		{
+			System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
+			collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
 		}
 
 		processCollection(entity, destinationBasePath, collectionPath);

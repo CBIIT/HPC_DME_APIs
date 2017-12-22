@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.cli.HPCBatchClient;
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
@@ -44,30 +45,21 @@ public class HPCBatchLocalfile extends HPCBatchClient {
 		this.cmd = cmd;
 	}
 
-	protected boolean processFile(String fileName, String userId, String password, String authToken) {
-		boolean success = true;
-
+	protected String processFile(String fileName, String userId, String password, String authToken) {
 		if (authToken == null && (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0)) {
 			System.out.println("Invalid login credentials");
-			return false;
+			return Constants.CLI_1;
 		}
-		try {
-			if (criteriaMap == null || criteriaMap.isEmpty())
-				return false;
+		if (criteriaMap == null || criteriaMap.isEmpty())
+			return Constants.CLI_2;
 
-			if(authToken == null)
-				authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL,
-					hpcServerProxyPort, hpcCertPath, hpcCertPassword);
-			HpcServerConnection connection = new HpcServerConnection(hpcServerURL, hpcServerProxyURL,
-					hpcServerProxyPort, authToken, hpcCertPath, hpcCertPassword);
-			connection.setBufferSize(bufferSize);
-			success = new HPCBatchLocalFolderExecutor(criteriaMap, connection, logFile, logRecordsFile, authToken)
-					.processData();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			return false;
-		}
-		return success;
-
+		if(authToken == null)
+			authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL,
+				hpcServerProxyPort, hpcCertPath, hpcCertPassword);
+		HpcServerConnection connection = new HpcServerConnection(hpcServerURL, hpcServerProxyURL,
+				hpcServerProxyPort, authToken, hpcCertPath, hpcCertPassword);
+		connection.setBufferSize(bufferSize);
+		return new HPCBatchLocalFolderExecutor(criteriaMap, connection, logFile, logRecordsFile, authToken)
+				.processData();
 	}
 }

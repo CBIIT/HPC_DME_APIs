@@ -19,6 +19,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -112,7 +113,7 @@ public abstract class HPCCmdClient {
 				if (line.isEmpty())
 				{
 					System.out.println("Invalid Login token in " + tokenFile);
-					return "1";
+					return Constants.CLI_1;
 				}
 				else {
 					authToken = line;
@@ -123,7 +124,7 @@ public abstract class HPCCmdClient {
 				if (line.indexOf(":") == -1)
 				{
 					System.out.println("Invalid Login credentials in " + loginFile);
-					return "1";
+					return Constants.CLI_1;
 				}
 				else {
 					userId = line.substring(0, line.indexOf(":"));
@@ -132,28 +133,28 @@ public abstract class HPCCmdClient {
 			}
 			try
 			{
-			boolean success = processCmd(cmd, criteria, outputFile, format, detail, userId, password, authToken);
+				String returnCode = processCmd(cmd, criteria, outputFile, format, detail, userId, password, authToken);
 
-			if (success)
+			if (returnCode == null)
 			{
 				System.out.println("Cmd process Successful");
-				return "0";
+				return Constants.CLI_0;
 			}
 			else
 			{
 				System.out.println("Cmd process is not Successful. Please error log for details.");
-				return "1";
+				return returnCode;
 			}
 			}
 			catch(HpcException e)
 			{
 				addErrorToLog("Faile to process: " +e.getMessage(), cmd);
 				System.out.println("Cmd process is not Successful. Please error log for details.");
-				return "1";
+				return Constants.CLI_1;
 			}
 		} catch (IOException e) {
 			System.out.println("Failed to run command: "+e.getMessage());
-			return "1";
+			return Constants.CLI_1;
 		} finally {
 			if (bufferedReader != null) {
 				try {
@@ -165,7 +166,7 @@ public abstract class HPCCmdClient {
 		}
 	}
 
-	protected abstract boolean processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
+	protected abstract String processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
 			String detail, String userId, String password, String authToken) throws HpcException;
 
 	protected void postProcess() {

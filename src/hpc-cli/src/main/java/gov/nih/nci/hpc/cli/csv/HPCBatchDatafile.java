@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.cli.HPCBatchClient;
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
@@ -34,24 +35,20 @@ public class HPCBatchDatafile extends HPCBatchClient {
 				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
 	}
 
-	protected boolean processFile(String fileName, String userId, String password, String authToken) {
-		boolean success = true;
-
+	protected String processFile(String fileName, String userId, String password, String authToken) {
 		if (authToken == null && (userId == null || userId.trim().length() == 0 || password == null || password.trim().length() == 0)) {
 			System.out.println("Invalid login credentials");
-			return false;
+			return Constants.CLI_1;
 		}
 		try {
 			if(authToken == null)
 				authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 					hpcCertPassword);
-			success = new HPCBatchDataFileProcessor(fileName, threadCount, hpcServerURL + "/" + hpcDataService,
+			return new HPCBatchDataFileProcessor(fileName, threadCount, hpcServerURL + "/" + hpcDataService,
 					hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile, authToken).processData();
 		} catch (Exception e) {
 			System.out.println("Cannot read the input file: "+e.getMessage());
-			return false;
+			return Constants.CLI_2;
 		}
-		return success;
-
 	}
 }

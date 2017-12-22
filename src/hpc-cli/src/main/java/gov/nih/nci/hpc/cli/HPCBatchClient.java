@@ -21,6 +21,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
 @Component
@@ -81,7 +82,12 @@ public abstract class HPCBatchClient {
 		globusLoginFile = configProperties.getProperty("hpc.globus.login.token");
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
 		String bufferSizeStr = configProperties.getProperty("upload.buffer.size");
-		bufferSize = Integer.parseInt(bufferSizeStr);
+		try {
+			bufferSize = Integer.parseInt(bufferSizeStr);
+		} catch (Exception e) {
+			System.out.println("Invalid upload.buffer.size value. Setting it to 100000");
+			bufferSize = 100000;
+		}
 		
 		String basePath = System.getProperty("HPC_DM_UTILS");
 		if(basePath == null)
@@ -89,6 +95,7 @@ public abstract class HPCBatchClient {
 			System.out.println("System Property HPC_DM_UTILS is missing");
 			System.exit(1);
 		}
+		
 		if(tokenFile != null)
 			tokenFile = basePath + File.separator + tokenFile;
 		if(loginFile != null)
@@ -123,7 +130,7 @@ public abstract class HPCBatchClient {
 				if (line.isEmpty())
 				{
 					System.out.println("Invalid Login token in " + tokenFile);
-					return "1";
+					return Constants.CLI_1;
 				}
 				else {
 					authToken = line;
@@ -134,7 +141,7 @@ public abstract class HPCBatchClient {
 				if (line.indexOf(":") == -1)
 				{
 					System.out.println("Invalid Login credentials in " + tokenFile);
-					return "1";
+					return Constants.CLI_1;
 				}
 				else {
 					userId = line.substring(0, line.indexOf(":"));
@@ -142,20 +149,20 @@ public abstract class HPCBatchClient {
 				}
 			}
 
-			boolean success = processFile(fileName, userId, password, authToken);
-			if (success)
+			String errorCode = processFile(fileName, userId, password, authToken);
+			if (errorCode == null)
 			{
 				System.out.println("Cmd process Successful");
-				return "0";
+				return Constants.CLI_0;
 			}
 			else
 			{
 				System.out.println("Cmd process is not Successful. Please error log for details.");
-				return "1";
+				return errorCode;
 			}
 		} catch (IOException e) {
 			System.out.println("Failed to run batch registration" + e.getMessage());
-			return "1";
+			return Constants.CLI_1;
 		} finally {
 			if (bufferedReader != null) {
 				try {
@@ -168,7 +175,7 @@ public abstract class HPCBatchClient {
 		}
 	}
 
-	protected abstract boolean processFile(String fileName, String userId, String password, String authToken);
+	protected abstract String processFile(String fileName, String userId, String password, String authToken);
 
 	protected void postProcess() {
 		try {
