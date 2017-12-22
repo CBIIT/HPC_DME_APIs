@@ -97,7 +97,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     if (uploadRequest.getGenerateUploadRequestURL()) {
       // Generate an upload request URL for the caller to use to upload directly.
       return generateUploadRequestURL(
-          authenticatedToken, archiveDestinationLocation, uploadRequestURLExpiration);
+          authenticatedToken, archiveDestinationLocation, uploadRequestURLExpiration, uploadRequest.getChecksum());
 
     } else {
       // Upload a file
@@ -359,7 +359,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   private HpcDataObjectUploadResponse generateUploadRequestURL(
       Object authenticatedToken,
       HpcFileLocation archiveDestinationLocation,
-      int uploadRequestURLExpiration)
+      int uploadRequestURLExpiration,
+      String checksum)
       throws HpcException {
 
     // Calculate the URL expiration date.
@@ -373,7 +374,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 archiveDestinationLocation.getFileId())
             .withMethod(HttpMethod.PUT)
             .withExpiration(expiration);
-
+    if(checksum != null && !checksum.isEmpty())
+    	generatePresignedUrlRequest.putCustomRequestHeader("md5chksum", checksum);
     // Generate the pre-signed URL.
     URL url =
         s3Connection
