@@ -1,20 +1,26 @@
 package gov.nih.nci.hpc.cli.local;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -22,6 +28,8 @@ import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.web.client.RestClientException;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,7 +63,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 
 	@Override
 	public boolean process(HpcPathAttributes entity, String filePathBaseName, String destinationBasePath,
-			String logFile, String recordFile, boolean metadataOnly, boolean directUpload)
+			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException {
 		HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
 		this.logFile = logFile;
@@ -104,16 +112,16 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		}
-		if (directUpload)
-			processS3Record(entity, dataObject, destinationBasePath, objectPath, metadataOnly);
+		if (directUpload && !metadataOnly)
+			processS3Record(entity, dataObject, destinationBasePath, objectPath, metadataOnly, checksum);
 		else
-			processRecord(entity, dataObject, destinationBasePath, objectPath, metadataOnly);
+			processRecord(entity, dataObject, destinationBasePath, objectPath, metadataOnly, checksum);
 		return true;
 	}
 
 	private void processRecord(HpcPathAttributes entity,
 			HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO, String basePath, String objectPath,
-			boolean metadataOnly) throws RecordProcessingException {
+			boolean metadataOnly, boolean checksum) throws RecordProcessingException {
 		InputStream inputStream = null;
 		InputStream checksumStream = null;
 		HpcExceptionDTO response = null;
@@ -127,10 +135,13 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 				ContentDisposition cd2 = new ContentDisposition(
 						"attachment;filename=" + hpcDataObjectRegistrationDTO.getSource().getFileId());
 				atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
-				HashCode hash = com.google.common.io.Files
-						.hash(new File(hpcDataObjectRegistrationDTO.getSource().getFileId()), Hashing.md5());
-				String md5 = hash.toString();
-				hpcDataObjectRegistrationDTO.setChecksum(md5);
+				if(checksum)
+				{
+					HashCode hash = com.google.common.io.Files
+							.hash(new File(hpcDataObjectRegistrationDTO.getSource().getFileId()), Hashing.md5());
+					String md5 = hash.toString();
+					hpcDataObjectRegistrationDTO.setChecksum(md5);
+				}
 			}
 			hpcDataObjectRegistrationDTO.setSource(null);
 		} catch (FileNotFoundException e) {
@@ -203,7 +214,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 
 	private void processS3Record(HpcPathAttributes entity,
 			HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO, String basePath, String objectPath,
-			boolean metadataOnly) throws RecordProcessingException {
+			boolean metadataOnly, boolean checksum) throws RecordProcessingException {
 		InputStream inputStream = null;
 		InputStream checksumStream = null;
 
@@ -218,6 +229,22 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		if (objectPath.charAt(0) != File.separatorChar)
 			objectPath = "/" + objectPath;
 		// System.out.println("Processing: " + basePath + objectPath);
+		String md5Checksum = null;
+		if(checksum)
+		{
+			HashCode hash;
+			try {
+				hash = com.google.common.io.Files
+						.hash(new File(entity.getAbsolutePath()), Hashing.md5());
+				md5Checksum = hash.toString();
+				hpcDataObjectRegistrationDTO.setChecksum(md5Checksum);
+			} catch (IOException e) {
+				String message = "Failed to calculate checksum due to: " + e.getMessage();
+				HpcClientUtil.writeException(e, message, null, logFile);
+				HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+				throw new RecordProcessingException(message);
+			}
+		}
 
 		WebClient client = HpcClientUtil.getWebClient(
 				connection.getHpcServerURL() + "/dataObject/" + basePath + objectPath,
@@ -240,7 +267,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 					// System.out.println("Successfully registered object.
 					// Uploading the object to the archive..");
 					uploadToUrl(responseDTO.getUploadRequestURL(), new File(entity.getAbsolutePath()),
-							connection.getBufferSize());
+							connection.getBufferSize(), md5Checksum);
 				} else {
 					System.out.println("Failed to get signed URL for: " + basePath + objectPath);
 				}
@@ -357,7 +384,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			return filePath;
 	}
 
-	public void uploadToUrl(String urlStr, File file, int bufferSize) throws HpcBatchException {
+	public void uploadToUrl(String urlStr, File file, int bufferSize, String checksum) throws HpcBatchException {
 
 		HttpURLConnection connection;
 		try {
@@ -367,7 +394,10 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			connection.setDoOutput(true);
 			connection.setRequestMethod("PUT");
 			connection.setChunkedStreamingMode(bufferSize);
+			if(checksum != null)
+				connection.addRequestProperty("md5chksum", checksum);
 			OutputStream out = connection.getOutputStream();
+			
 
 			byte[] buf = new byte[1024];
 			int count;
@@ -394,11 +424,20 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			if (responseCode == 200) {
 				System.out.println("Successfully registered " + file.getAbsolutePath());
 			}
+			else
+			{
+				BufferedReader br = new BufferedReader(new InputStreamReader((connection.getErrorStream())));
+				StringBuilder sb = new StringBuilder();
+				String output;
+				while ((output = br.readLine()) != null) 
+					sb.append(output);
+				System.out.println("Failed to register - " + file.getAbsolutePath() + ". Check error log for details.");		
+				throw new HpcBatchException("Failed to register - " + file.getAbsolutePath() + " Response: "+sb.toString());
+			}
 		} catch (IOException e) {
 			throw new HpcBatchException(e.getMessage(), e);
 		} catch (InterruptedException e) {
 			throw new HpcBatchException(e.getMessage(), e);
 		}
 	}
-
 }
