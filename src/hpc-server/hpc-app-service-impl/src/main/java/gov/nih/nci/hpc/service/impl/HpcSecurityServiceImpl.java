@@ -330,6 +330,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     invoker.setNciAccount(null);
     invoker.setDataManagementAccount(dataManagementAccount);
     invoker.setDataManagementAuthenticatedToken(null);
+    invoker.setLdapAuthentication(ldapAuthentication);
     invoker.setAuthenticationType(HpcAuthenticationType.SYSTEM_ACCOUNT);
 
     HpcRequestContext.setRequestInvoker(invoker);
