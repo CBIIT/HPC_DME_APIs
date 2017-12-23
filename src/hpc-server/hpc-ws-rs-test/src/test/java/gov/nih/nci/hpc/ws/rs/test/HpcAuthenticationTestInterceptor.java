@@ -93,7 +93,7 @@ public class HpcAuthenticationTestInterceptor
     	user.setNciAccount(nciAccount);
     	
     	try {
-    	     securityService.setRequestInvoker(user.getNciAccount(), HpcAuthenticationType.LDAP, dataManagementAccount);
+    	     securityService.setRequestInvoker(user.getNciAccount(), true, HpcAuthenticationType.LDAP, dataManagementAccount);
     	     
     	} catch(HpcException e) {
     		    logger.error("Authentication failed", e);

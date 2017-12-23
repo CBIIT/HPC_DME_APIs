@@ -694,7 +694,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 source,
                 dataObjectFile,
                 generateUploadRequestURL,
-                dataObjectRegistration.getChecksum(),
+                generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null,
                 path,
                 userId,
                 dataObjectRegistration.getCallerObjectId(),

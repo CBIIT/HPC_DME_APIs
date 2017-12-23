@@ -299,6 +299,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   @Override
   public void setRequestInvoker(
       HpcNciAccount nciAccount,
+      boolean ldapAuthentication,
       HpcAuthenticationType authenticationType,
       HpcIntegratedSystemAccount dataManagementAccount)
       throws HpcException {
@@ -310,13 +311,14 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     HpcRequestInvoker invoker = new HpcRequestInvoker();
     invoker.setNciAccount(nciAccount);
     invoker.setDataManagementAccount(dataManagementAccount);
+    invoker.setLdapAuthentication(ldapAuthentication);
     invoker.setAuthenticationType(authenticationType);
 
     HpcRequestContext.setRequestInvoker(invoker);
   }
 
   @Override
-  public void setSystemRequestInvoker() throws HpcException {
+  public void setSystemRequestInvoker(boolean ldapAuthentication) throws HpcException {
     HpcIntegratedSystemAccount dataManagementAccount =
         systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
     if (dataManagementAccount == null) {

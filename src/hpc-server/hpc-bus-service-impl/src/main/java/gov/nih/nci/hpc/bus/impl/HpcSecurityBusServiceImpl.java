@@ -16,7 +16,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -64,13 +64,18 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   // Instance members
   //---------------------------------------------------------------------//
 
-  // Application service instances.
-
+  // The security service instance.
   @Autowired private HpcSecurityService securityService = null;
 
+  // The data management (iRODS) security service.
   @Autowired private HpcDataManagementSecurityService dataManagementSecurityService = null;
 
+  // The data management (iRODS) service.
   @Autowired private HpcDataManagementService dataManagementService = null;
+
+  // LDAP authentication on/off switch.
+  @Value("${hpc.bus.ldapAuthentication}")
+  private Boolean ldapAuthentication = null;
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -323,8 +328,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   }
 
   @Override
-  public void authenticate(String nciUserId, String password, boolean ldapAuthentication)
-      throws HpcException {
+  public void authenticate(String nciUserId, String password) throws HpcException {
     // Input validation.
     if (StringUtils.isEmpty(nciUserId) || StringUtils.isEmpty(password)) {
       throw new HpcException("Null NCI user ID or password", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -377,16 +381,13 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     authenticationResponse.setAuthenticationType(requestInvoker.getAuthenticationType());
     authenticationResponse.setUserRole(requestInvoker.getUserRole());
 
-    // If the user was authenticated w/ LDAP authenticated (i.e. user-id + password),
-    // then generate and return an authentication token. The user can use this token in subsequent calls
+    // Generate an authentication token. The user can use this token in subsequent calls
     // until the token expires.
-    if (requestInvoker.getAuthenticationType().equals(HpcAuthenticationType.LDAP)) {
-      HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
-      authenticationTokenClaims.setUserId(requestInvoker.getNciAccount().getUserId());
-      authenticationTokenClaims.setDataManagementAccount(requestInvoker.getDataManagementAccount());
-      authenticationResponse.setToken(
-          securityService.createAuthenticationToken(authenticationTokenClaims));
-    }
+    HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
+    authenticationTokenClaims.setUserId(requestInvoker.getNciAccount().getUserId());
+    authenticationTokenClaims.setDataManagementAccount(requestInvoker.getDataManagementAccount());
+    authenticationResponse.setToken(
+        securityService.createAuthenticationToken(authenticationTokenClaims));
 
     return authenticationResponse;
   }
@@ -516,9 +517,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
 
     if (invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-      securityService.setSystemRequestInvoker();
+      securityService.setSystemRequestInvoker(ldapAuthentication);
     }
   }
+
   /**
    * Convert a user role from string to enum.
    *
@@ -568,7 +570,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
     // Instantiate a request invoker and set it on thread local.
     securityService.setRequestInvoker(
-        user.getNciAccount(), authenticationType, dataManagementAccount);
+        user.getNciAccount(), ldapAuthentication, authenticationType, dataManagementAccount);
 
     // Get the user role and update the request invoker.
     securityService
@@ -738,7 +740,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
     }
     if (invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-      securityService.setSystemRequestInvoker();
+      securityService.setSystemRequestInvoker(ldapAuthentication);
     }
 
     // Create the data management (IRODS) account.

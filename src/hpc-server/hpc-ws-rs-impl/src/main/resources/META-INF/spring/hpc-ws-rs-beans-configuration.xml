@@ -168,9 +168,7 @@
 
 	<!-- Authentication Interceptor -->
 	<bean id="hpcAuthenticationInterceptor"
-		class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor">
-		<constructor-arg value="${hpc.ws.rs.ldapAuthentication}" />
-	</bean>
+		class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor" />
 
 	<!-- Authorization Interceptor -->
 	<bean id="hpcAuthorizationInterceptor"

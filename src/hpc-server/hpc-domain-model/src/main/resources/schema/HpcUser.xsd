@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -56,6 +55,7 @@
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataManagementAuthenticatedToken" type="xsd:anyType" />
 				<xsd:element name="authenticationType" type="hpc-domain-user:HpcAuthenticationType" />
+				<xsd:element name="ldapAuthentication" type="xsd:boolean" />
 				<xsd:element name="userRole" type="hpc-domain-user:HpcUserRole" />
 			</xsd:sequence>
 		</xsd:complexType>
@@ -67,6 +67,7 @@
 				<xsd:element name="userId" type="xsd:string" />
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
+				<xsd:element name="dataManagementAccountExpiration" type="xsd:dateTime" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
