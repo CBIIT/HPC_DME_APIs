@@ -269,8 +269,7 @@ public class HpcIRODSConnection {
       HpcAuthenticationType authenticationType,
       boolean ldapAuthentication)
       throws HpcException {
-    
-    logger.error("ERAN: " + ldapAuthentication);
+
     IRODSAccount irodsAccount = null;
     try {
       if (authenticationType.equals(HpcAuthenticationType.TOKEN)) {

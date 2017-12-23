@@ -100,7 +100,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
   // Reports Application Service Instance
   @Autowired private HpcReportService reportsService = null;
-  
+
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
   private Boolean ldapAuthentication = null;
@@ -176,8 +176,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     // Use system account to perform this service.
     // TODO: Make this AOP.
     securityService.setSystemRequestInvoker(ldapAuthentication);
-    
-    logger.error("ERAN: " + ldapAuthentication);
 
     // Iterate through the data objects that their data transfer is in-progress.
     List<HpcDataObject> dataObjectsInProgress =
