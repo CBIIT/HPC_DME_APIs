@@ -32,51 +32,53 @@
 			<xsd:enumeration value="URL_EXPIRED" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:complexType name="HpcDataTransferUploadReport">
 		<xsd:sequence>
-			<xsd:element name="status" type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
+			<xsd:element name="status"
+				type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
 			<xsd:element name="message" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="HpcDataTransferDownloadStatus">
 		<xsd:restriction base="xsd:string">
-		    <xsd:enumeration value="RECEIVED" />
-		    <xsd:enumeration value="IN_PROGRESS" />
+			<xsd:enumeration value="RECEIVED" />
+			<xsd:enumeration value="IN_PROGRESS" />
 			<xsd:enumeration value="COMPLETED" />
 			<xsd:enumeration value="FAILED" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:complexType name="HpcDataTransferDownloadReport">
 		<xsd:sequence>
-			<xsd:element name="status" type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
+			<xsd:element name="status"
+				type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
 			<xsd:element name="message" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="HpcDataTransferType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="S_3" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:simpleType name="HpcArchiveType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="TEMPORARY_ARCHIVE" />
 			<xsd:enumeration value="ARCHIVE" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:simpleType name="HpcCollectionDownloadTaskStatus">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="ACTIVE" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:simpleType name="HpcDownloadTaskType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="DATA_OBJECT" />
@@ -84,7 +86,7 @@
 			<xsd:enumeration value="DATA_OBJECT_LIST" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:complexType name="HpcFileLocation">
 		<xsd:sequence>
 			<xsd:element name="fileContainerId" type="xsd:string" />
@@ -92,62 +94,72 @@
 			<xsd:element name="fileId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcArchive">
 		<xsd:sequence>
-			<xsd:element name="fileLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="type" type="hpc-domain-datatransfer:HpcArchiveType" />
+			<xsd:element name="fileLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="type"
+				type="hpc-domain-datatransfer:HpcArchiveType" />
 			<xsd:element name="directory" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
-	<xsd:complexType name="HpcFile"/>
-	
+
+	<xsd:complexType name="HpcFile" />
+
 	<xsd:complexType name="HpcDataObjectUploadRequest">
 		<xsd:sequence>
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
-			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="sourceLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="sourceFile" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="generateUploadRequestURL" type="xsd:boolean" />
-			<xsd:element name="checksum" type="xsd:string" />
+			<xsd:element name="uploadRequestURLChecksum" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDataObjectUploadResponse">
 		<xsd:sequence>
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="uploadRequestURL" type="xsd:string" />
-			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
-			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="archiveLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="dataTransferStatus"
+				type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
+			<xsd:element name="dataTransferType"
+				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="dataTransferStarted" type="xsd:dateTime" />
 			<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDataObjectDownloadRequest">
 		<xsd:sequence>
 			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="dataTransferType"
+				type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="archiveLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDataObjectDownloadResponse">
 		<xsd:sequence>
-		    <xsd:element name="downloadTaskId" type="xsd:string" />
+			<xsd:element name="downloadTaskId" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
-			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDataObjectDownloadTask">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
@@ -155,86 +167,104 @@
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
-			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-			<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
+			<xsd:element name="dataTransferType"
+				type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="dataTransferStatus"
+				type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
 			<xsd:element name="downloadFilePath" type="xsd:string" />
-			<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="archiveLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 			<xsd:element name="created" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDownloadTaskResult">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="type" type="hpc-domain-datatransfer:HpcDownloadTaskType" />
+			<xsd:element name="type"
+				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
-			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="dataTransferType"
+				type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="destinationLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="result" type="xsd:boolean" />
 			<xsd:element name="message" type="xsd:string" />
-			<xsd:element name="items" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
-			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="items"
+				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
+				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcCollectionDownloadTask">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="configurationId" type="xsd:string" />
-			<xsd:element name="dataObjectPaths" type="xsd:string" 
-			             minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="type" type="hpc-domain-datatransfer:HpcDownloadTaskType" />
-			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="status" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
+			<xsd:element name="dataObjectPaths" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="type"
+				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
+			<xsd:element name="destinationLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="status"
+				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
 			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
-			<xsd:element name="items" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
-			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="items"
+				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
+				minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcCollectionDownloadTaskItem">
 		<xsd:sequence>
 			<xsd:element name="dataObjectDownloadTaskId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="destinationLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="message" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDownloadTaskStatus">
 		<xsd:sequence>
 			<xsd:element name="inProgress" type="xsd:boolean" />
-			<xsd:element name="dataObjectDownloadTask" type="hpc-domain-datatransfer:HpcDataObjectDownloadTask" />
-			<xsd:element name="collectionDownloadTask" type="hpc-domain-datatransfer:HpcCollectionDownloadTask" />
-			<xsd:element name="result" type="hpc-domain-datatransfer:HpcDownloadTaskResult" />
+			<xsd:element name="dataObjectDownloadTask"
+				type="hpc-domain-datatransfer:HpcDataObjectDownloadTask" />
+			<xsd:element name="collectionDownloadTask"
+				type="hpc-domain-datatransfer:HpcCollectionDownloadTask" />
+			<xsd:element name="result"
+				type="hpc-domain-datatransfer:HpcDownloadTaskResult" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcUserDownloadRequest">
 		<xsd:sequence>
 			<xsd:element name="taskId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="type" type="hpc-domain-datatransfer:HpcDownloadTaskType" />
+			<xsd:element name="type"
+				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
-			<xsd:element name="items" type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem" 
-			             minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="items"
+				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
+				minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcDirectoryScanItem">
 		<xsd:sequence>
 			<xsd:element name="fileName" type="xsd:string" />
@@ -242,7 +272,7 @@
 			<xsd:element name="lastModified" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="HpcDirectoryScanPatternType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="SIMPLE" />

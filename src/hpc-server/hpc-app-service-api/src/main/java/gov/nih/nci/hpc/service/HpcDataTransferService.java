@@ -43,6 +43,8 @@ public interface HpcDataTransferService {
    * @param sourceFile The source file.
    * @param generateUploadRequestURL Generate an upload URL (so caller can directly upload file into
    *     archive).
+   * @param uploadRequestURLChecksum A checksum provided by the caller to be attached to the upload
+   *     request URL.
    * @param path The data object registration path.
    * @param userId The user-id who requested the data upload.
    * @param callerObjectId The caller's provided data object ID.
@@ -55,7 +57,7 @@ public interface HpcDataTransferService {
       HpcFileLocation sourceLocation,
       File sourceFile,
       boolean generateUploadRequestURL,
-      String checksum,
+      String uploadRequestURLChecksum,
       String path,
       String userId,
       String callerObjectId,

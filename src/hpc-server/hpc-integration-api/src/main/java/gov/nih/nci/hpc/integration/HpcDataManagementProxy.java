@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.integration;
 
+import java.util.List;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -22,9 +23,6 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
-import java.util.List;
-
-
 /**
  * <p>
  * HPC Data Management Proxy Interface.
@@ -35,18 +33,21 @@ import java.util.List;
 
 public interface HpcDataManagementProxy 
 {    
-    /**
-     * Authenticate the invoker w/ the data management system.
-     *
-     * @param dataManagementAccount The Data Management account to authenticate.
-     * @param authenticationType The authentication type.
-     * @return An authenticated token, to be used in subsequent calls to data management.
-     *         It returns null if the account is not authenticated.
-     * @throws HpcException on data management system failure.
-     */
-    public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
-    		                   HpcAuthenticationType authenticationType) 
-    		                  throws HpcException;
+  /**
+   * Authenticate the invoker w/ the data management system.
+   *
+   * @param dataManagementAccount The Data Management account to authenticate.
+   * @param authenticationType The authentication type.
+   * @param ldapAuthentication Indicator whether LDAP authentication is on/off.
+   * @return An authenticated token, to be used in subsequent calls to data management. It returns
+   *     null if the account is not authenticated.
+   * @throws HpcException on data management system failure.
+   */
+  public Object authenticate(
+      HpcIntegratedSystemAccount dataManagementAccount,
+      HpcAuthenticationType authenticationType,
+      boolean ldapAuthentication)
+      throws HpcException;
     
     /**
      * Close iRODS connection of an account.

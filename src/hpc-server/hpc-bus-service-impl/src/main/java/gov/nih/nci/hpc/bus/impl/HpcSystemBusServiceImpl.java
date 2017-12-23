@@ -19,7 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl;
@@ -100,6 +100,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
   // Reports Application Service Instance
   @Autowired private HpcReportService reportsService = null;
+  
+  // LDAP authentication on/off switch.
+  @Value("${hpc.bus.ldapAuthentication}")
+  private Boolean ldapAuthentication = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -123,7 +127,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void processDataTranferUploadReceived() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through the data objects that their data transfer is in-progress.
     List<HpcDataObject> dataObjectsReceived = dataManagementService.getDataObjectsUploadReceived();
@@ -171,7 +175,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void processDataTranferUploadInProgress() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through the data objects that their data transfer is in-progress.
     List<HpcDataObject> dataObjectsInProgress =
@@ -259,7 +263,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void processDataTranferUploadInProgressWithGeneratedURL() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through the data objects that their data transfer is in-progress.
     List<HpcDataObject> dataObjectsInProgress =
@@ -351,7 +355,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   public void processTemporaryArchive() throws HpcException {
     // Use system account to perform this service.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through the data objects that their data is in temporary archive.
     List<HpcDataObject> dataObjectsInTemporaryArchive =
@@ -438,7 +442,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   public void completeDataObjectDownloadTasks() throws HpcException {
     // Use system account to perform this service.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through all the data object download tasks that are in their 2nd hop
     // (i.e. GLOBUS download
@@ -473,7 +477,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   public void processCollectionDownloadTasks() throws HpcException {
     // Use system account to perform this service.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through all the collection download requests that were submitted (not
     // processed yet).
@@ -527,7 +531,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   public void completeCollectionDownloadTasks() throws HpcException {
     // Use system account to perform this service.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through all the active collection download requests.
     for (HpcCollectionDownloadTask downloadTask :
@@ -599,7 +603,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   public void processBulkDataObjectRegistrationTasks() throws HpcException {
     // Use system account to perform this service.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through all the bulk data object registration requests that were
     // submitted (not processed yet).
@@ -632,7 +636,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   public void completeBulkDataObjectRegistrationTasks() throws HpcException {
     // Use system account to perform this service.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Iterate through all the bulk data object registration requests that are
     // active.
@@ -683,7 +687,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void processEvents() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     // Get and process the pending notification events.
     for (HpcEvent event : eventService.getEvents()) {
@@ -725,7 +729,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void generateSummaryReportEvent() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     List<String> summaryReportUsers =
         notificationService.getNotificationSubscribedUsers(HpcEventType.USAGE_SUMMARY_REPORT);
@@ -740,7 +744,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void generateWeeklySummaryReportEvent() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     List<String> summaryReportByDateUsers =
         notificationService.getNotificationSubscribedUsers(
@@ -761,7 +765,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void generateDocReportEvent() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     List<String> summaryReportUsers =
         notificationService.getNotificationSubscribedUsers(
@@ -777,7 +781,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void generateWeeklyDocReportEvent() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     List<String> summaryReportByDateUsers =
         notificationService.getNotificationSubscribedUsers(
@@ -798,7 +802,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void generateUserReportEvent() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     List<String> summaryReportUsers =
         notificationService.getNotificationSubscribedUsers(
@@ -814,7 +818,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void generateWeeklyUserReportEvent() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     List<String> summaryReportByDateUsers =
         notificationService.getNotificationSubscribedUsers(
@@ -836,7 +840,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void refreshMetadataViews() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     metadataService.refreshViews();
   }
@@ -846,7 +850,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void refreshReportViews() throws HpcException {
     // Use system account to perform this service.
     // TODO: Make this AOP.
-    securityService.setSystemRequestInvoker();
+    securityService.setSystemRequestInvoker(ldapAuthentication);
 
     reportsService.refreshViews();
   }

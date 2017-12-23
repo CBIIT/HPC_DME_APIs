@@ -107,6 +107,7 @@ public interface HpcSecurityService {
    * Set the service call invoker in the request context.
    *
    * @param nciAccount The invoker's (HPC user) NCI account.
+   * @param ldapAuthentication Indicator whether LDAP authentication is turned on/off.
    * @param authenticationType The method the user was authenticated.
    * @param dataManagementAccount The data management account to be used when invoking data
    *     management actions on behalf of the invoker.
@@ -114,6 +115,7 @@ public interface HpcSecurityService {
    */
   public void setRequestInvoker(
       HpcNciAccount nciAccount,
+      boolean ldapAuthentication,
       HpcAuthenticationType authenticationType,
       HpcIntegratedSystemAccount dataManagementAccount)
       throws HpcException;
@@ -121,9 +123,10 @@ public interface HpcSecurityService {
   /**
    * Set the service call invoker in the request context using system account.
    *
+   * @param ldapAuthentication Indicator whether LDAP authentication is turned on/off.
    * @throws HpcException on service failure.
    */
-  public void setSystemRequestInvoker() throws HpcException;
+  public void setSystemRequestInvoker(boolean ldapAuthentication) throws HpcException;
 
   /**
    * Authenticate a user (via LDAP).

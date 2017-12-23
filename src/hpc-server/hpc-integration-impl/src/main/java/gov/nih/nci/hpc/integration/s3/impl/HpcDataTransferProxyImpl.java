@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -97,7 +98,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     if (uploadRequest.getGenerateUploadRequestURL()) {
       // Generate an upload request URL for the caller to use to upload directly.
       return generateUploadRequestURL(
-          authenticatedToken, archiveDestinationLocation, uploadRequestURLExpiration, uploadRequest.getChecksum());
+          authenticatedToken,
+          archiveDestinationLocation,
+          uploadRequestURLExpiration,
+          uploadRequest.getUploadRequestURLChecksum());
 
     } else {
       // Upload a file
@@ -353,6 +357,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param archiveDestinationLocation The archive destination location.
    * @param objectMetadata The S3 object metadata.
    * @param uploadRequestURLExpiration The URL expiration (in hours).
+   * @param uploadRequestURLChecksum An optional user provided checksum value to attach to the
+   *     generated url.
    * @return A data object upload response containing the upload request URL.
    * @throws HpcException on data transfer system failure.
    */
@@ -360,7 +366,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Object authenticatedToken,
       HpcFileLocation archiveDestinationLocation,
       int uploadRequestURLExpiration,
-      String checksum)
+      String uploadRequestURLChecksum)
       throws HpcException {
 
     // Calculate the URL expiration date.
@@ -374,8 +380,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 archiveDestinationLocation.getFileId())
             .withMethod(HttpMethod.PUT)
             .withExpiration(expiration);
-    if(checksum != null && !checksum.isEmpty())
-    	generatePresignedUrlRequest.putCustomRequestHeader("md5chksum", checksum);
+
+    // Optionally add a checksum header.
+    if (!StringUtils.isEmpty(uploadRequestURLChecksum)) {
+      generatePresignedUrlRequest.putCustomRequestHeader("md5chksum", uploadRequestURLChecksum);
+    }
+
     // Generate the pre-signed URL.
     URL url =
         s3Connection

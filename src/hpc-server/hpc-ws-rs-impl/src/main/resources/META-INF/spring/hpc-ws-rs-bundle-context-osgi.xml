@@ -30,7 +30,6 @@
 		<prop key="hpc.ws.rs.secured-url">https://${hpc.ws.rs.host}:${hpc.ws.rs.secured-port}/${hpc.ws.rs.path}</prop>
 		<prop key="hpc.ws.rs.stackTraceEnabled">true</prop>
 		<prop key="hpc.ws.rs.api-version">1.0.0</prop>
-		<prop key="hpc.ws.rs.ldapAuthentication">true</prop>
 		<prop key="hpc.ws.rs.attachment-tmp-directory">/tmp/hpc-attachment</prop>
 		<prop key="hpc.ws.rs.attachment-memory-threshold">104857600</prop>
 		

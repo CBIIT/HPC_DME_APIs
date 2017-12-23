@@ -83,11 +83,9 @@ public interface HpcSecurityBusService {
    *
    * @param nciUserId The user's ID.
    * @param password The user's password.
-   * @param ldapAuthentication Perform LDAP authentication indicator.
    * @throws HpcException If user authentication failed.
    */
-  public void authenticate(String nciUserId, String password, boolean ldapAuthentication)
-      throws HpcException;
+  public void authenticate(String nciUserId, String password) throws HpcException;
 
   /**
    * Authenticate user.
