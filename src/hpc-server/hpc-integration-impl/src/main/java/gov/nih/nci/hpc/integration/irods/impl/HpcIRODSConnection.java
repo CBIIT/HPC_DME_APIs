@@ -272,7 +272,8 @@ public class HpcIRODSConnection {
 
     IRODSAccount irodsAccount = null;
     try {
-      if (authenticationType.equals(HpcAuthenticationType.TOKEN)) {
+      if (authenticationType.equals(HpcAuthenticationType.TOKEN)
+          && !dataManagementAccount.getProperties().isEmpty()) {
         // The data management account was previously authenticated. Return an authenticated iRODS account.
         irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount);
 

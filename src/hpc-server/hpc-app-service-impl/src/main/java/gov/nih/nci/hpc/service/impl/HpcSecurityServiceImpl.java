@@ -13,6 +13,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidNciAccount;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -62,6 +63,8 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   private static final String TOKEN_SUBJECT = "HPCAuthenticationToken";
   private static final String USER_ID_TOKEN_CLAIM = "UserName";
   private static final String DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM = "DataManagementAccount";
+  private static final String DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM =
+      "DataManagementAccountExpiration";
 
   // JSON attributes. Used to create a JSON out of HpcIntegratedSystemAccount object.
   private static final String INTEGRATED_SYSTEM_JSON_ATTRIBUTE = "integratedSystem";
@@ -95,39 +98,19 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 
   // The authentication token signature key.
+  @Value("${hpc.service.security.authenticationTokenSignatureKey}")
   private String authenticationTokenSignatureKey = null;
 
   // The authentication token expiration period in minutes.
+  @Value("${hpc.service.security.authenticationTokenExpirationPeriod}")
   private int authenticationTokenExpirationPeriod = 0;
+
+  // The data management account expiration period in minutes.
+  @Value("${hpc.service.security.dataManagementAccountExpirationPeriod}")
+  private int dataManagementExpirationPeriod = 0;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
-  //---------------------------------------------------------------------//
-  // Constructors
-  //---------------------------------------------------------------------//
-
-  /**
-   * Constructor for Spring Dependency Injection.
-   *
-   * @param authenticationTokenSignatureKey The authentication token signature key.
-   * @param authenticationTokenExpirationPeriod The authentication token expiration period in
-   *     minutes.
-   */
-  public HpcSecurityServiceImpl(
-      String authenticationTokenSignatureKey, int authenticationTokenExpirationPeriod) {
-    this.authenticationTokenSignatureKey = authenticationTokenSignatureKey;
-    this.authenticationTokenExpirationPeriod = authenticationTokenExpirationPeriod;
-  }
-
-  /**
-   * Default constructor disabled.
-   *
-   * @throws HpcException Constructor is disabled.
-   */
-  public HpcSecurityServiceImpl() throws HpcException {
-    throw new HpcException("Constructor disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
-  }
 
   //---------------------------------------------------------------------//
   // Methods
@@ -376,6 +359,11 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
         DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM,
         toJSON(authenticationTokenClaims.getDataManagementAccount()));
 
+    // Calculate the data management account expiration date.
+    Calendar dataManagementAccountExpiration = Calendar.getInstance();
+    dataManagementAccountExpiration.add(Calendar.MINUTE, dataManagementExpirationPeriod);
+    claims.put(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, dataManagementAccountExpiration.getTime());
+
     // Calculate the expiration date.
     Calendar tokenExpiration = Calendar.getInstance();
     tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
@@ -402,6 +390,14 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
       tokenClaims.setUserId(jwsClaims.getBody().get(USER_ID_TOKEN_CLAIM, String.class));
       tokenClaims.setDataManagementAccount(
           fromJSON(jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, String.class)));
+      
+      // Check if the data management account expired.
+      Date dataManagementAccountExpiration = jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, Date.class);
+      if(dataManagementAccountExpiration.before(new Date())) {
+         // Data management account expired. Remove its properties.
+         tokenClaims.getDataManagementAccount().getProperties().clear();
+      }
+      
       return tokenClaims;
 
     } catch (SignatureException se) {
