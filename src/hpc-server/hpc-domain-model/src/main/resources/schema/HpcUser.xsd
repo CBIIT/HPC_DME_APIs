@@ -67,7 +67,6 @@
 				<xsd:element name="userId" type="xsd:string" />
 				<xsd:element name="dataManagementAccount"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
-				<xsd:element name="dataManagementAccountExpiration" type="xsd:dateTime" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
