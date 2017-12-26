@@ -454,6 +454,7 @@ function dm_show_register_directory_usage {
   Recursively copy all files in the <source-path> to the archive's <destination-path>. 
   Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example the metatadata for the file foo.txt should be foo.txt.metadata.json
   OPTIONS:
+  -a[ARCHIVE_TYPE]        The type of the archive. Valid options are "S3" and "POSIX".
   -d                      Print the files to be included in registration an exit 
   -e[EXCLUDE_FILE_PATH]   Exclude the files that match the patterns specified in the file EXCLUDE_FILE_PATH
   -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
@@ -474,11 +475,21 @@ function dm_register_directory {
     local USAGE="USAGE: dm_register_directory <source-path> <destination-path>"
     local OPTIND
     
-    #set the default number of threads to 1
+    #Set the default parameters
     numthreads=1
-    while getopts ":de:i:hmst:" option
+    archiveType=S3
+
+    while getopts ":a:de:i:hmp:st:" option
     do
       case "${option}" in
+        a)
+          archiveType="${OPTARG}"
+          if [ "$archiveType" != "S3" ] && [ "$archiveType" != "POSIX" ]
+          then
+            echo "ERROR: the arhive type can be either \"S3\" or \"POSIX\". Recevied:\"$archiveType\"" >&2
+            exit 1 
+          fi
+          ;;
         d)
           dry_run=1
           echo "Running dry, no registration will take place."
@@ -504,7 +515,7 @@ function dm_register_directory {
         m)
           metadata_only=1
           ;;
-        s)
+       s)
           skip_confirmation=1
           ;;
         h)
@@ -518,7 +529,7 @@ function dm_register_directory {
              echo "ERROR: The number of threads $numthreads is not a number" >&2; exit 1
           fi
 
-          if ! [ "$numthreads" -gt "0" && "$numthreads"-lt 10 ]
+          if ! [ "$numthreads" -gt "0" ] && [ "$numthreads"-lt 10 ]
           then
              echo "ERROR: The number of threads $numthreads should be between 0 and 10" >&2; exit 1
           fi
@@ -600,7 +611,9 @@ function dm_register_directory {
       command_args+=" --metadata true "
     fi
 
+    #Add all other options
     command_args+=" --threads $numthreads"
+    command_args+=" --archiveType $archiveType"
 
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file
@@ -648,6 +661,25 @@ function dm_register_directory {
 }
 
 
+#Print Usage of dm_register_globus_directory function
+function dm_show_register_globus_directory_usage {
+  read -d  '' usage <<- EOF
+  Usage: dm_register_globus_directory [OPTIONS]  <source-path> <destination-path> [endpoint]
+
+  Recursively copy all files in the globus <source-path> to the archive's <destination-path>. If endpoint is not passed, the default globus endpoint in hpcdme.properties file will be used.
+  OPTIONS:
+  -d                      Print the files to be included in registration an exit 
+  -e[EXCLUDE_FILE_PATH]   Exclude the files that match the patterns specified in the file EXCLUDE_FILE_PATH
+  -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
+  -p[PATTERN_TYPE]        The type of the regex pattern in the include/exclude files. Valid options are "Simple" and "RegEx". The default pattern is "Simple"
+  -h                      Print this message 
+EOF
+  echo "$usage"
+}
+
+
+
+
 #Register a directory from a globus endpoint using the cmd line client.
 #By default the endpoint specified in hpcdme.properties will be used
 #Inputs:  <source-path>: The path on the globus endpoint 
@@ -655,19 +687,69 @@ function dm_register_directory {
 #         [globus-endpoint]: The endpoint to use other that default
 function dm_register_globus_directory {
 
-    local USAGE="USAGE: dm_register_globus_directory <source-path> <destination-path> [globus-endpoint]"
+    local OPTIND
+
+    #Set the default parameters
+    patternType=Simple
+
+    while getopts ":de:i:hp:t:" option
+    do
+      case "${option}" in
+        d)
+          dry_run=1
+          echo "Running dry, no registration will take place."
+          ;;
+        e)
+          exclude_option=1
+          exclude_file="${OPTARG}"
+          if [ ! -e "$exclude_file" ]
+          then
+            echo "ERROR: The exclude file $exclude_file does not exists" >&2
+            exit 1
+          fi
+          ;;
+        i)
+          include_option=1
+          include_file="${OPTARG}"
+          if [ ! -e "$include_file" ]
+          then
+            echo "ERROR: The include file $include_file does not exists" >&2
+            exit 1
+          fi
+          ;;
+        p)
+          patternType="${OPTARG}"
+          if [ "$patternType" != "Simple" ] && [ "$patternType" != "RegEx" ]
+          then
+            echo "ERROR: the include/exclude pattern type can be either \"Simple\" or \"RegEx\". Recevied:\"$patternType\"" >&2
+            exit 1 
+          fi
+          ;;
+        h)
+          dm_show_register_globus_directory_usage 
+          exit 1
+          ;;
+        *)
+          echo "ERROR: Unsoported option ${option}" >&2
+          dm_show_register_globus_directory_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    shift $(( OPTIND-1 ))   
+
     check_java
     if [ "$?" -ne 0 ]
     then 
       return 1
     fi
-
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "ERROR: using dm_register_globus_directory" >&2
-        echo "Received: $@" >&2
-        echo "$USAGE" >&2
-        return 1
+        echo "ERROR: using dm_register_directory" >&2
+        usage=$(dm_show_register_globus_directory_usage)
+        echo "$usage" >&2
+        exit 1 
     fi
 
     local src_path="$1"
@@ -689,20 +771,43 @@ function dm_register_globus_directory {
       globus_endpoint=$(get_globus_endpoint)
       if [ "$?" -ne 0 ]
       then
-        return 1
+        echo  "ERROR: Can not find the default Globus endpoint in the properties file." >&2
+        exit 1
       fi
     else
       globus_endpoint="$3"
     fi       
 
+    command_args=""
+    #Get the include path
+    if [ "$include_option" ]
+    then
+      full_include_path=$(myfilereadlink $include_file)
+      command_args+=" --includePatternFile $full_include_path"
+    fi
+
+    #Get the exclude path
+    if [ "$exclude_option" ]
+    then
+      full_exclude_path=$(myfilereadlink $exclude_file)
+      command_args+=" --excludePatternFile $full_exclude_path"
+    fi
+
+    if [ "$dry_run" ]
+    then
+      command_args+=" --dryRun true"
+    fi
+
+    #Add all other options
+    command_args+=" --patternType $patternType"
+
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file
-    echo "registerFromGlobusPath --globusEndpoint $globus_endpoint --globusPath $src_path --destinationBasePath $dst_path" >  $command_file
+    echo "registerFromGlobusPath --globusEndpoint $globus_endpoint --globusSourcePath $src_path --destinationArchivePath $dst_path" $command_args >  $command_file
 
     local log_file=./dm_log
     local error_file=./dm_error
 
-    
 
     case "$(uname -s)" in
     
@@ -710,25 +815,30 @@ function dm_register_globus_directory {
          echo 'Mac OS X is not currently supported'
          return 1
          ;;
-    
        Linux)
         java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
          ;;
-    
        CYGWIN*|MINGW32*|MSYS*)
             java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
         ;;
-    
        # Add here more strings to compare
        # See correspondence table at the bottom of this answer
-    
        *)
          echo 'Current OS not supported' 
          return 1
          ;;
     esac
-}
 
+    if [ "$?" -eq  1 ]
+    then
+      echo "The batch registration did not fully complete successfully" >&2
+      echo "Check complete log and error files at:" >&2
+      echo "$log_file" >&2
+      echo "$error_file" >&2
+      return 1
+    fi
+
+}
 
 #Download a collection to Globus 
 #Inputs: collection-apth
