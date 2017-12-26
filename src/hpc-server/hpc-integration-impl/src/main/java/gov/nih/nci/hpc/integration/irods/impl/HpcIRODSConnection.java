@@ -270,15 +270,16 @@ public class HpcIRODSConnection {
       boolean ldapAuthentication)
       throws HpcException {
 
+    // Determine the authentication scheme to use. PAM if LDAP is turned on.
+    AuthScheme authenticationScheme = ldapAuthentication ? AuthScheme.PAM : AuthScheme.STANDARD;
+
     IRODSAccount irodsAccount = null;
     try {
       if (authenticationType.equals(HpcAuthenticationType.TOKEN)) {
         // The data management account was previously authenticated. Return an authenticated iRODS account.
-        irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount);
+        irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount, authenticationScheme);
 
       } else {
-        // Determine the authentication scheme to use. PAM if LDAP is turned on.
-        AuthScheme authenticationScheme = ldapAuthentication ? AuthScheme.PAM : AuthScheme.STANDARD;
 
         // Authenticate the data management account.
         AuthResponse authResponse =
@@ -382,10 +383,11 @@ public class HpcIRODSConnection {
    * Instantiate an IRODSAccount from HpcIntegratedSystemAccount.
    *
    * @param dataManagementAccount The Data Management account.
+   * @param authScheme The iRODS authentication scheme (PAM or STANDARD).
    * @return An iRODS account.
    * @throws JargonException on iRODS failure.
    */
-  private IRODSAccount toAuthenticatedIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount)
+  private IRODSAccount toAuthenticatedIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount, AuthScheme authScheme)
       throws JargonException {
     Map<String, String> properties = new Hashtable<>();
     for (HpcIntegratedSystemAccountProperty property : dataManagementAccount.getProperties()) {
@@ -400,7 +402,7 @@ public class HpcIRODSConnection {
         properties.get(HOME_DIRECTORY_PROPERTY),
         properties.get(ZONE_PROPERTY),
         properties.get(DEFAULT_STORAGE_RESOURCE_PROPERTY),
-        AuthScheme.PAM);
+        authScheme);
   }
 
   /**
