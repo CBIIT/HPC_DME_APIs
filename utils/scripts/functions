@@ -455,9 +455,12 @@ function dm_show_register_directory_usage {
   Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example the metatadata for the file foo.txt should be foo.txt.metadata.json
   OPTIONS:
   -a[ARCHIVE_TYPE]        The type of the archive. Valid options are "S3" and "POSIX".
+  -c                      Turn off checksum calculation. 
   -d                      Print the files to be included in registration an exit 
   -e[EXCLUDE_FILE_PATH]   Exclude the files that match the patterns specified in the file EXCLUDE_FILE_PATH
   -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
+  -l[FILES_LIST]          Register the files mentioned in the FILE_LIST only. Each line in the FILES_LIST file contains the full path of the files.
+                          source-path will be ignored in this case.
   -m                      Register metadata only. Do not register files.
   -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
@@ -478,8 +481,9 @@ function dm_register_directory {
     #Set the default parameters
     numthreads=1
     archiveType=S3
+    checksum=true
 
-    while getopts ":a:de:i:hmp:st:" option
+    while getopts ":a:cde:i:l:hmp:st:" option
     do
       case "${option}" in
         a)
@@ -490,6 +494,10 @@ function dm_register_directory {
             exit 1 
           fi
           ;;
+        c)
+          checksum=false
+          ;;
+
         d)
           dry_run=1
           echo "Running dry, no registration will take place."
@@ -512,10 +520,19 @@ function dm_register_directory {
             exit 1
           fi
           ;;
+        l)
+          file_list=1
+          list_of_files="${OPTARG}"
+          if [ ! -e "$list_of_files" ]
+          then
+            echo "ERROR: The FILES_LIST $list_of_files does not exists" >&2
+            exit 1
+          fi
+          ;;
         m)
           metadata_only=1
           ;;
-       s)
+        s)
           skip_confirmation=1
           ;;
         h)
@@ -529,9 +546,9 @@ function dm_register_directory {
              echo "ERROR: The number of threads $numthreads is not a number" >&2; exit 1
           fi
 
-          if ! [ "$numthreads" -gt "0" ] && [ "$numthreads"-lt 10 ]
+          if ! [ "$numthreads" -gt "0" ] && [ "$numthreads"-lt "32" ]
           then
-             echo "ERROR: The number of threads $numthreads should be between 0 and 10" >&2; exit 1
+             echo "ERROR: The number of threads $numthreads should be between 0 and 32" >&2; exit 1
           fi
           ;;
         *)
@@ -569,30 +586,41 @@ function dm_register_directory {
       return 1
     fi
 
-    #Make sure the source directory exists:
-    if [ ! -d $src_path ]
-    then
-      echo "The source directory: $src_path does not exist." >&2
-      return 1
-    fi 
-
-    full_src_path=$(myreadlink $src_path)
-
     command_args=""
-    #Get the include path
-    if [ "$include_option" ]
-    then
-      full_include_path=$(myfilereadlink $include_file)
-      command_args+=" --includePatternFile $full_include_path"
-    fi
 
-
-    #Get the exclude path
-    if [ "$exclude_option" ]
+    #Pass the options related to files that will be registered. 
+  
+    if [ $file_list ]
     then
-      full_exclude_path=$(myfilereadlink $exclude_file)
-      command_args+=" --excludePatternFile $full_exclude_path"
-    fi
+      command_args+=" --sourceFileList $list_of_files"
+    else
+      #Make sure the source directory exists:
+      if [ ! -d $src_path ]
+      then
+        echo "The source directory: $src_path does not exist." >&2
+        exit 1
+      fi 
+      full_src_path=$(myreadlink $src_path)
+
+      #Get the source path
+      local basedir=$(basename $full_src_path)
+      
+      command_args+=" --sourceFilePath $full_src_path --filePathBaseName $basedir"
+
+      #Get the include path
+      if [ "$include_option" ] 
+      then
+        full_include_path=$(myfilereadlink $include_file)
+        command_args+=" --includePatternFile $full_include_path"
+      fi
+  
+      #Get the exclude path
+      if [ "$exclude_option" ] 
+      then
+        full_exclude_path=$(myfilereadlink $exclude_file)
+        command_args+=" --excludePatternFile $full_exclude_path"
+      fi
+    fi 
 
     if [ "$dry_run" ]
     then
@@ -617,28 +645,21 @@ function dm_register_directory {
 
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file
-    local basedir=$(basename $full_src_path)
-    echo "registerFromFilePath --sourceFilePath $full_src_path --filePathBaseName $basedir --destinationArchivePath $dst_path" $command_args >  $command_file
+    echo "registerFromFilePath  --destinationArchivePath $dst_path" $command_args >  $command_file
 
     local log_file=./dm_log
     local error_file=./dm_error
 
-
     case "$(uname -s)" in
     
-       Darwin)
-         echo 'Mac OS X is not currently supported'
-         return 1
-         ;;
-    
-       Linux)
+       Darwin|Linux)
         java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
-         ;;
+       ;;
     
        CYGWIN*|MINGW32*|MSYS*)
             echo "registerFromFilePath --filePath `cygpath -m $full_src_path` --filePathBaseName $basedir --destinationBasePath $dst_path" >  $command_file
             java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
-        ;;
+       ;;
     
        # Add here more strings to compare
        # See correspondence table at the bottom of this answer
