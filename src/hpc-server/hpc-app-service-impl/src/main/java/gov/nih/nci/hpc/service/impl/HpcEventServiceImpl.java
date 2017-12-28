@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.dao.HpcReportsDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
@@ -59,6 +60,7 @@ public class HpcEventServiceImpl implements HpcEventService {
   public static final String DESTINATION_LOCATION_PAYLOAD_ATTRIBUTE = "DESTINATION_LOCATION";
   public static final String DATA_TRANSFER_COMPLETED_PAYLOAD_ATTRIBUTE = "DATA_TRANSFER_COMPLETED";
   public static final String ERROR_MESSAGE_PAYLOAD_ATTRIBUTE = "ERROR_MESSAGE";
+  public static final String REGISTRATION_ITEMS_PAYLOAD_ATTRIBUTE = "REGISTRATION_ITEMS";
 
   // Event payload entries values.
   public static final String COLLECTION_METADATA_UPDATE_PAYLOAD_VALUE = "METADATA";
@@ -170,6 +172,7 @@ public class HpcEventServiceImpl implements HpcEventService {
         dataTransferCompleted,
         null,
         destinationLocation,
+        null,
         null);
   }
 
@@ -193,7 +196,8 @@ public class HpcEventServiceImpl implements HpcEventService {
         dataTransferCompleted,
         null,
         destinationLocation,
-        errorMessage);
+        errorMessage,
+        null);
   }
 
   @Override
@@ -209,16 +213,13 @@ public class HpcEventServiceImpl implements HpcEventService {
         null,
         null,
         null,
+        null,
         null);
   }
 
   @Override
   public void addDataTransferUploadArchivedEvent(
-      String userId,
-      String path,
-      String registrationTaskId,
-      HpcFileLocation sourceLocation,
-      Calendar dataTransferCompleted)
+      String userId, String path, HpcFileLocation sourceLocation, Calendar dataTransferCompleted)
       throws HpcException {
     addDataTransferEvent(
         userId,
@@ -226,9 +227,10 @@ public class HpcEventServiceImpl implements HpcEventService {
         null,
         null,
         path,
-        registrationTaskId,
+        null,
         dataTransferCompleted,
         sourceLocation,
+        null,
         null,
         null);
   }
@@ -237,7 +239,6 @@ public class HpcEventServiceImpl implements HpcEventService {
   public void addDataTransferUploadFailedEvent(
       String userId,
       String path,
-      String registrationTaskId,
       HpcFileLocation sourceLocation,
       Calendar dataTransferCompleted,
       String errorMessage)
@@ -248,11 +249,12 @@ public class HpcEventServiceImpl implements HpcEventService {
         null,
         null,
         path,
-        registrationTaskId,
+        null,
         dataTransferCompleted,
         sourceLocation,
         null,
-        errorMessage);
+        errorMessage,
+        null);
   }
 
   @Override
@@ -267,6 +269,46 @@ public class HpcEventServiceImpl implements HpcEventService {
         null,
         null,
         null,
+        null,
+        null);
+  }
+
+  @Override
+  public void addBulkDataObjectRegistrationCompletedEvent(
+      String userId,
+      String registrationTaskId,
+      List<HpcBulkDataObjectRegistrationItem> registrationItems,
+      Calendar completed)
+      throws HpcException {
+    addDataTransferEvent(
+        userId,
+        HpcEventType.BULK_DATA_OBJECT_REGISTRATION_COMPLETED,
+        null,
+        null,
+        null,
+        registrationTaskId,
+        completed,
+        null,
+        null,
+        null,
+        registrationItems);
+  }
+
+  @Override
+  public void addBulkDataObjectRegistrationFailedEvent(
+      String userId, String registrationTaskId, Calendar completed, String errorMessage)
+      throws HpcException {
+    addDataTransferEvent(
+        userId,
+        HpcEventType.BULK_DATA_OBJECT_REGISTRATION_FAILED,
+        null,
+        null,
+        null,
+        registrationTaskId,
+        completed,
+        null,
+        null,
+        errorMessage,
         null);
   }
 
@@ -415,6 +457,7 @@ public class HpcEventServiceImpl implements HpcEventService {
    * @param sourceLocation (Optional) The data transfer source location.
    * @param destinationLocation (Optional) The data transfer destination location.
    * @param errorMessage (Optional) An error message.
+   * @param registrationItems Bulk registration items.
    * @throws HpcException on service failure.
    */
   private void addDataTransferEvent(
@@ -427,7 +470,8 @@ public class HpcEventServiceImpl implements HpcEventService {
       Calendar dataTransferCompleted,
       HpcFileLocation sourceLocation,
       HpcFileLocation destinationLocation,
-      String errorMessage)
+      String errorMessage,
+      List<HpcBulkDataObjectRegistrationItem> registrationItems)
       throws HpcException {
     // Input Validation.
     if (userId == null || eventType == null) {
@@ -492,6 +536,11 @@ public class HpcEventServiceImpl implements HpcEventService {
     }
     if (errorMessage != null) {
       event.getPayloadEntries().add(toPayloadEntry(ERROR_MESSAGE_PAYLOAD_ATTRIBUTE, errorMessage));
+    }
+    if (registrationItems != null) {
+      event
+          .getPayloadEntries()
+          .add(toPayloadEntry(REGISTRATION_ITEMS_PAYLOAD_ATTRIBUTE, toString(registrationItems)));
     }
 
     // Persist to DB.
@@ -640,5 +689,24 @@ public class HpcEventServiceImpl implements HpcEventService {
     }
 
     return fileLocationStr.toString();
+  }
+
+  /**
+   * Generate a string from a list of registration items.
+   *
+   * @param registrationItems The bulk registration items to generate a string for.
+   * @return A string representation of the registration items.
+   */
+  private String toString(List<HpcBulkDataObjectRegistrationItem> registrationItems) {
+    StringBuilder registrationItemsStr = new StringBuilder();
+    registrationItems.forEach(
+        registrationItem ->
+            registrationItemsStr.append(
+                "\n\t"
+                    + toString(registrationItem.getRequest().getSource())
+                    + " -> "
+                    + registrationItem.getTask().getPath()));
+
+    return registrationItemsStr.toString();
   }
 }
