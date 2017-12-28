@@ -22,7 +22,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your upload request is completed.\nSource path: %1$s\nTarget path: %2$s\nTask ID: %3$s",
+			"textFormat": "Your upload request is completed.\nSource path: %1$s\nTarget path: %2$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "SOURCE_LOCATION",
@@ -31,10 +31,6 @@
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
 					"index": "1"
-				},
-				{
-					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
-					"index": "2"
 				}
 			]
 		},
@@ -47,7 +43,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your data registration failed. \nData path: %1$s \nReason for failure: %2$s\nTask ID: %3$s",
+			"textFormat": "Your data registration failed. \nData path: %1$s \nReason for failure: %2$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -56,10 +52,6 @@
 				{
 					"payloadEntryAttribute": "ERROR_MESSAGE",
 					"index": "1"
-				},
-				{
-					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
-					"index": "2"
 				}
 			]
 		},
@@ -72,6 +64,44 @@
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				}
+			]
+		},
+		{
+			"eventType": "BULK_DATA_OBJECT_REGISTRATION_COMPLETED",
+			"subjectFormat": "HPC Bulk Data Object Registration Request Completed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your bulk registration request is completed.\nTask ID: %1$s \nRegistration Items: %2$s",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "REGISTRATION_ITEMS",
+					"index": "1"
+				}
+			]
+		},
+		{
+			"eventType": "BULK_DATA_OBJECT_REGISTRATION_FAILED",
+			"subjectFormat": "HPC Bulk Data Object Registration Request Failed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Your bulk registration failed. \nTask ID: %1$s",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
 					"index": "0"
 				}
 			]

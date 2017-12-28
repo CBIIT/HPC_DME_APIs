@@ -217,8 +217,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             break;
 
           case IN_TEMPORARY_ARCHIVE:
-            // Data object is in temporary archive. Note - This is a configured Cleversafe archive. Globus completed
-            // transfer to the temporary archive. File will be uploaded to Cleversafe next when
+            // Data object is in temporary archive. Note - This is a configured Cleversafe archive.
+            // Globus completed transfer to the temporary archive. File will be uploaded to Cleversafe next when
             // the processTemporaryArchive() scheduled task is called.
 
             // Update data transfer status.
@@ -888,7 +888,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       switch (dataTransferStatus) {
         case ARCHIVED:
           eventService.addDataTransferUploadArchivedEvent(
-              userId, path, null, sourceLocation, dataTransferCompleted);
+              userId, path, sourceLocation, dataTransferCompleted);
           break;
 
         case IN_TEMPORARY_ARCHIVE:
@@ -899,7 +899,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           eventService.addDataTransferUploadFailedEvent(
               userId,
               path,
-              null,
               sourceLocation,
               dataTransferCompleted,
               dataTransferType.value() + " failure");
@@ -919,27 +918,40 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   }
 
   /**
-   * add data transfer download event.
+   * add bulk data object registration event.
    *
-   * @param userId The user ID.
-   * @param registrationTaskId The data registration task ID.
-   * @param result The registration result.
+   * @param registrationTask The bulk registration task.
+   * @param result The bulk registration result.
    * @param message A failure message.
-   * @param dataTransferCompleted The upload completion time.
+   * @param completed The completion time.
    */
-  private void addDataTransferUploadEvent(
-      String userId,
-      String registrationTaskId,
+  private void addBulkDataObjectRegistrationEvent(
+      HpcBulkDataObjectRegistrationTask registrationTask,
       boolean result,
       String message,
-      Calendar dataTransferCompleted) {
+      Calendar completed) {
     try {
       if (result) {
-        eventService.addDataTransferUploadArchivedEvent(
-            userId, null, registrationTaskId, null, dataTransferCompleted);
+        // Update the source's file container name on all registration items (so that it will be displayed in the notification).
+        registrationTask
+            .getItems()
+            .forEach(
+                item -> {
+                  String configurationId =
+                      dataManagementService.findDataManagementConfigurationId(
+                          item.getTask().getPath());
+                  setFileContainerName(
+                      HpcDataTransferType.GLOBUS, configurationId, item.getRequest().getSource());
+                });
+
+        eventService.addBulkDataObjectRegistrationCompletedEvent(
+            registrationTask.getUserId(),
+            registrationTask.getId(),
+            registrationTask.getItems(),
+            completed);
       } else {
-        eventService.addDataTransferUploadFailedEvent(
-            userId, null, registrationTaskId, null, dataTransferCompleted, message);
+        eventService.addBulkDataObjectRegistrationFailedEvent(
+            registrationTask.getUserId(), registrationTask.getId(), completed, message);
       }
 
     } catch (HpcException e) {
@@ -1347,8 +1359,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     }
 
     // Send an event.
-    addDataTransferUploadEvent(
-        registrationTask.getUserId(), registrationTask.getId(), result, message, completed);
+    addBulkDataObjectRegistrationEvent(registrationTask, result, message, completed);
   }
 
   /**
