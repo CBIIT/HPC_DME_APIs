@@ -932,6 +932,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       Calendar completed) {
     try {
       if (result) {
+        // Update the source's file container name on all registration items (so that it will be displayed in the notification).
+        registrationTask
+            .getItems()
+            .forEach(
+                item -> {
+                  String configurationId =
+                      dataManagementService.findDataManagementConfigurationId(
+                          item.getTask().getPath());
+                  setFileContainerName(
+                      HpcDataTransferType.GLOBUS, configurationId, item.getRequest().getSource());
+                });
+
         eventService.addBulkDataObjectRegistrationCompletedEvent(
             registrationTask.getUserId(),
             registrationTask.getId(),
