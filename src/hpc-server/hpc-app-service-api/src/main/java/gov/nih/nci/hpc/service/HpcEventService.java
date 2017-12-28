@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -104,17 +105,12 @@ public interface HpcEventService {
    *
    * @param userId The user ID.
    * @param path The data object path.
-   * @param registrationTaskId (Optional) The data registration task ID.
    * @param sourceLocation The data transfer source location.
    * @param dataTransferCompleted The time the data upload completed.
    * @throws HpcException on service failure.
    */
   public void addDataTransferUploadArchivedEvent(
-      String userId,
-      String path,
-      String registrationTaskId,
-      HpcFileLocation sourceLocation,
-      Calendar dataTransferCompleted)
+      String userId, String path, HpcFileLocation sourceLocation, Calendar dataTransferCompleted)
       throws HpcException;
 
   /**
@@ -122,7 +118,6 @@ public interface HpcEventService {
    *
    * @param userId The user ID.
    * @param path The data object path.
-   * @param registrationTaskId (Optional) The data registration task ID.
    * @param sourceLocation The data transfer source location.
    * @param dataTransferCompleted The time the data upload completed.
    * @param errorMessage the upload failed error message.
@@ -131,7 +126,6 @@ public interface HpcEventService {
   public void addDataTransferUploadFailedEvent(
       String userId,
       String path,
-      String registrationTaskId,
       HpcFileLocation sourceLocation,
       Calendar dataTransferCompleted,
       String errorMessage)
@@ -145,6 +139,35 @@ public interface HpcEventService {
    * @throws HpcException on service failure.
    */
   public void addDataTransferUploadURLExpiredEvent(String userId, String path) throws HpcException;
+
+  /**
+   * Add a bulk data object registration completed event.
+   *
+   * @param userId The user ID.
+   * @param registrationTaskId The data registration task ID.
+   * @param registrationItems The data registration items.
+   * @param completed The time the bulk registration task completed.
+   * @throws HpcException on service failure.
+   */
+  public void addBulkDataObjectRegistrationCompletedEvent(
+      String userId,
+      String registrationTaskId,
+      List<HpcBulkDataObjectRegistrationItem> registrationItems,
+      Calendar completed)
+      throws HpcException;
+
+  /**
+   * Add a bulk data object registration failed event.
+   *
+   * @param userId The user ID.
+   * @param registrationTaskId The data registration task ID.
+   * @param completed The time the data registration task failed.
+   * @param errorMessage the upload failed error message.
+   * @throws HpcException on service failure.
+   */
+  public void addBulkDataObjectRegistrationFailedEvent(
+      String userId, String registrationTaskId, Calendar completed, String errorMessage)
+      throws HpcException;
 
   /**
    * Generate reports event.
