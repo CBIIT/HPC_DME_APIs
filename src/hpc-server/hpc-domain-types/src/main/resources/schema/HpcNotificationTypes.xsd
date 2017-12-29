@@ -26,6 +26,8 @@
 			<xsd:enumeration value="DATA_TRANSFER_UPLOAD_URL_EXPIRED" />
 			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_COMPLETED" />
 			<xsd:enumeration value="DATA_TRANSFER_DOWNLOAD_FAILED" />
+			<xsd:enumeration value="BULK_DATA_OBJECT_REGISTRATION_COMPLETED" />
+			<xsd:enumeration value="BULK_DATA_OBJECT_REGISTRATION_FAILED" />
 			<xsd:enumeration value="USAGE_SUMMARY_REPORT" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_WEEKLY_REPORT" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_DOC_REPORT" />

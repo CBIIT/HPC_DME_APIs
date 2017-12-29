@@ -58,7 +58,8 @@ public class HpcMimeMessagePreparator {
       mimeMessage.setRecipient(
           Message.RecipientType.TO, new InternetAddress(userId + "@" + NIH_EMAIL_DOMAIN));
       mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, payloadEntries));
-      mimeMessage.setText(notificationFormatter.formatText(eventType, payloadEntries));
+      mimeMessage.setText(
+          notificationFormatter.formatText(eventType, payloadEntries), "UTF-8", "html");
     };
   }
 
