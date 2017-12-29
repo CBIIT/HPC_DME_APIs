@@ -16,6 +16,7 @@ CREATE TABLE public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"
 (
   "ID" text PRIMARY KEY,
   "USER_ID" text,
+  "UI_URL" text,
   "STATUS" text,
   "ITEMS" text,
   "CREATED" timestamp
@@ -30,6 +31,8 @@ COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."ID" IS
                   'The bulk registration task ID';
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."USER_ID" IS 
                   'The user ID who submitted the request';
+COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."UI_URL" IS 
+                  'The UI URL to view the task by id.
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."STATUS" IS 
                   'The bulk registration task status';
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."ITEMS" IS 
