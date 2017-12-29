@@ -593,7 +593,7 @@ function dm_register_directory {
     if [ $file_list ]
     then
       list_of_files_converted=$(convert_path $list_of_files)
-      command_args+=" --sourceFileList $list_of_files_converted"
+      command_args+=" --sourceFileList ${list_of_files_converted}"
     else
       #Make sure the source directory exists:
       if [ ! -d $src_path ]
@@ -614,7 +614,7 @@ function dm_register_directory {
       then
         full_include_path=$(myfilereadlink $include_file)
         full_include_path_converted=$(convert_path full_include_path)
-        command_args+=" --includePatternFile $full_include_path_converted"
+        command_args+=" --includePatternFile ${full_include_path_converted}"
       fi
   
       #Get the exclude path
@@ -622,7 +622,7 @@ function dm_register_directory {
       then
         full_exclude_path=$(myfilereadlink $exclude_file)
         full_exclude_path_converted=$(convert_path full_exclude_path)
-        command_args+=" --excludePatternFile $full_exclude_path_converted"
+        command_args+=" --excludePatternFile ${full_exclude_path_converted}"
       fi
     fi 
 
