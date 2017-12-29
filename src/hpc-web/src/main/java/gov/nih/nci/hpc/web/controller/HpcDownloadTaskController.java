@@ -77,7 +77,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=task&taskId=" + taskId + "&type=" + type;
+				return "redirect:/login?returnPath=downloadtask&taskId=" + taskId + "&type=" + type;
 			}
 
 			if (taskId == null || type == null)

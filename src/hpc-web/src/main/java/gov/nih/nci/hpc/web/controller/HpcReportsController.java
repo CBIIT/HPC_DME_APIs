@@ -45,6 +45,9 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import gov.nih.nci.hpc.domain.report.HpcReportType;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportEntryDTO;
@@ -92,6 +95,7 @@ public class HpcReportsController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
+        model.addAttribute("reportRequest", new HpcReportRequest());
 		return init(model, bindingResult, session, request);
 	}
 
@@ -110,7 +114,6 @@ public class HpcReportsController extends AbstractHpcController {
 		}
 		model.addAttribute("userRole", user.getUserRole());
 		model.addAttribute("userDOC", user.getDoc());
-		model.addAttribute("reportRequest", new HpcReportRequest());
 		HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null, null,
 				user.getUserRole().equals("SYSTEM_ADMIN") ? null : user.getDoc(), sslCertPath, sslCertPassword);
 		model.addAttribute("docUsers", users.getUsers());
@@ -121,7 +124,18 @@ public class HpcReportsController extends AbstractHpcController {
 			docs.addAll(HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
 		}
 		model.addAttribute("docs", docs);
-		return "reports";
+        HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+        if (modelDTO == null) {
+            modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+            session.setAttribute("userDOCModel", modelDTO);
+        }
+        List<String> basepaths = new ArrayList<String>();
+        for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+          for(HpcDataManagementRulesDTO rule : docRule.getRules())
+              basepaths.add(rule.getBasePath());
+        }
+        model.addAttribute("basepaths", basepaths);
+        return "reports";
 	}
 
 	/**
@@ -139,6 +153,7 @@ public class HpcReportsController extends AbstractHpcController {
 	public String generate(@Valid @ModelAttribute("reportRequest") HpcReportRequest reportRequest, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		try {
+		    model.addAttribute("reportRequest", reportRequest);
 			HpcReportRequestDTO requestDTO = new HpcReportRequestDTO();
 			requestDTO.setType(HpcReportType.fromValue(reportRequest.getReportType()));
 			if (reportRequest.getDoc() != null && !reportRequest.getDoc().equals("-1")) {
@@ -146,6 +161,11 @@ public class HpcReportsController extends AbstractHpcController {
 						|| requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
 					requestDTO.getDoc().add(reportRequest.getDoc());
 			}
+            if (reportRequest.getBasepath() != null && !reportRequest.getBasepath().equals("-1")) {
+              if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
+                      || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))
+                  requestDTO.setPath(reportRequest.getBasepath());
+          }
 			if (reportRequest.getUser() != null && !reportRequest.getUser().equals("-1"))
 				requestDTO.getUser().add(reportRequest.getUser());
 			if (reportRequest.getFromDate() != null && !reportRequest.getFromDate().isEmpty())

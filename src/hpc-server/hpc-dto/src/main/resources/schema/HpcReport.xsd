@@ -35,6 +35,7 @@
 					         minOccurs="1" maxOccurs="unbounded" />
 				<xsd:element name="fromDate" type="xsd:string" />
 				<xsd:element name="toDate" type="xsd:string" />
+				<xsd:element name="path" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -52,6 +53,7 @@
 	<xsd:complexType name="HpcReportDTO">
 		<xsd:sequence>
 				<xsd:element name="type" type="xsd:string" />
+				<xsd:element name="path" type="xsd:string" />
 				<xsd:element name="doc" type="xsd:string" />
 				<xsd:element name="user" type="xsd:string" />
 				<xsd:element name="fromDate" type="xsd:string" />

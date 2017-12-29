@@ -1,9 +1,11 @@
 /**
  * HpcReportBusServiceImpl.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.bus.impl;
@@ -12,9 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 import gov.nih.nci.hpc.bus.HpcReportBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
@@ -43,9 +43,11 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
   // ---------------------------------------------------------------------//
 
   // The Report Application service instance.
-  @Autowired private HpcReportService reportService = null;
+  @Autowired
+  private HpcReportService reportService = null;
 
-  @Autowired private HpcSecurityService securityService = null;
+  @Autowired
+  private HpcSecurityService securityService = null;
 
   // ---------------------------------------------------------------------//
   // Constructors
@@ -70,92 +72,104 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
     }
 
     if ((invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)
-            || invoker.getUserRole().equals(HpcUserRole.USER))
-        && criteriaDTO.getDoc() != null) {
+        || invoker.getUserRole().equals(HpcUserRole.USER)) && criteriaDTO.getDoc() != null) {
       for (String doc : criteriaDTO.getDoc()) {
         if (!doc.equals(invoker.getNciAccount().getDoc()))
-          throw new HpcException(
-              "Unauthorized access to DOC report for: " + criteriaDTO.getDoc(),
+          throw new HpcException("Unauthorized access to DOC report for: " + criteriaDTO.getDoc(),
               HpcErrorType.UNAUTHORIZED_REQUEST);
       }
     }
 
     if (criteriaDTO == null)
-      throw new HpcException(
-          "Invalid criteria to generate report", HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Invalid criteria to generate report",
+          HpcErrorType.INVALID_REQUEST_INPUT);
 
     if (criteriaDTO.getType() == null)
       throw new HpcException("Report type is missing", HpcErrorType.INVALID_REQUEST_INPUT);
 
     if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY)
-        && (criteriaDTO.getFromDate() != null
-            || criteriaDTO.getToDate() != null
+        && (criteriaDTO.getFromDate() != null || criteriaDTO.getToDate() != null
             || (criteriaDTO.getDoc() != null && !criteriaDTO.getDoc().isEmpty())
             || (criteriaDTO.getUser() != null && !criteriaDTO.getUser().isEmpty())))
       throw new HpcException(
           "Invalid request for USAGE_SUMMARY report. User, Doc, FromDate, ToDate are not allowed.",
           HpcErrorType.INVALID_REQUEST_INPUT);
 
-    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)
-        && (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
-      throw new HpcException(
-          "Date range is missing for USAGE_SUMMARY_BY_DATE_RANGE report",
-          HpcErrorType.INVALID_REQUEST_INPUT);
+    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)) {
+      if (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null)
+        throw new HpcException("Date range is missing for USAGE_SUMMARY_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
 
-    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)
-        && (criteriaDTO.getDoc() != null && !criteriaDTO.getDoc().isEmpty()))
-      throw new HpcException(
-          "Invalid request for USAGE_SUMMARY_BY_DATE_RANGE report. Doc is not allowed",
-          HpcErrorType.INVALID_REQUEST_INPUT);
-
+      if (criteriaDTO.getDoc() != null && !criteriaDTO.getDoc().isEmpty())
+        throw new HpcException(
+            "Invalid request for USAGE_SUMMARY_BY_DATE_RANGE report. Doc is not allowed",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+    }
     if (criteriaDTO.getFromDate() != null && !isDateValid(criteriaDTO.getFromDate(), "mm/dd/yyyy"))
-      throw new HpcException(
-          "Invalid fromDate format. Valid format is mm/dd/yyyy",
+      throw new HpcException("Invalid fromDate format. Valid format is mm/dd/yyyy",
           HpcErrorType.INVALID_REQUEST_INPUT);
 
     if (criteriaDTO.getToDate() != null && !isDateValid(criteriaDTO.getToDate(), "mm/dd/yyyy"))
-      throw new HpcException(
-          "Invalid toDate format. Valid format is mm/dd/yyyy", HpcErrorType.INVALID_REQUEST_INPUT);
-
-    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
-        && (criteriaDTO.getDoc() == null || criteriaDTO.getDoc().isEmpty()))
-      throw new HpcException(
-          "DOC is missing for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
+      throw new HpcException("Invalid toDate format. Valid format is mm/dd/yyyy",
           HpcErrorType.INVALID_REQUEST_INPUT);
 
-    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
-        && (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
-      throw new HpcException(
-          "Date range is missing for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
-          HpcErrorType.INVALID_REQUEST_INPUT);
+    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)) {
+      if (criteriaDTO.getDoc() == null || criteriaDTO.getDoc().isEmpty())
+        throw new HpcException("DOC is missing for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
 
-    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE)
-        && (criteriaDTO.getUser() != null && !criteriaDTO.getUser().isEmpty()))
-      throw new HpcException(
-          "User is not allowed for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
-          HpcErrorType.INVALID_REQUEST_INPUT);
+      if (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null)
+        throw new HpcException(
+            "Date range is missing for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
 
-    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE)
-        && (criteriaDTO.getUser() == null || criteriaDTO.getUser().isEmpty()))
-      throw new HpcException(
-          "UserId value is missing for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
-          HpcErrorType.INVALID_REQUEST_INPUT);
+      if (criteriaDTO.getUser() != null && !criteriaDTO.getUser().isEmpty())
+        throw new HpcException("User is not allowed for USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
-    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE)
-        && (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null))
-      throw new HpcException(
-          "date range is missing for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
-          HpcErrorType.INVALID_REQUEST_INPUT);
+    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE)) {
+      if (criteriaDTO.getUser() == null || criteriaDTO.getUser().isEmpty())
+        throw new HpcException(
+            "UserId value is missing for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
 
-    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE)
-        && (criteriaDTO.getDoc() != null && !criteriaDTO.getDoc().isEmpty()))
-      throw new HpcException(
-          "DOC is not allowed for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
-          HpcErrorType.INVALID_REQUEST_INPUT);
+      if (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null)
+        throw new HpcException(
+            "date range is missing for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+
+      if (criteriaDTO.getDoc() != null && !criteriaDTO.getDoc().isEmpty())
+        throw new HpcException("DOC is not allowed for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
+      if (criteriaDTO.getPath() == null || criteriaDTO.getPath().isEmpty())
+        throw new HpcException("Path value is missing for USAGE_SUMMARY_BY_PATH report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    if (criteriaDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE)) {
+      if (criteriaDTO.getPath() == null || criteriaDTO.getPath().isEmpty())
+        throw new HpcException(
+            "Path value is missing for USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+
+      if (criteriaDTO.getFromDate() == null || criteriaDTO.getToDate() == null)
+        throw new HpcException(
+            "date range is missing for USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+
+      if (criteriaDTO.getDoc() != null && !criteriaDTO.getDoc().isEmpty())
+        throw new HpcException("DOC is not allowed for USAGE_SUMMARY_BY_USER_BY_DATE_RANGE report",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
     HpcReportCriteria criteria = new HpcReportCriteria();
     criteria.getDocs().addAll(criteriaDTO.getDoc());
     criteria.setType(criteriaDTO.getType());
+    criteria.setPath(criteriaDTO.getPath());
     Calendar fromcal = null;
     Calendar tocal = null;
     try {
@@ -170,8 +184,8 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
         criteria.setToDate(tocal);
       }
     } catch (ParseException e) {
-      throw new HpcException(
-          "Failed to parse date value " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Failed to parse date value " + e.getMessage(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
     criteria.getUsers().addAll(criteriaDTO.getUser());
 
@@ -187,6 +201,7 @@ public class HpcReportBusServiceImpl implements HpcReportBusService {
       dtoreport.setToDate((tocal != null ? displayformat.format(tocal.getTime()) : null));
       dtoreport.setType(report.getType().value());
       dtoreport.setUser(report.getUser());
+      dtoreport.setPath(report.getPath());
 
       for (HpcReportEntry entry : report.getReportEntries()) {
         HpcReportEntryDTO entryDTO = new HpcReportEntryDTO();
