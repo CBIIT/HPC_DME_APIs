@@ -592,7 +592,8 @@ function dm_register_directory {
   
     if [ $file_list ]
     then
-      command_args+=" --sourceFileList $list_of_files"
+      list_of_files_converted=$(convert_path $list_of_files)
+      command_args+=" --sourceFileList ${list_of_files_converted}"
     else
       #Make sure the source directory exists:
       if [ ! -d $src_path ]
@@ -601,24 +602,27 @@ function dm_register_directory {
         exit 1
       fi 
       full_src_path=$(myreadlink $src_path)
+      full_src_path_converted=$(convert_path $full_src_path)
 
       #Get the source path
       local basedir=$(basename $full_src_path)
       
-      command_args+=" --sourceFilePath $full_src_path --filePathBaseName $basedir"
+      command_args+=" --sourceFilePath $full_src_path_converted --filePathBaseName $basedir"
 
       #Get the include path
       if [ "$include_option" ] 
       then
         full_include_path=$(myfilereadlink $include_file)
-        command_args+=" --includePatternFile $full_include_path"
+        full_include_path_converted=$(convert_path full_include_path)
+        command_args+=" --includePatternFile ${full_include_path_converted}"
       fi
   
       #Get the exclude path
       if [ "$exclude_option" ] 
       then
         full_exclude_path=$(myfilereadlink $exclude_file)
-        command_args+=" --excludePatternFile $full_exclude_path"
+        full_exclude_path_converted=$(convert_path full_exclude_path)
+        command_args+=" --excludePatternFile ${full_exclude_path_converted}"
       fi
     fi 
 
@@ -657,7 +661,7 @@ function dm_register_directory {
        ;;
     
        CYGWIN*|MINGW32*|MSYS*)
-            echo "registerFromFilePath --filePath `cygpath -m $full_src_path` --filePathBaseName $basedir --destinationBasePath $dst_path" >  $command_file
+            #echo "registerFromFilePath --filePath `cygpath -m $full_src_path` --filePathBaseName $basedir --destinationBasePath $dst_path" >  $command_file
             java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
        ;;
     
