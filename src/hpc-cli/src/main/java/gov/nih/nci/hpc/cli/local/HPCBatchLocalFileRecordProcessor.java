@@ -26,6 +26,7 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 		HPCDataObject dataObject = (HPCDataObject) record.getPayload();
 		Map<String, String> criteriaMap = dataObject.getCriteriaMap();
 		String filePathBaseName = criteriaMap.get("filePathBaseName");
+		String filePath = criteriaMap.get("filePath");
 		String destinationBasePath = criteriaMap.get("destinationBasePath");
 		String metadata = criteriaMap.get("metadata");
 		String checksumStr = criteriaMap.get("checksum");
@@ -41,11 +42,11 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 			if (!pathAttr.getIsDirectory()) {
 				HpcLocalFileProcessor fileProcess;
 				fileProcess = new HpcLocalFileProcessor(dataObject.getConnection());
-				fileProcess.process(pathAttr, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
+				fileProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
 						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum);
 			} else {
 				HpcLocalFolderProcessor folderProcess = new HpcLocalFolderProcessor(dataObject.getConnection());
-				folderProcess.process(pathAttr, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
+				folderProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
 						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum);
 			}
 		} catch (RecordProcessingException e) {
