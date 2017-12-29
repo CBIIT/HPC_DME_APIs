@@ -83,6 +83,7 @@
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="uiURL" type="xsd:string" />
 			<xsd:element name="status" type="hpc-domain-datamanagement:HpcBulkDataObjectRegistrationTaskStatus" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="items" type="hpc-domain-model:HpcBulkDataObjectRegistrationItem" 

@@ -850,7 +850,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Submit a data objects registration task and return a response DTO.
     responseDTO.setTaskId(
         dataManagementService.registerDataObjects(
-            invokerNciAccount.getUserId(), dataObjectRegistrationRequests));
+            invokerNciAccount.getUserId(),
+            bulkDataObjectRegistrationRequest.getUiURL(),
+            dataObjectRegistrationRequests));
 
     return responseDTO;
   }

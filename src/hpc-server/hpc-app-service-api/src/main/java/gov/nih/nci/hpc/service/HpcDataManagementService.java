@@ -273,12 +273,16 @@ public interface HpcDataManagementService {
    * Data objects registration.
    *
    * @param userId The user ID requested the registration.
+   * @param uiURL (Optional) A URL for viewing the registration task on a UI. Note: {task_id} in
+   *     this URL will be replaced with actual task ID value.
    * @param dataObjectRegistrationRequests The data object registration requests.
    * @return The task ID created to register the data objects and can be used to track status
    * @throws HpcException on service failure.
    */
   public String registerDataObjects(
-      String userId, Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+      String userId,
+      String uiURL,
+      Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
       throws HpcException;
 
   /**

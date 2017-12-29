@@ -130,6 +130,7 @@
 					type="hpc-dto-datamanagement:HpcDirectoryScanRegistrationItemDTO"
 					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="dryRun" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="uiURL" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
