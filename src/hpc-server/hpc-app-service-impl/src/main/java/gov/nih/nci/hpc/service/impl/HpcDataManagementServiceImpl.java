@@ -517,7 +517,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   @Override
   public String registerDataObjects(
-      String userId, Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+      String userId, String uiURL, Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
       throws HpcException {
     // Input validation
     if (StringUtils.isEmpty(userId)) {
@@ -533,6 +533,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     HpcBulkDataObjectRegistrationTask bulkDataObjectRegistrationTask =
         new HpcBulkDataObjectRegistrationTask();
     bulkDataObjectRegistrationTask.setUserId(userId);
+    bulkDataObjectRegistrationTask.setUiURL(uiURL);
     bulkDataObjectRegistrationTask.setCreated(Calendar.getInstance());
     bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED);
 
