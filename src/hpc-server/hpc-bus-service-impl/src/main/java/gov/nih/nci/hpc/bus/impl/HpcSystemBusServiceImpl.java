@@ -80,7 +80,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   // Security Application Service Instance.
   @Autowired private HpcSecurityService securityService = null;
 
-  // Data Transer Application Service Instance.
+  // Data Transfer Application Service Instance.
   @Autowired private HpcDataTransferService dataTransferService = null;
 
   // Data Management Application Service Instance.
@@ -930,6 +930,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       boolean result,
       String message,
       Calendar completed) {
+
+    // Format the task ID. If the caller provided a UI URL, then use it to construct a URL link to view this task on UI.
+    String taskId = registrationTask.getId();
+    if (!StringUtils.isEmpty(registrationTask.getUiURL())) {
+      taskId =
+          "<a href=\""
+              + registrationTask.getUiURL().replaceAll("{task_id}", taskId)
+              + "\">"
+              + taskId
+              + "</a>";
+    }
+
     try {
       if (result) {
         // Update the source's file container name on all registration items (so that it will be displayed in the notification).
@@ -946,12 +958,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         eventService.addBulkDataObjectRegistrationCompletedEvent(
             registrationTask.getUserId(),
-            registrationTask.getId(),
+            taskId,
             registrationTask.getItems(),
             completed);
       } else {
         eventService.addBulkDataObjectRegistrationFailedEvent(
-            registrationTask.getUserId(), registrationTask.getId(), completed, message);
+            registrationTask.getUserId(), taskId, completed, message);
       }
 
     } catch (HpcException e) {
