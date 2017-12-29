@@ -936,7 +936,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     if (!StringUtils.isEmpty(registrationTask.getUiURL())) {
       taskId =
           "<a href=\""
-              + registrationTask.getUiURL().replaceAll("{task_id}", taskId)
+              + registrationTask.getUiURL().replaceAll("\\{task_id\\}", taskId)
               + "\">"
               + taskId
               + "</a>";
