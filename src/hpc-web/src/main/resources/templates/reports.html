@@ -44,7 +44,11 @@
       <script src="https://use.fontawesome.com/d8c7e3a713.js"></script>
       
     <![endif]-->
-
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var selected = [[${reportRequest.getReportType()}]];
+/*]]>*/
+</script>
 </head>
 
 <body>
@@ -97,19 +101,22 @@
 								type:</label>
 							<div class="col-sm-6">
 								<select name="reportType" id="reportType" class="form-control"
-									onchange="show(this)">
+									onchange="show(this.value)">
 									<option value="-1">----Select----</option>
 
 									<option value="USAGE_SUMMARY"
-										th:if="${userRole == 'SYSTEM_ADMIN'}">Summary Report</option>
+										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY'}">Summary report</option>
 									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
-										th:if="${userRole == 'SYSTEM_ADMIN'}">Summary report
+										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary report
 										by Date range</option>
-									<option value="USAGE_SUMMARY_BY_DOC">DOC Report</option>
-									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE">DOC
+									<option value="USAGE_SUMMARY_BY_DOC" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC'}">DOC Report</option>
+									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC
 										report by Date range</option>
-									<option value="USAGE_SUMMARY_BY_USER">User Report</option>
-									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE">User
+									<option value="USAGE_SUMMARY_BY_USER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER'}">User report</option>
+									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User
+										report by Date range</option>
+									<option value="USAGE_SUMMARY_BY_PATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH'}">Base path report</option>
+									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Base path
 										report by Date range</option>
 								</select>
 							</div>
@@ -124,7 +131,8 @@
 													<option value="-1">----Select----</option>
 													<option
 														th:each="entry : ${docs}"
-														th:value="${entry}" th:text="${entry}" th:selected="${entry == session.hpcUser.getDoc()}">
+														th:value="${entry}" th:text="${entry}" 
+														th:selected="${reportRequest.getDoc() == entry}">
 														Wireframe</option>
 											</select>
 							</div>
@@ -139,7 +147,24 @@
 													<option value="-1">----Select----</option>
 													<option
 														th:each="entry : ${docUsers}"
-														th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}">
+														th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
+														th:selected="${reportRequest.getUser() == entry}">
+														Wireframe</option>
+											</select>
+							</div>
+							<label class="control-label col-sm-4" for="level">&nbsp;</label>
+						</div>
+						<div class="form-group" style="display: none" id="basepathList">
+							<label class="control-label col-sm-2" for="level">Base path:</label>
+							<div class="col-sm-6">
+											<select size="1"
+												id="basepath" name="basepath" class="form-control"
+												th:required="required">
+													<option value="-1">----Select----</option>
+													<option
+														th:each="entry : ${basepaths}"
+														th:value="${entry}" th:text="${entry}" 
+														th:selected="${reportRequest.getBasepath() == entry}">
 														Wireframe</option>
 											</select>
 							</div>
@@ -149,7 +174,7 @@
 							<label class="control-label col-sm-2" for="level">From
 								Date:</label>
 <div class="input-group date col-sm-6" data-provide="datepicker">
-    <input type="text" class="form-control" id="fromDate" name="fromDate"/>
+    <input type="text" class="form-control" id="fromDate" name="fromDate" th:value="${reportRequest.getFromDate()}"/>
     <div class="input-group-addon">
         <span class="glyphicon glyphicon-th"></span>
     </div>
@@ -166,7 +191,7 @@
 							<label class="control-label col-sm-2" for="level">To
 								Date:</label>
 <div class="input-group date col-sm-6" data-provide="datepicker">
-    <input type="text" class="form-control" id="toDate" name="toDate"/>
+    <input type="text" class="form-control" id="toDate" name="toDate" th:value="${reportRequest.getToDate()}"/>
     <div class="input-group-addon">
         <span class="glyphicon glyphicon-th"></span>
     </div>
@@ -214,6 +239,14 @@
 													style="background-color: #006DCC; color: white;"
 													colspan="2"><label for="user">User: </label><label
 													for="user" th:text="${report.user}">User</label></td>
+											</tr>
+										</div>
+										<div th:if="${report.path != null}">
+											<tr>
+												<td align="center"
+													style="background-color: #006DCC; color: white;"
+													colspan="2"><label for="path">Base path: </label><label
+													for="user" th:text="${report.path}">Base path</label></td>
 											</tr>
 										</div>
 										<div th:if="${report.fromDate != null}">
@@ -329,6 +362,7 @@
 
       $(function(){
           $('select.styled').customSelect();
+          show(selected);
       });
 
       var toggle = true;
@@ -337,13 +371,15 @@
     	var toDateEle = document.getElementById("toDateDiv");
     	var docListEle = document.getElementById("docList");
     	var userListEle = document.getElementById("userList");
-      	var selectedValue = reportType.value;
+    	var basepathListEle = document.getElementById("basepathList");
+      	var selectedValue = reportType;
       	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
       	{
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		docListEle.style.display = "none";
       		userListEle.style.display = "none";
+      		basepathListEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC")
       	{
@@ -351,6 +387,7 @@
       		fromDateEle.style.display = "none";
       		toDateEle.style.display = "none";
       		userListEle.style.display = "none";
+      		basepathListEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
       	{
@@ -358,6 +395,7 @@
       		toDateEle.style.display = "block";
       		docListEle.style.display = "block";
       		userListEle.style.display = "none";
+      		basepathListEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER")
       	{
@@ -365,6 +403,7 @@
       		docListEle.style.display = "none";
       		fromDateEle.style.display = "none";
       		toDateEle.style.display = "none";
+      		basepathListEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
       	{
@@ -372,6 +411,23 @@
       		docListEle.style.display = "none";
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
+      		basepathListEle.style.display = "none";
+      	}
+      	else if(selectedValue == "USAGE_SUMMARY_BY_PATH")
+      	{
+      		userListEle.style.display = "none";
+      		docListEle.style.display = "none";
+      		fromDateEle.style.display = "none";
+      		toDateEle.style.display = "none";
+      		basepathListEle.style.display = "block";
+      	}
+      	else if(selectedValue == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
+      	{
+      		userListEle.style.display = "none";
+      		docListEle.style.display = "none";
+      		fromDateEle.style.display = "block";
+      		toDateEle.style.display = "block";
+      		basepathListEle.style.display = "block";
       	}
       	else
       	{
@@ -433,6 +489,22 @@
         	  	if(document.getElementById("user").value == "-1")
         	  		alert("Please select a user");
         		document.getElementById("doc").value = "-1";
+          	}
+          	else if(reportType == "USAGE_SUMMARY_BY_PATH")
+          	{
+        		document.getElementById("doc").value = "-1";
+        		document.getElementById("user").value = "-1";
+          	  	document.getElementById("fromDate").value = null;
+        	  	document.getElementById("toDate").value = null;
+        	  	if(document.getElementById("basepath").value == "-1")
+        	  		alert("Please select a Base path");
+          	}
+          	else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
+          	{
+        	  	if(document.getElementById("basepath").value == "-1")
+        	  		alert("Please select a Base path");
+        		document.getElementById("doc").value = "-1";
+        		document.getElementById("user").value = "-1";
           	}
     	  
     	  if(fromDate.valueOf() > toDate.valueOf())
