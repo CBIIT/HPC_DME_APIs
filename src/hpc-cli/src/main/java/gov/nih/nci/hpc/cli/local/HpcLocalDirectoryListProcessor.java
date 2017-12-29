@@ -40,7 +40,7 @@ public class HpcLocalDirectoryListProcessor {
 		this.connection = connection;
 	}
 
-	public boolean run(List<HpcPathAttributes> files, String filePathBaseName, String destinationBasePath,
+	public boolean run(List<HpcPathAttributes> files, String filePath, String filePathBaseName, String destinationBasePath,
 			String logFile, String recordFile, boolean testRun, boolean confirmation, boolean metadataOnly, boolean checksum) {
 		this.logFile = logFile;
 		this.recordFile = recordFile;
@@ -54,11 +54,11 @@ public class HpcLocalDirectoryListProcessor {
 						File fileAbsolutePath = new File(file.getAbsolutePath());
 						if (!fileAbsolutePath.isDirectory()) {
 							HpcLocalFileProcessor fileProcess = new HpcLocalFileProcessor(connection);
-							fileProcess.process(file, filePathBaseName, destinationBasePath, logFile, recordFile,
+							fileProcess.process(file, filePath, filePathBaseName, destinationBasePath, logFile, recordFile,
 									metadataOnly, false, checksum);
 						} else {
 							HpcLocalFolderProcessor folderProcess = new HpcLocalFolderProcessor(connection);
-							folderProcess.process(file, filePathBaseName, destinationBasePath, logFile, recordFile,
+							folderProcess.process(file, filePath, filePathBaseName, destinationBasePath, logFile, recordFile,
 									metadataOnly, false, checksum);
 						}
 

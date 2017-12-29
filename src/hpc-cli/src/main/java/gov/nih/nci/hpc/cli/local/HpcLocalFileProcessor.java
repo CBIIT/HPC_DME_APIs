@@ -62,7 +62,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	}
 
 	@Override
-	public boolean process(HpcPathAttributes entity, String filePathBaseName, String destinationBasePath,
+	public boolean process(HpcPathAttributes entity, String filePath, String filePathBaseName, String destinationBasePath,
 			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException {
 		HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
@@ -80,7 +80,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			String message = "Failed to process file: " + entity.getAbsolutePath() + " Reaon: " + e.getMessage();
 			System.out.println(message);
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			return false;
 		}
 
@@ -97,7 +97,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		fileLocation.setFileId(entity.getAbsolutePath());
 		dataObject.setSource(fileLocation);
 		dataObject.setCallerObjectId(null);
-		String objectPath = getObjectPath(filePathBaseName, entity.getPath());
+		String objectPath = getObjectPath(filePath, filePathBaseName, entity.getPath());
 		if(HpcClientUtil.containsWhiteSpace(objectPath))
 		{
 			System.out.println("White space in the file path "+ objectPath + " is replaced with underscore _ ");
@@ -109,18 +109,18 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		{
 			String message = "File does not exist. Skipping: " + entity.getAbsolutePath();
 			HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		}
 		if (directUpload && !metadataOnly)
-			processS3Record(entity, dataObject, destinationBasePath, objectPath, metadataOnly, checksum);
+			processS3Record(entity, dataObject, filePath, destinationBasePath, objectPath, metadataOnly, checksum);
 		else
-			processRecord(entity, dataObject, destinationBasePath, objectPath, metadataOnly, checksum);
+			processRecord(entity, dataObject, filePath, destinationBasePath, objectPath, metadataOnly, checksum);
 		return true;
 	}
 
 	private void processRecord(HpcPathAttributes entity,
-			HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO, String basePath, String objectPath,
+			HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO, String filePath, String basePath, String objectPath,
 			boolean metadataOnly, boolean checksum) throws RecordProcessingException {
 		InputStream inputStream = null;
 		InputStream checksumStream = null;
@@ -147,12 +147,12 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		} catch (FileNotFoundException e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		} catch (Exception e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		}
 
@@ -184,17 +184,17 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		} catch (HpcBatchException e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		} catch (RestClientException e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		} catch (Exception e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		} finally {
 			if (inputStream != null)
@@ -213,7 +213,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	}
 
 	private void processS3Record(HpcPathAttributes entity,
-			HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO, String basePath, String objectPath,
+			HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO, String filePath, String basePath, String objectPath,
 			boolean metadataOnly, boolean checksum) throws RecordProcessingException {
 		InputStream inputStream = null;
 		InputStream checksumStream = null;
@@ -241,7 +241,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			} catch (IOException e) {
 				String message = "Failed to calculate checksum due to: " + e.getMessage();
 				HpcClientUtil.writeException(e, message, null, logFile);
-				HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+				HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 				throw new RecordProcessingException(message);
 			}
 		}
@@ -276,17 +276,17 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		} catch (HpcBatchException e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		} catch (RestClientException e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		} catch (Exception e) {
 			String message = "Failed to process record due to: " + e.getMessage();
 			HpcClientUtil.writeException(e, message, null, logFile);
-			HpcClientUtil.writeRecord(entity.getAbsolutePath(), recordFile);
+			HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
 			throw new RecordProcessingException(message);
 		} finally {
 			if (inputStream != null)
@@ -375,13 +375,24 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		}
 	}
 
-	private String getObjectPath(String filePathBaseName, String filePath) {
-		filePath = filePath.replace('\\', '/');
-		String name = filePathBaseName + "/";
+	private String getObjectPath(String filePath, String filePathBaseName, String objectPath) {
+
+	  objectPath = objectPath.replace('\\', '/');
+	  filePath = filePath.replace('\\', '/');
+	  if(objectPath.equals(filePath))
+	    return objectPath;
+	  if(filePathBaseName != null && !filePathBaseName.isEmpty())
+	  {
+	  String name = filePathBaseName + "/";
 		if (filePath.indexOf(name) != -1)
 			return filePath.substring(filePath.indexOf(name));
-		else
-			return filePath;
+	  }
+	  else
+	  {
+        if (objectPath.indexOf(filePath) != -1)
+          return objectPath.substring(objectPath.indexOf(filePath)+filePath.length()+1);
+	  }
+	    return objectPath;
 	}
 
 	public void uploadToUrl(String urlStr, File file, int bufferSize, String checksum) throws HpcBatchException {

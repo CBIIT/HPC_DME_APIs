@@ -81,7 +81,7 @@ public class HpcLocalDirectoryListQuery {
 	 * @throws HpcException
 	 *             on data transfer system failure.
 	 */
-	public List<HpcPathAttributes> getFileListPathAttributes(String fileLocation, List<String> excludePattern,
+	public List<HpcPathAttributes> getFileListPathAttributes(String localBasePath, String fileLocation, List<String> excludePattern,
 			List<String> includePattern) throws HpcException {
 		List<HpcPathAttributes> pathAttributes = new ArrayList<HpcPathAttributes>();
 
@@ -90,14 +90,16 @@ public class HpcLocalDirectoryListQuery {
 			for(String filePath : files)
 			{
 				HpcPathAttributes filePathAttr = new HpcPathAttributes();
-				filePathAttr.setAbsolutePath(filePath);
+				String fullPath = localBasePath + File.separator + filePath;
+				fullPath = fullPath.replace("\\", "/");
+				filePathAttr.setAbsolutePath(fullPath);
 				String name = filePath.substring(filePath.lastIndexOf("/") > 0 ? filePath.lastIndexOf("/") : 0,
 						filePath.length());
 				filePathAttr.setName(name);
 				File fileToCheckDir = new File(filePath);
 				filePathAttr.setIsDirectory(fileToCheckDir.isDirectory());
 				filePathAttr.setPath(filePath);
-				System.out.println("Including: " + filePath);
+				System.out.println("Including: " + fullPath);
 				pathAttributes.add(filePathAttr);
 			}
 		} catch (Exception e) {

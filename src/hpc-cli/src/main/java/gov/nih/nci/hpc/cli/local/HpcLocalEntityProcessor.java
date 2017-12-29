@@ -27,7 +27,7 @@ public abstract class HpcLocalEntityProcessor {
 		this.connection = connection;
 	}
 
-	public abstract boolean process(HpcPathAttributes entity, String filePathBaseName, String destinationBasePath,
+	public abstract boolean process(HpcPathAttributes entity, String localPath, String filePathBaseName, String destinationBasePath,
 			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException;
 

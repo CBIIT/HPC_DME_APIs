@@ -34,17 +34,17 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 	}
 
 	@Override
-	public boolean process(HpcPathAttributes entity, String filePathBaseName, String destinationBasePath,
+	public boolean process(HpcPathAttributes entity, String localPath, String filePathBaseName, String destinationBasePath,
 			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException {
-		String collectionPath = getCollectionPath(filePathBaseName, entity.getPath());
+		String collectionPath = getCollectionPath(localPath, filePathBaseName, entity.getPath());
 		if(HpcClientUtil.containsWhiteSpace(collectionPath))
 		{
 			System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
 			collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
 		}
-
-		processCollection(entity, destinationBasePath, collectionPath);
+		if(!collectionPath.equals("/"))
+		  processCollection(entity, destinationBasePath, collectionPath);
 		return true;
 	}
 
@@ -100,14 +100,25 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 		}
 	}
 
-	private String getCollectionPath(String collectionPathBaseName, String collectionPath) {
+	private String getCollectionPath(String localPath, String collectionPathBaseName, String collectionPath) {
 
-		collectionPath = collectionPath.replace("\\", "/");
+	  collectionPath = collectionPath.replace("\\", "/");
+	  localPath = localPath.replace("\\", "/");
+	  if(collectionPath.equals(localPath))
+	    return "/";
+	  
+	  if(collectionPathBaseName != null && collectionPathBaseName.isEmpty())
+	  {
 		String name = "/" + collectionPathBaseName;
 		if (collectionPath.indexOf(name) != -1)
 			return collectionPath.substring(collectionPath.indexOf(name) + 1);
-		else
-			return collectionPath;
+	  }
+	  else
+	  {
+        if (collectionPath.indexOf(localPath) != -1)
+          return collectionPath.substring(collectionPath.indexOf(localPath) + localPath.length() + 1);
+	  }
+      return collectionPath;
 	}
 
 }

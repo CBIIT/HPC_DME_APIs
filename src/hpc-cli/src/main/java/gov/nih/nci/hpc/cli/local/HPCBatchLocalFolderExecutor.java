@@ -98,7 +98,7 @@ public class HPCBatchLocalFolderExecutor {
 			List<String> includePatterns = readPatternStringsfromFile(includePattern);
 			List<HpcPathAttributes> paths = null;
 			if(fileList != null)
-				paths = impl.getFileListPathAttributes(fileList, excludePatterns, includePatterns);
+				paths = impl.getFileListPathAttributes(localPath, fileList, excludePatterns, includePatterns);
 			else
 				paths = impl.getPathAttributes(localPath, excludePatterns, includePatterns);
 			if (testRun)
@@ -142,7 +142,7 @@ public class HPCBatchLocalFolderExecutor {
 				HpcLocalFolderProcessor folderProcessor;
 				try {
 					folderProcessor = new HpcLocalFolderProcessor(connection);
-					folderProcessor.process(folder, fileBasePath, destinationBasePath, logFile, errorRecordsFile,
+					folderProcessor.process(folder, localPath, fileBasePath, destinationBasePath, logFile, errorRecordsFile,
 							metadataOnly, true, checksum);
 				} catch (IOException e) {
 					System.out.println("Failed to process collection " + folder.getAbsolutePath()

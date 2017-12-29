@@ -174,7 +174,7 @@ public class HPCCommands implements CommandMarker {
 	@CliCommand(value = "registerFromFilePath", help = "Register Data files with the HPC DME Archive from a local folder. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --test <true|false> --confirm <true|false> --metadata <true|false> --threads <number>")
 	public String registerFilePathS3(
 			@CliOption(key = {
-					"sourceFilePath" }, mandatory = false, help = "Please provide source file path. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --checksum <true|false> --metadata <true|false> --threads <number>") final String filePath,
+					"sourceFilePath" }, mandatory = true, help = "Please provide source file path. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --checksum <true|false> --metadata <true|false> --threads <number>") final String filePath,
 			@CliOption(key = {
 					"sourceFileList" }, mandatory = false, help = "Please provide source file list. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false> --confirm <true|false> --checksum <true|false> --metadata <true|false> --threads <number>") final String fileList,
 			@CliOption(key = {
@@ -199,19 +199,9 @@ public class HPCCommands implements CommandMarker {
 					"threads" }, mandatory = false, help = "Number of threads to process. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false>  --confirm <true|false> --checksum <true|false> --metadata <true|false> --threads <number>") final String threads
 			) {
 		Map<String, String> criteriaMap = new HashMap<String, String>();
-		if(filePath != null && fileList != null)
-		{
-			System.out.println("Invalid options. Specify either sourceFilePath or sourceFileList without include and exclude criteria.");
-			return Constants.CLI_2;
-		}
 		if(fileList != null && (excludePattern != null || includePattern != null))
 		{
 			System.out.println("Invalid options. Specify sourceFileList without include and exclude criteria.");
-			return Constants.CLI_2;
-		}
-		if(filePath == null && fileList == null)
-		{
-			System.out.println("Invalid options. Specify either sourceFilePath or sourceFileList without include and exclude criteria.");
 			return Constants.CLI_2;
 		}
 		criteriaMap.put("filePath", filePath);
