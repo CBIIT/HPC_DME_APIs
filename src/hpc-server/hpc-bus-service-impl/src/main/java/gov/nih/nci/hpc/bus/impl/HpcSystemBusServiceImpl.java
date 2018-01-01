@@ -497,13 +497,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           // Download all files under this collection.
           downloadItems =
               downloadCollection(
-                  collection, downloadTask.getDestinationLocation(), downloadTask.getUserId());
+                  collection,
+                  downloadTask.getDestinationLocation(),
+                  downloadTask.getDestinationOverwrite(),
+                  downloadTask.getUserId());
 
         } else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
           downloadItems =
               downloadDataObjects(
                   downloadTask.getDataObjectPaths(),
                   downloadTask.getDestinationLocation(),
+                  downloadTask.getDestinationOverwrite(),
                   downloadTask.getUserId());
         }
 
@@ -957,10 +961,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                 });
 
         eventService.addBulkDataObjectRegistrationCompletedEvent(
-            registrationTask.getUserId(),
-            taskId,
-            registrationTask.getItems(),
-            completed);
+            registrationTask.getUserId(), taskId, registrationTask.getItems(), completed);
       } else {
         eventService.addBulkDataObjectRegistrationFailedEvent(
             registrationTask.getUserId(), taskId, completed, message);
@@ -1028,19 +1029,26 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    *
    * @param collection The collection to download.
    * @param destinationLocation The download destination location.
+   * @param destinationOverwrite If true, the requested destination location will be overwritten if
+   *     it exists.
    * @param userId The user ID who requested the collection download.
    * @return The download task items (each item represent a data-object download under the
    *     collection).
    * @throws HpcException on service failure.
    */
   private List<HpcCollectionDownloadTaskItem> downloadCollection(
-      HpcCollection collection, HpcFileLocation destinationLocation, String userId)
+      HpcCollection collection,
+      HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
+      String userId)
       throws HpcException {
     List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
     // Iterate through the data objects in the collection and download them.
     for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-      downloadItems.add(downloadDataObject(dataObjectEntry.getPath(), destinationLocation, userId));
+      downloadItems.add(
+          downloadDataObject(
+              dataObjectEntry.getPath(), destinationLocation, destinationOverwrite, userId));
     }
 
     // Iterate through the sub-collections and download them.
@@ -1053,6 +1061,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             downloadCollection(
                 subCollection,
                 calculateDownloadDestinationFileLocation(destinationLocation, subCollectionPath),
+                destinationOverwrite,
                 userId));
       }
     }
@@ -1065,17 +1074,23 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    *
    * @param dataObjectPaths The list of data object path to download.
    * @param destinationLocation The download destination location.
+   * @param destinationOverwrite If true, the requested destination location will be overwritten if
+   *     it exists.
    * @param userId The user ID who requested the collection download.
    * @return The download task items (each item represent a data-object download from the requested
    *     list).
    */
   private List<HpcCollectionDownloadTaskItem> downloadDataObjects(
-      List<String> dataObjectPaths, HpcFileLocation destinationLocation, String userId) {
+      List<String> dataObjectPaths,
+      HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
+      String userId) {
     List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
     // Iterate through the data objects in the collection and download them.
     for (String dataObjectPath : dataObjectPaths) {
-      downloadItems.add(downloadDataObject(dataObjectPath, destinationLocation, userId));
+      downloadItems.add(
+          downloadDataObject(dataObjectPath, destinationLocation, destinationOverwrite, userId));
     }
 
     return downloadItems;
@@ -1086,14 +1101,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    *
    * @param path The data object path.
    * @param destinationLocation The download destination location.
+   * @param destinationOverwrite If true, the requested destination location will be overwritten if
+   *     it exists.
    * @param userId The user ID who requested the collection download.
    * @return The download task item.
    */
   private HpcCollectionDownloadTaskItem downloadDataObject(
-      String path, HpcFileLocation destinationLocation, String userId) {
+      String path,
+      HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
+      String userId) {
     HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
     dataObjectDownloadRequest.setDestination(
         calculateDownloadDestinationFileLocation(destinationLocation, path));
+    dataObjectDownloadRequest.setDestinationOverwrite(destinationOverwrite);
 
     // Instantiate a download item for this data object.
     HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();

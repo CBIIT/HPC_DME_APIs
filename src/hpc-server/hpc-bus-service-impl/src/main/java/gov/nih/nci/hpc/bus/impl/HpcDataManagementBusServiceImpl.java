@@ -339,6 +339,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         dataTransferService.downloadCollection(
             path,
             downloadRequest.getDestination(),
+            downloadRequest.getDestinationOverwrite() != null
+                ? downloadRequest.getDestinationOverwrite()
+                : false,
             securityService.getRequestInvoker().getNciAccount().getUserId(),
             metadata.getConfigurationId());
 
@@ -367,7 +370,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           "Null destination in download request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Validate all data object paths requested exist and from the same DOC.
+    // Validate all data object paths requested exist.
     Map<String, String> dataObjectPathsMap = new HashMap<>();
     for (String path : downloadRequest.getDataObjectPaths()) {
       if (dataManagementService.getDataObject(path) == null) {
@@ -388,6 +391,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         dataTransferService.downloadDataObjects(
             dataObjectPathsMap,
             downloadRequest.getDestination(),
+            downloadRequest.getDestinationOverwrite() != null
+                ? downloadRequest.getDestinationOverwrite()
+                : false,
             securityService.getRequestInvoker().getNciAccount().getUserId());
 
     // Create and return a DAO with the request receipt.
@@ -1015,6 +1021,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             path,
             metadata.getArchiveLocation(),
             downloadRequest.getDestination(),
+            downloadRequest.getDestinationOverwrite() != null
+                ? downloadRequest.getDestinationOverwrite()
+                : false,
             metadata.getDataTransferType(),
             metadata.getConfigurationId(),
             userId,

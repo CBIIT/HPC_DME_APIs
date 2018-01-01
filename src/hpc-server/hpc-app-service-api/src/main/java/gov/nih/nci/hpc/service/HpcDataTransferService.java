@@ -70,6 +70,8 @@ public interface HpcDataTransferService {
    * @param path The data object path.
    * @param archiveLocation The archive file location.
    * @param destinationLocation The user requested file destination.
+   * @param destinationOverwrite If true, the requested destination location will be overwritten if
+   *     it exists.
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
@@ -82,6 +84,7 @@ public interface HpcDataTransferService {
       String path,
       HpcFileLocation archiveLocation,
       HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
       HpcDataTransferType dataTransferType,
       String configurationId,
       String userId,
@@ -268,6 +271,8 @@ public interface HpcDataTransferService {
    *
    * @param path The collection path.
    * @param destinationLocation The user requested destination.
+   * @param destinationOverwrite If true, the requested destination location will be overwritten if
+   *     it exists.
    * @param userId The user ID submitting the download request.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
@@ -275,7 +280,11 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public HpcCollectionDownloadTask downloadCollection(
-      String path, HpcFileLocation destinationLocation, String userId, String configurationId)
+      String path,
+      HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
+      String userId,
+      String configurationId)
       throws HpcException;
 
   /**
@@ -283,12 +292,17 @@ public interface HpcDataTransferService {
    *
    * @param dataObjectPathsMap A map of data-object-path to its configuration ID.
    * @param destinationLocation The user requested destination.
+   * @param destinationOverwrite If true, the requested destination location will be overwritten if
+   *     it exists.
    * @param userId The user ID submitting the download request.
    * @return The submitted request download task.
    * @throws HpcException on service failure.
    */
   public HpcCollectionDownloadTask downloadDataObjects(
-      Map<String, String> dataObjectPathsMap, HpcFileLocation destinationLocation, String userId)
+      Map<String, String> dataObjectPathsMap,
+      HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
+      String userId)
       throws HpcException;
 
   /**
