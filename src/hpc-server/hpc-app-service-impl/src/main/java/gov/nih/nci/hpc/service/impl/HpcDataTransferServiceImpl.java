@@ -199,6 +199,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       String path,
       HpcFileLocation archiveLocation,
       HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
       HpcDataTransferType dataTransferType,
       String configurationId,
       String userId,
@@ -214,6 +215,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadRequest.setDataTransferType(dataTransferType);
     downloadRequest.setArchiveLocation(archiveLocation);
     downloadRequest.setDestinationLocation(destinationLocation);
+    downloadRequest.setDestinationOverwrite(destinationOverwrite);
     downloadRequest.setPath(path);
     downloadRequest.setConfigurationId(configurationId);
     downloadRequest.setUserId(userId);
@@ -255,7 +257,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setDataTransferType(dataTransferType);
       downloadTask.setDestinationLocation(
           calculateDownloadDestinationFileLocation(
-              destinationLocation, dataTransferType, archiveLocation.getFileId(), configurationId));
+              destinationLocation,
+              destinationOverwrite,
+              dataTransferType,
+              archiveLocation.getFileId(),
+              configurationId));
       downloadTask.setPath(path);
       downloadTask.setUserId(userId);
 
@@ -587,16 +593,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public HpcCollectionDownloadTask downloadCollection(
-      String path, HpcFileLocation destinationLocation, String userId, String configurationId)
+      String path, HpcFileLocation destinationLocation, boolean destinationOverwrite, String userId, String configurationId)
       throws HpcException {
     // Validate the requested destination location.
     validateDownloadDestinationFileLocation(
-        HpcDataTransferType.GLOBUS, destinationLocation, false, configurationId);
+        HpcDataTransferType.GLOBUS, destinationLocation, false, true, configurationId);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
     downloadTask.setCreated(Calendar.getInstance());
     downloadTask.setDestinationLocation(destinationLocation);
+    downloadTask.setDestinationOverwrite(destinationOverwrite);
     downloadTask.setPath(path);
     downloadTask.setUserId(userId);
     downloadTask.setType(HpcDownloadTaskType.COLLECTION);
@@ -611,7 +618,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public HpcCollectionDownloadTask downloadDataObjects(
-      Map<String, String> dataObjectPathsMap, HpcFileLocation destinationLocation, String userId)
+      Map<String, String> dataObjectPathsMap, HpcFileLocation destinationLocation, boolean destinationOverwrite, String userId)
       throws HpcException {
     // Validate the requested destination location. Note: we use the configuration
     // ID of the
@@ -619,12 +626,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // configuration IDs.
     String configurationId = dataObjectPathsMap.values().iterator().next();
     validateDownloadDestinationFileLocation(
-        HpcDataTransferType.GLOBUS, destinationLocation, false, configurationId);
+        HpcDataTransferType.GLOBUS, destinationLocation, false, true, configurationId);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
     downloadTask.setCreated(Calendar.getInstance());
     downloadTask.setDestinationLocation(destinationLocation);
+    downloadTask.setDestinationOverwrite(destinationOverwrite);
     downloadTask.getDataObjectPaths().addAll(dataObjectPathsMap.keySet());
     downloadTask.setUserId(userId);
     downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
@@ -952,6 +960,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * @param destinationLocation The file location to validate.
    * @param validateExistsAsDirectory If true, an exception will thrown if the path is an existing
    *     directory.
+   * @param validateExistsAsFile If true, an exception will thrown if the path is an existing file.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
    * @return The path attributes.
@@ -961,6 +970,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcDataTransferType dataTransferType,
       HpcFileLocation destinationLocation,
       boolean validateExistsAsDirectory,
+      boolean validateExistsAsFile,
       String configurationId)
       throws HpcException {
     HpcPathAttributes pathAttributes =
@@ -977,7 +987,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Validate destination file doesn't exist as a file.
-    if (pathAttributes.getIsFile()) {
+    if (validateExistsAsFile && pathAttributes.getIsFile()) {
       throw new HpcException(
           "A file already exists with the same destination path: "
               + destinationLocation.getFileContainerId()
@@ -1147,9 +1157,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   /**
-   * Calculate download destination location.
+   * Calculate and validate download destination location.
    *
-   * @param destinationLocation The destination location requested by the caller..
+   * @param destinationLocation The destination location requested by the caller.
+   * @param destinationOverwrite If true, the requested destination location will be overwritten if
+   *     it exists.
    * @param dataTransferType The data transfer type to create the request.
    * @param sourcePath The source path.
    * @param configurationId The configuration ID (needed to determine the archive connection
@@ -1160,6 +1172,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    */
   private HpcFileLocation calculateDownloadDestinationFileLocation(
       HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
       HpcDataTransferType dataTransferType,
       String sourcePath,
       String configurationId)
@@ -1167,7 +1180,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Validate the download destination location.
     HpcPathAttributes pathAttributes =
         validateDownloadDestinationFileLocation(
-            dataTransferType, destinationLocation, false, configurationId);
+            dataTransferType, destinationLocation, false, !destinationOverwrite, configurationId);
 
     // Calculate the destination.
     if (pathAttributes.getIsDirectory()) {
@@ -1179,7 +1192,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       // Validate the calculated download destination.
       validateDownloadDestinationFileLocation(
-          dataTransferType, calcDestination, true, configurationId);
+          dataTransferType, calcDestination, true, !destinationOverwrite, configurationId);
 
       return calcDestination;
 
@@ -1225,6 +1238,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           toSecondHopDownloadRequest(
               calculateDownloadDestinationFileLocation(
                   firstHopDownloadRequest.getDestinationLocation(),
+                  firstHopDownloadRequest.getDestinationOverwrite(),
                   HpcDataTransferType.GLOBUS,
                   firstHopDownloadRequest.getArchiveLocation().getFileId(),
                   firstHopDownloadRequest.getConfigurationId()),

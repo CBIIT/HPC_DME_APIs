@@ -73,6 +73,7 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "DATA_OBJECT_PATHS" text[],
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text,
   "DESTINATION_LOCATION_FILE_ID" text,
+  "DESTINATION_OVERWRITE" boolean,
   "STATUS" text,
   "ITEMS" text,
   "CREATED" timestamp
@@ -99,6 +100,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_LOCATION_FI
                   'The download destination container ID';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_ID" IS 
                   'The download destination file ID';   
+COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_OVERWRITE" IS 
+                  'An indicator whether files at the download destination will be overwritten if they exist';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."STATUS" IS 
                   'The download task status';   
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."ITEMS" IS 

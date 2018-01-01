@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- * HpcDataManagement.xsd * * Copyright SVG, Inc. * Copyright Leidos Biomedical 
-	Research, Inc * * Distributed under the OSI-approved BSD 3-Clause License. 
-	* See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author <a 
-	href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> -->
+<!-- * HpcDataTransferTypes.xsd * * Copyright SVG, Inc. * Copyright Leidos 
+	Biomedical Research, Inc * * Distributed under the OSI-approved BSD 3-Clause 
+	License. * See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author 
+	<a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
@@ -323,6 +323,8 @@
 			<xsd:sequence>
 				<xsd:element name="destination"
 					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="destinationOverwrite" type="xsd:boolean"
+					minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -402,6 +404,8 @@
 					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="destination"
 					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="destinationOverwrite" type="xsd:boolean"
+					minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
