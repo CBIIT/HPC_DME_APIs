@@ -5,7 +5,7 @@
 			"subjectFormat": "HPC Data Upload received in temporary archive",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data upload request is stored in temporary archive. \nIt will post to permanent archive soon. \nData path: %1$s",
+			"textFormat": "Your data upload request is stored in temporary archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -22,7 +22,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your upload request is completed.\nSource path: %1$s\nTarget path: %2$s",
+			"textFormat": "Your upload request is completed.<br/>Source path: %1$s<br/>Target path: %2$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "SOURCE_LOCATION",
@@ -43,7 +43,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your data registration failed. \nData path: %1$s \nReason for failure: %2$s",
+			"textFormat": "Your data registration failed. <br/>Data path: %1$s <br/>Reason for failure: %2$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -60,7 +60,7 @@
 			"subjectFormat": "HPC Data Transfer Upload URL Expired",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data upload URL expired. \nData path: %1$s",
+			"textFormat": "Your data upload URL expired. <br/>Data path: %1$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -77,7 +77,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk registration request is completed.\nTask ID: %1$s \nRegistration Items: %2$s",
+			"textFormat": "Your bulk registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
@@ -98,7 +98,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk registration failed. \nTask ID: %1$s",
+			"textFormat": "Your bulk registration failed. <br/>Task ID: %1$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
@@ -119,7 +119,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request is completed.\nSource path: %1$s\nTarget path: %2$s \nTask ID: %3$s",
+			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -148,7 +148,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request failed.\nSource path: %1$s\nTarget path: %2$s \nTask ID: %3$s\nReason for failure: %4$s",
+			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -177,23 +177,23 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "HPC DME Usage summary report generated on %1$s. \n_______________________________________________________
-         \nTotal registered users: %2$s 
-         \nTotal size of the data:  %3$s bytes
-         \nLargest file:  %4$s bytes
-         \nAverage file size:  %5$s bytes
-         \nTotal number of objects:  %6$s
-         \nTotal number of collections:  %7$s
-         \nTotal number of metadata attributes:  %8$s
-         \nTotal number of files with size:
-         \n\t < 1MB:  %9$s 
-		 \n\t > 1MB and < 10MB:  %10$s
-		 \n\t > 10MB and < 50MB:  %11$s
-		 \n\t > 50MB and < 100MB:  %12$s
-		 \n\t > 100MB and < 500MB:  %13$s
-		 \n\t > 500MB and < 1GB:  %14$s
-		 \n\t > 1GB and < 10GB:  %15$s
-		 \n\t > 10GB:  %16$s",
+			"textFormat": "HPC DME Usage summary report generated on %1$s. <br/>_______________________________________________________
+         <br/>Total registered users: %2$s 
+         <br/>Total size of the data:  %3$s bytes
+         <br/>Largest file:  %4$s bytes
+         <br/>Average file size:  %5$s bytes
+         <br/>Total number of objects:  %6$s
+         <br/>Total number of collections:  %7$s
+         <br/>Total number of metadata attributes:  %8$s
+         <br/>Total number of files with size:
+         <br/>\t < 1MB:  %9$s 
+		 <br/>\t > 1MB and < 10MB:  %10$s
+		 <br/>\t > 10MB and < 50MB:  %11$s
+		 <br/>\t > 50MB and < 100MB:  %12$s
+		 <br/>\t > 100MB and < 500MB:  %13$s
+		 <br/>\t > 500MB and < 1GB:  %14$s
+		 <br/>\t > 1GB and < 10GB:  %15$s
+		 <br/>\t > 10GB:  %16$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
@@ -270,24 +270,24 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "HPC DME Usage summary report generated on %1$s. \n_______________________________________________________
-         \nReporting period from %17$s to %18$s\n
-         \nTotal registered users: %2$s 
-         \nTotal size of the data:  %3$s bytes
-         \nLargest file:  %4$s bytes
-         \nAverage file size:  %5$s bytes
-         \nTotal number of objects:  %6$s
-         \nTotal number of collections:  %7$s
-         \nTotal number of metadata attributes:  %8$s
-         \nTotal number of files with size:
-         \n\t < 1MB:  %9$s 
-		 \n\t > 1MB and < 10MB:  %10$s
-		 \n\t > 10MB and < 50MB:  %11$s
-		 \n\t > 50MB and < 100MB:  %12$s
-		 \n\t > 100MB and < 500MB:  %13$s
-		 \n\t > 500MB and < 1GB:  %14$s
-		 \n\t > 1GB and < 10GB:  %15$s
-		 \n\t > 10GB:  %16$s",
+			"textFormat": "HPC DME Usage summary report generated on %1$s. <br/>_______________________________________________________
+         <br/>Reporting period from %17$s to %18$s<br/>
+         <br/>Total registered users: %2$s 
+         <br/>Total size of the data:  %3$s bytes
+         <br/>Largest file:  %4$s bytes
+         <br/>Average file size:  %5$s bytes
+         <br/>Total number of objects:  %6$s
+         <br/>Total number of collections:  %7$s
+         <br/>Total number of metadata attributes:  %8$s
+         <br/>Total number of files with size:
+         <br/>\t < 1MB:  %9$s 
+		 <br/>\t > 1MB and < 10MB:  %10$s
+		 <br/>\t > 10MB and < 50MB:  %11$s
+		 <br/>\t > 50MB and < 100MB:  %12$s
+		 <br/>\t > 100MB and < 500MB:  %13$s
+		 <br/>\t > 500MB and < 1GB:  %14$s
+		 <br/>\t > 1GB and < 10GB:  %15$s
+		 <br/>\t > 10GB:  %16$s",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
@@ -368,7 +368,7 @@
 			"subjectFormat": "HPC collection updated",
 			"subjectArguments": [
 			],
-			"textFormat": "Collection %1$s was updated.\n %2$s.",
+			"textFormat": "Collection %1$s was updated.<br/> %2$s.",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "COLLECTION_PATH",
@@ -393,7 +393,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "%1$s server or connection is broken - Please have DBA or System Administrator check.\n%2$s\n",
+			"textFormat": "%1$s server or connection is broken - Please have DBA or System Administrator check.<br/>%2$s<br/>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "INTEGRATED_SYSTEM",
