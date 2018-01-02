@@ -26,6 +26,8 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_BASEPATH" />
+			<xsd:enumeration value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" />
 		</xsd:restriction>

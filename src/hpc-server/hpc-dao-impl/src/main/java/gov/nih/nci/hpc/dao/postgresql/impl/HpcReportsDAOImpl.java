@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
@@ -208,60 +209,110 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       "SELECT count(a.meta_attr_name) / greatest( count(distinct data_id), 1 ) "
           + "FROM r_report_data_objects a, r_report_registered_by b "
           + "where a.data_id = b.object_id and b.meta_attr_value=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
-  
-  /////////////////////////// USAGE_SUMMARY_BY_PATH.
-  private static final String SUM_OF_DATA_BY_PATH_SQL =
+
+  /////////////////////////// USAGE_SUMMARY_BY_BASEPATH.
+  private static final String SUM_OF_DATA_BY_BASEPATH_SQL =
       "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
           + "max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "
           + "avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize "
           + "from r_report_source_file_size a, r_report_registered_by_basepath b "
           + "where a.object_id = b.object_id and b.\"BASE_PATH\"=?";
 
-  private static final String TOTAL_NUM_OF_USERS_BY_PATH_SQL =
+  private static final String TOTAL_NUM_OF_USERS_BY_BASEPATH_SQL =
       "SELECT count(*) totalUsers FROM public.\"HPC_USER\" a,  public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
-      +"where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and b.\"BASE_PATH\"=?";
+          + "where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and b.\"BASE_PATH\"=?";
 
-  private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_PATH_SQL =
+  private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_BASEPATH_SQL =
       "SELECT count(distinct a.data_id) totalObjs FROM r_report_data_objects a, public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
           + "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" and b.\"BASE_PATH\"=?";
 
-  private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_PATH_SQL =
+  private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_BASEPATH_SQL =
       "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
           + "r_report_coll_registered_by_basepath b where b.\"BASE_PATH\"=? and a.coll_id=b.coll_id group by a.meta_attr_value";
 
-  private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_PATH_SQL =
+  private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_BASEPATH_SQL =
       "SELECT count(a.meta_attr_name) / greatest( count(distinct data_id), 1 ) "
           + "FROM r_report_data_objects a, r_report_registered_by_basepath b "
           + "where a.data_id = b.object_id and b.\"BASE_PATH\"=?";
-  
 
-  /////////////////////////////////// USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE.
-  private static final String SUM_OF_DATA_BY_PATH_DATE_SQL =
+
+  /////////////////////////////////// USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE.
+  private static final String SUM_OF_DATA_BY_BASEPATH_DATE_SQL =
       "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
           + "max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "
           + "avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize "
           + "from r_report_source_file_size a, r_report_registered_by_basepath b "
           + "where a.object_id = b.object_id and b.\"BASE_PATH\"=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
-  private static final String TOTAL_NUM_OF_USERS_BY_PATH_DATE_SQL =
+  private static final String TOTAL_NUM_OF_USERS_BY_BASEPATH_DATE_SQL =
       "SELECT count(*) totalUsers FROM public.\"HPC_USER\" a,  public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
-      +"where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and b.\"BASE_PATH\"=? and a.\"CREATED\" BETWEEN ?  AND ?";
+          + "where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and b.\"BASE_PATH\"=? and a.\"CREATED\" BETWEEN ?  AND ?";
 
-  private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_PATH_DATE_SQL =
+  private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_BASEPATH_DATE_SQL =
       "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects a, public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b  "
           + "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" and b.\"BASE_PATH\"=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
-  private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_PATH_DATE_SQL =
+  private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_BASEPATH_DATE_SQL =
       "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
           + "r_report_coll_registered_by_basepath b where b.\"BASE_PATH\"=? and a.coll_id=b.coll_id "
           + "and CAST(b.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
 
-  private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_PATH_DATE_SQL =
+  private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_BASEPATH_DATE_SQL =
       "SELECT count(a.meta_attr_name) / greatest( count(distinct data_id), 1 ) "
           + "FROM r_report_data_objects a, r_report_registered_by_basepath b "
           + "where a.data_id = b.object_id and b.\"BASE_PATH\"=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
-  
+
+  /////////////////////////// USAGE_SUMMARY_BY_PATH.
+  private static final String SUM_OF_DATA_BY_PATH_SQL =
+      "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
+          + "max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "
+          + "avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize "
+          + "from r_report_source_file_size a, r_report_collection_path b "
+          + "where a.object_id = b.object_id and (b.coll_name like ? or b.coll_name = ?)";
+
+  private static final String TOTAL_NUM_OF_USERS_BY_PATH_SQL =
+      "select COALESCE( count(distinct a.data_owner_name), 0) + COALESCE(count(distinct b.coll_owner_name), 0) from r_data_main a, r_coll_main b where a.coll_id=b.coll_id and (b.coll_name like ? or b.coll_name = ?) ";
+
+  private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_PATH_SQL =
+      "select count(distinct a.object_id) "+
+      "from r_report_source_file_size a, r_report_collection_path b "+ 
+      "where a.object_id=b.object_id and (b.coll_name like ? or b.coll_name = ?)";
+
+  private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_PATH_SQL =
+      "select a.meta_attr_value attr, count(distinct a.coll_id) cnt from r_report_collection_type a, "
+          + "r_report_coll_registered_by_path b where (b.coll_name like ? or b.coll_name = ?) and a.coll_id=b.coll_id group by a.meta_attr_value";
+
+  private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_PATH_SQL =
+      "SELECT count(a.meta_attr_name) / greatest( count(distinct a.data_id), 1 ) "
+          + "FROM r_report_data_objects a, r_report_collection_path b "
+          + "where a.data_id = b.object_id and (b.coll_name like ? or b.coll_name = ?)";
+
+  /////////////////////////// USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE.
+  private static final String SUM_OF_DATA_BY_PATH_DATE_SQL =
+      "select sum(to_number(a.meta_attr_value, '9999999999999999999')) totalSize, "
+          + "max(to_number(a.meta_attr_value, '9999999999999999999')) maxSize, "
+          + "avg(to_number(a.meta_attr_value, '9999999999999999999')) avgSize "
+          + "from r_report_source_file_size a, r_report_collection_path b "
+          + "where a.object_id = b.object_id and (b.coll_name like ? or b.coll_name = ?) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
+
+  private static final String TOTAL_NUM_OF_USERS_BY_PATH_DATE_SQL =
+      "select COALESCE( count(distinct a.data_owner_name), 0) + COALESCE(count(distinct b.coll_owner_name), 0) from r_data_main a, r_coll_main b where a.coll_id=b.coll_id and (b.coll_name like ? or b.coll_name = ?) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
+
+  private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_PATH_DATE_SQL =
+      "select count(distinct a.object_id) "+
+      "from r_report_source_file_size a, r_report_collection_path b "+ 
+      "where a.object_id=b.object_id and (b.coll_name like ? or b.coll_name = ?)  and CAST(b.create_ts as double precision) BETWEEN ? AND ?";
+
+  private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_PATH_DATE_SQL =
+      "select a.meta_attr_value attr, count(distinct a.coll_id) cnt from r_report_collection_type a, "
+          + "r_report_coll_registered_by_path b where (b.coll_name like ? or b.coll_name = ?) and a.coll_id=b.coll_id and CAST(b.create_ts as double precision) BETWEEN ? AND ? group by a.meta_attr_value";
+
+  private static final String AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_PATH_DATE_SQL =
+      "SELECT count( a.meta_attr_name) / greatest( count(distinct a.data_id), 1 ) "
+          + "FROM r_report_data_objects a, r_report_collection_path b "
+          + "where a.data_id = b.object_id and (b.coll_name like ? or b.coll_name = ?) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
+
   private static final String USERS_SQL = "select \"USER_ID\" from public.\"HPC_USER\"";
 
   private static final String DOCS_SQL =
@@ -280,6 +331,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
+  private String iRodsBasePath ="";
   // ---------------------------------------------------------------------//
   // Constructors
   // ---------------------------------------------------------------------//
@@ -288,7 +340,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
    * Constructor for Spring Dependency Injection.
    * 
    */
-  private HpcReportsDAOImpl() {}
+  private HpcReportsDAOImpl(String iRodsBasePath) {
+    this.iRodsBasePath = iRodsBasePath;
+  }
 
   // ---------------------------------------------------------------------//
   // Methods
@@ -299,23 +353,34 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
   // ---------------------------------------------------------------------//
 
   private String getUsersSize(HpcReportCriteria criteria, Date[] dates, Object[] docArg,
-      Object[] docDateArgs, Object[] pathArg, Object[] pathDateArgs) {
+      Object[] docDateArgs, Object[] basepathArg, Object[] basepathDateArgs, Object[] pathArg,
+      Object[] pathDateArgs) {
     Long usersSize = null;
-    if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
-      usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_SQL, Long.class);
-    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-      usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DATE_SQL, dates, Long.class);
-    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-      usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DOC_SQL, docArg, Long.class);
-    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
-      usersSize =
-          jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DOC_DATE_SQL, docDateArgs, Long.class);
-    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH))
-      usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_PATH_SQL, pathArg, Long.class);
-    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))
-      usersSize =
-          jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_PATH_DATE_SQL, pathDateArgs, Long.class);
-
+    try {
+      if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
+        usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_SQL, Long.class);
+      else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
+        usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DATE_SQL, dates, Long.class);
+      else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
+        usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DOC_SQL, docArg, Long.class);
+      else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
+        usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_DOC_DATE_SQL, docDateArgs,
+            Long.class);
+      else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH))
+        usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_BASEPATH_SQL, basepathArg,
+            Long.class);
+      else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))
+        usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_BASEPATH_DATE_SQL,
+            basepathDateArgs, Long.class);
+      else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
+        usersSize =
+            jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_PATH_SQL, pathArg, Long.class);
+      } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE)) {
+        usersSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_USERS_BY_PATH_DATE_SQL,
+            pathDateArgs, Long.class);
+      }
+    } catch (EmptyResultDataAccessException e) {
+    }
     if (usersSize != null)
       return usersSize.toString();
     else
@@ -323,7 +388,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
   }
 
   private String[] getTotalDataSize(HpcReportCriteria criteria, Long[] dates, String[] docArg,
-      Object[] docDateArgs, String[] userArg, Object[] userDateArgs, Object[] pathArg, Object[] pathDateArgs) {
+      Object[] docDateArgs, String[] userArg, Object[] userDateArgs, Object[] basepathArg,
+      Object[] basepathDateArgs, Object[] pathArg, Object[] pathDateArgs) {
     Map<String, Object> totals = null;
     if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
       totals = jdbcTemplate.queryForMap(SUM_OF_DATA_SQL);
@@ -337,6 +403,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_USER_SQL, userArg);
     else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
       totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_USER_DATE_SQL, userDateArgs);
+    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH))
+      totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_BASEPATH_SQL, basepathArg);
+    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))
+      totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_BASEPATH_DATE_SQL, basepathDateArgs);
     else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH))
       totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_PATH_SQL, pathArg);
     else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))
@@ -367,7 +437,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 
   private String getTotalDataObjSize(HpcReportCriteria criteria, Long[] dates, String[] docArg,
-      Object[] docDateArgs, String[] userArg, Object[] userDateArgs, Object[] pathArg, Object[] pathDateArgs) {
+      Object[] docDateArgs, String[] userArg, Object[] userDateArgs, Object[] basepathArg,
+      Object[] basepathDateArgs, Object[] pathArg, Object[] pathDateArgs) {
     Long dataSize = null;
     if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
       dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_SQL, Long.class);
@@ -386,6 +457,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
       dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_USER_DATE_SQL,
           userDateArgs, Long.class);
+    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH))
+      dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_BASEPATH_SQL, basepathArg,
+          Long.class);
+    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))
+      dataSize = jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_BASEPATH_DATE_SQL,
+          basepathDateArgs, Long.class);
     else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH))
       dataSize =
           jdbcTemplate.queryForObject(TOTAL_NUM_OF_DATA_OBJECTS_BY_PATH_SQL, pathArg, Long.class);
@@ -400,8 +477,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
   }
 
   private List<Map<String, Object>> getTotalCollectionsSize(HpcReportCriteria criteria,
-      Long[] dates, String[] docArg, Object[] docDateArgs, String[] userArg,
-      Object[] userDateArgs, Object[] pathArg, Object[] pathDateArgs) {
+      Long[] dates, String[] docArg, Object[] docDateArgs, String[] userArg, Object[] userDateArgs,
+      Object[] basepathArg, Object[] basepathDateArgs, Object[] pathArg, Object[] pathDateArgs) {
     List<Map<String, Object>> list = null;
     if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
       list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_SQL);
@@ -416,6 +493,11 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
       list =
           jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_DATE_SQL, userDateArgs);
+    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH))
+      list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_BASEPATH_SQL, basepathArg);
+    else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))
+      list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_BASEPATH_DATE_SQL,
+          basepathDateArgs);
     else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH))
       list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_PATH_SQL, pathArg);
     else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))
@@ -425,7 +507,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
   }
 
   private String getTotalMetaAttrCount(HpcReportCriteria criteria, Long[] dates, String[] docArg,
-      Object[] docDateArgs, String[] userArg, Object[] userDateArgs, String[] pathArg, Object[] pathDateArgs) {
+      Object[] docDateArgs, String[] userArg, Object[] userDateArgs, String[] basepathArg,
+      Object[] basepathDateArgs, String[] pathArg, Object[] pathDateArgs) {
     Long metaAttrCount = null;
     if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
       metaAttrCount =
@@ -460,19 +543,34 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
       metaAttrCount = jdbcTemplate.queryForObject(
           AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_USER_DATE_SQL, newuserDateArgs, Long.class);
-    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
+    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)) {
       String[] newPath = new String[1];
+      newPath[0] = basepathArg[0];
+      metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_BASEPATH_SQL,
+          newPath, Long.class);
+    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)) {
+      Object[] newPathDateArgs = new Object[3];
+      newPathDateArgs[0] = basepathDateArgs[0];
+      newPathDateArgs[1] = basepathDateArgs[1];
+      newPathDateArgs[2] = basepathDateArgs[2];
+
+      metaAttrCount = jdbcTemplate.queryForObject(
+          AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_BASEPATH_DATE_SQL, newPathDateArgs, Long.class);
+    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
+      String[] newPath = new String[2];
       newPath[0] = pathArg[0];
+      newPath[1] = pathArg[1];
       metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_PATH_SQL,
           newPath, Long.class);
     } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE)) {
-      Object[] newPathDateArgs = new Object[3];
+      Object[] newPathDateArgs = new Object[4];
       newPathDateArgs[0] = pathDateArgs[0];
       newPathDateArgs[1] = pathDateArgs[1];
       newPathDateArgs[2] = pathDateArgs[2];
+      newPathDateArgs[3] = pathDateArgs[3];
 
-      metaAttrCount = jdbcTemplate.queryForObject(AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_PATH_DATE_SQL,
-          newPathDateArgs, Long.class);
+      metaAttrCount = jdbcTemplate.queryForObject(
+          AVG_NUM_OF_DATA_OBJECT_META_ATTRS_BY_PATH_DATE_SQL, newPathDateArgs, Long.class);
     }
     if (metaAttrCount != null)
       return metaAttrCount.toString();
@@ -482,7 +580,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
   private List<Map<String, Object>> getFileSizeRange(HpcReportCriteria criteria,
       Object[] filesizedateArgs, Object[] filesizedocArgs, Object[] filesizedocDateArgs,
-      Object[] filesizeuserArgs, Object[] filesizeuserDateArgs, Object[] filesizePathArgs, Object[] filesizePathDateArgs) {
+      Object[] filesizeuserArgs, Object[] filesizeuserDateArgs, Object[] filesizebasePathArgs,
+      Object[] filesizebasePathDateArgs, Object[] filesizePathArgs, Object[] filesizePathDateArgs) {
     List<Map<String, Object>> results = null;
     if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)) {
       FILE_RANGE_FROM = " from r_report_source_file_size a ";
@@ -520,20 +619,35 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       return jdbcTemplate.query(
           FILE_RANGE_SELECT + FILE_RANGE_FROM + FILE_RANGE_WHERE + FILE_RANGE_GROUP,
           fileSizeRangeRowMapper, filesizeuserDateArgs);
-    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
+    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)) {
       FILE_RANGE_FROM = " from r_report_source_file_size a, r_report_registered_by_basepath b ";
       FILE_RANGE_WHERE = " where a.object_id=b.object_id and b.\"BASE_PATH\"=?";
       return jdbcTemplate.query(
           FILE_RANGE_SELECT + FILE_RANGE_FROM + FILE_RANGE_WHERE + FILE_RANGE_GROUP,
-          fileSizeRangeRowMapper, filesizePathArgs);
-    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE)) {
+          fileSizeRangeRowMapper, filesizebasePathArgs);
+    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)) {
       FILE_RANGE_FROM = " from r_report_source_file_size a, r_report_registered_by_basepath b ";
       FILE_RANGE_WHERE = " where a.object_id=b.object_id and "
           + "b.\"BASE_PATH\"=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
       return jdbcTemplate.query(
           FILE_RANGE_SELECT + FILE_RANGE_FROM + FILE_RANGE_WHERE + FILE_RANGE_GROUP,
+          fileSizeRangeRowMapper, filesizebasePathDateArgs);
+    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)) {
+      FILE_RANGE_FROM = " from r_report_source_file_size a, r_report_collection_path b ";
+      FILE_RANGE_WHERE =
+          " where a.object_id=b.object_id and (b.coll_name like ? or b.coll_name = ?)";
+      return jdbcTemplate.query(
+          FILE_RANGE_SELECT + FILE_RANGE_FROM + FILE_RANGE_WHERE + FILE_RANGE_GROUP,
+          fileSizeRangeRowMapper, filesizePathArgs);
+    } else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE)) {
+      FILE_RANGE_FROM = " from r_report_source_file_size a, r_report_collection_path b ";
+      FILE_RANGE_WHERE = " where a.object_id=b.object_id "
+          + "and (b.coll_name like ? or b.coll_name = ?) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
+      return jdbcTemplate.query(
+          FILE_RANGE_SELECT + FILE_RANGE_FROM + FILE_RANGE_WHERE + FILE_RANGE_GROUP,
           fileSizeRangeRowMapper, filesizePathDateArgs);
-    }    return results;
+    }
+    return results;
   }
 
   public List<HpcReport> generatReport(HpcReportCriteria criteria) {
@@ -541,6 +655,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
     if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)
         || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)
+        || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH)
+        || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
         || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
         || criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))
       reports.add(getReport(criteria));
@@ -648,30 +764,68 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       userDateArgs[2] = toDateLong;
     }
 
-    String[] pathArg = new String[1];
+    String[] basepathArg = new String[1];
     if (criteria.getPath() != null)
-      pathArg[0] = criteria.getPath();
+      basepathArg[0] = criteria.getPath();
 
-    Object[] pathDateArgs = new Object[3];
+    Object[] basepathDateArgs = new Object[3];
     if (criteria.getPath() != null) {
-      pathDateArgs[0] = criteria.getPath();
-      pathDateArgs[1] = fromDate;
-      pathDateArgs[2] = toDate;
+      basepathDateArgs[0] = criteria.getPath();
+      basepathDateArgs[1] = fromDate;
+      basepathDateArgs[2] = toDate;
     }
 
-    Object[] pathDateLongArgs = new Object[3];
+    Object[] basepathDateLongArgs = new Object[3];
     if (criteria.getPath() != null) {
-      pathDateLongArgs[0] = criteria.getPath();
-      pathDateLongArgs[1] = fromDateLong;
-      pathDateLongArgs[2] = toDateLong;
+      basepathDateLongArgs[0] = criteria.getPath();
+      basepathDateLongArgs[1] = fromDateLong;
+      basepathDateLongArgs[2] = toDateLong;
     }
 
+    String[] pathArg = new String[2];
+    if (criteria.getPath() != null) {
+      String collPath = criteria.getPath();
+      if(!collPath.startsWith("/"))
+        collPath = "/"+collPath;
+      collPath = iRodsBasePath + collPath;
+      pathArg[0] = collPath + "/%";
+      pathArg[1] = collPath;
+    }
+
+    Object[] pathDateArgs = new Object[4];
+    if (criteria.getPath() != null) {
+      String collPath = criteria.getPath();
+      if(!collPath.startsWith("/"))
+        collPath = "/"+collPath;
+      collPath = iRodsBasePath + collPath;
+      pathDateArgs[0] = collPath + "/%";
+      pathDateArgs[1] = collPath;
+      pathDateArgs[2] = fromDate;
+      pathDateArgs[3] = toDate;
+    }
+
+    Object[] pathDateLongArgs = new Object[4];
+    if (criteria.getPath() != null) {
+      String collPath = criteria.getPath();
+      if(!collPath.startsWith("/"))
+        collPath = "/"+collPath;
+      collPath = iRodsBasePath + collPath;
+      pathDateLongArgs[0] = collPath + "/%";
+      pathDateLongArgs[1] = collPath;
+      pathDateLongArgs[2] = fromDateLong;
+      pathDateLongArgs[3] = toDateLong;
+    }
+
+    if(criteria.getPath() != null)
+      report.setPath(criteria.getPath());
+    
     long start = System.currentTimeMillis();
 
     // TOTAL_NUM_OF_REGISTERED_USERS
     HpcReportEntry userSizeEntry = new HpcReportEntry();
     userSizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_REGISTERED_USERS);
-    userSizeEntry.setValue(getUsersSize(criteria, dateArgs, docArg, docDateUsersArgs, pathArg, pathDateArgs));
+    userSizeEntry.setValue(getUsersSize(criteria, dateArgs, docArg, docDateUsersArgs, basepathArg,
+        basepathDateArgs, pathArg, pathDateLongArgs));
     long stop = System.currentTimeMillis();
     logger.error(": " + (stop - start));
     start = System.currentTimeMillis();
@@ -679,8 +833,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     // Total Size - TOTAL_DATA_SIZE
     HpcReportEntry sizeEntry = new HpcReportEntry();
     sizeEntry.setAttribute(HpcReportEntryAttribute.TOTAL_DATA_SIZE);
-    String[] totals =
-        getTotalDataSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs, pathArg, pathDateLongArgs);
+    String[] totals = getTotalDataSize(criteria, dateLongArgs, docArg, docDateArgs, userArg,
+        userDateArgs, basepathArg, basepathDateLongArgs, pathArg, pathDateLongArgs);
     sizeEntry.setValue(totals[0]);
     stop = System.currentTimeMillis();
     logger.error("TOTAL_DATA_SIZE " + (stop - start));
@@ -705,15 +859,16 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     // Total number of data objects - TOTAL_NUM_OF_DATA_OBJECTS
     HpcReportEntry numOfDataObjEntry = new HpcReportEntry();
     numOfDataObjEntry.setAttribute(HpcReportEntryAttribute.TOTAL_NUM_OF_DATA_OBJECTS);
-    numOfDataObjEntry.setValue(
-        getTotalDataObjSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs, pathArg, pathDateLongArgs));
+    numOfDataObjEntry.setValue(getTotalDataObjSize(criteria, dateLongArgs, docArg, docDateArgs,
+        userArg, userDateArgs, basepathArg, basepathDateLongArgs, pathArg, pathDateLongArgs));
     stop = System.currentTimeMillis();
     logger.error("TOTAL_NUM_OF_DATA_OBJECTS " + (stop - start));
     start = System.currentTimeMillis();
 
     // Total number of collections - TOTAL_NUM_OF_COLLECTIONS
     List<Map<String, Object>> list =
-        getTotalCollectionsSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs, pathArg, pathDateLongArgs);
+        getTotalCollectionsSize(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs,
+            basepathArg, basepathDateLongArgs, pathArg, pathDateLongArgs);
     StringBuffer str = new StringBuffer();
     str.append("[");
     if (list != null) {
@@ -743,8 +898,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     // Total Meta attributes Size - TOTAL_NUMBER_OF_META_ATTRS
     HpcReportEntry metasizeEntry = new HpcReportEntry();
     metasizeEntry.setAttribute(HpcReportEntryAttribute.AVG_NUMBER_OF_DATA_OBJECT_META_ATTRS);
-    metasizeEntry.setValue(
-        getTotalMetaAttrCount(criteria, dateLongArgs, docArg, docDateArgs, userArg, userDateArgs, pathArg, pathDateLongArgs));
+    metasizeEntry.setValue(getTotalMetaAttrCount(criteria, dateLongArgs, docArg, docDateArgs,
+        userArg, userDateArgs, basepathArg, basepathDateLongArgs, pathArg, pathDateLongArgs));
     stop = System.currentTimeMillis();
     logger.error("TOTAL_NUMBER_OF_META_ATTRS " + (stop - start));
     start = System.currentTimeMillis();
@@ -776,7 +931,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
     // Get File size ranges
     List<Map<String, Object>> fileSizeRanges = getFileSizeRange(criteria, filesizedateArgs,
-        filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs, pathArg, pathDateLongArgs);
+        filesizedocArgs, filesizedocDateArgs, filesizeuserArgs, filesizeuserDateArgs, basepathArg,
+        basepathDateLongArgs, pathArg, pathDateLongArgs);
     HpcReportEntry oneMBEntry = new HpcReportEntry();
     oneMBEntry.setAttribute(HpcReportEntryAttribute.FILE_SIZE_BELOW_1_MB);
     oneMBEntry.setValue(getFilesSize("range1", fileSizeRanges));
