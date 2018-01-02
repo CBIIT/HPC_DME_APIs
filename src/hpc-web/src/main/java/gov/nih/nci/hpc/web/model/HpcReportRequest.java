@@ -6,6 +6,7 @@ public class HpcReportRequest {
 	private String doc;
 	private String user;
 	private String basepath;
+	private String path;
 	private String fromDate;
 	private String toDate;
 
@@ -55,6 +56,14 @@ public class HpcReportRequest {
 
   public void setBasepath(String basepath) {
     this.basepath = basepath;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
   }
 
 }

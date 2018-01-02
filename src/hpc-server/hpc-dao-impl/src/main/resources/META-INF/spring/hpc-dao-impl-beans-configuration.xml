@@ -51,7 +51,9 @@
 	<bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementAuditDAOImpl" />
 	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" />
 	<bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEventDAOImpl" />
-	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcReportsDAOImpl" />
+	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcReportsDAOImpl">
+		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
+	</bean>
 	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcMetadataDAOImpl" />
 	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserNamedQueryDAOImpl" />
 	<bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserBookmarkDAOImpl" />

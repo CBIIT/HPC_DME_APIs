@@ -115,8 +115,11 @@
 									<option value="USAGE_SUMMARY_BY_USER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER'}">User report</option>
 									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User
 										report by Date range</option>
-									<option value="USAGE_SUMMARY_BY_PATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH'}">Base path report</option>
-									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Base path
+									<option value="USAGE_SUMMARY_BY_BASEPATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH'}">Base path report</option>
+									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base path
+										report by Date range</option>
+									<option value="USAGE_SUMMARY_BY_PATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH'}">Collection path report</option>
+									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection path
 										report by Date range</option>
 								</select>
 							</div>
@@ -167,6 +170,13 @@
 														th:selected="${reportRequest.getBasepath() == entry}">
 														Wireframe</option>
 											</select>
+							</div>
+							<label class="control-label col-sm-4" for="level">&nbsp;</label>
+						</div>
+						<div class="form-group" style="display: none" id="collectionPath">
+							<label class="control-label col-sm-2" for="level">Collection path:</label>
+							<div class="col-sm-6">
+								<input type="text" name="path" id="path" th:value="${reportRequest.getPath()}" size="100"/>
 							</div>
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
@@ -372,6 +382,7 @@
     	var docListEle = document.getElementById("docList");
     	var userListEle = document.getElementById("userList");
     	var basepathListEle = document.getElementById("basepathList");
+    	var pathEle = document.getElementById("collectionPath");
       	var selectedValue = reportType;
       	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
       	{
@@ -380,6 +391,7 @@
       		docListEle.style.display = "none";
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
+      		pathEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC")
       	{
@@ -388,6 +400,7 @@
       		toDateEle.style.display = "none";
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
+      		pathEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE")
       	{
@@ -396,6 +409,7 @@
       		docListEle.style.display = "block";
       		userListEle.style.display = "none";
       		basepathListEle.style.display = "none";
+      		pathEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER")
       	{
@@ -404,6 +418,7 @@
       		fromDateEle.style.display = "none";
       		toDateEle.style.display = "none";
       		basepathListEle.style.display = "none";
+      		pathEle.style.display = "none";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_USER_BY_DATE_RANGE")
       	{
@@ -412,6 +427,25 @@
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
       		basepathListEle.style.display = "none";
+      		pathEle.style.display = "none";
+      	}
+      	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH")
+      	{
+      		userListEle.style.display = "none";
+      		docListEle.style.display = "none";
+      		fromDateEle.style.display = "none";
+      		toDateEle.style.display = "none";
+      		pathEle.style.display = "none";
+      		basepathListEle.style.display = "block";
+      	}
+      	else if(selectedValue == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
+      	{
+      		userListEle.style.display = "none";
+      		docListEle.style.display = "none";
+      		pathEle.style.display = "none";
+      		fromDateEle.style.display = "block";
+      		toDateEle.style.display = "block";
+      		basepathListEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH")
       	{
@@ -419,15 +453,17 @@
       		docListEle.style.display = "none";
       		fromDateEle.style.display = "none";
       		toDateEle.style.display = "none";
-      		basepathListEle.style.display = "block";
+      		basepathListEle.style.display = "none";
+      		pathEle.style.display = "block";
       	}
       	else if(selectedValue == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
       	{
       		userListEle.style.display = "none";
       		docListEle.style.display = "none";
+      		basepathListEle.style.display = "none";
       		fromDateEle.style.display = "block";
       		toDateEle.style.display = "block";
-      		basepathListEle.style.display = "block";
+      		pathEle.style.display = "block";
       	}
       	else
       	{
@@ -436,6 +472,8 @@
       		fromDateEle.style.display = "none";
       		docListEle.style.display = "none";
       		userListEle.style.display = "none";
+      		basepathListEle.style.display = "none";
+      		pathEle.style.display = "none";
       	}
       	
       }
@@ -490,7 +528,7 @@
         	  		alert("Please select a user");
         		document.getElementById("doc").value = "-1";
           	}
-          	else if(reportType == "USAGE_SUMMARY_BY_PATH")
+          	else if(reportType == "USAGE_SUMMARY_BY_BASEPATH")
           	{
         		document.getElementById("doc").value = "-1";
         		document.getElementById("user").value = "-1";
@@ -499,12 +537,30 @@
         	  	if(document.getElementById("basepath").value == "-1")
         	  		alert("Please select a Base path");
           	}
-          	else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
+          	else if(reportType == "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE")
           	{
         	  	if(document.getElementById("basepath").value == "-1")
         	  		alert("Please select a Base path");
         		document.getElementById("doc").value = "-1";
         		document.getElementById("user").value = "-1";
+          	}
+          	else if(reportType == "USAGE_SUMMARY_BY_PATH")
+          	{
+        		document.getElementById("doc").value = "-1";
+        		document.getElementById("user").value = "-1";
+        		document.getElementById("basepath").value = "-1";
+        		document.getElementById("fromDate").value = null;
+        	  	document.getElementById("toDate").value = null;
+        	  	if(document.getElementById("path").value == null || document.getElementById("path").value == "")
+        	  		alert("Please enter path");
+          	}
+          	else if(reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
+          	{
+        	  	if(document.getElementById("path").value == null || document.getElementById("path").value == "")
+        	  		alert("Please enter path");
+        		document.getElementById("doc").value = "-1";
+        		document.getElementById("user").value = "-1";
+        		document.getElementById("basepath").value = "-1";
           	}
     	  
     	  if(fromDate.valueOf() > toDate.valueOf())
