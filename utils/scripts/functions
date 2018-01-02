@@ -483,7 +483,7 @@ function dm_register_directory {
     archiveType=S3
     checksum=true
 
-    while getopts ":a:cde:i:l:hmp:st:" option
+    while getopts ":a:b:cde:i:l:hmp:st:" option
     do
       case "${option}" in
         a)
@@ -586,7 +586,21 @@ function dm_register_directory {
       return 1
     fi
 
+    #Make sure the source directory exists:
+    if [ ! -d $src_path ]
+    then
+      echo "The source directory: $src_path does not exist." >&2
+      exit 1
+    fi 
+
     command_args=""
+
+    #Pass the mandatory arguments
+    full_src_path=$(myreadlink $src_path)
+    full_src_path_converted=$(convert_path $full_src_path)
+    command_args+=" --sourceFilePath $full_src_path_converted "
+
+    command_args+=" --destinationArchivePath $dst_path "
 
     #Pass the options related to files that will be registered. 
   
@@ -595,25 +609,11 @@ function dm_register_directory {
       list_of_files_converted=$(convert_path $list_of_files)
       command_args+=" --sourceFileList ${list_of_files_converted}"
     else
-      #Make sure the source directory exists:
-      if [ ! -d $src_path ]
-      then
-        echo "The source directory: $src_path does not exist." >&2
-        exit 1
-      fi 
-      full_src_path=$(myreadlink $src_path)
-      full_src_path_converted=$(convert_path $full_src_path)
-
-      #Get the source path
-      local basedir=$(basename $full_src_path)
-      
-      command_args+=" --sourceFilePath $full_src_path_converted --filePathBaseName $basedir"
-
-      #Get the include path
+     #Get the include path
       if [ "$include_option" ] 
       then
         full_include_path=$(myfilereadlink $include_file)
-        full_include_path_converted=$(convert_path full_include_path)
+        full_include_path_converted=$(convert_path $full_include_path)
         command_args+=" --includePatternFile ${full_include_path_converted}"
       fi
   
@@ -621,7 +621,7 @@ function dm_register_directory {
       if [ "$exclude_option" ] 
       then
         full_exclude_path=$(myfilereadlink $exclude_file)
-        full_exclude_path_converted=$(convert_path full_exclude_path)
+        full_exclude_path_converted=$(convert_path $full_exclude_path)
         command_args+=" --excludePatternFile ${full_exclude_path_converted}"
       fi
     fi 
@@ -649,7 +649,7 @@ function dm_register_directory {
 
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file
-    echo "registerFromFilePath  --destinationArchivePath $dst_path" $command_args >  $command_file
+    echo "registerFromFilePath  " $command_args >  $command_file
 
     local log_file=./dm_log
     local error_file=./dm_error
@@ -661,7 +661,6 @@ function dm_register_directory {
        ;;
     
        CYGWIN*|MINGW32*|MSYS*)
-            #echo "registerFromFilePath --filePath `cygpath -m $full_src_path` --filePathBaseName $basedir --destinationBasePath $dst_path" >  $command_file
             java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
        ;;
     
@@ -670,11 +669,13 @@ function dm_register_directory {
     
        *)
          echo 'Current OS not supported' 
-         return 1
+         exit 1
          ;;
     esac
 
-    if [ "$?" -eq  1 ]
+    exit_code="$?"
+    echo "EXI_CODE $exit_code"
+    if [ "$exit_code" -eq  1 ]
     then
       echo "The batch registration did not fully complete successfully" >&2
       echo "Check complete log and error files at:" >&2
