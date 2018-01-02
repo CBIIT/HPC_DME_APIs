@@ -17,7 +17,6 @@ hpc.user=konkapv
 
 #Globus settings
 #default globus endpoint to be used in registration and download
-hpc.globus.user=
 hpc.default.globus.endpoint=
 
 #############################################################################
