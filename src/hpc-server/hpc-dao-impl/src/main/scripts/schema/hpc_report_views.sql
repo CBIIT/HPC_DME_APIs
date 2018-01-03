@@ -66,7 +66,7 @@ CREATE UNIQUE INDEX r_report_coll_registered_by_uidx1 ON r_report_coll_registere
 DROP MATERIALIZED VIEW IF EXISTS r_report_collection_type;
 CREATE MATERIALIZED VIEW r_report_collection_type
 AS (
-SELECT a.meta_attr_value, a.meta_attr_name, b.object_id, c.coll_id, c.create_ts 
+SELECT a.meta_attr_value, a.meta_attr_name, b.object_id, c.coll_id, c.coll_name, c.create_ts 
 FROM public.r_meta_main a 
 inner join r_objt_metamap b on a.meta_id=b.meta_id 
 inner join r_coll_main c on b.object_id=c.coll_id 
@@ -98,4 +98,30 @@ inner join public.r_objt_metamap b on a.data_id=b.object_id
 inner join public.r_meta_main c on b.meta_id=c.meta_id
 );
 CREATE UNIQUE INDEX r_report_data_objects_uidx1 ON r_report_data_objects(meta_attr_name, meta_attr_value, data_id);
+
+DROP MATERIALIZED VIEW IF EXISTS r_report_coll_registered_by_path;
+CREATE MATERIALIZED VIEW r_report_coll_registered_by_path
+AS (
+select distinct c.coll_name, a.meta_attr_name, a.meta_attr_value, c.coll_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_coll_main c
+where a.meta_id=b.meta_id and b.object_id = c.coll_id  
+);
+CREATE UNIQUE INDEX r_report_coll_registered_by_path_uidx1 ON r_report_coll_registered_by_path(meta_attr_name, meta_attr_value, coll_id, coll_name);
+
+DROP MATERIALIZED VIEW IF EXISTS r_report_registered_by_path;
+CREATE MATERIALIZED VIEW r_report_registered_by_path
+AS (
+select distinct d.coll_name, a.meta_attr_name, a.meta_attr_value, b.object_id, b.meta_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_data_main c, r_coll_main d 
+	where a.meta_id=b.meta_id and b.object_id = c.data_id and c.coll_id = d.coll_id
+);
+CREATE UNIQUE INDEX r_report_registered_by_path_uidx1 ON r_report_registered_by_path(meta_attr_name, meta_attr_value, object_id, coll_name);
+
+DROP MATERIALIZED VIEW IF EXISTS r_report_collection_path;
+CREATE MATERIALIZED VIEW r_report_collection_path
+AS (
+select distinct d.coll_name, b.object_id, c.create_ts from public.r_meta_main a, public.r_objt_metamap b, r_data_main c, r_coll_main d 
+	where a.meta_id=b.meta_id and b.object_id = c.data_id and c.coll_id = d.coll_id
+);
+CREATE UNIQUE INDEX r_report_collection_path_uidx1 ON r_report_collection_path(object_id, coll_name);
+
+
 
