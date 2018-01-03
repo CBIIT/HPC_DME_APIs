@@ -9,31 +9,28 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xmlns:context="http://www.springframework.org/schema/context"
-	   xmlns:aop="http://www.springframework.org/schema/aop"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	                       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 	<context:annotation-config />
 	<aop:aspectj-autoproxy />
-	
+
 	<!-- HPC Business Services Beans -->
 	<bean id="hpcSecurityBusService" class="gov.nih.nci.hpc.bus.impl.HpcSecurityBusServiceImpl" />
-	<bean id="hpcDataManagementBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl" />
+	<bean id="hpcDataManagementBusService"
+		class="gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl" />
 	<bean id="hpcDataSearchBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataSearchBusServiceImpl" />
 	<bean id="hpcDataBrowseBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataBrowseBusServiceImpl" />
 	<bean id="hpcSystemBusService" class="gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl" />
 	<bean id="hpcNotificationBusService" class="gov.nih.nci.hpc.bus.impl.HpcNotificationBusServiceImpl" />
 	<bean id="hpcReportBusService" class="gov.nih.nci.hpc.bus.impl.HpcReportBusServiceImpl" />
-	
+
 	<!-- Business Services Aspects -->
-	<bean id="hpcBusServiceAspect" class="gov.nih.nci.hpc.bus.aspect.HpcBusServiceAspect" >
-		<constructor-arg value="${hpc.bus.aspect.systemAdministratorUserId}" />
-	</bean>
+	<bean id="hpcBusServiceAspect" class="gov.nih.nci.hpc.bus.aspect.HpcBusServiceAspect" />
 
 </beans>

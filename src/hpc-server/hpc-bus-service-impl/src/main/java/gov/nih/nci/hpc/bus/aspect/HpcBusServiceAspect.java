@@ -10,7 +10,6 @@ package gov.nih.nci.hpc.bus.aspect;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -20,8 +19,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
@@ -47,6 +45,7 @@ public class HpcBusServiceAspect {
   @Autowired private HpcNotificationService notificationService = null;
 
   // The system administrator NCI user ID.
+  @Value("${hpc.bus.aspect.systemAdministratorUserId}")
   private String systemAdministratorUserId = null;
 
   // The logger instance.
@@ -56,23 +55,8 @@ public class HpcBusServiceAspect {
   // Constructors
   //---------------------------------------------------------------------//
 
-  /**
-   * Default Constructor disabled.
-   *
-   * @throws HpcException if used.
-   */
-  public HpcBusServiceAspect() throws HpcException {
-    throw new HpcException("Default constructor disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
-  }
-
-  /**
-   * Constructor for Spring Dependency Injection.
-   *
-   * @param systemAdministratorUserId The system administrator NCI user ID.
-   */
-  public HpcBusServiceAspect(String systemAdministratorUserId) {
-    this.systemAdministratorUserId = systemAdministratorUserId;
-  }
+  /** Constructor for Spring Dependency Injection. */
+  private HpcBusServiceAspect() {}
 
   //---------------------------------------------------------------------//
   // Pointcuts.
