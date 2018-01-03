@@ -33,7 +33,7 @@ http://www.ece.umd.edu/DSPCAD/projects/dice/dice.htm
   II- Globus configuraton:
       1- Create a globus shared endpoint (e.g., HPC_DM_TEST) and share it with the service account. 
          Review the user guide document to get the name of the service account. 
-      2- Add a test.txt empty file to this Globus endpoint:
+      2- Add a test.txtmpty file to this Globus endpoint:
         "endpoint": "HPC_DM_TEST",
         "path": "/test.txt"
       3- Add a download empty folder to your shared Globus endpoint
