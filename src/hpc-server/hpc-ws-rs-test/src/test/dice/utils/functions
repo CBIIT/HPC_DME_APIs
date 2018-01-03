@@ -488,6 +488,7 @@ function curl_register {
 
     #CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s"
     CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+
    
     if [ "$TYPE" == "dataObject" ]
     then
@@ -2516,7 +2517,7 @@ function verify_globus_download {
   do
     if [ "$first" == "false" ]
     then
-      verify_globus_file  -s 90 $globus_path 
+      verify_globus_file  -s 100 $globus_path 
       first=true
     else
       verify_globus_file  -e $globus_path 
@@ -2524,8 +2525,8 @@ function verify_globus_download {
   done 
 
 
-  #Sleep 50s and verify the status is updated
-  sleep 50 
+  #Sleep 60s and verify the status is updated
+  sleep 60 
   RESPONSE_HEADER=get-download-status-response-header.tmp
   RESPONSE_MSG=get-download-status-response-message.json.tmp
   get_download_status "$taskId" "$download_type"
