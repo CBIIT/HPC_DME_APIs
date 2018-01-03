@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.support.RetryTemplate;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
@@ -77,6 +78,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   @Autowired private RetryTemplate retryTemplate = null;
 
   // The Globus active tasks queue size.
+  @Value("${hpc.integration.globus.queueSize}")
   private int globusQueueSize = 0;
 
   // The Logger instance.
@@ -86,24 +88,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // Constructors
   // ---------------------------------------------------------------------//
 
-  /**
-   * Constructor for Spring Dependency Injection.
-   *
-   * @param globusQueueSize The Globus active tasks queue size.
-   */
-  public HpcDataTransferProxyImpl(int globusQueueSize) {
-    this.globusQueueSize = globusQueueSize;
-  }
-
-  /**
-   * Default Constructor is disabled.
-   *
-   * @throws HpcException Constructor is disabled.
-   */
-  @SuppressWarnings("unused")
-  private HpcDataTransferProxyImpl() throws HpcException {
-    throw new HpcException("Default Constructor Disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
-  }
+  /** Constructor for Spring Dependency Injection. */
+  private HpcDataTransferProxyImpl() {}
 
   // ---------------------------------------------------------------------//
   // Methods
@@ -212,7 +198,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     if (downloadRequest.getDestinationFile() != null) {
-      // This is a synchronous download request. 
+      // This is a synchronous download request.
       String archiveFilePath =
           downloadRequest
               .getArchiveLocation()
@@ -231,7 +217,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       }
 
       return String.valueOf(downloadRequest.getDestinationFile().hashCode());
-      
+
     } else {
       // This is an asynchrnous download request. Submit a request to Globus to transfer the data.
       return transferData(

@@ -42,18 +42,14 @@
     </bean>
     
 	<!--  Globus Connection  -->
-	<bean id="hpcGlobusConnection" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusConnection">
-		<constructor-arg value="${hpc.integration.globus.globusAuthScope}" index="0" />
-	</bean>
+	<bean id="hpcGlobusConnection" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusConnection" />
 	
 	<!--  Globus Directory Browser  -->
 	<bean id="hpcGlobusDirectoryBrowser" class="gov.nih.nci.hpc.integration.globus.impl.HpcGlobusDirectoryBrowser" />
 	
 	<!-- Globus Data Transfer Proxy -->
 	<bean id="hpcGlobusDataTransferProxy" 
-	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" >
-	      <constructor-arg value="${hpc.integration.globus.queueSize}" index="0" />
-	</bean>
+	      class="gov.nih.nci.hpc.integration.globus.impl.HpcDataTransferProxyImpl" />
 	
 	<!--  S3 Connection  -->
 	<bean id="hpcS3Connection" class="gov.nih.nci.hpc.integration.s3.impl.HpcS3Connection" />

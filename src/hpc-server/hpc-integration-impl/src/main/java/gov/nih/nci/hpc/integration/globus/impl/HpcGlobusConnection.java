@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.integration.globus.impl;
 
 import java.util.Arrays;
 import org.globusonline.transfer.JSONTransferAPIClient;
+import org.springframework.beans.factory.annotation.Value;
 import com.google.api.client.auth.oauth2.ClientCredentialsTokenRequest;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.BasicAuthentication;
@@ -30,32 +31,16 @@ public class HpcGlobusConnection {
   // Instance members
   //---------------------------------------------------------------------//
 
-  // Globus connection attributes.
+  // Globus authentication scope.
+  @Value("${hpc.integration.globus.globusAuthScope}")
   private String globusAuthScope = null;
 
   //---------------------------------------------------------------------//
   // Constructors
   //---------------------------------------------------------------------//
 
-  /**
-   * Constructor for Spring Dependency Injection.
-   *
-   * @param globusAuthUrl The Globus auth/token URL.
-   * @param globusAuthScope The Globus authentication scope.
-   */
-  public HpcGlobusConnection(String globusAuthScope) {
-    this.globusAuthScope = globusAuthScope;
-  }
-
-  /**
-   * Default Constructor.
-   *
-   * @throws HpcException Constructor is disabled.
-   */
-  @SuppressWarnings("unused")
-  private HpcGlobusConnection() throws HpcException {
-    throw new HpcException("Constructor Disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
-  }
+  /** Constructor for Spring Dependency Injection. */
+  private HpcGlobusConnection() {}
 
   //---------------------------------------------------------------------//
   // Methods
