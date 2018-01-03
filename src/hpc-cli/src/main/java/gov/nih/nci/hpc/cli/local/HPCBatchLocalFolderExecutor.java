@@ -28,6 +28,8 @@ import org.easybatch.core.filter.PoisonRecordFilter;
 import org.easybatch.core.job.Job;
 import org.easybatch.core.job.JobBuilder;
 import org.easybatch.core.job.JobReport;
+import org.easybatch.core.job.JobResult;
+import org.easybatch.core.job.JobStatus;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.easybatch.core.reader.BlockingQueueRecordReader;
 import org.easybatch.core.record.Record;
@@ -78,6 +80,7 @@ public class HPCBatchLocalFolderExecutor {
 				threadPoolSize = Integer.parseInt(threadStr);
 		} catch (NumberFormatException e) {
 			System.out.println("Failed to process number of threads input: " + threadStr);
+			generateJobReport(null, Constants.CLI_2);
 			return Constants.CLI_2;
 		}
 		if (criteriaMap.get("metadata") != null && criteriaMap.get("metadata").equalsIgnoreCase("true"))
@@ -102,12 +105,16 @@ public class HPCBatchLocalFolderExecutor {
 			else
 				paths = impl.getPathAttributes(localPath, excludePatterns, includePatterns);
 			if (testRun)
-				return Constants.CLI_0;
+			{
+			    generateJobReport(null, Constants.CLI_SUCCESS);  
+				return Constants.CLI_SUCCESS;
+			}
 			
 			List<HpcPathAttributes> folders = new ArrayList<HpcPathAttributes>();
 			List<HpcPathAttributes> files = new ArrayList<HpcPathAttributes>();
 			if (paths.isEmpty()) {
 				System.out.println("No files/folders found!");
+				generateJobReport(null, Constants.CLI_3);
 				return Constants.CLI_3;
 			} else {
 				for (HpcPathAttributes pathAttr : paths) {
@@ -129,10 +136,12 @@ public class HPCBatchLocalFolderExecutor {
 					String confirm = reader.readLine();
 					if (confirm != null && !confirm.equalsIgnoreCase("Y")) {
 						System.out.println("Skipped registering data files!");
-						return Constants.CLI_0;
+						generateJobReport(null, Constants.CLI_3);
+						return Constants.CLI_3;
 					}
 				} catch (IOException e) {
 					System.out.println("Failed to get confirmation " + e.getMessage());
+					generateJobReport(null, Constants.CLI_2);
 					return Constants.CLI_2;
 				}
 			}
@@ -147,10 +156,12 @@ public class HPCBatchLocalFolderExecutor {
 				} catch (IOException e) {
 					System.out.println("Failed to process collection " + folder.getAbsolutePath()
 							+ " registration due to: " + e.getMessage());
+					generateJobReport(null, Constants.CLI_4);
 					return Constants.CLI_4;
 				} catch (RecordProcessingException e) {
 					System.out.println("Failed to process collection " + folder.getAbsolutePath()
 							+ " registration due to: " + e.getMessage());
+					generateJobReport(null, Constants.CLI_4);
 					return Constants.CLI_4;
 				}
 			}
@@ -201,34 +212,61 @@ public class HPCBatchLocalFolderExecutor {
 				// System.out.println(jobReport.toString());
 			}
 
-			HPCJobReportMerger reportMerger = new HPCJobReportMerger();
-			JobReport finalReport = reportMerger.mergerReports(jobReports);
+			success = generateJobReport(jobReports, null);
 			Long stop = System.currentTimeMillis();
-			
 			long secs = (stop-start)/1000;
 			if(filesSize > 0)
 			{
 				System.out.println("Total bytes attempted: " + filesSize);
 				System.out.println("Average processing speed: " + (filesSize/secs) + " (bytes/sec)");
 			}
-			if (finalReport.getMetrics().getErrorCount() == 0)
-				success = true;
-			System.out.println(new HpcJobReportFormatter().formatReport(finalReport));
 		} catch (ExecutionException e) {
 			System.out.println("Failed to process file registration due to: " + e.getMessage());
+			generateJobReport(null, Constants.CLI_5);
 			return Constants.CLI_5;
 		} catch (InterruptedException e) {
 			System.out.println("Failed to process file registration due to: " + e.getMessage());
+			generateJobReport(null, Constants.CLI_5);
 			return Constants.CLI_5;
 		} catch (HpcException e) {
 			System.out.println("Failed to process file registration due to: " + e.getMessage());
+			generateJobReport(null, Constants.CLI_5);
 			return Constants.CLI_5;
 		}
 
 		// Shutdown executor service
 		if (executorService != null)
 			executorService.shutdown();
-		return Constants.CLI_0;
+		return Constants.CLI_SUCCESS;
+	}
+
+	private boolean generateJobReport(List<JobReport> jobReports, String returnCode)
+	{
+	  if(jobReports == null || jobReports.isEmpty())
+	  {
+	    jobReports = new ArrayList<>();
+	    JobReport report = new JobReport();
+	    report.setStatus(JobStatus.ABORTED);
+	    jobReports.add(report);
+	  }
+	  
+      HPCJobReportMerger reportMerger = new HPCJobReportMerger();
+      JobReport finalReport = reportMerger.mergerReports(jobReports);
+      finalReport.setJobResult(new JobResult(returnCode == null ? Constants.CLI_SUCCESS : returnCode));
+      for(JobReport report : jobReports)
+      {
+        if(report.getMetrics().getErrorCount() != 0)
+        {
+          finalReport.setJobResult(new JobResult(Constants.CLI_5 ));
+          break;
+        }
+      }
+      
+      System.out.println(new HpcJobReportFormatter().formatReport(finalReport));
+      if (finalReport.getMetrics().getErrorCount() == 0)
+          return true;
+      else 
+        return false;
 	}
 
 	private List<String> readPatternStringsfromFile(String fileName) {

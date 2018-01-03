@@ -52,6 +52,7 @@ public class HpcJobReportFormatter implements JobReportFormatter<String> {
 		/*
 		 * Job status
 		 */
+		sb.append(LINE_SEPARATOR).append("Result Code: ").append(jobReport.getResult());
 		sb.append(LINE_SEPARATOR).append("Status: ").append(jobReport.getStatus());
 
 		/*

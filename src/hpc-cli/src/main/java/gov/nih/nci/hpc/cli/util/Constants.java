@@ -23,6 +23,7 @@ public final class Constants {
 	public static final String GROUP_ID = "GroupId";
 	public static final String OBJECT_PATH = "object_path";
 	
+	public static final String CLI_SUCCESS = "CLI_SUCCESS";
 	//Authentication error
 	public static final String CLI_0 = "CLI_0";
 	
