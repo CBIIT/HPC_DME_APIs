@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+
+object_path=$(get_basefolder)/dice_project4/dice_object_1
+
+#Generate a destination directory with test.txt which already exists
+destination_path=/test.txt
+
+#update the download request 
+download_request=download-request.json.tmp
+download_template=$HPC_DM_TEST/utils/templates/download-async-template.json
+default_destination=$(get_json_value $download_template fileId)
+#update the globus uid
+update_uid $download_template updated-uid.json.tmp
+#update the destination path and the overwrite option
+cat updated-uid.json.tmp | sed  "s@$default_destination@$destination_path@" | sed  "s@\"destinationOverwrite.*@\"destinationOverwrite\":true@" > $download_request
+
+#Send the download request
+RESPONSE_HEADER=download-response-header.tmp
+RESPONSE_MSG=download-response-message.json.tmp
+download_async dataObject/$object_path $download_request
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo "download_async_code $HTTP_CODE"
+
+
