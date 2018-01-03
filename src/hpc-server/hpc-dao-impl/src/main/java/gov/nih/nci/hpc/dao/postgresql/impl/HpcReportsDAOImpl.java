@@ -1028,16 +1028,19 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
   @Override
   public void refreshViews() throws HpcException {
     try {
-      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_source_file_size");
-      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_data_objects");
-      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_collection_type");
-      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_doc");
-      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by_doc");
       jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_meta_main");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_source_file_size");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_doc");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_basepath");
       jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by");
       jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by");
-
-
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_collection_type");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by_doc");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by_basepath");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_data_objects");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by_path");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_path");
+      jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_collection_path");
     } catch (DataAccessException e) {
       throw new HpcException("Failed to refresh report views: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
