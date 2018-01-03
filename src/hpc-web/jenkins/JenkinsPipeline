@@ -8,10 +8,10 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-		dir ('/src/') { 
+		dir ('src') { 
 	            sh 'mvn -B -DskipTests clean package -Pdev'
 		}            
-		dir ('/src/hpc-web') { 
+		dir ('src/hpc-web') { 
 	            sh 'mvn -B -DskipTests clean package -Pdev'
 		}            
             }
