@@ -18,6 +18,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcEventDAO;
 import gov.nih.nci.hpc.dao.HpcNotificationDAO;
@@ -88,6 +89,7 @@ public class HpcEventServiceImpl implements HpcEventService {
 
   // An indicator whether a collection update notification should be sent to the invoker.
   // By default the invoker is not notified for changes they initiated, but this is handy for testing.
+  @Value("${hpc.service.event.invokerCollectionUpdateNotification}")
   boolean invokerCollectionUpdateNotification = false;
 
   // Date formatter to format event payload of type Calendar.
@@ -102,21 +104,8 @@ public class HpcEventServiceImpl implements HpcEventService {
 
   /**
    * Constructor for Spring Dependency Injection.
-   *
-   * @param invokerCollectionUpdateNotification If set to true, the invoker of collection update
-   *     will get notified for updates they initiated.
    */
-  private HpcEventServiceImpl(boolean invokerCollectionUpdateNotification) {
-    this.invokerCollectionUpdateNotification = invokerCollectionUpdateNotification;
-  }
-
-  /**
-   * Default Constructor.
-   *
-   * @throws HpcException Constructor is disabled.
-   */
-  private HpcEventServiceImpl() throws HpcException {
-    throw new HpcException("Default Constructor disabled", HpcErrorType.SPRING_CONFIGURATION_ERROR);
+  private HpcEventServiceImpl() {
   }
 
   //---------------------------------------------------------------------//
