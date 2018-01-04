@@ -90,7 +90,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( "
           + "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"RESULT\", "
-          + "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"CREATED\", \"COMPLETED\") "
+          + "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
           + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict on constraint \"HPC_DOWNLOAD_TASK_RESULT_pkey\" do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
@@ -231,7 +231,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         downloadTaskResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
         downloadTaskResult.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
         downloadTaskResult.setEffectiveTransferSpeed(rs.getInt("EFFECTIVE_TRANSFER_SPEED"));
-        
+
         Calendar created = Calendar.getInstance();
         created.setTime(rs.getTimestamp("CREATED"));
         downloadTaskResult.setCreated(created);
