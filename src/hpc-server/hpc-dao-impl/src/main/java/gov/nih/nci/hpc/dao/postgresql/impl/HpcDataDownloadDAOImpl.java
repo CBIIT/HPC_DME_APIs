@@ -91,7 +91,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"RESULT\", "
           + "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"CREATED\", \"COMPLETED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict on constraint \"HPC_DOWNLOAD_TASK_RESULT_pkey\" do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", "
@@ -103,6 +103,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"MESSAGE\"=excluded.\"MESSAGE\", "
           + "\"ITEMS\"=excluded.\"ITEMS\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
+          + "\"EFFECTIVE_TRANSFER_SPEED\"=excluded.\"EFFECTIVE_TRANSFER_SPEED\", "
           + "\"CREATED\"=excluded.\"CREATED\", "
           + "\"COMPLETED\"=excluded.\"COMPLETED\"";
 
@@ -229,7 +230,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         downloadTaskResult.setMessage(rs.getString("MESSAGE"));
         downloadTaskResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
         downloadTaskResult.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
-
+        downloadTaskResult.setEffectiveTransferSpeed(rs.getInt("EFFECTIVE_TRANSFER_SPEED"));
+        
         Calendar created = Calendar.getInstance();
         created.setTime(rs.getTimestamp("CREATED"));
         downloadTaskResult.setCreated(created);
@@ -423,6 +425,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           taskResult.getMessage(),
           toJSON(taskResult.getItems()),
           taskResult.getCompletionEvent(),
+          taskResult.getEffectiveTransferSpeed(),
           taskResult.getCreated(),
           taskResult.getCompleted());
 

@@ -57,4 +57,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."ITEMS" IS
                   'The download items included in this collection / bulk download request';            
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."CREATED" IS 
                   'The date and time the task was created';
-                                   
+                  
+          
+ALTER TABLE public."HPC_DOWNLOAD_TASK_RESULT" ADD COLUMN "EFFECTIVE_TRANSFER_SPEED" integer;
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."EFFECTIVE_TRANSFER_SPEED" IS 
+                  'The download effective transfer speed in bytes per second';                                      

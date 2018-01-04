@@ -325,6 +325,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     HpcDataTransferDownloadReport statusReport = new HpcDataTransferDownloadReport();
     statusReport.setMessage(report.niceStatusDescription);
+    statusReport.setBytesTransferred(report.bytesTransferred);
 
     if (report.status.equals(SUCCEEDED_STATUS)) {
       // Download completed successfully.
