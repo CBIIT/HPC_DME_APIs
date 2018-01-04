@@ -124,6 +124,7 @@ CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"
   "MESSAGE" text,
   "ITEMS" text,
   "COMPLETION_EVENT" boolean,
+  "EFFECTIVE_TRANSFER_SPEED" integer,
   "CREATED" timestamp NOT NULL,
   "COMPLETED" timestamp NOT NULL
 )
@@ -155,8 +156,10 @@ COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."MESSAGE" IS
                   'An error message in case the task failed';                     
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."ITEMS" IS 
                   'The download items included in this collection / bulk download request';  
-COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."COMPLETION_EVENT" IS 
-                  'An indicator whether a completion event was generated when the task completed';          
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."COMPLETION_EVENT" IS 
+                  'An indicator whether a completion event was generated when the task completed'; 
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."EFFECTIVE_TRANSFER_SPEED" IS 
+                  'The download effective transfer speed in bytes per second';                  
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."CREATED" IS 
                   'The date and time the task was created';
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."COMPLETED" IS 

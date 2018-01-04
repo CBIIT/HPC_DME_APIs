@@ -1227,7 +1227,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                   + dataTransferDownloadReport.getMessage()
                   + "].";
       Calendar completed = Calendar.getInstance();
-      dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed);
+      dataTransferService.completeDataObjectDownloadTask(
+          downloadTask,
+          result,
+          message,
+          completed,
+          dataTransferDownloadReport.getBytesTransferred());
 
       // Send a download completion event (if requested to).
       if (downloadTask.getCompletionEvent()) {
