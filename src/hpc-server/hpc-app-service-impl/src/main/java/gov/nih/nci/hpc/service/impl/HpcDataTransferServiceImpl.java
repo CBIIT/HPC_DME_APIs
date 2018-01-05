@@ -317,7 +317,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       } catch (HpcException e) {
         // Cleanup the download task and rethrow.
         completeDataObjectDownloadTask(
-            secondHopDownload.getDownloadTask(), false, e.getMessage(), Calendar.getInstance());
+            secondHopDownload.getDownloadTask(), false, e.getMessage(), Calendar.getInstance(), 0);
 
         throw (e);
       }
@@ -534,7 +534,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public void completeDataObjectDownloadTask(
-      HpcDataObjectDownloadTask downloadTask, boolean result, String message, Calendar completed)
+      HpcDataObjectDownloadTask downloadTask,
+      boolean result,
+      String message,
+      Calendar completed,
+      long bytesTransferred)
       throws HpcException {
     // Input validation
     if (downloadTask == null) {
@@ -543,7 +547,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Delete the staged download file.
-
     if (downloadTask.getDownloadFilePath() != null
         && !FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
       logger.error("Failed to delete file: " + downloadTask.getDownloadFilePath());
@@ -566,6 +569,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setCompletionEvent(downloadTask.getCompletionEvent());
     taskResult.setCreated(downloadTask.getCreated());
     taskResult.setCompleted(completed);
+
+    // Calculate the effective transfer speed (Bytes per second).
+    taskResult.setEffectiveTransferSpeed(
+        Math.toIntExact(
+            bytesTransferred
+                * 1000
+                / (taskResult.getCompleted().getTimeInMillis()
+                    - taskResult.getCreated().getTimeInMillis())));
+
+    // Persist to the DB.
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);
   }
 
@@ -614,7 +627,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public HpcCollectionDownloadTask downloadCollection(
-      String path, HpcFileLocation destinationLocation, boolean destinationOverwrite, String userId, String configurationId)
+      String path,
+      HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
+      String userId,
+      String configurationId)
       throws HpcException {
     // Validate the requested destination location.
     validateDownloadDestinationFileLocation(
@@ -639,7 +656,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public HpcCollectionDownloadTask downloadDataObjects(
-      Map<String, String> dataObjectPathsMap, HpcFileLocation destinationLocation, boolean destinationOverwrite, String userId)
+      Map<String, String> dataObjectPathsMap,
+      HpcFileLocation destinationLocation,
+      boolean destinationOverwrite,
+      String userId)
       throws HpcException {
     // Validate the requested destination location. Note: we use the configuration
     // ID of the
@@ -1424,7 +1444,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       // Cleanup the download task.
       try {
-        completeDataObjectDownloadTask(downloadTask, false, message, transferFailedTimestamp);
+        completeDataObjectDownloadTask(downloadTask, false, message, transferFailedTimestamp, 0);
 
       } catch (HpcException ex) {
         logger.error("Failed to cleanup download task", ex);

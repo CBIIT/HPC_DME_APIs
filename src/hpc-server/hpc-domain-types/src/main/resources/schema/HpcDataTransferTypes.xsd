@@ -55,6 +55,7 @@
 			<xsd:element name="status"
 				type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
 			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="bytesTransferred" type="xsd:long" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -204,6 +205,7 @@
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
+			<xsd:element name="effectiveTransferSpeed" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 
