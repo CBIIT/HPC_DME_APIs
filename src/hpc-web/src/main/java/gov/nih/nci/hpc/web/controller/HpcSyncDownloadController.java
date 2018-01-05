@@ -1,22 +1,28 @@
 /**
  * HpcSyncDownloadController.java
  *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See https://ncisvn.nci.nih.gov/svn/HPC_Data_Management/branches/hpc-prototype-dev/LICENSE.txt for details.
+ * Distributed under the OSI-approved BSD 3-Clause License. See
+ * https://ncisvn.nci.nih.gov/svn/HPC_Data_Management/branches/hpc-prototype-dev/LICENSE.txt for
+ * details.
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -41,9 +46,10 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
@@ -60,72 +66,100 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/downloadsync")
 public class HpcSyncDownloadController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
-	private String dataObjectServiceURL;
+  @Value("${gov.nih.nci.hpc.server.dataObject}")
+  private String dataObjectServiceURL;
 
-	/**
-	 * POST action for sync download
-	 * 
-	 * @param downloadFile
-	 * @param model
-	 * @param bindingResult
-	 * @param session
-	 * @param request
-	 * @param response
-	 * @return
-	 */
-	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	@ResponseBody
-	public Resource download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile,
-			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
-			HttpServletResponse response) {
-		try {
-			String authToken = (String) session.getAttribute("hpcUserToken");
-			if (authToken == null) {
-				model.addAttribute("Invalid user session, expired. Please login again.");
-				return null;
-			}
+  /**
+   * POST action for sync download
+   * 
+   * @param downloadFile
+   * @param model
+   * @param bindingResult
+   * @param session
+   * @param request
+   * @param response
+   * @return
+   */
+  @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+  @ResponseBody
+  public Resource download(
+      @Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile, Model model,
+      BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+      HttpServletResponse response) {
+    try {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      if (authToken == null) {
+        model.addAttribute("Invalid user session, expired. Please login again.");
+        return null;
+      }
 
-			String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
-			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
+      String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
+      HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
+      dto.setGenerateDownloadRequestURL(true);
 
-			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
-			client.header("Authorization", "Bearer " + authToken);
+      WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
+      client.header("Authorization", "Bearer " + authToken);
 
-			Response restResponse = client.invoke("POST", dto);
-			if (restResponse.getStatus() == 200) {
-				response.setContentType("application/octet-stream");
-				response.setHeader("Content-Disposition", "attachment; filename=" + downloadFile.getDownloadFileName());
-				IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
-				model.addAttribute("message", "Download completed successfully!");
-			} else {
-				ObjectMapper mapper = new ObjectMapper();
-				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-						new JacksonAnnotationIntrospector());
-				mapper.setAnnotationIntrospector(intr);
-				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      Response restResponse = client.invoke("POST", dto);
+      if (restResponse.getStatus() == 200) {
+        HpcDataObjectDownloadResponseDTO downloadDTO =
+            (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse,
+                HpcDataObjectDownloadResponseDTO.class);
+        String downloadRequestURL = null;
+        if (downloadDTO != null)
+          downloadRequestURL = downloadDTO.getDownloadRequestURL();
 
-				MappingJsonFactory factory = new MappingJsonFactory(mapper);
-				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+        if (downloadRequestURL == null)
+          throw new HpcWebException("Failed to get presigned URL to download");
 
-				try {
-					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-					model.addAttribute("message", "Failed to download: " + exception.getMessage());
-				} catch (Exception e) {
-					model.addAttribute("message", "Failed to download: " + e.getMessage());
-				}
-			}
-		} catch (HttpStatusCodeException e) {
-			model.addAttribute("message", "Failed to download: " + e.getMessage());
-			e.printStackTrace();
-		} catch (RestClientException e) {
-			model.addAttribute("message", "Failed to download: " + e.getMessage());
-			e.printStackTrace();
-		} catch (Exception e) {
-			model.addAttribute("message", "Failed to download: " + e.getMessage());
-			e.printStackTrace();
-		}
-		return null;
-	}
+        downloadToUrl(downloadRequestURL, 1000000, downloadFile.getDownloadFileName(), response);
+        // response.setContentType("application/octet-stream");
+        // response.setHeader("Content-Disposition", "attachment; filename=" +
+        // downloadFile.getDownloadFileName());
+        // IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
+        model.addAttribute("message", "Download completed successfully!");
+      } else {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+        try {
+          HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+          model.addAttribute("message", "Failed to download: " + exception.getMessage());
+        } catch (Exception e) {
+          model.addAttribute("message", "Failed to download: " + e.getMessage());
+        }
+      }
+    } catch (HttpStatusCodeException e) {
+      model.addAttribute("message", "Failed to download: " + e.getMessage());
+      e.printStackTrace();
+    } catch (RestClientException e) {
+      model.addAttribute("message", "Failed to download: " + e.getMessage());
+      e.printStackTrace();
+    } catch (Exception e) {
+      model.addAttribute("message", "Failed to download: " + e.getMessage());
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public void downloadToUrl(String urlStr, int bufferSize, String fileName,
+      HttpServletResponse response) throws HpcWebException {
+    try {
+      WebClient client = HpcClientUtil.getWebClient(urlStr, null, null);
+      Response restResponse = client.invoke("GET", null);
+      response.setContentType("application/octet-stream");
+      response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+      IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
+    } catch (IOException e) {
+      throw new HpcWebException(e);
+    }
+  }
+
 }
