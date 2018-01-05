@@ -189,6 +189,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcArchive baseArchiveDestination,
+      Integer downloadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Progress listener not supported.

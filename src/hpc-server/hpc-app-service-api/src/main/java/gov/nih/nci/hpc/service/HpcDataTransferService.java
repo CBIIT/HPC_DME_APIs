@@ -70,6 +70,7 @@ public interface HpcDataTransferService {
    * @param path The data object path.
    * @param archiveLocation The archive file location.
    * @param destinationLocation The user requested file destination.
+   * @param generateDownloadRequestURL If true, S3 presigned URL will be generated to download.
    * @param destinationOverwrite If true, the requested destination location will be overwritten if
    *     it exists.
    * @param dataTransferType The data transfer type.
@@ -84,6 +85,7 @@ public interface HpcDataTransferService {
       String path,
       HpcFileLocation archiveLocation,
       HpcFileLocation destinationLocation,
+      boolean generateDownloadRequestURL,
       boolean destinationOverwrite,
       HpcDataTransferType dataTransferType,
       String configurationId,

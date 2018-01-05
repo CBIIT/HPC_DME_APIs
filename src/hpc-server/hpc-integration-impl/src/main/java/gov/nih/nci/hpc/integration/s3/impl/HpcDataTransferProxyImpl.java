@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -119,6 +120,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcArchive baseArchiveDestination,
+      Integer uploadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Create a S3 download request.
@@ -126,7 +128,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         new GetObjectRequest(
             downloadRequest.getArchiveLocation().getFileContainerId(),
             downloadRequest.getArchiveLocation().getFileId());
-
+    
+    if (downloadRequest.getGenerateDownloadRequestURL()) {
+      // Generate an upload request URL for the caller to use to upload directly.
+      return generateDownloadRequestURL(
+          authenticatedToken,
+          downloadRequest.getArchiveLocation(),
+          uploadRequestURLExpiration);
+    }
+    
     // Download the file via S3.
     Download s3Download = null;
     try {
@@ -156,6 +166,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     return String.valueOf(s3Download.hashCode());
   }
 
+  
   @Override
   public String copyDataObject(
       Object authenticatedToken,
@@ -404,6 +415,43 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
 
     return uploadResponse;
+  }
+
+  /**
+   * Generate download request URL.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveSourceLocation The archive source location.
+   * @param downloadRequestURLExpiration The URL expiration (in hours).
+   * @return A data object download response containing the download request URL.
+   * @throws HpcException on data transfer system failure.
+   */
+  private String generateDownloadRequestURL(
+      Object authenticatedToken,
+      HpcFileLocation archiveSourceLocation,
+      Integer downloadRequestURLExpiration)
+      throws HpcException {
+
+    // Calculate the URL expiration date.
+    Date expiration = new Date();
+    expiration.setTime(expiration.getTime() + 1000 * 60 * 60 * downloadRequestURLExpiration);
+
+    // Create a URL generation request.
+    GeneratePresignedUrlRequest generatePresignedUrlRequest =
+        new GeneratePresignedUrlRequest(
+            archiveSourceLocation.getFileContainerId(),
+            archiveSourceLocation.getFileId())
+            .withMethod(HttpMethod.GET)
+            .withExpiration(expiration);
+
+    // Generate the pre-signed URL.
+    URL url =
+        s3Connection
+            .getTransferManager(authenticatedToken)
+            .getAmazonS3Client()
+            .generatePresignedUrl(generatePresignedUrlRequest);
+
+    return url.toString();
   }
 
   /**

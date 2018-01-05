@@ -323,6 +323,8 @@
 			<xsd:sequence>
 				<xsd:element name="destination"
 					type="hpc-domain-datatransfer:HpcFileLocation" />
+				<xsd:element name="generateDownloadRequestURL" type="xsd:boolean"
+					minOccurs="0" />
 				<xsd:element name="destinationOverwrite" type="xsd:boolean"
 					minOccurs="0" />
 			</xsd:sequence>
@@ -336,6 +338,7 @@
 				<xsd:element name="destinationLocation"
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
+				<xsd:element name="downloadRequestURL" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

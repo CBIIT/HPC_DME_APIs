@@ -199,6 +199,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       String path,
       HpcFileLocation archiveLocation,
       HpcFileLocation destinationLocation,
+      boolean generateDownloadRequestURL,
       boolean destinationOverwrite,
       HpcDataTransferType dataTransferType,
       String configurationId,
@@ -208,6 +209,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Input Validation.
     if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
       throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    if (generateDownloadRequestURL && destinationLocation != null ) {
+      throw new HpcException(
+          "Both data transfer destination and Presigned URL request provided",
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Create a download request.
@@ -220,7 +227,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadRequest.setConfigurationId(configurationId);
     downloadRequest.setUserId(userId);
     downloadRequest.setCompletionEvent(completionEvent);
-
+    downloadRequest.setGenerateDownloadRequestURL(generateDownloadRequestURL);
     // Create a download response.
     HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
 
@@ -230,20 +237,31 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             .getDataTransferConfiguration(configurationId, dataTransferType)
             .getBaseArchiveDestination();
 
+    // Get the data transfer configuration.
+    HpcDataTransferConfiguration dataTransferConfiguration =
+        dataManagementConfigurationLocator.getDataTransferConfiguration(
+            configurationId, dataTransferType);
+
     if (destinationLocation == null) {
       // This is a synchronous download request. Create a destination file on the local file system.
       downloadRequest.setDestinationFile(createDownloadFile());
       response.setDestinationFile(downloadRequest.getDestinationFile());
 
       // Perform the synchronous download.
-      dataTransferProxies
+      String presignedURL = dataTransferProxies
           .get(dataTransferType)
           .downloadDataObject(
               getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
               downloadRequest,
               baseArchiveDestination,
+              dataTransferConfiguration.getUploadRequestURLExpiration(),
               null);
-
+      if(generateDownloadRequestURL)
+      {
+        response.setDestinationFile(null);
+        response.setDownloadRequestURL(presignedURL);
+        return response;
+      }
     } else if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
       // This is an asynchronous download request from a file system archive.
 
@@ -289,6 +307,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
                 getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
                 downloadRequest,
                 baseArchiveDestination,
+                dataTransferConfiguration.getUploadRequestURLExpiration(),
                 secondHopDownload);
 
         response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
@@ -569,6 +588,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
       downloadRequest.setPath(downloadTask.getPath());
       downloadRequest.setUserId(downloadTask.getUserId());
+      // Get the data transfer configuration.
+      // Get the data transfer configuration.
+      HpcDataTransferConfiguration dataTransferConfiguration =
+          dataManagementConfigurationLocator.getDataTransferConfiguration(
+              downloadRequest.getConfigurationId(), downloadRequest.getDataTransferType());
 
       // Update the download task with the Globus request ID.
       downloadTask.setDataTransferRequestId(
@@ -578,11 +602,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
                   getAuthenticatedToken(
                       downloadRequest.getDataTransferType(), downloadRequest.getConfigurationId()),
                   downloadRequest,
-                  dataManagementConfigurationLocator
-                      .getDataTransferConfiguration(
-                          downloadRequest.getConfigurationId(),
-                          downloadRequest.getDataTransferType())
-                      .getBaseArchiveDestination(),
+                  dataTransferConfiguration.getBaseArchiveDestination(),
+                  dataTransferConfiguration.getUploadRequestURLExpiration(),
                   null));
 
       // Persist the download task.
