@@ -252,10 +252,15 @@ public interface HpcDataTransferService {
    * @param result The result of the task (true is successful, false is failed).
    * @param message (Optional) If the task failed, a message describing the failure.
    * @param completed (Optional) The download task completion timestamp.
+   * @param bytesTransferred The total bytes transfered.
    * @throws HpcException on service failure.
    */
   public void completeDataObjectDownloadTask(
-      HpcDataObjectDownloadTask downloadTask, boolean result, String message, Calendar completed)
+      HpcDataObjectDownloadTask downloadTask,
+      boolean result,
+      String message,
+      Calendar completed,
+      long bytesTransferred)
       throws HpcException;
 
   /**
