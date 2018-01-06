@@ -99,6 +99,7 @@
 			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
+			<xsd:element name="effectiveTransferSpeed" type="xsd:int" minOccurs="0" />
 			<xsd:element name="items" type="hpc-domain-model:HpcBulkDataObjectRegistrationItem" 
 			             minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
