@@ -357,6 +357,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       if (taskItem.getCompleted() != null) {
         jsonTask.put("completed", taskItem.getCompleted().getTime().getTime());
       }
+      if (taskItem.getEffectiveTransferSpeed() != null) {
+        jsonTask.put("effectiveTransferSpeed", taskItem.getEffectiveTransferSpeed().toString());
+      }
 
       JSONObject jsonRequest = new JSONObject();
       HpcDataObjectRegistrationRequest request = registrationItem.getRequest();
@@ -506,6 +509,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       Calendar cal = Calendar.getInstance();
       cal.setTimeInMillis((Long) completed);
       task.setCompleted(cal);
+    }
+    
+    Object effectiveTransferSpeed = jsonTask.get("effectiveTransferSpeed");
+    if (effectiveTransferSpeed != null) {
+      task.setEffectiveTransferSpeed(Integer.valueOf(effectiveTransferSpeed.toString()));
     }
 
     return task;
