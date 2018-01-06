@@ -1021,7 +1021,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             path,
             metadata.getArchiveLocation(),
             downloadRequest.getDestination(),
-            downloadRequest.getGenerateDownloadRequestURL() == null ? false : downloadRequest.getGenerateDownloadRequestURL(),
+            downloadRequest.getGenerateDownloadRequestURL() == null
+                ? false
+                : downloadRequest.getGenerateDownloadRequestURL(),
             downloadRequest.getDestinationOverwrite() != null
                 ? downloadRequest.getDestinationOverwrite()
                 : false,
@@ -1469,7 +1471,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @return A download response DTO object
    */
   private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(
-      HpcFileLocation destinationLocation, File destinationFile, String taskId, String downloadRequestURL) {
+      HpcFileLocation destinationLocation,
+      File destinationFile,
+      String taskId,
+      String downloadRequestURL) {
     // Construct and return a DTO
     HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
     downloadResponse.setDestinationFile(destinationFile);
@@ -1709,6 +1714,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
       downloadStatus.setMessage(taskStatus.getResult().getMessage());
       downloadStatus.setResult(taskStatus.getResult().getResult());
+      downloadStatus.setEffectiveTrasnsferSpeed(
+          taskStatus.getResult().getEffectiveTransferSpeed() > 0
+              ? taskStatus.getResult().getEffectiveTransferSpeed()
+              : null);
       populateDownloadItems(downloadStatus, taskStatus.getResult().getItems());
     }
 
