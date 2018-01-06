@@ -1924,9 +1924,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
         new HpcDataObjectRegistrationItemDTO();
     dataObjectRegistration.setPath(basePath + scanItem.getFilePath());
-    dataObjectRegistration
-        .getMetadataEntries()
-        .addAll(metadataEntries.getSelfMetadataEntries());
+    dataObjectRegistration.getMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
     dataObjectRegistration.setCreateParentCollections(true);
     dataObjectRegistration
         .getParentCollectionMetadataEntries()
@@ -2049,9 +2047,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   /**
-   * Convert a bulk registration task DTO from a registration result domain object.
+   * Return a bulk registration task DTO from a registration result domain object.
    *
-   * @param result bulk registration result domain object to convert The data object path.
+   * @param result bulk registration result domain object to convert to DTO.
    * @return a bulk registration task DTO.
    */
   private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
@@ -2062,11 +2060,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     taskDTO.setCompleted(result.getCompleted());
     taskDTO.setMessage(result.getMessage());
     taskDTO.setResult(result.getResult());
+    Integer effectiveTransferSpeed = result.getEffectiveTransferSpeed();
+    taskDTO.setEffectiveTransferSpeed(
+        effectiveTransferSpeed != null && effectiveTransferSpeed > 0
+            ? effectiveTransferSpeed
+            : null);
     populateRegistrationItems(taskDTO, result.getItems());
     return taskDTO;
-
-    // Download completed or failed. Populate the DTO accordingly.
-
   }
 
   /**
