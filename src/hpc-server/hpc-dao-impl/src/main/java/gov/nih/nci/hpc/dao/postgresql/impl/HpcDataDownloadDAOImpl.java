@@ -647,8 +647,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           downloadItem.getDestinationLocation().getFileContainerId());
       jsonDownloadItem.put(
           "destinationLocationFileId", downloadItem.getDestinationLocation().getFileId());
-      jsonDownloadItem.put(
-          "effectiveTransferSpeed", downloadItem.getEffectiveTransferSpeed());
+      if (downloadItem.getEffectiveTransferSpeed() != null) {
+        jsonDownloadItem.put("effectiveTransferSpeed", downloadItem.getEffectiveTransferSpeed());
+      }
 
       jsonDownloadItems.add(jsonDownloadItem);
     }
@@ -713,9 +714,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
         Object effectiveTransferSpeed = jsonDownloadItem.get("effectiveTransferSpeed");
         if (effectiveTransferSpeed != null) {
-          downloadItem.setEffectiveTransferSpeed(Integer.valueOf(effectiveTransferSpeed.toString()));
+          downloadItem.setEffectiveTransferSpeed(
+              Integer.valueOf(effectiveTransferSpeed.toString()));
         }
-        
+
         downloadItems.add(downloadItem);
       }
     }

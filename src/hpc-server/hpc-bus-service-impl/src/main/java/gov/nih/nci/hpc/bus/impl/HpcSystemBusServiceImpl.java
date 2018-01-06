@@ -561,7 +561,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               downloadItem.setResult(downloadItemStatus.getResult().getResult());
               downloadItem.setMessage(downloadItemStatus.getResult().getMessage());
               downloadItem.setEffectiveTransferSpeed(
-                  downloadItemStatus.getResult().getEffectiveTransferSpeed());
+                  downloadItemStatus.getResult().getEffectiveTransferSpeed() > 0
+                      ? downloadItemStatus.getResult().getEffectiveTransferSpeed()
+                      : null);
             } else {
               // There is at least one download item still in progress.
               downloadCompleted = false;
@@ -572,7 +574,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           logger.error("Failed to check collection download item status", e);
           downloadItem.setResult(false);
           downloadItem.setMessage(e.getMessage());
-          downloadItem.setEffectiveTransferSpeed(0);
         }
       }
 

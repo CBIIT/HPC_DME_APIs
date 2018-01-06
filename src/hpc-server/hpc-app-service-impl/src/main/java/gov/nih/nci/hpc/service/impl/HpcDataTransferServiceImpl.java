@@ -736,11 +736,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         completedItems++;
       }
     }
-    taskResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : 0);
+    taskResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
+    
+    logger.error("ERAN: calculated effective transfer: " + taskResult.getEffectiveTransferSpeed());
 
     // Persist to DB.
-    dataDownloadDAO.upsertDownloadTaskResult(taskResult);
-    
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);
   }
 
