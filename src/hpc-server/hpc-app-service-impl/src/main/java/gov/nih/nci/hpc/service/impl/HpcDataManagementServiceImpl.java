@@ -9,19 +9,16 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
@@ -603,6 +600,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     registrationResult.setCreated(registrationTask.getCreated());
     registrationResult.setCompleted(completed);
     registrationResult.getItems().addAll(registrationTask.getItems());
+    
+    // Calculate the effective transfer speed (Bytes per second). This is done by averaging the effective transfer speed
+    // of all successful registration items.
+    int effectiveTransferSpeed = 0;
+    int completedItems = 0;
+    for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
+      if (item.getTask().getResult()) {
+        effectiveTransferSpeed += item.getTask().getEffectiveTransferSpeed();
+        completedItems++;
+      }
+    }
+    registrationResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
+    
+    // Persist to DB.
     dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
   }
 
