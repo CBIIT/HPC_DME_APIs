@@ -241,6 +241,7 @@
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="effectiveTransferSpeed" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 

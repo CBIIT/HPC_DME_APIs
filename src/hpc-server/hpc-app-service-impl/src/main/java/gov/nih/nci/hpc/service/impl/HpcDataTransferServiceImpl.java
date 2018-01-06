@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
@@ -724,6 +725,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setCreated(downloadTask.getCreated());
     taskResult.setCompleted(completed);
     taskResult.getItems().addAll(downloadTask.getItems());
+    
+    // Calculate the effective transfer speed (Bytes per second). This is done by averaging the effective transfer speed
+    // of all successful download items.
+    int effectiveTransferSpeed = 0;
+    int completedItems = 0;
+    for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
+      if (item.getResult()) {
+        effectiveTransferSpeed += item.getEffectiveTransferSpeed();
+        completedItems++;
+      }
+    }
+    taskResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : 0);
+
+    // Persist to DB.
+    dataDownloadDAO.upsertDownloadTaskResult(taskResult);
+    
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);
   }
 
