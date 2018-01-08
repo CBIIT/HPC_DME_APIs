@@ -75,11 +75,12 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
   public static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL =
       "insert into public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" ( "
-          + "\"ID\", \"USER_ID\", \"RESULT\", \"MESSAGE\", \"ITEMS\", \"CREATED\", \"COMPLETED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?) "
+          + "\"ID\", \"USER_ID\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", \"ITEMS\", \"CREATED\", \"COMPLETED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"RESULT\"=excluded.\"RESULT\", "
           + "\"MESSAGE\"=excluded.\"MESSAGE\", "
+          + "\"EFFECTIVE_TRANSFER_SPEED\"=excluded.\"EFFECTIVE_TRANSFER_SPEED\", "
           + "\"ITEMS\"=excluded.\"ITEMS\", "
           + "\"CREATED\"=excluded.\"CREATED\", "
           + "\"COMPLETED\"=excluded.\"COMPLETED\"";
@@ -130,6 +131,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         bulkDdataObjectRegistrationResult.setResult(rs.getBoolean("RESULT"));
         bulkDdataObjectRegistrationResult.setMessage(rs.getString("MESSAGE"));
         bulkDdataObjectRegistrationResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
+        bulkDdataObjectRegistrationResult.setEffectiveTransferSpeed(rs.getInt("EFFECTIVE_TRANSFER_SPEED"));
 
         Calendar created = Calendar.getInstance();
         created.setTime(rs.getTimestamp("CREATED"));
@@ -244,6 +246,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
           registrationResult.getUserId(),
           registrationResult.getResult(),
           registrationResult.getMessage(),
+          registrationResult.getEffectiveTransferSpeed(),
           toJSON(registrationResult.getItems()),
           registrationResult.getCreated(),
           registrationResult.getCompleted());
@@ -356,6 +359,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       }
       if (taskItem.getCompleted() != null) {
         jsonTask.put("completed", taskItem.getCompleted().getTime().getTime());
+      }
+      if (taskItem.getEffectiveTransferSpeed() != null) {
+        jsonTask.put("effectiveTransferSpeed", taskItem.getEffectiveTransferSpeed().toString());
       }
 
       JSONObject jsonRequest = new JSONObject();
@@ -506,6 +512,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       Calendar cal = Calendar.getInstance();
       cal.setTimeInMillis((Long) completed);
       task.setCompleted(cal);
+    }
+    
+    Object effectiveTransferSpeed = jsonTask.get("effectiveTransferSpeed");
+    if (effectiveTransferSpeed != null) {
+      task.setEffectiveTransferSpeed(Integer.valueOf(effectiveTransferSpeed.toString()));
     }
 
     return task;

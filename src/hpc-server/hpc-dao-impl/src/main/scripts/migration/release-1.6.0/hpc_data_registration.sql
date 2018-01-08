@@ -12,6 +12,9 @@
 --
 
 ALTER TABLE public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK" ADD COLUMN "UI_URL" text;
-
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."UI_URL" IS 
                   'The UI URL to view the task by id';
+                  
+ALTER TABLE public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT" ADD COLUMN "EFFECTIVE_TRANSFER_SPEED" integer;
+COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."EFFECTIVE_TRANSFER_SPEED" IS 
+                  'The upload effective transfer speed in bytes per second';                       

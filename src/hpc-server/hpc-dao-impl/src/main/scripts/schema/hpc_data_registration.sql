@@ -47,6 +47,7 @@ CREATE TABLE public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"
   "USER_ID" text NOT NULL,
   "RESULT" boolean NOT NULL,
   "MESSAGE" text,
+  "EFFECTIVE_TRANSFER_SPEED" integer,
   "ITEMS" text,
   "CREATED" timestamp NOT NULL,
   "COMPLETED" timestamp NOT NULL
@@ -65,6 +66,8 @@ COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."RESULT" IS
                   'Task success/failure indicator';
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."MESSAGE" IS 
                   'An error message if the task failed';
+COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."EFFECTIVE_TRANSFER_SPEED" IS 
+                  'The upload effective transfer speed in bytes per second';     
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."ITEMS" IS 
                   'The list individual data object registrations included in this bulk registration request, in JSON format';
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."CREATED" IS 

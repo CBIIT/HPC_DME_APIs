@@ -832,7 +832,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectRegistrationRequest.setSource(dataObjectRegistrationItem.getSource());
       dataObjectRegistrationRequest
           .getMetadataEntries()
-          .addAll(dataObjectRegistrationItem.getSelfMetadataEntries());
+          .addAll(dataObjectRegistrationItem.getMetadataEntries());
       dataObjectRegistrationRequest
           .getParentCollectionMetadataEntries()
           .addAll(dataObjectRegistrationItem.getParentCollectionMetadataEntries());
@@ -1021,7 +1021,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             path,
             metadata.getArchiveLocation(),
             downloadRequest.getDestination(),
-            downloadRequest.getGenerateDownloadRequestURL() == null ? false : downloadRequest.getGenerateDownloadRequestURL(),
+            downloadRequest.getGenerateDownloadRequestURL() == null
+                ? false
+                : downloadRequest.getGenerateDownloadRequestURL(),
             downloadRequest.getDestinationOverwrite() != null
                 ? downloadRequest.getDestinationOverwrite()
                 : false,
@@ -1469,7 +1471,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @return A download response DTO object
    */
   private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(
-      HpcFileLocation destinationLocation, File destinationFile, String taskId, String downloadRequestURL) {
+      HpcFileLocation destinationLocation,
+      File destinationFile,
+      String taskId,
+      String downloadRequestURL) {
     // Construct and return a DTO
     HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
     downloadResponse.setDestinationFile(destinationFile);
@@ -1709,6 +1714,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
       downloadStatus.setMessage(taskStatus.getResult().getMessage());
       downloadStatus.setResult(taskStatus.getResult().getResult());
+      downloadStatus.setEffectiveTrasnsferSpeed(
+          taskStatus.getResult().getEffectiveTransferSpeed() > 0
+              ? taskStatus.getResult().getEffectiveTransferSpeed()
+              : null);
       populateDownloadItems(downloadStatus, taskStatus.getResult().getItems());
     }
 
@@ -1915,9 +1924,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
         new HpcDataObjectRegistrationItemDTO();
     dataObjectRegistration.setPath(basePath + scanItem.getFilePath());
-    dataObjectRegistration
-        .getSelfMetadataEntries()
-        .addAll(metadataEntries.getSelfMetadataEntries());
+    dataObjectRegistration.getMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
     dataObjectRegistration.setCreateParentCollections(true);
     dataObjectRegistration
         .getParentCollectionMetadataEntries()
@@ -2040,9 +2047,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   /**
-   * Convert a bulk registration task DTO from a registration result domain object.
+   * Return a bulk registration task DTO from a registration result domain object.
    *
-   * @param result bulk registration result domain object to convert The data object path.
+   * @param result bulk registration result domain object to convert to DTO.
    * @return a bulk registration task DTO.
    */
   private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
@@ -2053,11 +2060,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     taskDTO.setCompleted(result.getCompleted());
     taskDTO.setMessage(result.getMessage());
     taskDTO.setResult(result.getResult());
+    Integer effectiveTransferSpeed = result.getEffectiveTransferSpeed();
+    taskDTO.setEffectiveTransferSpeed(
+        effectiveTransferSpeed != null && effectiveTransferSpeed > 0
+            ? effectiveTransferSpeed
+            : null);
     populateRegistrationItems(taskDTO, result.getItems());
     return taskDTO;
-
-    // Download completed or failed. Populate the DTO accordingly.
-
   }
 
   /**
