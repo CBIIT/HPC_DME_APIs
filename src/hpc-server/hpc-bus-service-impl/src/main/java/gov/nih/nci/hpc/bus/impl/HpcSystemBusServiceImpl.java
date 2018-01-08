@@ -444,9 +444,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     // Use system account to perform this service.
     securityService.setSystemRequestInvoker(ldapAuthentication);
 
-    // Iterate through all the data object download tasks that are in their 2nd hop
-    // (i.e. GLOBUS download
-    // to user's endpoint is in progress).
+    // Iterate through all the data object download tasks that are in-progress or pending GLOBUS transfer.
     for (HpcDataObjectDownloadTask downloadTask :
         dataTransferService.getDataObjectDownloadTasks(HpcDataTransferType.GLOBUS)) {
       try {
@@ -562,6 +560,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               // This download item is now complete. Update the result.
               downloadItem.setResult(downloadItemStatus.getResult().getResult());
               downloadItem.setMessage(downloadItemStatus.getResult().getMessage());
+              downloadItem.setEffectiveTransferSpeed(
+                  downloadItemStatus.getResult().getEffectiveTransferSpeed() > 0
+                      ? downloadItemStatus.getResult().getEffectiveTransferSpeed()
+                      : null);
             } else {
               // There is at least one download item still in progress.
               downloadCompleted = false;
@@ -577,11 +579,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
       // Update the collection download task.
       if (downloadCompleted) {
-        // The collection download task finished. Determine if the collection download
-        // was successful.
-        // It is successful if and only if all items (data objects under the collection)
-        // were
-        // completed successfully.
+        // The collection download task finished. Determine if the collection download was successful.
+        // It is successful if and only if all items (data objects under the collection) were completed successfully.
         int completedItemsCount = 0;
         for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
           if (downloadItem.getResult()) {
@@ -609,8 +608,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     // Use system account to perform this service.
     securityService.setSystemRequestInvoker(ldapAuthentication);
 
-    // Iterate through all the bulk data object registration requests that were
-    // submitted (not processed yet).
+    // Iterate through all the bulk data object registration requests that were submitted (not processed yet).
     dataManagementService
         .getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED)
         .forEach(
@@ -673,7 +671,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                 }
               }
 
-              // List registration task completed.
+              // Bulk registration task completed.
               int itemsCount = bulkRegistrationTask.getItems().size();
               boolean result = completedItemsCount == itemsCount;
               completeBulkDataObjectRegistrationTask(
@@ -1173,8 +1171,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     Calendar completed = Calendar.getInstance();
     dataTransferService.completeCollectionDownloadTask(downloadTask, result, message, completed);
 
-    // Set the payload with either the collection path or the list of data object
-    // paths.
+    // Set the payload with either the collection path or the list of data object paths.
     String path = "";
     if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
       path = downloadTask.getPath();
@@ -1198,7 +1195,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
   /**
    * Complete a data object download task that is in-progress (Globus transfer is in-progress). 1.
-   * Check the status of Globus transfer. 2. If completed (succeeded ot failed), record the result.
+   * Check the status of Globus transfer. 2. If completed (succeeded or failed), record the result.
    *
    * @param downloadTask The download task to complete.
    * @throws HpcException on service failure.
@@ -1425,8 +1422,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         // Check the upload status.
         if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+          // Registration completed successfully for this item.
           registrationTask.setResult(true);
           registrationTask.setCompleted(metadata.getDataTransferCompleted());
+
+          // Calculate the effective transfer speed.
+          registrationTask.setEffectiveTransferSpeed(
+              Math.toIntExact(
+                  metadata.getSourceSize()
+                      * 1000
+                      / (metadata.getDataTransferCompleted().getTimeInMillis()
+                          - metadata.getDataTransferStarted().getTimeInMillis())));
         }
       }
 
