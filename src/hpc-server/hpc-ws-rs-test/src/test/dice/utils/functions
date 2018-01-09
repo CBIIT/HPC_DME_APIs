@@ -1169,13 +1169,38 @@ function register_dataobject_sync_presignurl {
 
 #Download a dataObject synchronously 
 #Input: dataObject-path 
+#Options: -p Use presigned URL
 function download_dataobject_sync {
 
+    usage="${FUNCNAME} [-p] [-f file_name] dataObject_path"
+
+    presigned=false
+    filename_provided=false
+    local OPTIND
+    while getopts ":f:p" option
+    do
+      case "${option}" in 
+        f)
+          file_name_provided=true
+          download_file_name="${OPTARG}"
+          ;;
+        p)
+          presigned=true
+          ;;
+        *)
+          echo "ERROR: Unsupported option ${option}" >&2
+          echo "$usage" >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    shift $(( OPTIND-1 ))
     if [ -z "$1" ] 
     then
-        echo "ERROR: using download_dataobject_sync"
-        echo "USAGE: download_dataobject_sync <dataOjbect-path>"
-        exit
+        echo "ERROR: using ${FUNCNAME}" >&2
+        echo "$usage" >&2
+        exit 1
     fi
 
     if [ -z $RESPONSE_HEADER ] 
@@ -1188,12 +1213,38 @@ function download_dataobject_sync {
         RESPONSE_MSG=download-dataobject-response-message.json.tmp
     fi
 
+    if  [ "$presigned" == "false" ] && [ "$file_name_provided" == "true" ]
+    then
+      RESPONSE_MSG=$download_file_name
+    fi
+
+
+    TEMPLATE="$HPC_DM_TEST/utils/templates/download-sync-template.json"
+    download_request=download-request.json.tmp
+    cat "$TEMPLATE" | sed "s@generateDownloadRequestURL.*@generateDownloadRequestURL:\"$presigned\"@" >  $download_request
     OBJECT_PATH="$1"
     SERVER=`cat $HPC_DM_TEST/utils/server`
-    TEMPLATE="$HPC_DM_TEST/utils/templates/download-sync-template.json"
-    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$OBJECT_PATH/download  $(get_curl_config)  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
+    curl -H "Content-Type: application/json" -d @$download_request -X POST ${SERVER}/dataObject/$OBJECT_PATH/download  $(get_curl_config)  -H "Accept: application/json" -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> curl-status 
     check_connection $RESPONSE_HEADER
 
+    #If presigned, then do another curl request 
+    http_code=$(get_http_code $RESPONSE_HEADER)
+    if [ "$http_code" == "200" ]
+    then
+      if [ "$presigned" == "true" ]
+      then
+        presigned_download_url=$(get_json_value $RESPONSE_MSG downloadRequestURL)
+        presigned_response_header=presigned_request_header.tmp
+        if [ $file_name_provided == "true" ]
+        then
+          presigned_response_message=$download_file_name
+        else
+          presigned_response_message=presigned_request_file.tmp
+        fi
+        curl -X GET  $presigned_download_url -D $presigned_response_header -o $presigned_response_message -s  2> presigned-status.tmp
+        check_connection $presigned_response_header
+      fi
+    fi
 }
 
 
