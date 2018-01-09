@@ -336,14 +336,14 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 
   @Override
   public void addSystemAccount(
-      HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType, String classifier)
+      HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType)
       throws HpcException {
     // Input validation.
     if (!isValidIntegratedSystemAccount(account)) {
       throw new HpcException("Invalid system account input", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    systemAccountDAO.upsert(account, dataTransferType, classifier);
+    systemAccountDAO.upsert(account, dataTransferType);
 
     // Refresh the system accounts cache.
     systemAccountLocator.reload();

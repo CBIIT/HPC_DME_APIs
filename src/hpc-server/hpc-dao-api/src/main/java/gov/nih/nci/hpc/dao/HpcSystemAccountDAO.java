@@ -34,8 +34,7 @@ public interface HpcSystemAccountDAO
      * @throws HpcException on database error.
      */
     public void upsert(HpcIntegratedSystemAccount account, 
-    		           HpcDataTransferType dataTransferType,
-                   String classifier)
+    		           HpcDataTransferType dataTransferType) 
     		          throws HpcException;
     
     /**
