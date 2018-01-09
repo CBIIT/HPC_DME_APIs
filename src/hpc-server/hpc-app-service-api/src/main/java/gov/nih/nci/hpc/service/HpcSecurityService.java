@@ -146,7 +146,7 @@ public interface HpcSecurityService {
    * @throws HpcException on service failure.
    */
   public void addSystemAccount(
-      HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType) throws HpcException;
+      HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType, String classifier) throws HpcException;
 
   /**
    * Create an authentication token, so the caller can use it in subsequent calls.

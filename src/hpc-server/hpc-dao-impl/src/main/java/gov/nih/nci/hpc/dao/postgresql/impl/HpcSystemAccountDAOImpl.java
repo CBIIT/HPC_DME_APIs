@@ -38,13 +38,19 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
     //---------------------------------------------------------------------//    
     
     // SQL Queries.
-	private final static String UPSERT_SQL = 
+/*
+	private final static String UPSERT_SQL =
 		    "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( " +
-                    "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\") " +
-                    "values (?, ?, ?, ?) " +
+                    "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\", \"CLASSIFIER\") " +
+                    "values (?, ?, ?, ?, ?) " +
             "on conflict(\"SYSTEM\") do update set \"USERNAME\"=excluded.\"USERNAME\", " +
                                                    "\"PASSWORD\"=excluded.\"PASSWORD\", " +
                                                    "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\"";
+*/
+  private final static String UPSERT_SQL =
+      "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( " +
+          "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\", \"CLASSIFIER\") " +
+          "values (?, ?, ?, ?, ?)";
 
 	private final static String GET_BY_SYSTEM_SQL = 
 		    "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = ?";
@@ -93,23 +99,24 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
     //---------------------------------------------------------------------//
     // HpcManagedUserDAO Interface Implementation
     //---------------------------------------------------------------------//  
-    
-	@Override
-	public void upsert(HpcIntegratedSystemAccount account, 
-	                   HpcDataTransferType dataTransferType) throws HpcException
-    {
-		try {
-		     jdbcTemplate.update(UPSERT_SQL,
-		    		             account.getUsername(),
-		    		             encryptor.encrypt(account.getPassword()),
-		                         account.getIntegratedSystem().value(),
-		                         dataTransferType != null ? dataTransferType.value() : null);
-		     
-		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to upsert a system account: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}
+
+  @Override
+  public void upsert(HpcIntegratedSystemAccount account,
+      HpcDataTransferType dataTransferType,
+      String classifier) throws HpcException {
+    try {
+      jdbcTemplate.update(UPSERT_SQL,
+          account.getUsername(),
+          encryptor.encrypt(account.getPassword()),
+          account.getIntegratedSystem().value(),
+          dataTransferType != null ? dataTransferType.value() : null,
+          classifier != null ? classifier : null);
+
+    } catch (DataAccessException e) {
+      throw new HpcException("Failed to upsert a system account: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
+  }
 	
 	@Override 
 	public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 

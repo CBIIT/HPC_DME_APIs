@@ -403,7 +403,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // Add the user to the managed collection.
     securityService.addSystemAccount(
         systemAccountRegistrationDTO.getAccount(),
-        systemAccountRegistrationDTO.getDataTransferType());
+        systemAccountRegistrationDTO.getDataTransferType(),
+        systemAccountRegistrationDTO.getClassifier());
   }
 
   @Override
