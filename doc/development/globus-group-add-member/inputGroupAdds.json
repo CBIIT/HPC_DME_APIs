@@ -1,0 +1,38 @@
+{
+  "addGroupMemberBundles": [
+    {
+      "groupId": "70bea4b4-f56b-11e7-a6a6-0ed2d3184bea",
+      "clientsToAdd": [
+        {
+          "clientId": "50d777e0-5ee2-4af6-b6d6-741093187267",
+          "clientSecret": "UqS4tNZI/Vy42XM+6AmC2MzBQO39spxT4jWcxH/3vm0="
+        },
+        {
+          "clientId": "554a5aed-e93f-436a-af63-cb818d2de823",
+          "clientSecret": "DPWfOKKaG6LjndCsF6ywSFReRq0W+JFF9+Xm+gMnLAs="
+        },
+        {
+          "clientId": "3fa453a9-202b-471f-a972-55e25a31a1fd",
+          "clientSecret": "WpNCLuwmC7Reaf/27GRyyG2rIWUuFJEIqbd49JdnT+0="
+        }
+      ]
+    },
+    {
+      "groupId": "a3ec4850-f56b-11e7-a6a6-0ed2d3184bea",
+      "clientsToAdd": [
+        {
+          "clientId": "d25efd0e-1e05-4f04-b246-329ab54d2eea",
+          "clientSecret": "qp2GAacLbmBqS/Zdv86Vg/I4lgxPdxnv+B29lKhUONQ="
+        },
+        {
+          "clientId": "399b1e76-b57f-491a-ae28-3f8b8d3c4a58",
+          "clientSecret": "bbjcLR2F2/N4Nmr8AOT85bAa/JRmi8kY+dfQrEKKZVM="
+        },
+        {
+          "clientId": "417b7f4d-6e4b-447e-aeca-462cbbe4b07d",
+          "clientSecret": "Rla57tCdUKmRX01WA0Wm6UVIxwT8Qzhi0yMbsz4iRes="
+        }
+      ]
+    }
+  ]
+}
