@@ -150,10 +150,10 @@ public abstract class HPCBatchClient {
 			}
 
 			String errorCode = processFile(fileName, userId, password, authToken);
-			if (errorCode == null)
+			if (errorCode == null || errorCode.equals(Constants.CLI_SUCCESS))
 			{
 				System.out.println("Cmd process Successful");
-				return Constants.CLI_0;
+				return Constants.CLI_SUCCESS;
 			}
 			else
 			{
