@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
+
+verify_registration  collection-registration-response-header.tmp
+verify_registration  dataObject-registration-response-header.tmp
+
+OBJECT_PATH=`cat registered-dataobject-path.tmp`
+
+#Download the dataobject synchronously
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+downloaded_file=presigned_downloaded_file.tmp
+download_dataobject_sync -p -f $downloaded_file "$OBJECT_PATH"
+
+HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+echo $HTTP_CODE >&2
+expected_message="Presigned URL for download is supported on S3 based destination archive only." 
+get_json_value $RESPONSE_MSG message | sed "s@$expected_message.*@$expected_message@" >&2

@@ -135,10 +135,10 @@ public abstract class HPCCmdClient {
 			{
 				String returnCode = processCmd(cmd, criteria, outputFile, format, detail, userId, password, authToken);
 
-			if (returnCode == null)
+			if (returnCode == null || returnCode.equals(Constants.CLI_SUCCESS))
 			{
 				System.out.println("Cmd process Successful");
-				return Constants.CLI_0;
+				return Constants.CLI_SUCCESS;
 			}
 			else
 			{

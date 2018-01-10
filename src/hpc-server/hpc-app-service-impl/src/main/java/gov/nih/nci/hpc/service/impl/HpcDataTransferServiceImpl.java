@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -205,14 +206,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcDataTransferType dataTransferType,
       String configurationId,
       String userId,
-      boolean completionEvent)
+      boolean completionEvent,
+      long size)
       throws HpcException {
     // Input Validation.
     if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
       throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    if (generateDownloadRequestURL && destinationLocation != null ) {
+    if (generateDownloadRequestURL && destinationLocation != null) {
       throw new HpcException(
           "Both data transfer destination and Presigned URL request provided",
           HpcErrorType.INVALID_REQUEST_INPUT);
@@ -229,6 +231,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadRequest.setUserId(userId);
     downloadRequest.setCompletionEvent(completionEvent);
     downloadRequest.setGenerateDownloadRequestURL(generateDownloadRequestURL);
+    downloadRequest.setSize(size);
     // Create a download response.
     HpcDataObjectDownloadResponse response = new HpcDataObjectDownloadResponse();
 
@@ -249,16 +252,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       response.setDestinationFile(downloadRequest.getDestinationFile());
 
       // Perform the synchronous download.
-      String presignedURL = dataTransferProxies
-          .get(dataTransferType)
-          .downloadDataObject(
-              getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
-              downloadRequest,
-              baseArchiveDestination,
-              dataTransferConfiguration.getUploadRequestURLExpiration(),
-              null);
-      if(generateDownloadRequestURL)
-      {
+      String presignedURL =
+          dataTransferProxies
+              .get(dataTransferType)
+              .downloadDataObject(
+                  getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
+                  downloadRequest,
+                  baseArchiveDestination,
+                  dataTransferConfiguration.getUploadRequestURLExpiration(),
+                  null);
+      if (generateDownloadRequestURL) {
         response.setDestinationFile(null);
         response.setDownloadRequestURL(presignedURL);
         return response;
@@ -274,6 +277,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setCreated(Calendar.getInstance());
       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
       downloadTask.setDataTransferType(dataTransferType);
+      downloadTask.setPercentComplete(0);
+      downloadTask.setSize(size);
       downloadTask.setDestinationLocation(
           calculateDownloadDestinationFileLocation(
               destinationLocation,
@@ -311,6 +316,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
                 dataTransferConfiguration.getUploadRequestURLExpiration(),
                 secondHopDownload);
 
+        // Populate the response object.
         response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
         response.setDestinationLocation(
             secondHopDownload.getDownloadTask().getDestinationLocation());
@@ -602,7 +608,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
       downloadRequest.setPath(downloadTask.getPath());
       downloadRequest.setUserId(downloadTask.getUserId());
-      // Get the data transfer configuration.
+      
       // Get the data transfer configuration.
       HpcDataTransferConfiguration dataTransferConfiguration =
           dataManagementConfigurationLocator.getDataTransferConfiguration(
@@ -624,6 +630,41 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
       dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
     }
+  }
+
+  @Override
+  public void updateDataObjectDownloadTaskProgress(
+      HpcDataObjectDownloadTask downloadTask, long bytesTransferred) throws HpcException {
+    // Input validation. Note: we only expect this to be called while Globus transfer is in-progress
+    // Currently, bytesTransferred are not available while S3 download is in progress.
+    if (downloadTask == null
+        || downloadTask.getSize() <= 0
+        || bytesTransferred <= 0
+        || bytesTransferred > downloadTask.getSize()
+        || downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+      return;
+    }
+
+    logger.error("ERAN: PCT: " + bytesTransferred + " : " + downloadTask.getSize());
+    
+    // Calculate the percent complete
+    int percentComplete = Math.round(100 * bytesTransferred / downloadTask.getSize());
+    if (dataManagementConfigurationLocator
+        .getDataTransferConfiguration(
+            downloadTask.getConfigurationId(), downloadTask.getDataTransferType())
+        .getBaseArchiveDestination()
+        .getType()
+        .equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+      // This is a 2-hop download, and S_3 is complete. Our base % complete is 50%.
+      downloadTask.setPercentComplete(50 + percentComplete / 2);
+    } else {
+      // This is a one-hop Globus download from archive to user destination (currently only supported by file system archive).
+      downloadTask.setPercentComplete(percentComplete);
+    }
+
+    logger.error("ERAN: PCT CALC: " + downloadTask.getPercentComplete() + " : " + percentComplete);
+    
+    dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
   }
 
   @Override
@@ -725,7 +766,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setCreated(downloadTask.getCreated());
     taskResult.setCompleted(completed);
     taskResult.getItems().addAll(downloadTask.getItems());
-    
+
     // Calculate the effective transfer speed (Bytes per second). This is done by averaging the effective transfer speed
     // of all successful download items.
     int effectiveTransferSpeed = 0;
@@ -736,7 +777,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         completedItems++;
       }
     }
-    taskResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
+    taskResult.setEffectiveTransferSpeed(
+        completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
 
     // Persist to DB.
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);
@@ -1302,7 +1344,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
               firstHopDownloadRequest.getPath(),
               firstHopDownloadRequest.getConfigurationId(),
               firstHopDownloadRequest.getUserId(),
-              firstHopDownloadRequest.getCompletionEvent());
+              firstHopDownloadRequest.getCompletionEvent(),
+              firstHopDownloadRequest.getSize());
 
       // Get the data transfer configuration.
       HpcDataTransferConfiguration dataTransferConfiguration =
@@ -1386,6 +1429,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
      * @param configurationId The data management configuration ID..
      * @param userId The user ID submitting the request.
      * @param completionEvent If true, an event will be added when async download is complete.
+     * @param size The data object size in bytes.
      * @return Data object download request.
      * @throws HpcException If it failed to obtain an authentication token.
      */
@@ -1395,7 +1439,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         String path,
         String configurationId,
         String userId,
-        boolean completionEvent)
+        boolean completionEvent,
+        long size)
         throws HpcException {
       // Create and return a download request, from the local GLOBUS endpoint, to the caller's destination.
       HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -1407,13 +1452,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setConfigurationId(configurationId);
       downloadRequest.setUserId(userId);
       downloadRequest.setCompletionEvent(completionEvent);
-
+      downloadRequest.setSize(size);
       return downloadRequest;
     }
 
     /**
-     * Create and store an entry in the DB to cleanup download file after 2nd hop async transfer is
-     * complete.
+     * Create a download task for a 2-hop download.
      *
      * @throws HpcException If it failed to persist the task.
      */
@@ -1428,6 +1472,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setArchiveLocation(secondHopDownloadRequest.getArchiveLocation());
       downloadTask.setDestinationLocation(secondHopDownloadRequest.getDestinationLocation());
       downloadTask.setCreated(Calendar.getInstance());
+      downloadTask.setPercentComplete(0);
+      downloadTask.setSize(secondHopDownloadRequest.getSize());
 
       dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
     }
