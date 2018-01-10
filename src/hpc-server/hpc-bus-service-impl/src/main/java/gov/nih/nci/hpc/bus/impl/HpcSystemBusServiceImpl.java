@@ -1245,6 +1245,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             downloadTask.getDestinationLocation(),
             completed);
       }
+    } else {
+      // Download is still in progress. Update the progress (percent complete).
+      dataTransferService.updateDataObjectDownloadTaskProgress(
+          downloadTask, dataTransferDownloadReport.getBytesTransferred());
     }
   }
 

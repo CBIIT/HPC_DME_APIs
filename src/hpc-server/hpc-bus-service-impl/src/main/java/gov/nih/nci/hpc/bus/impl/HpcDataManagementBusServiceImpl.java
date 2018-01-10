@@ -998,14 +998,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     String configurationId = dataManagementService.findDataManagementConfigurationId(path);
-    HpcDataManagementConfiguration configuration = dataManagementService.getDataManagementConfiguration(configurationId);
-    if (downloadRequest != null && downloadRequest.getGenerateDownloadRequestURL() != null
-        && downloadRequest.getGenerateDownloadRequestURL() && configuration != null
+    HpcDataManagementConfiguration configuration =
+        dataManagementService.getDataManagementConfiguration(configurationId);
+    if (downloadRequest != null
+        && downloadRequest.getGenerateDownloadRequestURL() != null
+        && downloadRequest.getGenerateDownloadRequestURL()
+        && configuration != null
         && (configuration.getS3Configuration() != null
             || configuration.getS3Configuration().getUrl() != null))
       throw new HpcException(
-          "Presigned URL for download is supported on S3 based destination archive only. Requested path is archived on a POSIX based file system: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-      
+          "Presigned URL for download is supported on S3 based destination archive only. Requested path is archived on a POSIX based file system: "
+              + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
         metadataService.getDataObjectSystemGeneratedMetadata(path);
@@ -1039,7 +1044,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             metadata.getDataTransferType(),
             metadata.getConfigurationId(),
             userId,
-            completionEvent);
+            completionEvent,
+            metadata.getSourceSize());
 
     // Construct and return a DTO.
     return toDownloadResponseDTO(
