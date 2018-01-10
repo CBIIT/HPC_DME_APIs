@@ -27,6 +27,8 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text,
   "DESTINATION_LOCATION_FILE_ID" text,
   "COMPLETION_EVENT" boolean,
+  "PERCENT_COMPLETE" integer,
+  "SIZE" bigint,
   "CREATED" timestamp
 )
 WITH (
@@ -59,6 +61,10 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_LOCATION_F
                   'The download destination file ID';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."COMPLETION_EVENT" IS 
                   'An indicator whether a completion event needs to be generated when the task is completed';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PERCENT_COMPLETE" IS 
+                  'The download task completion %';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."SIZE" IS 
+                  'The data object size';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."CREATED" IS 
                   'The date and time the task was created';
 

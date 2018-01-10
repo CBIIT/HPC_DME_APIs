@@ -1,0 +1,2 @@
+400
+Presigned URL for download is supported on S3 based destination archive only.

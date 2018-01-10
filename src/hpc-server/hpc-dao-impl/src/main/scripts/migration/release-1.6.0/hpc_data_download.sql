@@ -61,4 +61,61 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."CREATED" IS
           
 ALTER TABLE public."HPC_DOWNLOAD_TASK_RESULT" ADD COLUMN "EFFECTIVE_TRANSFER_SPEED" integer;
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."EFFECTIVE_TRANSFER_SPEED" IS 
-                  'The download effective transfer speed in bytes per second';                                      
+                  'The download effective transfer speed in bytes per second';    
+                  
+DROP TABLE IF EXISTS public."HPC_DATA_OBJECT_DOWNLOAD_TASK";
+CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
+(
+  "ID" text PRIMARY KEY,
+  "USER_ID" text,
+  "PATH" text,
+  "CONFIGURATION_ID" text,
+  "DATA_TRANSFER_REQUEST_ID" text,
+  "DATA_TRANSFER_TYPE" text,
+  "DATA_TRANSFER_STATUS" text,
+  "DOWNLOAD_FILE_PATH" text,
+  "ARCHIVE_LOCATION_FILE_CONTAINER_ID" text,
+  "ARCHIVE_LOCATION_FILE_ID" text,
+  "DESTINATION_LOCATION_FILE_CONTAINER_ID" text,
+  "DESTINATION_LOCATION_FILE_ID" text,
+  "COMPLETION_EVENT" boolean,
+  "PERCENT_COMPLETE" integer,
+  "SIZE" bigint,
+  "CREATED" timestamp
+)
+WITH (
+  OIDS=FALSE
+);
+
+COMMENT ON TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK" IS 
+                 'Active data object download tasks';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."ID" IS 
+                  'The download task ID';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."USER_ID" IS 
+                  'The user ID who submitted the download request';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."CONFIGURATION_ID" IS 
+                  'The configuration ID to use in downloading the data object';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_REQUEST_ID" IS 
+                  'The data transfer (S3 or Globus) request ID that is currently in progress';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_TYPE" IS 
+                  'The data transfer (S3 or Globus) that is currently in progress';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_STATUS" IS 
+                  'The data transfer status (S3 or Globus)';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DOWNLOAD_FILE_PATH" IS 
+                  'The file path used in the 2-hop download';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."ARCHIVE_LOCATION_FILE_CONTAINER_ID" IS 
+                  'The archive location container ID of the data object to be downloaded';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."ARCHIVE_LOCATION_FILE_ID" IS 
+                  'The archive location file ID of the data object to be downloaded';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_CONTAINER_ID" IS 
+                  'The download destination container ID';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_ID" IS 
+                  'The download destination file ID';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."COMPLETION_EVENT" IS 
+                  'An indicator whether a completion event needs to be generated when the task is completed';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PERCENT_COMPLETE" IS 
+                  'The download task completion %';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."SIZE" IS 
+                  'The data object size';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."CREATED" IS 
+                  'The date and time the task was created';                                  

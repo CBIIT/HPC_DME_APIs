@@ -246,7 +246,10 @@ public class HPCBatchLocalFolderExecutor {
 	  {
 	    jobReports = new ArrayList<>();
 	    JobReport report = new JobReport();
-	    report.setStatus(JobStatus.ABORTED);
+	    if(returnCode.equals(Constants.CLI_SUCCESS))
+	      report.setStatus(JobStatus.COMPLETED);
+	    else
+	      report.setStatus(JobStatus.ABORTED);
 	    jobReports.add(report);
 	  }
 	  
