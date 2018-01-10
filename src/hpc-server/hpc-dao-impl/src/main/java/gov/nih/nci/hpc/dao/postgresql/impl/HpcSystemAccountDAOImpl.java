@@ -21,7 +21,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
+
+import java.util.List;
 
 /**
  * <p>
@@ -56,6 +59,9 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 		    "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = ?";
 	private final static String GET_BY_DATA_TRANSFER_TYPE_SQL = 
 		    "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"DATA_TRANSFER_TYPE\" = ?";
+
+	private final static String GET_SHARED_GLOBUS_APP_ACCOUNTS =
+        "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = 'P_GLOBUS'";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -76,8 +82,14 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 		account.setUsername(rs.getString("USERNAME"));
 		account.setPassword(encryptor.decrypt(rs.getBytes(("PASSWORD"))));
 		account.setIntegratedSystem(HpcIntegratedSystem.fromValue(rs.getString(("SYSTEM"))));
-        
-        return account;
+
+    final String classifierValue  = rs.getString("CLASSIFIER");
+    HpcIntegratedSystemAccountProperty theProperty = new HpcIntegratedSystemAccountProperty();
+    theProperty.setName("classifier");
+    theProperty.setValue(classifierValue);
+    account.getProperties().add(theProperty);
+
+    return account;
 	};
 	
     //---------------------------------------------------------------------//
@@ -150,6 +162,17 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
+
+  @Override
+  public List<HpcIntegratedSystemAccount> getGlobusPooledAccounts() throws HpcException {
+    try {
+      return jdbcTemplate.query(GET_SHARED_GLOBUS_APP_ACCOUNTS, rowMapper);
+    } catch (DataAccessException daEx) {
+      throw new HpcException("Failed to get shared/pooled Globus app accounts: " + daEx.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, daEx);
+    }
+  }
+
 }
 
  
