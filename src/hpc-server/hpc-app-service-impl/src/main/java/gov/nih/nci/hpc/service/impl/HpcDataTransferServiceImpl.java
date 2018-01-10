@@ -648,7 +648,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     logger.error("ERAN: PCT: " + bytesTransferred + " : " + downloadTask.getSize());
     
     // Calculate the percent complete
-    int percentComplete = Math.toIntExact(100 * (bytesTransferred / downloadTask.getSize()));
+    int percentComplete = Math.round(100 * bytesTransferred / downloadTask.getSize());
     if (dataManagementConfigurationLocator
         .getDataTransferConfiguration(
             downloadTask.getConfigurationId(), downloadTask.getDataTransferType())
@@ -656,7 +656,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         .getType()
         .equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
       // This is a 2-hop download, and S_3 is complete. Our base % complete is 50%.
-      downloadTask.setPercentComplete(50 + Math.toIntExact(percentComplete / 2));
+      downloadTask.setPercentComplete(50 + percentComplete / 2);
     } else {
       // This is a one-hop Globus download from archive to user destination (currently only supported by file system archive).
       downloadTask.setPercentComplete(percentComplete);
