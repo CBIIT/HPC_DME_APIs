@@ -131,12 +131,13 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
   }
 	
 	@Override 
-	public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
+	public List<HpcIntegratedSystemAccount> getSystemAccount(HpcIntegratedSystem system)
                                                       throws HpcException
 	{
 		try {
-		     return jdbcTemplate.queryForObject(GET_BY_SYSTEM_SQL, rowMapper, system.value());
-		     
+//      return jdbcTemplate.queryForObject(GET_BY_SYSTEM_SQL, rowMapper, system.value());
+       return jdbcTemplate.query(GET_BY_SYSTEM_SQL, rowMapper, system.value());
+
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
 			    
@@ -147,13 +148,13 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 	}
 	
 	@Override 
-	public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType) 
+	public List<HpcIntegratedSystemAccount> getSystemAccount(HpcDataTransferType dataTransferType)
                                                       throws HpcException
 	{
 		try {
-		     return jdbcTemplate.queryForObject(GET_BY_DATA_TRANSFER_TYPE_SQL, rowMapper, 
-		    		                            dataTransferType.value());
-		     
+//		     return jdbcTemplate.queryForObject(GET_BY_DATA_TRANSFER_TYPE_SQL, rowMapper,
+//		    		                            dataTransferType.value());
+      return jdbcTemplate.query(GET_BY_DATA_TRANSFER_TYPE_SQL, rowMapper, dataTransferType.value());
 		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
 			    return null;
 			    

@@ -46,7 +46,7 @@ public interface HpcSystemAccountDAO
      * @return The system account if found, or null otherwise.
      * @throws HpcException on database error.
      */
-    public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
+    public List<HpcIntegratedSystemAccount> getSystemAccount(HpcIntegratedSystem system)
     		                                          throws HpcException;
     
     /**
@@ -56,7 +56,7 @@ public interface HpcSystemAccountDAO
      * @return The system account if found, or null otherwise.
      * @throws HpcException on database error.
      */
-    public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType) 
+    public List<HpcIntegratedSystemAccount> getSystemAccount(HpcDataTransferType dataTransferType)
     		                                          throws HpcException;
 
 
