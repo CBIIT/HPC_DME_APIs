@@ -1,0 +1,36 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "name",
+         "value": "ProjectX1"
+        },
+        {
+         "attribute": "collection_type",
+         "value": "Project"
+        },
+        {
+         "attribute": "description",
+         "value": "Project desc"
+        },
+        {
+         "attribute": "project_id_CSAS",
+         "value": "17801"
+        },
+        {
+         "attribute": "bioinformatics_contact",
+         "value": "bioinformatics contact name"
+        },
+        {
+         "attribute": "grant_funding_agent",
+         "value": "NIH"
+        },
+        {
+         "attribute": "project_start_date",
+         "value": "10/25/2006"
+        },
+        {
+         "attribute": "my_attribute1",
+         "value": "value1"
+        }
+    ]
+}

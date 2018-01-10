@@ -1,0 +1,53 @@
+{
+    "metadataEntries": [
+        {
+         "attribute": "name",
+         "value": "ERR0000861filt.fastq"
+        },
+        {
+         "attribute": "file_type",
+         "value": "FASTQ"
+        },
+        {
+         "attribute": "description",
+         "value": "DataObject Obj1 description"
+        },
+        {
+         "attribute": "reference_genome",
+         "value": "human - hg19"
+        },
+        {
+         "attribute": "reference_annotation",
+         "value": "ensemblev70"
+        },
+        {
+         "attribute": "software_tool",
+         "value": "bcl2fastq v2.17"
+        },
+        {
+         "attribute": "md5_checksum",
+         "value": "A4EA3B978A36CF2AFA071983BF090DC5"
+        },
+        {
+         "attribute": "phi_content",
+         "value": "PHI Not Present"
+        },
+        {
+         "attribute": "pii_content",
+         "value": "PII Not Present"
+        },
+        {
+         "attribute": "data_encryption_status",
+         "value": "Encrypted"
+        },
+	{
+	 "attribute": "data_compression_status",
+	 "value": "Not Compressed"
+	},
+	{
+	 "attribute": "my_attribute3",
+	 "value": "value3"
+	}
+]
+}
+
