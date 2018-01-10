@@ -63,6 +63,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="S_3" />
+			<xsd:enumeration value="P_GLOBUS" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
