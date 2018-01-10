@@ -60,8 +60,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"DATA_TRANSFER_STATUS\", \"DOWNLOAD_FILE_PATH\","
           + "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", "
-          + "\"COMPLETION_EVENT\", \"CREATED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
@@ -74,6 +74,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
+          + "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", "
+          + "\"SIZE\"=excluded.\"SIZE\", "
           + "\"CREATED\"=excluded.\"CREATED\"";
 
   public static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL =
@@ -178,6 +180,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
             HpcDataTransferDownloadStatus.fromValue(rs.getString(("DATA_TRANSFER_STATUS"))));
         dataObjectDownloadTask.setDownloadFilePath(rs.getString("DOWNLOAD_FILE_PATH"));
         dataObjectDownloadTask.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
+        dataObjectDownloadTask.setPercentComplete(rs.getInt("PERCENT_COMPLETE"));
+        dataObjectDownloadTask.setSize(rs.getLong("SIZE"));
 
         String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
         String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
@@ -345,6 +349,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           dataObjectDownloadTask.getDestinationLocation().getFileContainerId(),
           dataObjectDownloadTask.getDestinationLocation().getFileId(),
           dataObjectDownloadTask.getCompletionEvent(),
+          dataObjectDownloadTask.getPercentComplete(),
+          dataObjectDownloadTask.getSize(),
           dataObjectDownloadTask.getCreated());
 
     } catch (DataAccessException e) {

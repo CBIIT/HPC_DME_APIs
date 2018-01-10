@@ -78,6 +78,7 @@ public interface HpcDataTransferService {
    *     config).
    * @param userId The user ID submitting the download request.
    * @param completionEvent If true, an event will be added when async download is complete.
+   * @param size The data object's size in bytes.
    * @return A data object download response.
    * @throws HpcException on service failure.
    */
@@ -90,7 +91,8 @@ public interface HpcDataTransferService {
       HpcDataTransferType dataTransferType,
       String configurationId,
       String userId,
-      boolean completionEvent)
+      boolean completionEvent,
+      long size)
       throws HpcException;
 
   /**
@@ -272,6 +274,16 @@ public interface HpcDataTransferService {
    */
   public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException;
+
+  /**
+   * Calculate the percent complete of the download task.
+   *
+   * @param downloadTask The download task to update progress
+   * @param bytesTransferred The bytes transferred so far.
+   * @throws HpcException on service failure.
+   */
+  public void updateDataObjectDownloadTaskProgress(
+      HpcDataObjectDownloadTask downloadTask, long bytesTransferred) throws HpcException;
 
   /**
    * Submit a request to download a collection.
