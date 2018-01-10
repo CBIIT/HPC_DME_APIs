@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 
 /**
  * HPC Request Context. Holds specific request (service call) data.
@@ -25,6 +26,14 @@ public class HpcRequestContext {
         @Override
         protected HpcRequestInvoker initialValue() {
           return new HpcRequestInvoker();
+        }
+      };
+
+  private static final ThreadLocal<HpcIntegratedSystemAccount> requestIntegratedSysAcct =
+      new ThreadLocal<HpcIntegratedSystemAccount>() {
+        @Override
+        protected HpcIntegratedSystemAccount initialValue() {
+          return null;
         }
       };
 
@@ -45,4 +54,25 @@ public class HpcRequestContext {
   public static void setRequestInvoker(HpcRequestInvoker invoker) {
     requestInvoker.set(invoker);
   }
+
+
+  /**
+   * Get the HPC integrated system account of this service-call.
+   *
+   * @return The HPC integrated system account involved in service-call
+   */
+  public static HpcIntegratedSystemAccount getRequestIntegratedSysAcct() {
+    return requestIntegratedSysAcct.get();
+  }
+
+  /**
+   * Set the HPC integrated system account of this service-call.
+   *
+   * @param sysAcct The HPC integrated system account to set as the one used in this service-call.
+   */
+  public static void setRequestIntegratedSysAcct(HpcIntegratedSystemAccount sysAcct) {
+    requestIntegratedSysAcct.set(sysAcct);
+  }
+
 }
+

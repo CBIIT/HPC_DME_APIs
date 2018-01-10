@@ -261,6 +261,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
                   baseArchiveDestination,
                   dataTransferConfiguration.getUploadRequestURLExpiration(),
                   null);
+
+      releaseSystemAccountInRequestContext();
+
       if (generateDownloadRequestURL) {
         response.setDestinationFile(null);
         response.setDownloadRequestURL(presignedURL);
@@ -321,6 +324,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         response.setDestinationLocation(
             secondHopDownload.getDownloadTask().getDestinationLocation());
 
+        releaseSystemAccountInRequestContext();
       } catch (HpcException e) {
         // Cleanup the download task and rethrow.
         completeDataObjectDownloadTask(
@@ -342,16 +346,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       String registrarId)
       throws HpcException {
     // Add metadata is done by copying the object to itself w/ attached metadata.
-    return dataTransferProxies
-        .get(dataTransferType)
-        .copyDataObject(
-            getAuthenticatedToken(dataTransferType, configurationId),
-            fileLocation,
-            fileLocation,
-            dataManagementConfigurationLocator
-                .getDataTransferConfiguration(configurationId, dataTransferType)
-                .getBaseArchiveDestination(),
-            generateMetadata(objectId, registrarId));
+    final String retVal =
+        dataTransferProxies
+            .get(dataTransferType)
+            .copyDataObject(
+                getAuthenticatedToken(dataTransferType, configurationId),
+                fileLocation,
+                fileLocation,
+                dataManagementConfigurationLocator
+                    .getDataTransferConfiguration(configurationId, dataTransferType)
+                    .getBaseArchiveDestination(),
+                generateMetadata(objectId, registrarId));
+
+    releaseSystemAccountInRequestContext();
+
+    return retVal;
   }
 
   @Override
@@ -371,6 +380,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             dataManagementConfigurationLocator
                 .getDataTransferConfiguration(configurationId, dataTransferType)
                 .getBaseArchiveDestination());
+
+    releaseSystemAccountInRequestContext();
   }
 
   @Override
@@ -386,12 +397,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         dataManagementConfigurationLocator.getDataTransferConfiguration(
             configurationId, dataTransferType);
 
-    return dataTransferProxies
+    final HpcDataTransferUploadReport retUploadReport =
+      dataTransferProxies
         .get(dataTransferType)
         .getDataTransferUploadStatus(
             getAuthenticatedToken(dataTransferType, configurationId),
             dataTransferRequestId,
             dataTransferConfiguration.getBaseArchiveDestination());
+
+    releaseSystemAccountInRequestContext();
+
+    return retUploadReport;
   }
 
   @Override
@@ -402,10 +418,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    return dataTransferProxies
-        .get(dataTransferType)
-        .getDataTransferDownloadStatus(
-            getAuthenticatedToken(dataTransferType, configurationId), dataTransferRequestId);
+    final HpcDataTransferDownloadReport retDownloadReportObj =
+        dataTransferProxies
+            .get(dataTransferType)
+            .getDataTransferDownloadStatus(
+                getAuthenticatedToken(dataTransferType, configurationId), dataTransferRequestId);
+
+    releaseSystemAccountInRequestContext();
+
+    return retDownloadReportObj;
   }
 
   @Override
@@ -416,10 +437,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    return dataTransferProxies
-        .get(dataTransferType)
-        .getDataTransferSize(
-            getAuthenticatedToken(dataTransferType, configurationId), dataTransferRequestId);
+    final long retVal =
+        dataTransferProxies
+            .get(dataTransferType)
+            .getDataTransferSize(
+                getAuthenticatedToken(dataTransferType, configurationId), dataTransferRequestId);
+
+    releaseSystemAccountInRequestContext();
+
+    return retVal;
   }
 
   @Override
@@ -434,10 +460,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    return dataTransferProxies
+    final HpcPathAttributes retPathAttribs =
+        dataTransferProxies
         .get(dataTransferType)
         .getPathAttributes(
             getAuthenticatedToken(dataTransferType, configurationId), fileLocation, getSize);
+
+    releaseSystemAccountInRequestContext();
+
+    return retPathAttribs;
   }
 
   public List<HpcDirectoryScanItem> scanDirectory(
@@ -462,6 +493,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Filter the list based on provided patterns.
     filterScanItems(scanItems, includePatterns, excludePatterns, patternType);
+
+    releaseSystemAccountInRequestContext();
 
     return scanItems;
   }
@@ -608,7 +641,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
       downloadRequest.setPath(downloadTask.getPath());
       downloadRequest.setUserId(downloadTask.getUserId());
-      
+
       // Get the data transfer configuration.
       HpcDataTransferConfiguration dataTransferConfiguration =
           dataManagementConfigurationLocator.getDataTransferConfiguration(
@@ -629,6 +662,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // Persist the download task.
       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
       dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+
+      releaseSystemAccountInRequestContext();
     }
   }
 
@@ -818,10 +853,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Null / Empty file container ID.", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    return dataTransferProxies
-        .get(dataTransferType)
-        .getFileContainerName(
-            getAuthenticatedToken(dataTransferType, configurationId), fileContainerId);
+    final String retVal =
+        dataTransferProxies
+            .get(dataTransferType)
+            .getFileContainerName(
+                getAuthenticatedToken(dataTransferType, configurationId), fileContainerId);
+
+    releaseSystemAccountInRequestContext();
+
+    return retVal;
   }
 
   // ---------------------------------------------------------------------//
@@ -855,7 +895,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // No authenticated token found for this request. Create one.
     HpcIntegratedSystemAccount dataTransferSystemAccount =
-        systemAccountLocator.getSystemAccount(dataTransferType);
+        systemAccountLocator.getSystemAccount(dataTransferType, invoker.getNciAccount().getDoc());
+    HpcRequestContext.setRequestIntegratedSysAcct(dataTransferSystemAccount);
+//    HpcIntegratedSystemAccount dataTransferSystemAccount =
+//        systemAccountLocator.getSystemAccount(dataTransferType);
+
     if (dataTransferSystemAccount == null) {
       throw new HpcException(
           "System account not registered for " + dataTransferType.value(),
@@ -978,6 +1022,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       uploadResponse.setDataTransferType(dataTransferType);
       uploadResponse.setDataTransferStarted(Calendar.getInstance());
       uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.RECEIVED);
+
+      releaseSystemAccountInRequestContext();
+
       return uploadResponse;
     }
 
@@ -987,7 +1034,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             configurationId, dataTransferType);
 
     // Upload the data object using the appropriate data transfer system proxy.
-    return dataTransferProxies
+    final HpcDataObjectUploadResponse retUploadResponse =
+        dataTransferProxies
         .get(dataTransferType)
         .uploadDataObject(
             authenticatedToken,
@@ -995,6 +1043,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             dataTransferConfiguration.getBaseArchiveDestination(),
             dataTransferConfiguration.getUploadRequestURLExpiration(),
             null);
+
+    releaseSystemAccountInRequestContext();
+
+    return retUploadResponse;
   }
 
   /**
@@ -1537,4 +1589,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       return sourceLocation;
     }
   }
+
+  /*
+     Release system account from the HpcRequestContext, if applicable.
+
+     This is originally intended for returning system account credentials for Globus representing
+     a pooled app account.  The credentials are returned to system account locator component so
+     that it can recycle them for future usage.
+   */
+  private void releaseSystemAccountInRequestContext() {
+    final HpcIntegratedSystemAccount sysAcct = HpcRequestContext.getRequestIntegratedSysAcct();
+    if (null != sysAcct) {
+      systemAccountLocator.returnSharedSystemAccount(sysAcct);
+      HpcRequestContext.setRequestIntegratedSysAcct(null);
+    }
+  }
+
 }
