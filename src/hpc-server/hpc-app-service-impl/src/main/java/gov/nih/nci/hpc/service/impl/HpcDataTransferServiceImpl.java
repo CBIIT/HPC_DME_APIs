@@ -608,7 +608,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
       downloadRequest.setPath(downloadTask.getPath());
       downloadRequest.setUserId(downloadTask.getUserId());
-      // Get the data transfer configuration.
+      
       // Get the data transfer configuration.
       HpcDataTransferConfiguration dataTransferConfiguration =
           dataManagementConfigurationLocator.getDataTransferConfiguration(
@@ -645,6 +645,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       return;
     }
 
+    logger.error("ERAN: PCT: " + bytesTransferred + " : " + downloadTask.getSize());
+    
     // Calculate the percent complete
     int percentComplete = Math.toIntExact(100 * (bytesTransferred / downloadTask.getSize()));
     if (dataManagementConfigurationLocator
