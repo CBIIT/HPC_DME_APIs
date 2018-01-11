@@ -729,21 +729,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException {
-    // Calculate the percent complete.
-    long totalDownloadSize = 0;
-    long totalBytesTransferred = 0;
-    for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-      totalDownloadSize += item.getSize();
-      totalBytesTransferred += item.getPercentComplete() / 100 * item.getSize();
+    // Calculate the percent complete (if the download task is active)
+    if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
+      long totalDownloadSize = 0;
+      long totalBytesTransferred = 0;
+      for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
+        totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
+        totalBytesTransferred +=
+            item.getPercentComplete() != null
+                ? item.getPercentComplete() / 100 * item.getSize()
+                : 0;
+      }
+
+      if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
+        float percentComplete = 100 * (float) totalBytesTransferred / totalDownloadSize;
+        downloadTask.setPercentComplete(Math.round(percentComplete));
+      }
     }
 
-    if(totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
-      float percentComplete = 100 * (float) totalBytesTransferred / totalDownloadSize;
-      downloadTask.setPercentComplete(Math.round(percentComplete));
-    }
-    
     logger.error("ERAN: COLL PCT: " + downloadTask.getPercentComplete());
-    
+
     dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
   }
 
