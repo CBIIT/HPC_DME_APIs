@@ -950,14 +950,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Get the metadata for this data object.
     HpcMetadataEntries metadataEntries =
         metadataService.getDataObjectMetadataEntries(dataObject.getAbsolutePath());
-    String transferPercentCompletion =
-        getDataTransferUploadPercentCompletion(
-            metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries()));
-
     HpcDataObjectDTO dataObjectDTO = new HpcDataObjectDTO();
     dataObjectDTO.setDataObject(dataObject);
     dataObjectDTO.setMetadataEntries(metadataEntries);
-    dataObjectDTO.setTransferPercentCompletion(transferPercentCompletion);
+    dataObjectDTO.setPercentComplete(
+        getDataTransferUploadPercentCompletion(
+            metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
 
     return dataObjectDTO;
   }
@@ -1084,7 +1082,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           taskStatus.getDataObjectDownloadTask().getDataTransferType());
       downloadStatus.setDestinationLocation(
           taskStatus.getDataObjectDownloadTask().getDestinationLocation());
-      downloadStatus.setPercentComplete(taskStatus.getDataObjectDownloadTask().getPercentComplete());
+      downloadStatus.setPercentComplete(
+          taskStatus.getDataObjectDownloadTask().getPercentComplete());
 
     } else {
       // Download completed or failed. Populate the DTO accordingly.
@@ -1342,7 +1341,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param systemGeneratedMetadata The system generated metadata of the data object.
    * @return The transfer % completion if transfer is in progress, or null otherwise. e.g 86%.
    */
-  private String getDataTransferUploadPercentCompletion(
+  private Integer getDataTransferUploadPercentCompletion(
       HpcSystemGeneratedMetadata systemGeneratedMetadata) {
     // Get the transfer status, transfer request id and data-object size from the
     // metadata entries.
@@ -1358,7 +1357,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     Long sourceSize = systemGeneratedMetadata.getSourceSize();
 
     if (dataTransferRequestId == null || sourceSize == null || sourceSize <= 0) {
-      return "Unknown";
+      return null;
     }
 
     // Get the size of the data transferred so far.
@@ -1371,10 +1370,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               systemGeneratedMetadata.getConfigurationId());
     } catch (HpcException e) {
       logger.error("Failed to get data transfer size: " + dataTransferRequestId, e);
-      return "Unknown";
+      return null;
     }
 
-    return String.valueOf((transferSize * 100L) / sourceSize) + '%';
+    float percentComplete = 100 * (float) transferSize / sourceSize;
+    return Math.round(percentComplete);
   }
 
   /**
@@ -1714,6 +1714,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             .getDataObjectPaths()
             .addAll(taskStatus.getCollectionDownloadTask().getDataObjectPaths());
       }
+      downloadStatus.setPercentComplete(taskStatus.getCollectionDownloadTask().getPercentComplete());
       downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
       downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
       downloadStatus.setDestinationLocation(
