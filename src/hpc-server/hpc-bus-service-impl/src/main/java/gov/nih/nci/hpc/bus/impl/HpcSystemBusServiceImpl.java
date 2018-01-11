@@ -560,6 +560,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               // This download item is now complete. Update the result.
               downloadItem.setResult(downloadItemStatus.getResult().getResult());
               downloadItem.setMessage(downloadItemStatus.getResult().getMessage());
+              downloadItem.setPercentComplete(null);
               downloadItem.setEffectiveTransferSpeed(
                   downloadItemStatus.getResult().getEffectiveTransferSpeed() > 0
                       ? downloadItemStatus.getResult().getEffectiveTransferSpeed()
