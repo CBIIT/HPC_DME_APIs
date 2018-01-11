@@ -608,7 +608,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
       downloadRequest.setPath(downloadTask.getPath());
       downloadRequest.setUserId(downloadTask.getUserId());
-      
+
       // Get the data transfer configuration.
       HpcDataTransferConfiguration dataTransferConfiguration =
           dataManagementConfigurationLocator.getDataTransferConfiguration(
@@ -633,7 +633,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public void updateDataObjectDownloadTaskProgress(
+  public void updateDataObjectDownloadTask(
       HpcDataObjectDownloadTask downloadTask, long bytesTransferred) throws HpcException {
     // Input validation. Note: we only expect this to be called while Globus transfer is in-progress
     // Currently, bytesTransferred are not available while S3 download is in progress.
@@ -645,10 +645,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       return;
     }
 
-    logger.error("ERAN: PCT: " + bytesTransferred + " : " + downloadTask.getSize());
-    
     // Calculate the percent complete
-    int percentComplete = Math.round(100 * bytesTransferred / downloadTask.getSize());
+    float percentComplete = 100 * (float) bytesTransferred / downloadTask.getSize();
     if (dataManagementConfigurationLocator
         .getDataTransferConfiguration(
             downloadTask.getConfigurationId(), downloadTask.getDataTransferType())
@@ -656,14 +654,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         .getType()
         .equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
       // This is a 2-hop download, and S_3 is complete. Our base % complete is 50%.
-      downloadTask.setPercentComplete(50 + percentComplete / 2);
+      downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
     } else {
       // This is a one-hop Globus download from archive to user destination (currently only supported by file system archive).
-      downloadTask.setPercentComplete(percentComplete);
+      downloadTask.setPercentComplete(Math.round(percentComplete));
     }
 
-    logger.error("ERAN: PCT CALC: " + downloadTask.getPercentComplete() + " : " + percentComplete);
-    
+    logger.error("ERAN: DO PCT: " + downloadTask.getPercentComplete());
+
     dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
   }
 
@@ -731,6 +729,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException {
+    // Calculate the percent complete (if the download task is active)
+    if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
+      long totalDownloadSize = 0;
+      long totalBytesTransferred = 0;
+      for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
+        totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
+        totalBytesTransferred +=
+            item.getPercentComplete() != null
+                ? item.getPercentComplete() / 100 * item.getSize()
+                : 0;
+      }
+
+      if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
+        float percentComplete = 100 * (float) totalBytesTransferred / totalDownloadSize;
+        downloadTask.setPercentComplete(Math.round(percentComplete));
+      }
+    }
+
+    logger.error("ERAN: COLL PCT: " + downloadTask.getPercentComplete());
+
     dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
   }
 
