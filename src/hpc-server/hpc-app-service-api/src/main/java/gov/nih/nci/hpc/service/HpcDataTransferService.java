@@ -276,13 +276,14 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Calculate the percent complete of the download task.
+   * Update a data object download task. % Complete is calculated and any change on the task object
+   * will be persisted.
    *
    * @param downloadTask The download task to update progress
    * @param bytesTransferred The bytes transferred so far.
    * @throws HpcException on service failure.
    */
-  public void updateDataObjectDownloadTaskProgress(
+  public void updateDataObjectDownloadTask(
       HpcDataObjectDownloadTask downloadTask, long bytesTransferred) throws HpcException;
 
   /**
@@ -325,7 +326,7 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Update a collection download task.
+   * Update a collection download task. % Complete is calculated and any change on the task object will be persisted.
    *
    * @param downloadTask The collection download task to update.
    * @throws HpcException on service failure.
