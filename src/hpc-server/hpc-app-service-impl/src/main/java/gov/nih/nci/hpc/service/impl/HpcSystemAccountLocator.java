@@ -23,6 +23,8 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -41,6 +43,8 @@ public class HpcSystemAccountLocator {
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
+  // The logger instance.
+  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   // singularSystemAccounts contains data about system accounts for which there is only 1
   //   account per system
@@ -116,6 +120,10 @@ public class HpcSystemAccountLocator {
   //  accounts
   private void initMultiDataTransferAccountsMap(HpcDataTransferType transferType,
       List<HpcIntegratedSystemAccount> theAccts) {
+    if (null == multiDataTransferAccounts.get(transferType)) {
+      multiDataTransferAccounts
+          .put(transferType, new ConcurrentHashMap<String, Queue<HpcIntegratedSystemAccount>>());
+    }
     final Map<String, Queue<HpcIntegratedSystemAccount>> classifier2QueueMap = multiDataTransferAccounts
         .get(transferType);
     for (HpcIntegratedSystemAccount someAcct : theAccts) {
@@ -179,7 +187,7 @@ public class HpcSystemAccountLocator {
     if (null != singularDataTransferAccounts.get(dataTransferType)) {
       retSysAcct = singularDataTransferAccounts.get(dataTransferType);
     } else if (null != multiDataTransferAccounts.get(dataTransferType)) {
-      // Assumption: P_GLOBUS is 1 and only data transfer type having multiple system accounts supporting it
+      // Assumption: GLOBUS is 1 and only data transfer type having multiple system accounts supporting it
       retSysAcct = obtainPooledGlobusAppAcctInfo(docClassifier);
     }
 
@@ -192,34 +200,63 @@ public class HpcSystemAccountLocator {
    * @param someSharedSysAcct The shared system account
    */
   public void returnSharedSystemAccount(HpcIntegratedSystemAccount someSharedSysAcct) {
-    // Assumption: P_GLOBUS is 1 and only data transfer type having multiple system accounts supporting it
-    final String classifierValue = fetchSysAcctPropertyValue(someSharedSysAcct,
-        PROPERTY_NAME_CLASSIFIER);
-    Queue<HpcIntegratedSystemAccount> acctsQueue = multiDataTransferAccounts
-        .get(HpcDataTransferType.P_GLOBUS).get(classifierValue);
-    if (null != acctsQueue) {
-      acctsQueue.add(someSharedSysAcct);
+    logger.info(String.format("Received system account data to return to pool, if applicable." +
+                "  Account details are: %s.", genStringRepOfHpcIntegratedSystemAccount(someSharedSysAcct)));
+
+    // Assumption: GLOBUS is 1 and only data transfer type having multiple system accounts supporting it
+    if ( HpcIntegratedSystem.GLOBUS.equals( someSharedSysAcct.getIntegratedSystem() ) ) {
+      logger.info("Account is for GLOBUS so should be returned to applicable pool.");
+      final Map<String, Queue<HpcIntegratedSystemAccount>> classifier2QueueMap =
+          multiDataTransferAccounts.get(HpcDataTransferType.GLOBUS);
+      final String classifierValue = fetchSysAcctPropertyValue(someSharedSysAcct,
+          PROPERTY_NAME_CLASSIFIER);
+      final String appliedClassifier = (null == classifierValue || false == classifier2QueueMap.containsKey(classifierValue)) ? DOC_CLASSIFIER_DEFAULT : classifierValue;
+      logger.info(String.format("Target GLOBUS pool corresponding to DOC classifier of %s.", appliedClassifier));
+      final Queue<HpcIntegratedSystemAccount> acctsQueue = classifier2QueueMap.get(appliedClassifier);
+      if (null != acctsQueue) {
+        acctsQueue.add(someSharedSysAcct);
+        logger.info("Returned account object to applicable pool.");
+      }
+    } else {
+      logger.info("Account is not for GLOBUS, so there is no pool in which it belongs.");
     }
   }
 
   private HpcIntegratedSystemAccount obtainPooledGlobusAppAcctInfo(String docClassifier) {
+    logger.info(String
+        .format("Received request for Globus app account from pool for DOC classifier, %s.",
+            docClassifier));
+
     HpcIntegratedSystemAccount retSysAcct = null;
     final Map<String, Queue<HpcIntegratedSystemAccount>> classifier2QueueMap = multiDataTransferAccounts
-        .get(HpcDataTransferType.P_GLOBUS);
+        .get(HpcDataTransferType.GLOBUS);
     final Queue<HpcIntegratedSystemAccount> theQueue =
         (null == classifier2QueueMap.get(docClassifier)) ?
             classifier2QueueMap.get(DOC_CLASSIFIER_DEFAULT)
             : classifier2QueueMap.get(docClassifier);
+
+    logger
+        .info("Accessed applicable pool and about to poll it for Globus app account credentials.");
+
     boolean polledSuccessfully = false;
     while (!polledSuccessfully) {
       try {
         retSysAcct = theQueue.poll();
         polledSuccessfully = true;
+
+        logger.info(String
+            .format("Successfully acquired Globus app account having client ID of %s.",
+                retSysAcct.getUsername()));
+
       } catch (NoSuchElementException nseEx) {
+        logger.info(
+            "... failed to acquire Globus app account credentials, so sleeping and then will re-poll the pool.");
         sleepWithoutExceptionHandling(GLOBUS_ACCT_POOL_RETRY_INTERVAL_MS);
         polledSuccessfully = false;
       }
     }
+
+    logger.info("About to return Globus app account credentials.");
     return retSysAcct;
   }
 
@@ -242,6 +279,19 @@ public class HpcSystemAccountLocator {
       }
     }
     return retPropVal;
+  }
+
+  private String genStringRepOfHpcIntegratedSystemAccount(HpcIntegratedSystemAccount sysAcct) {
+    final StringBuilder sb = new StringBuilder();
+    sb.append("{ username = ").append(sysAcct.getUsername())
+      .append(", integrated system = ").append(sysAcct.getIntegratedSystem());
+    final List<HpcIntegratedSystemAccountProperty> allProps = sysAcct.getProperties();
+    for (HpcIntegratedSystemAccountProperty prop : allProps) {
+      sb.append(", ").append(prop.getName()).append(" = ").append(prop.getValue());
+    }
+    sb.append(" }");
+    final String retVal = sb.toString();
+    return retVal;
   }
 
   // populate another data transfer accounts map for pooled/shared Globus app accounts

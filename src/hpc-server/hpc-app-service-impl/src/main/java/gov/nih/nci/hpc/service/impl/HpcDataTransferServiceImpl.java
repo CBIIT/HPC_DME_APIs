@@ -1623,4 +1623,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
   }
 
+/*
+  private HpcDataTransferType rerouteGlobus2P_Globus(HpcDataTransferType dtType) {
+    final HpcDataTransferType retDtType =
+        (HpcDataTransferType.GLOBUS.equals(dtType)) ? HpcDataTransferType.P_GLOBUS : dtType;
+    return retDtType;
+  }
+*/
+
 }

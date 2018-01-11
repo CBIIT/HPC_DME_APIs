@@ -60,13 +60,13 @@ public interface HpcSystemAccountDAO
     		                                          throws HpcException;
 
 
-  /**
+  /*
    * Get system accounts representing Globus pooled/shared application accounts.
    *
    * @return Set containing system accounts info as HpcIntegratedSystemAccount instances
    * @throws HpcException on error
    */
-  public List<HpcIntegratedSystemAccount> getGlobusPooledAccounts() throws HpcException;
+//  public List<HpcIntegratedSystemAccount> getGlobusPooledAccounts() throws HpcException;
 
 }
 
