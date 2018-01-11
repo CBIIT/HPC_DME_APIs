@@ -565,7 +565,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                       ? downloadItemStatus.getResult().getEffectiveTransferSpeed()
                       : null);
             } else {
-              // There is at least one download item still in progress.
+              // Update the progress on this download item.
+              downloadItem.setSize(downloadItemStatus.getDataObjectDownloadTask().getSize());
+              downloadItem.setPercentComplete(
+                  downloadItemStatus.getDataObjectDownloadTask().getPercentComplete());
+
+              // This item still in progress, so overall download not completed just yet.
               downloadCompleted = false;
             }
           }
@@ -1247,7 +1252,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       }
     } else {
       // Download is still in progress. Update the progress (percent complete).
-      dataTransferService.updateDataObjectDownloadTaskProgress(
+      dataTransferService.updateDataObjectDownloadTask(
           downloadTask, dataTransferDownloadReport.getBytesTransferred());
     }
   }

@@ -233,6 +233,7 @@
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="percentComplete" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -245,6 +246,8 @@
 			<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="effectiveTransferSpeed" type="xsd:int" minOccurs="0" />
+			<xsd:element name="percentComplete" type="xsd:int" minOccurs="0" />
+			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
