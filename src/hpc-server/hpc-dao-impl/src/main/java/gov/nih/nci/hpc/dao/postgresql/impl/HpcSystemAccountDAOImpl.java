@@ -43,7 +43,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
     // SQL Queries.
 /*
 	private final static String UPSERT_SQL =
-		    "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( " +
+		    "insert into public.\"HPC_SYSTEM_ACCOUNT_DEV884\" ( " +
                     "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\", \"CLASSIFIER\") " +
                     "values (?, ?, ?, ?, ?) " +
             "on conflict(\"SYSTEM\") do update set \"USERNAME\"=excluded.\"USERNAME\", " +
@@ -51,17 +51,17 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
                                                    "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\"";
 */
   private final static String UPSERT_SQL =
-      "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( " +
+      "insert into public.\"HPC_SYSTEM_ACCOUNT_DEV884\" ( " +
           "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\", \"CLASSIFIER\") " +
           "values (?, ?, ?, ?, ?)";
 
 	private final static String GET_BY_SYSTEM_SQL = 
-		    "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = ?";
+		    "select * from public.\"HPC_SYSTEM_ACCOUNT_DEV884\" where \"SYSTEM\" = ?";
 	private final static String GET_BY_DATA_TRANSFER_TYPE_SQL = 
-		    "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"DATA_TRANSFER_TYPE\" = ?";
+		    "select * from public.\"HPC_SYSTEM_ACCOUNT_DEV884\" where \"DATA_TRANSFER_TYPE\" = ?";
 
-	private final static String GET_SHARED_GLOBUS_APP_ACCOUNTS =
-        "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = 'P_GLOBUS'";
+//	private final static String GET_SHARED_GLOBUS_APP_ACCOUNTS =
+//        "select * from public.\"HPC_SYSTEM_ACCOUNT_DEV884\" where \"SYSTEM\" = 'P_GLOBUS'";
 	
     //---------------------------------------------------------------------//
     // Instance members
@@ -76,21 +76,27 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 	HpcEncryptor encryptor = null;
 	
 	// Row mapper.
-	private RowMapper<HpcIntegratedSystemAccount> rowMapper = (rs, rowNum) ->
-	{
-		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
-		account.setUsername(rs.getString("USERNAME"));
-		account.setPassword(encryptor.decrypt(rs.getBytes(("PASSWORD"))));
-		account.setIntegratedSystem(HpcIntegratedSystem.fromValue(rs.getString(("SYSTEM"))));
+  private RowMapper<HpcIntegratedSystemAccount> rowMapper = (rs, rowNum) ->
+  {
+    HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+    account.setUsername(rs.getString("USERNAME"));
+    account.setPassword(encryptor.decrypt(rs.getBytes(("PASSWORD"))));
+/*
+		final String rawSystem = rs.getString("SYSTEM");
+		if (!"P_GLOBUS".equals(rawSystem)) {
+			account.setIntegratedSystem(HpcIntegratedSystem.fromValue(rawSystem));
+		}
+*/
+    account.setIntegratedSystem(HpcIntegratedSystem.fromValue(rs.getString("SYSTEM")));
 
-    final String classifierValue  = rs.getString("CLASSIFIER");
+    final String classifierValue = rs.getString("CLASSIFIER");
     HpcIntegratedSystemAccountProperty theProperty = new HpcIntegratedSystemAccountProperty();
     theProperty.setName("classifier");
     theProperty.setValue(classifierValue);
     account.getProperties().add(theProperty);
 
     return account;
-	};
+  };
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -164,6 +170,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
 		}
 	}
 
+/*
   @Override
   public List<HpcIntegratedSystemAccount> getGlobusPooledAccounts() throws HpcException {
     try {
@@ -173,6 +180,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, daEx);
     }
   }
+*/
 
 }
 
