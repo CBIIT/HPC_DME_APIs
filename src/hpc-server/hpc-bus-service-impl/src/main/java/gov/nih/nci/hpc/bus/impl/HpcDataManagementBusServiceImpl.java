@@ -1714,7 +1714,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             .getDataObjectPaths()
             .addAll(taskStatus.getCollectionDownloadTask().getDataObjectPaths());
       }
-      downloadStatus.setPercentComplete(taskStatus.getCollectionDownloadTask().getPercentComplete());
+      downloadStatus.setPercentComplete(
+          taskStatus.getCollectionDownloadTask().getPercentComplete());
       downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
       downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
       downloadStatus.setDestinationLocation(
