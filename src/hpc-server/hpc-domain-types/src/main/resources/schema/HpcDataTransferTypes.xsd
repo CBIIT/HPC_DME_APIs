@@ -233,7 +233,6 @@
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="percentComplete" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 

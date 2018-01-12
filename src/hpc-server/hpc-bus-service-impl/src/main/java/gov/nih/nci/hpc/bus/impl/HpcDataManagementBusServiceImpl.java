@@ -35,6 +35,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -743,7 +744,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                   systemGeneratedMetadata.getRegistrarId());
 
           metadataService.updateDataObjectSystemGeneratedMetadata(
-              path, null, null, checksum, null, null, null, null);
+              path, null, null, checksum, null, null, null, null, null);
         }
 
         // Add collection update event.
@@ -1714,8 +1715,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             .getDataObjectPaths()
             .addAll(taskStatus.getCollectionDownloadTask().getDataObjectPaths());
       }
-      downloadStatus.setPercentComplete(
-          taskStatus.getCollectionDownloadTask().getPercentComplete());
+      downloadStatus.setPercentComplete(calculateCollectionDownloadPercentComplete(
+          taskStatus.getCollectionDownloadTask()));
       downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
       downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
       downloadStatus.setDestinationLocation(
@@ -1804,7 +1805,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       String path, HpcDataTransferUploadStatus dataTransferStatus) {
     try {
       metadataService.updateDataObjectSystemGeneratedMetadata(
-          path, null, null, null, dataTransferStatus, null, null, null);
+          path, null, null, null, dataTransferStatus, null, null, null, null);
 
     } catch (HpcException e) {
       logger.error(
@@ -2043,7 +2044,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           HpcDataTransferUploadStatus.URL_GENERATED,
           null,
           uploadResponse.getDataTransferStarted(),
-          null);
+          null, null);
 
       return uploadResponse.getUploadRequestURL();
     }
@@ -2128,5 +2129,32 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     resultHpcPermForColl.setCollectionPath(path);
     resultHpcPermForColl.setPermission(hsPerm.getPermission());
     return resultHpcPermForColl;
+  }
+
+  /**
+   * Calculate the overall % complete of a collection download task
+   *
+   * @param downloadTask The collection download task. return The % complete.
+   */
+  private int calculateCollectionDownloadPercentComplete(HpcCollectionDownloadTask downloadTask) {
+    if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
+      long totalDownloadSize = 0;
+      long totalBytesTransferred = 0;
+      for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
+        totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
+        totalBytesTransferred +=
+            item.getPercentComplete() != null
+                ? item.getPercentComplete() / 100 * item.getSize()
+                : 0;
+      }
+
+      if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
+        float percentComplete = 100 * (float) totalBytesTransferred / totalDownloadSize;
+        logger.error("ERAN: COLL PCT: " + percentComplete);
+        return Math.round(percentComplete);
+      }
+    }
+    
+    return 0;
   }
 }
