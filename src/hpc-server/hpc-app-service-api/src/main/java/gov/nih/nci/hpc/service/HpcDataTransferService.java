@@ -326,7 +326,7 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Update a collection download task. % Complete is calculated and any change on the task object will be persisted.
+   * Update a collection download task. 
    *
    * @param downloadTask The collection download task to update.
    * @throws HpcException on service failure.
