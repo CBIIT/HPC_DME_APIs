@@ -16,7 +16,7 @@ function dm_generate_token () {
 
     local LOG_FILE=$HPC_DM_UTILS/temp/log
     local CONFIG_PATH=$HPC_DM_UTILS/tokens/curl-conf
-    rm $LOG_FILE 2>/dev/null
+    rm -f $LOG_FILE 2>/dev/null
 
     SERVER=$(get_server) || exit 1
     USERNAME=$(get_username) || exit 1
@@ -36,7 +36,7 @@ function dm_generate_token () {
       echo $TOKEN > $HPC_DM_UTILS/${FORMATED_PATH}
       local CONFIG_STRING=$(cat "$CONFIG_PATH-sample" | sed "s@Bearer.*@Bearer $TOKEN\"@")
       echo "$CONFIG_STRING" > $CONFIG_PATH
-      rm $LOG_FILE 2>/dev/null
+      rm -f $LOG_FILE 2>/dev/null
     fi
 }
 
@@ -45,7 +45,7 @@ function dm_globus_generate_token {
 
     local LOG_FILE=$HPC_DM_UTILS/temp/globus-log
     local CONFIG_PATH=$HPC_DM_UTILS/tokens/curl-globus
-    rm $LOG_FILE 2>/dev/null
+    rm -f $LOG_FILE 2>/dev/null
 
     SERVER=$(get_globus_server) || exit 1
     GLOBUS_USER=$(get_globus_user) || exit 1
@@ -65,7 +65,7 @@ function dm_globus_generate_token {
       echo ${GLOBUS_USER}:${TOKEN} > $HPC_DM_UTILS/${FORMATED_PATH}
       local CONFIG_STRING=$(cat "$CONFIG_PATH-sample" | sed "s@Bearer.*@Bearer $TOKEN\"@")
       echo "$CONFIG_STRING" > $CONFIG_PATH
-      rm $LOG_FILE 2>/dev/null
+      rm -f $LOG_FILE 2>/dev/null
     fi
 }
 
@@ -118,8 +118,8 @@ function dm_register () {
     local RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
     local RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
 
-    rm $RESPONSE_MSG 2>/dev/null 
-    rm $RESPONSE_HEADER 2>/dev/null 
+    rm -f  $RESPONSE_MSG 2>/dev/null 
+    rm -f $RESPONSE_HEADER 2>/dev/null 
 
     local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
@@ -242,8 +242,8 @@ function dm_sync_globus_endpoint  {
       echo "dm_register_dataobject  temp.json $DST_PATH $SRC_PATH"
       echo "verify_registration  $REPONSE_HEADER $RESPONSE_MSG $DST_PATH"
 
-      rm $RESPONSE_HEADER 2>/dev/null
-      rm $RESPONSE_MSG 2>/dev/null
+      rm -f $RESPONSE_HEADER 2>/dev/null
+      rm -f $RESPONSE_MSG 2>/dev/null
 
     done <<< "$FILE_LIST"
 
@@ -328,13 +328,13 @@ function dm_get_dataobject {
       #Check if the user needs the response header file 
       if [ -z "$3" ]
       then 
-        rm "$RESPONSE_HEADER" 2> /dev/null
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
       fi
 
       if [ -z "$2" ]
       then
         print_json_message "$RESPONSE_MSG"    
-        rm $RESPONSE_MSG 2> /dev/null 
+        rm -f $RESPONSE_MSG 2> /dev/null 
       fi
       exit 0
     fi
@@ -374,13 +374,13 @@ function dm_get_collection {
       #Check if the user needs the response header file 
       if [ -z "$3" ]
       then 
-        rm "$RESPONSE_HEADER" 2> /dev/null
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
       fi
 
       if [ -z "$2" ]
       then
         print_json_message "$RESPONSE_MSG"    
-        rm $RESPONSE_MSG 2> /dev/null 
+        rm -f $RESPONSE_MSG 2> /dev/null 
       fi
     fi
 }
@@ -441,7 +441,7 @@ function dm_download_dataobject_sync {
       #In this case the destination path file will contain the error code
       print_error_message "$DESTINATION_PATH" "$CODE" 
     else
-      rm $RESPONSE_HEADER 2> /dev/null
+      rm -f $RESPONSE_HEADER 2> /dev/null
     fi
 }
 
@@ -952,7 +952,7 @@ function dm_download_collection_async {
       #In this case the destination path file will contain the error code
       print_error_message "$reponse_msg" "$code" 
     else
-      rm $response_hdr 2> /dev/null
+      rm -f $response_hdr 2> /dev/null
     fi
 }
 
@@ -1057,7 +1057,7 @@ function dm_download_async {
       #In this case the destination path file will contain the error code
       print_error_message "$response_msg" "$code"  || exit 1
     else
-      rm $response_hdr 2> /dev/null
+      rm -f $response_hdr 2> /dev/null
     fi
 
     #Parse the download receipt:
@@ -1130,13 +1130,13 @@ function dm_get_download_status {
       #Check if the user needs the response header file 
       if [ -z "$3" ]
       then 
-        rm "$RESPONSE_HEADER" 2> /dev/null
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
       fi
 
       if [ -z "$2" ]
       then
         print_json_message "$response_msg"    
-        rm $response_msg 2> /dev/null 
+        rm -f $response_msg 2> /dev/null 
       fi
     fi
 }
