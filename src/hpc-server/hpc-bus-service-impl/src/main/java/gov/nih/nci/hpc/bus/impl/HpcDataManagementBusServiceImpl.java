@@ -1374,7 +1374,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       return null;
     }
 
-    float percentComplete = 100 * (float) transferSize / sourceSize;
+    float percentComplete = (float) 100 * transferSize / sourceSize;
     return Math.round(percentComplete);
   }
 
@@ -2149,8 +2149,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 : 0;
       }
 
+      logger.error("ERAN: total: " + totalBytesTransferred + " / " + totalDownloadSize);
       if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
-        float percentComplete = 100 * (float) totalBytesTransferred / totalDownloadSize;
+        float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
         logger.error("ERAN: COLL PCT: " + percentComplete);
         return Math.round(percentComplete);
       }
