@@ -660,8 +660,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setPercentComplete(Math.round(percentComplete));
     }
 
-    logger.error("ERAN: DO PCT: " + downloadTask.getPercentComplete());
-
     dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
   }
 
