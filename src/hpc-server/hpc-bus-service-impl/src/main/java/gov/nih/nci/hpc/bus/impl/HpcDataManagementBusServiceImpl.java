@@ -1715,8 +1715,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             .getDataObjectPaths()
             .addAll(taskStatus.getCollectionDownloadTask().getDataObjectPaths());
       }
-      downloadStatus.setPercentComplete(calculateCollectionDownloadPercentComplete(
-          taskStatus.getCollectionDownloadTask()));
+      downloadStatus.setPercentComplete(
+          calculateCollectionDownloadPercentComplete(taskStatus.getCollectionDownloadTask()));
       downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
       downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
       downloadStatus.setDestinationLocation(
@@ -2044,7 +2044,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           HpcDataTransferUploadStatus.URL_GENERATED,
           null,
           uploadResponse.getDataTransferStarted(),
-          null, null);
+          null,
+          null);
 
       return uploadResponse.getUploadRequestURL();
     }
@@ -2141,7 +2142,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       long totalDownloadSize = 0;
       long totalBytesTransferred = 0;
       for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-        logger.error("ERAN: item: " + item.getPercentComplete() + " / " + item.getSize());
         totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
         totalBytesTransferred +=
             item.getPercentComplete() != null
@@ -2149,14 +2149,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 : 0;
       }
 
-      logger.error("ERAN: total: " + totalBytesTransferred + " / " + totalDownloadSize);
       if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
         float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
-        logger.error("ERAN: COLL PCT: " + percentComplete);
         return Math.round(percentComplete);
       }
     }
-    
+
     return 0;
   }
 }
