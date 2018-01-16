@@ -637,25 +637,25 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     dataManagementService
         .getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED)
         .forEach(
-            listRegistrationTask -> {
+            bulkRegistrationTask -> {
               try {
                 // 'Activate' the registration task.
-                listRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE);
+                bulkRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE);
 
                 // Register all items in this bulk registration task.
-                listRegistrationTask
+                bulkRegistrationTask
                     .getItems()
-                    .forEach(item -> registerDataObject(item, listRegistrationTask.getUserId()));
+                    .forEach(item -> registerDataObject(item, bulkRegistrationTask.getUserId()));
 
                 // Persist the bulk data object registration task.
-                dataManagementService.updateBulkDataObjectRegistrationTask(listRegistrationTask);
+                dataManagementService.updateBulkDataObjectRegistrationTask(bulkRegistrationTask);
 
               } catch (HpcException e) {
                 logger.error(
-                    "Failed to process a data object list registration: "
-                        + listRegistrationTask.getId(),
+                    "Failed to process a bulk data object registration: "
+                        + bulkRegistrationTask.getId(),
                     e);
-                completeBulkDataObjectRegistrationTask(listRegistrationTask, false, e.getMessage());
+                completeBulkDataObjectRegistrationTask(bulkRegistrationTask, false, e.getMessage());
               }
             });
   }
@@ -1443,17 +1443,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           registrationTask.setResult(false);
           registrationTask.setMessage("Data object upload failed");
           registrationTask.setCompleted(Calendar.getInstance());
+          registrationTask.setPercentComplete(0);
         }
 
         // Get the System generated metadata.
         HpcSystemGeneratedMetadata metadata =
             metadataService.getDataObjectSystemGeneratedMetadata(registrationTask.getPath());
-
+        registrationTask.setSize(metadata.getSourceSize());
+        
         // Check the upload status.
         if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
           // Registration completed successfully for this item.
           registrationTask.setResult(true);
           registrationTask.setCompleted(metadata.getDataTransferCompleted());
+          registrationTask.setPercentComplete(100);
 
           // Calculate the effective transfer speed.
           registrationTask.setEffectiveTransferSpeed(
@@ -1462,6 +1465,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                       * 1000
                       / (metadata.getDataTransferCompleted().getTimeInMillis()
                           - metadata.getDataTransferStarted().getTimeInMillis())));
+        } else {
+          // Registration still in progress. Update % complete.
+          registrationTask.setPercentComplete(
+              dataTransferService.calculateDataObjectUploadPercentComplete(metadata));
         }
       }
 
@@ -1469,6 +1476,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       logger.error("Failed to check data object registration item status", e);
       registrationTask.setResult(false);
       registrationTask.setMessage(e.getMessage());
+      registrationTask.setPercentComplete(null);
     }
   }
 

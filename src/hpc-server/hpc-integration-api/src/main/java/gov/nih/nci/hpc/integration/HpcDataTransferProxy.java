@@ -159,19 +159,6 @@ public interface HpcDataTransferProxy {
   }
 
   /**
-   * Get the size of the data transferred of a specific request.
-   *
-   * @param authenticatedToken An authenticated token.
-   * @param dataTransferRequestId The data transfer request ID.
-   * @return The size of the data transferred in bytes.
-   * @throws HpcException on data transfer system failure.
-   */
-  public default long getDataTransferSize(Object authenticatedToken, String dataTransferRequestId)
-      throws HpcException {
-    throw new HpcException("getDataTransferStatus() not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
-
-  /**
    * Get attributes of a file/directory.
    *
    * @param authenticatedToken An authenticated token.

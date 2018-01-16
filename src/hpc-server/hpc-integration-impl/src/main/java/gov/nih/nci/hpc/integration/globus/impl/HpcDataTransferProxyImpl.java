@@ -295,6 +295,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     HpcDataTransferUploadReport statusReport = new HpcDataTransferUploadReport();
     statusReport.setMessage(report.niceStatusDescription);
+    statusReport.setBytesTransferred(report.bytesTransferred);
 
     if (report.status.equals(SUCCEEDED_STATUS)) {
       // Upload completed successfully. Return status based on the archive type.
@@ -347,12 +348,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     return statusReport;
-  }
-
-  @Override
-  public long getDataTransferSize(Object authenticatedToken, String dataTransferRequestId)
-      throws HpcException {
-    return getDataTransferReport(authenticatedToken, dataTransferRequestId).bytesTransferred;
   }
 
   @Override
