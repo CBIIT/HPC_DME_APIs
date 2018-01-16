@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -153,20 +154,6 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public HpcDataTransferDownloadReport getDataTransferDownloadStatus(
-      HpcDataTransferType dataTransferType, String dataTransferRequestId, String configurationId)
-      throws HpcException;
-
-  /**
-   * Get the size of the data transferred of a specific request.
-   *
-   * @param dataTransferType The data transfer type.
-   * @param dataTransferRequestId The data transfer request ID.
-   * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
-   * @return The size of the data transferred in bytes.
-   * @throws HpcException on service failure.
-   */
-  public long getDataTransferSize(
       HpcDataTransferType dataTransferType, String dataTransferRequestId, String configurationId)
       throws HpcException;
 
@@ -326,7 +313,7 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Update a collection download task. % Complete is calculated and any change on the task object will be persisted.
+   * Update a collection download task.
    *
    * @param downloadTask The collection download task to update.
    * @throws HpcException on service failure.
@@ -406,4 +393,13 @@ public interface HpcDataTransferService {
   public String getFileContainerName(
       HpcDataTransferType dataTransferType, String configurationId, String fileContainerId)
       throws HpcException;
+
+  /**
+   * Calculate a data object upload % complete. Note: if upload not in progress, null is returned.
+   *
+   * @param systemGeneratedMetadata The system generated metadata of the data object.
+   * @return The transfer % completion if transfer is in progress, or null otherwise.
+   */
+  public Integer calculateDataObjectUploadPercentComplete(
+      HpcSystemGeneratedMetadata systemGeneratedMetadata);
 }

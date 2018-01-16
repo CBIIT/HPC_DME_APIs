@@ -116,8 +116,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( "
           + "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_OVERWRITE\", \"ITEMS\", \"STATUS\", \"TYPE\", "
-          + "\"DATA_OBJECT_PATHS\", \"PERCENT_COMPLETE\", \"CREATED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "\"DATA_OBJECT_PATHS\", \"CREATED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
@@ -128,7 +128,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"STATUS\"=excluded.\"STATUS\", "
           + "\"TYPE\"=excluded.\"TYPE\", "
           + "\"DATA_OBJECT_PATHS\"=excluded.\"DATA_OBJECT_PATHS\", "
-          + "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", "
           + "\"CREATED\"=excluded.\"CREATED\"";
 
   public static final String GET_COLLECTION_DOWNLOAD_TASK_SQL =
@@ -270,7 +269,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         }
         collectionDownloadTask.setDestinationOverwrite(rs.getBoolean("DESTINATION_OVERWRITE"));
         collectionDownloadTask.getItems().addAll(fromJSON(rs.getString("ITEMS")));
-        collectionDownloadTask.setPercentComplete(rs.getInt("PERCENT_COMPLETE"));
 
         Calendar created = Calendar.getInstance();
         created.setTime(rs.getTimestamp("CREATED"));
@@ -498,7 +496,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           collectionDownloadTask.getStatus().value(),
           collectionDownloadTask.getType().value(),
           sqlArray,
-          collectionDownloadTask.getPercentComplete(),
           collectionDownloadTask.getCreated());
 
     } catch (DataAccessException e) {
