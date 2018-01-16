@@ -545,16 +545,16 @@ function get_type  {
     #Make sure the item exists and figure out if it is a collection or a dataobject
     local get_response_hdr=$HPC_DM_UTILS/temp/get_collection_response_header.tmp
     local get_response_msg=$HPC_DM_UTILS/temp/get_collection_response_message.json.tmp
-    rm $get_response_hdr 2>/dev/null
-    rm $get_response_msg 2>/dev/null
+    rm -f  $get_response_hdr 2>/dev/null
+    rm -f $get_response_msg 2>/dev/null
     dm_get_item  collection/$archive_path "$get_response_msg" "$get_response_hdr" || exit 1
     
     code=$(get_http_code "$get_response_hdr")  || exit 1
 
     if [ "$code" -eq 200 ]
     then 
-        rm $get_response_hdr 2>/dev/null
-        rm $get_response_msg 2>/dev/null
+        rm -f $get_response_hdr 2>/dev/null
+        rm -f $get_response_msg 2>/dev/null
         echo "collection"
         return 
     elif [ "$code" -ne 204 ] 
@@ -565,16 +565,16 @@ function get_type  {
 
     local get_response_hdr=$HPC_DM_UTILS/temp/get_dataobject_response_header.tmp
     local get_response_msg=$HPC_DM_UTILS/temp/get_dataobject_response_message.json.tmp
-    rm $get_response_hdr 2>/dev/null
-    rm $get_response_msg 2>/dev/null
+    rm -f $get_response_hdr 2>/dev/null
+    rm -f $get_response_msg 2>/dev/null
     dm_get_item  dataObject/$archive_path "$get_response_msg" "$get_response_hdr" || exit 1
     code=$(get_http_code "$get_response_hdr")  || exit 1
 
     if [ "$code" -eq 200 ]
     then 
         echo "dataObject"
-        rm $get_response_hdr 2>/dev/null
-        rm $get_response_msg 2>/dev/null
+        rm -f $get_response_hdr 2>/dev/null
+        rm -f $get_response_msg 2>/dev/null
         return 
     elif [ "$code" -ne 204 ] 
     then 

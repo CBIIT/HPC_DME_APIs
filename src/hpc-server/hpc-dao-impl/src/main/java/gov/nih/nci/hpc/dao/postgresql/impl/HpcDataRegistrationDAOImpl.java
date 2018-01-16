@@ -131,7 +131,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         bulkDdataObjectRegistrationResult.setResult(rs.getBoolean("RESULT"));
         bulkDdataObjectRegistrationResult.setMessage(rs.getString("MESSAGE"));
         bulkDdataObjectRegistrationResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
-        bulkDdataObjectRegistrationResult.setEffectiveTransferSpeed(rs.getInt("EFFECTIVE_TRANSFER_SPEED"));
+        bulkDdataObjectRegistrationResult.setEffectiveTransferSpeed(
+            rs.getInt("EFFECTIVE_TRANSFER_SPEED"));
 
         Calendar created = Calendar.getInstance();
         created.setTime(rs.getTimestamp("CREATED"));
@@ -363,6 +364,12 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       if (taskItem.getEffectiveTransferSpeed() != null) {
         jsonTask.put("effectiveTransferSpeed", taskItem.getEffectiveTransferSpeed().toString());
       }
+      if (taskItem.getPercentComplete() != null) {
+        jsonTask.put("percentComplete", taskItem.getPercentComplete().toString());
+      }
+      if (taskItem.getSize() != null) {
+        jsonTask.put("size", taskItem.getSize().toString());
+      }
 
       JSONObject jsonRequest = new JSONObject();
       HpcDataObjectRegistrationRequest request = registrationItem.getRequest();
@@ -513,10 +520,20 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       cal.setTimeInMillis((Long) completed);
       task.setCompleted(cal);
     }
-    
+
     Object effectiveTransferSpeed = jsonTask.get("effectiveTransferSpeed");
     if (effectiveTransferSpeed != null) {
       task.setEffectiveTransferSpeed(Integer.valueOf(effectiveTransferSpeed.toString()));
+    }
+
+    Object percentComplete = jsonTask.get("percentComplete");
+    if (percentComplete != null) {
+      task.setPercentComplete(Integer.valueOf(percentComplete.toString()));
+    }
+
+    Object size = jsonTask.get("size");
+    if (size != null) {
+      task.setSize(Long.valueOf(size.toString()));
     }
 
     return task;

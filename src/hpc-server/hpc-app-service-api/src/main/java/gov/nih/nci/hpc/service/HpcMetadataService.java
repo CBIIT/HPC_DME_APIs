@@ -193,6 +193,7 @@ public interface HpcMetadataService {
    * @param dataTransferType (Optional) The data transfer type.
    * @param dataTransferStarted (Optional) The time data transfer started.
    * @param dataTransferCompleted (Optional) The time data transfer completed.
+   * @param sourceSize (Optional) The data source size in bytes.
    * @throws HpcException on service failure.
    */
   public void updateDataObjectSystemGeneratedMetadata(
@@ -203,7 +204,8 @@ public interface HpcMetadataService {
       HpcDataTransferUploadStatus dataTransferStatus,
       HpcDataTransferType dataTransferType,
       Calendar dataTransferStarted,
-      Calendar dataTransferCompleted)
+      Calendar dataTransferCompleted,
+      Long sourceSize)
       throws HpcException;
 
   /**
