@@ -25,6 +25,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
@@ -955,7 +956,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dataObjectDTO.setDataObject(dataObject);
     dataObjectDTO.setMetadataEntries(metadataEntries);
     dataObjectDTO.setPercentComplete(
-        getDataTransferUploadPercentCompletion(
+        dataTransferService.calculateDataObjectUploadPercentComplete(
             metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
 
     return dataObjectDTO;
@@ -999,8 +1000,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     String configurationId = dataManagementService.findDataManagementConfigurationId(path);
     HpcDataManagementConfiguration configuration =
         dataManagementService.getDataManagementConfiguration(configurationId);
-    if (downloadRequest != null
-        && downloadRequest.getGenerateDownloadRequestURL() != null
+    if (downloadRequest.getGenerateDownloadRequestURL() != null
         && downloadRequest.getGenerateDownloadRequestURL()
         && configuration != null
         && (configuration.getS3Configuration() != null
@@ -1334,48 +1334,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     return null;
-  }
-
-  /**
-   * Calculate the data transfer % completion if transfer is in progress
-   *
-   * @param systemGeneratedMetadata The system generated metadata of the data object.
-   * @return The transfer % completion if transfer is in progress, or null otherwise. e.g 86%.
-   */
-  private Integer getDataTransferUploadPercentCompletion(
-      HpcSystemGeneratedMetadata systemGeneratedMetadata) {
-    // Get the transfer status, transfer request id and data-object size from the
-    // metadata entries.
-    HpcDataTransferUploadStatus transferStatus = systemGeneratedMetadata.getDataTransferStatus();
-    if (transferStatus == null
-        || (!transferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE)
-            && !transferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE))) {
-      // data transfer not in progress.
-      return null;
-    }
-
-    String dataTransferRequestId = systemGeneratedMetadata.getDataTransferRequestId();
-    Long sourceSize = systemGeneratedMetadata.getSourceSize();
-
-    if (dataTransferRequestId == null || sourceSize == null || sourceSize <= 0) {
-      return null;
-    }
-
-    // Get the size of the data transferred so far.
-    long transferSize = 0;
-    try {
-      transferSize =
-          dataTransferService.getDataTransferSize(
-              systemGeneratedMetadata.getDataTransferType(),
-              dataTransferRequestId,
-              systemGeneratedMetadata.getConfigurationId());
-    } catch (HpcException e) {
-      logger.error("Failed to get data transfer size: " + dataTransferRequestId, e);
-      return null;
-    }
-
-    float percentComplete = (float) 100 * transferSize / sourceSize;
-    return Math.round(percentComplete);
   }
 
   /**
@@ -2065,6 +2023,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     taskDTO.setTaskId(task.getId());
     taskDTO.setCreated(task.getCreated());
     taskDTO.setTaskStatus(task.getStatus());
+    taskDTO.setPercentComplete(calculateDataObjectBulkRegistrationPercentComplete(task));
     populateRegistrationItems(taskDTO, task.getItems());
     return taskDTO;
   }
@@ -2102,11 +2061,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcBulkDataObjectRegistrationTaskDTO taskDTO, List<HpcBulkDataObjectRegistrationItem> items) {
     for (HpcBulkDataObjectRegistrationItem item : items) {
       Boolean result = item.getTask().getResult();
+      item.getTask().setSize(null);
       if (result == null) {
         taskDTO.getInProgressItems().add(item.getTask());
       } else if (result) {
+        item.getTask().setPercentComplete(null);
         taskDTO.getCompletedItems().add(item.getTask());
       } else {
+        item.getTask().setPercentComplete(null);
         taskDTO.getFailedItems().add(item.getTask());
       }
     }
@@ -2151,6 +2113,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
       if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
         float percentComplete = (float) 100 * totalBytesTransferred / totalDownloadSize;
+        return Math.round(percentComplete);
+      }
+    }
+
+    return 0;
+  }
+
+  /**
+   * Calculate the overall % complete of a bulk data object registration task.
+   *
+   * @param downloadTask The collection download task. return The % complete.
+   */
+  private int calculateDataObjectBulkRegistrationPercentComplete(
+      HpcBulkDataObjectRegistrationTask task) {
+    if (task.getStatus().equals(HpcBulkDataObjectRegistrationTaskStatus.ACTIVE)) {
+      long totalUploadSize = 0;
+      long totalBytesTransferred = 0;
+      for (HpcBulkDataObjectRegistrationItem item : task.getItems()) {
+        totalUploadSize += item.getTask().getSize() != null ? item.getTask().getSize() : 0;
+        totalBytesTransferred +=
+            item.getTask().getPercentComplete() != null
+                ? ((double) item.getTask().getPercentComplete() / 100) * item.getTask().getSize()
+                : 0;
+      }
+
+      if (totalUploadSize > 0 && totalBytesTransferred <= totalUploadSize) {
+        float percentComplete = (float) 100 * totalBytesTransferred / totalUploadSize;
         return Math.round(percentComplete);
       }
     }

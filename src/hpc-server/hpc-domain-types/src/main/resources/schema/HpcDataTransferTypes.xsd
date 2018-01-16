@@ -38,6 +38,7 @@
 			<xsd:element name="status"
 				type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
 			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="bytesTransferred" type="xsd:long" />
 		</xsd:sequence>
 	</xsd:complexType>
 
