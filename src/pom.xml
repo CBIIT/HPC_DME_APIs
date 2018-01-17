@@ -18,7 +18,7 @@
 	<name>HPC</name>
 	<groupId>gov.nih.nci.hpc</groupId>
 	<artifactId>hpc</artifactId>
-	<version>1.5.1-RELEASE</version>
+	<version>1.5.2-CANDIDATE</version>
 	<packaging>pom</packaging>
 
 	<properties>

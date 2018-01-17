@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>1.5.1-RELEASE</version>
+		<version>1.5.2-CANDIDATE</version>
 	</parent>
 	<artifactId>hpc-ws-rs-api</artifactId>
 	<packaging>bundle</packaging>
