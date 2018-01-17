@@ -36,20 +36,25 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
     //---------------------------------------------------------------------//
     // Constants
     //---------------------------------------------------------------------//    
-    
-    // SQL Queries.
-	private final static String UPSERT_SQL = 
-		    "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( " +
-                    "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\") " +
-                    "values (?, ?, ?, ?) " +
-            "on conflict(\"SYSTEM\") do update set \"USERNAME\"=excluded.\"USERNAME\", " +
-                                                   "\"PASSWORD\"=excluded.\"PASSWORD\", " +
-                                                   "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\"";
+    private static final String WHERE_CLAUSE__CLASSIFIER_IS_NULL =
+        "where \"CLASSIFIER\" is null";
 
-	private final static String GET_BY_SYSTEM_SQL = 
-		    "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = ?";
-	private final static String GET_BY_DATA_TRANSFER_TYPE_SQL = 
-		    "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"DATA_TRANSFER_TYPE\" = ?";
+  // SQL Queries.
+  private final static String UPSERT_SQL =
+      "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( " +
+          "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\") " +
+          "values (?, ?, ?, ?) " +
+          "on conflict(\"SYSTEM\") do update set \"USERNAME\"=excluded.\"USERNAME\", " +
+          "\"PASSWORD\"=excluded.\"PASSWORD\", " +
+          "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\" " +
+          WHERE_CLAUSE__CLASSIFIER_IS_NULL;
+
+  private final static String GET_BY_SYSTEM_SQL =
+      "select * from public.\"HPC_SYSTEM_ACCOUNT\" where " + WHERE_CLAUSE__CLASSIFIER_IS_NULL
+          + " and \"SYSTEM\" = ?";
+  private final static String GET_BY_DATA_TRANSFER_TYPE_SQL =
+      "select * from public.\"HPC_SYSTEM_ACCOUNT\" where " + WHERE_CLAUSE__CLASSIFIER_IS_NULL
+          + " and \"DATA_TRANSFER_TYPE\" = ?";
 	
     //---------------------------------------------------------------------//
     // Instance members
