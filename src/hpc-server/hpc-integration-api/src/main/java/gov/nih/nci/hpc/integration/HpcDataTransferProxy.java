@@ -31,6 +31,29 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
  */
 public interface HpcDataTransferProxy {
+
+  /**
+   * The return type of acceptsTransferRequests method in this interface's parent interface.
+   */
+  public interface TransferRequestFeedback {
+
+    /**
+     * Getter for boolean that is true if data transfer system account in context can support
+     * more transfers and is false otherwise.
+     *
+     * @return boolean
+     */
+    public boolean isAcceptingTransferRequests();
+
+    /**
+     * Getter for current size of transfer requests queue belonging to data transfer system
+     * account in context.
+     *
+     * @return
+     */
+    public int getQueueSize();
+  }
+
   /**
    * Authenticate the invoker w/ the data transfer system.
    *
@@ -51,8 +74,19 @@ public interface HpcDataTransferProxy {
    *     too busy.
    * @throws HpcException on data transfer system failure.
    */
-  public default boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException {
-    return true;
+  public default TransferRequestFeedback acceptsTransferRequests(Object authenticatedToken)
+      throws HpcException {
+    return new TransferRequestFeedback() {
+      @Override
+      public boolean isAcceptingTransferRequests() {
+        return true;
+      }
+
+      @Override
+      public int getQueueSize() {
+        return 0;
+      }
+    };
   }
 
   /**
@@ -156,6 +190,19 @@ public interface HpcDataTransferProxy {
       Object authenticatedToken, String dataTransferRequestId) throws HpcException {
     throw new HpcException(
         "getDataTransferDownloadStatus() not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
+   * Get the size of the data transferred of a specific request.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param dataTransferRequestId The data transfer request ID.
+   * @return The size of the data transferred in bytes.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default long getDataTransferSize(Object authenticatedToken, String dataTransferRequestId)
+      throws HpcException {
+    throw new HpcException("getDataTransferStatus() not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
 
   /**

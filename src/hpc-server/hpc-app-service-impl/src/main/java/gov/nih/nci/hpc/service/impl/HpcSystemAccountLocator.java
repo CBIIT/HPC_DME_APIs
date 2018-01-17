@@ -8,24 +8,27 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * HPC System Account Locator.
@@ -35,7 +38,51 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HpcSystemAccountLocator {
 
-  private static final long GLOBUS_ACCT_POOL_RETRY_INTERVAL_MS = 5000l;
+  protected static class PooledSystemAccountWrapper implements Comparable {
+
+    private HpcIntegratedSystemAccount systemAccount;
+    private double utilizationScore;
+
+    protected PooledSystemAccountWrapper(HpcIntegratedSystemAccount pAccount, double pScore) {
+      this.systemAccount = pAccount;
+      this.utilizationScore = pScore;
+    }
+
+    protected PooledSystemAccountWrapper(HpcIntegratedSystemAccount pAccount) {
+      this(pAccount, 0.0);
+    }
+
+    protected PooledSystemAccountWrapper() {
+      this(null, 0.0);
+    }
+
+    protected HpcIntegratedSystemAccount getSystemAccount() {
+      return systemAccount;
+    }
+
+    protected void setSystemAccount(HpcIntegratedSystemAccount pAccount) {
+      systemAccount = pAccount;
+    }
+
+    protected double getUtilizationScore() {
+      return utilizationScore;
+    }
+
+    protected void setUtilizationScore(double pScore) {
+      utilizationScore = pScore;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+      int retVal = -1;
+      if (o instanceof PooledSystemAccountWrapper) {
+        PooledSystemAccountWrapper convPsaWrapper = (PooledSystemAccountWrapper) o;
+        retVal = Double.valueOf(utilizationScore).compareTo(convPsaWrapper.getUtilizationScore());
+      }
+      return retVal;
+    }
+
+  }
 
   private static final String DOC_CLASSIFIER_DEFAULT = "DEFAULT";
   private static final String PROPERTY_NAME_CLASSIFIER = "classifier";
@@ -59,15 +106,19 @@ public class HpcSystemAccountLocator {
       new ConcurrentHashMap<HpcDataTransferType, HpcIntegratedSystemAccount>();
 
   // multiDataTransferAccounts contains data about system accounts for data transfer for which
-  //   there are more than 1 account per data transfer typeHpcIntegratedSystemAccount polledAcct = theQueue.poll();
-  private Map<HpcDataTransferType, Map<String, Queue<HpcIntegratedSystemAccount>>> multiDataTransferAccounts =
-      new ConcurrentHashMap<HpcDataTransferType, Map<String, Queue<HpcIntegratedSystemAccount>>>();
+  //   there are more than 1 account per data transfer type
+  private Map<HpcDataTransferType, Map<String, List<PooledSystemAccountWrapper>>> multiDataTransferAccounts =
+      new ConcurrentHashMap<HpcDataTransferType, Map<String, List<PooledSystemAccountWrapper>>>();
 
 //  private Map<String, Queue<HpcIntegratedSystemAccount>> globusPooledAccounts =
 //      new ConcurrentHashMap<>();
 
+  private List<HpcDataManagementConfiguration> dataMgmtConfigurations = new CopyOnWriteArrayList<HpcDataManagementConfiguration>();
+
   // System Accounts DAO
   @Autowired HpcSystemAccountDAO systemAccountDAO = null;
+
+  @Autowired HpcDataManagementConfigurationDAO dataMgmtConfigDAO = null;
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -89,51 +140,7 @@ public class HpcSystemAccountLocator {
     initSystemAccountsData();
     initDataTransferAccountsData();
 //    loadGlobusPooledAccounts();
-  }
-
-  // Populate the system accounts maps.
-  private void initSystemAccountsData() throws HpcException {
-    for (HpcIntegratedSystem system : HpcIntegratedSystem.values()) {
-      // Get the data transfer system account.
-      final List<HpcIntegratedSystemAccount> accounts = systemAccountDAO.getSystemAccount(system);
-      if (accounts != null && accounts.size() == 1) {
-          singularSystemAccounts.put(system, accounts.get(0));
-      }
-    }
-  }
-
-  // Populate the data transfer accounts maps.
-  private void initDataTransferAccountsData() throws HpcException {
-    for (HpcDataTransferType dataTransferType : HpcDataTransferType.values()) {
-      // Get the data transfer system account.
-      final List<HpcIntegratedSystemAccount> accounts = systemAccountDAO
-          .getSystemAccount(dataTransferType);
-      if (accounts != null && accounts.size() == 1) {
-        singularDataTransferAccounts.put(dataTransferType, accounts.get(0));
-      } else if (accounts != null && accounts.size() > 1) {
-        initMultiDataTransferAccountsMap(dataTransferType, accounts);
-      }
-    }
-  }
-
-  // Populate the data transfer accounts map for transfer type that involves shared/pooled
-  //  accounts
-  private void initMultiDataTransferAccountsMap(HpcDataTransferType transferType,
-      List<HpcIntegratedSystemAccount> theAccts) {
-    if (null == multiDataTransferAccounts.get(transferType)) {
-      multiDataTransferAccounts
-          .put(transferType, new ConcurrentHashMap<String, Queue<HpcIntegratedSystemAccount>>());
-    }
-    final Map<String, Queue<HpcIntegratedSystemAccount>> classifier2QueueMap = multiDataTransferAccounts
-        .get(transferType);
-    for (HpcIntegratedSystemAccount someAcct : theAccts) {
-      final String classifierValue = fetchSysAcctPropertyValue(someAcct, PROPERTY_NAME_CLASSIFIER);
-      if (null == classifier2QueueMap.get(classifierValue)) {
-        classifier2QueueMap
-            .put(classifierValue, new ConcurrentLinkedQueue<HpcIntegratedSystemAccount>());
-      }
-      classifier2QueueMap.get(classifierValue).add(someAcct);
-    }
+    fetchDataConfigurations();
   }
 
   /**
@@ -180,7 +187,7 @@ public class HpcSystemAccountLocator {
    * @throws HpcException on service failure.
    */
   public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType,
-      String docClassifier)
+      String hpcDataMgmtConfigId)
       throws HpcException {
     HpcIntegratedSystemAccount retSysAcct = null;
 
@@ -188,83 +195,127 @@ public class HpcSystemAccountLocator {
       retSysAcct = singularDataTransferAccounts.get(dataTransferType);
     } else if (null != multiDataTransferAccounts.get(dataTransferType)) {
       // Assumption: GLOBUS is 1 and only data transfer type having multiple system accounts supporting it
-      retSysAcct = obtainPooledGlobusAppAcctInfo(docClassifier);
+      retSysAcct = obtainPooledGlobusAppAcctInfo(hpcDataMgmtConfigId);
     }
 
     return retSysAcct;
   }
 
   /**
-   * Return a shared system account's data to pool of such system accounts data.
+   * Sets account queue size for particular Globus system account.
    *
-   * @param someSharedSysAcct The shared system account
+   * @param systemAccountId The ID of the Globus system account (should be client ID in UUID format)
+   * @param queueSize Size of the transfer queue of the Globus system account
    */
-  public void returnSharedSystemAccount(HpcIntegratedSystemAccount someSharedSysAcct) {
-    logger.info(String.format("Received system account data to return to pool, if applicable." +
-                "  Account details are: %s.", genStringRepOfHpcIntegratedSystemAccount(someSharedSysAcct)));
-
-    // Assumption: GLOBUS is 1 and only data transfer type having multiple system accounts supporting it
-    if ( HpcIntegratedSystem.GLOBUS.equals( someSharedSysAcct.getIntegratedSystem() ) ) {
-      logger.info("Account is for GLOBUS so should be returned to applicable pool.");
-      final Map<String, Queue<HpcIntegratedSystemAccount>> classifier2QueueMap =
-          multiDataTransferAccounts.get(HpcDataTransferType.GLOBUS);
-      final String classifierValue = fetchSysAcctPropertyValue(someSharedSysAcct,
-          PROPERTY_NAME_CLASSIFIER);
-      final String appliedClassifier = (null == classifierValue || false == classifier2QueueMap.containsKey(classifierValue)) ? DOC_CLASSIFIER_DEFAULT : classifierValue;
-      logger.info(String.format("Target GLOBUS pool corresponding to DOC classifier of %s.", appliedClassifier));
-      final Queue<HpcIntegratedSystemAccount> acctsQueue = classifier2QueueMap.get(appliedClassifier);
-      if (null != acctsQueue) {
-        acctsQueue.add(someSharedSysAcct);
-        logger.info("Returned account object to applicable pool.");
-      }
-    } else {
-      logger.info("Account is not for GLOBUS, so there is no pool in which it belongs.");
-    }
-  }
-
-  private HpcIntegratedSystemAccount obtainPooledGlobusAppAcctInfo(String docClassifier) {
-    logger.info(String
-        .format("Received request for Globus app account from pool for DOC classifier, %s.",
-            docClassifier));
-
-    HpcIntegratedSystemAccount retSysAcct = null;
-    final Map<String, Queue<HpcIntegratedSystemAccount>> classifier2QueueMap = multiDataTransferAccounts
+  public void setGlobusAccountQueueSize(String systemAccountId, int queueSize) {
+    final Map<String, List<PooledSystemAccountWrapper>> classifier2ListMap = multiDataTransferAccounts
         .get(HpcDataTransferType.GLOBUS);
-    final Queue<HpcIntegratedSystemAccount> theQueue =
-        (null == classifier2QueueMap.get(docClassifier)) ?
-            classifier2QueueMap.get(DOC_CLASSIFIER_DEFAULT)
-            : classifier2QueueMap.get(docClassifier);
-
-    logger
-        .info("Accessed applicable pool and about to poll it for Globus app account credentials.");
-
-    boolean polledSuccessfully = false;
-    while (!polledSuccessfully) {
-      try {
-        retSysAcct = theQueue.poll();
-        polledSuccessfully = true;
-
-        logger.info(String
-            .format("Successfully acquired Globus app account having client ID of %s.",
-                retSysAcct.getUsername()));
-
-      } catch (NoSuchElementException nseEx) {
-        logger.info(
-            "... failed to acquire Globus app account credentials, so sleeping and then will re-poll the pool.");
-        sleepWithoutExceptionHandling(GLOBUS_ACCT_POOL_RETRY_INTERVAL_MS);
-        polledSuccessfully = false;
+    outer:
+    for (Map.Entry<String, List<PooledSystemAccountWrapper>> mapEntry : classifier2ListMap
+        .entrySet()) {
+      final List<PooledSystemAccountWrapper> thePool = mapEntry.getValue();
+      inner:
+      for (PooledSystemAccountWrapper psaWrapper : thePool) {
+        if (psaWrapper.getSystemAccount().getUsername().equals(systemAccountId)) {
+          // Internally, queueSize is treated as a utilization score, higher meaning experiencing
+          //  greater utilization
+          psaWrapper.setUtilizationScore(Integer.valueOf(queueSize).doubleValue());
+          break outer;
+        }
       }
     }
-
-    logger.info("About to return Globus app account credentials.");
-    return retSysAcct;
   }
 
-  private void sleepWithoutExceptionHandling(long msDuration) {
-    try {
-      Thread.currentThread().sleep(msDuration);
-    } catch (InterruptedException e) {
-      // do nothing
+  // Populate the system accounts maps.
+  private void initSystemAccountsData() throws HpcException {
+    for (HpcIntegratedSystem system : HpcIntegratedSystem.values()) {
+      // Get the data transfer system account.
+      final List<HpcIntegratedSystemAccount> accounts = systemAccountDAO.getSystemAccount(system);
+      if (accounts != null && accounts.size() == 1) {
+        singularSystemAccounts.put(system, accounts.get(0));
+      }
+    }
+  }
+
+  // Populate the data transfer accounts maps.
+  private void initDataTransferAccountsData() throws HpcException {
+    for (HpcDataTransferType dataTransferType : HpcDataTransferType.values()) {
+      // Get the data transfer system account.
+      final List<HpcIntegratedSystemAccount> accounts = systemAccountDAO
+          .getSystemAccount(dataTransferType);
+      if (accounts != null && accounts.size() == 1) {
+        singularDataTransferAccounts.put(dataTransferType, accounts.get(0));
+      } else if (accounts != null && accounts.size() > 1) {
+        initMultiDataTransferAccountsMap(dataTransferType, accounts);
+      }
+    }
+  }
+
+  // Populate the data transfer accounts map for transfer type that involves shared/pooled
+  //  accounts
+  private void initMultiDataTransferAccountsMap(HpcDataTransferType transferType,
+      List<HpcIntegratedSystemAccount> theAccts) {
+    if (null == multiDataTransferAccounts.get(transferType)) {
+      multiDataTransferAccounts
+          .put(transferType,
+              new ConcurrentHashMap<String, List<PooledSystemAccountWrapper>>());
+    }
+    final Map<String, List<PooledSystemAccountWrapper>> classifier2ListMap = multiDataTransferAccounts
+        .get(transferType);
+    for (HpcIntegratedSystemAccount someAcct : theAccts) {
+      final String classifierValue = fetchSysAcctPropertyValue(someAcct, PROPERTY_NAME_CLASSIFIER);
+      if (null == classifier2ListMap.get(classifierValue)) {
+        classifier2ListMap
+            .put(classifierValue, new ArrayList<PooledSystemAccountWrapper>());
+      }
+      classifier2ListMap.get(classifierValue).add(new PooledSystemAccountWrapper(someAcct));
+    }
+  }
+
+
+  private void fetchDataConfigurations() throws HpcException {
+    dataMgmtConfigurations.clear();
+    dataMgmtConfigurations.addAll(dataMgmtConfigDAO.getDataManagementConfigurations());
+  }
+
+  private String lookupDocFromDataMgmtConfigId(String configId) throws HpcException {
+    if (null == dataMgmtConfigurations || dataMgmtConfigurations.isEmpty()) {
+      fetchDataConfigurations();
+    }
+    String retWhichDoc = null;
+    for (HpcDataManagementConfiguration someConfig : dataMgmtConfigurations) {
+      if (someConfig.getId().equals(configId)) {
+        retWhichDoc = someConfig.getDoc();
+        break;
+      }
+    }
+    return retWhichDoc;
+  }
+
+  private HpcIntegratedSystemAccount obtainPooledGlobusAppAcctInfo(String hpcDataMgmtConfigId)
+      throws HpcException {
+    logger.info(String
+        .format(
+            "Received request for Globus app account from pool corresponding to Data Configuration having ID = %s.",
+            hpcDataMgmtConfigId));
+    final Map<String, List<PooledSystemAccountWrapper>> classifier2ListMap = multiDataTransferAccounts
+        .get(HpcDataTransferType.GLOBUS);
+    final String theDoc = lookupDocFromDataMgmtConfigId(hpcDataMgmtConfigId);
+    final String docClassifier =
+        classifier2ListMap.containsKey(theDoc) ? theDoc : DOC_CLASSIFIER_DEFAULT;
+    logger.info(
+        String.format("Applicable DOC = %s, while the proper pool is under DOC classifier = %s",
+            theDoc, docClassifier));
+    final List<PooledSystemAccountWrapper> theList = classifier2ListMap.get(docClassifier);
+    final PooledSystemAccountWrapper wrapperObj = Collections.min(theList);
+    if (null == wrapperObj) {
+      throw new HpcException("Unable to obtain Globus app account credentials from pool",
+          HpcErrorType.UNEXPECTED_ERROR);
+    } else {
+      final HpcIntegratedSystemAccount retSysAcct = wrapperObj.getSystemAccount();
+      logger.info(String.format("Successfully acquired Globus app account having client ID of %s.",
+          retSysAcct.getUsername()));
+      return retSysAcct;
     }
   }
 
@@ -280,101 +331,5 @@ public class HpcSystemAccountLocator {
     }
     return retPropVal;
   }
-
-  private String genStringRepOfHpcIntegratedSystemAccount(HpcIntegratedSystemAccount sysAcct) {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("{ username = ").append(sysAcct.getUsername())
-      .append(", integrated system = ").append(sysAcct.getIntegratedSystem());
-    final List<HpcIntegratedSystemAccountProperty> allProps = sysAcct.getProperties();
-    for (HpcIntegratedSystemAccountProperty prop : allProps) {
-      sb.append(", ").append(prop.getName()).append(" = ").append(prop.getValue());
-    }
-    sb.append(" }");
-    final String retVal = sb.toString();
-    return retVal;
-  }
-
-  // populate another data transfer accounts map for pooled/shared Globus app accounts
-//  private void loadGlobusPooledAccounts() throws HpcException {
-//    final List<HpcIntegratedSystemAccount> queriedAcctData = systemAccountDAO.getGlobusPooledAccounts();
-//    for (HpcIntegratedSystemAccount pooledAcct : queriedAcctData) {
-//      final String classifierVal = fetchSysAcctPropertyValue(pooledAcct, PROPERTY_NAME_CLASSIFIER);
-//      if (null != classifierVal) {
-//        if (null == globusPooledAccounts.get(classifierVal)) {
-//          globusPooledAccounts.put(classifierVal, new ConcurrentLinkedQueue<HpcIntegratedSystemAccount>());
-//        }
-//        globusPooledAccounts.get(classifierVal).add(pooledAcct);
-//      }
-//    }
-//  }
-
-  /*
-   * Get system account by data transfer type
-   *
-   * @param dataTransferType The data transfer type associated with the requested system account.
-   * @param docName The name of the DOC for which Globus transfer is desired
-   * @return The system account if found, or null otherwise.
-   * @throws HpcException on service failure.
-   */
-//  public HpcIntegratedSystemAccount getSystemAccountV2(HpcDataTransferType dataTransferType, String docName)
-//      throws HpcException {
-//    //if S3/CleverSafe transfer type or Globus transfer type, then go by original logic
-//    if (HpcDataTransferType.S_3.equals(dataTransferType) || HpcDataTransferType.GLOBUS.equals(dataTransferType)) {
-//      return singularDataTransferAccounts.get(dataTransferType);
-//    }
-/*
-    //if P_GLOBUS transfer type then obtain one of the shared app accounts from proper pool
-    else if (HpcDataTransferType.P_GLOBUS.equals(dataTransferType)) {
-      return borrowPooledGlobusAcct(docName);
-    }
-*/
-//    else {
-//      return null;
-//    }
-//  }
-
-  /*
-   * Borrow a shared Globus app account from a pool of such accounts corresponding to a DOC bucket.
-   *
-   * @param whichDoc - indicates which DOC bucket (single DOC or collection of DOCs)
-   * @return HpcIntegratedSystemAccount object representing a shared Globus app account
-   */
-//  public HpcIntegratedSystemAccount borrowPooledGlobusAcct(String whichDoc) {
-//    HpcIntegratedSystemAccount retObj = null;
-//    final Queue<HpcIntegratedSystemAccount> acctsPool =
-//        (null == globusPooledAccounts.get(whichDoc)) ?
-//            globusPooledAccounts.get(DOC_CLASSIFIER_DEFAULT) :
-//            globusPooledAccounts.get(whichDoc);
-//    boolean pollSuceeded = false;
-//    do {
-//      try {
-//        retObj = acctsPool.poll();
-//        pollSuceeded = true;
-//      } catch (NoSuchElementException nseEx) {
-//        sleepWithoutExceptionHandling(GLOBUS_ACCT_POOL_RETRY_INTERVAL_MS);
-//        pollSuceeded = false;
-//      }
-//    } while (!pollSuceeded);
-//
-//    return retObj;
-//  }
-
-
-  /*
-   * Return a shared Globus app account to whichever pool of such accounts it belongs. That pool
-   * corresponds to a DOC bucket.
-   *
-   * @param theAcct HpcIntegratedSystemAccount object representing shared GLobus app account
-   */
-//  public void returnPooledGlobusAcct(HpcIntegratedSystemAccount theAcct) {
-//    final String docBucket = fetchSysAcctPropertyValue(theAcct, PROPERTY_NAME_CLASSIFIER);
-//    if (null != docBucket) {
-//      if (null == globusPooledAccounts.get(docBucket)) {
-//        globusPooledAccounts
-//            .put(docBucket, new ConcurrentLinkedQueue<HpcIntegratedSystemAccount>());
-//      }
-//      globusPooledAccounts.get(docBucket).add(theAcct);
-//    }
-//  }
 
 }
