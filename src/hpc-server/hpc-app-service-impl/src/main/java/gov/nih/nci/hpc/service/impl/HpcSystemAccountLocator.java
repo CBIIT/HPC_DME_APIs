@@ -113,12 +113,10 @@ public class HpcSystemAccountLocator {
 //  private Map<String, Queue<HpcIntegratedSystemAccount>> globusPooledAccounts =
 //      new ConcurrentHashMap<>();
 
-  private List<HpcDataManagementConfiguration> dataMgmtConfigurations = new CopyOnWriteArrayList<HpcDataManagementConfiguration>();
-
   // System Accounts DAO
   @Autowired HpcSystemAccountDAO systemAccountDAO = null;
 
-  @Autowired HpcDataManagementConfigurationDAO dataMgmtConfigDAO = null;
+  @Autowired HpcDataManagementConfigurationLocator dataMgmtConfigLocator = null;
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -139,8 +137,7 @@ public class HpcSystemAccountLocator {
   public void reload() throws HpcException {
     initSystemAccountsData();
     initDataTransferAccountsData();
-//    loadGlobusPooledAccounts();
-    fetchDataConfigurations();
+    this.dataMgmtConfigLocator.reload();
   }
 
   /**
@@ -273,47 +270,62 @@ public class HpcSystemAccountLocator {
   }
 
 
-  private void fetchDataConfigurations() throws HpcException {
-    dataMgmtConfigurations.clear();
-    dataMgmtConfigurations.addAll(dataMgmtConfigDAO.getDataManagementConfigurations());
+  // Logic for selecting which "pool" of Globus app accounts to utilize based on HPC Data Mgmt
+  // Configuration ID
+  private List<PooledSystemAccountWrapper> accessProperPool(String hpcDataMgmtConfigId)
+      throws HpcException {
+    logger.debug(
+        String.format("accessProperPool: entered with received hpcDataMgmtConfigId = ",
+            hpcDataMgmtConfigId));
+    String docClassifier = null;
+    final Map<String, List<PooledSystemAccountWrapper>> classifier2PoolMap = multiDataTransferAccounts
+        .get(HpcDataTransferType.GLOBUS);
+    final HpcDataManagementConfiguration dmConfig = this.dataMgmtConfigLocator
+        .get(hpcDataMgmtConfigId);
+    if (null == dmConfig) {
+      logger.debug(
+          String.format(
+              "accessProperPool: determined no data mgmt configuration matches, apply default classifier %s",
+              DOC_CLASSIFIER_DEFAULT));
+      // If no matching Data Mgmt Config, then use default classifier
+      docClassifier = DOC_CLASSIFIER_DEFAULT;
+    } else {
+      // If matching Data Mgmt Config, then determine if that Config's DOC is a key in the map.
+      // If so, use the DOC as the classifier key into the map; otherwise, use the default classifier.
+      docClassifier = classifier2PoolMap.containsKey(dmConfig.getDoc()) ? dmConfig.getDoc()
+          : DOC_CLASSIFIER_DEFAULT;
+      logger.debug(
+          String
+              .format("accessProperPool: DOC is %s, DOC classifier to use is %s", dmConfig.getDoc(),
+                  DOC_CLASSIFIER_DEFAULT));
+    }
+    final List<PooledSystemAccountWrapper> retProperPool = classifier2PoolMap.get(docClassifier);
+    logger.debug("accessProperPool: about to return");
+
+    return retProperPool;
   }
 
-  private String lookupDocFromDataMgmtConfigId(String configId) throws HpcException {
-    if (null == dataMgmtConfigurations || dataMgmtConfigurations.isEmpty()) {
-      fetchDataConfigurations();
-    }
-    String retWhichDoc = null;
-    for (HpcDataManagementConfiguration someConfig : dataMgmtConfigurations) {
-      if (someConfig.getId().equals(configId)) {
-        retWhichDoc = someConfig.getDoc();
-        break;
-      }
-    }
-    return retWhichDoc;
-  }
 
   private HpcIntegratedSystemAccount obtainPooledGlobusAppAcctInfo(String hpcDataMgmtConfigId)
       throws HpcException {
-    logger.info(String
+    logger.debug(String
         .format(
-            "Received request for Globus app account from pool corresponding to Data Configuration having ID = %s.",
+            "obtainPooledGlobusAppAcctInfo: received hpcDataMgmtConfigId = %s.",
             hpcDataMgmtConfigId));
-    final Map<String, List<PooledSystemAccountWrapper>> classifier2ListMap = multiDataTransferAccounts
-        .get(HpcDataTransferType.GLOBUS);
-    final String theDoc = lookupDocFromDataMgmtConfigId(hpcDataMgmtConfigId);
-    final String docClassifier =
-        classifier2ListMap.containsKey(theDoc) ? theDoc : DOC_CLASSIFIER_DEFAULT;
-    logger.info(
-        String.format("Applicable DOC = %s, while the proper pool is under DOC classifier = %s",
-            theDoc, docClassifier));
-    final List<PooledSystemAccountWrapper> theList = classifier2ListMap.get(docClassifier);
-    final PooledSystemAccountWrapper wrapperObj = Collections.min(theList);
+    final List<PooledSystemAccountWrapper> theGlobusAcctsPool = accessProperPool(
+        hpcDataMgmtConfigId);
+
+    // Choose PooledSystemAccountWrapper instance from pool that has least value according
+    //  to natural ordering of PooledSystemAccountWrapper, which is by utilizationScore
+    //  property.  Lower score indicates the wrapped system account is being utilized less.
+    final PooledSystemAccountWrapper wrapperObj = Collections.min(theGlobusAcctsPool);
     if (null == wrapperObj) {
       throw new HpcException("Unable to obtain Globus app account credentials from pool",
           HpcErrorType.UNEXPECTED_ERROR);
     } else {
       final HpcIntegratedSystemAccount retSysAcct = wrapperObj.getSystemAccount();
-      logger.info(String.format("Successfully acquired Globus app account having client ID of %s.",
+      logger.debug(String.format(
+          "obtainPooledGlobusAppAcctInfo: successfully acquired Globus app account having client ID of %s, about to return.",
           retSysAcct.getUsername()));
       return retSysAcct;
     }
