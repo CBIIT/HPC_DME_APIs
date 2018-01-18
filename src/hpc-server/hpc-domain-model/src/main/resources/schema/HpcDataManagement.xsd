@@ -35,30 +35,28 @@
 			    <xsd:element name="uploadRequestURLExpiration" type="xsd:int" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
-
+				         
 	<xsd:element name="HpcDataManagementConfiguration">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="id" type="xsd:string"/>
-				<xsd:element name="doc" type="xsd:string"/>
-				<xsd:element name="basePath" type="xsd:string"/>
-				<xsd:element name="archiveDataTransferType"
-					type="hpc-domain-datatransfer:HpcDataTransferType"/>
-				<xsd:element name="s3Configuration" type="hpc-domain-model:HpcDataTransferConfiguration"/>
-				<xsd:element name="globusConfiguration"
-					type="hpc-domain-model:HpcDataTransferConfiguration"/>
+				<xsd:element name="id" type="xsd:string" />
+				<xsd:element name="doc" type="xsd:string" />
+			    <xsd:element name="basePath" type="xsd:string" />
+			    <xsd:element name="archiveDataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+			    <xsd:element name="s3Configuration" type="hpc-domain-model:HpcDataTransferConfiguration" />
+			    <xsd:element name="globusConfiguration" type="hpc-domain-model:HpcDataTransferConfiguration" />
 				<xsd:element name="collectionMetadataValidationRules"
-					type="hpc-domain-metadata:HpcMetadataValidationRule"
-					minOccurs="0" maxOccurs="unbounded"/>
+				             type="hpc-domain-metadata:HpcMetadataValidationRule"
+					         minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="dataObjectMetadataValidationRules"
-					type="hpc-domain-metadata:HpcMetadataValidationRule"
-					minOccurs="0" maxOccurs="unbounded"/>
+				             type="hpc-domain-metadata:HpcMetadataValidationRule"
+					         minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="dataHierarchy"
-					type="hpc-domain-datamanagement:HpcDataHierarchy"/>
+				             type="hpc-domain-datamanagement:HpcDataHierarchy" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>
-
+	</xsd:element>	
+	
 	<xsd:complexType name="HpcDataObjectRegistrationRequest">
 		<xsd:sequence>
 			<xsd:element name="source"

@@ -35,17 +35,16 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-
-  <xsd:complexType name="HpcDataTransferAuthenticatedToken">
-    <xsd:sequence>
-      <xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType"/>
-      <xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType"/>
-      <xsd:element name="configurationId" type="xsd:string"/>
-      <xsd:element name="systemAccountUsername" type="xsd:string"/>
-    </xsd:sequence>
-  </xsd:complexType>
-
-  <xsd:element name="HpcRequestInvoker">
+	
+	<xsd:complexType name="HpcDataTransferAuthenticatedToken">
+		<xsd:sequence>
+			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+			<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
+			<xsd:element name="configurationId" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="HpcRequestInvoker">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="nciAccount" type="hpc-domain-user:HpcNciAccount" />

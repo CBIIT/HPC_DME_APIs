@@ -14,7 +14,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-import java.util.List;
 
 /**
  * <p>
@@ -35,8 +34,7 @@ public interface HpcSystemAccountDAO
      * @throws HpcException on database error.
      */
     public void upsert(HpcIntegratedSystemAccount account, 
-    		           HpcDataTransferType dataTransferType,
-                   String classifier)
+    		           HpcDataTransferType dataTransferType) 
     		          throws HpcException;
     
     /**
@@ -46,7 +44,7 @@ public interface HpcSystemAccountDAO
      * @return The system account if found, or null otherwise.
      * @throws HpcException on database error.
      */
-    public List<HpcIntegratedSystemAccount> getSystemAccount(HpcIntegratedSystem system)
+    public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
     		                                          throws HpcException;
     
     /**
@@ -56,18 +54,8 @@ public interface HpcSystemAccountDAO
      * @return The system account if found, or null otherwise.
      * @throws HpcException on database error.
      */
-    public List<HpcIntegratedSystemAccount> getSystemAccount(HpcDataTransferType dataTransferType)
+    public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType) 
     		                                          throws HpcException;
-
-
-  /*
-   * Get system accounts representing Globus pooled/shared application accounts.
-   *
-   * @return Set containing system accounts info as HpcIntegratedSystemAccount instances
-   * @throws HpcException on error
-   */
-//  public List<HpcIntegratedSystemAccount> getGlobusPooledAccounts() throws HpcException;
-
 }
 
  

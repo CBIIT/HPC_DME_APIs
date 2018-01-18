@@ -71,7 +71,7 @@
         <dependency>
             <groupId>gov.nih.nci.hpc</groupId>
             <artifactId>hpc-dto</artifactId>
-            <version>1.6.0-dev884</version>
+            <version>1.6.0-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
         <dependency>
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>gov.nih.nci.hpc</groupId>
             <artifactId>hpc-client</artifactId>
-            <version>1.6.0-dev884</version>
+            <version>1.6.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -131,7 +131,7 @@
         <dependency>
             <groupId>gov.nih.nci.hpc</groupId>
             <artifactId>hpc-domain-types</artifactId>
-            <version>1.6.0-dev884</version>
+            <version>1.6.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
