@@ -49,7 +49,6 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
-
   // ---------------------------------------------------------------------//
   // Constants
   // ---------------------------------------------------------------------//
@@ -64,91 +63,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   private static final String NOT_DIRECTORY_GLOBUS_CODE =
       "ExternalError.DirListingFailed.NotDirectory";
-
-  /**
-   * Implementation class for interface HpcDataTransferProxy.TransferRequestFeedback.
-   */
-  public static class TransferRequestFeedbackImpl implements
-      HpcDataTransferProxy.TransferRequestFeedback {
-
-    private boolean acceptingTransferRequests;
-    private int queueSize;
-
-    /**
-     * Constructor for specifying values to set all properties.
-     *
-     * @param acceptingFlag The value to set acceptingTransferRequests property
-     * @param qSize The value to set queueSize property
-     * @throws HpcException On invalid argument(s) received
-     */
-    public TransferRequestFeedbackImpl(boolean acceptingFlag, int qSize) throws HpcException {
-      if (qSize < 0) {
-        throw new HpcException(String.format(
-            "Negative integer (%s) is forbidden as argument to match qSize parameter in constructor of %s",
-            qSize, this.getClass().getCanonicalName()), HpcErrorType.UNEXPECTED_ERROR);
-      }
-      this.acceptingTransferRequests = acceptingFlag;
-      this.queueSize = qSize;
-    }
-
-    /**
-     * Default, no-arg constructor that sets acceptingTransferRequests property to true and
-     * queueSize property to 0.
-     *
-     * @throws HpcException
-     */
-    public TransferRequestFeedbackImpl() throws HpcException {
-      this(true, 0);
-    }
-
-    /**
-     * Getter for acceptingTransferRequests property which indicates whether data transfer system
-     * account in context is currently accepting data transfer requests.
-     *
-     * @return true if accepting requests, false otherwise
-     */
-    @Override
-    public boolean isAcceptingTransferRequests() {
-      return this.acceptingTransferRequests;
-    }
-
-    /**
-     * Setter for acceptingTransferRequests property which indicates whether data transfer system
-     * account in context is currently accepting data transfer requests.
-     *
-     * @param argVal boolean that is true to mean accepting requests and is false otherwise
-     */
-    public void setAcceptingTransferRequests(boolean argVal) {
-      this.acceptingTransferRequests = argVal;
-    }
-
-    /**
-     * Getter for queueSize property which is length of queue of of the data transfer system
-     * account in context.  The queue is of data transfer requests.
-     *
-     * @return int queue length
-     */
-    @Override
-    public int getQueueSize() {
-      return this.queueSize;
-    }
-
-    /**
-     * Setter for queueSize property which is length of queue of of the data transfer system
-     * account in context.  The queue is of data transfer requests.
-     *
-     * @param argSize int length to set
-     * @throws HpcException On negative value for argSize parameter
-     */
-    public void setQueueSize(int argSize) throws HpcException {
-      if (argSize < 0) {
-        throw new HpcException(String.format(
-            "Negative integer (%s) is forbidden as argument to setQueueSize method of %s",
-            argSize, this.getClass().getCanonicalName()), HpcErrorType.UNEXPECTED_ERROR);
-      }
-      this.queueSize = argSize;
-    }
-  }
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -192,7 +106,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public TransferRequestFeedbackImpl acceptsTransferRequests(Object authenticatedToken) throws HpcException {
+  public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException {
     JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
     return retryTemplate.execute(
@@ -200,9 +114,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           try {
             JSONObject jsonTasksLists =
                 client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
-            final int tasksCount = jsonTasksLists.getInt("total");
-            final boolean underLimit = tasksCount < globusQueueSize;
-            return new TransferRequestFeedbackImpl(underLimit, tasksCount);
+            return jsonTasksLists.getInt("total") < globusQueueSize;
+
           } catch (Exception e) {
             throw new HpcException(
                 "[GLOBUS] Failed to determine active tasks count",
