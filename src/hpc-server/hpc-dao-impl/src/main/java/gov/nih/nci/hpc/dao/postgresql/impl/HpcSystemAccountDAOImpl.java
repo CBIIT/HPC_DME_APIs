@@ -36,8 +36,8 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
   //---------------------------------------------------------------------//
   // Constants
   //---------------------------------------------------------------------//
-  private static final String WHERE_CLAUSE__CLASSIFIER_IS_NULL =
-      "where \"CLASSIFIER\" is null";
+  private static final String CONDITION__CLASSIFIER_IS_NULL =
+      "\"CLASSIFIER\" is null";
 
   // SQL Queries.
   private final static String UPSERT_SQL =
@@ -46,14 +46,14 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO
           "values (?, ?, ?, ?) " +
           "on conflict(\"SYSTEM\") do update set \"USERNAME\"=excluded.\"USERNAME\", " +
           "\"PASSWORD\"=excluded.\"PASSWORD\", " +
-          "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\" " +
-          WHERE_CLAUSE__CLASSIFIER_IS_NULL;
+          "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\" where " +
+          CONDITION__CLASSIFIER_IS_NULL;
 
   private final static String GET_BY_SYSTEM_SQL =
-      "select * from public.\"HPC_SYSTEM_ACCOUNT\" where " + WHERE_CLAUSE__CLASSIFIER_IS_NULL
+      "select * from public.\"HPC_SYSTEM_ACCOUNT\" where " + CONDITION__CLASSIFIER_IS_NULL
           + " and \"SYSTEM\" = ?";
   private final static String GET_BY_DATA_TRANSFER_TYPE_SQL =
-      "select * from public.\"HPC_SYSTEM_ACCOUNT\" where " + WHERE_CLAUSE__CLASSIFIER_IS_NULL
+      "select * from public.\"HPC_SYSTEM_ACCOUNT\" where " + CONDITION__CLASSIFIER_IS_NULL
           + " and \"DATA_TRANSFER_TYPE\" = ?";
 
   //---------------------------------------------------------------------//
