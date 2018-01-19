@@ -60,7 +60,7 @@ def send_email(subject, message):
 
 def error_exit():
     """Exit the program and send notification emails"""
-    subject="Error during HPCDME archiving of CV7000_Images" 
+    subject="ERROR: HPCDME during registration" 
     body="See the log file {0}".format(log_path)
     send_email(subject, body)
     logging.shutdown()
@@ -68,12 +68,20 @@ def error_exit():
 
 def email_warning(message):
     """Email a warning message"""
-    subject="Warning during HPCDME archiving of CV7000_Images" 
+    subject="WARNING: HPCDME during registration" 
     send_email(subject, message)
 
+def email_completion(message):
+    """Email a warning message"""
+    subject="COMPLETED: HPCDME script completed a registration job" 
+    send_email(subject, message)
+
+
+
 def get_immediate_subdirectories(a_dir):
+    now = time.time()
     return [name for name in os.listdir(a_dir)
-                if os.path.isdir(os.path.join(a_dir, name))]
+                if os.path.isdir(os.path.join(a_dir, name)) and os.stat(os.path.join(a_dir, name)).st_mtime < now - 7 * 86400]
 
 
 def make_tarfile(output_filename, source_dir):
@@ -398,3 +406,5 @@ except Exception as inst:
 
 registered_pis.close()
 registered_users.close()
+message =  "The archive script completed the registration of the user file: {0} \n. See complete registration log at {1}.".format(users_file, log_path)
+email_completion(message)
