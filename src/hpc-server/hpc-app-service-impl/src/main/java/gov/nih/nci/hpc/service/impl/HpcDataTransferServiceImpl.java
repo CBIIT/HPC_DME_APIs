@@ -55,6 +55,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
@@ -409,20 +410,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public long getDataTransferSize(
-      HpcDataTransferType dataTransferType, String dataTransferRequestId, String configurationId)
-      throws HpcException { // Input Validation.
-    if (dataTransferRequestId == null) {
-      throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    return dataTransferProxies
-        .get(dataTransferType)
-        .getDataTransferSize(
-            getAuthenticatedToken(dataTransferType, configurationId), dataTransferRequestId);
-  }
-
-  @Override
   public HpcPathAttributes getPathAttributes(
       HpcDataTransferType dataTransferType,
       HpcFileLocation fileLocation,
@@ -645,7 +632,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       return;
     }
 
-    // Calculate the percent complete
+    // Calculate the percent complete.
     float percentComplete = 100 * (float) bytesTransferred / downloadTask.getSize();
     if (dataManagementConfigurationLocator
         .getDataTransferConfiguration(
@@ -659,8 +646,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // This is a one-hop Globus download from archive to user destination (currently only supported by file system archive).
       downloadTask.setPercentComplete(Math.round(percentComplete));
     }
-
-    logger.error("ERAN: DO PCT: " + downloadTask.getPercentComplete());
 
     dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
   }
@@ -729,26 +714,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException {
-    // Calculate the percent complete (if the download task is active)
-    if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
-      long totalDownloadSize = 0;
-      long totalBytesTransferred = 0;
-      for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-        totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
-        totalBytesTransferred +=
-            item.getPercentComplete() != null
-                ? item.getPercentComplete() / 100 * item.getSize()
-                : 0;
-      }
-
-      if (totalDownloadSize > 0 && totalBytesTransferred <= totalDownloadSize) {
-        float percentComplete = 100 * (float) totalBytesTransferred / totalDownloadSize;
-        downloadTask.setPercentComplete(Math.round(percentComplete));
-      }
-    }
-
-    logger.error("ERAN: COLL PCT: " + downloadTask.getPercentComplete());
-
     dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
   }
 
@@ -840,6 +805,80 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         .get(dataTransferType)
         .getFileContainerName(
             getAuthenticatedToken(dataTransferType, configurationId), fileContainerId);
+  }
+
+  /**
+   * Calculate a data object upload % complete. Note: if upload not in progress, null is returned.
+   *
+   * @param systemGeneratedMetadata The system generated metadata of the data object.
+   * @return The transfer % completion if transfer is in progress, or null otherwise.
+   */
+  @Override
+  public Integer calculateDataObjectUploadPercentComplete(
+      HpcSystemGeneratedMetadata systemGeneratedMetadata) {
+    // Get the data transfer info from the metadata entries.
+    HpcDataTransferUploadStatus dataTransferStatus =
+        systemGeneratedMetadata.getDataTransferStatus();
+    HpcDataTransferType dataTransferType = systemGeneratedMetadata.getDataTransferType();
+    if (dataTransferStatus == null || dataTransferType == null) {
+      return null;
+    }
+
+    if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE)) {
+      // Transfer is exactly half way in a 2-hop upload.
+      return 50;
+    }
+
+    if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE)
+        || dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE)) {
+      // Data transfer is in progress.
+      if (dataTransferType.equals(HpcDataTransferType.S_3)) {
+        // We don't have visibility into S3 transfer. Return a 50.
+        return 50;
+      }
+
+      String dataTransferRequestId = systemGeneratedMetadata.getDataTransferRequestId();
+      String configurationId = systemGeneratedMetadata.getConfigurationId();
+      Long sourceSize = systemGeneratedMetadata.getSourceSize();
+      if (configurationId == null
+          || dataTransferRequestId == null
+          || sourceSize == null
+          || sourceSize <= 0) {
+        return null;
+      }
+
+      // Get the size of the data transferred so far.
+      long transferSize = 0;
+      try {
+        // Get the data transfer configuration.
+        HpcDataTransferConfiguration dataTransferConfiguration =
+            dataManagementConfigurationLocator.getDataTransferConfiguration(
+                configurationId, dataTransferType);
+
+        transferSize =
+            dataTransferProxies
+                .get(dataTransferType)
+                .getDataTransferUploadStatus(
+                    getAuthenticatedToken(dataTransferType, configurationId),
+                    dataTransferRequestId,
+                    dataTransferConfiguration.getBaseArchiveDestination())
+                .getBytesTransferred();
+
+      } catch (HpcException e) {
+        logger.error("Failed to get data transfer upload status: " + dataTransferRequestId, e);
+        return null;
+      }
+
+      float percentComplete = (float) 100 * transferSize / sourceSize;
+      if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE)) {
+        // Transfer is in 1st hop of 2-hop upload. The Globus % complete is half of the overall upload.
+        percentComplete /= 2;
+      }
+
+      return Math.round(percentComplete);
+    }
+
+    return null;
   }
 
   // ---------------------------------------------------------------------//
