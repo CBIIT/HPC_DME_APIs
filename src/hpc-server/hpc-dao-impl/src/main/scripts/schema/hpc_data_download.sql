@@ -82,7 +82,6 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "DESTINATION_OVERWRITE" boolean,
   "STATUS" text,
   "ITEMS" text,
-  "PERCENT_COMPLETE" integer,
   "CREATED" timestamp
 )
 WITH (
@@ -113,8 +112,6 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."STATUS" IS
                   'The download task status';   
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."ITEMS" IS 
                   'The download items included in this collection / bulk download request';    
-COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."PERCENT_COMPLETE" IS 
-                  'The download task completion %';        
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."CREATED" IS 
                   'The date and time the task was created';
                                    

@@ -482,7 +482,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
       HpcDataTransferUploadStatus dataTransferStatus,
       HpcDataTransferType dataTransferType,
       Calendar dataTransferStarted,
-      Calendar dataTransferCompleted)
+      Calendar dataTransferCompleted,
+      Long sourceSize)
       throws HpcException {
     // Input validation.
     if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
@@ -546,6 +547,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
           toMetadataEntry(
               DATA_TRANSFER_COMPLETED_ATTRIBUTE,
               dateFormat.format(dataTransferCompleted.getTime())));
+    }
+
+    if (sourceSize != null) {
+      // Update the Source File Size metadata.
+      addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, sourceSize));
     }
 
     if (!metadataEntries.isEmpty()) {

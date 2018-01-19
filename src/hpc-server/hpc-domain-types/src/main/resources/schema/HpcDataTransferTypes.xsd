@@ -38,6 +38,7 @@
 			<xsd:element name="status"
 				type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
 			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="bytesTransferred" type="xsd:long" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -233,7 +234,6 @@
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="percentComplete" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 
