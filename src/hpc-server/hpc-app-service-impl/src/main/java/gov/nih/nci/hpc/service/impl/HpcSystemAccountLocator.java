@@ -261,11 +261,16 @@ public class HpcSystemAccountLocator {
         .get(transferType);
     for (HpcIntegratedSystemAccount someAcct : theAccts) {
       final String classifierValue = fetchSysAcctPropertyValue(someAcct, PROPERTY_NAME_CLASSIFIER);
-      if (null == classifier2ListMap.get(classifierValue)) {
-        classifier2ListMap
-            .put(classifierValue, new ArrayList<PooledSystemAccountWrapper>());
+      if (null == classifierValue) {
+        // no classifier property so do nothing with this system account as classifier indicates which
+        //  pool (or bucket) it belongs in
+      } else {
+        if (null == classifier2ListMap.get(classifierValue)) {
+          classifier2ListMap
+              .put(classifierValue, new ArrayList<PooledSystemAccountWrapper>());
+        }
+        classifier2ListMap.get(classifierValue).add(new PooledSystemAccountWrapper(someAcct));
       }
-      classifier2ListMap.get(classifierValue).add(new PooledSystemAccountWrapper(someAcct));
     }
   }
 
