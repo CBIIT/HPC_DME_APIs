@@ -83,6 +83,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcFileSizeUpdateDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionsForCollection;
@@ -1301,6 +1302,46 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dataManagementModel.getDocRules().addAll(docsRules.values());
 
     return dataManagementModel;
+  }
+
+  // TODO - remove after file size updated in prod
+  @Override
+  public HpcFileSizeUpdateDTO updateFileSize(HpcFileSizeUpdateDTO request) throws HpcException {
+    HpcFileSizeUpdateDTO response = new HpcFileSizeUpdateDTO();
+    for (String path : request.getPaths()) {
+      HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
+      try {
+        systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+      } catch(HpcException e) {
+        response.getPaths().add(path + ": " + e.getMessage());
+        continue;
+      }
+
+      if (systemGeneratedMetadata.getSourceSize() != null) {
+        response
+            .getPaths()
+            .add(path + ": already have file size - " + systemGeneratedMetadata.getSourceSize());
+        continue;
+      }
+
+      // Lookup the archive for this data object.
+      HpcPathAttributes archivePathAttributes =
+          dataTransferService.getPathAttributes(
+              systemGeneratedMetadata.getDataTransferType(),
+              systemGeneratedMetadata.getArchiveLocation(),
+              true,
+              systemGeneratedMetadata.getConfigurationId());
+      if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
+        // Update the data management (iRODS) data object's system-metadata.
+        metadataService.updateDataObjectSystemGeneratedMetadata(
+            path, null, null, null, null, null, null, null, archivePathAttributes.getSize());
+        response.getPaths().add(path + ": updatef file size - " + archivePathAttributes.getSize());
+      } else {
+        response.getPaths().add(path + ": file not found in Cleversafe");
+      }
+    }
+
+    return response;
   }
 
   // ---------------------------------------------------------------------//
