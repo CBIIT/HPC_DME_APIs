@@ -9,7 +9,6 @@
 package gov.nih.nci.hpc.bus;
 
 import java.io.File;
-
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -30,6 +29,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcFileSizeUpdateDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -378,4 +378,7 @@ public interface HpcDataManagementBusService {
    * @throws HpcException on service failure.
    */
   public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
+  
+  // TODO - Remove after file size was updated in prod
+  public HpcFileSizeUpdateDTO updateFileSize(HpcFileSizeUpdateDTO fileSizeUpdate) throws HpcException;
 }

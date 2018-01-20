@@ -60,6 +60,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   private static final String PERMISSION_DENIED_STATUS = "PERMISSION_DENIED";
   private static final String OK_STATUS = "OK";
   private static final String QUEUED_STATUS = "Queued";
+  private static final String TIMEOUT_STATUS = "TIMEOUT";
 
   private static final String NOT_DIRECTORY_GLOBUS_CODE =
       "ExternalError.DirListingFailed.NotDirectory";
@@ -723,7 +724,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     if (report.status.equals(INACTIVE_STATUS)
         || (!StringUtils.isEmpty(report.niceStatus)
             && !report.niceStatus.equals(OK_STATUS)
-            && !report.niceStatus.equals(QUEUED_STATUS))) {
+            && !report.niceStatus.equals(QUEUED_STATUS)
+            && !report.niceStatus.equals(TIMEOUT_STATUS))) {
       // Globus task requires some manual intervention. We cancel it and consider it a
       // failure.
       logger.error(
