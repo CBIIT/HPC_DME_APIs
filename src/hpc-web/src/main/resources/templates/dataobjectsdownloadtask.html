@@ -104,6 +104,11 @@
 								</div>
 								<div class="form-group">
 									<div class="col-md-12 form-group">
+										<label for="Name">Task Id:</label> <label
+											for="${taskId}"
+											th:text="${taskId}"></label>
+									</div>
+									<div class="col-md-12 form-group">
 										<label for="Name">Path:</label> <label
 											for="${hpcDataObjectsDownloadStatusDTO.getPath()}"
 											th:text="${hpcDataObjectsDownloadStatusDTO.getPath()}"></label>
@@ -176,9 +181,16 @@
 								</div>
 							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
+								<div class="col-md-3">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>Failed</strong>
+									</h2>
+								</div>
+								<div class="col-md-3 col-md-offset-6">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
+									<strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-refresh" title="Retry Failed" aria-hidden="true"></i></a></strong>
 								</h2>
+								</div>
 							</div>
 							<div class="panel-body"
 								th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
@@ -228,6 +240,12 @@
 					</div>
 				</div>
 				<div class="row"></div>
+	<form class="form-horizontal" id="downloadForm"
+	    th:action="@{/downloadtask}"
+		method="POST">
+		<input type="hidden" id="taskId" name="taskId"/>
+		<input type="hidden" id="taskType" name="taskType"/>
+	</form>
 			</section>
 		</section>
 		<!--main content end-->
@@ -247,5 +265,19 @@
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
+	
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+function retryDownload(task, taskType)
+{
+	document.getElementById("taskId").value = task;
+	document.getElementById("taskType").value = taskType;
+	$("#downloadForm").submit();
+	
+}
+           
+/*]]>*/
+</script>
 </body>
 </html>
