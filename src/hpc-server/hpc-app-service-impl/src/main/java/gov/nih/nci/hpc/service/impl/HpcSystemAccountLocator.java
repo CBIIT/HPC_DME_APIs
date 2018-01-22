@@ -8,16 +8,24 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * HPC System Account Locator.
@@ -26,18 +34,86 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @version $Id$
  */
 public class HpcSystemAccountLocator {
+
+  protected static class PooledSystemAccountWrapper implements Comparable {
+
+    private HpcIntegratedSystemAccount systemAccount;
+    private double utilizationScore;
+
+    protected PooledSystemAccountWrapper(HpcIntegratedSystemAccount pAccount, double pScore) {
+      this.systemAccount = pAccount;
+      this.utilizationScore = pScore;
+    }
+
+    protected PooledSystemAccountWrapper(HpcIntegratedSystemAccount pAccount) {
+      this(pAccount, 0.0);
+    }
+
+    protected PooledSystemAccountWrapper() {
+      this(null, 0.0);
+    }
+
+    protected HpcIntegratedSystemAccount getSystemAccount() {
+      return systemAccount;
+    }
+
+    protected void setSystemAccount(HpcIntegratedSystemAccount pAccount) {
+      systemAccount = pAccount;
+    }
+
+    protected double getUtilizationScore() {
+      return utilizationScore;
+    }
+
+    protected void setUtilizationScore(double pScore) {
+      utilizationScore = pScore;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+      int retVal = -1;
+      if (o instanceof PooledSystemAccountWrapper) {
+        PooledSystemAccountWrapper convPsaWrapper = (PooledSystemAccountWrapper) o;
+        retVal = Double.valueOf(utilizationScore).compareTo(convPsaWrapper.getUtilizationScore());
+      }
+      return retVal;
+    }
+
+  }
+
+  private static final String DOC_CLASSIFIER_DEFAULT = "DEFAULT";
+  private static final String PROPERTY_NAME_CLASSIFIER = "classifier";
+
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
+  // The logger instance.
+  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+  // singularSystemAccounts contains data about system accounts for which there is only 1
+  //   account per system
+  private Map<HpcIntegratedSystem, HpcIntegratedSystemAccount> singularSystemAccounts =
+      new ConcurrentHashMap<HpcIntegratedSystem, HpcIntegratedSystemAccount>();
 
   // Map data transfer type to a 'credentials' structure.
-  private Map<HpcIntegratedSystem, HpcIntegratedSystemAccount> systemAccounts =
-      new ConcurrentHashMap<HpcIntegratedSystem, HpcIntegratedSystemAccount>();
-  private Map<HpcDataTransferType, HpcIntegratedSystemAccount> dataTransferAccounts =
+
+  // singularDataTransferAccounts contains data about system accounts for data transfer for which
+  //   there is only 1 account per data transfer type
+  private Map<HpcDataTransferType, HpcIntegratedSystemAccount> singularDataTransferAccounts =
       new ConcurrentHashMap<HpcDataTransferType, HpcIntegratedSystemAccount>();
+
+  // multiDataTransferAccounts contains data about system accounts for data transfer for which
+  //   there are more than 1 account per data transfer type
+  private Map<HpcDataTransferType, Map<String, List<PooledSystemAccountWrapper>>> multiDataTransferAccounts =
+      new ConcurrentHashMap<HpcDataTransferType, Map<String, List<PooledSystemAccountWrapper>>>();
+
+//  private Map<String, Queue<HpcIntegratedSystemAccount>> globusPooledAccounts =
+//      new ConcurrentHashMap<>();
 
   // System Accounts DAO
   @Autowired HpcSystemAccountDAO systemAccountDAO = null;
+
+  @Autowired HpcDataManagementConfigurationLocator dataMgmtConfigLocator = null;
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -56,23 +132,9 @@ public class HpcSystemAccountLocator {
    * @throws HpcException on service failure.
    */
   public void reload() throws HpcException {
-    // Populate the system accounts map.
-    for (HpcIntegratedSystem system : HpcIntegratedSystem.values()) {
-      // Get the data transfer system account.
-      HpcIntegratedSystemAccount account = systemAccountDAO.getSystemAccount(system);
-      if (account != null) {
-        systemAccounts.put(system, account);
-      }
-    }
-
-    // Populate the data transfer accounts map.
-    for (HpcDataTransferType dataTransferType : HpcDataTransferType.values()) {
-      // Get the data transfer system account.
-      HpcIntegratedSystemAccount account = systemAccountDAO.getSystemAccount(dataTransferType);
-      if (account != null) {
-        dataTransferAccounts.put(dataTransferType, account);
-      }
-    }
+    initSystemAccountsData();
+    initDataTransferAccountsData();
+    this.dataMgmtConfigLocator.reload();
   }
 
   /**
@@ -84,7 +146,18 @@ public class HpcSystemAccountLocator {
    */
   public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system)
       throws HpcException {
-    return systemAccounts.get(system);
+    HpcIntegratedSystemAccount retSysAcct = null;
+
+    if (null != singularSystemAccounts.get(system)) {
+      retSysAcct = singularSystemAccounts.get(system);
+    }
+    else {
+      throw new HpcException(String.format(
+          "Call to get data for exactly one system account for integrated system of %s could not be resolved.",
+          system.value()), HpcErrorType.UNEXPECTED_ERROR);
+    }
+
+    return retSysAcct;
   }
 
   /**
@@ -96,7 +169,7 @@ public class HpcSystemAccountLocator {
    */
   public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType)
       throws HpcException {
-    return dataTransferAccounts.get(dataTransferType);
+    return getSystemAccount(dataTransferType, DOC_CLASSIFIER_DEFAULT);
   }
 
   /**
