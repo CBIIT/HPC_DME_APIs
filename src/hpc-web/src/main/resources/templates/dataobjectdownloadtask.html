@@ -87,12 +87,19 @@
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading" th:if="${hpcDataObjectDownloadStatusDTO != null}">
+								<div class="col-md-3">
 									<i class="fa fa-list-alt red"></i><strong>Task Details</strong>
+								</div>
+								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectDownloadStatusDTO.getResult() == false}">
+								<h2>
+									<strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-refresh" title="Retry Failed" aria-hidden="true"></i></a></strong>
+								</h2>
+								</div>
 							</div>
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
 									<a class="close" data-dismiss="alert">×</a> <label
-										for="${error}" th:text="${error}"></label>
+										for="${error}" th:utext="${error}"></label>
 								</div>
 							</div>
 								<!--panel-body start-->
@@ -172,6 +179,12 @@
 			</section>
 		</section>
 		<!--main content end-->
+	<form class="form-horizontal" id="downloadForm"
+	    th:action="@{/downloadtask}"
+		method="POST">
+		<input type="hidden" id="taskId" name="taskId"/>
+		<input type="hidden" id="taskType" name="taskType"/>
+	</form>
 	</section>
 	<!-- container section start -->
 
@@ -188,5 +201,18 @@
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+function retryDownload(task, taskType)
+{
+	document.getElementById("taskId").value = task;
+	document.getElementById("taskType").value = taskType;
+	$("#downloadForm").submit();
+	
+}
+           
+/*]]>*/
+</script>
 </body>
 </html>
