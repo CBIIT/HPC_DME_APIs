@@ -1,6 +1,8 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+
+import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,6 +51,27 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
+
+  class HpcGlobusTransferAcceptanceResponse implements HpcTransferAcceptanceResponse {
+    private boolean acceptTransferFlag;
+    private int queueLength;
+
+    HpcGlobusTransferAcceptanceResponse(boolean canAccept, int sizeOfQueue) {
+      this.acceptTransferFlag = canAccept;
+      this.queueLength = sizeOfQueue;
+    }
+
+    @Override
+    public boolean canAcceptTransfer() {
+      return acceptTransferFlag;
+    }
+
+    @Override
+    public int getQueueSize() {
+      return queueLength;
+    }
+  }
+
   // ---------------------------------------------------------------------//
   // Constants
   // ---------------------------------------------------------------------//
@@ -107,7 +130,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException {
+  public HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken) throws HpcException {
     JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
     return retryTemplate.execute(
@@ -115,8 +138,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           try {
             JSONObject jsonTasksLists =
                 client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
-            return jsonTasksLists.getInt("total") < globusQueueSize;
-
+            final int qSize = jsonTasksLists.getInt("total");
+            final boolean underCap = qSize < globusQueueSize;
+            final HpcTransferAcceptanceResponse transferAcceptanceResponse = new HpcGlobusTransferAcceptanceResponse(underCap, qSize);
+            return transferAcceptanceResponse;
           } catch (Exception e) {
             throw new HpcException(
                 "[GLOBUS] Failed to determine active tasks count",
