@@ -12,6 +12,7 @@
 source $HPC_DM_UTILS/scripts/utilities
 
 #Generate a DM API authentication token
+#Arguments: [password]
 function dm_generate_token () {
 
     local LOG_FILE=$HPC_DM_UTILS/temp/log
@@ -21,7 +22,14 @@ function dm_generate_token () {
     SERVER=$(get_server) || exit 1
     USERNAME=$(get_username) || exit 1
 
-    curl -k -u $USERNAME  ${SERVER}/authenticate >  $LOG_FILE
+    if [ -z "$1" ]
+    then
+      curl -k -u $USERNAME  ${SERVER}/authenticate >  $LOG_FILE
+    else
+      account_password="$1"
+      curl -k -u $USERNAME:$account_password  ${SERVER}/authenticate >  $LOG_FILE
+    fi
+
     local TOKEN=$(get_json_value $LOG_FILE token)
 
     if [ -z $TOKEN ]
@@ -574,6 +582,7 @@ function dm_register_directory {
         exit 1 
     fi
 
+    set -x
     local src_path="$1"
     local dst_path="$2"
 
@@ -587,7 +596,7 @@ function dm_register_directory {
     fi
 
     #Make sure the source directory exists:
-    if [ ! -d $src_path ]
+    if [ ! -d "$src_path" ]
     then
       echo "The source directory: $src_path does not exist." >&2
       exit 1
@@ -597,8 +606,8 @@ function dm_register_directory {
 
     #Pass the mandatory arguments
     full_src_path=$(myreadlink $src_path)
-    full_src_path_converted=$(convert_path $full_src_path)
-    command_args+=" --sourceFilePath $full_src_path_converted "
+    full_src_path_converted=$(convert_path "$full_src_path")
+    command_args+=" --sourceFilePath \"$full_src_path_converted\" "
 
     command_args+=" --destinationArchivePath $dst_path "
 
@@ -834,7 +843,7 @@ function dm_register_globus_directory {
     local log_file=./dm_log
     local error_file=./dm_error
 
-
+    
     case "$(uname -s)" in
     
        Darwin)
@@ -1113,7 +1122,6 @@ function dm_get_download_status {
     server=$(get_server) || exit 1
 
    
-    set -x 
     curl -G -X GET ${server}${request_type}/download?task_id="$taskId"  $config  -H "Accept: application/json" -D $response_header -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
     check_connection $response_header
 
