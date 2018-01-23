@@ -608,29 +608,29 @@ function dm_register_directory {
     full_src_path_converted=$(convert_path "$full_src_path")
     command_args+=" --sourceFilePath \"$full_src_path_converted\" "
 
-    command_args+=" --destinationArchivePath $dst_path "
+    command_args+=" --destinationArchivePath \"$dst_path\" "
 
     #Pass the options related to files that will be registered. 
   
     if [ $file_list ]
     then
-      list_of_files_converted=$(convert_path $list_of_files)
-      command_args+=" --sourceFileList ${list_of_files_converted}"
+      list_of_files_converted=$(convert_path "$list_of_files")
+      command_args+=" --sourceFileList \"${list_of_files_converted}\" "
     else
      #Get the include path
       if [ "$include_option" ] 
       then
-        full_include_path=$(myfilereadlink $include_file)
-        full_include_path_converted=$(convert_path $full_include_path)
-        command_args+=" --includePatternFile ${full_include_path_converted}"
+        full_include_path=$(myfilereadlink "$include_file")
+        full_include_path_converted=$(convert_path "$full_include_path")
+        command_args+=" --includePatternFile \"${full_include_path_converted}\" "
       fi
   
       #Get the exclude path
       if [ "$exclude_option" ] 
       then
-        full_exclude_path=$(myfilereadlink $exclude_file)
-        full_exclude_path_converted=$(convert_path $full_exclude_path)
-        command_args+=" --excludePatternFile ${full_exclude_path_converted}"
+        full_exclude_path=$(myfilereadlink "$exclude_file")
+        full_exclude_path_converted=$(convert_path "$full_exclude_path")
+        command_args+=" --excludePatternFile \"${full_exclude_path_converted}\" "
       fi
     fi 
 
@@ -816,15 +816,15 @@ function dm_register_globus_directory {
     #Get the include path
     if [ "$include_option" ]
     then
-      full_include_path=$(myfilereadlink $include_file)
-      command_args+=" --includePatternFile $full_include_path"
+      full_include_path=$(myfilereadlink "$include_file")
+      command_args+=" --includePatternFile \"$full_include_path\""
     fi
 
     #Get the exclude path
     if [ "$exclude_option" ]
     then
-      full_exclude_path=$(myfilereadlink $exclude_file)
-      command_args+=" --excludePatternFile $full_exclude_path"
+      full_exclude_path=$(myfilereadlink "$exclude_file")
+      command_args+=" --excludePatternFile \"$full_exclude_path\""
     fi
 
     if [ "$dry_run" ]
