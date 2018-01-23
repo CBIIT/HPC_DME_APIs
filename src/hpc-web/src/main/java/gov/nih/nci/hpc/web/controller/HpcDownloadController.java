@@ -151,39 +151,7 @@ public class HpcDownloadController extends AbstractHpcController {
 				dto.setDestination(location);
 			}
 
-			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
-			client.header("Authorization", "Bearer " + authToken);
-
-			Response restResponse = client.invoke("POST", dto);
-			if (restResponse.getStatus() == 200) {
-				HpcDataObjectDownloadResponseDTO downloadDTO = (HpcDataObjectDownloadResponseDTO) HpcClientUtil
-						.getObject(restResponse, HpcDataObjectDownloadResponseDTO.class);
-				String taskId = "Unknown";
-				if (downloadDTO != null)
-					taskId = downloadDTO.getTaskId();
-
-				result.setMessage("<strong>Asynchronous download request is submitted successfully! <br>TaskId: "
-						+ taskId + "<strong>");
-				return result;
-			} else {
-				ObjectMapper mapper = new ObjectMapper();
-				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-						new JacksonAnnotationIntrospector());
-				mapper.setAnnotationIntrospector(intr);
-				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-				MappingJsonFactory factory = new MappingJsonFactory(mapper);
-				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-				try {
-					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-					result.setMessage("Download request is not successfull: " + exception.getMessage());
-					return result;
-				} catch (Exception e) {
-					result.setMessage("Download request is not successfull: " + e.getMessage());
-					return result;
-				}
-			}
+			return HpcClientUtil.downloadDataFile(authToken, serviceURL, dto, sslCertPath, sslCertPassword);
 		} catch (HttpStatusCodeException e) {
 			result.setMessage("Download request is not successfull: " + e.getMessage());
 			return result;
