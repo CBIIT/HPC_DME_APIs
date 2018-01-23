@@ -340,7 +340,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       if (report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
         statusReport.setMessage(
             report.niceStatusDescription
-                + " . Check HPC-DM system-account granted write access to the destination endpoint");
+                + ". Check HPC-DM system-account granted write access to the destination endpoint");
       }
 
     } else {

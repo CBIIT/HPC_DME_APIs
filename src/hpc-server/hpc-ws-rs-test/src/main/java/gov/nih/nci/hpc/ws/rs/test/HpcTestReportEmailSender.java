@@ -15,7 +15,8 @@ import java.util.Properties;
 
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -36,6 +37,9 @@ public class HpcTestReportEmailSender
 
 	// Mail Sender.
 	JavaMailSender mailSender = null;
+	
+	  // The logger instance.
+	  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
     //---------------------------------------------------------------------//
     // Constructors
@@ -70,7 +74,7 @@ public class HpcTestReportEmailSender
             	             });
              
         } catch(MailException e) {
-                System.err.println("Failed to send an email: " + e.getMessage());
+                logger.error("Failed to send an email: " + e.getMessage());
         }
     }
 }
