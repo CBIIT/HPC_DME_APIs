@@ -1045,7 +1045,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             metadata.getConfigurationId(),
             userId,
             completionEvent,
-            metadata.getSourceSize());
+            metadata.getSourceSize() != null ? metadata.getSourceSize() : 0);
+    
+    logger.error("ERAN: source size" + metadata.getSourceSize());
 
     // Construct and return a DTO.
     return toDownloadResponseDTO(
