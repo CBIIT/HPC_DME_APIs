@@ -600,7 +600,7 @@ function convert_path {
       echo $input_path
     ;;
     CYGWIN*|MINGW32*|MSYS*)
-      echo $(cygpath -m $input_path)
+      echo $(cygpath -m "${input_path}")
     ;;
     *)
       echo 'Current OS not supported' 
