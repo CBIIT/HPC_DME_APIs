@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:Mahidhar.Narra@nih.gov">Mahidhar Narra</a>
  */
 public interface HpcDataTransferProxy {
+
   /**
    * Authenticate the invoker w/ the data transfer system.
    *
@@ -47,12 +48,14 @@ public interface HpcDataTransferProxy {
    * Check if upload/download requests are accepted at the moment.
    *
    * @param authenticatedToken An authenticated token.
-   * @return True if upload/download requests are accepted, or false if the data-transfer system is
-   *     too busy.
+   * @return HpcTransferAcceptanceResponse for which:
+   *         1. the method canAcceptTransfer() returns true if upload/download requests are accepted
+   *            or false if the data-transfer system is too busy.
+   *         2. the method getQueueSize() returns int that is size of data transfer queue.
    * @throws HpcException on data transfer system failure.
    */
-  public default boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException {
-    return true;
+  public default HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken) throws HpcException {
+    return new HpcTransferAcceptanceResponse() {};
   }
 
   /**

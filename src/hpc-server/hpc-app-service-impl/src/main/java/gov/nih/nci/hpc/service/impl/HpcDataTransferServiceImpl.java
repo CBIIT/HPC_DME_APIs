@@ -9,6 +9,8 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
+
+import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -580,12 +582,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException {
     // Check if Globus accepts transfer requests at this time.
-    if (dataTransferProxies
-        .get(downloadTask.getDataTransferType())
-        .acceptsTransferRequests(
-            getAuthenticatedToken(
-                downloadTask.getDataTransferType(), downloadTask.getConfigurationId()))) {
-
+    if (checkIfTransferCanBeLaunched(downloadTask.getDataTransferType(),
+        downloadTask.getConfigurationId())) {
       // Globus accepts requests - submit the async download (to Globus).
       HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
       downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
@@ -912,7 +910,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // No authenticated token found for this request. Create one.
     HpcIntegratedSystemAccount dataTransferSystemAccount =
-        systemAccountLocator.getSystemAccount(dataTransferType);
+        systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
     if (dataTransferSystemAccount == null) {
       throw new HpcException(
           "System account not registered for " + dataTransferType.value(),
@@ -940,6 +938,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     authenticatedToken.setDataTransferAuthenticatedToken(token);
     authenticatedToken.setDataTransferType(dataTransferType);
     authenticatedToken.setConfigurationId(configurationId);
+    authenticatedToken.setSystemAccountId(dataTransferSystemAccount.getUsername());
     invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
     HpcRequestContext.setRequestInvoker(invoker);
 
@@ -1026,8 +1025,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         dataTransferType, uploadRequest.getSourceLocation(), configurationId);
 
     // Check that the data transfer system can accept transfer requests.
-    Object authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId);
-    if (!dataTransferProxies.get(dataTransferType).acceptsTransferRequests(authenticatedToken)) {
+    if (!checkIfTransferCanBeLaunched(dataTransferType, configurationId)) {
       // The data transfer system is busy. Queue the request (upload status set to
       // 'RECEIVED'),
       // and the upload will be performed later by a scheduled task.
@@ -1042,6 +1040,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     HpcDataTransferConfiguration dataTransferConfiguration =
         dataManagementConfigurationLocator.getDataTransferConfiguration(
             configurationId, dataTransferType);
+    Object authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId);
 
     // Upload the data object using the appropriate data transfer system proxy.
     return dataTransferProxies
@@ -1594,4 +1593,43 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       return sourceLocation;
     }
   }
+
+  /*
+   * Determine whether a data transfer request can be initiated at current time.
+   *
+   * @param transferType  The type of data transfer
+   * @param dataMgmtConfigId  The ID of a data management configuration
+   * @return boolean that is true if request can be initiated, false otherwise
+   * @throw HpcException  On internal error
+   */
+  private boolean checkIfTransferCanBeLaunched(HpcDataTransferType transferType,
+      String dataMgmtConfigId)
+      throws HpcException {
+    final Object theAuthToken = getAuthenticatedToken(transferType, dataMgmtConfigId);
+    final HpcTransferAcceptanceResponse transferAcceptanceResponse =
+        this.dataTransferProxies
+            .get(transferType)
+            .acceptsTransferRequests(theAuthToken);
+    final List<HpcDataTransferAuthenticatedToken> invokerTokens = HpcRequestContext
+        .getRequestInvoker().getDataTransferAuthenticatedTokens();
+    String globusClientId = null;
+    for (HpcDataTransferAuthenticatedToken someToken : invokerTokens) {
+      if (someToken.getDataTransferType().equals(transferType) && someToken.getConfigurationId()
+          .equals(dataMgmtConfigId)) {
+        globusClientId = someToken.getSystemAccountId();
+        break;
+      }
+    }
+    if (null == globusClientId) {
+      final String msg = String.format(
+          "Could not find Globus app account client ID for this request, transfer type is %s and data management configuration ID is %s.",
+          transferType.toString(), dataMgmtConfigId);
+      throw new HpcException(msg, HpcErrorType.UNEXPECTED_ERROR);
+    }
+    this.systemAccountLocator
+        .setGlobusAccountQueueSize(globusClientId, transferAcceptanceResponse.getQueueSize());
+
+    return transferAcceptanceResponse.canAcceptTransfer();
+  }
+
 }

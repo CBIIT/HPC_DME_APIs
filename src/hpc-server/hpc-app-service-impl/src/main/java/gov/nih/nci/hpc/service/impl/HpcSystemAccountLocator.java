@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,14 +171,17 @@ public class HpcSystemAccountLocator {
    */
   public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType)
       throws HpcException {
-    return getSystemAccount(dataTransferType, DOC_CLASSIFIER_DEFAULT);
+
+    final Object[] configIds = this.dataMgmtConfigLocator.keySet().toArray();
+    final String randomConfigId = (String) configIds[ new Random().nextInt(configIds.length) ];
+    return getSystemAccount(dataTransferType, randomConfigId);
   }
 
   /**
    * Get system account by data transfer type and DOC classifier
    *
    * @param dataTransferType The data transfer type associated with the requested system account.
-   * @param docClassifier The indicator of which DOC bucket
+   * @param hpcDataMgmtConfigId The ID of specific data management configuration
    * @return The system account if found, or null otherwise.
    * @throws HpcException on service failure.
    */
@@ -202,6 +207,10 @@ public class HpcSystemAccountLocator {
    * @param queueSize Size of the transfer queue of the Globus system account
    */
   public void setGlobusAccountQueueSize(String systemAccountId, int queueSize) {
+    logger.debug(String
+        .format("setGlobusAccountQueueSize: Entered with systemAccountId = %s, queueSize = %s",
+            systemAccountId, Integer.toString(queueSize)));
+    boolean scoreUpdated = false;
     final Map<String, List<PooledSystemAccountWrapper>> classifier2ListMap = multiDataTransferAccounts
         .get(HpcDataTransferType.GLOBUS);
     outer:
@@ -211,13 +220,20 @@ public class HpcSystemAccountLocator {
       inner:
       for (PooledSystemAccountWrapper psaWrapper : thePool) {
         if (psaWrapper.getSystemAccount().getUsername().equals(systemAccountId)) {
+          logger.debug(String.format(
+              "setGlobusAccountQueueSize: Found matching Globus app account having client ID %s, update its score to %s",
+              systemAccountId, Integer.toString(queueSize)));
           // Internally, queueSize is treated as a utilization score, higher meaning experiencing
           //  greater utilization
           psaWrapper.setUtilizationScore(Integer.valueOf(queueSize).doubleValue());
+          scoreUpdated = true;
           break outer;
         }
       }
     }
+    logger.debug(
+        "setGlobusAccountQueueSize: About to exit.  Score was " + (scoreUpdated ? "" : "NOT")
+            + " updated.");
   }
 
   // Populate the system accounts maps.
