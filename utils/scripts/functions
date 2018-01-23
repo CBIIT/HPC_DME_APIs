@@ -582,7 +582,6 @@ function dm_register_directory {
         exit 1 
     fi
 
-    set -x
     local src_path="$1"
     local dst_path="$2"
 
