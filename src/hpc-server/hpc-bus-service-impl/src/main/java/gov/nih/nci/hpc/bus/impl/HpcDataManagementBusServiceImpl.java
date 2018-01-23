@@ -1046,8 +1046,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             userId,
             completionEvent,
             metadata.getSourceSize() != null ? metadata.getSourceSize() : 0);
-    
-    logger.error("ERAN: source size: " + metadata.getSourceSize());
 
     // Construct and return a DTO.
     return toDownloadResponseDTO(
@@ -1314,7 +1312,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
       try {
         systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
-      } catch(HpcException e) {
+      } catch (HpcException e) {
         response.getPaths().add(path + ": " + e.getMessage());
         continue;
       }
