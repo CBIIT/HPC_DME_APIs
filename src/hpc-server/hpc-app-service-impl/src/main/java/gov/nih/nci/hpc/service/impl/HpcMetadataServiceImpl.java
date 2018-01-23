@@ -202,6 +202,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
       List<HpcMetadataEntry> systemGeneratedMetadataEntries) throws HpcException {
     // Extract the system generated data-object metadata entries from the entire
     // set.
+    
+    logger.error("ERAN: smd: " + systemGeneratedMetadataEntries);
+    
+    
     Map<String, String> metadataMap = toMap(systemGeneratedMetadataEntries);
     HpcSystemGeneratedMetadata systemGeneratedMetadata = new HpcSystemGeneratedMetadata();
     systemGeneratedMetadata.setObjectId(metadataMap.get(ID_ATTRIBUTE));
@@ -288,6 +292,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     Map<String, String> metadataMap = new HashMap<>();
     for (HpcMetadataEntry metadataEntry : metadataEntries) {
       metadataMap.put(metadataEntry.getAttribute(), metadataEntry.getValue());
+      logger.error("ERAN: smd: " + metadataEntry.getAttribute() + "=" + metadataEntry.getValue());
     }
 
     return metadataMap;
