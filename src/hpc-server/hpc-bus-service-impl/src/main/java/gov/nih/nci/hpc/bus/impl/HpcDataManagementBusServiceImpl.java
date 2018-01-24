@@ -1001,11 +1001,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     String configurationId = dataManagementService.findDataManagementConfigurationId(path);
     HpcDataManagementConfiguration configuration =
         dataManagementService.getDataManagementConfiguration(configurationId);
-//    if (downloadRequest.getGenerateDownloadRequestURL() != null
-//        && downloadRequest.getGenerateDownloadRequestURL()
-//        && configuration != null
-//        && (configuration.getS3Configuration() == null
-//            || configuration.getS3Configuration().getUrl() == null))
+    //If POSIX Archive, set presigned URL to false
+    if (downloadRequest.getGenerateDownloadRequestURL() != null
+        && downloadRequest.getGenerateDownloadRequestURL()
+        && configuration != null
+        && (configuration.getS3Configuration() == null
+            || configuration.getS3Configuration().getUrl() == null))
+      downloadRequest.setGenerateDownloadRequestURL(false);
 //      throw new HpcException(
 //          "Presigned URL for download is supported on S3 based destination archive only. Requested path is archived on a POSIX based file system: "
 //              + path,
