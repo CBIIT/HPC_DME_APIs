@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -110,13 +111,14 @@ public class HpcSyncDownloadController extends AbstractHpcController {
           downloadRequestURL = downloadDTO.getDownloadRequestURL();
 
         if (downloadRequestURL == null)
-          throw new HpcWebException("Failed to get presigned URL to download");
-
-        downloadToUrl(downloadRequestURL, 1000000, downloadFile.getDownloadFileName(), response);
-        // response.setContentType("application/octet-stream");
-        // response.setHeader("Content-Disposition", "attachment; filename=" +
-        // downloadFile.getDownloadFileName());
-        // IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
+        {
+           response.setContentType("application/octet-stream");
+           response.setHeader("Content-Disposition", "attachment; filename=" +
+           downloadFile.getDownloadFileName());
+           IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
+        }
+        else
+          downloadToUrl(downloadRequestURL, 1000000, downloadFile.getDownloadFileName(), response);
         model.addAttribute("message", "Download completed successfully!");
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -132,19 +134,21 @@ public class HpcSyncDownloadController extends AbstractHpcController {
         try {
           HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
           model.addAttribute("message", "Failed to download: " + exception.getMessage());
+          return new ByteArrayResource(("Failed to download: " + exception.getMessage()).getBytes());
         } catch (Exception e) {
           model.addAttribute("message", "Failed to download: " + e.getMessage());
+          return new ByteArrayResource(("Failed to download: " + e.getMessage()).getBytes());
         }
       }
     } catch (HttpStatusCodeException e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
-      e.printStackTrace();
+      return new ByteArrayResource(("Failed to download: " + e.getMessage()).getBytes());
     } catch (RestClientException e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
-      e.printStackTrace();
+      return new ByteArrayResource(("Failed to download: " + e.getMessage()).getBytes());
     } catch (Exception e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
-      e.printStackTrace();
+      return new ByteArrayResource(("Failed to download: " + e.getMessage()).getBytes());
     }
     return null;
   }
