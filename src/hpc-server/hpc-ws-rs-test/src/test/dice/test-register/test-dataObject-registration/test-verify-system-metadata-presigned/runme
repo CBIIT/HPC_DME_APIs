@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# runme
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+source ../../utils/registration-functions
+../utils/runtest
+
+#Check if collection registration went through:
+verify_registration collection-registration-response-header.tmp
+
+#Make sure the system generated metadat file exists and is not empty
+METADATA_FILE="system-generated-metadata.tmp"
+
+if [ ! -e "$METADATA_FILE" ]
+then 
+    echo "ERROR: The file $METADATA_FILE does not exits " >&2
+    echo "HINT: run makeme first" >&2
+    exit
+fi
+
+SYSTEM_METADATA=$(cat $METADATA_FILE)
+if [ -z "$SYSTEM_METADATA" ]
+then 
+    echo "ERROR: The file $METADATA_FILE is empty" >&2
+    echo "HINT: run makeme first" >&2
+    exit
+fi
+
+SUFFIX=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+PROJECT_PATH=`cat registered-project-path.tmp`
+
+object_name=object-${SUFFIX}.txt
+DATAOBJECT_PATH="${PROJECT_PATH}/${object_name}"
+
+register_dataobject_sync_presignurl ${PROJECT_PATH} ${object_name}
+
+#Check the returned code is 201
+REG_HTTP_CODE=`get_http_code presignedURL-registration-response-header.tmp`
+if [ "$REG_HTTP_CODE" != "200" ]  
+then
+        echo "FAILED TO REGISTER DATAOBJECT, HTTP_CODE = $REG_HTTP_CODE" 1>&2
+        exit
+fi
+
+echo $REG_HTTP_CODE
+
+
+RESPONSE_HEADER=response-header
+RESPONSE_MSG=response-message.json
+
+#Make sure the transfer is complete
+sleep 120 
+
+#Get the registered dataObject by path
+get_item "dataObject/${DATAOBJECT_PATH}" "$RESPONSE_HEADER" "$RESPONSE_MSG"
+
+GET_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
+if [ "$GET_HTTP_CODE" != "200" ]  
+then
+        echo "FAILED TO GET, HTTP_CODE = $GET_HTTP_CODE" 1>&2
+        exit
+fi
+
+
+#loop over all the system generated metadata and make sure they exists
+
+IFS=$'\n' read -rd '' -a METADATA_ARRAY <<<"$SYSTEM_METADATA"
+
+for system_attribute in "${METADATA_ARRAY[@]}"
+do
+    check_attribute "$RESPONSE_MSG" "\"$system_attribute\""
+done
+
