@@ -30,4 +30,7 @@ OBJECT_FILE=object.tmp
 echo "Hello" >  $OBJECT_FILE 
 curl_register input.json "$OBJECT_PATH" dataObject "$OBJECT_FILE"
 
-verify_registration dataObject-registration-response-header.tmp
+response_header=dataObject-registration-response-header.tmp
+
+verify_registration $response_header
+verify_location "$response_header" "$OBJECT_PATH"

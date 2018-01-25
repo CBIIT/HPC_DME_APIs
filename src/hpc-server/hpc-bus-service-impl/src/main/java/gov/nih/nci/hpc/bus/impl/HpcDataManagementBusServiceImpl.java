@@ -99,6 +99,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -807,6 +808,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         .addAll(
             toDataObjectRegistrationItems(
                 bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()));
+    
+    // Normalize the path of the data object registration items (i.e. remove redundant '/', etc).
+    bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().forEach(item -> item.setPath(toNormalizedPath(item.getPath())));
 
     // If dry-run was requested, simply return the entire list of individual data
     // object registrations.
@@ -1861,7 +1865,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems = new ArrayList<>();
     for (HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem :
         directoryScanRegistrationItems) {
-      String basePath = directoryScanRegistrationItem.getBasePath();
+      String basePath = toNormalizedPath(directoryScanRegistrationItem.getBasePath());
       if (StringUtils.isEmpty(basePath)) {
         throw new HpcException(
             "Null / Empty base path in directory scan registration request",

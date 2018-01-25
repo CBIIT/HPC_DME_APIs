@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.ws.rs.impl;
 
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,7 +104,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     boolean collectionCreated = true;
     try {
       collectionCreated =
-          dataManagementBusService.registerCollection(toAbsolutePath(path), collectionRegistration);
+          dataManagementBusService.registerCollection(toNormalizedPath(path), collectionRegistration);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -117,7 +118,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     HpcCollectionListDTO collections = new HpcCollectionListDTO();
     try {
       HpcCollectionDTO collection =
-          dataManagementBusService.getCollection(toAbsolutePath(path), list);
+          dataManagementBusService.getCollection(toNormalizedPath(path), list);
       if (collection != null) {
         collections.getCollections().add(collection);
       }
@@ -134,7 +135,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     HpcCollectionListDTO collections = new HpcCollectionListDTO();
     try {
       HpcCollectionDTO collection =
-          dataManagementBusService.getCollectionChildren(toAbsolutePath(path));
+          dataManagementBusService.getCollectionChildren(toNormalizedPath(path));
       if (collection != null) {
         collections.getCollections().add(collection);
       }
@@ -151,7 +152,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     HpcCollectionDownloadResponseDTO downloadResponse = null;
     try {
       downloadResponse =
-          dataManagementBusService.downloadCollection(toAbsolutePath(path), downloadRequest);
+          dataManagementBusService.downloadCollection(toNormalizedPath(path), downloadRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -176,7 +177,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response deleteCollection(String path) {
     try {
-      dataManagementBusService.deleteCollection(toAbsolutePath(path));
+      dataManagementBusService.deleteCollection(toNormalizedPath(path));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -192,7 +193,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     try {
       permissionsResponse =
           dataManagementBusService.setCollectionPermissions(
-              toAbsolutePath(path), collectionPermissionsRequest);
+              toNormalizedPath(path), collectionPermissionsRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -205,7 +206,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response getCollectionPermissions(String path) {
     HpcEntityPermissionsDTO entityPermissions = null;
     try {
-      entityPermissions = dataManagementBusService.getCollectionPermissions(toAbsolutePath(path));
+      entityPermissions = dataManagementBusService.getCollectionPermissions(toNormalizedPath(path));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -219,7 +220,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     HpcUserPermissionDTO hpcUserPermissionDTO = null;
     try {
       hpcUserPermissionDTO =
-          dataManagementBusService.getCollectionPermission(toAbsolutePath(path), userId);
+          dataManagementBusService.getCollectionPermission(toNormalizedPath(path), userId);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -264,7 +265,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       dataObjectFile = toFile(dataObjectInputStream);
       responseDTO =
           dataManagementBusService.registerDataObject(
-              toAbsolutePath(path), dataObjectRegistration, dataObjectFile);
+              toNormalizedPath(path), dataObjectRegistration, dataObjectFile);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -346,7 +347,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response getDataObject(String path) {
     HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
     try {
-      HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toAbsolutePath(path));
+      HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path));
       if (dataObject != null) {
         dataObjects.getDataObjects().add(dataObject);
       }
@@ -364,7 +365,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     HpcDataObjectDownloadResponseDTO downloadResponse = null;
     try {
       downloadResponse =
-          dataManagementBusService.downloadDataObject(toAbsolutePath(path), downloadRequest);
+          dataManagementBusService.downloadDataObject(toNormalizedPath(path), downloadRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -391,7 +392,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response deleteDataObject(String path) {
     HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = null;
     try {
-      dataObjectDeleteResponse = dataManagementBusService.deleteDataObject(toAbsolutePath(path));
+      dataObjectDeleteResponse = dataManagementBusService.deleteDataObject(toNormalizedPath(path));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -407,7 +408,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     try {
       permissionsResponse =
           dataManagementBusService.setDataObjectPermissions(
-              toAbsolutePath(path), dataObjectPermissionsRequest);
+              toNormalizedPath(path), dataObjectPermissionsRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -420,7 +421,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response getDataObjectPermissions(String path) {
     HpcEntityPermissionsDTO entityPermissions = null;
     try {
-      entityPermissions = dataManagementBusService.getDataObjectPermissions(toAbsolutePath(path));
+      entityPermissions = dataManagementBusService.getDataObjectPermissions(toNormalizedPath(path));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -434,7 +435,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     HpcUserPermissionDTO hpcUserPermissionDTO = null;
     try {
       hpcUserPermissionDTO =
-          dataManagementBusService.getDataObjectPermission(toAbsolutePath(path), userId);
+          dataManagementBusService.getDataObjectPermission(toNormalizedPath(path), userId);
 
     } catch (HpcException e) {
       return errorResponse(e);

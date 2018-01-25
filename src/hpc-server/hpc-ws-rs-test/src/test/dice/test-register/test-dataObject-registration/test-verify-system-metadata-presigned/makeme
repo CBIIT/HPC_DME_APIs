@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+# 1- Call general maketest scripts. 
+# 2- Get the policies files.
+# 3- Extract the system generated metadata for dataObjects. 
+# 4- Save the system generated metadata to a file. 
+
+#Clean previous parsed policies file
+../../utils/cleantest
+
+# Script to build the executable for this test
+# Usage: makeme [no arguments]
+../../../utils/maketest
+
+
+../utils/maketest
+source $HPC_DM_TEST/utils/functions
+source ../../utils/registration-functions
+
+RESPONSE_HEADER=get-doc-policies-response-header.tmp
+POLICIES_FILE=metadataValidationRules.json.tmp
+
+get_doc_policies DUMMY "$RESPONSE_HEADER" "$POLICIES_FILE"
+METADATA_TYPE="dataObjectSystemGeneratedMetadataAttributeNames"
+get_system_added_metadata "$POLICIES_FILE" "$METADATA_TYPE"
+
+#As this is a presigned URL upload, it should not have these metadata: 
+#source_file_container_id
+#source_file_id 
+#archive_caller_object_id
+
+cat system-generated-metadata.tmp | grep -v source_file_container_id | grep -v source_file_id  | grep -v archive_caller_object_id > temp.tmp
+
+mv temp.tmp system-generated-metadata.tmp
+

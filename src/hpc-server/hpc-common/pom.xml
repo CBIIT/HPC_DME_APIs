@@ -34,7 +34,8 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package>
-							gov.nih.nci.hpc.exception
+							gov.nih.nci.hpc.exception,
+							gov.nih.nci.hpc.util
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>
@@ -47,6 +48,10 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>hpc-domain-types</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+    			<groupId>org.springframework</groupId>
+    			<artifactId>spring-core</artifactId>
 		</dependency>
 	</dependencies>
 </project>
