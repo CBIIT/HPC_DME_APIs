@@ -15,10 +15,12 @@ import gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor;
 import gov.nih.nci.hpc.ws.rs.provider.HpcExceptionMapper;
 
 import java.net.URI;
-
+import java.util.Iterator;
+import java.util.Map;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -41,17 +43,17 @@ public abstract class HpcRestServiceImpl
     //---------------------------------------------------------------------//
 
     // The URI Info context instance.
-	@Context
+    @Context
     private UriInfo uriInfo = null;
-	
-	// The exception mapper (Exception to HTTP error code) instance.
-	@Autowired
-	@Qualifier("hpcExceptionMapper")
-	private HpcExceptionMapper exceptionMapper = null;
-	
-	// The API version interceptor.
-	@Autowired
-	private HpcAPIVersionInterceptor apiVersion = null;
+    
+    // The exception mapper (Exception to HTTP error code) instance.
+    @Autowired
+    @Qualifier("hpcExceptionMapper")
+    private HpcExceptionMapper exceptionMapper = null;
+    
+    // The API version interceptor.
+    @Autowired
+    private HpcAPIVersionInterceptor apiVersion = null;
     
     //---------------------------------------------------------------------//
     // Methods
@@ -65,10 +67,10 @@ public abstract class HpcRestServiceImpl
      */
     protected Response createdResponse(String id)
     {
-		UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+        UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
         URI uri = uriBuilder.path(id != null ? id : "").build();
                
-		return Response.created(uri).build();
+        return Response.created(uri).build();
     }
     
     /**
@@ -80,14 +82,14 @@ public abstract class HpcRestServiceImpl
      */
     protected Response createdResponse(String id, Object entity)
     {
-    	if(entity == null) {
-    	   return createdResponse(id);
-    	}
-    	
-		UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+        if(entity == null) {
+           return createdResponse(id);
+        }
+        
+        UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
         URI uri = uriBuilder.path(id != null ? id : "").build();
                
-		return Response.created(uri).entity(entity).build();
+        return Response.created(uri).entity(entity).build();
     }
     
     /**
@@ -100,17 +102,62 @@ public abstract class HpcRestServiceImpl
      */
     protected Response okResponse(Object entity, boolean nullEntityAsNoContent)
     {
-		if(entity != null) {
+        if(entity != null) {
            return Response.ok(entity).
-        		           header("Access-Control-Allow-Origin", "*").
-        		           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
-		} else if(nullEntityAsNoContent) {
-			      return Response.status(Response.Status.NO_CONTENT).build();
-		} else {
-			    return Response.ok().build();
-		}
+                           header("Access-Control-Allow-Origin", "*").
+                           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
+        } else if(nullEntityAsNoContent) {
+                  return Response.status(Response.Status.NO_CONTENT).build();
+        } else {
+                return Response.ok().build();
+        }
     }
     
+    /**
+     * Build an 'ok' (HTTP 200) REST response instance.
+     *
+     * @param entity The entity to attach to the response.
+     * @param nullEntityAsNoContent If set to 'true', and entity is null - a 
+     *                             'not found' (HTTP 204) will be returned.
+     * @return The REST response object.
+     */
+    protected Response okResponse(Object entity, boolean nullEntityAsNoContent, Map<String, String> headers)
+    {
+        if(entity != null) {
+          ResponseBuilder responseBuilder = Response.ok(entity);
+          responseBuilder.header("Access-Control-Allow-Origin", "*");
+          responseBuilder.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
+          if(headers != null && !headers.isEmpty()){
+            responseBuilder = addHeaders(responseBuilder, headers);
+          }
+           return responseBuilder.build();
+        } else if(nullEntityAsNoContent) {
+          ResponseBuilder responseBuilder = Response.status(Response.Status.NO_CONTENT);
+          if(headers != null && !headers.isEmpty()){
+            responseBuilder = addHeaders(responseBuilder, headers);
+          }
+           return responseBuilder.build();
+        } else {
+          ResponseBuilder responseBuilder = Response.ok();
+          if(headers != null && !headers.isEmpty()){
+            responseBuilder = addHeaders(responseBuilder, headers);
+          }
+           return responseBuilder.build();
+        }
+    }
+
+    private ResponseBuilder addHeaders(ResponseBuilder responseBuilder, Map<String, String> headers)
+    {
+      if(headers != null && !headers.isEmpty()){
+        Iterator<String> iter = headers.keySet().iterator();
+        while (iter.hasNext())
+        {
+          String key = iter.next();
+          responseBuilder = responseBuilder.header(key, headers.get(key));
+        }
+      }
+      return responseBuilder;
+    }
     /**
      * Build an 'ok' (HTTP 200) REST response instance.
      *
@@ -120,11 +167,29 @@ public abstract class HpcRestServiceImpl
      */
     protected Response okResponse(Object entity, MediaType mediaType)
     {
-    	return Response.ok(entity, mediaType).
-        		           header("Access-Control-Allow-Origin", "*").
-        		           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
+        return Response.ok(entity, mediaType).
+                           header("Access-Control-Allow-Origin", "*").
+                           header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
     }
     
+    /**
+     * Build an 'ok' (HTTP 200) REST response instance.
+     *
+     * @param entity The entity to attach to the response.
+     * @param mediaType The response's media type.
+     * @return The REST response object.
+     */
+    protected Response okResponse(Object entity, MediaType mediaType, Map<String, String> headers)
+    {
+      ResponseBuilder responseBuilder = Response.ok(entity, mediaType);
+      responseBuilder.header("Access-Control-Allow-Origin", "*");
+      responseBuilder.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
+      if(headers != null && !headers.isEmpty()){
+        responseBuilder = addHeaders(responseBuilder, headers);
+      }
+       return responseBuilder.build();
+    }
+
     /**
      * Return an error REST response instance. 
      * Map HpcException to the appropriate HTTP code.
@@ -134,9 +199,9 @@ public abstract class HpcRestServiceImpl
      */
     protected Response errorResponse(HpcException e)
     {
-    	// For some reason, the API Version Interceptor doesn't pick up the error response.
-    	// As a workaround - we call it here directly.
-    	return apiVersion.header(exceptionMapper.toResponse(e)).build();
+        // For some reason, the API Version Interceptor doesn't pick up the error response.
+        // As a workaround - we call it here directly.
+        return apiVersion.header(exceptionMapper.toResponse(e)).build();
     }
     
     /**
@@ -145,18 +210,18 @@ public abstract class HpcRestServiceImpl
      * @param path The path.
      * @return The absolute path.
      */
-	protected String toAbsolutePath(String path)
-	{
-		// Normalize the path - i.e. remove duplicate and trailing '/'
-		String absolutePath = StringUtils.trimTrailingCharacter(path, '/').replaceAll("/+", "/");
-		
-		StringBuilder buf = new StringBuilder();
-		if(absolutePath.isEmpty() || absolutePath.charAt(0) != '/') {
-		   buf.append('/');
-		} 
-		buf.append(absolutePath);
-		return buf.toString();
-	}
+    protected String toAbsolutePath(String path)
+    {
+        // Normalize the path - i.e. remove duplicate and trailing '/'
+        String absolutePath = StringUtils.trimTrailingCharacter(path, '/').replaceAll("/+", "/");
+        
+        StringBuilder buf = new StringBuilder();
+        if(absolutePath.isEmpty() || absolutePath.charAt(0) != '/') {
+           buf.append('/');
+        } 
+        buf.append(absolutePath);
+        return buf.toString();
+    }
 }
 
  
