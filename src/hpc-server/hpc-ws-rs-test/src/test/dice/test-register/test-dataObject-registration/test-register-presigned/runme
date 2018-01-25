@@ -25,3 +25,8 @@ PROJECT_PATH=`cat registered-project-path.tmp`
 
 #Register the original dataOject
 register_dataobject_sync_presignurl $PROJECT_PATH
+
+response_header=preSigned-registration-response-header.tmp
+object_path=$(cat registered-data-object-path.tmp)
+verify_location "$response_header" "$object_path"
+

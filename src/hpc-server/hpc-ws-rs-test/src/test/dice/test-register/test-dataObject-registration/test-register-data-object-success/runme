@@ -23,7 +23,10 @@ sleep 1
 NAME=`date +"%b-%d-%G-%H-%M-%S"`
 USERID=`get_username $HPC_DM_TEST/utils/config`
 PROJECT_PATH=`cat registered-project-path.tmp`
-
-curl_register input.json $PROJECT_PATH/object-${NAME}.txt dataObject
+dataobject_path=$PROJECT_PATH/object-${NAME}.txt
+curl_register input.json $dataobject_path dataObject
 
 get_http_code $RESPONSE_HEADER
+
+#Verify the location is correct
+verify_location "$RESPONSE_HEADER" "$dataobject_path"

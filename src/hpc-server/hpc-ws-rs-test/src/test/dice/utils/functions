@@ -399,6 +399,35 @@ function get_parameter {
 
 
 
+#Verify that the "Location" returned in response header upon registration is correct
+#Input  response-header: The registration-response-header
+#       path: location string without the leading '/'
+function verify_location {
+
+    usage="ERROR using $FUNCNAME \n USAGE: $FUNCNAME <response-header> <path>"
+    if [ -z "$1" ]  || [ -z "$2" ]
+    then
+        echo "$usage" >&2
+        echo "RECEIVED: $@" >&2
+        exit 1
+    fi
+
+    response_header="$1"
+    item_path="$2"
+
+    #Get the location without any white spaces
+    location=$(grep Location $response_header | sed "s@Location:.*dataObject/@@" |  tr -d '[:space:]')
+
+    if [ "$location" != "$item_path" ]
+    then
+      echo "ERROR: the returned location: $location does not match the path: $item_path" >&2
+    fi
+
+}
+
+
+
+
 #Verify that a collection or a dataObject  was registered correctly
 #Input  registration-response-header
 function verify_registration {
