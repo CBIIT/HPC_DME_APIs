@@ -196,7 +196,7 @@
 					<li class="sub-menu"><a th:href="@{/reports}" class=""> <i
 							class="icon_document_alt"></i> <span>Reports</span>
 					</a></li>
-					<li class="sub-menu" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
+					<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
 						<a href="#" class=""> 
 						<i class="icon_lock_alt"></i> 
 							<span>Admin</span> 
