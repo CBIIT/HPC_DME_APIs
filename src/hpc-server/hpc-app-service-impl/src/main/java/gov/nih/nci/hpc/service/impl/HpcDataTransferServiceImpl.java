@@ -910,7 +910,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // No authenticated token found for this request. Create one.
     HpcIntegratedSystemAccount dataTransferSystemAccount =
-        systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
+        systemAccountLocator.getSystemAccount(dataTransferType, configurationId, null);
     if (dataTransferSystemAccount == null) {
       throw new HpcException(
           "System account not registered for " + dataTransferType.value(),
