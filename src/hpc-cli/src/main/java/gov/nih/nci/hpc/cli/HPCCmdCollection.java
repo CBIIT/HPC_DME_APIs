@@ -34,7 +34,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.gson.Gson;
 
 import gov.nih.nci.hpc.cli.domain.HPCCollectionRecord;
@@ -46,6 +52,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 @Component
 public class HPCCmdCollection extends HPCCmdClient {
@@ -146,7 +153,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 
 				System.out.println("Executing: " + serviceURL);
 
-				if (restResponse.getStatus() != 204) {
+				if (restResponse.getStatus() == 200) {
 					MappingJsonFactory factory = new MappingJsonFactory();
 					createRecordsLog(outputFile, format);
 					if (format != null && format.equalsIgnoreCase("json")) {
@@ -161,7 +168,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 						br.close();
 
 					} else if (format != null && format.equalsIgnoreCase("csv")) {
-						if (detail != null && detail.equalsIgnoreCase("no")) {
+						if (detail == null || detail.equalsIgnoreCase("no")) {
 							JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 							try {
 								HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
@@ -212,7 +219,21 @@ public class HPCCmdCollection extends HPCCmdClient {
 						System.out.println("Wrote results into " + logRecordsFile);
 						br.close();
 					}
+				}
+				else if(restResponse.getStatus() != 204)
+				{
+			        ObjectMapper mapper = new ObjectMapper();
+			        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+			            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+			            new JacksonAnnotationIntrospector());
+			        mapper.setAnnotationIntrospector(intr);
+			        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+			        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+			        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+			        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+			        throw new HpcCmdException(exception.getMessage());
 				}
 
 				logRecordsFile = null;
