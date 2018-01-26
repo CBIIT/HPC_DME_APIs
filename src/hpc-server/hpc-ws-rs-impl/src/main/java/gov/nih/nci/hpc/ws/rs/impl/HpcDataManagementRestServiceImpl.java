@@ -12,6 +12,8 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -283,8 +285,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     if (registered) {
       // Data object was registered. Return a 'created' response.
       return responseDTO.getUploadRequestURL() != null
-          ? createdResponse(null, responseDTO)
-          : createdResponse(null);
+          ? createdResponse(path, responseDTO)
+          : createdResponse(path);
     } else {
       // Data object metadata was updated. Return 'ok' response.
       return okResponse(responseDTO.getUploadRequestURL() != null ? responseDTO : null, false);
@@ -368,8 +370,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     } catch (HpcException e) {
       return errorResponse(e);
     }
-
-    return downloadResponse(downloadResponse, messageContext);
+    Map<String, String> header = new HashMap<String, String>();
+    header.put("DATA_TRANSFER_TYPE", downloadResponse.getDataTransferType());
+    return downloadResponse(downloadResponse, messageContext, header);
   }
 
   @Override
@@ -553,20 +556,21 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @return an OK response.
    */
   private Response downloadResponse(
-      HpcDataObjectDownloadResponseDTO downloadResponse, MessageContext messageContext) {
+      HpcDataObjectDownloadResponseDTO downloadResponse, MessageContext messageContext, Map<String, String> header) {
     if (downloadResponse == null) {
-      return okResponse(null, false);
+      return okResponse(null, false, header);
     }
-
+    Response response = null;
     if (downloadResponse.getDestinationFile() != null) {
       // Put the download file on the message context, so the cleanup interceptor can
       // delete it after the file was received by the caller.
       messageContext.put(
           DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE, downloadResponse.getDestinationFile());
-      return okResponse(
-          downloadResponse.getDestinationFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE);
+      response = okResponse(
+          downloadResponse.getDestinationFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE, header);
     } else {
-      return okResponse(downloadResponse, false);
+      response = okResponse(downloadResponse, false, header);
     }
+    return response;
   }
 }
