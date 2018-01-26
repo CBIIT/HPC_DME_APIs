@@ -587,7 +587,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     return retryTemplate.execute(
         arg0 -> {
           try {
-            JSONObject jsonReport = client.getResult("/task/" + dataTransferRequestId).document;
+            JSONObject jsonReport = client.getResult("/endpoint_manager/task/" + dataTransferRequestId).document;
 
             HpcGlobusDataTransferReport report = new HpcGlobusDataTransferReport();
             report.status = jsonReport.getString("status");

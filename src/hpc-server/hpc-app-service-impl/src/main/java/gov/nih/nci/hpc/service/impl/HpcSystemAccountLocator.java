@@ -175,7 +175,7 @@ public class HpcSystemAccountLocator {
 
     final Object[] configIds = this.dataMgmtConfigLocator.keySet().toArray();
     final String randomConfigId = (String) configIds[new Random().nextInt(configIds.length)];
-    return getSystemAccount(dataTransferType, randomConfigId, null);
+    return getSystemAccount(dataTransferType, randomConfigId);
   }
 
   /**
@@ -183,14 +183,11 @@ public class HpcSystemAccountLocator {
    *
    * @param dataTransferType The data transfer type associated with the requested system account.
    * @param hpcDataMgmtConfigId The ID of specific data management configuration.
-   * @param systemAccountId (Optional) If provided, the system account instance identified by this
-   *     id is returned, otherwise if null is set, the least busy instance from the pool is
-   *     returned.
    * @return The system account if found, or null otherwise.
    * @throws HpcException on service failure.
    */
   public HpcIntegratedSystemAccount getSystemAccount(
-      HpcDataTransferType dataTransferType, String hpcDataMgmtConfigId, String systemAccountId)
+      HpcDataTransferType dataTransferType, String hpcDataMgmtConfigId)
       throws HpcException {
     HpcIntegratedSystemAccount retSysAcct = null;
 
