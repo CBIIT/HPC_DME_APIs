@@ -340,6 +340,7 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 				<xsd:element name="downloadRequestURL" type="xsd:string" />
+				<xsd:element name="dataTransferType" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
