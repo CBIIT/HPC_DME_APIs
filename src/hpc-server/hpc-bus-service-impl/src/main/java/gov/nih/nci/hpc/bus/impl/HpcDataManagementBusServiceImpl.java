@@ -1011,7 +1011,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         && configuration != null
         && (configuration.getS3Configuration() == null
             || configuration.getS3Configuration().getUrl() == null))
+    {
       downloadRequest.setGenerateDownloadRequestURL(false);
+    }
 //      throw new HpcException(
 //          "Presigned URL for download is supported on S3 based destination archive only. Requested path is archived on a POSIX based file system: "
 //              + path,
@@ -1058,7 +1060,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         downloadResponse.getDestinationLocation(),
         downloadResponse.getDestinationFile(),
         downloadResponse.getDownloadTaskId(),
-        downloadResponse.getDownloadRequestURL());
+        downloadResponse.getDownloadRequestURL(),
+        metadata.getDataTransferType().value());
   }
 
   @Override
@@ -1496,13 +1499,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcFileLocation destinationLocation,
       File destinationFile,
       String taskId,
-      String downloadRequestURL) {
+      String downloadRequestURL, 
+      String dataTransferType) {
     // Construct and return a DTO
     HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
     downloadResponse.setDestinationFile(destinationFile);
     downloadResponse.setDestinationLocation(destinationLocation);
     downloadResponse.setTaskId(taskId);
     downloadResponse.setDownloadRequestURL(downloadRequestURL);
+    downloadResponse.setDataTransferType(dataTransferType);
 
     return downloadResponse;
   }

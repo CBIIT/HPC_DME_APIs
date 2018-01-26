@@ -18,10 +18,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -102,23 +104,27 @@ public class HpcSyncDownloadController extends AbstractHpcController {
       client.header("Authorization", "Bearer " + authToken);
 
       Response restResponse = client.invoke("POST", dto);
+      MultivaluedMap<String, Object> respHeaders = restResponse.getMetadata();
+      List dataTransferTypes = (List)respHeaders.get("DATA_TRANSFER_TYPE");
+      
       if (restResponse.getStatus() == 200) {
-        HpcDataObjectDownloadResponseDTO downloadDTO =
-            (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse,
-                HpcDataObjectDownloadResponseDTO.class);
-        String downloadRequestURL = null;
-        if (downloadDTO != null)
-          downloadRequestURL = downloadDTO.getDownloadRequestURL();
-
-        if (downloadRequestURL == null)
+        if(dataTransferTypes != null && dataTransferTypes.get(0) != null && dataTransferTypes.get(0).equals("S_3"))
+        {
+          HpcDataObjectDownloadResponseDTO downloadDTO =
+              (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse,
+                  HpcDataObjectDownloadResponseDTO.class);
+          String downloadRequestURL = null;
+          if (downloadDTO != null)
+            downloadRequestURL = downloadDTO.getDownloadRequestURL();
+          downloadToUrl(downloadRequestURL, 1000000, downloadFile.getDownloadFileName(), response);
+        }
+        else
         {
            response.setContentType("application/octet-stream");
            response.setHeader("Content-Disposition", "attachment; filename=" +
            downloadFile.getDownloadFileName());
            IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
         }
-        else
-          downloadToUrl(downloadRequestURL, 1000000, downloadFile.getDownloadFileName(), response);
         model.addAttribute("message", "Download completed successfully!");
       } else {
         ObjectMapper mapper = new ObjectMapper();
