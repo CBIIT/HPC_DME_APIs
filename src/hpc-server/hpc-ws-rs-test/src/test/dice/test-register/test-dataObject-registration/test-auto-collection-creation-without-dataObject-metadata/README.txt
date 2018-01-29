@@ -17,10 +17,7 @@ Register a dataObject with valid inputs.
 The dataObject does not have any metadata.
 
 makeme:
-Change the DOC of the user to DUMMY_NO_HIER before running the test.
 
 runme:
-Change the DOC of the user back to DUMMY DOC.
-
 This is done by setting the attribute "createParentCollections" to "true".
 The returned code should be 201
