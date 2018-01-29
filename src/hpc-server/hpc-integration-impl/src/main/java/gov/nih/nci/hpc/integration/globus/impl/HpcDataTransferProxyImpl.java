@@ -1,6 +1,8 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
+
+import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,6 +51,27 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
+
+  class HpcGlobusTransferAcceptanceResponse implements HpcTransferAcceptanceResponse {
+    private boolean acceptTransferFlag;
+    private int queueLength;
+
+    HpcGlobusTransferAcceptanceResponse(boolean canAccept, int sizeOfQueue) {
+      this.acceptTransferFlag = canAccept;
+      this.queueLength = sizeOfQueue;
+    }
+
+    @Override
+    public boolean canAcceptTransfer() {
+      return acceptTransferFlag;
+    }
+
+    @Override
+    public int getQueueSize() {
+      return queueLength;
+    }
+  }
+
   // ---------------------------------------------------------------------//
   // Constants
   // ---------------------------------------------------------------------//
@@ -60,6 +83,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   private static final String PERMISSION_DENIED_STATUS = "PERMISSION_DENIED";
   private static final String OK_STATUS = "OK";
   private static final String QUEUED_STATUS = "Queued";
+  private static final String TIMEOUT_STATUS = "TIMEOUT";
 
   private static final String NOT_DIRECTORY_GLOBUS_CODE =
       "ExternalError.DirListingFailed.NotDirectory";
@@ -106,7 +130,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public boolean acceptsTransferRequests(Object authenticatedToken) throws HpcException {
+  public HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken) throws HpcException {
     JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
     return retryTemplate.execute(
@@ -114,8 +138,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           try {
             JSONObject jsonTasksLists =
                 client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
-            return jsonTasksLists.getInt("total") < globusQueueSize;
-
+            final int qSize = jsonTasksLists.getInt("total");
+            final boolean underCap = qSize < globusQueueSize;
+            final HpcTransferAcceptanceResponse transferAcceptanceResponse = new HpcGlobusTransferAcceptanceResponse(underCap, qSize);
+            return transferAcceptanceResponse;
           } catch (Exception e) {
             throw new HpcException(
                 "[GLOBUS] Failed to determine active tasks count",
@@ -339,7 +365,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       if (report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
         statusReport.setMessage(
             report.niceStatusDescription
-                + " . Check HPC-DM system-account granted write access to the destination endpoint");
+                + ". Check HPC-DM system-account granted write access to the destination endpoint");
       }
 
     } else {
@@ -561,7 +587,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     return retryTemplate.execute(
         arg0 -> {
           try {
-            JSONObject jsonReport = client.getResult("/task/" + dataTransferRequestId).document;
+            JSONObject jsonReport = client.getResult("/endpoint_manager/task/" + dataTransferRequestId).document;
 
             HpcGlobusDataTransferReport report = new HpcGlobusDataTransferReport();
             report.status = jsonReport.getString("status");
@@ -723,7 +749,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     if (report.status.equals(INACTIVE_STATUS)
         || (!StringUtils.isEmpty(report.niceStatus)
             && !report.niceStatus.equals(OK_STATUS)
-            && !report.niceStatus.equals(QUEUED_STATUS))) {
+            && !report.niceStatus.equals(QUEUED_STATUS)
+            && !report.niceStatus.equals(TIMEOUT_STATUS))) {
       // Globus task requires some manual intervention. We cancel it and consider it a
       // failure.
       logger.error(

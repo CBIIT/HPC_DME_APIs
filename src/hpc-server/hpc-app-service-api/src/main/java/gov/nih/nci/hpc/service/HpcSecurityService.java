@@ -143,10 +143,12 @@ public interface HpcSecurityService {
    *
    * @param account The system account to be added/updated.
    * @param dataTransferType The data transfer type to associate with the system account.
+   * @param classifier The classifier to provide finer grained detail than system
    * @throws HpcException on service failure.
    */
   public void addSystemAccount(
-      HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType) throws HpcException;
+      HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType, String classifier)
+      throws HpcException;
 
   /**
    * Create an authentication token, so the caller can use it in subsequent calls.

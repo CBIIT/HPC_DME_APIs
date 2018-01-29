@@ -83,6 +83,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcFileSizeUpdateDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionsForCollection;
@@ -98,6 +99,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -806,6 +808,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         .addAll(
             toDataObjectRegistrationItems(
                 bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()));
+    
+    // Normalize the path of the data object registration items (i.e. remove redundant '/', etc).
+    bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().forEach(item -> item.setPath(toNormalizedPath(item.getPath())));
 
     // If dry-run was requested, simply return the entire list of individual data
     // object registrations.
@@ -1000,15 +1005,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     String configurationId = dataManagementService.findDataManagementConfigurationId(path);
     HpcDataManagementConfiguration configuration =
         dataManagementService.getDataManagementConfiguration(configurationId);
+    //If POSIX Archive, set presigned URL to false
     if (downloadRequest.getGenerateDownloadRequestURL() != null
         && downloadRequest.getGenerateDownloadRequestURL()
         && configuration != null
-        && (configuration.getS3Configuration() != null
-            || configuration.getS3Configuration().getUrl() != null))
-      throw new HpcException(
-          "Presigned URL for download is supported on S3 based destination archive only. Requested path is archived on a POSIX based file system: "
-              + path,
-          HpcErrorType.INVALID_REQUEST_INPUT);
+        && (configuration.getS3Configuration() == null
+            || configuration.getS3Configuration().getUrl() == null))
+    {
+      downloadRequest.setGenerateDownloadRequestURL(false);
+    }
+//      throw new HpcException(
+//          "Presigned URL for download is supported on S3 based destination archive only. Requested path is archived on a POSIX based file system: "
+//              + path,
+//          HpcErrorType.INVALID_REQUEST_INPUT);
 
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
@@ -1044,14 +1053,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             metadata.getConfigurationId(),
             userId,
             completionEvent,
-            metadata.getSourceSize());
+            metadata.getSourceSize() != null ? metadata.getSourceSize() : 0);
 
     // Construct and return a DTO.
     return toDownloadResponseDTO(
         downloadResponse.getDestinationLocation(),
         downloadResponse.getDestinationFile(),
         downloadResponse.getDownloadTaskId(),
-        downloadResponse.getDownloadRequestURL());
+        downloadResponse.getDownloadRequestURL(),
+        metadata.getDataTransferType().value());
   }
 
   @Override
@@ -1303,6 +1313,46 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return dataManagementModel;
   }
 
+  // TODO - remove after file size updated in prod
+  @Override
+  public HpcFileSizeUpdateDTO updateFileSize(HpcFileSizeUpdateDTO request) throws HpcException {
+    HpcFileSizeUpdateDTO response = new HpcFileSizeUpdateDTO();
+    for (String path : request.getPaths()) {
+      HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
+      try {
+        systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+      } catch (HpcException e) {
+        response.getPaths().add(path + ": " + e.getMessage());
+        continue;
+      }
+
+      if (systemGeneratedMetadata.getSourceSize() != null) {
+        response
+            .getPaths()
+            .add(path + ": already have file size - " + systemGeneratedMetadata.getSourceSize());
+        continue;
+      }
+
+      // Lookup the archive for this data object.
+      HpcPathAttributes archivePathAttributes =
+          dataTransferService.getPathAttributes(
+              systemGeneratedMetadata.getDataTransferType(),
+              systemGeneratedMetadata.getArchiveLocation(),
+              true,
+              systemGeneratedMetadata.getConfigurationId());
+      if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
+        // Update the data management (iRODS) data object's system-metadata.
+        metadataService.updateDataObjectSystemGeneratedMetadata(
+            path, null, null, null, null, null, null, null, archivePathAttributes.getSize());
+        response.getPaths().add(path + ": updatef file size - " + archivePathAttributes.getSize());
+      } else {
+        response.getPaths().add(path + ": file not found in Cleversafe");
+      }
+    }
+
+    return response;
+  }
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -1449,13 +1499,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcFileLocation destinationLocation,
       File destinationFile,
       String taskId,
-      String downloadRequestURL) {
+      String downloadRequestURL, 
+      String dataTransferType) {
     // Construct and return a DTO
     HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
     downloadResponse.setDestinationFile(destinationFile);
     downloadResponse.setDestinationLocation(destinationLocation);
     downloadResponse.setTaskId(taskId);
     downloadResponse.setDownloadRequestURL(downloadRequestURL);
+    downloadResponse.setDataTransferType(dataTransferType);
 
     return downloadResponse;
   }
@@ -1813,7 +1865,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems = new ArrayList<>();
     for (HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem :
         directoryScanRegistrationItems) {
-      String basePath = directoryScanRegistrationItem.getBasePath();
+      String basePath = toNormalizedPath(directoryScanRegistrationItem.getBasePath());
       if (StringUtils.isEmpty(basePath)) {
         throw new HpcException(
             "Null / Empty base path in directory scan registration request",
