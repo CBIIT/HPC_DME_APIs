@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+#import common functions
+
+
+
+source $HPC_DM_TEST/utils/functions
+../utils/runtest
+
+#Check if collection registration went through:
+verify_registration project-response-header.tmp
+
+verify_registration no-metadata-response-header.tmp
+
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+USERID=`get_username $HPC_DM_TEST/utils/config`
+no_meta_folder_path=`cat registered-no-metadata-folder-path.tmp`
+
+#Register the README.txt synchronously at the No-metadata-folder collection
+curl_register input-no-metadata.json $no_meta_folder_path/object-${NAME}.txt dataObject README.txt
+
+get_http_code $RESPONSE_HEADER 
