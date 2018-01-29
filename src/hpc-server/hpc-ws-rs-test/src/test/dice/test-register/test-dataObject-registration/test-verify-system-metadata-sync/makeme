@@ -41,6 +41,6 @@ get_system_added_metadata "$POLICIES_FILE" "$METADATA_TYPE"
 #source_file_id 
 #archive_caller_object_id
 
-cat system-generated-metadata.tmp | grep -v source_file_container_id | grep -v source_file_id  > temp.tmp
+cat system-generated-metadata.tmp | grep -v source_file_container_id | grep -v source_file_id |  grep -v archive_caller_object_id > temp.tmp
 
 mv temp.tmp system-generated-metadata.tmp
