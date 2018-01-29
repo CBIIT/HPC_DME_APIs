@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to make this test
+# Usage: makeme [no arguments]
+
+source $HPC_DM_TEST/utils/functions
+
+#Clean previous files 
+../../utils/cleantest
+
+../../../utils/maketest
+
+#Register a project. 
+project_destination_path="$(get_basefolder)/project-add-dataobject"
+curl_register $HPC_DM_TEST/utils/templates/register-project-template.json "$project_destination_path" collection
+mv $RESPONSE_HEADER project-response-header.tmp  
+mv $RESPONSE_MSG project-response-message.json.tmp 2>/dev/null
+
+#Register a No_metadata_folder collection as mentioned in the hierarchy
+no_meta_folder_path=$project_destination_path/test-no-metadata
+curl_register input-no-metadata.json "$no_meta_folder_path" collection
+mv $RESPONSE_HEADER no-metadata-response-header.tmp
+mv $RESPONSE_MSG no-metadata-response-message.json.tmp 2>/dev/null
+
+echo "$project_destination_path" >> registered-project-path.tmp
+echo "$no_meta_folder_path" >> registered-no-metadata-folder-path.tmp
+
