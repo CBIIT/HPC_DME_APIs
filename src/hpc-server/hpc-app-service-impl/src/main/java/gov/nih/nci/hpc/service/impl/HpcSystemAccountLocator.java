@@ -208,7 +208,7 @@ public class HpcSystemAccountLocator {
    * @param queueSize Size of the transfer queue of the Globus system account
    */
   public void setGlobusAccountQueueSize(String systemAccountId, int queueSize) {
-    logger.debug(
+    logger.info(
         String.format(
             "setGlobusAccountQueueSize: Entered with systemAccountId = %s, queueSize = %s",
             systemAccountId, Integer.toString(queueSize)));
@@ -222,7 +222,7 @@ public class HpcSystemAccountLocator {
       inner:
       for (PooledSystemAccountWrapper psaWrapper : thePool) {
         if (psaWrapper.getSystemAccount().getUsername().equals(systemAccountId)) {
-          logger.debug(
+          logger.info(
               String.format(
                   "setGlobusAccountQueueSize: Found matching Globus app account having client ID %s, update its score to %s",
                   systemAccountId, Integer.toString(queueSize)));
@@ -234,7 +234,7 @@ public class HpcSystemAccountLocator {
         }
       }
     }
-    logger.debug(
+    logger.info(
         "setGlobusAccountQueueSize: About to exit.  Score was "
             + (scoreUpdated ? "" : "NOT")
             + " updated.");
@@ -293,7 +293,7 @@ public class HpcSystemAccountLocator {
   // Configuration ID
   private List<PooledSystemAccountWrapper> accessProperPool(String hpcDataMgmtConfigId)
       throws HpcException {
-    logger.debug(
+    logger.info(
         String.format(
             "accessProperPool: entered with received hpcDataMgmtConfigId = ", hpcDataMgmtConfigId));
     String docClassifier = null;
@@ -302,7 +302,7 @@ public class HpcSystemAccountLocator {
     final HpcDataManagementConfiguration dmConfig =
         this.dataMgmtConfigLocator.get(hpcDataMgmtConfigId);
     if (null == dmConfig) {
-      logger.debug(
+      logger.info(
           String.format(
               "accessProperPool: determined no data mgmt configuration matches, apply default classifier %s",
               DOC_CLASSIFIER_DEFAULT));
@@ -315,20 +315,20 @@ public class HpcSystemAccountLocator {
           classifier2PoolMap.containsKey(dmConfig.getDoc())
               ? dmConfig.getDoc()
               : DOC_CLASSIFIER_DEFAULT;
-      logger.debug(
+      logger.info(
           String.format(
               "accessProperPool: DOC is %s, DOC classifier to use is %s",
               dmConfig.getDoc(), DOC_CLASSIFIER_DEFAULT));
     }
     final List<PooledSystemAccountWrapper> retProperPool = classifier2PoolMap.get(docClassifier);
-    logger.debug("accessProperPool: about to return");
+    logger.info("accessProperPool: about to return");
 
     return retProperPool;
   }
 
   private HpcIntegratedSystemAccount obtainPooledGlobusAppAcctInfo(String hpcDataMgmtConfigId)
       throws HpcException {
-    logger.debug(
+    logger.info(
         String.format(
             "obtainPooledGlobusAppAcctInfo: received hpcDataMgmtConfigId = %s.",
             hpcDataMgmtConfigId));
@@ -345,7 +345,7 @@ public class HpcSystemAccountLocator {
           HpcErrorType.UNEXPECTED_ERROR);
     } else {
       final HpcIntegratedSystemAccount retSysAcct = wrapperObj.getSystemAccount();
-      logger.debug(
+      logger.info(
           String.format(
               "obtainPooledGlobusAppAcctInfo: successfully acquired Globus app account having client ID of %s, about to return.",
               retSysAcct.getUsername()));
