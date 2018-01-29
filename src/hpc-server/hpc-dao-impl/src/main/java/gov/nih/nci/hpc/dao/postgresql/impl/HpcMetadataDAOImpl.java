@@ -11,16 +11,13 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
@@ -46,63 +43,49 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
   // SQL Queries.
   private static final String GET_COLLECTION_IDS_EQUAL_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection "
-          + "where collection.meta_attr_value = ?";
+      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where collection.meta_attr_value = ?";
 
   private static final String GET_COLLECTION_IDS_NOT_EQUAL_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection "
-          + "where collection.meta_attr_value <> ?";
+      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where collection.meta_attr_value <> ?";
 
   private static final String GET_COLLECTION_IDS_LIKE_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection "
-          + "where lower(collection.meta_attr_value) like lower(?)";
+      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where lower(collection.meta_attr_value) like lower(?)";
 
   private static final String GET_COLLECTION_IDS_NUM_LESS_THAN_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection "
-          + "where num_less_than(collection.meta_attr_value, ?) = true";
+      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where num_less_than(collection.meta_attr_value, ?) = true";
 
   private static final String GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection "
-          + "where num_less_or_equal(collection.meta_attr_value, ?) = true";
+      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where num_less_or_equal(collection.meta_attr_value, ?) = true";
 
   private static final String GET_COLLECTION_IDS_NUM_GREATER_THAN_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection "
-          + "where num_greater_than(collection.meta_attr_value, ?) = true";
+      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where num_greater_than(collection.meta_attr_value, ?) = true";
 
   private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection "
-          + "where num_greater_or_equal(collection.meta_attr_value, ?) = true";
+      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where num_greater_or_equal(collection.meta_attr_value, ?) = true";
 
   private static final String GET_COLLECTION_EXACT_ATTRIBUTE_MATCH_FILTER =
       " and collection.meta_attr_name = ?";
 
   private static final String GET_DATA_OBJECT_IDS_EQUAL_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject "
-          + "where dataObject.meta_attr_value = ?";
+      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.meta_attr_value = ?";
 
   private static final String GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject "
-          + "where dataObject.meta_attr_value <> ?";
+      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.meta_attr_value <> ?";
 
   private static final String GET_DATA_OBJECT_IDS_LIKE_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject "
-          + "where lower(dataObject.meta_attr_value) like lower(?)";
+      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where lower(dataObject.meta_attr_value) like lower(?)";
 
   private static final String GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject "
-          + "where num_less_than(dataObject.meta_attr_value, ?) = true";
+      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where num_less_than(dataObject.meta_attr_value, ?) = true";
 
   private static final String GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject "
-          + "where num_less_or_equal(dataObject.meta_attr_value, ?) = true";
+      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where num_less_or_equal(dataObject.meta_attr_value, ?) = true";
 
   private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_THAN_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject "
-          + "where num_greater_than(dataObject.meta_attr_value, ?) = true";
+      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where num_greater_than(dataObject.meta_attr_value, ?) = true";
 
   private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject "
-          + "where num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
+      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
 
   private static final String GET_DATA_OBJECT_EXACT_ATTRIBUTE_MATCH_FILTER =
       " and dataObject.meta_attr_name = ?";
@@ -490,9 +473,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
   // SQL Maps from operators to queries and filters.
   private class HpcSQLMaps {
-    private Map<HpcMetadataQueryOperator, String> queries = new HashMap<>();
-    private Map<HpcMetadataQueryOperator, String> levelFilters = new HashMap<>();
-    private Map<HpcMetadataQueryOperator, String> levelLabelFilters = new HashMap<>();
+    private EnumMap<HpcMetadataQueryOperator, String> queries = new EnumMap<>(HpcMetadataQueryOperator.class);
+    private EnumMap<HpcMetadataQueryOperator, String> levelFilters = new EnumMap<>(HpcMetadataQueryOperator.class);
+    private EnumMap<HpcMetadataQueryOperator, String> levelLabelFilters = new EnumMap<>(HpcMetadataQueryOperator.class);
     private String exactAttributeMatchFilter = null;
   }
 

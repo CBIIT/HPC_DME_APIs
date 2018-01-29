@@ -340,6 +340,7 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 				<xsd:element name="downloadRequestURL" type="xsd:string" />
+				<xsd:element name="dataTransferType" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -504,6 +505,15 @@
 				<xsd:element name="dataObjectMetadataAttributes"
 					type="hpc-domain-metadata:HpcMetadataLevelAttributes" minOccurs="0"
 					maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--  TODO: Remove after file size was updated in prod -->
+	<xsd:element name="HpcFileSizeUpdateDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="paths" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
+import java.util.List;
 
 /**
  * <p>
@@ -31,30 +32,32 @@ public interface HpcSystemAccountDAO
      *
      * @param account The system account to be added/updated.
      * @param dataTransferType The data transfer type to associate with the system account.
+     * @param classifier The classifier to offer finer grained detail than system or transfer type
      * @throws HpcException on database error.
      */
     public void upsert(HpcIntegratedSystemAccount account, 
-    		           HpcDataTransferType dataTransferType) 
+    		           HpcDataTransferType dataTransferType,
+                   String classifier)
     		          throws HpcException;
     
     /**
-     * Get system account. 
+     * Get system accounts.
      *
-     * @param system The system to get the account for
-     * @return The system account if found, or null otherwise.
+     * @param system The system to get the accounts for
+     * @return The system accounts if found, or null otherwise.
      * @throws HpcException on database error.
      */
-    public HpcIntegratedSystemAccount getSystemAccount(HpcIntegratedSystem system) 
+    public List<HpcIntegratedSystemAccount> getSystemAccount(HpcIntegratedSystem system)
     		                                          throws HpcException;
     
     /**
-     * Get system account by data transfer type
+     * Get system accounts by data transfer type
      *
-     * @param dataTransferType The data transfer type associated with the requested system account.
-     * @return The system account if found, or null otherwise.
+     * @param dataTransferType The data transfer type associated with the requested system accounts.
+     * @return The system accounts if found, or null otherwise.
      * @throws HpcException on database error.
      */
-    public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType) 
+    public List<HpcIntegratedSystemAccount> getSystemAccount(HpcDataTransferType dataTransferType)
     		                                          throws HpcException;
 }
 

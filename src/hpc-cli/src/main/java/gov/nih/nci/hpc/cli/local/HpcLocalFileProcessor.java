@@ -162,8 +162,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		objectPath = objectPath.replace("\\", "/");
 		if (objectPath.charAt(0) != File.separatorChar)
 			objectPath = "/" + objectPath;
-		System.out.println("Processing: " + basePath + objectPath);
-		System.out.println("checksum: " + hpcDataObjectRegistrationDTO.getChecksum());
+		System.out.println("Processing: " + basePath + objectPath + " | checksum: "+hpcDataObjectRegistrationDTO.getChecksum());
 
 		WebClient client = HpcClientUtil.getWebClient(
 				connection.getHpcServerURL() + "/dataObject/" + basePath + objectPath,
@@ -238,6 +237,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 						.hash(new File(entity.getAbsolutePath()), Hashing.md5());
 				md5Checksum = hash.toString();
 				hpcDataObjectRegistrationDTO.setChecksum(md5Checksum);
+				System.out.println("Processing: "+ basePath + objectPath + " | Checksum: "+md5Checksum);
 			} catch (IOException e) {
 				String message = "Failed to calculate checksum due to: " + e.getMessage();
 				HpcClientUtil.writeException(e, message, null, logFile);

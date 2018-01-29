@@ -90,6 +90,7 @@
 				<xsd:element name="account"
 					         type="hpc-domain-user:HpcIntegratedSystemAccount" />
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+				<xsd:element name="classifier" type="xsd:string" minOccurs="0" maxOccurs="1" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
