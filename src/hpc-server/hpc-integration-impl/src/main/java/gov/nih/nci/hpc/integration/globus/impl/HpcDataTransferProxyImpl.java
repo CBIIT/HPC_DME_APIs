@@ -131,18 +131,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken) throws HpcException {
-    JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
 
+logger.info(String.format("acceptsTransferRequests: entered with received authenticatedToken parameter = %s", authenticatedToken.toString()));
+
+    JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
     return retryTemplate.execute(
         arg0 -> {
           try {
             JSONObject jsonTasksLists =
                 client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
+logger.info(String.format("acceptsTransferRequests: Made request to Globus for transfer tasks, resulting JSON is \n[\n%s\n]\n", jsonTasksLists.toString()));
             final int qSize = jsonTasksLists.getInt("total");
             final boolean underCap = qSize < globusQueueSize;
+logger.info(String.format("acceptsTransferRequests: from JSON response, determined that qSize = %s and underCap = %s", Integer.toString(qSize), Boolean.toString(underCap)));
             final HpcTransferAcceptanceResponse transferAcceptanceResponse = new HpcGlobusTransferAcceptanceResponse(underCap, qSize);
+logger.info("acceptsTransferRequests: About to return");
             return transferAcceptanceResponse;
           } catch (Exception e) {
+logger.error("acceptsTransferRequests: About to throw exception", e);
             throw new HpcException(
                 "[GLOBUS] Failed to determine active tasks count",
                 HpcErrorType.DATA_TRANSFER_ERROR,
