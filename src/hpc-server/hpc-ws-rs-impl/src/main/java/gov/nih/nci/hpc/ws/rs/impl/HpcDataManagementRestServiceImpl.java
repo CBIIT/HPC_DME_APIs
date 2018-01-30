@@ -285,8 +285,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     if (registered) {
       // Data object was registered. Return a 'created' response.
       return responseDTO.getUploadRequestURL() != null
-          ? createdResponse(path, responseDTO)
-          : createdResponse(path);
+          ? createdResponse(null, responseDTO)
+          : createdResponse(null);
     } else {
       // Data object metadata was updated. Return 'ok' response.
       return okResponse(responseDTO.getUploadRequestURL() != null ? responseDTO : null, false);
