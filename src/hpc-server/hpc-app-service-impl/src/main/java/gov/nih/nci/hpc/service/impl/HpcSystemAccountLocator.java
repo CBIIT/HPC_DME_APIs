@@ -295,7 +295,7 @@ public class HpcSystemAccountLocator {
       throws HpcException {
     logger.info(
         String.format(
-            "accessProperPool: entered with received hpcDataMgmtConfigId = ", hpcDataMgmtConfigId));
+            "accessProperPool: entered with received hpcDataMgmtConfigId = %s", hpcDataMgmtConfigId));
     String docClassifier = null;
     final Map<String, List<PooledSystemAccountWrapper>> classifier2PoolMap =
         multiDataTransferAccounts.get(HpcDataTransferType.GLOBUS);
