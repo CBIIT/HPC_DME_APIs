@@ -8,7 +8,6 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
-import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -22,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,22 +213,30 @@ public class HpcSystemAccountLocator {
     boolean scoreUpdated = false;
     final Map<String, List<PooledSystemAccountWrapper>> classifier2ListMap =
         multiDataTransferAccounts.get(HpcDataTransferType.GLOBUS);
-    outer:
-    for (Map.Entry<String, List<PooledSystemAccountWrapper>> mapEntry :
-        classifier2ListMap.entrySet()) {
-      final List<PooledSystemAccountWrapper> thePool = mapEntry.getValue();
-      inner:
-      for (PooledSystemAccountWrapper psaWrapper : thePool) {
-        if (psaWrapper.getSystemAccount().getUsername().equals(systemAccountId)) {
-          logger.info(
-              String.format(
-                  "setGlobusAccountQueueSize: Found matching Globus app account having client ID %s, update its score to %s",
-                  systemAccountId, Integer.toString(queueSize)));
-          // Internally, queueSize is treated as a utilization score, higher meaning experiencing
-          //  greater utilization
-          psaWrapper.setUtilizationScore(Integer.valueOf(queueSize).doubleValue());
-          scoreUpdated = true;
-          break outer;
+    if (null == classifier2ListMap || classifier2ListMap.isEmpty()) {
+      logger.warn(
+          "setGlobusAccountQueueSize: There are no pools of GLOBUS app accounts, so do nothing.");
+    } else {
+      for (Map.Entry<String, List<PooledSystemAccountWrapper>> mapEntry :
+          classifier2ListMap.entrySet()) {
+        final List<PooledSystemAccountWrapper> thePool = mapEntry.getValue();
+        final String poolClassifier = mapEntry.getKey();
+        if (null == thePool) {
+          logger.warn(String.format(
+              "setGlobusAccountQueueSize: Globus app accounts for classifier \"%s\" is null."),
+              poolClassifier);
+        } else if (thePool.isEmpty()) {
+          logger.warn(String.format(
+              "setGlobusAccountQueueSize: Globus app accounts for classifier \"%s\" is empty."),
+              poolClassifier);
+        } else if (scoreUpdated = updateAppAccountUtilizationScore(thePool, systemAccountId,
+            queueSize)) {
+          logger.info(String.format(
+              "setGlobusAccountQueueSize: Updated Globus app account's utilization score; found it in pool having classifier \"%s\"",
+              poolClassifier));
+          break;
+        } else {
+          // do nothing, pool was neither null nor empty and didn't have the app account
         }
       }
     }
@@ -238,6 +244,27 @@ public class HpcSystemAccountLocator {
         "setGlobusAccountQueueSize: About to exit.  Score was "
             + (scoreUpdated ? "" : "NOT")
             + " updated.");
+  }
+
+  private boolean updateAppAccountUtilizationScore(
+      List<PooledSystemAccountWrapper> pWrappedSysAccounts, String pSysAccountId, int pQueueSize) {
+    boolean modifiedScoreFlag = false;
+    if (null == pWrappedSysAccounts || pWrappedSysAccounts.isEmpty() || null == pSysAccountId
+        || pSysAccountId.isEmpty() || pQueueSize < 0) {
+      // do nothing, as one or more inputs are invalid
+    } else {
+      for (PooledSystemAccountWrapper psaWrapper : pWrappedSysAccounts) {
+        final HpcIntegratedSystemAccount sysAccnt = psaWrapper.getSystemAccount();
+        if (null != sysAccnt && pSysAccountId.equals(sysAccnt.getUsername())) {
+          // Internally, queueSize is treated as a utilization score, higher meaning experiencing
+          //  greater utilization
+          psaWrapper.setUtilizationScore(Integer.valueOf(pQueueSize).doubleValue());
+          modifiedScoreFlag = true;
+          break;
+        }
+      }
+    }
+    return modifiedScoreFlag;
   }
 
   // Populate the system accounts maps.
