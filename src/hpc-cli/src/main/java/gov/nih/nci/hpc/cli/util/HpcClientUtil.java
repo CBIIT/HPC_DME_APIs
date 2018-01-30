@@ -407,12 +407,20 @@ public class HpcClientUtil {
   }
 
   public static void writeRecord(String fileBasePath, String absolutePath, String logFile) {
+    File fullFile = new File(fileBasePath);
+    String fullFilePathName = null;
+    try {
+    fullFilePathName = fullFile.getCanonicalPath();
+  } catch (IOException e) {
+    System.out.println("Failed to read file path: "+fileBasePath);
+  }
+    fullFilePathName = fullFilePathName.replace('\\', '/');
     fileBasePath = fileBasePath.replace('\\', '/');
     absolutePath = absolutePath.replace('\\', '/');
     String objectPath = absolutePath;
-    if (absolutePath.indexOf(fileBasePath) != -1)
+    if (absolutePath.indexOf(fullFilePathName) != -1)
       objectPath =
-          absolutePath.substring(absolutePath.indexOf(fileBasePath) + fileBasePath.length() + 1);
+          absolutePath.substring(absolutePath.indexOf(fullFilePathName) + fullFilePathName.length() + 1);
     HpcLogWriter.getInstance().WriteLog(logFile, objectPath);
   }
 
