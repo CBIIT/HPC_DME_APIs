@@ -1,5 +1,6 @@
 package gov.nih.nci.hpc.cli.local;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,9 +102,20 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 	}
 
 	private String getCollectionPath(String localPath, String collectionPathBaseName, String collectionPath) {
+	   String fullFilePathName = null;
+	   File fullFile = new File(localPath);
+       String fullLocalPathName = null;
+       File fullLocalFile = new File(collectionPath);
+	      try {
+	      fullFilePathName = fullFile.getCanonicalPath();
+	      fullLocalPathName = fullLocalFile.getCanonicalPath();
+	    } catch (IOException e) {
+	      System.out.println("Failed to read file path: "+localPath);
+	    }
 
 	  collectionPath = collectionPath.replace("\\", "/");
 	  localPath = localPath.replace("\\", "/");
+	  fullFilePathName = fullFilePathName.replace('\\', '/');
 	  if(collectionPath.equals(localPath))
 	    return "/";
 	  
@@ -115,8 +127,8 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 	  }
 	  else
 	  {
-        if (collectionPath.indexOf(localPath) != -1)
-          return collectionPath.substring(collectionPath.indexOf(localPath) + localPath.length() + 1);
+        if (fullLocalPathName.indexOf(fullFilePathName) != -1)
+          return fullLocalPathName.substring(collectionPath.indexOf(fullFilePathName) + fullFilePathName.length() + 1);
 	  }
       return collectionPath;
 	}
