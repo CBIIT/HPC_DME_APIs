@@ -21,10 +21,13 @@
 
 DROP FOREIGN TABLE IF EXISTS "HPC_SYSTEM_ACCOUNT";
 CREATE FOREIGN TABLE "HPC_SYSTEM_ACCOUNT" (
-  	   "USERNAME" text NOT NULL,
-  	   "PASSWORD" bytea NOT NULL,
-  	   "SYSTEM" text NOT NULL,
-  	   "DATA_TRANSFER_TYPE" text)
+  "ID" integer DEFAULT nextval('"HPC_SYSTEM_ACCOUNT_SEQ"'::regclass) NOT NULL,
+  "SYSTEM" text NOT NULL,
+  "CLASSIFIER" text,
+  "DATA_TRANSFER_TYPE" text,
+  "USERNAME" text NOT NULL,
+  "PASSWORD" bytea NOT NULL,
+  CONSTRAINT "HPC_SYSTEM_ACCOUNT_pkey" PRIMARY KEY ("ID"))
        SERVER hpc_dm_dev
        OPTIONS (schema_name 'public', table_name 'HPC_SYSTEM_ACCOUNT');
 
