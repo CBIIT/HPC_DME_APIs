@@ -170,7 +170,7 @@ public class HpcReportsController extends AbstractHpcController {
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE))
           requestDTO.setPath(reportRequest.getBasepath());
       }
-      if (reportRequest.getPath() != null && !reportRequest.getPath().equals("-1")) {
+      else if (reportRequest.getPath() != null && !reportRequest.getPath().equals("-1")) {
         if (requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH)
             || requestDTO.getType().equals(HpcReportType.USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE))
           try {
