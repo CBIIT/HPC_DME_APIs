@@ -1605,31 +1605,80 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   private boolean checkIfTransferCanBeLaunched(HpcDataTransferType transferType,
       String dataMgmtConfigId)
       throws HpcException {
+
+    logger.info(String.format(
+        "checkIfTransferCanBeLaunched: Entered with parameters of transferType = %s, dataMgmtConfigId = %s",
+        transferType.toString(), dataMgmtConfigId));
+
     final Object theAuthToken = getAuthenticatedToken(transferType, dataMgmtConfigId);
+
+    logger.info(String
+        .format("checkIfTransferCanBeLaunched: got auth token of %s", token2String(theAuthToken)));
+
     final HpcTransferAcceptanceResponse transferAcceptanceResponse =
         this.dataTransferProxies
             .get(transferType)
             .acceptsTransferRequests(theAuthToken);
+
     final List<HpcDataTransferAuthenticatedToken> invokerTokens = HpcRequestContext
         .getRequestInvoker().getDataTransferAuthenticatedTokens();
     String globusClientId = null;
+
+    logger.info("checkIfTransferCanBeLaunched: searching for token within invoker state");
+
     for (HpcDataTransferAuthenticatedToken someToken : invokerTokens) {
       if (someToken.getDataTransferType().equals(transferType) && someToken.getConfigurationId()
           .equals(dataMgmtConfigId)) {
         globusClientId = someToken.getSystemAccountId();
+
+        logger.info(String.format(
+            "checkIfTransferCanBeLaunched: found matching token and its system account ID (Globus client ID) is %s",
+            globusClientId));
+
         break;
       }
     }
     if (null == globusClientId) {
+
+      logger.error("checkIfTransferCanBeLaunched: About to throw HpcException");
+
       final String msg = String.format(
           "Could not find Globus app account client ID for this request, transfer type is %s and data management configuration ID is %s.",
           transferType.toString(), dataMgmtConfigId);
       throw new HpcException(msg, HpcErrorType.UNEXPECTED_ERROR);
     }
+
+    logger.info(String.format(
+        "checkIfTransferCanBeLaunched: Update to call system account locator's setGlobusAccountQueueSize passing in (%s, %s)",
+        globusClientId, Integer.toString(transferAcceptanceResponse.getQueueSize())));
+
     this.systemAccountLocator
         .setGlobusAccountQueueSize(globusClientId, transferAcceptanceResponse.getQueueSize());
 
+    logger.info("checkIfTransferCanBeLaunched: About to return");
+
     return transferAcceptanceResponse.canAcceptTransfer();
+  }
+
+  private String token2String(Object pToken) {
+    String retStrRep = null;
+    if (pToken instanceof HpcDataTransferAuthenticatedToken) {
+      HpcDataTransferAuthenticatedToken dtaToken = (HpcDataTransferAuthenticatedToken) pToken;
+      StringBuilder sb = new StringBuilder();
+//			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
+//			<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
+//			<xsd:element name="configurationId" type="xsd:string" />
+//      <xsd:element name="systemAccountId" type="xsd:string" />
+      sb.append("[ dataTransferType = ").append(dtaToken.getDataTransferType().toString());
+      sb.append(", dataTransferAuthenticatedToken = ").append(dtaToken.getDataTransferAuthenticatedToken().toString());
+      sb.append(", configurationId = ").append(dtaToken.getConfigurationId());
+      sb.append(", systemAccountId = ").append(dtaToken.getSystemAccountId()).append(" ]");
+      retStrRep = sb.toString();
+    }
+    else {
+      retStrRep = pToken.toString();
+    }
+    return retStrRep;
   }
 
 }

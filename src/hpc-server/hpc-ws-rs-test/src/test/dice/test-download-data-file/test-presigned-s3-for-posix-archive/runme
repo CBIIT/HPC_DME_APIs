@@ -20,8 +20,8 @@ verify_registration  dataObject-registration-response-header.tmp
 OBJECT_PATH=`cat registered-dataobject-path.tmp`
 
 #Download the dataobject synchronously
-RESPONSE_HEADER=response-header
-RESPONSE_MSG=response-message.json
+RESPONSE_HEADER=download-request-response-header.tmp
+RESPONSE_MSG=download-request-response-message.json.tmp
 downloaded_file=presigned_downloaded_file.tmp
 download_dataobject_sync -p -f $downloaded_file "$OBJECT_PATH"
 

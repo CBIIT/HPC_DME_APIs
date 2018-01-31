@@ -36,10 +36,10 @@ get_user $USER_ID $RESPONSE_HEADER $RESPONSE_MSG
 
 get_http_code $RESPONSE_HEADER
 
-EXISTS=$(grep "DUMMY" $RESPONSE_MSG)
+EXISTS=$(grep "FLNCR" $RESPONSE_MSG)
 
 if [ -z "$EXISTS" ]
 then
-    echo "ERROR: DOC did not change to DUMMY" >&2
+    echo "ERROR: DOC did not change to FLNCR" >&2
 fi
 
