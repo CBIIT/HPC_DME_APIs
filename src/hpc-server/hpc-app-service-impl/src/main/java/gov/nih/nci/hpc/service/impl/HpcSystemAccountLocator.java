@@ -8,6 +8,16 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -16,21 +26,11 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * HPC System Account Locator.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 public class HpcSystemAccountLocator {
 
@@ -38,6 +38,7 @@ public class HpcSystemAccountLocator {
 
     private HpcIntegratedSystemAccount systemAccount;
     private double utilizationScore;
+    private Date lastUsed = new Date(0);
 
     protected PooledSystemAccountWrapper(HpcIntegratedSystemAccount pAccount, double pScore) {
       this.systemAccount = pAccount;
@@ -53,6 +54,7 @@ public class HpcSystemAccountLocator {
     }
 
     protected HpcIntegratedSystemAccount getSystemAccount() {
+      lastUsed = new Date();
       return systemAccount;
     }
 
@@ -62,6 +64,10 @@ public class HpcSystemAccountLocator {
 
     protected double getUtilizationScore() {
       return utilizationScore;
+    }
+
+    protected Date getLastUsed() {
+      return lastUsed;
     }
 
     protected void setUtilizationScore(double pScore) {
@@ -74,6 +80,9 @@ public class HpcSystemAccountLocator {
       if (o instanceof PooledSystemAccountWrapper) {
         PooledSystemAccountWrapper convPsaWrapper = (PooledSystemAccountWrapper) o;
         retVal = Double.valueOf(utilizationScore).compareTo(convPsaWrapper.getUtilizationScore());
+        if (retVal == 0) {
+          retVal = lastUsed.compareTo(convPsaWrapper.getLastUsed());
+        }
       }
       return retVal;
     }
@@ -185,8 +194,7 @@ public class HpcSystemAccountLocator {
    * @throws HpcException on service failure.
    */
   public HpcIntegratedSystemAccount getSystemAccount(
-      HpcDataTransferType dataTransferType, String hpcDataMgmtConfigId)
-      throws HpcException {
+      HpcDataTransferType dataTransferType, String hpcDataMgmtConfigId) throws HpcException {
     HpcIntegratedSystemAccount retSysAcct = null;
 
     if (null != singularDataTransferAccounts.get(dataTransferType)) {
@@ -222,18 +230,21 @@ public class HpcSystemAccountLocator {
         final List<PooledSystemAccountWrapper> thePool = mapEntry.getValue();
         final String poolClassifier = mapEntry.getKey();
         if (null == thePool) {
-          logger.warn(String.format(
-              "setGlobusAccountQueueSize: Globus app accounts for classifier \"%s\" is null."),
+          logger.warn(
+              String.format(
+                  "setGlobusAccountQueueSize: Globus app accounts for classifier \"%s\" is null."),
               poolClassifier);
         } else if (thePool.isEmpty()) {
-          logger.warn(String.format(
-              "setGlobusAccountQueueSize: Globus app accounts for classifier \"%s\" is empty."),
+          logger.warn(
+              String.format(
+                  "setGlobusAccountQueueSize: Globus app accounts for classifier \"%s\" is empty."),
               poolClassifier);
-        } else if (scoreUpdated = updateAppAccountUtilizationScore(thePool, systemAccountId,
-            queueSize)) {
-          logger.info(String.format(
-              "setGlobusAccountQueueSize: Updated Globus app account's utilization score; found it in pool having classifier \"%s\"",
-              poolClassifier));
+        } else if (scoreUpdated =
+            updateAppAccountUtilizationScore(thePool, systemAccountId, queueSize)) {
+          logger.info(
+              String.format(
+                  "setGlobusAccountQueueSize: Updated Globus app account's utilization score; found it in pool having classifier \"%s\"",
+                  poolClassifier));
           break;
         } else {
           // do nothing, pool was neither null nor empty and didn't have the app account
@@ -249,8 +260,11 @@ public class HpcSystemAccountLocator {
   private boolean updateAppAccountUtilizationScore(
       List<PooledSystemAccountWrapper> pWrappedSysAccounts, String pSysAccountId, int pQueueSize) {
     boolean modifiedScoreFlag = false;
-    if (null == pWrappedSysAccounts || pWrappedSysAccounts.isEmpty() || null == pSysAccountId
-        || pSysAccountId.isEmpty() || pQueueSize < 0) {
+    if (null == pWrappedSysAccounts
+        || pWrappedSysAccounts.isEmpty()
+        || null == pSysAccountId
+        || pSysAccountId.isEmpty()
+        || pQueueSize < 0) {
       // do nothing, as one or more inputs are invalid
     } else {
       for (PooledSystemAccountWrapper psaWrapper : pWrappedSysAccounts) {
@@ -322,7 +336,8 @@ public class HpcSystemAccountLocator {
       throws HpcException {
     logger.info(
         String.format(
-            "accessProperPool: entered with received hpcDataMgmtConfigId = %s", hpcDataMgmtConfigId));
+            "accessProperPool: entered with received hpcDataMgmtConfigId = %s",
+            hpcDataMgmtConfigId));
     String docClassifier = null;
     final Map<String, List<PooledSystemAccountWrapper>> classifier2PoolMap =
         multiDataTransferAccounts.get(HpcDataTransferType.GLOBUS);
