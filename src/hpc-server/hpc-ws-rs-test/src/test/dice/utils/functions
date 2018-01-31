@@ -576,7 +576,7 @@ function verify_globus_file {
 
     usage="${FUNCNAME} [-s sleep-time] file_path [EndpointID]"
     local OPTIND
-    sleep_time=60
+    sleep_time=120
     list_exists=false
     while getopts ":s:e" option
     do
@@ -2611,6 +2611,12 @@ function verify_globus_download {
   RESPONSE_MSG=get-download-status-response-message.json.tmp
   get_download_status "$taskId" "$download_type"
 
+  code=$(get_http_code $RESPONSE_HEADER) 
+  if [ "$code" != 200 ]
+  then
+    echo "ERROR: The second get download status code returned $code" >&2
+    exit 1
+  fi
   #Verify that the download is marked complete on the download status
   status=$(get_json_unquotted_value $RESPONSE_MSG inProgress)
   echo "in_progress:$status"
