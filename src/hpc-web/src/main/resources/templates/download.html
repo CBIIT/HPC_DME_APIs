@@ -35,7 +35,7 @@
 			<p>You may download a data file to your local computer (synchronous) or to a Globus endpoint
 				location (asynchronous). </p>
 				<p>If you use asynchronous option, you will first give WRITE access of your Globus target endpoint
-				location to the HPC DME Application account; Copy UUID value from your Shared Endpoint of Globus
+				location to the HPC DME Globus Group; Copy UUID value from your Shared Endpoint of Globus
 				Manage Endpoints into text entry "Globus Endpoint Name (UUID)"; lastly, enter a file name into
 				text entry "Globus Endpoint (Destination) Path" for the selected data file. </p>
 				<p>
@@ -46,7 +46,7 @@
 			<div class="pull-center" th:if="${downloadType == 'collection'}">
 			<p>You will download the selected collection of data files to a Globus endpoint location 
 				asynchronously.</p> <p>Please first grant WRITE access of your Globus target endpoint location to the HPC DME 
-				Application account; Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
+				Globus Group; Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
 				into text entry "Globus Endpoint Name (UUID)"; lastly, enter a directory name into text
 				entry "Globus Endpoint (Destination) Path" for the selected collection.<br/>The new directory will be created under your shared endpoint at Globus.</p>			
 			</div>

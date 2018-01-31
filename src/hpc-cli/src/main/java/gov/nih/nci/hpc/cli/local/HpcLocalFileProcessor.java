@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Properties;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
@@ -26,6 +26,7 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.web.client.RestClientException;
 import org.w3c.dom.Document;
@@ -376,10 +377,20 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	}
 
 	private String getObjectPath(String filePath, String filePathBaseName, String objectPath) {
-
+//	  System.out.println("filePath "+filePath);
+	  File fullFile = new File(filePath);
+	  String fullFilePathName = null;
+	  try {
+      fullFilePathName = fullFile.getCanonicalPath();
+    } catch (IOException e) {
+      System.out.println("Failed to read file path: "+filePath);
+    }
 	  objectPath = objectPath.replace('\\', '/');
 	  filePath = filePath.replace('\\', '/');
-	  if(objectPath.equals(filePath))
+	  fullFilePathName = fullFilePathName.replace('\\', '/');
+	  if(filePath.startsWith("."))
+	    filePath = filePath.substring(1,  filePath.length());
+	  if(objectPath.equals(fullFilePathName))
 	    return objectPath;
 	  if(filePathBaseName != null && !filePathBaseName.isEmpty())
 	  {
@@ -389,25 +400,33 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	  }
 	  else
 	  {
-        if (objectPath.indexOf(filePath) != -1)
-          return objectPath.substring(objectPath.indexOf(filePath)+filePath.length()+1);
+        if (objectPath.indexOf(fullFilePathName) != -1)
+          return objectPath.substring(objectPath.indexOf(fullFilePathName)+fullFilePathName.length()+1);
 	  }
 	    return objectPath;
 	}
 
 	public void uploadToUrl(String urlStr, File file, int bufferSize, String checksum) throws HpcBatchException {
 
-		HttpURLConnection connection;
+		HttpURLConnection httpConnection;
 		try {
+		  
+		  if(connection.getHpcServerProxyURL() != null && !connection.getHpcServerProxyURL().isEmpty() && 
+		      connection.getHpcServerProxyPort() != null && !connection.getHpcServerProxyPort().isEmpty())
+		  {
+    		  Properties systemProperties = System.getProperties();
+    		  systemProperties.setProperty("http.proxyHost",connection.getHpcServerProxyURL());
+    		  systemProperties.setProperty("http.proxyPort",connection.getHpcServerProxyPort());
+		  }
 			URL url = new URL(urlStr);
 			InputStream inputStream = new FileInputStream(file);
-			connection = (HttpURLConnection) url.openConnection();
-			connection.setDoOutput(true);
-			connection.setRequestMethod("PUT");
-			connection.setChunkedStreamingMode(bufferSize);
+			httpConnection = (HttpURLConnection) url.openConnection();
+			httpConnection.setDoOutput(true);
+			httpConnection.setRequestMethod("PUT");
+			httpConnection.setChunkedStreamingMode(bufferSize);
 			if(checksum != null)
-				connection.addRequestProperty("md5chksum", checksum);
-			OutputStream out = connection.getOutputStream();
+				httpConnection.addRequestProperty("md5chksum", checksum);
+			OutputStream out = httpConnection.getOutputStream();
 			
 
 			byte[] buf = new byte[1024];
@@ -430,14 +449,14 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			out.close();
 			inputStream.close();
 
-			int responseCode = connection.getResponseCode();
+			int responseCode = httpConnection.getResponseCode();
 
 			if (responseCode == 200) {
 				System.out.println("Successfully registered " + file.getAbsolutePath());
 			}
 			else
 			{
-				BufferedReader br = new BufferedReader(new InputStreamReader((connection.getErrorStream())));
+				BufferedReader br = new BufferedReader(new InputStreamReader((httpConnection.getErrorStream())));
 				StringBuilder sb = new StringBuilder();
 				String output;
 				while ((output = br.readLine()) != null) 

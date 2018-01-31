@@ -32,6 +32,6 @@ source ../../utils/registration-functions
 RESPONSE_HEADER=get-doc-policies-response-header.tmp
 POLICIES_FILE=metadataValidationRules.json.tmp
 
-get_doc_policies DUMMY "$RESPONSE_HEADER" "$POLICIES_FILE"
+get_doc_policies TEST "$RESPONSE_HEADER" "$POLICIES_FILE"
 METADATA_TYPE="dataObjectSystemGeneratedMetadataAttributeNames"
 get_system_added_metadata "$POLICIES_FILE" "$METADATA_TYPE"

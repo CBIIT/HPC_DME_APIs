@@ -13,11 +13,5 @@
 @ddblock_end copyright
 ******************************/
 
-Register a dataObject with valid inputs. 
-The dataObject does not have any metadata.
+Register a dataObject with valid inputs but with metadata that corresponds to No_metadata_folder collection with does not have any required attributes.
 
-makeme:
-
-runme:
-This is done by setting the attribute "createParentCollections" to "true".
-The returned code should be 201
