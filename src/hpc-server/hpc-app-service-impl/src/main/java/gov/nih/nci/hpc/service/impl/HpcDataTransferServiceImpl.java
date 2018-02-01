@@ -344,10 +344,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       String registrarId)
       throws HpcException {
     // Add metadata is done by copying the object to itself w/ attached metadata.
+    // Check that the data transfer system can accept transfer requests.
+    boolean globusSyncUpload =
+        dataTransferType.equals(HpcDataTransferType.GLOBUS)
+            && fileLocation != null;
+
     return dataTransferProxies
         .get(dataTransferType)
         .copyDataObject(
-            getAuthenticatedToken(dataTransferType, configurationId),
+            !globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId) : null,
             fileLocation,
             fileLocation,
             dataManagementConfigurationLocator
@@ -752,7 +757,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
     for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-      if (item.getResult()) {
+      if (item.getResult() != null && item.getResult()) {
         effectiveTransferSpeed += item.getEffectiveTransferSpeed();
         completedItems++;
       }
