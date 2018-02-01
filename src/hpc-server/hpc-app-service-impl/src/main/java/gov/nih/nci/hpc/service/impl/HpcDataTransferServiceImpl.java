@@ -9,8 +9,6 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
-
-import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,6 +60,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 
@@ -583,7 +582,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throws HpcException {
     // Check if Globus accepts transfer requests at this time.
     if (acceptsTransferRequests(
-        downloadTask.getDataTransferType(), downloadTask.getConfigurationId(), false)) {
+        downloadTask.getDataTransferType(), downloadTask.getConfigurationId())) {
       // Globus accepts requests - submit the async download (to Globus).
       HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
       downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
@@ -1025,7 +1024,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         dataTransferType, uploadRequest.getSourceLocation(), configurationId);
 
     // Check that the data transfer system can accept transfer requests.
-    if (!acceptsTransferRequests(dataTransferType, configurationId, uploadRequest.getSourceFile() != null)) {
+    boolean globusSyncUpload =
+        dataTransferType.equals(HpcDataTransferType.GLOBUS)
+            && uploadRequest.getSourceFile() != null;
+    if (!globusSyncUpload && !acceptsTransferRequests(dataTransferType, configurationId)) {
       // The data transfer system is busy. Queue the request (upload status set to
       // 'RECEIVED'),
       // and the upload will be performed later by a scheduled task.
@@ -1040,13 +1042,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     HpcDataTransferConfiguration dataTransferConfiguration =
         dataManagementConfigurationLocator.getDataTransferConfiguration(
             configurationId, dataTransferType);
-    Object authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId);
 
     // Upload the data object using the appropriate data transfer system proxy.
     return dataTransferProxies
         .get(dataTransferType)
         .uploadDataObject(
-            authenticatedToken,
+            !globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId) : null,
             uploadRequest,
             dataTransferConfiguration.getBaseArchiveDestination(),
             dataTransferConfiguration.getUploadRequestURLExpiration(),
@@ -1597,35 +1598,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   /*
    * Determine whether a data transfer request can be initiated at current time.
    *
-   * @param transferType  The type of data transfer.
+   * @param dataTransferType  The type of data transfer.
    * @param configurationId  The data management configuration ID.
-   * @param syncUpload An indicator whether this is a sync upload.
    * @return boolean that is true if request can be initiated, false otherwise
    * @throw HpcException  On internal error
    */
   private boolean acceptsTransferRequests(
-      HpcDataTransferType transferType, String configurationId, boolean syncUpload)
-      throws HpcException {
+      HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
 
     logger.info(
         String.format(
             "checkIfTransferCanBeLaunched: Entered with parameters of transferType = %s, dataMgmtConfigId = %s",
-            transferType.toString(), configurationId));
+            dataTransferType.toString(), configurationId));
 
-    if (transferType.equals(HpcDataTransferType.GLOBUS) && syncUpload) {
-      // This is a sync upload w/ Globus. The Globus proxy will store the file locally to a FileSystem archive,
-      // but there is no Globus transfer involved in this. 
-      return true;
-    }
-
-    final Object theAuthToken = getAuthenticatedToken(transferType, configurationId);
+    final Object theAuthToken = getAuthenticatedToken(dataTransferType, configurationId);
 
     logger.info(
         String.format(
             "checkIfTransferCanBeLaunched: got auth token of %s", token2String(theAuthToken)));
 
     final HpcTransferAcceptanceResponse transferAcceptanceResponse =
-        this.dataTransferProxies.get(transferType).acceptsTransferRequests(theAuthToken);
+        this.dataTransferProxies.get(dataTransferType).acceptsTransferRequests(theAuthToken);
 
     final List<HpcDataTransferAuthenticatedToken> invokerTokens =
         HpcRequestContext.getRequestInvoker().getDataTransferAuthenticatedTokens();
@@ -1634,7 +1627,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     logger.info("checkIfTransferCanBeLaunched: searching for token within invoker state");
 
     for (HpcDataTransferAuthenticatedToken someToken : invokerTokens) {
-      if (someToken.getDataTransferType().equals(transferType)
+      if (someToken.getDataTransferType().equals(dataTransferType)
           && someToken.getConfigurationId().equals(configurationId)) {
         globusClientId = someToken.getSystemAccountId();
 
@@ -1653,7 +1646,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       final String msg =
           String.format(
               "Could not find Globus app account client ID for this request, transfer type is %s and data management configuration ID is %s.",
-              transferType.toString(), configurationId);
+              dataTransferType.toString(), configurationId);
       throw new HpcException(msg, HpcErrorType.UNEXPECTED_ERROR);
     }
 
