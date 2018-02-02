@@ -3,7 +3,7 @@
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
- * 
+ *
  * Distributed under the OSI-approved BSD 3-Clause License.
  * See https://ncisvn.nci.nih.gov/svn/HPC_Data_Management/branches/hpc-prototype-dev/LICENSE.txt for details.
  */
@@ -79,7 +79,7 @@ public class HpcCollectionController extends AbstractHpcController {
 
 	/**
 	 * Get selected collection details from its path
-	 * 
+	 *
 	 * @param body
 	 * @param path
 	 * @param action
@@ -118,11 +118,8 @@ public class HpcCollectionController extends AbstractHpcController {
             }
 
 			// Get collection
-			HpcCollectionListDTO collections = HpcClientUtil.getCollection(
-              authToken, serviceURL, path,true, false, sslCertPath,
-              sslCertPassword);
-//			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
-//					sslCertPath, sslCertPassword);
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
+					sslCertPath, sslCertPassword);
 			if (collections != null && collections.getCollections() != null
 					&& collections.getCollections().size() > 0) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
@@ -185,15 +182,18 @@ public class HpcCollectionController extends AbstractHpcController {
      */
 	private boolean determineIfCollectionCanBeDelete(
       HttpSession session, HpcCollectionDTO collection) {
+        final String authToken = (String) session.getAttribute("hpcUserToken");
         final boolean retVal =
+          determineWhetherCollectionHasChildren(authToken,
+            collection.getCollection().getAbsolutePath()) &&
           HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session) &&
-          HpcCollectionUtil.isUserCollectionOwner(session, collection) &&
-          HpcCollectionUtil.isCollectionEmpty(collection);
+          HpcCollectionUtil.isUserCollectionOwner(session, collection);
+
         return retVal;
     }
 
 
-	private List<String> getMetadataAttributeNames(HpcCollectionDTO collection) {
+    private List<String> getMetadataAttributeNames(HpcCollectionDTO collection) {
 		List<String> names = new ArrayList<String>();
 		if (collection == null || collection.getMetadataEntries() == null
 				|| collection.getMetadataEntries().getSelfMetadataEntries() == null
@@ -206,7 +206,7 @@ public class HpcCollectionController extends AbstractHpcController {
 
 	/**
 	 * Update collection
-	 * 
+	 *
 	 * @param hpcCollection
 	 * @param model
 	 * @param bindingResult
@@ -393,7 +393,7 @@ public class HpcCollectionController extends AbstractHpcController {
         if(inputFlashMap != null)
         {
         final Set<String> inputFlashAttrKeys = inputFlashMap.keySet();
-        
+
         for (String someKey : inputFlashAttrKeys) {
             Object someVal = inputFlashMap.get(someKey);
             if (null == attrNmPrefix) {
@@ -572,8 +572,8 @@ public class HpcCollectionController extends AbstractHpcController {
         HpcCollectionModel retHpcCollObj = null;
         HpcCollectionDTO theCollectionDto = null;
         putUserDocModelIntoSession(authToken, session);
-        final HpcCollectionListDTO collections = HpcClientUtil.getCollection(
-          authToken, serviceURL, collectionPath, true, false,
+        HpcCollectionListDTO collections = HpcClientUtil.getCollection(
+          authToken, serviceURL, collectionPath, false,
           sslCertPath, sslCertPassword);
         if (null != collections && null != collections.getCollections() &&
               0 < collections.getCollections().size()) {
@@ -585,6 +585,21 @@ public class HpcCollectionController extends AbstractHpcController {
         }
 
         return new Object[] { retHpcCollObj, theCollectionDto };
+    }
+
+
+    private boolean determineWhetherCollectionHasChildren(
+                      String theAuthToken, String theCollectionPath) {
+        boolean retVal = false;
+        final HpcCollectionListDTO someCollection = HpcClientUtil.getCollection(
+                theAuthToken, serviceURL, theCollectionPath, true, false,
+                sslCertPath, sslCertPassword);
+        if (null != someCollection && null != someCollection.getCollections() &&
+                0 < someCollection.getCollections().size()) {
+            retVal = HpcCollectionUtil.isCollectionEmpty(
+                       someCollection.getCollections().get(0));
+        }
+        return retVal;
     }
 
 
