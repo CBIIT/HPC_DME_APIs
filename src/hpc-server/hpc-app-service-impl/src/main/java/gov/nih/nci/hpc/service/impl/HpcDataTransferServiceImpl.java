@@ -757,7 +757,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
     for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-      if (item.getResult() != null && item.getResult()) {
+      if (item.getResult() != null && item.getResult() && item.getEffectiveTransferSpeed() != null) {
         effectiveTransferSpeed += item.getEffectiveTransferSpeed();
         completedItems++;
       }
