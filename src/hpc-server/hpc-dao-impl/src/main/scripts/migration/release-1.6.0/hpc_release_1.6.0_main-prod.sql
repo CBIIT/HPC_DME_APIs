@@ -15,8 +15,8 @@
 \i hpc_report_views.sql
 \i hpc_data_download.sql
 \i hpc_data_registration.sql
-\i hpc_test_archive.sql
 \i hpc_data_management_configuration_prod.sql
+\i hpc_test_archive.sql
 \i hpc_system_account.sql
 
                                    
