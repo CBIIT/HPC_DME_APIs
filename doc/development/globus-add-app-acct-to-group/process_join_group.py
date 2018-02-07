@@ -20,41 +20,43 @@ import json
 #     3.  Globus groups are properly configured to allow appropriate Globus application accounts to join
 #         without any human-in-the-loop intervention.
 #
-#     4.  Contents of input JSON file are expected to be in the following format (example):
+#     4.  Contents of input JSON file are expected to be in the following format (example) with placeholders
+#         for Globus group UUIDs, Globus application accounts' client IDs, and Globus application accounts' 
+#         client secrets:
 # 
 #         {
 #           "addGroupMemberBundles": [
 #             {
-#               "groupId": "a6da7308-eca5-11e7-a8a1-0ea08e639e9e",
+#               "groupId": "<UUID of some Globus group>",
 #               "clientsToAdd": [
 #                 {
-#                   "clientId": "50d777e0-5ee2-4af6-b6d6-741093187267",
-#                   "clientSecret": "UqS4tNZI/Vy42XM+6AmC2MzBQO39spxT4jWcxH/3vm0="
+#                   "clientId": "<client ID of some Globus application account>",
+#                   "clientSecret": "<a client secret>"
 #                 },
 #                 {
-#                   "clientId": "554a5aed-e93f-436a-af63-cb818d2de823",
-#                   "clientSecret": "DPWfOKKaG6LjndCsF6ywSFReRq0W+JFF9+Xm+gMnLAs="
+#                   "clientId": "<client ID of some Globus application account>",
+#                   "clientSecret": "<a client secret>"
 #                 },
 #                 {
-#                   "clientId": "3fa453a9-202b-471f-a972-55e25a31a1fd",
-#                   "clientSecret": "WpNCLuwmC7Reaf/27GRyyG2rIWUuFJEIqbd49JdnT+0="
+#                   "clientId": "<client ID of some Globus application account>",
+#                   "clientSecret": "<a client secret>"
 #                 }
 #               ]
 #             },
 #             {
-#               "groupId": "5f8eae9c-f55b-11e7-a756-0af7ae577cc6",
+#               "groupId": "<UUID of some Globus group>",
 #               "clientsToAdd": [
 #                 {
-#                   "clientId": "d25efd0e-1e05-4f04-b246-329ab54d2eea",
-#                   "clientSecret": "qp2GAacLbmBqS/Zdv86Vg/I4lgxPdxnv+B29lKhUONQ="
+#                   "clientId": "<client ID of some Globus application account>",
+#                   "clientSecret": "<a client secret>"
 #                 },
 #                 {
-#                   "clientId": "399b1e76-b57f-491a-ae28-3f8b8d3c4a58",
-#                   "clientSecret": "bbjcLR2F2/N4Nmr8AOT85bAa/JRmi8kY+dfQrEKKZVM="
+#                   "clientId": "<client ID of some Globus application account>",
+#                   "clientSecret": "<a client secret>"
 #                 },
 #                 {
-#                   "clientId": "417b7f4d-6e4b-447e-aeca-462cbbe4b07d",
-#                   "clientSecret": "Rla57tCdUKmRX01WA0Wm6UVIxwT8Qzhi0yMbsz4iRes="
+#                   "clientId": "<client ID of some Globus application account>",
+#                   "clientSecret": "<a client secret>"
 #                 }
 #               ]
 #             }
@@ -66,6 +68,21 @@ import json
 # Original Author: William Liu
 #
 # Original Date: January 9, 2018
+# 
+# Revisions:
+#
+#   Author                Date                         Comments
+#--------------------------------------------------------------------------------------------------
+#   William Liu           February 7, 2018             Modified add_client_to_group function to
+#                                                      fix errors that were experienced with prior
+#                                                      revision's implementation of the function.
+#                                                      The modified code was sent by Globus Support
+#                                                      in response to support request.
+#                                                      
+#                                                      Changed sample JSON in this comment block to
+#                                                      remove actual Globus group UUIDs, Globus 
+#                                                      application account client IDs, and Globus
+#                                                      application account client secrets.
 #
 ####################################################################################################
 ####################################################################################################
@@ -98,19 +115,27 @@ def gen_groups_client(client_id, client_secret):
 
 
 def add_client_to_group(target_group_id, target_client_id, target_client_secret):
-    ret_signal = False
     groups_client = gen_groups_client(target_client_id, target_client_secret)
     try:
         client_username = CLIENT_IDENTITY_USERNAME_TEMPLATE.format(target_client_id)
         res = groups_client.post(
                 JOIN_GROUP_CALL.format(group_id=target_group_id),
                 join_group_payload(client_username))
-        ret_signal = True
-    except globus_sdk.GlobusAPIError as e:
-        print('Error joining group:\n{}'.format(e))
-        raise
+    except globus_sdk.GlobusAPIError:
+        try:
+            res = groups_client.get('{}/{}'.format(
+                    JOIN_GROUP_CALL.format(group_id=target_group_id),
+                    client_username))
+        except globus_sdk.GlobusAPIError as e:
+            print('Error joining group:\n{}'.format(e))
+            raise
 
-    return ret_signal
+    try:
+        status = res.data['members'][0]['status']
+    except KeyError:
+        status = res.data['status']
+
+    return status == 'active'
 
 
 def main():
