@@ -33,4 +33,4 @@ hpc.login.token=tokens/hpcdme-auth.txt
 validate.md5.checksum=false
 upload.buffer.size=10000000
 # JAR version
-hpc.jar.version=hpc-cli-1.6.0.jar
+hpc.jar.version=hpc-cli-1.6.0-RELEASE.jar
