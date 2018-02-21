@@ -116,7 +116,8 @@
 							<keypass>changeit</keypass>
 							<alias>hpc-server-key</alias>
 							<dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
-							<validity>365</validity>
+							<!-- 36,500 days ~= 100 years -->
+							<validity>36500</validity>
 							<skipIfExist>true</skipIfExist>
 						</configuration>
 					</execution>
@@ -132,7 +133,8 @@
 							<keypass>hpc-client-pwd</keypass>
 							<alias>hpc-client-key</alias>
 							<dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US</dname>
-							<validity>365</validity>
+							<!-- 36,500 days ~= 100 years -->
+							<validity>36500</validity>
 							<skipIfExist>true</skipIfExist>
 						</configuration>
 					</execution>
