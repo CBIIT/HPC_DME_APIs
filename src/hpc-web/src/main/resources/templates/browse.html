@@ -172,6 +172,8 @@
 									</div>
 									
 									<ul id="myMenu" class="dropdown-menu" style="position: fixed;" role="menu" aria-labelledby="dLabel">
+                      <li><a href="#viewDetails">View Details</a></li>
+                      <li class="divider"></li>
 											<li><a href="#addCollection">Add Collection</a></li>
  											<li class="divider"></li>
 											<li><a href="#addDatafile">Add Datafile</a></li>
@@ -265,12 +267,8 @@ function refreshNode(node) {
 $('#tree1').bind(
     'tree.click',
     function(event) {
-        // The clicked node is 'event.node'
         var node = event.node;
-        if(node.collection)
-        	location.href = "collection?action=view&path="+node.fullPath;
-        else
-        	location.href = "datafile?action=view&path="+node.fullPath;
+        $('#tree1').tree('toggle', node);
     }
 );
 
@@ -316,7 +314,11 @@ $('#tree1').bind('tree.open', function (e,data) {
 );
 
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
-    "addCollection": function (node) { 
+    "viewDetails": function (node) {
+    	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
+    	                     node.fullPath + "&source=browse&init";
+    },
+    "addCollection": function (node) {
     	window.location = "/addCollection?parent="+node.fullPath+"&source=browse&init";
     },
     "addDatafile": function (node) {
