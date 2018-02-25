@@ -4,11 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -36,6 +39,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
@@ -44,109 +48,39 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration(locations={"/hpc-app-service-beans-configuration.xml"})
-@ContextConfiguration(loader=AnnotationConfigContextLoader.class)
-@TestExecutionListeners(listeners = { DependencyInjectionTestExecutionListener.class,
-	    DirtiesContextTestExecutionListener.class, TransactionalTestExecutionListener.class })
+@ContextConfiguration(locations={"/hpc-test-app-service-beans-configuration.xml"})
+//@ContextConfiguration(loader=AnnotationConfigContextLoader.class)
 public class HpcDataTransferServiceImplTest {
 	
-	@Configuration
-	static class HpcDataTransferServiceImplTestContextConfiguration {
-		
-		
-	    @Bean
-	    public HpcDataTransferProxy hpcGlobusDataTransferProxy() {
-	        return Mockito.mock(HpcDataTransferProxy.class);
-	    }
-	    @Autowired
-	    private HpcDataTransferProxy hpcGlobusDataTransferProxy;
-	  
-	
-	    @Bean
-	    public HpcDataTransferProxy hpcS3DataTransferProxy() {
-	        return Mockito.mock(HpcDataTransferProxy.class);
-	    }
-	    @Autowired
-	    private HpcDataTransferProxy hpcS3DataTransferProxy;
-	    
-	    
-		@Bean
-		public HpcDataTransferService dataTransferService() throws HpcException {
-			
-			Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new HashMap<HpcDataTransferType, HpcDataTransferProxy>();
-			dataTransferProxies.put(HpcDataTransferType.GLOBUS, hpcGlobusDataTransferProxy);
-			dataTransferProxies.put(HpcDataTransferType.S_3, hpcS3DataTransferProxy);
-			
-			HpcDataTransferUploadReport uploadReport = new HpcDataTransferUploadReport();
-			uploadReport.setBytesTransferred(2000);
-			
-			HpcDataTransferAuthenticatedToken token = new HpcDataTransferAuthenticatedToken();
-			token.setDataTransferType(HpcDataTransferType.GLOBUS);
-			token.setConfigurationId("configId");
-			HpcRequestInvoker invoker = new HpcRequestInvoker();
-			List<HpcDataTransferAuthenticatedToken> tokens = invoker.getDataTransferAuthenticatedTokens();
-			tokens.add(token);
-			HpcRequestContext.setRequestInvoker(invoker);
-			
-			//Mockito.when(hpcGlobusDataTransferProxy.getDataTransferUploadStatus(Mockito.anyObject(), Mockito.anyString(), Mockito.anyObject())).thenReturn(uploadReport);
-			Mockito.doReturn(uploadReport).when(hpcGlobusDataTransferProxy).getDataTransferUploadStatus(Mockito.anyObject(), Mockito.anyString(), Mockito.anyObject());
-				
-			HpcDataTransferService dataTransferService = new HpcDataTransferServiceImpl(dataTransferProxies, "./");
-			return dataTransferService;
-			
-			
-		}
-		
-		@Bean
-		public HpcSystemAccountLocator hpcSystemAccountLocator() throws HpcException {
-			return Mockito.mock(HpcSystemAccountLocator.class);
-		}
-		
-		@Bean
-		public HpcSystemAccountDAO systemAccountDAO() {
-			return Mockito.mock(HpcSystemAccountDAO.class);
-		}
-		
-		@Bean
-		public HpcDataManagementConfigurationLocator dataManagementConfigurationLocator() throws HpcException {
-			
-			HpcDataManagementConfigurationLocator dataManagementConfigurationLocator =  Mockito.mock(HpcDataManagementConfigurationLocator.class);
-			
-			HpcDataTransferConfiguration dataTransferConfiguration = new HpcDataTransferConfiguration();
-		    Mockito.doReturn(dataTransferConfiguration).when(dataManagementConfigurationLocator).getDataTransferConfiguration(Mockito.anyString(), Mockito.anyObject());
-		    return dataManagementConfigurationLocator;
-		}
-		
-		@Bean 
-		public HpcDataManagementConfigurationDAO dataManagementConfigurationDAO() {
-			return Mockito.mock(HpcDataManagementConfigurationDAO.class);
-		}
-		
-		@Bean 
-		public HpcDataManagementProxy dataManagementProxy() {
-			return Mockito.mock(HpcDataManagementProxy.class);
-		}
-		
-		@Bean
-		public HpcDataDownloadDAO dataDowbloadDAO() {
-			return Mockito.mock(HpcDataDownloadDAO.class);
-		}
-		
-		@Bean
-		public HpcEventService hpcEventService() {
-			return Mockito.mock(HpcEventService.class);
-		}
-		
-		@Bean
-		public HpcPagination hpcDownloadResultsPagination() {
-			return Mockito.mock(HpcPagination.class);
-		}
-	}
-	
-	@Autowired 
+	@Autowired
+	@Qualifier("test")
 	private HpcDataTransferService dataTransferService;
 	
+    @Autowired
+	private HpcDataTransferProxy hpcGlobusDataTransferProxy;
+    
+    @Autowired
+    private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator;
 	
+	@Before
+	public void setup() throws HpcException {
+		HpcDataTransferUploadReport uploadReport = new HpcDataTransferUploadReport();
+		uploadReport.setBytesTransferred(2000);
+		
+		HpcDataTransferAuthenticatedToken token = new HpcDataTransferAuthenticatedToken();
+		token.setDataTransferType(HpcDataTransferType.GLOBUS);
+		token.setConfigurationId("configId");
+		HpcRequestInvoker invoker = new HpcRequestInvoker();
+		List<HpcDataTransferAuthenticatedToken> tokens = invoker.getDataTransferAuthenticatedTokens();
+		tokens.add(token);
+		HpcRequestContext.setRequestInvoker(invoker);
+		
+		Mockito.doReturn(uploadReport).when(hpcGlobusDataTransferProxy).getDataTransferUploadStatus(Mockito.anyObject(), Mockito.anyObject(), Mockito.anyObject());
+		
+		HpcDataTransferConfiguration dataTransferConfiguration = new HpcDataTransferConfiguration();
+		Mockito.doReturn(dataTransferConfiguration).when(dataManagementConfigurationLocator).getDataTransferConfiguration(Mockito.anyObject(), Mockito.anyObject());		    
+	}
+     
 	@Test
 	public void calculateDataObjectUploadPercentCompleteTest() {
 		
@@ -155,7 +89,7 @@ public class HpcDataTransferServiceImplTest {
 		metadata.setDataTransferRequestId("requestId");
 	    metadata.setConfigurationId("configId");
 	    metadata.setSourceSize(5000L);
-	    
+	   
 		//Null if either of data transfer type or status is null
 		
 		metadata.setDataTransferStatus(HpcDataTransferUploadStatus.RECEIVED);
