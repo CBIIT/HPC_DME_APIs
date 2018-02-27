@@ -521,7 +521,7 @@ function myreadlink {
   pushd $1 > /dev/null
   absolute_path=$(pwd)
   popd > /dev/null
-  echo $absolute_path 
+  echo "$absolute_path"
 }
 
 
@@ -532,7 +532,7 @@ function myfilereadlink {
   pushd $relative_dir_path > /dev/null
   absolute_dir_path=$(pwd)
   popd > /dev/null
-  echo $absolute_dir_path/$(basename $1)
+  echo "$absolute_dir_path/$(basename $1)"
 }
 
 
@@ -597,7 +597,7 @@ function convert_path {
   input_path="$1"
   case "$(uname -s)" in
     Darwin|Linux)
-      echo $input_path
+      echo "$input_path"
     ;;
     CYGWIN*|MINGW32*|MSYS*)
       echo $(cygpath -m "${input_path}")

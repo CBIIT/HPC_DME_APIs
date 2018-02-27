@@ -86,7 +86,6 @@ function dm_globus_generate_token {
 #         <type>: dataObjet or collection 
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
-
     local USAGE="USAGE: dm_register <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
@@ -657,7 +656,7 @@ function dm_register_directory {
 
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file
-    echo "registerFromFilePath  " $command_args >  $command_file
+    echo "registerFromFilePath  " "$command_args" >  $command_file
 
     local log_file=./dm_log
     local error_file=./dm_error
