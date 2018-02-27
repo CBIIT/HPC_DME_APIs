@@ -87,6 +87,7 @@ public class HpcLocalDirectoryListQuery {
 
 		try {
 			List<String> files = readFileListfromFile(fileLocation);
+			long totalSize = 0L;
 			for(String filePath : files)
 			{
 				HpcPathAttributes filePathAttr = new HpcPathAttributes();
@@ -99,9 +100,11 @@ public class HpcLocalDirectoryListQuery {
 				File fileToCheckDir = new File(filePath);
 				filePathAttr.setIsDirectory(fileToCheckDir.isDirectory());
 				filePathAttr.setPath(filePath);
+				totalSize = totalSize + fileToCheckDir.length();
 				System.out.println("Including: " + fullPath);
 				pathAttributes.add(filePathAttr);
 			}
+			System.out.println("\nAggreate file size: " + totalSize);
 		} catch (Exception e) {
 			throw new HpcException("Failed to get path attributes: " + fileLocation,
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
@@ -174,13 +177,17 @@ public class HpcLocalDirectoryListQuery {
 			includePattern.add("*/**");
 		}
 
+		long totalSize = 0L;
 		Paths paths = getFileList(directoryName, excludePattern, includePattern);
-		for (String file : paths) {
-			String fileName = file.replace("\\", File.separator);
+		for (String filePath : paths) {
+			String fileName = filePath.replace("\\", File.separator);
 			fileName = fileName.replace("/", File.separator);
 			System.out.println("Including: " + fileName);
-			resultList.add(new File(fileName));
+			File file = new File(fileName);
+			totalSize = totalSize + file.length();
+			resultList.add(file);
 		}
+		System.out.println("\nAggregate file size: " + totalSize);
 		return resultList;
 	}
 
