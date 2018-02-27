@@ -45,8 +45,6 @@
 	<modules>
 		<module>hpc-common</module>
 		<module>hpc-domain-types</module>
-		<module>hpc-domain-model</module>
-		<module>hpc-dto</module>
 		<module>hpc-dao-api</module>
 		<module>hpc-dao-impl</module>
 		<module>hpc-integration-api</module>
@@ -135,15 +133,51 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.19.1</version>
 					<configuration>
-						<skipTests>true</skipTests>
+						<skipTests>false</skipTests>
 						<parallel>classes</parallel>
 						<threadCount>5</threadCount>
+						<argLine>${surefireArgLine}</argLine>
 					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
 					<version>1.6.0</version>
+				</plugin>
+				<plugin>
+    					<groupId>org.jacoco</groupId>
+    					<artifactId>jacoco-maven-plugin</artifactId>
+    					<version>0.8.0</version>
+					<executions>
+					    <execution>
+            					<id>pre-unit-test</id>
+            					<goals>
+                				    <goal>prepare-agent</goal>
+           					</goals>
+						<configuration>
+                				    <!-- Sets the path to the file which contains the execution data. -->
+                				    <destFile>${basedir}/target/coverage-reports/jacoco-ut.exec</destFile>
+                				    <!--
+                    				        Sets the name of the property containing the settings
+                    				        for JaCoCo runtime agent.
+                				    -->
+                			 	    <propertyName>surefireArgLine</propertyName>
+            			  		</configuration> 
+        				    </execution>
+        				    <execution>
+            					<id>post-unit-test</id>
+            					<phase>test</phase>
+            					<goals>
+                				    <goal>report</goal>
+            					</goals>
+					 	<configuration> 
+                				    <!-- Sets the path to the file which contains the execution data. -->
+                			  	    <dataFile>${basedir}/target/coverage-reports/jacoco-ut.exec</dataFile>
+                				    <!-- Sets the output directory for the code coverage report. -->
+                			 	    <outputDirectory>${basedir}/target/site/jacoco-ut</outputDirectory>
+            			  		</configuration> 
+        				    </execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -166,7 +200,8 @@
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
 				<version>${commons-codec.version}</version>
-			</dependency>-->
+			</dependency/>
+			-->
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
@@ -261,6 +296,11 @@
 			    <groupId>org.springframework.retry</groupId>
 			    <artifactId>spring-retry</artifactId>
 			    <version>${spring.retry.version}</version>
+			</dependency>
+			<dependency>
+    				<groupId>org.mockito</groupId>
+    				<artifactId>mockito-core</artifactId>
+    				<version>1.10.19</version>
 			</dependency>
 			<dependency>
 				<groupId>com.amazonaws</groupId>
@@ -391,4 +431,30 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
+
+	<!--  This profile is required to work around the maven bug MDEP-98 when it is
+	 desired to execute just the maven test phase. Ideally, we should be able to disable
+ 	tests through the skipTests configuration in surefire, but because of MDEP-98, for 
+	the below modules that use the unpack goal from maven-dependency-plugin to resolve 
+	dependency on hpc-domain-types, maven is unable to locate the jar because package 
+	phase, to which assembly of jar module is bound, will not be triggered by this
+	test phase execution.
+	To now run only the test phase, use ‘mvn test -P -untestable’ which will prevent
+	this profile from running and thus exclude the below modules.
+	-->
+	<profiles>
+    		<profile>
+      			<id>untestable</id>
+			<activation>
+            			<file>
+                			<exists>pom.xml</exists>
+           			 </file>
+        		</activation>
+      			<modules>
+        			<module>hpc-domain-model</module>
+				<module>hpc-dto</module>
+      			</modules>
+    		</profile>
+  	</profiles>
+
 </project>
