@@ -1,0 +1,26 @@
+import requests
+import os
+
+class hpc_dm_utils:
+  """A common utility class for the command line client"""  
+
+  def __init__(self):
+    #Make sure HPC_DME_UTILS is available   
+
+    #Make sure the hpcdme.properties is available
+   
+    #Get the server
+
+    #Get the username
+
+    #Get the jar file
+ 
+
+class hpc_dm_api:
+  """A wrapper class to make requests to  HPC_DM APIs"""
+
+  def __init__(self):
+    utils=
+
+  def generate_dm_token():
+
