@@ -168,9 +168,27 @@
 									</div>								
 								
 									<div class="form-group">
-										<div id="tree1"></div>										
+										<div id="tree1"></div>
 									</div>
-									
+                  <div id="bookmarksDiv">
+                    <div>User Bookmarks</div>
+<!--
+  <ul th:each="someBookmark : ${#httpSession.getAttribute('bookmarks')}" th:if="${#httpSession.getAttribute('bookmarks') != null}">
+    <li>
+      <a href="${someBookmark.path}" th:inline="text">[[${someBookmark.name}]]!</a>
+    </li>
+  </ul>
+-->
+                    <ul>
+                    <th:block th:each="someBookmark : ${userBookmarks}">
+                      <li>
+                        <a th:text="${someBookmark.name}" href="${someBookmark.path}"></a>
+                      </li>
+                    </th:block>
+                    </ul>
+                    <div>... Under construction</div>
+                  </div>
+
 									<ul id="myMenu" class="dropdown-menu" style="position: fixed;" role="menu" aria-labelledby="dLabel">
                       <li><a href="#viewDetails">View Details</a></li>
                       <li class="divider"></li>
