@@ -86,8 +86,10 @@ public class HpcBrowseController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String browse(@Valid @ModelAttribute("hpcBrowse") HpcBrowserEntry hpcBrowserEntry, Model model,
-			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
+	public String browse(@Valid @ModelAttribute("hpcBrowse") HpcBrowserEntry hpcBrowserEntry,
+			Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+			HttpServletResponse response,
 			final RedirectAttributes redirectAttributes, final String refreshNode) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
@@ -105,14 +107,17 @@ public class HpcBrowseController extends AbstractHpcController {
 
 				// session.setAttribute("selectedBrowsePath",
 				// hpcBrowserEntry.getSelectedNodePath());
-				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry, authToken,
+				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
+						authToken,
 						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
-				if (hpcBrowserEntry.isPartial())
+				if (hpcBrowserEntry.isPartial()) {
 					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
+				}
 
 				browserEntry = trimPath(browserEntry, browserEntry.getName());
 				List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
 				entries.add(browserEntry);
+				model.addAttribute("userBookmarks", fetchCurrentUserBookmarks(session));
 				model.addAttribute("browserEntryList", entries);
 				model.addAttribute("browserEntry", browserEntry);
 				model.addAttribute("scrollLoc", hpcBrowserEntry.getScrollLoc());

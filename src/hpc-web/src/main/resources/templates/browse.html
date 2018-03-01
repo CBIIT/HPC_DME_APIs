@@ -60,6 +60,7 @@
     var data = [[${browserEntryList}]];
     var basePathName = [[${basePath}]];
     var scrollLoc = [[${scrollLoc}]];
+    var userBookmarks = [[${userBookmarks}]];
 /*]]>*/
 </script>
 	
@@ -101,6 +102,18 @@
 	.myMenuStyle > li {
 		background-color: #eee;
 	}
+
+#bookmarksContent {
+  margin-top: 2em;
+}
+
+#bookmarksDiv > a {
+  margin-left: 2em;
+}
+
+#toggleBookmarksElem > i {
+  margin-right: 1em;
+}
 </style>
 </head>
 <body ng-controller="MyCtrl" onload="scrollWindow()">
@@ -165,30 +178,18 @@
 											<!-- /.modal-content -->
 										</div>
 										<!-- /.modal-dialog -->
-									</div>								
-								
+									</div>
 									<div class="form-group">
 										<div id="tree1"></div>
+                    <div id="bookmarksContent">
+                      <span id="toggleBookmarksElem">
+                        <i class="glyphicon glyphicon-folder-open"></i>
+                        User Bookmarks
+                      </span>
+                      <br/>
+                      <div id="bookmarksDiv"></div>
+                    </div>
 									</div>
-                  <div id="bookmarksDiv">
-                    <div>User Bookmarks</div>
-<!--
-  <ul th:each="someBookmark : ${#httpSession.getAttribute('bookmarks')}" th:if="${#httpSession.getAttribute('bookmarks') != null}">
-    <li>
-      <a href="${someBookmark.path}" th:inline="text">[[${someBookmark.name}]]!</a>
-    </li>
-  </ul>
--->
-                    <ul>
-                    <th:block th:each="someBookmark : ${userBookmarks}">
-                      <li>
-                        <a th:text="${someBookmark.name}" href="${someBookmark.path}"></a>
-                      </li>
-                    </th:block>
-                    </ul>
-                    <div>... Under construction</div>
-                  </div>
-
 									<ul id="myMenu" class="dropdown-menu" style="position: fixed;" role="menu" aria-labelledby="dLabel">
                       <li><a href="#viewDetails">View Details</a></li>
                       <li class="divider"></li>
@@ -201,10 +202,8 @@
 											<li><a href="#refreshNode">Refresh Node</a></li>
 									</ul>	
 								</div>
-
 						</div>
 						<!--/col-->
-
 					</div>
 				</div>
 				<div class="row"></div>
@@ -251,9 +250,8 @@ $(function() {
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
                 $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
-
             }
-        }        
+        }
     });
 });
 
@@ -331,6 +329,22 @@ $('#tree1').bind('tree.open', function (e,data) {
 }
 );
 
+
+$('#tree1').bind('tree.init', function() {
+  var postTreeInit = function() {
+    $("#bookmarksDiv").empty();
+    var aBookmarkLink;
+    for (i = 0; i < userBookmarks.length; i++) {
+      var linkHref = '/browse?refresh&path=' + userBookmarks[i].path;
+      aBookmarkLink = "<a href='bm-path'>bm-name</a>".replace("bm-path", linkHref)
+                                                     .replace("bm-name", userBookmarks[i].name);
+      $("#bookmarksDiv").append(aBookmarkLink);
+      $("#bookmarksDiv").append("<br/>");
+    }
+  };
+  setTimeout(postTreeInit, 500);
+});
+
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "viewDetails": function (node) {
     	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
@@ -349,6 +363,18 @@ $('#tree1').jqTreeContextMenu($('#myMenu'), {
     	refreshNode(node);
     }
 }); 
+
+  $('#toggleBookmarksElem').bind('click', function() {
+    $('#bookmarksDiv').toggle();
+
+    if ($('#bookmarksDiv:visible').length == 0) {
+      $('#toggleBookmarksElem > i').removeClass('glyphicon-folder-open');
+      $('#toggleBookmarksElem > i').addClass('glyphicon-folder-close');
+    } else {
+      $('#toggleBookmarksElem > i').removeClass('glyphicon-folder-close');
+      $('#toggleBookmarksElem > i').addClass('glyphicon-folder-open');
+    }
+  });
 
 /*]]>*/
 </script>
