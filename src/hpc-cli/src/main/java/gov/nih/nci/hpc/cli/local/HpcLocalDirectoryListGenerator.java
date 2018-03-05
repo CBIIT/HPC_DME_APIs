@@ -7,6 +7,28 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.local;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
+import gov.nih.nci.hpc.cli.util.HpcBatchException;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.cli.util.HpcLogWriter;
+import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.cli.util.Paths;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,40 +46,14 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.web.client.RestClientException;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-import com.google.common.hash.HashCode;
-import com.google.common.hash.Hashing;
-
-import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
-import gov.nih.nci.hpc.cli.util.HpcBatchException;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.HpcCmdException;
-import gov.nih.nci.hpc.cli.util.HpcLogWriter;
-import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.cli.local.HpcLocalDirectoryListGenerator;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HpcLocalDirectoryListGenerator {
 
@@ -104,8 +100,8 @@ public class HpcLocalDirectoryListGenerator {
 				Collections.sort(files);
 				for (HpcPathAttributes file : files) {
 					try {
-
-						File fileAbsolutePath = new File(file.getAbsolutePath());
+//						File fileAbsolutePath = new File(file.getAbsolutePath());
+						File fileAbsolutePath = new File(Paths.generateFileSystemResourceUri(file.getAbsolutePath()));
 						if (!fileAbsolutePath.isDirectory()) {
 							HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
 
@@ -233,8 +229,10 @@ public class HpcLocalDirectoryListGenerator {
 	}
 
 	private List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly) throws HpcCmdException {
-		String fullPath = file.getAbsolutePath();
-		File metadataFile = new File(fullPath + ".metadata.json");
+//		String fullPath = file.getAbsolutePath();
+//    File metadataFile = new File(fullPath + ".metadata.json");
+    final String fullPath = file.getAbsolutePath().concat(".metadata.json");
+		File metadataFile = new File(Paths.generateFileSystemResourceUri(fullPath));
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
 		if (metadataFile.exists()) {
 			MappingJsonFactory factory = new MappingJsonFactory();
