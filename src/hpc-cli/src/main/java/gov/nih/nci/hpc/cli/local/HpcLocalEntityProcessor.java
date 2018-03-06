@@ -1,5 +1,13 @@
 package gov.nih.nci.hpc.cli.local;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
+import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.cli.util.Paths;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,17 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.easybatch.core.processor.RecordProcessingException;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-
-import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
-import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
-import gov.nih.nci.hpc.cli.util.HpcCmdException;
-import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 
 public abstract class HpcLocalEntityProcessor {
 	protected HpcServerConnection connection;
@@ -31,52 +29,58 @@ public abstract class HpcLocalEntityProcessor {
 			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException;
 
-	protected List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly) throws HpcCmdException {
-		String fullPath = file.getAbsolutePath();
-		File metadataFile = new File(fullPath + ".metadata.json");
-		List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
-		if (metadataFile.exists()) {
-			MappingJsonFactory factory = new MappingJsonFactory();
-			JsonParser parser;
-			try {
-				parser = factory.createParser(new FileInputStream(metadataFile));
-				HpcMetadataAttributes metadataAttributes = parser.readValueAs(HpcMetadataAttributes.class);
-				metadataEntries = metadataAttributes.getMetadataEntries();
-				// metadataEntries = parser.readValueAs(new
-				// TypeReference<List<HpcMetadataEntry>>() {
-				// });
-			} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-				throw new HpcCmdException(
-						"Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e.getMessage());
-			} catch (IOException e) {
-				throw new HpcCmdException(
-						"Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e.getMessage());
-			}
-		} else {
-			if (metadataOnly)
-				return null;
-			HpcMetadataEntry nameEntry = new HpcMetadataEntry();
-			nameEntry.setAttribute("name");
-			nameEntry.setValue(file.getName());
-			metadataEntries.add(nameEntry);
-			HpcMetadataEntry dateEntry = new HpcMetadataEntry();
-			dateEntry.setAttribute("modified_date");
-			if (file.getUpdatedDate() != null)
-				dateEntry.setValue(file.getUpdatedDate());
-			else {
-				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-				dateEntry.setValue(sdf.format(new Date()));
-			}
-			metadataEntries.add(dateEntry);
-			if (file.getIsDirectory()) {
-				HpcMetadataEntry typeEntry = new HpcMetadataEntry();
-				typeEntry.setAttribute("collection_type");
-				typeEntry.setValue("Folder");
-				metadataEntries.add(typeEntry);
-			}
-		}
-		return metadataEntries;
-	}
+  protected List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly)
+      throws HpcCmdException {
+//		String fullPath = file.getAbsolutePath();
+//		File metadataFile = new File(fullPath + ".metadata.json");
+    final String metadataFilePath = file.getAbsolutePath().concat(".metadata.json");
+    File metadataFile = new File(Paths.generateFileSystemResourceUri(metadataFilePath));
+    List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
+    if (metadataFile.exists()) {
+      MappingJsonFactory factory = new MappingJsonFactory();
+      JsonParser parser;
+      try {
+        parser = factory.createParser(new FileInputStream(metadataFile));
+        HpcMetadataAttributes metadataAttributes = parser.readValueAs(HpcMetadataAttributes.class);
+        metadataEntries = metadataAttributes.getMetadataEntries();
+        // metadataEntries = parser.readValueAs(new
+        // TypeReference<List<HpcMetadataEntry>>() {
+        // });
+      } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+        throw new HpcCmdException(
+            "Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e
+                .getMessage());
+      } catch (IOException e) {
+        throw new HpcCmdException(
+            "Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e
+                .getMessage());
+      }
+    } else {
+      if (metadataOnly) {
+        return null;
+      }
+      HpcMetadataEntry nameEntry = new HpcMetadataEntry();
+      nameEntry.setAttribute("name");
+      nameEntry.setValue(file.getName());
+      metadataEntries.add(nameEntry);
+      HpcMetadataEntry dateEntry = new HpcMetadataEntry();
+      dateEntry.setAttribute("modified_date");
+      if (file.getUpdatedDate() != null) {
+        dateEntry.setValue(file.getUpdatedDate());
+      } else {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        dateEntry.setValue(sdf.format(new Date()));
+      }
+      metadataEntries.add(dateEntry);
+      if (file.getIsDirectory()) {
+        HpcMetadataEntry typeEntry = new HpcMetadataEntry();
+        typeEntry.setAttribute("collection_type");
+        typeEntry.setValue("Folder");
+        metadataEntries.add(typeEntry);
+      }
+    }
+    return metadataEntries;
+  }
 
 	protected List<HpcMetadataEntry> getParentCollectionMetadata(HpcPathAttributes file, boolean metadataOnly) {
 		List<HpcMetadataEntry> parentCollectionMetadataEntries = new ArrayList<HpcMetadataEntry>();

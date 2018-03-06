@@ -1,5 +1,0 @@
-# PROD API Server
-hpcdmeapi.nci.nih.gov 8080
-
-# PROD Web Server
-hpcdmeweb.nci.nih.gov 443
