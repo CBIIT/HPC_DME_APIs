@@ -116,7 +116,7 @@ public class HPCPermissions extends HPCBatchClient {
 		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader();
 		try {
 			// initialize FileReader object
-			fileReader = new FileReader(fileName);
+			fileReader = new FileReader(new File(Paths.generateFileSystemResourceUri(fileName)));
 			// initialize CSVParser object
 			csvFileParser = new CSVParser(fileReader, csvFileFormat);
 			Map<String, Integer> headersMap = csvFileParser.getHeaderMap();
