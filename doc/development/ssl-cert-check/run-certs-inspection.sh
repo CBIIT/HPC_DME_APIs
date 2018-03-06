@@ -12,12 +12,6 @@
 ###          certs are NIH IRODS certificate, NIH LDAP root certificate, and NIH intermediate CA 
 ###          certificate.
 ###
-###          This script also examines certs for HPC DME web server and HPC DME REST API server in
-###          a different environment/tier.  The strategy is:
-###            a. DEV machine examines certs for UAT tier.
-###            b. UAT machine examines certs for PROD tier.
-###            c. PROD machine examines certs for DEV tier.
-###
 ### Assumptions:
 ###   1.  This script is executed on a server on which Apache Servicemix is installed.
 ###   2.  The server on which this script is executed has Apache Servicemix installed at the
@@ -35,6 +29,9 @@
 ###                   william.liu2@nih.gov    with environment variables of service account user
 ###                                           available.  Refactored script code to use divide logic  
 ###                                           into functions.
+###
+### 2.   2018-02-27   William Yu-Wei Liu     Removed checking of remote DME API and Web servers'
+###                                           certificates.  That was deemed unnecessary.
 ###################################################################################################
 
 
@@ -52,8 +49,8 @@ EXPIRY_THRESHOLD_DAYS=21
 
 ### Send notification emails to this address or these addresses; separate multiple addresses using
 ###  commas
-TO_EMAIL_ADDR=HPC_DME_Admin@mail.nih.gov
-#TO_EMAIL_ADDR=william.liu2@nih.gov
+#TO_EMAIL_ADDR=HPC_DME_Admin@mail.nih.gov
+TO_EMAIL_ADDR=william.liu2@nih.gov
 
 ####################################################################################################
 ### END: Set environment-agnostic variables that may change commonly
@@ -91,20 +88,14 @@ if [[ $THIS_HOST = "fr-s-hpcdm-gp-d"* ]]; then
   APACHE_SRVCMIX_HOME=/opt/apache-servicemix-7.0.0.M3
   EMAIL_DOMAIN=fr-s-hpcdm-gp-d.$DOMAIN_EXTENSION
   SRVC_ACCNT_USER_HOME=/home/NCIF-HPCDM-SVC
-  ### From DEV, check UAT servers
-  SSLDOMAINS_FILE=ssldomains-uat
 elif [[ $THIS_HOST = "fr-s-hpcdm-uat-p"* ]]; then
   APACHE_SRVCMIX_HOME=/opt/apache-servicemix-7.0.0
   EMAIL_DOMAIN=fr-s-hpcdm-uat-p.$DOMAIN_EXTENSION
   SRVC_ACCNT_USER_HOME=/home/NCIF-HPCDM-SVC
-  ### From UAT, check PROD servers
-  SSLDOMAINS_FILE=ssldomains-prod
 else
   APACHE_SRVCMIX_HOME=/opt/apache-servicemix-7.0.0.M3
   EMAIL_DOMAIN=fr-s-dmeapi-t-p.$DOMAIN_EXTENSION
   SRVC_ACCNT_USER_HOME=/home/ncifhpcdmsvcp
-  ### From PROD, check DEV servers
-  SSLDOMAINS_FILE=ssldomains-dev
 fi
 
 FROM_EMAIL_ADDR=`whoami`@$EMAIL_DOMAIN
@@ -116,27 +107,6 @@ COMMON_SSL_CERT_CHECK_OPTIONS="-x $EXPIRY_THRESHOLD_DAYS -i -a -e $TO_EMAIL_ADDR
 ####################################################################################################
 ### END: Set environment-dependent variables
 ####################################################################################################
-
-inspect_ssldomains() {
-  RET_STATUS=0
-  if [ $# -ne 1 ]; then
-    local USAGE_MSG="Usage: inspect_ssldomains <SSL domains file, as expected by ssl-cert-check utility>"
-    echo $USAGE_MSG
-    local MSG_SUBJ="Error running script for checking expiration of domain certificate(s)"
-    echo -e "Script: $SCRIPT_NAME\nDetails ...\n$USAGE_MSG" | mail -s "$MSG_SUBJ" $TO_EMAIL_ADDR -aFrom:$FROM_EMAIL_ADDR
-    RET_STATUS=1
-  elif [ -f "$1" ]; then 
-    local DOMAINS_FILE=$1
-    $SSL_CERT_CHECK_HOME/ssl-cert-check $COMMON_SSL_CERT_CHECK_OPTIONS -f $DOMAINS_FILE
-  else
-    local NO_SUCH_FILE_MSG="The file $1 does not exist."
-    echo $NO_SUCH_FILE_MSG
-    local MSG_SUBJ="Error running script for checking expiration of domain certificate(s)"
-    echo -e "Script: $SCRIPT_NAME\nDetails ...\n$NO_SUCH_FILE_MSG" | mail -s "$MSG_SUBJ" $TO_EMAIL_ADDR -aFrom:$FROM_EMAIL_ADDR
-    RET_STATUS=1
-  fi
-  return $RET_STATUS
-}
 
 inspect_keystore_cert() {
   local RET_STATUS=0
@@ -194,8 +164,6 @@ main() {
     inspect_keystore_cert $HPC_CACERTS_STORE $HPC_CACERTS_STORE_PASSWORD $SOME_CACERT_ALIAS >> $LOG_FILE 2>&1
   done
   
-  inspect_ssldomains $SSLDOMAINS_FILE >> $LOG_FILE 2>&1
-
   # Delete any log files that this script generated 90 or more days ago
   find $LOG_FILE_PATTERN -type f -mtime +$((DAYS_AGE_FOR_LOG_DELETE - 1)) -exec rm {} \;
 }
