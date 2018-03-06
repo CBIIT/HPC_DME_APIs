@@ -123,7 +123,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 		try {
 
 			// initialize FileReader object
-			fileReader = new FileReader(fileName);
+			fileReader = new FileReader(new File(Paths.generateFileSystemResourceUri(fileName)));
 
 			// initialize CSVParser object
 			csvFileParser = new CSVParser(fileReader, csvFileFormat);

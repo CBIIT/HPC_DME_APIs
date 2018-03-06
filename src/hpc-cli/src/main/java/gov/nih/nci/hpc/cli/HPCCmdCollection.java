@@ -298,7 +298,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 		Iterator iterator = criteria.keySet().iterator();
 		String fileName = (String) iterator.next();
 
-		BufferedReader reader = new BufferedReader(new FileReader(fileName));
+		BufferedReader reader = new BufferedReader(new FileReader(new File(Paths.generateFileSystemResourceUri(fileName))));
 		Gson gson = new Gson();
 		HpcCompoundMetadataQueryDTO dto = gson.fromJson(reader, HpcCompoundMetadataQueryDTO.class);
 		return dto;

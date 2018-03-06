@@ -295,7 +295,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 			throws UnsupportedEncodingException, FileNotFoundException {
 		Iterator iterator = criteria.keySet().iterator();
 		String fileName = (String) iterator.next();
-		BufferedReader reader = new BufferedReader(new FileReader(fileName));
+		BufferedReader reader = new BufferedReader(new FileReader(new File(Paths.generateFileSystemResourceUri(fileName))));
 		Gson gson = new Gson();
 		HpcCompoundMetadataQueryDTO dto = gson.fromJson(reader, HpcCompoundMetadataQueryDTO.class);
 		dto.setTotalCount(true);
