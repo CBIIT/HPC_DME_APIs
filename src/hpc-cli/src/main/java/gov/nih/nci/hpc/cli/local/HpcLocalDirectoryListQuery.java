@@ -139,7 +139,7 @@ public class HpcLocalDirectoryListQuery {
 		BufferedReader reader = null;
 		List<String> patterns = new ArrayList<String>();
 		try {
-			reader = new BufferedReader(new FileReader(fileName));
+			reader = new BufferedReader(new FileReader(new File(Paths.generateFileSystemResourceUri(fileName))));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				patterns.add(line);

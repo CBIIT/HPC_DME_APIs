@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.cli.util;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public class HPCCSVFile {
         	List<HPCBatchCollection> collections = new ArrayList();
             
             //initialize FileReader object
-            fileReader = new FileReader(fileName);
+            fileReader = new FileReader(new File(Paths.generateFileSystemResourceUri(fileName)));
            
             //initialize CSVParser object
             csvFileParser = new CSVParser(fileReader, csvFileFormat);
