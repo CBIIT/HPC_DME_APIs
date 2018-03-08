@@ -7,15 +7,6 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.csv;
 
-import gov.nih.nci.hpc.cli.HPCBatchClient;
-import gov.nih.nci.hpc.cli.util.Constants;
-import gov.nih.nci.hpc.cli.util.HpcBatchException;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.Paths;
-import gov.nih.nci.hpc.cli.util.RecordLogFileType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -28,11 +19,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.StringUtils;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -43,68 +36,45 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import gov.nih.nci.hpc.cli.HPCBatchClient;
+import gov.nih.nci.hpc.cli.util.Constants;
+import gov.nih.nci.hpc.cli.util.HpcBatchException;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+
 @Component
 public class HPCBatchCollection extends HPCBatchClient {
-
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMddhhmm");
-
-
-  private static final String FILE_NAME_PREFIX_FOR__LOG_FILE = "putCollections_errorLog";
-  private static final String FILE_NAME_PREFIX_FOR__RECORDS_LOG_FILE = "putCollections_errorRecords";
-
-
-  private static String generateDateTimeStampString() {
-    return DATE_FORMAT.format(new Date());
-  }
-
-
-  private static String generateLogFileName() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append(FILE_NAME_PREFIX_FOR__LOG_FILE);
-    sb.append(generateDateTimeStampString());
-    sb.append(RecordLogFileType.TEXT.getFileExtension());
-    return sb.toString();
-  }
-
-
-  private static String generateLogRecordsFileName() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append(FILE_NAME_PREFIX_FOR__RECORDS_LOG_FILE);
-    sb.append(generateDateTimeStampString());
-    sb.append(RecordLogFileType.CSV.getFileExtension());
-    return sb.toString();
-  }
-
 
 	public HPCBatchCollection() {
 		super();
 	}
 
-  protected void initializeLog() {
-    File logFileHandle = new File(
-        Paths.generateFileSystemResourceUri(logDir, generateLogFileName()));
-    logFile = logFileHandle.getPath();
+	protected void initializeLog() {
+		logFile = logDir + File.separator + "putCollections_errorLog"
+				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
+		logRecordsFile = logDir + File.separator + "putCollections_errorRecords"
+				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
+		File file1 = new File(logFile);
+		File file2 = new File(logRecordsFile);
+		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
+		try {
+			if (!file1.exists()) {
+				file1.createNewFile();
+			}
+			fileLogWriter = new FileWriter(file1, true);
 
-    File recordsLogFileHandle = new File(
-        Paths.generateFileSystemResourceUri(logDir, generateLogRecordsFileName()));
-    logRecordsFile = recordsLogFileHandle.getPath();
+			if (!file2.exists()) {
+				file2.createNewFile();
+			}
+			fileRecordWriter = new FileWriter(file2, true);
+			csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
+		} catch (IOException e) {
+			System.out.println("Failed to initialize Batch process: " + e.getMessage());
+		}
 
-    CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
-    try {
-      if (!logFileHandle.exists()) {
-        logFileHandle.createNewFile();
-      }
-      fileLogWriter = new FileWriter(logFileHandle, true);
-
-      if (!recordsLogFileHandle.exists()) {
-        recordsLogFileHandle.createNewFile();
-      }
-      fileRecordWriter = new FileWriter(recordsLogFileHandle, true);
-      csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
-    } catch (IOException e) {
-      System.out.println("Failed to initialize Batch process: " + e.getMessage());
-    }
-  }
+	}
 
 	protected String processFile(String fileName, String userId, String password, String authToken) {
 		String returnCode = null;
@@ -123,7 +93,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 		try {
 
 			// initialize FileReader object
-			fileReader = new FileReader(new File(Paths.generateFileSystemResourceUri(fileName)));
+			fileReader = new FileReader(fileName);
 
 			// initialize CSVParser object
 			csvFileParser = new CSVParser(fileReader, csvFileFormat);

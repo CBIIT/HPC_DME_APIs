@@ -7,9 +7,7 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.globus;
 
-import gov.nih.nci.hpc.cli.util.Paths;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -166,7 +164,7 @@ public class HpcGlobusDirectoryListProcessor {
 		BufferedReader reader = null;
 		List<String> patterns = new ArrayList<String>();
 		try {
-			reader = new BufferedReader(new FileReader(new File(Paths.generateFileSystemResourceUri(fileName))));
+			reader = new BufferedReader(new FileReader(fileName));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				patterns.add(line);
