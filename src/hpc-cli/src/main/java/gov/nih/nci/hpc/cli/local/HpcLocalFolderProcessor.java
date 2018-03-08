@@ -1,5 +1,16 @@
 package gov.nih.nci.hpc.cli.local;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import javax.ws.rs.core.Response;
+
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.easybatch.core.processor.RecordProcessingException;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -8,21 +19,14 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
+import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
-import gov.nih.nci.hpc.cli.util.Paths;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import javax.ws.rs.core.Response;
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.easybatch.core.processor.RecordProcessingException;
 
 public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
@@ -97,40 +101,36 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 		}
 	}
 
-  private String getCollectionPath(String localPath, String collectionPathBaseName,
-      String collectionPath) {
-    String fullFilePathName = null;
-//	   File fullFile = new File(localPath);
-    File fullFile = new File(Paths.generateFileSystemResourceUri(localPath));
-    String fullLocalPathName = null;
-//    File fullLocalFile = new File(collectionPath);
-    File fullLocalFile = new File(Paths.generateFileSystemResourceUri(collectionPath));
-    try {
-      fullFilePathName = fullFile.getCanonicalPath();
-      fullLocalPathName = fullLocalFile.getCanonicalPath();
-    } catch (IOException e) {
-      System.out.println("Failed to read file path: " + localPath);
-    }
+	private String getCollectionPath(String localPath, String collectionPathBaseName, String collectionPath) {
+	   String fullFilePathName = null;
+	   File fullFile = new File(localPath);
+       String fullLocalPathName = null;
+       File fullLocalFile = new File(collectionPath);
+	      try {
+	      fullFilePathName = fullFile.getCanonicalPath();
+	      fullLocalPathName = fullLocalFile.getCanonicalPath();
+	    } catch (IOException e) {
+	      System.out.println("Failed to read file path: "+localPath);
+	    }
 
-    collectionPath = collectionPath.replace("\\", "/");
-    localPath = localPath.replace("\\", "/");
-    fullFilePathName = fullFilePathName.replace('\\', '/');
-    if (collectionPath.equals(localPath)) {
-      return "/";
-    }
-
-    if (collectionPathBaseName != null && collectionPathBaseName.isEmpty()) {
-      String name = "/" + collectionPathBaseName;
-      if (collectionPath.indexOf(name) != -1) {
-        return collectionPath.substring(collectionPath.indexOf(name) + 1);
-      }
-    } else {
-      if (fullLocalPathName.indexOf(fullFilePathName) != -1) {
-        return fullLocalPathName
-            .substring(collectionPath.indexOf(fullFilePathName) + fullFilePathName.length() + 1);
-      }
-    }
-    return collectionPath;
-  }
+	  collectionPath = collectionPath.replace("\\", "/");
+	  localPath = localPath.replace("\\", "/");
+	  fullFilePathName = fullFilePathName.replace('\\', '/');
+	  if(collectionPath.equals(localPath))
+	    return "/";
+	  
+	  if(collectionPathBaseName != null && collectionPathBaseName.isEmpty())
+	  {
+		String name = "/" + collectionPathBaseName;
+		if (collectionPath.indexOf(name) != -1)
+			return collectionPath.substring(collectionPath.indexOf(name) + 1);
+	  }
+	  else
+	  {
+        if (fullLocalPathName.indexOf(fullFilePathName) != -1)
+          return fullLocalPathName.substring(collectionPath.indexOf(fullFilePathName) + fullFilePathName.length() + 1);
+	  }
+      return collectionPath;
+	}
 
 }

@@ -6,20 +6,6 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.util;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -50,6 +36,7 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.transform.Source;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.http.client.HttpClient;
@@ -60,6 +47,7 @@ import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -68,6 +56,21 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 
 public class HpcClientUtil {
 
@@ -404,23 +407,20 @@ public class HpcClientUtil {
   }
 
   public static void writeRecord(String fileBasePath, String absolutePath, String logFile) {
-//    File fullFile = new File(fileBasePath);
-    File fullFile = new File(Paths.generateFileSystemResourceUri(fileBasePath));
+    File fullFile = new File(fileBasePath);
     String fullFilePathName = null;
     try {
-      fullFilePathName = fullFile.getCanonicalPath();
-    } catch (IOException e) {
-      System.out.println("Failed to read file path: " + fileBasePath);
-    }
+    fullFilePathName = fullFile.getCanonicalPath();
+  } catch (IOException e) {
+    System.out.println("Failed to read file path: "+fileBasePath);
+  }
     fullFilePathName = fullFilePathName.replace('\\', '/');
     fileBasePath = fileBasePath.replace('\\', '/');
     absolutePath = absolutePath.replace('\\', '/');
     String objectPath = absolutePath;
-    if (absolutePath.indexOf(fullFilePathName) != -1) {
+    if (absolutePath.indexOf(fullFilePathName) != -1)
       objectPath =
-          absolutePath
-              .substring(absolutePath.indexOf(fullFilePathName) + fullFilePathName.length() + 1);
-    }
+          absolutePath.substring(absolutePath.indexOf(fullFilePathName) + fullFilePathName.length() + 1);
     HpcLogWriter.getInstance().WriteLog(logFile, objectPath);
   }
 
