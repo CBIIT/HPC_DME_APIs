@@ -7,6 +7,27 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.google.gson.Gson;
+import gov.nih.nci.hpc.cli.domain.HPCDataFileRecord;
+import gov.nih.nci.hpc.cli.util.Constants;
+import gov.nih.nci.hpc.cli.util.CsvFileWriter;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.cli.util.Paths;
+import gov.nih.nci.hpc.cli.util.RecordLogFileType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,37 +46,41 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.ws.rs.core.Response;
-
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-import com.google.gson.Gson;
-
-import gov.nih.nci.hpc.cli.domain.HPCDataFileRecord;
-import gov.nih.nci.hpc.cli.util.Constants;
-import gov.nih.nci.hpc.cli.util.CsvFileWriter;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.HpcCmdException;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-
 @Component
 public class HPCCmdDatafile extends HPCCmdClient {
+
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
+
+  private static final String ERROR_LOG_FILE_NAME_PREFIX = "getDatafiles_errorLog";
+  private static final String FILE_EXTENSION_TXT = ".txt";
+  private static final String RECORDS_LOG_FILE_NAME_PREFIX = "getDatafiles_Records";
+
+  private static String generateDateTimeStampString() {
+    return DATE_FORMAT.format(new Date());
+  }
+
+  private static String generateErrorLogFileName() {
+    final StringBuilder sb = new StringBuilder();
+    sb.append(ERROR_LOG_FILE_NAME_PREFIX);
+    sb.append(generateDateTimeStampString());
+    sb.append(FILE_EXTENSION_TXT);
+    return sb.toString();
+  }
+
+  private static String generateRecordsLogFileName(String fileType) {
+    final StringBuilder sb = new StringBuilder();
+    sb.append(RECORDS_LOG_FILE_NAME_PREFIX);
+    sb.append(generateDateTimeStampString());
+    sb.append(RecordLogFileType.lookupFileExtensionOfFileType(fileType));
+    return sb.toString();
+  }
+
 
 	public HPCCmdDatafile() {
 		super();
@@ -64,46 +89,38 @@ public class HPCCmdDatafile extends HPCCmdClient {
 	protected void initializeLog() {
 	}
 
-	protected void createErrorLog() {
-		if (logFile == null) {
-			logFile = logDir + File.separator + "getDatafiles_errorLog"
-					+ new SimpleDateFormat("yyyyMMdd'.txt'").format(new Date());
-			File file1 = new File(logFile);
-			try {
-				if (!file1.exists()) {
-					file1.createNewFile();
-				}
-				fileLogWriter = new FileWriter(file1, true);
-			} catch (IOException e) {
-				System.out.println("Failed to initialize Batch process: " + e.getMessage());
-			}
-		}
-	}
+  protected void createErrorLog() {
+    if (logFile == null) {
+      File file1 = new File(
+          Paths.generateFileSystemResourceUri(logDir, generateErrorLogFileName()));
+      logFile = file1.getPath();
+      try {
+        if (!file1.exists()) {
+          file1.createNewFile();
+        }
+        fileLogWriter = new FileWriter(file1, true);
+      } catch (IOException e) {
+        System.out.println("Failed to initialize Batch process: " + e.getMessage());
+      }
+    }
+  }
 
-	protected void createRecordsLog(String fileName, String type) {
-		if (fileName == null || fileName.isEmpty())
-			fileName = logDir + File.separator + "getDatafiles_Records"
-					+ new SimpleDateFormat("yyyyMMdd").format(new Date());
 
-		logRecordsFile = fileName;
-
-		if (type != null && type.equalsIgnoreCase("csv"))
-			logRecordsFile = logRecordsFile + ".csv";
-		else if (type != null && type.equalsIgnoreCase("json"))
-			logRecordsFile = logRecordsFile + ".json";
-		else
-			logRecordsFile = logRecordsFile + ".txt";
-
-		File file2 = new File(logRecordsFile);
-		try {
-			if (!file2.exists()) {
-				file2.createNewFile();
-			}
-			fileRecordWriter = new FileWriter(file2, false);
-		} catch (IOException e) {
-			System.out.println("Failed to initialize output file: " + e.getMessage());
-		}
-	}
+  protected void createRecordsLog(String fileName, String type) {
+    final String effectiveFileName =
+        (null == fileName || fileName.isEmpty()) ? generateRecordsLogFileName(type)
+            : RecordLogFileType.appendFileExtensionIfNeeded(fileName, type);
+    File file2 = new File(Paths.generateFileSystemResourceUri(logDir, effectiveFileName));
+    logRecordsFile = file2.getPath();
+    try {
+      if (!file2.exists()) {
+        file2.createNewFile();
+      }
+      fileRecordWriter = new FileWriter(file2, false);
+    } catch (IOException e) {
+      System.out.println("Failed to initialize output file: " + e.getMessage());
+    }
+  }
 
 	protected String processCmd(String cmd, Map<String, String> criteria, String outputFile, String format,
 			String detail, String userId, String password, String authToken) {
@@ -278,7 +295,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 			throws UnsupportedEncodingException, FileNotFoundException {
 		Iterator iterator = criteria.keySet().iterator();
 		String fileName = (String) iterator.next();
-		BufferedReader reader = new BufferedReader(new FileReader(fileName));
+		BufferedReader reader = new BufferedReader(new FileReader(new File(Paths.generateFileSystemResourceUri(fileName))));
 		Gson gson = new Gson();
 		HpcCompoundMetadataQueryDTO dto = gson.fromJson(reader, HpcCompoundMetadataQueryDTO.class);
 		dto.setTotalCount(true);

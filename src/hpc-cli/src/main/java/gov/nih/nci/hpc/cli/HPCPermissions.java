@@ -7,6 +7,14 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
+import gov.nih.nci.hpc.cli.util.Constants;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
+import gov.nih.nci.hpc.cli.util.Paths;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -20,7 +28,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -34,47 +41,66 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import gov.nih.nci.hpc.cli.util.Constants;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
-
 @Component
 public class HPCPermissions extends HPCBatchClient {
-	@Autowired
+
+  private static final SimpleDateFormat DATE_TIME_FORMAT =
+      new SimpleDateFormat("yyyyMMddhhmm");
+
+  private static final String FILE_EXTENSION_CSV = ".csv";
+  private static final String FILE_EXTENSION_TXT = ".txt";
+  private static final String LOG_FILE_NAME_PREFIX = "putPermissions_errorLog";
+  private static final String LOG_RECORDS_FILE_NAME_PREFIX = "putPermissions_errorRecords";
+
+  private static String generateDateTimeStampString() {
+    return DATE_TIME_FORMAT.format(new Date());
+  }
+
+  private static String generateLogFileName() {
+    final StringBuilder sbLogFileNameBuilder = new StringBuilder();
+    sbLogFileNameBuilder.append(LOG_FILE_NAME_PREFIX).append(generateDateTimeStampString())
+        .append(FILE_EXTENSION_TXT);
+    return sbLogFileNameBuilder.toString();
+  }
+
+  private static String generateLogRecordsFileName() {
+    final StringBuilder sbLogRecordsFileNameBuilder = new StringBuilder();
+    sbLogRecordsFileNameBuilder.append(LOG_RECORDS_FILE_NAME_PREFIX)
+        .append(generateDateTimeStampString())
+        .append(FILE_EXTENSION_CSV);
+    return sbLogRecordsFileNameBuilder.toString();
+  }
+
+  @Autowired
 	private HpcConfigProperties configProperties;
 
 	public HPCPermissions() {
 		super();
 	}
 
-	protected void initializeLog() {
-		logFile = logDir + File.separator + "putPermissions_errorLog"
-				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
-		logRecordsFile = logDir + File.separator + "putPermissions_errorRecords"
-				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
-		File file1 = new File(logFile);
-		File file2 = new File(logRecordsFile);
-		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
-		try {
-			if (!file1.exists()) {
-				file1.createNewFile();
-			}
-			fileLogWriter = new FileWriter(file1, true);
+  protected void initializeLog() {
+    try {
+      File theLogFile = new File(
+          Paths.generateFileSystemResourceUri(logDir, generateLogFileName()));
+      logFile = theLogFile.getPath();
+      if (!theLogFile.exists()) {
+        theLogFile.createNewFile();
+      }
+      fileLogWriter = new FileWriter(theLogFile, true);
 
-			if (!file2.exists()) {
-				file2.createNewFile();
-			}
-			fileRecordWriter = new FileWriter(file2, true);
-			csvFilePrinter = new CSVPrinter(fileRecordWriter, csvFileFormat);
-		} catch (IOException e) {
-			System.out.println("Failed to initialize Batch process: " + e.getMessage());
-		}
-
-	}
+      File theLogRecordsFile = new File(
+          Paths.generateFileSystemResourceUri(logDir, generateLogRecordsFileName()));
+      logRecordsFile = theLogRecordsFile.getPath();
+      if (!theLogRecordsFile.exists()) {
+        theLogRecordsFile.createNewFile();
+      }
+      fileRecordWriter = new FileWriter(theLogRecordsFile, true);
+      csvFilePrinter = new CSVPrinter(fileRecordWriter,
+          CSVFormat.DEFAULT.withRecordSeparator("\n"));
+    } catch (IOException e) {
+      System.out.println("Failed to initialize Batch process: " + e.getMessage());
+    }
+  }
 
 	protected String processFile(String fileName, String userId, String password, String authToken) {
 		boolean success = true;
@@ -90,7 +116,7 @@ public class HPCPermissions extends HPCBatchClient {
 		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader();
 		try {
 			// initialize FileReader object
-			fileReader = new FileReader(fileName);
+			fileReader = new FileReader(new File(Paths.generateFileSystemResourceUri(fileName)));
 			// initialize CSVParser object
 			csvFileParser = new CSVParser(fileReader, csvFileFormat);
 			Map<String, Integer> headersMap = csvFileParser.getHeaderMap();
@@ -163,6 +189,7 @@ public class HPCPermissions extends HPCBatchClient {
 		return Constants.CLI_0;
 
 	}
+
 
 	private String updatePermissions(String type, String path, String authToken,
 			List<HpcUserPermission> userPermissions, List<HpcGroupPermission> groupPermissions, CSVRecord record,
