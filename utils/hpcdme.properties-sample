@@ -36,5 +36,6 @@ upload.buffer.size=10000000
 ###HPC CLI Logging START####
 #ERROR, WARN, INFO, DEBUG
 hpc.log.level=ERROR
+hpc.log.file=hpc-cli.log
 ###HPC CLI Logging END####
 hpc.jar.version=hpc-cli-1.7.0-SNAPSHOT.jar
