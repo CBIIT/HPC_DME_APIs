@@ -79,6 +79,18 @@ public class HPCCommands implements CommandMarker {
 		criteriaMap.put(criteria, criteria);
 		return getCollections.process("getCollections", criteriaMap, outputfile, format, detail);
 	}
+	
+	
+	@CliCommand(value = "deleteCollection", help = "Delete Collection from HPC Archive. Usage: deleteCollection --path <data file path>")
+	public String deleteCollection(
+			@CliOption(key = {
+					"path" }, mandatory = true, help = "Please provide collection path. Usage: deleteCollection --path <data file path> --recursive <true|false>") final String path,
+			@CliOption(key = {
+			"recursive" }, mandatory = false, help = "Please provide recursion option. Usage: deleteCollection --path <data file path>  --recursive <true|false>") final String recursive) {
+		Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put(path, path);
+		return getCollections.process("deleteCollection", criteriaMap, null, null, recursive);
+	}
 
 	@CliCommand(value = "getDatafile", help = "Get Collection from HPC Archive. Usage: getDatafile --path <data file path> --outputfile <output file full path> --format <json|csv>")
 	public String getDatafile(
@@ -106,6 +118,15 @@ public class HPCCommands implements CommandMarker {
 		Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(criteria, criteria);
 		return getDatafiles.process("getDatafiles", criteriaMap, outputfile, format, detail);
+	}
+	
+	@CliCommand(value = "deleteDatafile", help = "Delete data object from HPC Archive. Usage: deleteDatafile --path <data file path>")
+	public String deleteDatafile(
+			@CliOption(key = {
+					"path" }, mandatory = true, help = "Please provide data file path. Usage: deleteDatafile --path <data file path>") final String path) {
+		Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put(path, path);
+		return getDatafiles.process("deleteDatafile", criteriaMap, null, null, null);
 	}
 
 	@CliCommand(value = "registerFromGlobusPath", help = "Register Data files from Globus endpoint with HPC Archive. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>")
