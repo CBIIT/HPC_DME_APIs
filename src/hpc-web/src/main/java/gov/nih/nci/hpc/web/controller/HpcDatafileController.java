@@ -90,8 +90,10 @@ public class HpcDatafileController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=datafile&action=" + action + "&path=" +
-                MiscUtil.performUrlEncoding(path);
+        final String encodedDmePath =
+          MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(path);
+        return "redirect:/login?returnPath=datafile&action=" + action +
+              "&path=" + encodedDmePath;
 			}
 
 			if (path == null)
@@ -165,16 +167,20 @@ public class HpcDatafileController extends AbstractHpcController {
 			final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		String[] action = request.getParameterValues("action");
-		if (action != null && action.length > 0 && action[0].equals("cancel"))
-			return "redirect:/datafile?path=" +  MiscUtil.performUrlEncoding(hpcDatafile.getPath()) + "&action=view";
-		else if (action != null && action.length > 0 && action[0].equals("delete")) {
-			boolean deleted = HpcClientUtil.deleteDatafile(authToken, serviceURL, hpcDatafile.getPath(), sslCertPath,
-					sslCertPassword);
-			if (deleted) {
-				redirectAttributes.addFlashAttribute("error", "Data file " + hpcDatafile.getPath() + " is deleted!");
-				session.removeAttribute("selectedUsers");
-			}
-		}
+    if (action != null && action.length > 0 && action[0].equals("cancel")) {
+      final String encodedDmePath =
+        MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcDatafile.getPath());
+      return "redirect:/datafile?action=view&path=" + encodedDmePath;
+    } else if (action != null && action.length > 0 && action[0].equals("delete")) {
+      boolean deleted = HpcClientUtil
+          .deleteDatafile(authToken, serviceURL, hpcDatafile.getPath(), sslCertPath,
+              sslCertPassword);
+      if (deleted) {
+        redirectAttributes
+            .addFlashAttribute("error", "Data file " + hpcDatafile.getPath() + " is deleted!");
+        session.removeAttribute("selectedUsers");
+      }
+    }
 
 		try {
 			if (hpcDatafile.getPath() == null || hpcDatafile.getPath().trim().length() == 0)
@@ -193,7 +199,9 @@ public class HpcDatafileController extends AbstractHpcController {
 		} finally {
 			model.addAttribute("hpcDatafile", hpcDatafile);
 		}
-		return "redirect:/datafile?path=" +  MiscUtil.performUrlEncoding(hpcDatafile.getPath()) + "&action=view";
+    final String encodedDmePath =
+      MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcDatafile.getPath());
+    return "redirect:/datafile?action=view&path=" + encodedDmePath;
 	}
 
 	@JsonView(Views.Public.class)
