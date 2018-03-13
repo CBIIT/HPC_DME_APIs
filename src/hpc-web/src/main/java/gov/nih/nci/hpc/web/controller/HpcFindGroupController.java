@@ -91,51 +91,61 @@ public class HpcFindGroupController extends AbstractHpcController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.POST)
-	public String findUsers(@Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup, BindingResult bindingResult,
-			Model model, HttpSession session, HttpServletRequest request) {
-		try {
-			String path = (String) session.getAttribute("permissionsPath");
-			String[] actionType = request.getParameterValues("actionType");
-			if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
-				String[] selectedGroups = request.getParameterValues("selectedGroups");
-				StringBuffer buffer = new StringBuffer();
-				for (int i = 0; i < selectedGroups.length; i++) {
-					StringTokenizer tokens = new StringTokenizer(selectedGroups[i], ",");
-					while (tokens.hasMoreTokens()) {
-						buffer.append(tokens.nextToken());
-						if (tokens.hasMoreTokens())
-							buffer.append(";");
-					}
-				}
-				session.setAttribute("selectedGroups", buffer.toString());
-				if (selectedGroups != null && selectedGroups.length > 0)
-					return "redirect:/permissions?assignType=Group&path=" +
-              MiscUtil.performUrlEncoding(hpcWebGroup.getPath()) + "&type="
-							+ hpcWebGroup.getType();
-			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
-				session.removeAttribute("selectedGroups");
-				return "redirect:/permissions?assignType=Group&path=" +
-            MiscUtil.performUrlEncoding(hpcWebGroup.getPath()) + "&type="
-						+ hpcWebGroup.getType();
-			}
+  @RequestMapping(method = RequestMethod.POST)
+  public String findUsers(
+      @Valid @ModelAttribute("hpcGroup") HpcWebGroup hpcWebGroup,
+      BindingResult bindingResult,
+      Model model,
+      HttpSession session,
+      HttpServletRequest request) {
+    try {
+      String path = (String) session.getAttribute("permissionsPath");
+      String[] actionType = request.getParameterValues("actionType");
+      final String encodedDmePath =
+        MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcWebGroup.getPath());
+      if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
+        String[] selectedGroups = request.getParameterValues("selectedGroups");
+        StringBuffer buffer = new StringBuffer();
+        for (int i = 0; i < selectedGroups.length; i++) {
+          StringTokenizer tokens = new StringTokenizer(selectedGroups[i], ",");
+          while (tokens.hasMoreTokens()) {
+            buffer.append(tokens.nextToken());
+            if (tokens.hasMoreTokens()) {
+              buffer.append(";");
+            }
+          }
+        }
+        session.setAttribute("selectedGroups", buffer.toString());
+        if (selectedGroups != null && selectedGroups.length > 0) {
+          return "redirect:/permissions?assignType=Group&path=" +
+                  encodedDmePath + "&type=" + hpcWebGroup.getType();
+        }
+      } else if (actionType != null && actionType.length > 0 &&
+                  actionType[0].equals("cancel")) {
+        session.removeAttribute("selectedGroups");
+        return "redirect:/permissions?assignType=Group&path=" +
+                  encodedDmePath + "&type=" + hpcWebGroup.getType();
+      }
+      String groupName = null;
+      if (hpcWebGroup.getGroupName() != null && hpcWebGroup.getGroupName().trim().length() > 0) {
+        groupName = hpcWebGroup.getGroupName();
+      }
 
-			String groupName = null;
-			if (hpcWebGroup.getGroupName() != null && hpcWebGroup.getGroupName().trim().length() > 0)
-				groupName = hpcWebGroup.getGroupName();
-
-			String authToken = (String) session.getAttribute("hpcUserToken");
-			HpcGroupListDTO groups = HpcClientUtil.getGroups(authToken, groupServiceURL, groupName, sslCertPath,
-					sslCertPassword);
-			if (groups != null && groups.getGroups() != null && groups.getGroups().size() > 0)
-				model.addAttribute("searchresults", groups.getGroups());
-		} catch (Exception e) {
-			ObjectError error = new ObjectError("hpcDatasetSearch", "Failed to search by name: " + e.getMessage());
-			bindingResult.addError(error);
-			model.addAttribute("error", "Failed to search by name: " + e.getMessage());
-			return "findgroup";
-		}
-		model.addAttribute("hpcWebGroup", hpcWebGroup);
-		return "findgroup";
-	}
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      HpcGroupListDTO groups = HpcClientUtil
+          .getGroups(authToken, groupServiceURL, groupName, sslCertPath,
+              sslCertPassword);
+      if (groups != null && groups.getGroups() != null && groups.getGroups().size() > 0) {
+        model.addAttribute("searchresults", groups.getGroups());
+      }
+    } catch (Exception e) {
+      ObjectError error = new ObjectError("hpcDatasetSearch",
+          "Failed to search by name: " + e.getMessage());
+      bindingResult.addError(error);
+      model.addAttribute("error", "Failed to search by name: " + e.getMessage());
+      return "findgroup";
+    }
+    model.addAttribute("hpcWebGroup", hpcWebGroup);
+    return "findgroup";
+  }
 }
