@@ -116,7 +116,8 @@ public interface HpcDataManagementRestService {
 	@Path("/collection/download")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollectionDownloadStatus(@QueryParam("taskId") String taskId);
-
+	
+	
 	/**
 	 * Delete a collection.
 	 *
@@ -126,8 +127,9 @@ public interface HpcDataManagementRestService {
 	 */
 	@DELETE
 	@Path("/collection/{path:.*}")
-	public Response deleteCollection(@PathParam("path") String path);
+	public Response deleteCollection(@PathParam("path") String path, @QueryParam("recursive") Boolean recursive);
 
+	
 	/**
 	 * Set a collection's permissions.
 	 *
@@ -163,7 +165,8 @@ public interface HpcDataManagementRestService {
 	 *            The collection path.
 	 * @param userId
 	 *            The user id to get permissions for.
-	 * @return The REST service response w/ HpcUserPermissionDTO entity.
+	 * @return The REST service response w/ HpcUserPermissionDTO entity. 
+	 * 
 	 */
 	@GET
 	@Path("/collection/{path:.*}/acl/user/{userId:.*}")

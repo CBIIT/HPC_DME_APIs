@@ -9,12 +9,16 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.model.HpcWebUser;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.StringTokenizer;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -26,12 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
-import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.model.HpcWebUser;
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
@@ -117,14 +115,18 @@ public class HpcFindUserController extends AbstractHpcController {
 							buffer.append(";");
 					}
 				}
-				session.setAttribute("selectedUsers", buffer.toString());
-				if (selectedUsers != null && selectedUsers.length > 0)
-					if (hpcWebUser.getType() != null && hpcWebUser.getType().equals("group"))
-						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&groupName="
-								+ hpcWebUser.getPath() + "&type=" + hpcWebUser.getType();
-					else
-						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
-								+ "&type=" + hpcWebUser.getType();
+        session.setAttribute("selectedUsers", buffer.toString());
+        if (selectedUsers != null && selectedUsers.length > 0) {
+          final String urlEncodedDmePath =
+            MiscUtil.urlEncodeDmePath(hpcWebUser.getPath());
+          if (hpcWebUser.getType() != null && hpcWebUser.getType().equals("group")) {
+            return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&groupName="
+                + urlEncodedDmePath + "&type=" + hpcWebUser.getType();
+          } else {
+            return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" +
+                urlEncodedDmePath + "&type=" + hpcWebUser.getType();
+          }
+        }
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
 				return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()

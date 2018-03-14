@@ -54,6 +54,16 @@
 					<mainClass>gov.nih.nci.hpc.ws.rs.test.HpcDiceTestRunner</mainClass>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<skipTests>true</skipTests>
+					<parallel>classes</parallel>
+					<threadCount>5</threadCount>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

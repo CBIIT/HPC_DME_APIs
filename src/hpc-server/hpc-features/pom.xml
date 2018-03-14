@@ -30,6 +30,19 @@
 			<resource>
 				<directory>${basedir}/src/main/resources</directory>
 				<filtering>true</filtering>
+        <includes>
+          <include>features.xml</include>
+          <include>hpc-server.properties</include>
+        </includes>
+        <excludes>
+          <!-- begin exclusion of features-*.xml files -->
+          <exclude>features-*.xml</exclude>
+          <!-- end exclusion of features-*-.xml files -->
+
+          <!-- begin exclusion of environment-specific .properties files -->
+          <exclude>hpc-server-*.properties</exclude>
+          <!-- end exclusion of environment-specific .properties files -->
+        </excludes>
 			</resource>
 		</resources>
 		<plugins>
@@ -182,6 +195,60 @@
 				</plugins>
 			</build>
 		</profile>
+    <profile>
+      <id>skip-generate-keystore-jks-files</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.coderplus.maven.plugins</groupId>
+            <artifactId>copy-rename-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-proper-features-xml</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <sourceFile>${basedir}/src/main/resources/features-preserve-server-keystore.xml</sourceFile>
+                  <destinationFile>${basedir}/src/main/resources/features.xml</destinationFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+		<profile>
+      <id>generate-keystore-jks-files</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.coderplus.maven.plugins</groupId>
+            <artifactId>copy-rename-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-proper-features-xml</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <sourceFile>${basedir}/src/main/resources/features-override-server-keystore.xml</sourceFile>
+                  <destinationFile>${basedir}/src/main/resources/features.xml</destinationFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 	</profiles>
 
 	<dependencies />
