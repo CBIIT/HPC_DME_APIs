@@ -118,7 +118,7 @@ public class HpcFindUserController extends AbstractHpcController {
         session.setAttribute("selectedUsers", buffer.toString());
         if (selectedUsers != null && selectedUsers.length > 0) {
           final String urlEncodedDmePath =
-            MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcWebUser.getPath());
+            MiscUtil.urlEncodeDmePath(hpcWebUser.getPath());
           if (hpcWebUser.getType() != null && hpcWebUser.getType().equals("group")) {
             return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&groupName="
                 + urlEncodedDmePath + "&type=" + hpcWebUser.getType();

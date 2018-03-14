@@ -305,7 +305,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 		}
 		// if (uploadType != null && uploadType.equals("sync"))
     final String encodedDmePath =
-      MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcDataModel.getPath());
+      MiscUtil.urlEncodeDmePath(hpcDataModel.getPath());
     return "redirect:/datafile?path=" + encodedDmePath + "&action=view";
 		// else
 		// return "adddatafile";

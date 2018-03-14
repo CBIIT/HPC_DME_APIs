@@ -299,7 +299,7 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionlURL))
-        .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(path));
+        .append(MiscUtil.urlEncodeDmePath(path));
       if (children) {
         sb.append("/children");
       }
@@ -349,7 +349,7 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(path))
+        .append(MiscUtil.urlEncodeDmePath(path))
         .append("?list=").append(Boolean.toString(list));
       final String url2Call = sb.toString();
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
@@ -824,7 +824,7 @@ public class HpcClientUtil {
 
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(path));
+        .append(MiscUtil.urlEncodeDmePath(path));
       final String url2Call = sb.toString();
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
                                                     hpcCertPassword);
@@ -861,7 +861,7 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(path));
+        .append(MiscUtil.urlEncodeDmePath(path));
       final String url2Call = sb.toString();
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
@@ -897,7 +897,7 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(collectionPath));
+        .append(MiscUtil.urlEncodeDmePath(collectionPath));
       final String url2Call = sb.toString();
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
                                                     hpcCertPassword);
@@ -944,7 +944,7 @@ public class HpcClientUtil {
 
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(path));
+        .append(MiscUtil.urlEncodeDmePath(path));
       final String url2Call = sb.toString();
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
@@ -1026,7 +1026,7 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(path));
+        .append(MiscUtil.urlEncodeDmePath(path));
       final String url2Call = sb.toString();
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
@@ -1067,7 +1067,7 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(path));
+        .append(MiscUtil.urlEncodeDmePath(path));
       final String url2Call = sb.toString();
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
@@ -1299,7 +1299,7 @@ public class HpcClientUtil {
       String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
     final StringBuilder sb = new StringBuilder();
     sb.append(MiscUtil.prepareUrlForExtending(hpcServiceURL))
-      .append(MiscUtil.urlEncodeDmePathWithSlashTrimming(path))
+      .append(MiscUtil.urlEncodeDmePath(path))
       .append("/acl/user/")
       .append(userId);
     final String url2Call = sb.toString();

@@ -102,7 +102,7 @@ public class HpcFindGroupController extends AbstractHpcController {
       String path = (String) session.getAttribute("permissionsPath");
       String[] actionType = request.getParameterValues("actionType");
       final String encodedDmePath =
-        MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcWebGroup.getPath());
+        MiscUtil.urlEncodeDmePath(hpcWebGroup.getPath());
       if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
         String[] selectedGroups = request.getParameterValues("selectedGroups");
         StringBuffer buffer = new StringBuffer();
