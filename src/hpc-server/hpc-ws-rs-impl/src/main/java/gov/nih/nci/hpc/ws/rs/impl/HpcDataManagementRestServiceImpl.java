@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.ws.rs.Consumes;
@@ -25,7 +26,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
+
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -175,9 +180,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response deleteCollection(String path) {
+  public Response deleteCollection(String path, Boolean recursive) {
     try {
-      dataManagementBusService.deleteCollection(toNormalizedPath(path));
+    	
+      recursive = recursive != null ? recursive : false;
+      if(recursive) {
+    	  //Delete all the data objects in this hierarchy first
+    	  deleteDataObjectsInCollections(path);
+;      }
+      dataManagementBusService.deleteCollection(toNormalizedPath(path), recursive);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -185,6 +196,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(null, false);
   }
+  
 
   @Override
   public Response setCollectionPermissions(
@@ -522,7 +534,36 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
-
+  /**
+   * Recursively delete all the data objects from the specified collection and from 
+   * it's sub-collections.
+   * @param path The path at the root of the hierarchy to delete from.
+   */
+  private void deleteDataObjectsInCollections(String path) throws HpcException {
+	
+	  HpcCollectionDTO collectionDto = dataManagementBusService.getCollectionChildren(path);
+	  
+	    if (collectionDto.getCollection() != null) {
+	    	List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
+	    	if(!CollectionUtils.isEmpty(dataObjects)) {
+	    		//Delete data objects in this collection
+	    		for(HpcCollectionListingEntry entry: dataObjects) {
+	    			dataManagementBusService.deleteDataObject(entry.getPath());
+	    		}
+	    	}
+	    	
+	    	List<HpcCollectionListingEntry> subCollections = collectionDto.getCollection().getSubCollections();
+	    	if(!CollectionUtils.isEmpty(subCollections)) {
+	    		//Recursively delete data objects from this sub-collection and 
+	    		//it's sub-collections
+	    		for(HpcCollectionListingEntry entry: subCollections) {
+	    			deleteDataObjectsInCollections(entry.getPath());
+	    		}
+	    	}
+	    }
+  }
+  
+  
   /**
    * Copy input stream to File and close the input stream.
    *

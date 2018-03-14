@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,14 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/downloadtask")
 public class HpcDownloadTaskController extends AbstractHpcController {
+
+  public static final String NAV_OUTCOME_DOWNLOADTASKS =
+    "redirect:/downloadtasks";
+  public static final String NAV_OUTCOME_DATAOBJ_DOWNLOADTASK =
+    "dataobjectdownloadtask";
+  public static final String NAV_OUTCOME_DATAOBJS_DOWNLOADTASK =
+    "dataobjectsdownloadtask";
+
   @Value("${gov.nih.nci.hpc.server.download}")
   private String dataObjectsDownloadServiceURL;
 
@@ -96,7 +105,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       }
 
       if (taskId == null || type == null)
-        return "redirect:/downloadtasks";
+        return NAV_OUTCOME_DOWNLOADTASKS;
 
       if (type.equals(HpcDownloadTaskType.COLLECTION.name()))
         return displayCollectionTask(authToken, taskId, model);
@@ -107,26 +116,18 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       else {
         String message = "Data file not found!";
         model.addAttribute("error", message);
-        return "redirect:/downloadtasks";
+        return NAV_OUTCOME_DOWNLOADTASKS;
       }
     } catch (Exception e) {
       model.addAttribute("error", "Failed to get data file: " + e.getMessage());
       e.printStackTrace();
-      return "redirect:/downloadtasks";
+      return NAV_OUTCOME_DOWNLOADTASKS;
     }
   }
 
 
   /**
    * POST action to retry failed download files.
-   * 
-   * @param downloadFile
-   * @param model
-   * @param bindingResult
-   * @param session
-   * @param request
-   * @param response
-   * @return
    */
   @JsonView(Views.Public.class)
   @RequestMapping(method = RequestMethod.POST)
@@ -146,18 +147,20 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       HpcBulkDataObjectDownloadRequestDTO dto = new HpcBulkDataObjectDownloadRequestDTO();
       if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())
           || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name())) {
-        
+
         String queryServiceURL = null;
-        if (taskType.equals(HpcDownloadTaskType.COLLECTION.name()))
-            queryServiceURL = collectionDownloadServiceURL + "?taskId=" + taskId;
-        else
-            queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
-            
+        if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())) {
+          queryServiceURL = collectionDownloadServiceURL + "?taskId=" + taskId;
+        } else {
+          queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
+        }
+
         HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
             .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
         if (downloadTask.getFailedItems() != null && !downloadTask.getFailedItems().isEmpty()) {
-          for (HpcCollectionDownloadTaskItem item : downloadTask.getFailedItems())
+          for (HpcCollectionDownloadTaskItem item : downloadTask.getFailedItems()) {
             dto.getDataObjectPaths().add(item.getPath());
+          }
           dto.setDestination(downloadTask.getDestinationLocation());
           dto.setDestinationOverwrite(true);
         }
@@ -165,27 +168,28 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           HpcBulkDataObjectDownloadResponseDTO downloadDTO =
               (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil.downloadFiles(authToken,
                   dataObjectsDownloadServiceURL, dto, sslCertPath, sslCertPassword);
-          if (downloadDTO != null)
-          {
+          if (downloadDTO != null) {
             result.setMessage(
                 "Download request successfull. Task Id: " + downloadDTO.getTaskId());
-            model.addAttribute("error", "Retry download request is submitted successfully. Task Id: " + downloadDTO.getTaskId());
+            model.addAttribute("error",
+                "Retry download request is submitted successfully. Task Id: " + downloadDTO
+                    .getTaskId());
           }
 
           model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-          return "dataobjectsdownloadtask";
+          return NAV_OUTCOME_DATAOBJS_DOWNLOADTASK;
 
         } catch (Exception e) {
           result.setMessage("Download request is not successfull: " + e.getMessage());
           model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-          return "dataobjectsdownloadtask";
+          return NAV_OUTCOME_DATAOBJS_DOWNLOADTASK;
         }
 
       } else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT.name())) {
         String queryServiceURL = dataObjectDownloadServiceURL + "?taskId=" + taskId;
         HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil
             .getDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
-        String serviceURL = dataObjectServiceURL + downloadTask.getPath() + "/download";
+        final String serviceURL = generateDownloadDataFileServiceURL(downloadTask);
         if (!downloadTask.getResult()) {
           HpcDownloadRequestDTO downloadDTO = new HpcDownloadRequestDTO();
           downloadDTO.setDestination(downloadTask.getDestinationLocation());
@@ -194,19 +198,32 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           model.addAttribute("error", responseBody.getMessage());
         }
         model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
-        return "dataobjectdownloadtask";
+        return NAV_OUTCOME_DATAOBJ_DOWNLOADTASK;
       }
     } catch (HttpStatusCodeException e) {
-      result.setMessage("Download request is not successfull: " + e.getMessage());
-      return "redirect:/downloadtasks";
+      return handleExceptionOnDownloadRequest(result, e.getMessage());
     } catch (RestClientException e) {
-      result.setMessage("Download request is not successfull: " + e.getMessage());
-      return "redirect:/downloadtasks";
+      return handleExceptionOnDownloadRequest(result, e.getMessage());
     } catch (Exception e) {
-      result.setMessage("Download request is not successfull: " + e.getMessage());
-      return "redirect:/downloadtasks";
+      return handleExceptionOnDownloadRequest(result, e.getMessage());
     }
-    return "redirect:/downloadtasks";
+    return NAV_OUTCOME_DOWNLOADTASKS;
+  }
+
+  private String handleExceptionOnDownloadRequest(
+    AjaxResponseBody result, String message) {
+    result.setMessage(
+      String.format("Download request is not successful: %s", message));
+    return NAV_OUTCOME_DOWNLOADTASKS;
+  }
+
+  private String generateDownloadDataFileServiceURL(
+    HpcDataObjectDownloadStatusDTO downloadTask) {
+    final StringBuilder sb = new StringBuilder(dataObjectServiceURL);
+    sb.append(MiscUtil.urlEncodeDmePath(downloadTask.getPath()));
+    sb.append("/download");
+    final String retServiceURL = sb.toString();
+    return retServiceURL;
   }
 
   private String displayDataObjectTask(String authToken, String taskId, Model model) {
@@ -214,7 +231,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil.getDataObjectDownloadTask(authToken,
         queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
-    return "dataobjectdownloadtask";
+    return NAV_OUTCOME_DATAOBJ_DOWNLOADTASK;
   }
 
   private String displayCollectionTask(String authToken, String taskId, Model model) {
@@ -222,7 +239,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
         .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-    return "dataobjectsdownloadtask";
+    return NAV_OUTCOME_DATAOBJS_DOWNLOADTASK;
   }
 
   private String diplayDataObjectListTask(String authToken, String taskId, Model model) {
@@ -230,6 +247,6 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
         .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-    return "dataobjectsdownloadtask";
+    return NAV_OUTCOME_DATAOBJS_DOWNLOADTASK;
   }
 }

@@ -314,6 +314,13 @@
 	
 	var rowId = 0;
 	
+	$("#hpcDatafile").change(function (e) {
+	    //Append the file name to the data file path
+	    var value = $("#path").val() + "/" + $(this).val();
+	    $("#path").val(value);
+	    $("#path").show();
+	});
+	
 	function addMetadata() {
 		rowId++;
 	    var table = document.getElementById("metaAttrTable");

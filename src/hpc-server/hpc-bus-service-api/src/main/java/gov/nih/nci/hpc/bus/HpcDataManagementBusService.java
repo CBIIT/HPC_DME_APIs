@@ -133,7 +133,7 @@ public interface HpcDataManagementBusService {
    * @param path The collection path.
    * @throws HpcException on service failure.
    */
-  public void deleteCollection(String path) throws HpcException;
+  public void deleteCollection(String path, Boolean recursive) throws HpcException;
 
   /**
    * Get data objects download task status.
