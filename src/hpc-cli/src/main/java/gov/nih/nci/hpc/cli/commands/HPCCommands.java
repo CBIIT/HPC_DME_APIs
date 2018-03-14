@@ -81,7 +81,7 @@ public class HPCCommands implements CommandMarker {
 	}
 	
 	
-	@CliCommand(value = "deleteCollection", help = "Delete Collection from HPC Archive. Usage: deleteCollection --path <data file path>")
+	@CliCommand(value = "deleteCollection", help = "Delete Collection from HPC Archive. Usage: deleteCollection --path <data file path --recursive <true|false>")
 	public String deleteCollection(
 			@CliOption(key = {
 					"path" }, mandatory = true, help = "Please provide collection path. Usage: deleteCollection --path <data file path> --recursive <true|false>") final String path,
