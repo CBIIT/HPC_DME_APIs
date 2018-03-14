@@ -335,7 +335,7 @@ $('#tree1').bind('tree.init', function() {
     $("#bookmarksDiv").empty();
     var aBookmarkLink;
     for (i = 0; i < userBookmarks.length; i++) {
-      var linkHref = '/browse?refresh&path=' + window.encodeURIComponent(userBookmarks[i].path);
+      var linkHref = '/browse?refresh&path=' + userBookmarks[i].path;
       aBookmarkLink = "<a href='bm-path'>bm-name</a>".replace("bm-path", linkHref)
                                                      .replace("bm-name", userBookmarks[i].name);
       $("#bookmarksDiv").append(aBookmarkLink);
@@ -348,7 +348,7 @@ $('#tree1').bind('tree.init', function() {
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "viewDetails": function (node) {
     	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
-    	                     window.encodeURIComponent(node.fullPath) + "&source=browse&init";
+    	                     node.fullPath + "&source=browse&init";
     },
     "addCollection": function (node) {
     	window.location = "/addCollection?parent="+node.fullPath+"&source=browse&init";

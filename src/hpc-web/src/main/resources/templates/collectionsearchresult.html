@@ -68,9 +68,7 @@
 
 <script>
 var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
-app.filter('encodeURIComponent', function() {
-    return window.encodeURIComponent;
-});
+
 app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
 
 	$scope.gridOptions1 = {
@@ -82,25 +80,24 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     //useExternalPagination: true,
     //useExternalSorting: true,    
     treeRowHeaderAlwaysVisible: false,
-    columnDefs:
-    [ { field: 'path',
-        width: 500,
-        displayName: 'Path',
-        cellFilter: 'encodeURIComponent',
-        cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?action=view&amp;path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD}}</a></div>'
-      },
-      { field: 'download',
-        width: 50,
-        displayName: 'Download',
-        cellFilter: 'encodeURIComponent',
-        cellTemplate: '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
-      },
-      { field: 'permission',
-        width: 120,
-        displayName: 'Permission',
-        cellFilter: 'encodeURIComponent',
-        cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
-      } ],
+    columnDefs: [
+                 { field: 'path', 
+                	 width:500, 
+                	 displayName: 'Path', 
+                	 cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?action=view&amp;path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  
+                  },{
+						field : 'download',
+						width : 50,
+						displayName : 'Download',
+						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
+					}
+                 ,{
+						field : 'permission',
+						width : 120,
+						displayName : 'Permission',
+						cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
+					}
+               ],
     onRegisterApi: function( gridApi ) {
       $scope.grid1Api = gridApi;
       $scope.totalPages = totalPages;
