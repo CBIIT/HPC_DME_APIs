@@ -11,6 +11,8 @@ import argparse
 import traceback
 import json
 from pprint import pprint
+import urllib
+from time import sleep
 
 #A script to automatically archive hitif projects
 
@@ -47,7 +49,8 @@ class registration_log:
 def send_email(subject, message):
     """Email a message an optionally exit"""
 
-    recipients_list = ['george.zaki@nih.gov', 'gudlap@mail.nih.gov']
+    #recipients_list = ['george.zaki@nih.gov', 'gudlap@mail.nih.gov']
+    recipients_list = ['george.zaki@nih.gov']
     recipients=','.join(recipients_list)
 
     email_command ='blat.exe -to {0} -server mailfwd.nih.gov -f hpcdme_cronjob@mail.nih.gov -subject "{1}" -body "{2}"'.format(recipients, subject, message)
@@ -65,6 +68,18 @@ def error_exit():
     send_email(subject, body)
     logging.shutdown()
     exit(1)
+
+def email_error(message):
+    """Email an error message"""
+    subject="ERROR: HPCDME during registration" 
+    send_email(subject, message)
+    global n_errors
+    global max_errors
+    n_errors = n_errors + 1
+    logging.error("Setting the number of errors to:{0}".format(n_errors))
+    if n_errors >= max_errors:
+        error_exit()
+
 
 def email_warning(message):
     """Email a warning message"""
@@ -144,7 +159,7 @@ def check_dataobject(data_object_path):
                 'ERROR' Can not retrieve the status of that object
     """
 
-    cmd_line="dm_get_dataobject {0}".format(data_object_path)
+    cmd_line="dm_get_dataobject '{0}'".format(data_object_path)
     try:
         metadata_string = subprocess.check_output(cmd_line, stderr=subprocess.STDOUT, shell=True)    
     except  subprocess.CalledProcessError as e:
@@ -154,7 +169,8 @@ def check_dataobject(data_object_path):
     metadata_dic = json.loads(metadata_string)
 
     #Make sure it is the correct dataObject, as the metadata is returned as a list:  
-    if metadata_dic['dataObjects'][0]['dataObject']['absolutePath'] != data_object_path:
+    unquoted_data_object_path = urllib.unquote_plus(data_object_path)
+    if metadata_dic['dataObjects'][0]['dataObject']['absolutePath'] != unquoted_data_object_path:
         logging.error('Cannot retrieve metadata for {0}'.format(data_object_path))
         logging.error('returned metadat: {0}'.format(metadata_string))
         return 'ERROR'
@@ -177,8 +193,7 @@ def register_collection(path, metadata, collection_type="Folder"):
   metadata_file.close()
 
   #Submit the request 
-  register_command = "dm_register_collection {0} {1}".format(metadata_path, path)
-  logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+  register_command = "dm_register_collection '{0}' '{1}'".format(metadata_path, path)
   logging.debug(register_command)
 
   try:
@@ -205,7 +220,7 @@ def register_dataObject_sync(path, metadata, src_file):
   with open("files.txt", 'w') as file_pointer:
     file_pointer.write(os.path.basename(src_file))
   file_pointer.close()
-  register_command = "dm_register_directory -s -l {0} . {1}".format(file_list, path)
+  register_command = "dm_register_directory -s -l '{0}' . '{1}'".format(file_list, path)
   logging.debug(register_command)
   output = os.popen(register_command).read()
   with open('cli-output.txt', 'w') as cli_output:
@@ -214,7 +229,7 @@ def register_dataObject_sync(path, metadata, src_file):
   [code, message]= analyse_registration_output(output)
   if code != 0:
     logging.debug("ERROR: failed to register file\nMessage:{0}".format(message))
-    error_exit()
+    email_error("Registering the file {0} returned the error message:{1}".format(path, message))
   return [code, message]
 
 #Register a PI collecton
@@ -242,13 +257,16 @@ def register_user_collection(row, pi_collection_path, registered_users):
   user_email = row['nihusername']
   user_path = "User_"  + user_name.replace(" ", "_")
   user_collection_path = os.path.join(pi_collection_path, user_path)
-
+  comment = row['comments'].strip()
   if not registered_users.item_exists(user_name):
     #Register the user collection 
     user_metadata = {}
     user_metadata["name"] = user_name
     user_metadata["email"] = user_email
     user_metadata["branch"] = row['branch']
+    #Add a comment if it exists
+    if comment != '':
+        user_metadata["comment"] = comment
     register_collection (user_collection_path, user_metadata)
     registered_users.add_item(user_name)
 
@@ -256,7 +274,10 @@ def register_user_collection(row, pi_collection_path, registered_users):
    
 def register_experiment(user_collection_path, experiment_dir, registered_experiments):
 
-  exp_path = "Exp_"  + experiment_dir.replace(" ", "_")
+  experiment_name = experiment_dir.replace(" ", "_")
+  experiment_name = urllib.quote_plus(experiment_name)
+  exp_path = "Exp_"  + experiment_name
+  #exp_path = "Exp_"  + experiment_dir.replace(" ", "_").replace("%", "%25").replace("#", "%23").replace("[", "%5B").replace("]", "%5D")
   exp_collection_path = os.path.join(user_collection_path, exp_path)
 
   if not registered_experiments.item_exists(experiment_dir):
@@ -271,19 +292,21 @@ def register_experiment(user_collection_path, experiment_dir, registered_experim
 
 parser = argparse.ArgumentParser()
 parser.add_argument("users_file", help = 'A csv file that contains the users information')
+parser.add_argument("archive_database", help = 'The path to the directory that contains the archive database and working area.')
 
 args = parser.parse_args()
 
 
 #Read the users CSV File 
 users_file = args.users_file
-archive_database="/home/zakigf/archive_database"
+archive_database=args.archive_database 
 #archive_database="/cygdrive/V/HiTIF_Management/Archiving_Scripts/CV7000/CV7000_HPCDME"
 base_path = "/HiTIF_Archive" 
 
 current_time=time.strftime("%Y-%m-%d_%H-%M-%S")
 log_path = os.path.join(archive_database, "logging-" + current_time + ".txt")
-logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename=log_path, level=logging.ERROR, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+print "started logging file {0}".format(log_path)
 #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 if not os.path.exists(archive_database):
@@ -304,6 +327,10 @@ except Exception as inst:
     logging.debug(tb)
     error_exit()
 
+#The number of file registration errors that took place:
+n_errors = 0
+#The maximum number of allowed file registration erros
+max_errors = 3
 try:
     users_dir = os.path.dirname(os.path.abspath(users_file))
     registered_pis_file = os.path.join(archive_database, "registered_pis.txt")
@@ -362,20 +389,22 @@ try:
     
             #Check if the measurment is already registered in the archive.
             archive_status = check_dataobject(data_object_path) 
+            #Generate the tar file name 
+            tar_file_name = measurment.replace(" ", '_') + ".tar.gz"
+            tar_file_path = os.path.join(experiment_database_path, tar_file_name)
             if archive_status == 'EMPTY' or archive_status == 'URL_EXPIRED':
 
                 #Archive the measurment.
                 measurment_src_path = os.path.join(exp_dir, measurment)
                 logging.debug("Registering the measurment:{0}".format(measurment_src_path))
                 #tar the measurment folder and upload it to cleversave 
-                tar_file_name = measurment.replace(" ", '_') + ".tar.gz"
-                tar_file_path = os.path.join(experiment_database_path, tar_file_name)
                 make_tarfile(tar_file_path, measurment_src_path)
                 metadata={"experiment_name":measurment}
                 try:
                     
-                    register_dataObject_sync(exp_collection_path, metadata, os.path.abspath(tar_file_path))
-                    registered_measurments.add_item(measurment)
+                    code, message = register_dataObject_sync(exp_collection_path, metadata, os.path.abspath(tar_file_path))
+                    if code == 0:
+                        registered_measurments.add_item(measurment)
                 except Exception as inst:
                     logging.error("FAILED: registration for the measurment {0}".format(measurment_src_path)) 
                     tb = traceback.format_exc()
@@ -386,6 +415,11 @@ try:
                 #The measurment is in the archive but not in the databse:
                 #Add the measurment to the database
                 registered_measurments.add_item(measurment)
+                #Check if the tar file got deleted
+                if os.path.exists(tar_file_path):
+                    message = "The tar file {0} exists while the measurment is already ARCHIVED".format(os.path.abspath(tar_file_path))
+                    logging.warning(message)
+                    email_warning(message)
             elif archive_status == 'ERROR'  :
                 logging.error('Can not retrieve the transfer status for {0}'.format(data_object_path))
                 error_exit()
@@ -396,11 +430,13 @@ try:
                 email_warning(message)    
 
         registered_measurments.close()
+        sleep(1)
     
       registered_experiments.close()
+      sleep(1)
 except Exception as inst:
     tb = traceback.format_exc()
-    logging.debug(tb)
+    logging.error(tb)
     error_exit()
 
 
