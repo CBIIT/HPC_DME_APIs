@@ -163,7 +163,7 @@ public class HpcPermissionController extends AbstractHpcController {
 			if (restResponse.getStatus() == 200) {
 				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
         final String encodedDmePath =
-          MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(permissionsRequest.getPath());
+          MiscUtil.urlEncodeDmePath(permissionsRequest.getPath());
 				return "redirect:/permissions?assignType=User&type=" +
                 permissionsRequest.getType() + "&path=" + encodedDmePath;
 			} else {
@@ -208,7 +208,7 @@ public class HpcPermissionController extends AbstractHpcController {
 	private String getServiceURL(Model model, String path, String type) {
 		String serviceAPIUrl = null;
 		final String encodedDmePath =
-      MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(path);
+      MiscUtil.urlEncodeDmePath(path);
 		if (type.equals("collection"))
 			serviceAPIUrl = serverCollectionURL + encodedDmePath + "/acl";
 		else if (type.equals("dataObject"))

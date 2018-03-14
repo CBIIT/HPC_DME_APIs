@@ -91,7 +91,7 @@ public class HpcDatafileController extends AbstractHpcController {
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
         final String encodedDmePath =
-          MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(path);
+          MiscUtil.urlEncodeDmePath(path);
         return "redirect:/login?returnPath=datafile&action=" + action +
               "&path=" + encodedDmePath;
 			}
@@ -169,7 +169,7 @@ public class HpcDatafileController extends AbstractHpcController {
 		String[] action = request.getParameterValues("action");
     if (action != null && action.length > 0 && action[0].equals("cancel")) {
       final String encodedDmePath =
-        MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcDatafile.getPath());
+        MiscUtil.urlEncodeDmePath(hpcDatafile.getPath());
       return "redirect:/datafile?action=view&path=" + encodedDmePath;
     } else if (action != null && action.length > 0 && action[0].equals("delete")) {
       boolean deleted = HpcClientUtil
@@ -200,7 +200,7 @@ public class HpcDatafileController extends AbstractHpcController {
 			model.addAttribute("hpcDatafile", hpcDatafile);
 		}
     final String encodedDmePath =
-      MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcDatafile.getPath());
+      MiscUtil.urlEncodeDmePath(hpcDatafile.getPath());
     return "redirect:/datafile?action=view&path=" + encodedDmePath;
 	}
 

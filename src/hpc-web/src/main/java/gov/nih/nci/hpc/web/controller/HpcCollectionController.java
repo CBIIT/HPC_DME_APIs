@@ -107,7 +107,7 @@ public class HpcCollectionController extends AbstractHpcController {
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
 				return "redirect:/login?returnPath=collection&action=" + action + "&path=" +
-                MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(path);
+                MiscUtil.urlEncodeDmePath(path);
 			}
 
 			if (path == null) {
@@ -226,7 +226,7 @@ public class HpcCollectionController extends AbstractHpcController {
 			final RedirectAttributes redirectAttributes) {
 		String[] action = request.getParameterValues("action");
 		final String encodedDmePath =
-      MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcCollection.getPath());
+      MiscUtil.urlEncodeDmePath(hpcCollection.getPath());
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
 			return "redirect:/collection?path=" + encodedDmePath +
               "&action=view";
@@ -347,7 +347,7 @@ public class HpcCollectionController extends AbstractHpcController {
 			model.addAttribute("error", String.format(
 					ERROR_MSG_TEMPLATE__$DELETE_FAILED_WITH_REASON, e.getMessage()));
 			final String urlEncodedDmeCollPath =
-			  MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(collPath);
+			  MiscUtil.urlEncodeDmePath(collPath);
 			copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
             retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat(
                     String.format(URI_PATTERN__$COLLECTION_DETAIL_VIEW,
@@ -388,7 +388,7 @@ public class HpcCollectionController extends AbstractHpcController {
         copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
         final String allowedAction = (String) model.asMap().get("action");
         final String urlEncodedDmePath =
-          MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(collPath);
+          MiscUtil.urlEncodeDmePath(collPath);
         retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat(
                 String.format(URI_PATTERN__$COLLECTION_DETAIL_VIEW,
                         urlEncodedDmePath, allowedAction));
@@ -462,7 +462,7 @@ public class HpcCollectionController extends AbstractHpcController {
             retNavOutcome = String.format(
               "redirect:/login?returnPath=collection&action=%s&path=%s",
               collectionAction,
-              MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(collectionPath)
+              MiscUtil.urlEncodeDmePath(collectionPath)
             );
         }
         return retNavOutcome;

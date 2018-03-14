@@ -273,7 +273,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			setCollectionPath(model, request, originPath);
 		}
     final String encodedDmePath =
-      MiscUtil.urlEncodeDmePathWithPreserveSlashAtEnds(hpcCollection.getPath());
+      MiscUtil.urlEncodeDmePath(hpcCollection.getPath());
 		return "redirect:/collection?path=" + encodedDmePath + "&action=view";
 	}
 
