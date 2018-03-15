@@ -44,6 +44,4 @@ public final class Constants {
 	
 	
 	public static final String CLI_6 = "CLI_6";
-
-	public static final String URI_SCHEME_FILE="file";
 }

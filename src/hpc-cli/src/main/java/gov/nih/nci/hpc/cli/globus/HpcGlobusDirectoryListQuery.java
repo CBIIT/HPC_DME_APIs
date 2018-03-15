@@ -96,7 +96,6 @@ public class HpcGlobusDirectoryListQuery {
 		List<HpcPathAttributes> pathAttributes = new ArrayList<HpcPathAttributes>();
 
 		// Invoke the Globus directory listing service.
-		System.out.println("getPathAttributes");
 		try {
 			Result dirContent = listDirectoryContent(fileLocation, client);
 			getPathAttributes(pathAttributes, dirContent, client);
@@ -117,9 +116,6 @@ public class HpcGlobusDirectoryListQuery {
 			} // else path was not found.
 
 		} catch (Exception e) {
-		  e.printStackTrace();
-		  System.out.println(e.getMessage());
-		  logger.debug(e.getMessage(), e);
 			throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation,
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
