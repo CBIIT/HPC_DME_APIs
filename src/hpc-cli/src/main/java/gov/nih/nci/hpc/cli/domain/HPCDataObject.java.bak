@@ -183,17 +183,4 @@ public class HPCDataObject {
 	public void setCriteriaMap(Map<String, String> criteriaMap) {
 		this.criteriaMap = criteriaMap;
 	}
-
-  @Override
-  public String toString() {
-    return "HPCDataObject [objectPath=" + objectPath + ", dto=" + dto + ", basePath=" + basePath
-        + ", dataFilePathAttrs=" + dataFilePathAttrs + ", proxyURL=" + proxyURL + ", proxyPort="
-        + proxyPort + ", hpcCertPath=" + hpcCertPath + ", hpcCertPassword=" + hpcCertPassword
-        + ", userId=" + userId + ", password=" + password + ", authToken=" + authToken
-        + ", logFile=" + logFile + ", bufferSize=" + bufferSize + ", errorRecordsFile="
-        + errorRecordsFile + ", headersMap=" + headersMap + ", criteriaMap=" + criteriaMap
-        + ", csvRecord=" + csvRecord + ", connection=" + connection + "]";
-  }
-	
-	
 }
