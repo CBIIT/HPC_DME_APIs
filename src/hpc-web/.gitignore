@@ -1,4 +1,8 @@
-/target/
 /.classpath
+/.idea
 /.project
+
+/src/main/resources/static/bower_components/
+/target/
+
 hpcweb.log.*
