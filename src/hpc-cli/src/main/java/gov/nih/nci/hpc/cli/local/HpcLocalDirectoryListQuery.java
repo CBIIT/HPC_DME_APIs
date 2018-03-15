@@ -7,6 +7,11 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.local;
 
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.cli.util.Paths;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.exception.HpcException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -14,15 +19,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import gov.nih.nci.hpc.cli.util.HpcCmdException;
-import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
-import gov.nih.nci.hpc.cli.util.Paths;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.exception.HpcException;
 
 public class HpcLocalDirectoryListQuery {
 	// ---------------------------------------------------------------------//
@@ -64,6 +62,8 @@ public class HpcLocalDirectoryListQuery {
 			rootPath.setPath(fileLocation);
 			pathAttributes.add(rootPath);
 		} catch (Exception e) {
+		  e.printStackTrace();
+		  System.out.println(e.getMessage());
 		  logger.error(e.getMessage(), e);
 			throw new HpcException("Failed to get path attributes: " + fileLocation,
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -102,6 +102,7 @@ public class HpcLocalDirectoryListQuery {
 						filePath.length());
 				filePathAttr.setName(name);
 				File fileToCheckDir = new File(filePath);
+//				File fileToCheckDir = new File(Paths.generateFileSystemResourceUri(filePath));
 				filePathAttr.setIsDirectory(fileToCheckDir.isDirectory());
 				filePathAttr.setPath(filePath);
 				totalSize = totalSize + fileToCheckDir.length();

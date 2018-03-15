@@ -118,31 +118,39 @@ class GlobScanner {
 		}
 	}
 
-	private void process (File dir, String fileName, List<Pattern> matchingIncludes) {
-		// Increment patterns that need to move to the next token.
-		boolean isFinalMatch = false;
-		List<Pattern> incrementedPatterns = new ArrayList();
-		for (Iterator iter = matchingIncludes.iterator(); iter.hasNext();) {
-			Pattern include = (Pattern)iter.next();
-			if (include.incr(fileName)) {
-				incrementedPatterns.add(include);
-				if (include.isExhausted()) iter.remove();
-			}
-			if (include.wasFinalMatch()) isFinalMatch = true;
-		}
-
+  private void process(File dir, String fileName, List<Pattern> matchingIncludes) {
+    // Increment patterns that need to move to the next token.
+    boolean isFinalMatch = false;
+    List<Pattern> incrementedPatterns = new ArrayList();
+    for (Iterator iter = matchingIncludes.iterator(); iter.hasNext(); ) {
+      Pattern include = (Pattern) iter.next();
+      if (include.incr(fileName)) {
+        incrementedPatterns.add(include);
+        if (include.isExhausted()) {
+          iter.remove();
+        }
+      }
+      if (include.wasFinalMatch()) {
+        isFinalMatch = true;
+      }
+    }
 		File file = new File(dir, fileName);
-		if (isFinalMatch) {
-			int length = rootDir.getPath().length();
-			if (!rootDir.getPath().endsWith(File.separator)) length++; // Lose starting slash.
-			matches.add(file.getPath().substring(length));
-		}
-		if (!matchingIncludes.isEmpty() && file.isDirectory()) scanDir(file, matchingIncludes);
-
-		// Decrement patterns.
-		for (Pattern include : incrementedPatterns)
-			include.decr();
-	}
+//    File file = new File(Paths.generateFileSystemResourceUri(dir, fileName));
+    if (isFinalMatch) {
+      int length = rootDir.getPath().length();
+      if (!rootDir.getPath().endsWith(File.separator)) {
+        length++; // Lose starting slash.
+      }
+      matches.add(file.getPath().substring(length));
+    }
+    if (!matchingIncludes.isEmpty() && file.isDirectory()) {
+      scanDir(file, matchingIncludes);
+    }
+    // Decrement patterns.
+    for (Pattern include : incrementedPatterns) {
+      include.decr();
+    }
+  }
 
 	public List<String> matches () {
 		return matches;
