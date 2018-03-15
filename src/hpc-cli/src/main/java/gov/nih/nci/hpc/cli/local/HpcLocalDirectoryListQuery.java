@@ -62,8 +62,6 @@ public class HpcLocalDirectoryListQuery {
 			rootPath.setPath(fileLocation);
 			pathAttributes.add(rootPath);
 		} catch (Exception e) {
-		  e.printStackTrace();
-		  System.out.println(e.getMessage());
 		  logger.error(e.getMessage(), e);
 			throw new HpcException("Failed to get path attributes: " + fileLocation,
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -102,7 +100,6 @@ public class HpcLocalDirectoryListQuery {
 						filePath.length());
 				filePathAttr.setName(name);
 				File fileToCheckDir = new File(filePath);
-//				File fileToCheckDir = new File(Paths.generateFileSystemResourceUri(filePath));
 				filePathAttr.setIsDirectory(fileToCheckDir.isDirectory());
 				filePathAttr.setPath(filePath);
 				totalSize = totalSize + fileToCheckDir.length();

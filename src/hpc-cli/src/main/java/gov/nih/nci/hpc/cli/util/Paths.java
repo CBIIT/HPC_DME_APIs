@@ -1,13 +1,9 @@
 package gov.nih.nci.hpc.cli.util;
 
-import gov.nih.nci.hpc.cli.util.Constants;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,56 +18,6 @@ import java.util.zip.ZipOutputStream;
 
 /** Collects filesystem paths using wildcards, preserving the directory structure. Copies, deletes, and zips paths. */
 public class Paths implements Iterable<String> {
-
-  public static URI generateFileSystemResourceUri(File parentDir, String fsItemName) {
-    try {
-      final String fsItemPath = parentDir.getCanonicalPath().concat(File.separator)
-          .concat(fsItemName);
-      URI retUri = new URI(Constants.URI_SCHEME_FILE, fsItemPath, null);
-      return retUri;
-    } catch (URISyntaxException uriSyntaxExcptn) {
-      final String errorMsg = String.format(
-          "Failed to construct valid URI for file system resource specified as having parent dir " +
-              "item File instance with path '%s' and having name '%s'.",
-          parentDir.getPath(), fsItemName);
-      throw new HpcCmdException(errorMsg, uriSyntaxExcptn);
-    } catch (IOException ioExcptn) {
-      final String errorMsg = String.format(
-          "Failed to obtain canonical path for file system resource specified as having parent " +
-              "dir item File instance with path '%s' and having name '%s'.",
-          parentDir.getPath(), fsItemName);
-      throw new HpcCmdException(errorMsg, ioExcptn);
-    }
-  }
-
-  public static URI generateFileSystemResourceUri(String fsParentDirPath, String fsItemName)
-      throws HpcCmdException {
-    try {
-      final String fsItemPath = fsParentDirPath.concat(File.separator).concat(fsItemName);
-      URI retUri = new URI(Constants.URI_SCHEME_FILE, fsItemPath, null);
-      return retUri;
-    } catch (URISyntaxException uriSyntaxExcptn) {
-      final String errorMsg = String.format(
-          "Failed to construct valid URI for file system resource specified as having parent dir " +
-              "'%s' and having name '%s'.",
-          fsParentDirPath, fsItemName);
-      throw new HpcCmdException(errorMsg, uriSyntaxExcptn);
-    }
-  }
-
-  public static URI generateFileSystemResourceUri(String fsResourcePath) throws HpcCmdException {
-    try {
-      URI retUri = new URI(Constants.URI_SCHEME_FILE, fsResourcePath, null);
-      return retUri;
-    } catch (URISyntaxException uriSyntaxExcptn) {
-      final String errorMsg = String
-          .format("Failed to construct valid URI for file system resource specified as '%s'.",
-              fsResourcePath);
-      throw new HpcCmdException(errorMsg, uriSyntaxExcptn);
-    }
-  }
-
-
 	static private final Comparator<Path> LONGEST_TO_SHORTEST = new Comparator<Path>() {
 		public int compare (Path s1, Path s2) {
 			return s2.absolute().length() - s1.absolute().length();
@@ -108,7 +54,6 @@ public class Paths implements Iterable<String> {
 			}
 		}
 		File dirFile = new File(dir);
-   // File dirFile = new File(generateFileSystemResourceUri(dir));
 		if (!dirFile.exists()) return this;
 
 		List<String> includes = new ArrayList();
@@ -200,7 +145,6 @@ public class Paths implements Iterable<String> {
 			}
 		}
 		File dirFile = new File(dir);
-//    File dirFile = new File(generateFileSystemResourceUri(dir));
 		if (!dirFile.exists()) return this;
 
 		List<String> includes = new ArrayList();
@@ -225,22 +169,21 @@ public class Paths implements Iterable<String> {
 
 	/** Copies the files and directories to the specified directory.
 	 * @return A paths object containing the paths of the new files. */
-  public Paths copyTo(String destDir) throws IOException {
-    Paths newPaths = new Paths();
-    for (Path path : paths) {
+	public Paths copyTo (String destDir) throws IOException {
+		Paths newPaths = new Paths();
+		for (Path path : paths) {
 			File destFile = new File(destDir, path.name);
-//      File destFile = new File(generateFileSystemResourceUri(destDir, path.name));
-      File srcFile = path.file();
-      if (srcFile.isDirectory()) {
-        destFile.mkdirs();
-      } else {
-        destFile.getParentFile().mkdirs();
-        copyFile(srcFile, destFile);
-      }
-      newPaths.paths.add(new Path(destDir, path.name));
-    }
-    return newPaths;
-  }
+			File srcFile = path.file();
+			if (srcFile.isDirectory()) {
+				destFile.mkdirs();
+			} else {
+				destFile.getParentFile().mkdirs();
+				copyFile(srcFile, destFile);
+			}
+			newPaths.paths.add(new Path(destDir, path.name));
+		}
+		return newPaths;
+	}
 
 	/** Deletes all the files, directories, and any files in the directories.
 	 * @return False if any file could not be deleted. */
@@ -376,7 +319,6 @@ public class Paths implements Iterable<String> {
 	/** Adds a single path to this Paths object. */
 	public Paths addFile (String fullPath) {
 		File file = new File(fullPath);
-//    File file = new File(generateFileSystemResourceUri(fullPath));
 		String parent = file.getParent();
 		paths.add(new Path(parent == null ? "" : parent, file.getName()));
 		return this;
@@ -445,10 +387,9 @@ public class Paths implements Iterable<String> {
 			return dir + name;
 		}
 
-    public File file() {
+		public File file () {
 			return new File(dir, name);
-//      return new File(generateFileSystemResourceUri(dir, name));
-    }
+		}
 
 		public int hashCode () {
 			final int prime = 31;
@@ -500,5 +441,4 @@ public class Paths implements Iterable<String> {
 		}
 		return file.delete();
 	}
-
 }
