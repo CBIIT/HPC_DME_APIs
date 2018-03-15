@@ -395,6 +395,7 @@ function dm_get_collection {
 
 
 
+
 #Download a dataObject synchronously 
 #Inputs: logic-path 
 #        destination-file
@@ -452,6 +453,181 @@ function dm_download_dataobject_sync {
       rm -f $RESPONSE_HEADER 2> /dev/null
     fi
 }
+
+
+#Delete a datafile from the archive using the cmd line client.
+#Inputs:  <file-path>: The path on the file system 
+
+function dm_delete_datafile {
+
+    local USAGE="USAGE: dm_delete_datafile <file-path>"
+
+    check_java
+    if [ "$?" -ne 0 ]
+    then 
+      return 1
+    fi
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR using dm_delete_datafile" >&2
+        echo "$USAGE" >&2
+        exit 1 
+    fi
+    
+    local file_path="$1"
+   
+    #Check if the jar exists:
+    local jar_file=$(get_jar)
+    local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
+    if [ ! -f $jar_path ]
+    then
+      echo "Can not find $jar_path " >&2
+      return 1
+    fi
+
+    command_args=""
+
+    #Pass the mandatory arguments
+    command_args+=" --path \"$file_path\" "
+  
+    #Generate the command for the client: 
+    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    echo "deleteDatafile  " $command_args >  $command_file
+
+    case "$(uname -s)" in
+    
+       Darwin|Linux)
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        exit_code="$?"
+       ;;
+    
+       CYGWIN*|MINGW32*|MSYS*)
+            java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+        exit_code="$?"
+       ;;
+    
+       *)
+         echo 'Current OS not supported' 
+         exit 1
+         ;;
+    esac
+
+    if [ "$exit_code" -eq  "1" ]
+    then
+      echo "The datafile deletion did not fully complete successfully" >&2
+      echo "Check complete log and error files" >&2
+      return 1
+    fi
+
+}
+
+#Print Usage of dm_register_directory function
+function dm_show_delete_collection_usage {
+  read -d  '' usage <<- EOF
+  Usage: dm_delete_collection [OPTIONS] <collection-path> 
+
+  Delete the collection at the specified path. 
+  OPTIONS:
+  -r                      Recursive delete. This will delete all the files and sub-collections under the specified collection recursively. 
+EOF
+  echo "$usage"
+}
+
+#Delete a collection from the archive using the cmd line client.
+#Inputs:  <source-path>: The path on the file system 
+
+function dm_delete_collection {
+
+    local USAGE="USAGE: dm_delete_collection <collection-path>"
+    local OPTIND
+    
+    #Set the default parameters
+    numthreads=1
+    recursive=false
+  
+   while getopts ":rt:" option
+    do
+      case "${option}" in
+       
+        r)
+	  recursive=true
+          ;;
+        *)
+          echo "ERROR: Unsupported option ${option}" >&2
+          dm_show_delete_collection_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
+
+    shift $(( OPTIND-1 ))   
+
+    check_java
+    if [ "$?" -ne 0 ]
+    then 
+      return 1
+    fi
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using dm_delete_collection" >&2
+        usage=$(dm_show_delete_collection_usage)
+        echo "$usage" >&2
+        exit 1
+    fi
+
+
+    local collection_path="$1"
+
+    #Check if the jar exists:
+    local jar_file=$(get_jar)
+    local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
+    if [ ! -f $jar_path ]
+    then
+       echo "Can not find $jar_path " >&2
+       return 1
+     fi
+
+    command_args=""
+
+    #Pass the mandatory arguments
+    command_args+="--path \"$collection_path\" "
+
+    #Pass the optional ones
+    command_args+="--recursive $recursive "
+
+    #Generate the command for the client: 
+    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    echo "deleteCollection  " $command_args >  $command_file
+
+    case "$(uname -s)" in
+    
+       Darwin|Linux)
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        exit_code="$?"
+       ;;
+    
+       CYGWIN*|MINGW32*|MSYS*)
+            java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+        exit_code="$?"
+       ;;
+    
+       *)
+         echo 'Current OS not supported' 
+         exit 1
+         ;;
+    esac
+
+    if [ "$exit_code" -eq  "1" ]
+    then
+      echo "The collection deletion did not fully complete successfully" >&2
+      echo "Check complete log and error files" >&2
+      return 1
+    fi
+}
+
 
 
 #Print Usage of dm_register_directory function
