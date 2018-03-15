@@ -134,7 +134,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					System.out.println("The file " + path + " will be deleted. Procced with deletion ? (Y/N):");
 					String confirm = reader.readLine();
 					if (confirm == null || !"Y".equalsIgnoreCase(confirm)) {
-						System.out.println("Skipped deleting collections");
+						System.out.println("Skipped deleting file");
 						return null;
 					}	
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
