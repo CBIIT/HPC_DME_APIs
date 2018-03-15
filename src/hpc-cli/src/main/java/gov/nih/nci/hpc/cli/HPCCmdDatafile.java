@@ -123,25 +123,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 						hpcCertPassword);
 
 				Response restResponse = null;
-				if (cmd.equals("deleteDatafile")) {
-					Iterator iterator = criteria.keySet().iterator();
-					String path = (String) iterator.next();
-					serviceURL = serviceURL + path;		
-					
-					jline.console.ConsoleReader reader;
-					reader = new jline.console.ConsoleReader();
-					reader.setExpandEvents(false);
-					System.out.println("The file " + path + " will be deleted. Procced with deletion ? (Y/N):");
-					String confirm = reader.readLine();
-					if (confirm == null || !"Y".equalsIgnoreCase(confirm)) {
-						System.out.println("Skipped deleting file");
-						return null;
-					}	
-					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
-					client.header("Authorization", "Bearer " + authToken);
-					restResponse = client.delete();
-				}
-				else if (cmd.equals("getDatafile")) {
+				if (cmd.equals("getDatafile")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
 					serviceURL = serviceURL + path;
@@ -167,7 +149,8 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
 					restResponse = client.post(criteriaClause);
-				} 
+				}
+
 				System.out.println("Executing: " + serviceURL);
 
 				if (restResponse.getStatus() == 200) {

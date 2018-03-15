@@ -7,6 +7,7 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli;
 
+import gov.nih.nci.hpc.cli.util.Paths;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -37,6 +38,7 @@ public class TestDataGenerator {
 			String content = "This is the content to write into file";
 
 			File file = new File(filePath);
+//			File file = new File(Paths.generateFileSystemResourceUri(filePath));
 
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
@@ -63,6 +65,7 @@ public class TestDataGenerator {
 			System.out.println("Done");
 
 		} catch (IOException e) {
+		  // TODO: more exception handling logic
 			e.printStackTrace();
 		}
 	}

@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.cli.util;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
