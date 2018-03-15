@@ -1828,29 +1828,51 @@ public class HpcClientUtil {
     }
   }
 
-  public static void populateBasePaths(HttpSession session, Model model,
-      HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
-      String sslCertPath, String sslCertPassword) throws HpcWebException {
-
-    Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-    String queryParams = "?";
-    for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
-      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-        queryParams += "collectionPath=" + rule.getBasePath() + "&";
-      }
-    }
-    queryParams = queryParams.substring(0, queryParams.length() - 1);
-    HpcUserPermsForCollectionsDTO permissions = HpcClientUtil.getPermissionForCollections(authToken,
-        collectionURL + "/" + userId, queryParams, sslCertPath, sslCertPassword);
+  public static void populateBasePaths(
+      HttpSession session,
+      Model model,
+      HpcDataManagementModelDTO modelDTO,
+      String authToken,
+      String userId,
+      String collectionURL,
+      String sslCertPath,
+      String sslCertPassword) throws HpcWebException {
+    final Set<String> basePaths =
+      new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+    final String url2Call = String.format("%s/%s", collectionURL, userId);
+    final String queryParams = generateQueryString(modelDTO);
+    HpcUserPermsForCollectionsDTO permissions =
+      HpcClientUtil.getPermissionForCollections(
+        authToken, url2Call, queryParams, sslCertPath, sslCertPassword);
     if (permissions != null) {
       for (HpcPermissionForCollection permission : permissions.getPermissionsForCollections()) {
-        if (permission != null && permission.getPermission() != null
-            && (permission.getPermission().equals(HpcPermission.WRITE)
-                || permission.getPermission().equals(HpcPermission.OWN)))
+        if (permission != null && (
+          HpcPermission.WRITE.equals(permission.getPermission()) ||
+          HpcPermission.OWN.equals(permission.getPermission()) ) ) {
           basePaths.add(permission.getCollectionPath());
+        }
       }
     }
     session.setAttribute("basePaths", basePaths);
+  }
+
+
+  private static String generateQueryString(HpcDataManagementModelDTO argModelDTO) {
+    final StringBuilder sb = new StringBuilder("?");
+    boolean firstItemFlag = true;
+    for (HpcDocDataManagementRulesDTO docRule : argModelDTO.getDocRules()) {
+      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+        if (firstItemFlag) {
+          firstItemFlag = false;
+        } else {
+          sb.append("&");
+        }
+        sb.append("collectionPath=")
+          .append(MiscUtil.urlEncodeDmePath(rule.getBasePath()));
+      }
+    }
+    final String queryParams = sb.substring(0, sb.length() - 1);
+    return queryParams;
   }
 
 }
