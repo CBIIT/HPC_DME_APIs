@@ -18,8 +18,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,55 +51,37 @@ public abstract class HPCBatchClient {
 	protected boolean inputCredentials = true;
 	protected int bufferSize = 0;
 	protected int threadCount = 1;
-    protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
-
+	
 	public HPCBatchClient() {
 
 	}
 
 	protected void preprocess() {
-	    logger.debug("preprocess");
-	    try {
+		try {
 			String threadStr = configProperties.getProperty("hpc.job.thread.count");
-			logger.debug("hpc.job.thread.count "+threadStr);
 			threadCount = Integer.parseInt(threadStr);
 		} catch (Exception e) {
-		    logger.error("hpc.job.thread.count error " +e.getMessage());
 			threadCount = 3;
 		}
 
 		hpcServerURL = configProperties.getProperty("hpc.server.url");
-		logger.debug("hpc.server.url "+hpcServerURL);
 		hpcServerProxyURL = configProperties.getProperty("hpc.server.proxy.url");
-		logger.debug("hpc.server.proxy.url "+hpcServerProxyURL);
 		hpcServerProxyPort = configProperties.getProperty("hpc.server.proxy.port");
-		logger.debug("hpc.server.proxy.port "+hpcServerProxyPort);
 		globusNexusURL = configProperties.getProperty("globus.nexus.url");
-		logger.debug("globus.nexus.url "+globusNexusURL);
 		String checkMD5 = configProperties.getProperty("validate.md5.checksum");
-		logger.debug("validate.md5.checksum "+checkMD5);
 		if(checkMD5 != null && checkMD5.equalsIgnoreCase("true"))
 			validateMD5 = true;	
 		globusURL = configProperties.getProperty("globus.url");
-		logger.debug("globus.url "+globusURL);
+		hpcServerURL = configProperties.getProperty("hpc.server.url");
 		hpcDataService = configProperties.getProperty("hpc.dataobject.service");
-		logger.debug("hpc.dataobject.service "+hpcDataService);
 		hpcCertPath = configProperties.getProperty("hpc.ssl.keystore.path");
-		logger.debug("hpc.ssl.keystore.path "+hpcCertPath);
 		hpcCertPassword = configProperties.getProperty("hpc.ssl.keystore.password");
-		logger.debug("hpc.ssl.keystore.password "+hpcCertPassword);
 		logDir = configProperties.getProperty("hpc.error-log.dir");
-		logger.debug("hpc.error-log.dir "+logDir);
 		loginFile = configProperties.getProperty("hpc.login.credentials");
-		logger.debug("hpc.login.credentials "+loginFile);
 		tokenFile = configProperties.getProperty("hpc.login.token");
-		logger.debug("hpc.login.token "+tokenFile);
 		globusLoginFile = configProperties.getProperty("hpc.globus.login.token");
-        logger.debug("hpc.globus.login.token "+globusLoginFile);
 		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
-        logger.debug("hpc.collection.service "+hpcCollectionService);
 		String bufferSizeStr = configProperties.getProperty("upload.buffer.size");
-        logger.debug("upload.buffer.size "+bufferSizeStr);
 		try {
 			bufferSize = Integer.parseInt(bufferSizeStr);
 		} catch (Exception e) {
@@ -110,7 +90,6 @@ public abstract class HPCBatchClient {
 		}
 		
 		String basePath = System.getProperty("HPC_DM_UTILS");
-		logger.debug("HPC_DM_UTILS "+basePath);
 		if(basePath == null)
 		{
 			System.out.println("System Property HPC_DM_UTILS is missing");
@@ -122,9 +101,7 @@ public abstract class HPCBatchClient {
 		if(loginFile != null)
 			loginFile = basePath + File.separator + loginFile;
 		globusLoginFile = basePath + File.separator + globusLoginFile;
-		logger.debug("globusLoginFile "+globusLoginFile);
 		hpcCertPath = basePath + File.separator + hpcCertPath;
-		logger.debug("hpcCertPath "+hpcCertPath);
 		
 		initializeLog();
 		
@@ -134,7 +111,6 @@ public abstract class HPCBatchClient {
 
 	public String process(String fileName) {
 		preprocess();
-        logger.debug("process");
 		BufferedReader bufferedReader = null;
 		try {
 			String userId = null;
@@ -173,10 +149,7 @@ public abstract class HPCBatchClient {
 				}
 			}
 
-			logger.debug("fileName "+fileName);
-			logger.debug("userId "+userId);
 			String errorCode = processFile(fileName, userId, password, authToken);
-			logger.debug("errorCode "+errorCode);
 			if (errorCode == null || errorCode.equals(Constants.CLI_SUCCESS))
 			{
 				System.out.println("Cmd process Successful");
@@ -205,7 +178,6 @@ public abstract class HPCBatchClient {
 	protected abstract String processFile(String fileName, String userId, String password, String authToken);
 
 	protected void postProcess() {
-	  logger.debug("postProcess");
 		try {
 			if (fileLogWriter != null) {
 				fileLogWriter.flush();

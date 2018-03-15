@@ -33,10 +33,6 @@
 					<artifactId>commons-logging</artifactId>
 					<groupId>commons-logging</groupId>
 				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>slf4j-api</groupId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -44,13 +40,11 @@
 			<artifactId>spring-shell</artifactId>
 			<version>${spring.shell.version}</version>
 		</dependency>
-<!-- 
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
- -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit-dep</artifactId>
@@ -207,13 +201,12 @@
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.52</version>
 		</dependency>
-<!-- 		
 <dependency>
   <groupId>org.slf4j</groupId>
   <artifactId>slf4j-api</artifactId>
   <version>1.7.1</version>
 </dependency>
- -->
+
 <dependency>
   <groupId>org.slf4j</groupId>
   <artifactId>jcl-over-slf4j</artifactId>
