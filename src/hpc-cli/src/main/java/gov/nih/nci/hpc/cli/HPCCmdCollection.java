@@ -367,7 +367,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 			confirm = reader.readLine();
 			if (confirm == null || !"N".equalsIgnoreCase(confirm)) {
 				int fileCount = 0;
-				System.out.println("The following files will be deleted from the Archive:");				
+				System.out.println("The following collections and files will be deleted from the Archive:");				
 				fileCount = getDataObjectsPaths(serviceURL, path, authToken, true, fileCount);
 				System.out.println("A total of " + fileCount + " files are marked for deletion. Procced with deletion ? (Y/N):");
 					
@@ -407,7 +407,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
 		HpcCollectionDTO collectionDto = collections.getCollections().get(0);
 		HpcCollection collection = collectionDto.getCollection();
-		//System.out.println(collection.getAbsolutePath());
+		System.out.println(collection.getAbsolutePath());
 		if(CollectionUtils.isNotEmpty(collection.getDataObjects())) {
 			fileCount = fileCount + collection.getDataObjects().size();
 			if(printFilePath) {
@@ -418,7 +418,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 		}
 		if(CollectionUtils.isNotEmpty(collection.getSubCollections())) {
 			for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
-				//System.out.println(subCollection.getPath());
+				System.out.println(subCollection.getPath());
 				fileCount = fileCount + getDataObjectsPaths(serviceURL, subCollection.getPath(), authToken, printFilePath, fileCount);
 			}
 		}
