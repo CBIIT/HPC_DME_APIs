@@ -372,7 +372,7 @@
 								waitEle.style.display = "block";
 								$.ajax({
 									type : "DELETE",
-									url : "/datafile?deletepath="+document.getElementById("deletepath").value,
+									url : "/datafile?deletepath="+ urlEncodePathString(document.getElementById("deletepath").value),
 									data : $form.serialize(),
 									success : function(msg) {
 										waitEle.style.display = "none";
