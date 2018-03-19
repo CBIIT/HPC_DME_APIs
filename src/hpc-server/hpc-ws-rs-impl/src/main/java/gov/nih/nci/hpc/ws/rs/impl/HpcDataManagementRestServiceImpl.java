@@ -10,6 +10,8 @@ package gov.nih.nci.hpc.ws.rs.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -111,7 +113,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       final Map<String, String> responseMap = new HashMap<>();
       responseMap.put("path", path);
       responseMap.put("elementType", pathElemType);
-      return okResponse(responseMap, true);
+      try {
+        final String jsonResponseStr =
+            new ObjectMapper().writeValueAsString(responseMap);
+        return okResponse(jsonResponseStr, true);
+      } catch (JsonProcessingException jpe) {
+        // (String message, HpcErrorType errorType, Throwable cause)
+        final String errMsg =
+          String.format("Failure during conversion of Map to JSON: %s",
+                        responseMap.toString());
+        throw new HpcException(errMsg, HpcErrorType.DATA_MANAGEMENT_ERROR, jpe);
+      }
     } catch (HpcException e) {
       return errorResponse(e);
     }
