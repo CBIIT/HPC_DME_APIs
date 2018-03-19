@@ -45,6 +45,19 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
 @Path("/")
 public interface HpcDataManagementRestService {
+
+  /**
+   * Examine whether path refers to collection or data file.
+   *
+   * @param path The path.
+   * @return The REST service response.
+   */
+  @GET
+  @Path("/pathRefType/{path:.*}")
+  @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+  public Response interrogatePathRef(@PathParam("path") String path);
+
+
 	/**
 	 * Collection registration.
 	 *
