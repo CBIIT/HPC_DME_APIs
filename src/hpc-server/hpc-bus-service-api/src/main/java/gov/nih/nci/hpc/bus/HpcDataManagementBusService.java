@@ -44,6 +44,16 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcDataManagementBusService {
 
   /**
+   * Determine if path refers to collection or data file.
+   *
+   * @param path The path.
+   * @return A boolean result that is true if path refers to collection
+   *         or false if it refers to data file.
+   * @throws HpcException on service failure.
+   */
+  public boolean interrogatePathRef(String path) throws HpcException;
+
+  /**
    * Register a Collection.
    *
    * @param path The collection's path.
