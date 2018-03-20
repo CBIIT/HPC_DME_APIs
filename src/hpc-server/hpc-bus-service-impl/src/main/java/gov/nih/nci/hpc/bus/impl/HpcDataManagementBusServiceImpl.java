@@ -150,6 +150,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   // ---------------------------------------------------------------------//
 
   @Override
+  public boolean interrogatePathRef(String path) throws HpcException {
+    return dataManagementService.interrogatePathRef(path);
+  }
+
+  @Override
   public boolean registerCollection(
       String path, HpcCollectionRegistrationDTO collectionRegistration) throws HpcException {
     // Determine the data management configuration to use based on the path.
