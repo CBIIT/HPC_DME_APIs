@@ -183,11 +183,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response deleteCollection(String path, Boolean recursive) {
     try {
     	
-      recursive = recursive != null ? recursive : false;
-      if(recursive) {
-    	  //Delete all the data objects in this hierarchy first
-    	  deleteDataObjectsInCollections(path);
-;      }
+      recursive = recursive != null ? recursive : false;    
       dataManagementBusService.deleteCollection(toNormalizedPath(path), recursive);
 
     } catch (HpcException e) {
@@ -531,37 +527,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(response, false);
   }
 
-  // ---------------------------------------------------------------------//
-  // Helper Methods
-  // ---------------------------------------------------------------------//
-  /**
-   * Recursively delete all the data objects from the specified collection and from 
-   * it's sub-collections.
-   * @param path The path at the root of the hierarchy to delete from.
-   */
-  private void deleteDataObjectsInCollections(String path) throws HpcException {
-	
-	  HpcCollectionDTO collectionDto = dataManagementBusService.getCollectionChildren(path);
-	  
-	    if (collectionDto.getCollection() != null) {
-	    	List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
-	    	if(!CollectionUtils.isEmpty(dataObjects)) {
-	    		//Delete data objects in this collection
-	    		for(HpcCollectionListingEntry entry: dataObjects) {
-	    			dataManagementBusService.deleteDataObject(entry.getPath());
-	    		}
-	    	}
-	    	
-	    	List<HpcCollectionListingEntry> subCollections = collectionDto.getCollection().getSubCollections();
-	    	if(!CollectionUtils.isEmpty(subCollections)) {
-	    		//Recursively delete data objects from this sub-collection and 
-	    		//it's sub-collections
-	    		for(HpcCollectionListingEntry entry: subCollections) {
-	    			deleteDataObjectsInCollections(entry.getPath());
-	    		}
-	    	}
-	    }
-  }
+  
   
   
   /**
