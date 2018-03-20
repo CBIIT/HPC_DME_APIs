@@ -149,9 +149,22 @@ public interface HpcDataManagementProxy
      */
     public boolean isPathParentDirectory(Object authenticatedToken, 
     		                             String path)
-    		                            throws HpcException;   
-    
-    /**
+    		                            throws HpcException;
+
+  /**
+   * Determine if path refers to collection or data file.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param path The path.
+   * @return Indication of either collection or data file via boolean; true
+   *          corresponds to collection while false corresponds to data file
+   * @throws HpcException on data management system failure.
+   */
+  public boolean interrogatePathRef(Object authenticatedToken, String path)
+  throws HpcException;
+
+
+  /**
      * Get path attributes (exists, isDirectory, isFile)
      *
      * @param authenticatedToken An authenticated token.

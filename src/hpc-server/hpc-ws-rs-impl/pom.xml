@@ -81,6 +81,11 @@
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <!-- <version>${jackson.version}</version> -->
+    </dependency>
   </dependencies>
 
   <profiles>
