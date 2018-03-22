@@ -56,6 +56,8 @@ import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -312,7 +314,8 @@ public class HpcClientUtil {
         theItemPath = theItemPath.substring(1);
       }
       final String hpcServiceUrl =
-        argServiceUrlPrefix.concat("/").concat(theItemPath);
+        MiscUtil.encodeFullURL(
+          argServiceUrlPrefix.concat("/").concat(theItemPath));
       final WebClient client = HpcClientUtil.getWebClient(hpcServiceUrl,
                                 argSslCertPath, argSslCertPasswd);
 //      client.header(HttpHeaders.AUTHORIZATION, "Basic " + argAuthToken);
@@ -331,7 +334,7 @@ public class HpcClientUtil {
       }
 
       return elemType;
-    } catch (IllegalStateException | IOException e) {
+    } catch (IllegalStateException | URISyntaxException | IOException e) {
       e.printStackTrace();
       final String msgForHpcWebException = String.format(
         ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE,
@@ -353,7 +356,7 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionlURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
+        .append(path);
       if (children) {
         sb.append("/children");
       }
@@ -363,7 +366,7 @@ public class HpcClientUtil {
       else {
         sb.append("?list=false");
       }
-      final String serviceURL = sb.toString();
+      final String serviceURL = MiscUtil.encodeFullURL(sb.toString());
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
@@ -403,9 +406,9 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePath(path))
+        .append(path)
         .append("?list=").append(Boolean.toString(list));
-      final String url2Call = sb.toString();
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
                                                     hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -878,8 +881,8 @@ public class HpcClientUtil {
 
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
                                                     hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -915,8 +918,8 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -951,8 +954,8 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePath(collectionPath));
-      final String url2Call = sb.toString();
+        .append(collectionPath);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
                                                     hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -998,8 +1001,8 @@ public class HpcClientUtil {
 
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
@@ -1080,8 +1083,8 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
@@ -1121,8 +1124,8 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -1351,19 +1354,26 @@ public class HpcClientUtil {
 
   public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId,
       String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
-    final StringBuilder sb = new StringBuilder();
-    sb.append(MiscUtil.prepareUrlForExtending(hpcServiceURL))
-      .append(MiscUtil.urlEncodeDmePath(path))
-      .append("/acl/user/")
-      .append(userId);
-    final String url2Call = sb.toString();
-    WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
-                                                  hpcCertPassword);
-    client.header("Authorization", "Bearer " + token);
+    Response restResponse;
+    try {
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcServiceURL))
+          .append(path)
+          .append("/acl/user/")
+          .append(userId);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
+      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
+          hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
 
-    Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
-      return null;
+      restResponse = client.get();
+      if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+        return null;
+    } catch (MalformedURLException|URISyntaxException e) {
+      e.printStackTrace();
+      throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+    }
+
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
     try {
@@ -1941,7 +1951,7 @@ public class HpcClientUtil {
           .append(MiscUtil.urlEncodeDmePath(rule.getBasePath()));
       }
     }
-    final String queryParams = sb.substring(0, sb.length() - 1);
+    final String queryParams = sb.toString(); //sb.substring(0, sb.length() - 1);
     return queryParams;
   }
 
