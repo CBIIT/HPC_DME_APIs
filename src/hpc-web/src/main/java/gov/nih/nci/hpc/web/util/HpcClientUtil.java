@@ -310,9 +310,6 @@ public class HpcClientUtil {
     Optional<String> elemType = Optional.empty();
     try {
       String theItemPath = argItemPath.trim();
-      if (theItemPath.startsWith("/")) {
-        theItemPath = theItemPath.substring(1);
-      }
       final String hpcServiceUrl =
         MiscUtil.encodeFullURL(
           argServiceUrlPrefix.concat("/").concat(theItemPath));
