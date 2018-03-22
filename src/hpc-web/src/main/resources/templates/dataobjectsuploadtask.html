@@ -212,9 +212,11 @@
 								<div class="panel panel-default"
 									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getCompletedItems()}"  style="margin-top:5px">
 									<div class="col-md-12 form-group">
-										<label for="Name">Path:</label><a th:href="@{'/datafile?action=view&amp;path=' + ${hpcUploadTaskItem.getPath()}}"> <label
-											for="${hpcUploadTaskItem.getPath()}"
-											th:text="${hpcUploadTaskItem.getPath()}"></label></a>
+										<label for="Name">Path:</label>
+                    <a th:href="@{/datafile(action=view,path=${hpcUploadTaskItem.getPath()})}">
+                      <label for="${hpcUploadTaskItem.getPath()}" th:text="${hpcUploadTaskItem.getPath()}">
+                      </label>
+                    </a>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getMessage() != null}">
 										<label for="Name">Message:</label> <label
