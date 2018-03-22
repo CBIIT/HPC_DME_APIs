@@ -113,7 +113,7 @@
 						th:each="bookmark : ${bookmarksList}"
 						th:with="index=0">
 						<td style="white-space: nowrap" align="left">
-							<a th:href="@{'/browse?refresh&amp;path=' + ${bookmark.getPath()}}">
+							<a th:href="@{/browse(refresh=1,path=${bookmark.getPath()})}">
 							<span th:utext="${bookmark.getName()}"></span>
 							</a>
 						</td>
