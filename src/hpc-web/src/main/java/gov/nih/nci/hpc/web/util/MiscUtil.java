@@ -2,6 +2,9 @@ package gov.nih.nci.hpc.web.util;
 
 import gov.nih.nci.hpc.web.HpcWebException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
 public class MiscUtil {
@@ -55,6 +58,33 @@ public class MiscUtil {
       return encodedDmePath;
     }
 
+
+    public static String encodeFullURL(String argRawURLString)
+        throws URISyntaxException, MalformedURLException {
+      String retURL = null;
+      final int posFirstColon = argRawURLString.indexOf(":");
+      if (-1 == posFirstColon) {
+        retURL = new URI(argRawURLString).toURL().toString();
+      } else {
+        // [scheme:]scheme-specific-part[#fragment]
+        final String scheme = argRawURLString.substring(0, posFirstColon);
+        String schemeSpecificPart;
+        String fragment;
+        final int posLastHash = argRawURLString.lastIndexOf("#");
+        if (-1 == posLastHash) {
+          schemeSpecificPart = argRawURLString.substring(1 + posFirstColon);
+          fragment = null;
+        } else {
+          schemeSpecificPart = argRawURLString.substring(
+            1 + posFirstColon, posLastHash);
+          fragment = argRawURLString.substring(1 + posLastHash);
+        }
+        retURL = new URI(scheme, schemeSpecificPart, fragment)
+                      .toURL().toString();
+      }
+
+      return retURL;
+    }
 
  /*
   private static String removePrefix(String argText, String argPrefix) {
