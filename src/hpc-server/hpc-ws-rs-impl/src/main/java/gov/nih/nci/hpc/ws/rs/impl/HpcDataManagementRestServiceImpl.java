@@ -122,7 +122,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         final String errMsg =
           String.format("Failure during conversion of Map to JSON: %s",
                         responseMap.toString());
-        throw new HpcException(errMsg, HpcErrorType.DATA_MANAGEMENT_ERROR, jpe);
+        throw new HpcException(errMsg, HpcErrorType.UNEXPECTED_ERROR, jpe);
       }
     } catch (HpcException e) {
       return errorResponse(e);
