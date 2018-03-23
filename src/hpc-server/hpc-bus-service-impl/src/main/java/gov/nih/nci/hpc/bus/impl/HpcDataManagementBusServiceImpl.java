@@ -456,10 +456,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         metadataService.getCollectionMetadataEntries(collection.getAbsolutePath());
 
     // Delete the collection.
+    
     boolean deleted = true;
     String message = null;
+    
     try {
-      dataManagementService.delete(path, false);
+    	if(recursive) {
+  	  		//Delete all the data objects in this hierarchy first
+  	  		deleteDataObjectsInCollections(path);
+    	}
+    
+    	dataManagementService.delete(path, false);
 
     } catch (HpcException e) {
       // Collection deletion failed. Capture this in the audit record.
@@ -1610,6 +1617,39 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     return permissionResponses;
   }
+  
+  
+//---------------------------------------------------------------------//
+ // Helper Methods
+ // ---------------------------------------------------------------------//
+ /**
+  * Recursively delete all the data objects from the specified collection and from 
+  * it's sub-collections.
+  * @param path The path at the root of the hierarchy to delete from.
+  */
+ private void deleteDataObjectsInCollections(String path) throws HpcException {
+	
+	  HpcCollectionDTO collectionDto = getCollectionChildren(path);
+	  
+	    if (collectionDto.getCollection() != null) {
+	    	List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
+	    	if(!CollectionUtils.isEmpty(dataObjects)) {
+	    		//Delete data objects in this collection
+	    		for(HpcCollectionListingEntry entry: dataObjects) {
+	    			deleteDataObject(entry.getPath());
+	    		}
+	    	}
+	    	
+	    	List<HpcCollectionListingEntry> subCollections = collectionDto.getCollection().getSubCollections();
+	    	if(!CollectionUtils.isEmpty(subCollections)) {
+	    		//Recursively delete data objects from this sub-collection and 
+	    		//it's sub-collections
+	    		for(HpcCollectionListingEntry entry: subCollections) {
+	    			deleteDataObjectsInCollections(entry.getPath());
+	    		}
+	    	}
+	    }
+ }
 
   /**
    * Perform group permission requests on an entity (collection or data object)

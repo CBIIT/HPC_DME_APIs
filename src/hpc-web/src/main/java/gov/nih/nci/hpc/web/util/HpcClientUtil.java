@@ -1,60 +1,5 @@
 package gov.nih.nci.hpc.web.util;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.transform.Source;
-import org.apache.cxf.configuration.jsse.TLSClientParameters;
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
-import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.apache.cxf.transport.http.HTTPConduit;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.xml.SourceHttpMessageConverter;
-import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
-import org.springframework.ui.Model;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -87,10 +32,10 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
+import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
@@ -108,8 +53,76 @@ import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.transform.Source;
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.SourceHttpMessageConverter;
+import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
+import org.springframework.ui.Model;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 public class HpcClientUtil {
+
+  private static final String ELEM_TYPE__DATA_FILE = "data file";
+
+  private static final String ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE =
+    "Failed to determine type of DME entity at path, %s." +
+    "  Exception message: %s.";
+
+  private static final String JSON_RESPONSE_ATTRIB__ELEMENT_TYPE =
+      "elementType";
 
   public static WebClient getWebClient(String url, String hpcCertPath, String hpcCertPassword) {
     WebClient client = WebClient.create(url, Collections.singletonList(new JacksonJsonProvider()));
@@ -173,7 +186,7 @@ public class HpcClientUtil {
     Response restResponse = client.get();
     try {
 
-      if (restResponse.getStatus() != 200) {
+      if (restResponse.getStatus() != HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -236,7 +249,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -289,6 +302,47 @@ public class HpcClientUtil {
     return basePath;
   }
 
+
+  public static Optional<String> getPathElementType(
+      String argAuthToken, String argServiceUrlPrefix, String argItemPath,
+      String argSslCertPath, String argSslCertPasswd)
+      throws HpcWebException {
+    Optional<String> elemType = Optional.empty();
+    try {
+      String theItemPath = argItemPath.trim();
+      final String hpcServiceUrl =
+        MiscUtil.encodeFullURL(
+          argServiceUrlPrefix.concat("/").concat(theItemPath));
+      final WebClient client = HpcClientUtil.getWebClient(hpcServiceUrl,
+                                argSslCertPath, argSslCertPasswd);
+//      client.header(HttpHeaders.AUTHORIZATION, "Basic " + argAuthToken);
+      client.header("Authorization", "Bearer " + argAuthToken);
+      final Response restResponse = client.get();
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+        elemType = extractElementTypeFromResponse(restResponse);
+      } else {
+        final String extractedErrMsg =
+            genHpcExceptionDtoOnNonOkRestResponse(restResponse).getMessage();
+        throw new HpcWebException(String.format(
+          ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE,
+          theItemPath,
+          extractedErrMsg
+        ));
+      }
+
+      return elemType;
+    } catch (IllegalStateException | URISyntaxException | IOException e) {
+      e.printStackTrace();
+      final String msgForHpcWebException = String.format(
+        ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE,
+        argItemPath,
+        e.getMessage()
+      );
+      throw new HpcWebException(msgForHpcWebException);
+    }
+  }
+
+
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean list, String hpcCertPath, String hpcCertPassword) {
     return getCollection(token, hpcCollectionlURL, path, false, list, hpcCertPath, hpcCertPassword);
@@ -299,7 +353,7 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionlURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
+        .append(path);
       if (children) {
         sb.append("/children");
       }
@@ -309,14 +363,14 @@ public class HpcClientUtil {
       else {
         sb.append("?list=false");
       }
-      final String serviceURL = sb.toString();
+      final String serviceURL = MiscUtil.encodeFullURL(sb.toString());
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -349,9 +403,9 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePath(path))
+        .append(path)
         .append("?list=").append(Boolean.toString(list));
-      final String url2Call = sb.toString();
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
                                                     hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -359,7 +413,7 @@ public class HpcClientUtil {
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -420,7 +474,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -450,7 +504,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -493,7 +547,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -601,7 +655,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -634,7 +688,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -665,7 +719,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -744,7 +798,7 @@ public class HpcClientUtil {
           HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("POST", groupDTO);
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -788,7 +842,7 @@ public class HpcClientUtil {
           HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("DELETE", null);
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -824,8 +878,8 @@ public class HpcClientUtil {
 
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
                                                     hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -861,14 +915,14 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", collectionDTO);
-      if (restResponse.getStatus() == 200 || restResponse.getStatus() == 201) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK || restResponse.getStatus() == 201) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -897,14 +951,14 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(MiscUtil.urlEncodeDmePath(collectionPath));
-      final String url2Call = sb.toString();
+        .append(collectionPath);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
                                                     hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -944,8 +998,8 @@ public class HpcClientUtil {
 
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
@@ -995,7 +1049,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", datafileDTO);
-      if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == 201 || restResponse.getStatus() == HttpServletResponse.SC_OK) {
         return (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil.getObject(restResponse,
             HpcBulkDataObjectRegistrationResponseDTO.class);
       } else {
@@ -1026,8 +1080,8 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
@@ -1038,7 +1092,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.put(new MultipartBody(atts));
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -1067,14 +1121,14 @@ public class HpcClientUtil {
     try {
       final StringBuilder sb = new StringBuilder();
       sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(MiscUtil.urlEncodeDmePath(path));
-      final String url2Call = sb.toString();
+        .append(path);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
           HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -1106,7 +1160,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("POST", userDTO);
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -1143,7 +1197,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -1174,7 +1228,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1208,7 +1262,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1240,7 +1294,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1271,7 +1325,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1297,19 +1351,26 @@ public class HpcClientUtil {
 
   public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId,
       String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
-    final StringBuilder sb = new StringBuilder();
-    sb.append(MiscUtil.prepareUrlForExtending(hpcServiceURL))
-      .append(MiscUtil.urlEncodeDmePath(path))
-      .append("/acl/user/")
-      .append(userId);
-    final String url2Call = sb.toString();
-    WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
-                                                  hpcCertPassword);
-    client.header("Authorization", "Bearer " + token);
+    Response restResponse;
+    try {
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcServiceURL))
+          .append(path)
+          .append("/acl/user/")
+          .append(userId);
+      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
+      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
+          hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
 
-    Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != 200)
-      return null;
+      restResponse = client.get();
+      if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+        return null;
+    } catch (MalformedURLException|URISyntaxException e) {
+      e.printStackTrace();
+      throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+    }
+
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
     try {
@@ -1341,7 +1402,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1373,7 +1434,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1409,7 +1470,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     try {
       ObjectMapper mapper = new ObjectMapper();
@@ -1437,7 +1498,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     try {
       ObjectMapper mapper = new ObjectMapper();
@@ -1464,7 +1525,7 @@ public class HpcClientUtil {
       WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("POST", dto);
-      if (restResponse.getStatus() == 200) {
+      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -1506,7 +1567,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.invoke("POST", dto);
-    if (restResponse.getStatus() == 200) {
+    if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
       HpcDataObjectDownloadResponseDTO downloadDTO =
           (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse,
               HpcDataObjectDownloadResponseDTO.class);
@@ -1547,7 +1608,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1583,7 +1644,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1619,7 +1680,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1658,7 +1719,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != 200)
+    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1857,6 +1918,22 @@ public class HpcClientUtil {
   }
 
 
+  private static Optional<String> extractElementTypeFromResponse(
+      Response restResponse) throws IOException {
+    Optional<String> retVal = Optional.empty();
+    final JsonParser parser = new MappingJsonFactory().createParser(
+      (InputStream) restResponse.getEntity());
+    while (null != parser.nextValue()) {
+      if (JSON_RESPONSE_ATTRIB__ELEMENT_TYPE.equals(parser.getCurrentName())) {
+        retVal = Optional.of(parser.getValueAsString());
+        break;
+      }
+    }
+
+    return retVal;
+  }
+
+
   private static String generateQueryString(HpcDataManagementModelDTO argModelDTO) {
     final StringBuilder sb = new StringBuilder("?");
     boolean firstItemFlag = true;
@@ -1871,8 +1948,26 @@ public class HpcClientUtil {
           .append(MiscUtil.urlEncodeDmePath(rule.getBasePath()));
       }
     }
-    final String queryParams = sb.substring(0, sb.length() - 1);
+    final String queryParams = sb.toString(); //sb.substring(0, sb.length() - 1);
     return queryParams;
+  }
+
+
+  private static HpcExceptionDTO genHpcExceptionDtoOnNonOkRestResponse(
+    Response restResponse) throws IOException {
+    final ObjectMapper mapper = new ObjectMapper();
+    mapper.setAnnotationIntrospector(new AnnotationIntrospectorPair(
+      new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+      new JacksonAnnotationIntrospector())
+    );
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+      false);
+    final JsonParser parser = new MappingJsonFactory(mapper).createParser(
+      (InputStream) restResponse.getEntity());
+    final HpcExceptionDTO hpcExceptionDto =
+      parser.readValueAs(HpcExceptionDTO.class);
+
+    return hpcExceptionDto;
   }
 
 }
