@@ -304,8 +304,9 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			}
 		}
 		// if (uploadType != null && uploadType.equals("sync"))
-		return "redirect:/datafile?path=" + MiscUtil.performUrlEncoding(hpcDataModel.getPath()) +
-            "&action=view";
+    final String encodedDmePath =
+      MiscUtil.urlEncodeDmePath(hpcDataModel.getPath());
+    return "redirect:/datafile?path=" + encodedDmePath + "&action=view";
 		// else
 		// return "adddatafile";
 	}

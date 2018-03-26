@@ -7,6 +7,28 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.local;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
+import gov.nih.nci.hpc.cli.util.HpcBatchException;
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.cli.util.HpcLogWriter;
+import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.cli.util.Paths;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,43 +46,19 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.easybatch.core.processor.RecordProcessingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClientException;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-import com.google.common.hash.HashCode;
-import com.google.common.hash.Hashing;
-
-import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
-import gov.nih.nci.hpc.cli.util.HpcBatchException;
-import gov.nih.nci.hpc.cli.util.HpcClientUtil;
-import gov.nih.nci.hpc.cli.util.HpcCmdException;
-import gov.nih.nci.hpc.cli.util.HpcLogWriter;
-import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.cli.local.HpcLocalDirectoryListGenerator;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-
 public class HpcLocalDirectoryListGenerator {
-
+    protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 	private Properties properties = new Properties();
 	private String hpcCertPath;
 	private String hpcCertPassword;
@@ -92,20 +90,33 @@ public class HpcLocalDirectoryListGenerator {
 	public boolean run(String filePath, String excludePatternFile, String includePatternFile, String filePathBaseName,
 			String destinationBasePath, String logFile, String recordFile, boolean testRun, boolean confirmation,
 			boolean metadataOnly) {
+	    logger.debug("run: filePath "+filePath);
+	    logger.debug("run: filePathBaseName "+filePathBaseName);
+	    logger.debug("run: destinationBasePath "+destinationBasePath);
+	    logger.debug("run: logFile "+logFile);
+	    logger.debug("run: recordFile "+recordFile);
+	    logger.debug("run: testRun "+testRun);
+	    logger.debug("run: confirmation "+confirmation);
+	    logger.debug("run: metadataOnly "+metadataOnly);
 		this.logFile = logFile;
 		this.recordFile = recordFile;
 		boolean success = true;
 		HpcLocalDirectoryListQuery impl = new HpcLocalDirectoryListQuery();
 		try {
-			List<String> excludePatterns = readPatternStringsfromFile(excludePatternFile);
+		    logger.debug("excludePatternFile "+excludePatternFile);
+		    logger.debug("includePatternFile "+includePatternFile);
+		    List<String> excludePatterns = readPatternStringsfromFile(excludePatternFile);
 			List<String> includePatterns = readPatternStringsfromFile(includePatternFile);
+			logger.debug("excludePatterns "+excludePatterns);
+			logger.debug("includePatterns "+includePatterns);
 			List<HpcPathAttributes> files = impl.getPathAttributes(filePath, excludePatterns, includePatterns);
+			logger.debug("files "+files);
 			if (files != null && !testRun) {
 				Collections.sort(files);
 				for (HpcPathAttributes file : files) {
 					try {
-
 						File fileAbsolutePath = new File(file.getAbsolutePath());
+//						File fileAbsolutePath = new File(Paths.generateFileSystemResourceUri(file.getAbsolutePath()));
 						if (!fileAbsolutePath.isDirectory()) {
 							HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
 
@@ -118,6 +129,7 @@ public class HpcLocalDirectoryListGenerator {
 									continue;
 								}
 							} catch (HpcCmdException e) {
+							    logger.error(e.getMessage(), e);
 								String message = "Failed to process file: " + file.getAbsolutePath() + " Reaon: "
 										+ e.getMessage();
 								System.out.println(message);
@@ -148,6 +160,7 @@ public class HpcLocalDirectoryListGenerator {
 						}
 
 					} catch (RecordProcessingException e) {
+					    logger.debug(e.getMessage(), e);
 						String message = "Failed to process cmd due to: " + e.getMessage();
 						writeException(e, message, null);
 						success = false;
@@ -155,14 +168,17 @@ public class HpcLocalDirectoryListGenerator {
 				}
 			}
 		} catch (HpcCmdException e) {
+		    logger.error(e.getMessage(), e);
 			String message = "Failed to process cmd due to: " + e.getMessage();
 			writeException(e, message, null);
 			success = false;
 		} catch (RestClientException e) {
+		    logger.error(e.getMessage(), e);
 			String message = "Failed to process cmd due to: " + e.getMessage();
 			writeException(e, message, null);
 			success = false;
 		} catch (Exception e) {
+		    logger.error(e.getMessage(), e);
 			String message = "Failed to process cmd due to: " + e.getMessage();
 			writeException(e, message, null);
 			success = false;
@@ -234,7 +250,9 @@ public class HpcLocalDirectoryListGenerator {
 
 	private List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly) throws HpcCmdException {
 		String fullPath = file.getAbsolutePath();
-		File metadataFile = new File(fullPath + ".metadata.json");
+    File metadataFile = new File(fullPath + ".metadata.json");
+//    final String fullPath = file.getAbsolutePath().concat(".metadata.json");
+//		File metadataFile = new File(Paths.generateFileSystemResourceUri(fullPath));
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
 		if (metadataFile.exists()) {
 			MappingJsonFactory factory = new MappingJsonFactory();
@@ -247,9 +265,11 @@ public class HpcLocalDirectoryListGenerator {
 				// TypeReference<List<HpcMetadataEntry>>() {
 				// });
 			} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+			    logger.error(e.getMessage(), e);
 				throw new HpcCmdException(
 						"Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e.getMessage());
 			} catch (IOException e) {
+			    logger.error(e.getMessage(), e);
 				throw new HpcCmdException(
 						"Failed to read JSON metadata file: " + file.getAbsolutePath() + " Reason: " + e.getMessage());
 			}
@@ -319,6 +339,7 @@ public class HpcLocalDirectoryListGenerator {
 		String jsonInString = null;
 		List<Attachment> atts = new LinkedList<Attachment>();
 		try {
+		    logger.debug("metadataOnly "+metadataOnly);
 			if (!metadataOnly) {
 				inputStream = new BufferedInputStream(
 						new FileInputStream(hpcDataObjectRegistrationDTO.getSource().getFileId()));
@@ -333,6 +354,7 @@ public class HpcLocalDirectoryListGenerator {
 			}
 			hpcDataObjectRegistrationDTO.setSource(null);
 		} catch (FileNotFoundException e) {
+		    logger.error(e.getMessage(), e);
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -340,6 +362,7 @@ public class HpcLocalDirectoryListGenerator {
 			writeException(e, message, null);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (Exception e) {
+		    logger.error(e.getMessage(), e);
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -431,6 +454,7 @@ public class HpcLocalDirectoryListGenerator {
 				System.out.println("Success! ");
 			}
 		} catch (HpcBatchException e) {
+		    logger.error(e.getMessage(), e);
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -438,6 +462,7 @@ public class HpcLocalDirectoryListGenerator {
 			writeException(e, message, null);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (RestClientException e) {
+		    logger.error(e.getMessage(), e);
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -445,6 +470,7 @@ public class HpcLocalDirectoryListGenerator {
 			writeException(e, message, null);
 			throw new RecordProcessingException(exceptionAsString);
 		} catch (Exception e) {
+		    logger.error(e.getMessage(), e);
 			String message = "Failed to process record due to: " + e.getMessage();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -469,6 +495,10 @@ public class HpcLocalDirectoryListGenerator {
 
 	public void processCollection(HpcPathAttributes file, String basePath, String collectionPath, boolean confirmation)
 			throws RecordProcessingException {
+	    logger.debug("processCollection: file "+file);
+	    logger.debug("processCollection: basePath "+basePath);
+	    logger.debug("processCollection: collectionPath "+collectionPath);
+	    logger.debug("processCollection: confirmation "+confirmation);
 		collectionPath = collectionPath.replace("//", "/");
 		collectionPath = collectionPath.replace("\\", "/");
 		List<HpcMetadataEntry> metadataList = getMetadata(file, false);
@@ -525,6 +555,7 @@ public class HpcLocalDirectoryListGenerator {
 				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
 				throw new RecordProcessingException(exception.getMessage());
 			} catch (IllegalStateException | IOException e) {
+			    logger.error(e.getMessage(), e);
 				throw new RecordProcessingException(e.getMessage());
 			}
 		}

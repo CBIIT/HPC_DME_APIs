@@ -297,15 +297,19 @@ public class HpcClientUtil {
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean children, boolean list, String hpcCertPath, String hpcCertPassword) {
     try {
-      String serviceURL = hpcCollectionlURL;
-      final String urlEncodedDmePath = MiscUtil.performUrlEncoding(path);
-      if (children)
-        serviceURL = serviceURL + urlEncodedDmePath + "/children";
-      else if (list)
-        serviceURL = serviceURL + urlEncodedDmePath + "?list=true";
-      else
-        serviceURL = serviceURL + urlEncodedDmePath + "?list=false";
-
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionlURL))
+        .append(MiscUtil.urlEncodeDmePath(path));
+      if (children) {
+        sb.append("/children");
+      }
+      else if (list) {
+        sb.append("?list=true");
+      }
+      else {
+        sb.append("?list=false");
+      }
+      final String serviceURL = sb.toString();
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
@@ -335,13 +339,21 @@ public class HpcClientUtil {
     }
   }
 
-  public static HpcDataObjectListDTO getDatafiles(String token, String hpcDatafileURL, String path,
-      boolean list, String hpcCertPath, String hpcCertPassword) {
+  public static HpcDataObjectListDTO getDatafiles(
+    String token,
+    String hpcDatafileURL,
+    String path,
+    boolean list,
+    String hpcCertPath,
+    String hpcCertPassword) {
     try {
-      WebClient client = HpcClientUtil.getWebClient(
-          hpcDatafileURL + "/" + MiscUtil.performUrlEncoding(path) +
-              (list ? "?list=true" : "?list=false"), hpcCertPath,
-          hpcCertPassword);
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
+        .append(MiscUtil.urlEncodeDmePath(path))
+        .append("?list=").append(Boolean.toString(list));
+      final String url2Call = sb.toString();
+      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
+                                                    hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
@@ -810,8 +822,12 @@ public class HpcClientUtil {
           && collection.getCollectionPaths().size() > 0)
         throw new HpcWebException("Failed to create. Collection already exists: " + path);
 
-      WebClient client =
-          HpcClientUtil.getWebClient(hpcCollectionURL + MiscUtil.performUrlEncoding(path), hpcCertPath, hpcCertPassword);
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
+        .append(MiscUtil.urlEncodeDmePath(path));
+      final String url2Call = sb.toString();
+      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
+                                                    hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", collectionDTO);
@@ -843,9 +859,12 @@ public class HpcClientUtil {
       HpcCollectionRegistrationDTO collectionDTO, String path, String hpcCertPath,
       String hpcCertPassword) {
     try {
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
+        .append(MiscUtil.urlEncodeDmePath(path));
+      final String url2Call = sb.toString();
       WebClient client =
-          HpcClientUtil.getWebClient(hpcCollectionURL + MiscUtil.performUrlEncoding(path),
-                                      hpcCertPath, hpcCertPassword);
+          HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", collectionDTO);
@@ -876,8 +895,12 @@ public class HpcClientUtil {
   public static boolean deleteCollection(String token, String hpcCollectionURL,
       String collectionPath, String hpcCertPath, String hpcCertPassword) {
     try {
-      WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + "/" +
-          MiscUtil.performUrlEncoding(collectionPath), hpcCertPath, hpcCertPassword);
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
+        .append(MiscUtil.urlEncodeDmePath(collectionPath));
+      final String url2Call = sb.toString();
+      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
+                                                    hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
@@ -919,9 +942,12 @@ public class HpcClientUtil {
         // Data file is not there!
       }
 
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
+        .append(MiscUtil.urlEncodeDmePath(path));
+      final String url2Call = sb.toString();
       WebClient client =
-          HpcClientUtil.getWebClient(hpcDatafileURL + MiscUtil.performUrlEncoding(path),
-                                    hpcCertPath, hpcCertPassword);
+          HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
@@ -998,9 +1024,12 @@ public class HpcClientUtil {
       HpcDataObjectRegistrationRequestDTO datafileDTO, String path, String hpcCertPath,
       String hpcCertPassword) {
     try {
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
+        .append(MiscUtil.urlEncodeDmePath(path));
+      final String url2Call = sb.toString();
       WebClient client =
-          HpcClientUtil.getWebClient(hpcDatafileURL + MiscUtil.performUrlEncoding(path),
-                                      hpcCertPath, hpcCertPassword);
+          HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
@@ -1036,9 +1065,12 @@ public class HpcClientUtil {
   public static boolean deleteDatafile(String token, String hpcDatafileURL, String path,
       String hpcCertPath, String hpcCertPassword) {
     try {
+      final StringBuilder sb = new StringBuilder();
+      sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
+        .append(MiscUtil.urlEncodeDmePath(path));
+      final String url2Call = sb.toString();
       WebClient client =
-          HpcClientUtil.getWebClient(hpcDatafileURL + MiscUtil.performUrlEncoding(path),
-                                      hpcCertPath, hpcCertPassword);
+          HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
@@ -1265,12 +1297,14 @@ public class HpcClientUtil {
 
   public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId,
       String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
-
-    final String urlEncodedDmePath = MiscUtil.performUrlEncoding(path);
-    WebClient client = HpcClientUtil.getWebClient(hpcServiceURL + urlEncodedDmePath +
-                      "/acl/user/" + userId,
-        hpcCertPath, hpcCertPassword);
-
+    final StringBuilder sb = new StringBuilder();
+    sb.append(MiscUtil.prepareUrlForExtending(hpcServiceURL))
+      .append(MiscUtil.urlEncodeDmePath(path))
+      .append("/acl/user/")
+      .append(userId);
+    final String url2Call = sb.toString();
+    WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
+                                                  hpcCertPassword);
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
@@ -1794,29 +1828,51 @@ public class HpcClientUtil {
     }
   }
 
-  public static void populateBasePaths(HttpSession session, Model model,
-      HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
-      String sslCertPath, String sslCertPassword) throws HpcWebException {
-
-    Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-    String queryParams = "?";
-    for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
-      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-        queryParams += "collectionPath=" + rule.getBasePath() + "&";
-      }
-    }
-    queryParams = queryParams.substring(0, queryParams.length() - 1);
-    HpcUserPermsForCollectionsDTO permissions = HpcClientUtil.getPermissionForCollections(authToken,
-        collectionURL + "/" + userId, queryParams, sslCertPath, sslCertPassword);
+  public static void populateBasePaths(
+      HttpSession session,
+      Model model,
+      HpcDataManagementModelDTO modelDTO,
+      String authToken,
+      String userId,
+      String collectionURL,
+      String sslCertPath,
+      String sslCertPassword) throws HpcWebException {
+    final Set<String> basePaths =
+      new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+    final String url2Call = String.format("%s/%s", collectionURL, userId);
+    final String queryParams = generateQueryString(modelDTO);
+    HpcUserPermsForCollectionsDTO permissions =
+      HpcClientUtil.getPermissionForCollections(
+        authToken, url2Call, queryParams, sslCertPath, sslCertPassword);
     if (permissions != null) {
       for (HpcPermissionForCollection permission : permissions.getPermissionsForCollections()) {
-        if (permission != null && permission.getPermission() != null
-            && (permission.getPermission().equals(HpcPermission.WRITE)
-                || permission.getPermission().equals(HpcPermission.OWN)))
+        if (permission != null && (
+          HpcPermission.WRITE.equals(permission.getPermission()) ||
+          HpcPermission.OWN.equals(permission.getPermission()) ) ) {
           basePaths.add(permission.getCollectionPath());
+        }
       }
     }
     session.setAttribute("basePaths", basePaths);
+  }
+
+
+  private static String generateQueryString(HpcDataManagementModelDTO argModelDTO) {
+    final StringBuilder sb = new StringBuilder("?");
+    boolean firstItemFlag = true;
+    for (HpcDocDataManagementRulesDTO docRule : argModelDTO.getDocRules()) {
+      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+        if (firstItemFlag) {
+          firstItemFlag = false;
+        } else {
+          sb.append("&");
+        }
+        sb.append("collectionPath=")
+          .append(MiscUtil.urlEncodeDmePath(rule.getBasePath()));
+      }
+    }
+    final String queryParams = sb.substring(0, sb.length() - 1);
+    return queryParams;
   }
 
 }

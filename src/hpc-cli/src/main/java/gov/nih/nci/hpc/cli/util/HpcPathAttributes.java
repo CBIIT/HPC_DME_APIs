@@ -155,4 +155,14 @@ public class HpcPathAttributes implements Serializable, Comparable<HpcPathAttrib
 	public int compareTo(HpcPathAttributes o) {
 		return this.absolutePath.compareTo(o.getAbsolutePath());
 	}
+
+  @Override
+  public String toString() {
+    return "HpcPathAttributes [exists=" + exists + ", isFile=" + isFile + ", isDirectory="
+        + isDirectory + ", size=" + size + ", isAccessible=" + isAccessible + ", updatedDate="
+        + updatedDate + ", path=" + path + ", absolutePath=" + absolutePath + ", name=" + name
+        + "]";
+  }
+	
+	
 }

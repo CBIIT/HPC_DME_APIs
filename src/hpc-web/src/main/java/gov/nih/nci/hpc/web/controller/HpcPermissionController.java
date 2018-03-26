@@ -162,8 +162,10 @@ public class HpcPermissionController extends AbstractHpcController {
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 			if (restResponse.getStatus() == 200) {
 				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				return "redirect:/permissions?assignType=User&type=" + permissionsRequest.getType() + "&path="
-						+ MiscUtil.performUrlEncoding(permissionsRequest.getPath());
+        final String encodedDmePath =
+          MiscUtil.urlEncodeDmePath(permissionsRequest.getPath());
+				return "redirect:/permissions?assignType=User&type=" +
+                permissionsRequest.getType() + "&path=" + encodedDmePath;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -205,7 +207,8 @@ public class HpcPermissionController extends AbstractHpcController {
 
 	private String getServiceURL(Model model, String path, String type) {
 		String serviceAPIUrl = null;
-		final String encodedDmePath = MiscUtil.performUrlEncoding(path);
+		final String encodedDmePath =
+      MiscUtil.urlEncodeDmePath(path);
 		if (type.equals("collection"))
 			serviceAPIUrl = serverCollectionURL + encodedDmePath + "/acl";
 		else if (type.equals("dataObject"))

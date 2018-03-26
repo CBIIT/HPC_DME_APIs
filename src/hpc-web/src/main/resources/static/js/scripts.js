@@ -88,6 +88,37 @@ function initializeJS() {
 
 }
 
+/*
+ * Does URL encoding on a path string preserving forward slashes
+ * but performing encoding on the path segments/parts separated
+ * by forward slashes.
+ *
+ * Parameters:
+ * argOrigPath - the original path string
+ *
+ * Returns: URL-encoded path string
+ */
+function urlEncodePathString(argOrigPath) {
+  var pathSegments;
+  var i;
+
+  var textBuffer = '';
+  var retEncodedPath = argOrigPath;
+
+  if ('string' == typeof argOrigPath && -1 < argOrigPath.indexOf('/') ) {
+    pathSegments = argOrigPath.split('/');
+    for (i = 0; i < pathSegments.length; i += 1) {
+      if (i > 0) {
+        textBuffer += '/';
+      }
+      textBuffer += window.encodeURI(pathSegments[i]);
+    }
+    retEncodedPath = textBuffer;
+  }
+
+  return retEncodedPath;
+}
+
 jQuery(document).ready(function(){
     initializeJS();
 });

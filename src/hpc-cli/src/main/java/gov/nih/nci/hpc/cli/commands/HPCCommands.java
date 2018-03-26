@@ -1,4 +1,4 @@
-/*******************************************************************************
+ /*******************************************************************************
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc.
  *  
@@ -9,8 +9,8 @@ package gov.nih.nci.hpc.cli.commands;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -50,8 +50,8 @@ public class HPCCommands implements CommandMarker {
 	@Autowired
 	private HPCBatchLocalfile batchLocalFiles;
 
-	protected final Logger LOG = Logger.getLogger(getClass().getName());
-
+	protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
+    
 	@CliCommand(value = "getCollection", help = "Get Collection from HPC Archive. Usage: getCollection --path <collection path> --outputfile <output file full path> --format <json|csv>")
 	public String getCollection(
 			@CliOption(key = {
@@ -60,7 +60,8 @@ public class HPCCommands implements CommandMarker {
 					"outputfile" }, mandatory = false, help = "Please provide outputfile path. Usage: getCollection --path <collection path> --outputfile <output file full path> --format <json|csv>") final String outputfile,
 			@CliOption(key = {
 					"format" }, mandatory = false, help = "Please provide outputfile path. Usage: getCollection --format <collection path> --outputfile <output file full path> --format <json|csv>") final String format) {
-		Map<String, String> criteriaMap = new HashMap<String, String>();
+	  logger.debug("getCollection");
+	  Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(path, path);
 		return getCollections.process("getCollection", criteriaMap, outputfile, format, null);
 	}
@@ -75,9 +76,22 @@ public class HPCCommands implements CommandMarker {
 					"format" }, mandatory = false, help = "Please provide outputfile path. Usage: getCollection --format <collection path> --outputfile <output file full path> --format <json|csv>") final String format,
 			@CliOption(key = {
 					"detail" }, mandatory = false, help = "Please provide metadata criteria. Usage: getCollections --criteria <metadata criteria>  --outputfile <output file full path> --format <json|csv> --detail <yes|no>") final String detail) {
+        logger.debug("getCollections");
 		Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(criteria, criteria);
 		return getCollections.process("getCollections", criteriaMap, outputfile, format, detail);
+	}
+	
+	
+	@CliCommand(value = "deleteCollection", help = "Delete Collection from HPC Archive. Usage: deleteCollection --path <data file path --recursive <true|false>")
+	public String deleteCollection(
+			@CliOption(key = {
+					"path" }, mandatory = true, help = "Please provide collection path. Usage: deleteCollection --path <data file path> --recursive <true|false>") final String path,
+			@CliOption(key = {
+			"recursive" }, mandatory = false, help = "Please provide recursion option. Usage: deleteCollection --path <data file path>  --recursive <true|false>") final String recursive) {
+		Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put(path, path);
+		return getCollections.process("deleteCollection", criteriaMap, null, null, recursive);
 	}
 
 	@CliCommand(value = "getDatafile", help = "Get Collection from HPC Archive. Usage: getDatafile --path <data file path> --outputfile <output file full path> --format <json|csv>")
@@ -88,7 +102,8 @@ public class HPCCommands implements CommandMarker {
 					"outputfile" }, mandatory = false, help = "Please provide outputfile path. Usage: getDatafile --path <data file path> --outputfile <output file full path> --format <json|csv>") final String outputfile,
 			@CliOption(key = {
 					"format" }, mandatory = false, help = "Please provide outputfile path. Usage: getDatafile --format <data file path> --outputfile <output file full path> --format <json|csv>") final String format) {
-		Map<String, String> criteriaMap = new HashMap<String, String>();
+	    logger.debug("getDatafile");
+	    Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(path, path);
 		return getDatafiles.process("getDatafile", criteriaMap, outputfile, format, null);
 	}
@@ -103,9 +118,19 @@ public class HPCCommands implements CommandMarker {
 					"format" }, mandatory = false, help = "Please provide outputfile path. Usage: getDatafiles --format <collection path> --outputfile <output file full path> --format <json|csv>") final String format,
 			@CliOption(key = {
 					"detail" }, mandatory = false, help = "Please provide metadata criteria. Usage: getDatafiles --criteria <metadata criteria>  --outputfile <output file full path> --format <json|csv> --detail <yes|no>") final String detail) {
-		Map<String, String> criteriaMap = new HashMap<String, String>();
+	    logger.debug("getCollection");
+	    Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(criteria, criteria);
 		return getDatafiles.process("getDatafiles", criteriaMap, outputfile, format, detail);
+	}
+	
+	@CliCommand(value = "deleteDatafile", help = "Delete data object from HPC Archive. Usage: deleteDatafile --path <data file path>")
+	public String deleteDatafile(
+			@CliOption(key = {
+					"path" }, mandatory = true, help = "Please provide data file path. Usage: deleteDatafile --path <data file path>") final String path) {
+		Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put(path, path);
+		return getDatafiles.process("deleteDatafile", criteriaMap, null, null, null);
 	}
 
 	@CliCommand(value = "registerFromGlobusPath", help = "Register Data files from Globus endpoint with HPC Archive. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>")
@@ -124,7 +149,8 @@ public class HPCCommands implements CommandMarker {
 			"dryRun" }, mandatory = false, help = "Dryrun to see the registration files. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String dryRun,
 			@CliOption(key = {
 					"destinationArchivePath" }, mandatory = true, help = "Please provide destination base path. Usage: registerFromGlobusPath --globusEndpoint <Globus Endpoint Name> --globusSourcePath <Globus Endpoint Path> --destinationArchivePath <Destination base path> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --patternType <Simple|RegEx> --dryRun <true|false>") final String basePath) {
-		Map<String, String> criteriaMap = new HashMap<String, String>();
+	    logger.debug("registerFromGlobusPath");
+	    Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put("globusEndpoint", globusEndpoint);
 		criteriaMap.put("globusPath", globusPath);
 		criteriaMap.put("basePath", basePath);
@@ -198,7 +224,8 @@ public class HPCCommands implements CommandMarker {
 			@CliOption(key = {
 					"threads" }, mandatory = false, help = "Number of threads to process. Usage: registerFromFilePath --sourceFilePath <Souce file path> --sourceFileList <Source files list> --excludePatternFile <Patterns to exclude files> --includePatternFile <Patterns to include files> --filePathBaseName <Source file path Base name> --destinationArchivePath <Destination base path> --archiveType<S3|POSIX> --dryRun <true|false>  --confirm <true|false> --checksum <true|false> --metadata <true|false> --threads <number>") final String threads
 			) {
-		Map<String, String> criteriaMap = new HashMap<String, String>();
+	    logger.debug("registerFromFilePath");
+	    Map<String, String> criteriaMap = new HashMap<String, String>();
 		if(fileList != null && (excludePattern != null || includePattern != null))
 		{
 			System.out.println("Invalid options. Specify sourceFileList without include and exclude criteria.");
@@ -254,12 +281,14 @@ public class HPCCommands implements CommandMarker {
 	@CliCommand(value = "putPermissions", help = "Batch assingment of permissions. Usage: putPermissions --source <file path>")
 	public String putPermissions(@CliOption(key = {
 			"source" }, mandatory = true, help = "Please provide file location for permissions. Usage: putPermissions --source <file path>") final String source) {
-		return putPermissions.process(source);
+	    logger.debug("putPermissions");
+	    return putPermissions.process(source);
 	}
 
 	@CliCommand(value = "putDatafiles", help = "Batch upload data objects to HPC Archive. Usage: putDatafiles --source <file path>")
 	public String putDatafiles(@CliOption(key = {
 			"source" }, mandatory = true, help = "Please provide file location for daatafiles. Usage: putDatafiles --source <file path>") final String source) {
-		return putDatafiles.process(source);
+	    logger.debug("putDatafiles");
+	    return putDatafiles.process(source);
 	}
 }

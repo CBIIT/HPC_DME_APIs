@@ -30,4 +30,10 @@ public class HPCLocalFileRecord extends GenericRecord<HpcPathAttributes> {
 		this.recordNumber = recordNumber;
 	}
 
+  @Override
+  public String toString() {
+    return "HPCLocalFileRecord [recordNumber=" + recordNumber + "]";
+  }
+
+	
 }

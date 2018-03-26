@@ -14,7 +14,8 @@ import org.easybatch.core.mapper.AbstractRecordMapper;
 import org.easybatch.core.mapper.RecordMapper;
 import org.easybatch.core.mapper.RecordMappingException;
 import org.easybatch.core.record.GenericRecord;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.domain.HPCLocalFileRecord;
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
@@ -22,6 +23,7 @@ import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 
 public class HPCBatchLocalFileRecordMapper extends AbstractRecordMapper
 		implements RecordMapper<HPCLocalFileRecord, GenericRecord> {
+  protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	Map<String, Integer> headersMap;
 	private HpcServerConnection connection;
@@ -40,6 +42,7 @@ public class HPCBatchLocalFileRecordMapper extends AbstractRecordMapper
 
 	@Override
 	public GenericRecord processRecord(HPCLocalFileRecord record) throws RecordMappingException {
+	    logger.debug("HPCBatchLocalFileRecordMapper: processRecord: "+record.toString());
 		HpcPathAttributes pathAttr = record.getPayload();
 		HPCDataObject dataObject = new HPCDataObject();
 		dataObject.setLogFile(logFile);
