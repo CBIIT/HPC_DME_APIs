@@ -211,6 +211,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		HpcCollectionRegistrationDTO registrationDTO = null;
 
 		try {
+      MiscUtil.validateDmePathForForbiddenChars(hpcCollection.getPath());
 			registrationDTO = constructRequest(request, session, hpcCollection.getPath(), hpcCollection);
 		} catch (HpcWebException e) {
 			model.addAttribute("hpcCollection", hpcCollection);

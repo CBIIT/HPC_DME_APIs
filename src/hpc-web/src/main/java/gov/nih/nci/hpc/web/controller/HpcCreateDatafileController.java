@@ -243,6 +243,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			String parentPath = null;
 			hpcDataModel.setPath(hpcDataModel.getPath().trim());
 			try {
+				MiscUtil.validateDmePathForForbiddenChars(hpcDataModel.getPath());
 				parentPath = hpcDataModel.getPath().substring(0, hpcDataModel.getPath().lastIndexOf("/"));
 				if (!parentPath.isEmpty())
 					HpcClientUtil.getCollection(authToken, collectionServiceURL, parentPath, true, sslCertPath,
