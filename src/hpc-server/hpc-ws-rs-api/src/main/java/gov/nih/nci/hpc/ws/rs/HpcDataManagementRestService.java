@@ -45,6 +45,19 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 
 @Path("/")
 public interface HpcDataManagementRestService {
+
+  /**
+   * Examine whether path refers to collection or data file.
+   *
+   * @param path The path.
+   * @return The REST service response.
+   */
+  @GET
+  @Path("/pathRefType/{path:.*}")
+  @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+  public Response interrogatePathRef(@PathParam("path") String path);
+
+
 	/**
 	 * Collection registration.
 	 *
@@ -116,7 +129,8 @@ public interface HpcDataManagementRestService {
 	@Path("/collection/download")
 	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
 	public Response getCollectionDownloadStatus(@QueryParam("taskId") String taskId);
-
+	
+	
 	/**
 	 * Delete a collection.
 	 *
@@ -126,8 +140,9 @@ public interface HpcDataManagementRestService {
 	 */
 	@DELETE
 	@Path("/collection/{path:.*}")
-	public Response deleteCollection(@PathParam("path") String path);
+	public Response deleteCollection(@PathParam("path") String path, @QueryParam("recursive") Boolean recursive);
 
+	
 	/**
 	 * Set a collection's permissions.
 	 *
@@ -163,7 +178,8 @@ public interface HpcDataManagementRestService {
 	 *            The collection path.
 	 * @param userId
 	 *            The user id to get permissions for.
-	 * @return The REST service response w/ HpcUserPermissionDTO entity.
+	 * @return The REST service response w/ HpcUserPermissionDTO entity. 
+	 * 
 	 */
 	@GET
 	@Path("/collection/{path:.*}/acl/user/{userId:.*}")

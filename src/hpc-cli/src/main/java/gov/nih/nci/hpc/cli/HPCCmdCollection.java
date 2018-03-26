@@ -28,11 +28,14 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.irods.jargon.core.pub.domain.DataObject;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -48,6 +51,8 @@ import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.CsvFileWriter;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -123,14 +128,23 @@ public class HPCCmdCollection extends HPCCmdClient {
 						hpcCertPassword);
 
 				Response restResponse = null;
-				if (cmd.equals("getCollection")) {
+				
+				if (cmd.equals("deleteCollection")) {
+					Iterator iterator = criteria.keySet().iterator();
+					String path = (String) iterator.next();
+					restResponse =  processDeleteCmd(serviceURL, path, outputFile, detail, userId, password, authToken);
+					if(restResponse == null) {
+						return null;
+					}
+				} else if (cmd.equals("getCollection")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
 					serviceURL = serviceURL + path;
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
 					restResponse = client.get();
-				} else if (cmd.equals("getCollections")) {
+					
+				}  else if (cmd.equals("getCollections")) {
 					serviceURL = serviceURL + "/query";
 					HpcCompoundMetadataQueryDTO criteriaClause = null;
 					try {
@@ -328,6 +342,88 @@ public class HPCCmdCollection extends HPCCmdClient {
 			collections.add(collection);
 		}
 		return collections;
+	}
+	
+	
+	private Response processDeleteCmd(String serviceURL, String path, String outputFile, 
+			String recursive, String userId, String password, String authToken) throws
+		JsonParseException, IOException {
+		
+		recursive = recursive != null ? recursive : "false";
+		jline.console.ConsoleReader reader;
+		reader = new jline.console.ConsoleReader();
+		reader.setExpandEvents(false);
+		String confirm = null;
+		//Obtain confirmation from the user - multiple levels of confirmation for recursive delete
+		if(recursive.equalsIgnoreCase("true")) {
+			
+			System.out.println("WARNING: You have requested recursive delete of the collection. This will delete all files and sub-collections within it recursively. Are you sure you would like to proceed? (Y/N):");
+			confirm = reader.readLine();
+			if (confirm == null || !"Y".equalsIgnoreCase(confirm)) {
+				System.out.println("Skipped deleting collections");
+				return null;
+			}
+			System.out.println("Would you like to see the list of files to delete ?");
+			confirm = reader.readLine();
+			if (confirm == null || !"N".equalsIgnoreCase(confirm)) {
+				int fileCount = 0;
+				System.out.println("The following collections and files will be deleted from the Archive:");				
+				fileCount = getDataObjectsPaths(serviceURL, path, authToken, true, fileCount);
+				System.out.println("A total of " + fileCount + " files are marked for deletion. Procced with deletion ? (Y/N):");
+					
+			} else {
+				System.out.println("The collection " + path + " and all files and sub-collections within it will be recursively deleted. Procced with deletion ? (Y/N):");
+			}
+		} else {
+			System.out.println("The collection " + path + " will be deleted. Procced with deletion ? (Y/N):");
+		}
+			
+		confirm = reader.readLine();
+		if (confirm == null || !"Y".equalsIgnoreCase(confirm)) {
+			System.out.println("Skipped deleting collections");
+			return null;
+		}			
+		
+		//Invoke delete API if user confirms
+		serviceURL = serviceURL + path + "/?recursive=" + recursive;
+		WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + authToken);
+		return client.delete();
+		
+	}
+	
+	
+	private int getDataObjectsPaths(String serviceURL, String path, String authToken, 
+			boolean printFilePath, int fileCount) 
+	throws JsonParseException, IOException {
+		
+		String servicePath = serviceURL + path + "/children";
+		WebClient client = HpcClientUtil.getWebClient(servicePath, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
+		client.header("Authorization", "Bearer " + authToken);
+		Response restResponse = client.get();
+		MappingJsonFactory factory = new MappingJsonFactory();
+		
+		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
+		HpcCollectionDTO collectionDto = collections.getCollections().get(0);
+		HpcCollection collection = collectionDto.getCollection();
+		System.out.println(collection.getAbsolutePath());
+		if(CollectionUtils.isNotEmpty(collection.getDataObjects())) {
+			fileCount = fileCount + collection.getDataObjects().size();
+			if(printFilePath) {
+				for(HpcCollectionListingEntry dataObject:collection.getDataObjects()) {
+					System.out.println(dataObject.getPath());
+				}
+			}
+		}
+		if(CollectionUtils.isNotEmpty(collection.getSubCollections())) {
+			for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
+				System.out.println(subCollection.getPath());
+				fileCount = fileCount + getDataObjectsPaths(serviceURL, subCollection.getPath(), authToken, printFilePath, fileCount);
+			}
+		}
+		return fileCount;
+	
 	}
 
 }

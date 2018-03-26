@@ -233,6 +233,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   }
 
   @Override
+  public boolean interrogatePathRef(String path) throws HpcException {
+    return dataManagementProxy.interrogatePathRef(
+            dataManagementAuthenticator.getAuthenticatedToken(), path);
+  }
+
+  @Override
   public boolean createFile(String path) throws HpcException {
     Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 

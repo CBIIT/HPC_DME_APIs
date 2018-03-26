@@ -20,6 +20,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
@@ -27,6 +28,7 @@ import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -146,6 +148,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   // ---------------------------------------------------------------------//
   // HpcDataManagementBusService Interface Implementation
   // ---------------------------------------------------------------------//
+
+  @Override
+  public boolean interrogatePathRef(String path) throws HpcException {
+    return dataManagementService.interrogatePathRef(path);
+  }
 
   @Override
   public boolean registerCollection(
@@ -415,7 +422,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   @Override
-  public void deleteCollection(String path) throws HpcException {
+  public void deleteCollection(String path, Boolean recursive) throws HpcException {
     // Input validation.
     if (StringUtils.isEmpty(path)) {
       throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -428,11 +435,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           "Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Validate the collection is empty.
-    if (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty()) {
-      throw new HpcException(
-          "Collection is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+    // Validate the collection is empty if recursive flag is not set.
+    if(!recursive) {
+    	if (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty()) {
+    		throw new HpcException(
+    				"Collection is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+    	}
+    } 
 
     // Validate the invoker is the owner of the data object.
     HpcPermission permission = dataManagementService.getCollectionPermission(path).getPermission();
@@ -1356,7 +1365,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
-
+  
+  
   /**
    * Get the data object source size. (Either source or dataObjectFile are not null)
    *

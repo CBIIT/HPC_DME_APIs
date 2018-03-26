@@ -7,6 +7,11 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.local;
 
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
+import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.cli.util.Paths;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.exception.HpcException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -14,15 +19,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import gov.nih.nci.hpc.cli.util.HpcCmdException;
-import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
-import gov.nih.nci.hpc.cli.util.Paths;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.exception.HpcException;
 
 public class HpcLocalDirectoryListQuery {
 	// ---------------------------------------------------------------------//
@@ -50,6 +48,9 @@ public class HpcLocalDirectoryListQuery {
 		List<HpcPathAttributes> pathAttributes = new ArrayList<HpcPathAttributes>();
 
 		try {
+		    logger.debug("getPathAttributes: fileLocation: "+fileLocation);
+		    logger.debug("getPathAttributes: excludePattern: "+excludePattern);
+		    logger.debug("getPathAttributes: includePattern: "+includePattern);
 			List<File> dirContent = listDirectory(fileLocation, excludePattern, includePattern);
 			getPathAttributes(pathAttributes, dirContent);
 			HpcPathAttributes rootPath = new HpcPathAttributes();
@@ -61,7 +62,8 @@ public class HpcLocalDirectoryListQuery {
 			rootPath.setPath(fileLocation);
 			pathAttributes.add(rootPath);
 		} catch (Exception e) {
-			throw new HpcException("[GLOBUS] Failed to get path attributes: " + fileLocation,
+		  logger.error(e.getMessage(), e);
+			throw new HpcException("Failed to get path attributes: " + fileLocation,
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 
@@ -158,40 +160,42 @@ public class HpcLocalDirectoryListQuery {
 		return patterns;
 	}
 
-	public static List<File> listDirectory(String directoryName, List<String> excludePattern,
-			List<String> includePattern) throws HpcException {
-		File directory = new File(directoryName);
+  public List<File> listDirectory(String directoryName, List<String> excludePattern,
+      List<String> includePattern) throws HpcException {
+    		File directory = new File(directoryName);
+ //   File directory = new File(Paths.generateFileSystemResourceUri(directoryName));
+    List<File> resultList = new ArrayList<File>();
 
-		List<File> resultList = new ArrayList<File>();
+    // get all the files from a directory
+    File[] fList = directory.listFiles();
+    if (fList == null) {
+      System.out.println("Invalid source folder");
+      throw new HpcException("Invalid source folder " + directoryName,
+          HpcErrorType.DATA_TRANSFER_ERROR);
+    }
 
-		// get all the files from a directory
-		File[] fList = directory.listFiles();
-		if (fList == null) {
-			System.out.println("Invalid source folder");
-			throw new HpcException("Invalid source folder " + directoryName, HpcErrorType.DATA_TRANSFER_ERROR);
-		}
+    if (includePattern == null || includePattern.isEmpty()) {
+      includePattern = new ArrayList<String>();
+      includePattern.add("*");
+      includePattern.add("*/**");
+    }
 
-		if (includePattern == null || includePattern.isEmpty()) {
-			includePattern = new ArrayList<String>();
-			includePattern.add("*");
-			includePattern.add("*/**");
-		}
+    long totalSize = 0L;
+    Paths paths = getFileList(directoryName, excludePattern, includePattern);
+    for (String filePath : paths) {
+      String fileName = filePath.replace("\\", File.separator).replace(
+                                        "/", File.separator);
+      System.out.println("Including: " + fileName);
+		File file = new File(fileName);
+//      File file = new File(Paths.generateFileSystemResourceUri(fileName));
+      totalSize += file.length();
+      resultList.add(file);
+    }
+    System.out.println("\nAggregate file size: " + totalSize);
+    return resultList;
+  }
 
-		long totalSize = 0L;
-		Paths paths = getFileList(directoryName, excludePattern, includePattern);
-		for (String filePath : paths) {
-			String fileName = filePath.replace("\\", File.separator);
-			fileName = fileName.replace("/", File.separator);
-			System.out.println("Including: " + fileName);
-			File file = new File(fileName);
-			totalSize = totalSize + file.length();
-			resultList.add(file);
-		}
-		System.out.println("\nAggregate file size: " + totalSize);
-		return resultList;
-	}
-
-	private static Paths getFileList(String basePath, List<String> excludePatterns, List<String> includePatterns) {
+	private Paths getFileList(String basePath, List<String> excludePatterns, List<String> includePatterns) {
 		Paths paths = new Paths();
 		if (includePatterns == null || includePatterns.isEmpty()) {
 			includePatterns = new ArrayList<String>();
@@ -204,6 +208,7 @@ public class HpcLocalDirectoryListQuery {
 			for (String pattern : excludePatterns)
 				patterns.add("!" + pattern);
 		}
+		logger.debug("basePath "+basePath);
 		return paths.glob(basePath, patterns);
 
 	}
