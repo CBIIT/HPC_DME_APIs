@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -277,6 +278,9 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			// Validate parent path
 			String parentPath = null;
 			hpcDataModel.setPath(hpcDataModel.getPath().trim());
+
+      MiscUtil.validateDmePathForForbiddenChars(hpcDataModel.getPath());
+
 			HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructBulkRequest(request, session,
 					hpcDataModel.getPath().trim());
 			
