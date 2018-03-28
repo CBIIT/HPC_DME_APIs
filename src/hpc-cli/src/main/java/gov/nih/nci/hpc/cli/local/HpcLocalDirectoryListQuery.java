@@ -225,6 +225,7 @@ public class HpcLocalDirectoryListQuery {
 			for (String pattern : excludePatterns)
 				patterns.add("!" + pattern);
 		}
+		patterns.add("!**/hpc*.log/**");
 		logger.debug("basePath "+basePath);
 		return paths.glob(basePath, patterns);
 
