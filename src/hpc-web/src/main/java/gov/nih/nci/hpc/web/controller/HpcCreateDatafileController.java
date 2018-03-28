@@ -9,18 +9,11 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.web.HpcWebException;
-import gov.nih.nci.hpc.web.model.HpcDatafileModel;
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
-import gov.nih.nci.hpc.web.util.MiscUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -33,6 +26,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.HpcDatafileModel;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 
 /**
  * <p>
@@ -243,7 +245,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			String parentPath = null;
 			hpcDataModel.setPath(hpcDataModel.getPath().trim());
 			try {
-				MiscUtil.validateDmePathForForbiddenChars(hpcDataModel.getPath());
+				//MiscUtil.validateDmePathForForbiddenChars(hpcDataModel.getPath());
 				parentPath = hpcDataModel.getPath().substring(0, hpcDataModel.getPath().lastIndexOf("/"));
 				if (!parentPath.isEmpty())
 					HpcClientUtil.getCollection(authToken, collectionServiceURL, parentPath, true, sslCertPath,
@@ -305,9 +307,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			}
 		}
 		// if (uploadType != null && uploadType.equals("sync"))
-    final String encodedDmePath =
-      MiscUtil.urlEncodeDmePath(hpcDataModel.getPath());
-    return "redirect:/datafile?path=" + encodedDmePath + "&action=view";
+		return "redirect:/datafile?path=" + hpcDataModel.getPath() + "&action=view";
 		// else
 		// return "adddatafile";
 	}

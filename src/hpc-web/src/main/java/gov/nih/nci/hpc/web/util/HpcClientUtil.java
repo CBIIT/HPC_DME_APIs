@@ -186,7 +186,7 @@ public class HpcClientUtil {
     Response restResponse = client.get();
     try {
 
-      if (restResponse.getStatus() != HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() != 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -249,7 +249,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -311,8 +311,7 @@ public class HpcClientUtil {
     try {
       String theItemPath = argItemPath.trim();
       final String hpcServiceUrl =
-        MiscUtil.encodeFullURL(
-          argServiceUrlPrefix.concat("/").concat(theItemPath));
+          argServiceUrlPrefix.concat("/").concat(theItemPath);
       final WebClient client = HpcClientUtil.getWebClient(hpcServiceUrl,
                                 argSslCertPath, argSslCertPasswd);
 //      client.header(HttpHeaders.AUTHORIZATION, "Basic " + argAuthToken);
@@ -331,7 +330,7 @@ public class HpcClientUtil {
       }
 
       return elemType;
-    } catch (IllegalStateException | URISyntaxException | IOException e) {
+    } catch (IllegalStateException | IOException e) {
       e.printStackTrace();
       final String msgForHpcWebException = String.format(
         ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE,
@@ -351,26 +350,21 @@ public class HpcClientUtil {
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean children, boolean list, String hpcCertPath, String hpcCertPassword) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionlURL))
-        .append(path);
-      if (children) {
-        sb.append("/children");
-      }
-      else if (list) {
-        sb.append("?list=true");
-      }
-      else {
-        sb.append("?list=false");
-      }
-      final String serviceURL = MiscUtil.encodeFullURL(sb.toString());
+      String serviceURL = hpcCollectionlURL;
+      if (children)
+        serviceURL = serviceURL + path + "/children";
+      else if (list)
+        serviceURL = serviceURL + path + "?list=true";
+      else
+        serviceURL = serviceURL + path + "?list=false";
+
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -393,27 +387,18 @@ public class HpcClientUtil {
     }
   }
 
-  public static HpcDataObjectListDTO getDatafiles(
-    String token,
-    String hpcDatafileURL,
-    String path,
-    boolean list,
-    String hpcCertPath,
-    String hpcCertPassword) {
+  public static HpcDataObjectListDTO getDatafiles(String token, String hpcDatafileURL, String path,
+      boolean list, String hpcCertPath, String hpcCertPassword) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(path)
-        .append("?list=").append(Boolean.toString(list));
-      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
-      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
-                                                    hpcCertPassword);
+      WebClient client = HpcClientUtil.getWebClient(
+          hpcDatafileURL + "/" + path + (list ? "?list=true" : "?list=false"), hpcCertPath,
+          hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -474,7 +459,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -504,7 +489,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -547,7 +532,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -655,7 +640,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -688,7 +673,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -719,7 +704,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -798,7 +783,7 @@ public class HpcClientUtil {
           HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("POST", groupDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -842,7 +827,7 @@ public class HpcClientUtil {
           HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("DELETE", null);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -876,12 +861,8 @@ public class HpcClientUtil {
           && collection.getCollectionPaths().size() > 0)
         throw new HpcWebException("Failed to create. Collection already exists: " + path);
 
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(path);
-      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
-      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
-                                                    hpcCertPassword);
+      WebClient client =
+          HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", collectionDTO);
@@ -913,16 +894,12 @@ public class HpcClientUtil {
       HpcCollectionRegistrationDTO collectionDTO, String path, String hpcCertPath,
       String hpcCertPassword) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(path);
-      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
-          HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
+          HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", collectionDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK || restResponse.getStatus() == 201) {
+      if (restResponse.getStatus() == 200 || restResponse.getStatus() == 201) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -949,16 +926,12 @@ public class HpcClientUtil {
   public static boolean deleteCollection(String token, String hpcCollectionURL,
       String collectionPath, String hpcCertPath, String hpcCertPassword) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcCollectionURL))
-        .append(collectionPath);
-      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
-      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
-                                                    hpcCertPassword);
+      WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + "/" + collectionPath,
+          hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -996,12 +969,8 @@ public class HpcClientUtil {
         // Data file is not there!
       }
 
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(path);
-      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
-          HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
+          HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
@@ -1049,7 +1018,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", datafileDTO);
-      if (restResponse.getStatus() == 201 || restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
         return (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil.getObject(restResponse,
             HpcBulkDataObjectRegistrationResponseDTO.class);
       } else {
@@ -1078,12 +1047,8 @@ public class HpcClientUtil {
       HpcDataObjectRegistrationRequestDTO datafileDTO, String path, String hpcCertPath,
       String hpcCertPassword) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(path);
-      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
-          HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
+          HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
@@ -1092,7 +1057,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.put(new MultipartBody(atts));
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -1119,16 +1084,12 @@ public class HpcClientUtil {
   public static boolean deleteDatafile(String token, String hpcDatafileURL, String path,
       String hpcCertPath, String hpcCertPassword) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcDatafileURL))
-        .append(path);
-      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
       WebClient client =
-          HpcClientUtil.getWebClient(url2Call, hpcCertPath, hpcCertPassword);
+          HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -1160,7 +1121,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("POST", userDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         return true;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -1197,7 +1158,7 @@ public class HpcClientUtil {
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -1228,7 +1189,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1262,7 +1223,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1294,7 +1255,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1325,7 +1286,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1351,26 +1312,15 @@ public class HpcClientUtil {
 
   public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId,
       String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
-    Response restResponse;
-    try {
-      final StringBuilder sb = new StringBuilder();
-      sb.append(MiscUtil.prepareUrlForExtending(hpcServiceURL))
-          .append(path)
-          .append("/acl/user/")
-          .append(userId);
-      final String url2Call = MiscUtil.encodeFullURL(sb.toString());
-      WebClient client = HpcClientUtil.getWebClient(url2Call, hpcCertPath,
-          hpcCertPassword);
-      client.header("Authorization", "Bearer " + token);
 
-      restResponse = client.get();
-      if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
-        return null;
-    } catch (MalformedURLException|URISyntaxException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
-    }
+    WebClient client = HpcClientUtil.getWebClient(hpcServiceURL + path + "/acl/user/" + userId,
+        hpcCertPath, hpcCertPassword);
 
+    client.header("Authorization", "Bearer " + token);
+
+    Response restResponse = client.get();
+    if (restResponse == null || restResponse.getStatus() != 200)
+      return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
     try {
@@ -1402,7 +1352,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1434,7 +1384,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1470,7 +1420,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     try {
       ObjectMapper mapper = new ObjectMapper();
@@ -1498,7 +1448,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     try {
       ObjectMapper mapper = new ObjectMapper();
@@ -1525,7 +1475,7 @@ public class HpcClientUtil {
       WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("POST", dto);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
             new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
@@ -1567,7 +1517,7 @@ public class HpcClientUtil {
     client.header("Authorization", "Bearer " + token);
 
     Response restResponse = client.invoke("POST", dto);
-    if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+    if (restResponse.getStatus() == 200) {
       HpcDataObjectDownloadResponseDTO downloadDTO =
           (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse,
               HpcDataObjectDownloadResponseDTO.class);
@@ -1608,7 +1558,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1644,7 +1594,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1680,7 +1630,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1719,7 +1669,7 @@ public class HpcClientUtil {
 
     Response restResponse = client.get();
 
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (restResponse == null || restResponse.getStatus() != 200)
       return null;
     MappingJsonFactory factory = new MappingJsonFactory();
     JsonParser parser;
@@ -1889,29 +1839,26 @@ public class HpcClientUtil {
     }
   }
 
-  public static void populateBasePaths(
-      HttpSession session,
-      Model model,
-      HpcDataManagementModelDTO modelDTO,
-      String authToken,
-      String userId,
-      String collectionURL,
-      String sslCertPath,
-      String sslCertPassword) throws HpcWebException {
-    final Set<String> basePaths =
-      new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-    final String url2Call = String.format("%s/%s", collectionURL, userId);
-    final String queryParams = generateQueryString(modelDTO);
-    HpcUserPermsForCollectionsDTO permissions =
-      HpcClientUtil.getPermissionForCollections(
-        authToken, url2Call, queryParams, sslCertPath, sslCertPassword);
+  public static void populateBasePaths(HttpSession session, Model model,
+      HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
+      String sslCertPath, String sslCertPassword) throws HpcWebException {
+
+    Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+    String queryParams = "?";
+    for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+        queryParams += "collectionPath=" + rule.getBasePath() + "&";
+      }
+    }
+    queryParams = queryParams.substring(0, queryParams.length() - 1);
+    HpcUserPermsForCollectionsDTO permissions = HpcClientUtil.getPermissionForCollections(authToken,
+        collectionURL + "/" + userId, queryParams, sslCertPath, sslCertPassword);
     if (permissions != null) {
       for (HpcPermissionForCollection permission : permissions.getPermissionsForCollections()) {
-        if (permission != null && (
-          HpcPermission.WRITE.equals(permission.getPermission()) ||
-          HpcPermission.OWN.equals(permission.getPermission()) ) ) {
+        if (permission != null && permission.getPermission() != null
+            && (permission.getPermission().equals(HpcPermission.WRITE)
+                || permission.getPermission().equals(HpcPermission.OWN)))
           basePaths.add(permission.getCollectionPath());
-        }
       }
     }
     session.setAttribute("basePaths", basePaths);
