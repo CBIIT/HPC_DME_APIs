@@ -109,8 +109,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class HpcClientUtil {
 
@@ -235,16 +238,16 @@ public class HpcClientUtil {
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean children, boolean list, String hpcCertPath, String hpcCertPassword) {
     try {
-      final StringBuilder sb = new StringBuilder(hpcCollectionlURL);
-      sb.append(path);
+      String theUrl = buildServiceUrl(hpcCollectionlURL, path);
       if (children) {
-        sb.append("/children");
+        theUrl = buildServiceUrl(theUrl, new String[] { "children" });
       }
       else {
-        sb.append("?list=").append(list);
+        theUrl = buildServiceUrlWithQueryString(theUrl, "list",
+          Boolean.valueOf(list));
       }
-      final String serviceURL = sb.toString();
-      WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword, Optional.of(token));
+      WebClient client = HpcClientUtil.getWebClient(theUrl, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.get();
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
@@ -266,9 +269,10 @@ public class HpcClientUtil {
       HpcBookmarkRequestDTO hpcBookmark, String hpcBookmarkName, String hpcCertPath,
       String hpcCertPassword) {
     try {
-      WebClient client = HpcClientUtil.getWebClient(
-          hpcBookmarkURL + "/" + MiscUtil.performUrlEncoding(hpcBookmarkName), hpcCertPath,
-          hpcCertPassword, Optional.of(token));
+      final String url2Invoke = buildServiceUrl(hpcBookmarkURL, new String[]
+        {hpcBookmarkName});
+      WebClient client = HpcClientUtil.getWebClient(url2Invoke, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(hpcBookmark);
       if (isResponseCreated(restResponse)) {
         return true;
@@ -293,8 +297,8 @@ public class HpcClientUtil {
           && collection.getCollectionPaths().size() > 0)
         throw new HpcWebException("Failed to create. Collection already exists: " + path);
       WebClient client =
-        HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(buildServiceUrl(hpcCollectionURL, path),
+        hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(collectionDTO);
       if (isResponseCreated(restResponse)) {
         return true;
@@ -309,14 +313,15 @@ public class HpcClientUtil {
   }
 
 
-  public static HpcGroupMembersResponseDTO createGroup(String token, String hpcUserURL,
+  public static HpcGroupMembersResponseDTO createGroup(String token, String hpcGroupURL,
       HpcGroupMembersRequestDTO groupDTO, String groupName, String hpcCertPath,
       String hpcCertPassword) {
     HpcGroupMembersResponseDTO response = null;
     try {
-      WebClient client = HpcClientUtil.getWebClient(
-  hpcUserURL + "/" + MiscUtil.performUrlEncoding(groupName),
-        hpcCertPath, hpcCertPassword, Optional.of(token));
+      final String url2Invoke = buildServiceUrl(hpcGroupURL, new String[]
+        {groupName});
+      WebClient client = HpcClientUtil.getWebClient(url2Invoke, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(groupDTO);
       if (isResponseCreated(restResponse)) {
         response = (HpcGroupMembersResponseDTO) parseBasedOnConf(
@@ -337,9 +342,10 @@ public class HpcClientUtil {
   public static boolean createUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO,
       String userId, String hpcCertPath, String hpcCertPassword) {
     try {
-      WebClient client =
-        HpcClientUtil.getWebClient(hpcUserURL + "/" + userId,
-        hpcCertPath, hpcCertPassword, Optional.of(token));
+      final String url2Invoke = buildServiceUrl(hpcUserURL, new String[]
+        {userId});
+      WebClient client = HpcClientUtil.getWebClient(url2Invoke, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(userDTO);
       if (isResponseCreated(restResponse)) {
         return true;
@@ -357,7 +363,9 @@ public class HpcClientUtil {
   public static boolean deleteBookmark(String token, String hpcBookmarkURL, String hpcBookmarkName,
       String hpcCertPath, String hpcCertPassword) {
     try {
-      WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL + "/" + hpcBookmarkName,
+      final String url2Invoke = buildServiceUrl(hpcBookmarkURL, new String[]
+        {hpcBookmarkName});
+      WebClient client = HpcClientUtil.getWebClient(url2Invoke,
           hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.delete();
       if (isResponseOk(restResponse)) {
@@ -376,8 +384,9 @@ public class HpcClientUtil {
   public static boolean deleteCollection(String token, String hpcCollectionURL,
       String collectionPath, String hpcCertPath, String hpcCertPassword) {
     try {
-      WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + "/" + collectionPath,
-          hpcCertPath, hpcCertPassword, Optional.of(token));
+      final String url2Invoke = buildServiceUrl(hpcCollectionURL, collectionPath);
+      WebClient client = HpcClientUtil.getWebClient(url2Invoke, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.delete();
       if (isResponseOk(restResponse)) {
         return true;
@@ -395,9 +404,10 @@ public class HpcClientUtil {
   public static boolean deleteDatafile(String token, String hpcDatafileURL, String path,
       String hpcCertPath, String hpcCertPassword) {
     try {
+      final String url2Invoke = buildServiceUrl(hpcDatafileURL, path);
       WebClient client =
-        HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(url2Invoke, hpcCertPath, hpcCertPassword,
+        Optional.of(token));
       Response restResponse = client.delete();
       if (isResponseOk(restResponse)) {
         return true;
@@ -413,9 +423,11 @@ public class HpcClientUtil {
   public static boolean deleteGroup(String token, String hpcUserURL, String groupName,
       String hpcCertPath, String hpcCertPassword) {
     try {
+      final String url2Invoke = buildServiceUrl(hpcUserURL, new String[]
+        {groupName});
       WebClient client =
-        HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(url2Invoke, hpcCertPath, hpcCertPassword,
+        Optional.of(token));
       Response restResponse = client.delete();
       if (isResponseOk(restResponse)) {
         return true;
@@ -433,9 +445,10 @@ public class HpcClientUtil {
   public static boolean deleteSearch(String token, String hpcSavedSearchURL, String searchName,
       String hpcCertPath, String hpcCertPassword) {
     try {
-      WebClient client = HpcClientUtil.getWebClient(
-          hpcSavedSearchURL + "/" + MiscUtil.performUrlEncoding(searchName), hpcCertPath,
-          hpcCertPassword, Optional.of(token));
+      final String theUrl = buildServiceUrl(hpcSavedSearchURL, new String[]
+        {searchName});
+      WebClient client = HpcClientUtil.getWebClient(theUrl, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.delete();
       if (isResponseOk(restResponse)) {
         return true;
@@ -550,9 +563,10 @@ public class HpcClientUtil {
   public static HpcDataObjectListDTO getDatafiles(String token, String hpcDatafileURL, String path,
       boolean list, String hpcCertPath, String hpcCertPassword) {
     try {
-      WebClient client = HpcClientUtil.getWebClient(
-          hpcDatafileURL + "/" + path + (list ? "?list=true" : "?list=false"), hpcCertPath,
-          hpcCertPassword, Optional.of(token));
+      final String apiServiceUrl = buildServiceUrlWithQueryString(
+        buildServiceUrl(hpcDatafileURL, path), "list", Boolean.valueOf(list));
+      WebClient client = HpcClientUtil.getWebClient(apiServiceUrl, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.get();
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
@@ -689,13 +703,11 @@ public class HpcClientUtil {
   public static HpcGroupListDTO getGroups(String token, String hpcGroupURL, String groupName,
       String hpcCertPath, String hpcCertPassword) {
     try {
-      String paramsURL = "";
-      if (!isStringBlank(groupName)) {
-        paramsURL = "?groupPattern=" + MiscUtil.performUrlEncoding(groupName);
-      }
+      final String apiServiceUrl = isStringBlank(groupName) ? hpcGroupURL :
+        buildServiceUrlWithQueryString(hpcGroupURL, "groupPattern", groupName);
       WebClient client =
-        HpcClientUtil.getWebClient(hpcGroupURL + paramsURL, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(apiServiceUrl, hpcCertPath, hpcCertPassword,
+        Optional.of(token));
       Response restResponse = client.get();
       if (isResponseOk(restResponse)) {
         HpcGroupListDTO groups = (HpcGroupListDTO) parseBasedOnConf(
@@ -769,8 +781,8 @@ public class HpcClientUtil {
     Optional<String> elemType = Optional.empty();
     try {
       String theItemPath = argItemPath.trim();
-      final String hpcServiceUrl =
-          argServiceUrlPrefix.concat("/").concat(theItemPath);
+      final String hpcServiceUrl = buildServiceUrl(argServiceUrlPrefix,
+        theItemPath);
       final WebClient client = HpcClientUtil.getWebClient(hpcServiceUrl,
           argSslCertPath, argSslCertPasswd, Optional.of(argAuthToken));
       final Response restResponse = client.get();
@@ -801,9 +813,10 @@ public class HpcClientUtil {
 
   public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId,
       String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
-    WebClient client = HpcClientUtil.getWebClient(
-      hpcServiceURL + path + "/acl/user/" + userId,
-      hpcCertPath, hpcCertPassword, Optional.of(token));
+    final String apiServiceUrl = buildServiceUrl(buildServiceUrl(hpcServiceURL,
+      path), "acl", "user", userId);
+    WebClient client = HpcClientUtil.getWebClient(apiServiceUrl, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
     if (isResponseNullOrNotOk(restResponse))
       return null;
@@ -818,10 +831,10 @@ public class HpcClientUtil {
 
 
   public static HpcUserPermsForCollectionsDTO getPermissionForCollections(String token,
-      String hpcServiceURL, String queryParam, String hpcCertPath, String hpcCertPassword) {
+      String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
     WebClient client =
-      HpcClientUtil.getWebClient(hpcServiceURL + queryParam, hpcCertPath,
-      hpcCertPassword, Optional.of(token));
+      HpcClientUtil.getWebClient(hpcServiceURL, hpcCertPath, hpcCertPassword,
+      Optional.of(token));
     Response restResponse = client.get();
     if (isResponseNullOrNotOk(restResponse))
       return null;
@@ -854,7 +867,8 @@ public class HpcClientUtil {
 
   public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL,
       String queryName, String hpcCertPath, String hpcCertPassword) {
-    String serviceURL = hpcQueryURL + "/" + queryName;
+    final String serviceURL = buildServiceUrl(hpcQueryURL, new String[]
+      {queryName});
     WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath,
       hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
@@ -1034,9 +1048,11 @@ public class HpcClientUtil {
   public static HpcUserDTO getUserByAdmin(String token, String hpcUserURL, String userId,
       String hpcCertPath, String hpcCertPassword) {
     try {
+      final String apiServiceUrl = buildServiceUrl(hpcUserURL, new String[]
+        {userId});
       WebClient client =
-        HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(apiServiceUrl, hpcCertPath, hpcCertPassword,
+        Optional.of(token));
       Response restResponse = client.get();
       if (isResponseOk(restResponse)) {
         HpcUserDTO userDto = (HpcUserDTO) parseBasedOnConf(
@@ -1056,36 +1072,25 @@ public class HpcClientUtil {
   public static HpcUserListDTO getUsers(String token, String hpcUserURL, String userId,
       String firstName, String lastName, String doc, String hpcCertPath, String hpcCertPassword) {
     try {
-      boolean first = true;
-      String paramsURL = "";
+      final MultiValueMap<String, String> myQueryParams = new
+        LinkedMultiValueMap<>();
       if (!isStringBlank(userId)) {
-        paramsURL = "?nciUserId=" + MiscUtil.performUrlEncoding(userId);
-        first = false;
+        myQueryParams.set("nciUserId", userId);
       }
       if (!isStringBlank(firstName)) {
-        if (first) {
-          paramsURL = "?firstNamePattern=" + MiscUtil.performUrlEncoding(firstName);
-          first = false;
-        } else
-          paramsURL = paramsURL + "&firstNamePattern=" + MiscUtil.performUrlEncoding(firstName);
+        myQueryParams.set("firstNamePattern", firstName);
       }
       if (!isStringBlank(lastName)) {
-        if (first) {
-          paramsURL = "?lastNamePattern=" + MiscUtil.performUrlEncoding(lastName);
-          first = false;
-        } else
-          paramsURL = paramsURL + "&lastNamePattern=" + MiscUtil.performUrlEncoding(lastName);
+        myQueryParams.set("lastNamePattern", lastName);
       }
       if (!isStringBlank(doc)) {
-        if (first) {
-          paramsURL = "?doc=" + MiscUtil.performUrlEncoding(doc);
-          first = false;
-        } else
-          paramsURL = paramsURL + "&doc=" + MiscUtil.performUrlEncoding(doc);
+        myQueryParams.set("doc", doc);
       }
+      final String apiServiceUrl = buildServiceUrlWithQueryString(hpcUserURL,
+        myQueryParams);
       WebClient client =
-        HpcClientUtil.getWebClient(hpcUserURL + paramsURL, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(apiServiceUrl, hpcCertPath, hpcCertPassword,
+        Optional.of(token));
       Response restResponse = client.get();
       if (isResponseOk(restResponse)) {
         HpcUserListDTO users = (HpcUserListDTO) parseBasedOnConf(
@@ -1104,15 +1109,17 @@ public class HpcClientUtil {
       HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
       String sslCertPath, String sslCertPassword) throws HpcWebException {
     Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-    String queryParams = "?";
+    final MultiValueMap<String, String> paramsMap = new LinkedMultiValueMap<>();
     for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
       for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-        queryParams += "collectionPath=" + rule.getBasePath() + "&";
+        paramsMap.set("collectionPath", rule.getBasePath());
       }
     }
-    queryParams = queryParams.substring(0, queryParams.length() - 1);
-    HpcUserPermsForCollectionsDTO permissions = HpcClientUtil.getPermissionForCollections(authToken,
-        collectionURL + "/" + userId, queryParams, sslCertPath, sslCertPassword);
+    final String apiServiceUrl = buildServiceUrlWithQueryString(collectionURL,
+      paramsMap);
+    HpcUserPermsForCollectionsDTO permissions =
+      HpcClientUtil.getPermissionForCollections(authToken, apiServiceUrl,
+      sslCertPath, sslCertPassword);
     if (permissions != null) {
       for (HpcPermissionForCollection permission : permissions.getPermissionsForCollections()) {
         if (permission != null && permission.getPermission() != null
@@ -1159,9 +1166,10 @@ public class HpcClientUtil {
       } catch (HpcWebException e) {
         // Data file is not there!
       }
+      final String apiServiceUrl = buildServiceUrl(hpcDatafileURL, path);
       WebClient client =
-        HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(apiServiceUrl, hpcCertPath, hpcCertPassword,
+        Optional.of(token));
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
@@ -1188,9 +1196,10 @@ public class HpcClientUtil {
       HpcCollectionRegistrationDTO collectionDTO, String path, String hpcCertPath,
       String hpcCertPassword) {
     try {
+      final String apiServiceUrl = buildServiceUrl(hpcCollectionURL, path);
       WebClient client =
-        HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(apiServiceUrl, hpcCertPath, hpcCertPassword,
+        Optional.of(token));
       Response restResponse = client.put(collectionDTO);
       if (isResponseOk(restResponse) || isResponseCreated(restResponse)) {
         return true;
@@ -1208,8 +1217,8 @@ public class HpcClientUtil {
       String hpcCertPassword) {
     try {
       WebClient client =
-        HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(buildServiceUrl(hpcDatafileURL, path),
+        hpcCertPath, hpcCertPassword, Optional.of(token));
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
@@ -1234,8 +1243,8 @@ public class HpcClientUtil {
     HpcGroupMembersResponseDTO response = null;
     try {
       WebClient client =
-        HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(buildServiceUrl(hpcUserURL, new String[]
+        {groupName}), hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.post(groupDTO);
       if (isResponseOk(restResponse)) {
         response = (HpcGroupMembersResponseDTO) parseBasedOnConf(
@@ -1257,8 +1266,8 @@ public class HpcClientUtil {
       String userId, String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client =
-        HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath,
-        hpcCertPassword, Optional.of(token));
+        HpcClientUtil.getWebClient(buildServiceUrl(hpcUserURL, new String[]
+        {userId}), hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.post(userDTO);
       if (isResponseOk(restResponse)) {
         return true;
@@ -1321,6 +1330,42 @@ public class HpcClientUtil {
         BEARER + hpcAuthToken.get());
     }
     return retWebClientObj;
+  }
+
+
+  private static String buildServiceUrl(String argBaseUrl,
+      String argPathFromBase) {
+    final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
+        argBaseUrl);
+    ucBuilder.path(argPathFromBase);
+    return ucBuilder.toUriString();
+  }
+
+
+  private static String buildServiceUrl(String argBaseUrl,
+      String ... argPathSegmensFromBase) {
+    final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
+        argBaseUrl);
+    ucBuilder.pathSegment(argPathSegmensFromBase);
+    return ucBuilder.toUriString();
+  }
+
+
+  private static String buildServiceUrlWithQueryString(String argBaseUrl,
+      MultiValueMap<String,String> argParamsMap) {
+    final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
+        argBaseUrl);
+    ucBuilder.queryParams(argParamsMap);
+    return ucBuilder.toUriString();
+  }
+
+
+  private static String buildServiceUrlWithQueryString(String argBaseUrl,
+    String argQueryParam, Object argParamVal) {
+    final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
+      argBaseUrl);
+    ucBuilder.queryParam(argQueryParam, argParamVal);
+    return ucBuilder.toUriString();
   }
 
 

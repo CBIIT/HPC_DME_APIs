@@ -9,12 +9,15 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
+import org.neo4j.cypher.internal.compiler.v2_1.functions.Str;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Controller
 @EnableAutoConfiguration
@@ -85,11 +89,12 @@ public class HpcProfileController extends AbstractHpcController {
       }
       HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken,
           userId, collectionAclURL, sslCertPath, sslCertPassword);
-      final String queryParams = generateQueryString(modelDTO);
-      final String url2Call = String.format("%s/%s", collectionAclURL, userId);
+      final UriComponentsBuilder ucBuilder =
+        UriComponentsBuilder.fromHttpUrl(collectionAclURL)
+                            .queryParams(generateQueryParamsMap(modelDTO));
       final HpcUserPermsForCollectionsDTO permissions =
-          HpcClientUtil.getPermissionForCollections(
-              authToken, url2Call, queryParams, sslCertPath, sslCertPassword);
+          HpcClientUtil.getPermissionForCollections(authToken,
+          ucBuilder.toUriString(), sslCertPath, sslCertPassword);
 
       log.info(String.format("authToken: %s", authToken));
       log.info(String.format("userId: %s", userId));
@@ -122,6 +127,17 @@ public class HpcProfileController extends AbstractHpcController {
     }
     final String retQueryString = sb.toString();
     return retQueryString;
+  }
+
+  private MultiValueMap<String, String> generateQueryParamsMap(
+    HpcDataManagementModelDTO argModelDTO) {
+    final MultiValueMap<String, String> mvMap = new LinkedMultiValueMap<>();
+    for (HpcDocDataManagementRulesDTO docRule : argModelDTO.getDocRules()) {
+      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+        mvMap.set("collectionPath", rule.getBasePath());
+      }
+    }
+    return mvMap;
   }
 
 }
