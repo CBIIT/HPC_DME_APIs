@@ -16,13 +16,28 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HpcLocalDirectoryListQuery {
+
+  private static String genFileSizeDisplayString(long sizeInBytes) {
+    final String formattedFig =
+      NumberFormat.getInstance(Locale.US).format(sizeInBytes);
+
+    final String storageUnit = (sizeInBytes == 1) ? "byte" : "bytes";
+
+    final String retDisplayStr = String.format(
+      "Aggregate file size: %s %s", formattedFig, storageUnit);
+
+    return retDisplayStr;
+  }
+
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
@@ -191,9 +206,11 @@ public class HpcLocalDirectoryListQuery {
       totalSize += file.length();
       resultList.add(file);
     }
-    System.out.println("\nAggregate file size: " + totalSize);
+    System.out.println("\n" + genFileSizeDisplayString(totalSize));
+
     return resultList;
   }
+
 
 	private Paths getFileList(String basePath, List<String> excludePatterns, List<String> includePatterns) {
 		Paths paths = new Paths();
@@ -208,6 +225,7 @@ public class HpcLocalDirectoryListQuery {
 			for (String pattern : excludePatterns)
 				patterns.add("!" + pattern);
 		}
+		patterns.add("!**/hpc*.log/**");
 		logger.debug("basePath "+basePath);
 		return paths.glob(basePath, patterns);
 
