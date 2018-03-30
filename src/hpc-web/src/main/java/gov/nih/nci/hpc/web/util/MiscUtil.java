@@ -3,6 +3,7 @@ package gov.nih.nci.hpc.web.util;
 import gov.nih.nci.hpc.web.HpcWebException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class MiscUtil {
 
@@ -13,7 +14,8 @@ public class MiscUtil {
   public static String performUrlEncoding(String argInputStr) throws HpcWebException {
       String result;
       try {
-        result = URLEncoder.encode(argInputStr, "UTF-8");
+        result = URLEncoder.encode(argInputStr,
+          StandardCharsets.UTF_8.displayName());
         return result;
       } catch (UnsupportedEncodingException e) {
         throw new HpcWebException(e);
@@ -24,8 +26,8 @@ public class MiscUtil {
   public static String prepareUrlForExtending(String argOrigUrl) {
       final StringBuilder sb = new StringBuilder();
       sb.append(argOrigUrl.trim());
-      if (!argOrigUrl.endsWith("/")) {
-        sb.append("/");
+      if (!argOrigUrl.endsWith(FORWARD_SLASH)) {
+        sb.append(FORWARD_SLASH);
       }
       final String preppedUrl = sb.toString();
       return preppedUrl;
