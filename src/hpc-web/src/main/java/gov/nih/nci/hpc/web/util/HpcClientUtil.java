@@ -2,7 +2,6 @@ package gov.nih.nci.hpc.web.util;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,7 +56,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -145,7 +144,7 @@ public class HpcClientUtil {
     client.header(HttpHeaders.AUTHORIZATION, "Basic " + token);
     Response restResponse = client.get();
     try {
-      if (restResponse.getStatus() != HttpServletResponse.SC_OK) {
+      if (!isResponseOk(restResponse)) {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Authentication failed: "));
       }
@@ -154,21 +153,24 @@ public class HpcClientUtil {
               HpcAuthenticationResponseDTO.class);
       return dto.getToken();
     } catch (IllegalStateException|IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get auth token: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(
+        e, Optional.of("Failed to get auth token: "));
     }
   }
 
 
   public static String getBasePath(HttpServletRequest request) {
-    String[] basePathValues = request.getParameterValues("basePath");
+    final String[] basePathValues = request.getParameterValues("basePath");
     String basePath = null;
-    if (basePathValues == null || basePathValues.length == 0)
+    if (basePathValues == null || basePathValues.length == 0) {
       basePath = (String) request.getAttribute("basePath");
-    else
+    }
+    else {
       basePath = basePathValues[0];
-    if (basePath != null && basePath.equals("_select_null"))
+    }
+    if (basePath != null && "_select_null".equals(basePath)) {
       return null;
+    }
     return basePath;
   }
 
@@ -195,27 +197,29 @@ public class HpcClientUtil {
           // TODO
           for (HpcDocDataManagementRulesDTO rulesDTO : modelDTO.getDocRules()) {
             for (HpcDataManagementRulesDTO rule : rulesDTO.getRules()) {
-              if (rule.getId().equals(configurationId))
+              if (rule.getId().equals(configurationId)) {
                 return rule.getBasePath();
+              }
             }
           }
         }
       }
     }
     return null;
-
   }
 
 
   public static HpcDataManagementRulesDTO getBasePathManagementRules(
       HpcDataManagementModelDTO docModelDto, String basePath) {
-    if (docModelDto == null || docModelDto.getDocRules() == null || basePath == null)
+    if (docModelDto == null || docModelDto.getDocRules() == null ||
+        basePath == null) {
       return null;
-
+    }
     for (HpcDocDataManagementRulesDTO docDTO : docModelDto.getDocRules()) {
       for (HpcDataManagementRulesDTO rules : docDTO.getRules()) {
-        if (rules.getBasePath().equals(basePath))
+        if (rules.getBasePath().equals(basePath)) {
           return rules;
+        }
       }
     }
     return null;
@@ -231,21 +235,20 @@ public class HpcClientUtil {
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean children, boolean list, String hpcCertPath, String hpcCertPassword) {
     try {
-      String serviceURL = hpcCollectionlURL;
-      if (children)
-        serviceURL = serviceURL + path + "/children";
-      else if (list)
-        serviceURL = serviceURL + path + "?list=true";
-      else
-        serviceURL = serviceURL + path + "?list=false";
-
-      WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+      final StringBuilder sb = new StringBuilder(hpcCollectionlURL);
+      sb.append(path);
+      if (children) {
+        sb.append("/children");
+      }
+      else {
+        sb.append("?list=").append(list);
+      }
+      final String serviceURL = sb.toString();
+      WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.get();
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         HpcCollectionListDTO collections = (HpcCollectionListDTO)
             parseBasedOnConf((InputStream) restResponse.getEntity(),
                 HpcCollectionListDTO.class);
@@ -253,10 +256,8 @@ public class HpcClientUtil {
       } else {
         throw new HpcWebException("Failed to get collection! No READ access!");
       }
-
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(path + ": " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(path.concat(":")));
     }
   }
 
@@ -266,22 +267,18 @@ public class HpcClientUtil {
       String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(
-          hpcBookmarkURL + "/" + URLEncoder.encode(hpcBookmarkName, "UTF-8"), hpcCertPath,
-          hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+          hpcBookmarkURL + "/" + MiscUtil.performUrlEncoding(hpcBookmarkName), hpcCertPath,
+          hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(hpcBookmark);
-      if (restResponse.getStatus() == HttpServletResponse.SC_CREATED) {
+      if (isResponseCreated(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to create bookmark: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to create bookmark due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(
+        e, Optional.of("Failed to create bookmark due to: "));
     }
   }
 
@@ -295,23 +292,19 @@ public class HpcClientUtil {
       if (collection != null && collection.getCollectionPaths() != null
           && collection.getCollectionPaths().size() > 0)
         throw new HpcWebException("Failed to create. Collection already exists: " + path);
-
       WebClient client =
-          HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+        HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(collectionDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_CREATED) {
+      if (isResponseCreated(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to create collection: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to create collection due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to create collection due to: "));
     }
   }
 
@@ -321,12 +314,11 @@ public class HpcClientUtil {
       String hpcCertPassword) {
     HpcGroupMembersResponseDTO response = null;
     try {
-      WebClient client = HpcClientUtil.getWebClient(hpcUserURL + "/" + URLEncoder.encode(groupName),
-          hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+      WebClient client = HpcClientUtil.getWebClient(
+  hpcUserURL + "/" + MiscUtil.performUrlEncoding(groupName),
+        hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(groupDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_CREATED) {
+      if (isResponseCreated(restResponse)) {
         response = (HpcGroupMembersResponseDTO) parseBasedOnConf(
             (InputStream) restResponse.getEntity(),
             HpcGroupMembersResponseDTO.class);
@@ -334,11 +326,9 @@ public class HpcClientUtil {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to create group: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to create group due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to create group due to: "));
     }
     return response;
   }
@@ -348,21 +338,18 @@ public class HpcClientUtil {
       String userId, String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client =
-          HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+        HpcClientUtil.getWebClient(hpcUserURL + "/" + userId,
+        hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(userDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_CREATED) {
+      if (isResponseCreated(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to create user: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to create User due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to create User due to: "));
     }
   }
 
@@ -371,21 +358,17 @@ public class HpcClientUtil {
       String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL + "/" + hpcBookmarkName,
-          hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+          hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to delete bookmark: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to delete bookmark due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to delete bookmark due to: "));
     }
   }
 
@@ -394,21 +377,17 @@ public class HpcClientUtil {
       String collectionPath, String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(hpcCollectionURL + "/" + collectionPath,
-          hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+          hpcCertPath, hpcCertPassword, Optional.of(token));
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to delete collection: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to delete collection due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to delete collection due to: "));
     }
   }
 
@@ -417,43 +396,36 @@ public class HpcClientUtil {
       String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client =
-          HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+        HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(restResponse, Optional.empty());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.empty());
     }
   }
 
 
   public static boolean deleteGroup(String token, String hpcUserURL, String groupName,
       String hpcCertPath, String hpcCertPassword) {
-    HpcGroupMembersResponseDTO response = null;
     try {
       WebClient client =
-          HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
+        HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to delete group: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to delete group due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to delete group due to: "));
     }
   }
 
@@ -462,22 +434,18 @@ public class HpcClientUtil {
       String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(
-          hpcSavedSearchURL + "/" + URLEncoder.encode(searchName, "UTF-8"), hpcCertPath,
-          hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+          hpcSavedSearchURL + "/" + MiscUtil.performUrlEncoding(searchName), hpcCertPath,
+          hpcCertPassword, Optional.of(token));
       Response restResponse = client.delete();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to delete saved search: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to delete saved search due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to delete saved search due to: "));
     }
   }
 
@@ -486,18 +454,16 @@ public class HpcClientUtil {
       HpcDownloadRequestDTO dto, String hpcCertPath, String hpcCertPassword)
       throws JsonParseException, IOException {
     AjaxResponseBody result = new AjaxResponseBody();
-    WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.post(dto);
-    if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+    if (isResponseOk(restResponse)) {
       HpcDataObjectDownloadResponseDTO downloadDTO =
           (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse,
               HpcDataObjectDownloadResponseDTO.class);
       String taskId = "Unknown";
       if (downloadDTO != null)
         taskId = downloadDTO.getTaskId();
-
       result.setMessage(
           "<strong>Asynchronous download request is submitted successfully! <br>TaskId: " + taskId
               + "<strong>");
@@ -520,10 +486,10 @@ public class HpcClientUtil {
       HpcBulkDataObjectDownloadRequestDTO dto, String hpcCertPath, String hpcCertPassword) {
     HpcBulkDataObjectDownloadResponseDTO response = null;
     try {
-      WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
+      WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.post(dto);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         response = (HpcBulkDataObjectDownloadResponseDTO) parseBasedOnConf(
             (InputStream) restResponse.getEntity(),
             HpcBulkDataObjectDownloadResponseDTO.class);
@@ -531,49 +497,30 @@ public class HpcClientUtil {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to submit download request: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to submit download request: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to submit download request: "));
     }
     return response;
   }
 
 
-  private static void enableSSL() {
-    TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
-      public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-        return null;
-      }
-
-      public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-
-      public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-    }};
-
-    try {
-      SSLContext sc = SSLContext.getInstance("SSL");
-      sc.init(null, trustAllCerts, new java.security.SecureRandom());
-      HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-    } catch (Exception e) {
-    }
-  }
-
-
-  public static String encode(String strVal) {
-    if (strVal == null)
+  public static String encode(String strVal) throws UnsupportedEncodingException {
+    if (strVal == null) {
       return null;
-    else if (strVal.indexOf("/") == -1)
+    }
+    else if (strVal.indexOf("/") == -1) {
       return strVal;
+    }
     else {
-      StringBuffer encodedStr = new StringBuffer();
-      StringTokenizer tokens = new StringTokenizer(strVal, "/");
+      final StringBuffer encodedStr = new StringBuffer();
+      final StringTokenizer tokens = new StringTokenizer(strVal, "/");
       while (tokens.hasMoreTokens()) {
         String token = tokens.nextToken();
-        encodedStr.append(URLEncoder.encode(token));
-        if (tokens.hasMoreTokens())
+        encodedStr.append(MiscUtil.performUrlEncoding(token));
+        if (tokens.hasMoreTokens()) {
           encodedStr.append("/");
+        }
       }
       return encodedStr.toString();
     }
@@ -582,21 +529,20 @@ public class HpcClientUtil {
 
   public static HpcBookmarkListDTO getBookmarks(String token, String hpcBookmarkURL,
       String hpcCertPath, String hpcCertPassword) {
-    WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcBookmarkURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse)) {
       return null;
+    }
     try {
       HpcBookmarkListDTO bookmarkListDto = (HpcBookmarkListDTO)
           parsePlainly((InputStream) restResponse.getEntity(),
               HpcBookmarkListDTO.class);
       return bookmarkListDto;
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+        Optional.of("Failed to get Bookmarks due to: "));
     }
   }
 
@@ -606,13 +552,11 @@ public class HpcClientUtil {
     try {
       WebClient client = HpcClientUtil.getWebClient(
           hpcDatafileURL + "/" + path + (list ? "?list=true" : "?list=false"), hpcCertPath,
-          hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+          hpcCertPassword, Optional.of(token));
       Response restResponse = client.get();
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         HpcDataObjectListDTO datafiles = (HpcDataObjectListDTO)
             parseBasedOnConf((InputStream) restResponse.getEntity(),
                 HpcDataObjectListDTO.class);
@@ -621,98 +565,86 @@ public class HpcClientUtil {
         throw new HpcWebException(
             "Failed to get Data file! It could be because you don't have READ access!");
       }
-
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(path + " : " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e,
+          Optional.of(path.concat(" : ")));
     }
   }
 
 
   public static HpcDataObjectDownloadStatusDTO getDataObjectDownloadTask(String token,
       String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse)) {
       return null;
+    }
     try {
       return (HpcDataObjectDownloadStatusDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcDataObjectDownloadStatusDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get data object download tasks details due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get data object download tasks details due to: "));
     }
   }
 
 
   public static HpcCollectionDownloadStatusDTO getDataObjectsDownloadTask(String token,
       String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse)) {
       return null;
+    }
     try {
       return (HpcCollectionDownloadStatusDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcCollectionDownloadStatusDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get data objects download tasks details due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get data objects download tasks details due to: "));
     }
   }
 
 
   public static HpcBulkDataObjectRegistrationStatusDTO getDataObjectRegistrationTask(String token,
       String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse)) {
       return null;
+    }
     try {
       return (HpcBulkDataObjectRegistrationStatusDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcBulkDataObjectRegistrationStatusDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get data object registration tasks details due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get data object registration tasks details due to: "));
     }
   }
 
 
   public static HpcDataManagementModelDTO getDOCModel(String token, String hpcModelURL,
       String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcModelURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcModelURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse)) {
       return null;
+    }
     try {
       HpcDataManagementModelDTO dto = (HpcDataManagementModelDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcDataManagementModelDTO.class);
       return dto;
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get DOC Model due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get DOC Model due to: "));
     }
   }
 
@@ -725,32 +657,31 @@ public class HpcClientUtil {
     if (modelDTO == null) {
       HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
       modelDTO = HpcClientUtil.getDOCModel(token, hpcModelURL, hpcCertPath, hpcCertPassword);
-      if (modelDTO != null)
+      if (modelDTO != null) {
         session.setAttribute("userDOCModel", modelDTO);
+      }
     }
-
-    for (HpcDocDataManagementRulesDTO docDTO : modelDTO.getDocRules())
+    for (HpcDocDataManagementRulesDTO docDTO : modelDTO.getDocRules()) {
       docs.add(docDTO.getDoc());
+    }
     return docs;
   }
 
 
   public static HpcDownloadSummaryDTO getDownloadSummary(String token, String hpcQueryURL,
       String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse)) {
       return null;
+    }
     try {
       return (HpcDownloadSummaryDTO) parseBasedOnConf(
           (InputStream) restResponse.getEntity(), HpcDownloadSummaryDTO.class);
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get download tasks list due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get download tasks list due to: "));
     }
   }
 
@@ -759,24 +690,21 @@ public class HpcClientUtil {
       String hpcCertPath, String hpcCertPassword) {
     try {
       String paramsURL = "";
-      if (groupName != null && groupName.trim().length() > 0) {
-        paramsURL = "?groupPattern=" + URLEncoder.encode(groupName);
+      if (!isStringBlank(groupName)) {
+        paramsURL = "?groupPattern=" + MiscUtil.performUrlEncoding(groupName);
       }
-
       WebClient client =
-          HpcClientUtil.getWebClient(hpcGroupURL + paramsURL, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+        HpcClientUtil.getWebClient(hpcGroupURL + paramsURL, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.get();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         HpcGroupListDTO groups = (HpcGroupListDTO) parseBasedOnConf(
             (InputStream) restResponse.getEntity(), HpcGroupListDTO.class);
         return groups;
       }
-
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get Users due to: "));
     }
     return null;
   }
@@ -784,43 +712,39 @@ public class HpcClientUtil {
 
   public static HpcMetadataAttributesListDTO getMetadataAttrNames(String token,
       String hpcMetadataAttrsURL, String hpcCertPath, String hpcCertPassword) {
-
     String url = hpcMetadataAttrsURL;
-
-    WebClient client = HpcClientUtil.getWebClient(url, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(url, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse)) {
       return null;
+    }
     try {
       return (HpcMetadataAttributesListDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcMetadataAttributesListDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get Metadata attributes: due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get Metadata attributes: due to: "));
     }
   }
 
 
   public static HpcNotificationDeliveryReceiptListDTO getNotificationReceipts(String token,
       String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse)) {
       return null;
+    }
     try {
       return (HpcNotificationDeliveryReceiptListDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcNotificationDeliveryReceiptListDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get notification receipts due to: "));
     }
   }
 
@@ -831,11 +755,9 @@ public class HpcClientUtil {
       parser = MY_CONFIGURED_JSON_MAPPING_FACTORY.createParser(
           (InputStream) response.getEntity());
       return parser.readValueAs(objectClass);
-    } catch (IOException e1) {
-      // TODO Auto-generated catch block
-      throw new HpcWebException("Failed to parse object: " + e1.getMessage());
     } catch (Exception e) {
-      throw new HpcWebException("Failed to parse object: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to parse object: "));
     }
   }
 
@@ -850,11 +772,9 @@ public class HpcClientUtil {
       final String hpcServiceUrl =
           argServiceUrlPrefix.concat("/").concat(theItemPath);
       final WebClient client = HpcClientUtil.getWebClient(hpcServiceUrl,
-          argSslCertPath, argSslCertPasswd);
-//      client.header(HttpHeaders.AUTHORIZATION, "Basic " + argAuthToken);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + argAuthToken);
+          argSslCertPath, argSslCertPasswd, Optional.of(argAuthToken));
       final Response restResponse = client.get();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         elemType = extractElementTypeFromResponse(restResponse);
       } else {
         final String extractedErrMsg =
@@ -868,118 +788,103 @@ public class HpcClientUtil {
 
       return elemType;
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
       final String msgForHpcWebException = String.format(
           ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE,
           argItemPath,
           e.getMessage()
       );
-      throw new HpcWebException(msgForHpcWebException);
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        msgForHpcWebException));
     }
   }
 
 
   public static HpcUserPermissionDTO getPermissionForUser(String token, String path, String userId,
       String hpcServiceURL, String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcServiceURL + path + "/acl/user/" + userId,
-        hpcCertPath, hpcCertPassword);
-
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(
+      hpcServiceURL + path + "/acl/user/" + userId,
+      hpcCertPath, hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse))
       return null;
     try {
       return (HpcUserPermissionDTO) parsePlainly(
           (InputStream) restResponse.getEntity(), HpcUserPermissionDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get permission due to: "));
     }
   }
 
 
   public static HpcUserPermsForCollectionsDTO getPermissionForCollections(String token,
       String hpcServiceURL, String queryParam, String hpcCertPath, String hpcCertPassword) {
-
     WebClient client =
-        HpcClientUtil.getWebClient(hpcServiceURL + queryParam, hpcCertPath, hpcCertPassword);
-
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+      HpcClientUtil.getWebClient(hpcServiceURL + queryParam, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse))
       return null;
     try {
       return (HpcUserPermsForCollectionsDTO) parsePlainly((InputStream)
           restResponse.getEntity(), HpcUserPermsForCollectionsDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get permission due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get permission due to: "));
     }
   }
 
 
   public static HpcEntityPermissionsDTO getPermissions(String token, String hpcServiceURL,
       String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcServiceURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcServiceURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse))
       return null;
     try {
       return (HpcEntityPermissionsDTO) parsePlainly(
           (InputStream) restResponse.getEntity(), HpcEntityPermissionsDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get notification receipts due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get notification receipts due to: "));
     }
   }
 
 
   public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL,
       String queryName, String hpcCertPath, String hpcCertPassword) {
-
     String serviceURL = hpcQueryURL + "/" + queryName;
-    WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse))
       return null;
     try {
       return (HpcNamedCompoundMetadataQueryDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcNamedCompoundMetadataQueryDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get Query for: " + queryName + " due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get Query for: " + queryName + " due to: "));
     }
   }
 
 
   public static HpcRegistrationSummaryDTO getRegistrationSummary(String token, String hpcQueryURL,
       String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse))
       return null;
     try {
       return (HpcRegistrationSummaryDTO) parseBasedOnConf(
           (InputStream) restResponse.getEntity(),
           HpcRegistrationSummaryDTO.class);
     } catch (IllegalStateException | IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get registration tasks list due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get registration tasks list due to: "));
     }
   }
 
@@ -1075,31 +980,31 @@ public class HpcClientUtil {
 
   public static HpcNamedCompoundMetadataQueryListDTO getSavedSearches(String token,
       String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse))
       return null;
     try {
       return (HpcNamedCompoundMetadataQueryListDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcNamedCompoundMetadataQueryListDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get saved queries due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get saved queries due to: "));
     }
   }
 
 
   public static List<HpcDataManagementRulesDTO> getUserDOCManagementRules(
       HpcDataManagementModelDTO docModelDto, String userDoc) {
-    if (docModelDto == null || docModelDto.getDocRules() == null)
+    if (docModelDto == null || docModelDto.getDocRules() == null) {
       return null;
-
+    }
     for (HpcDocDataManagementRulesDTO docDTO : docModelDto.getDocRules()) {
-      if (docDTO.getDoc().equals(userDoc))
+      if (docDTO.getDoc().equals(userDoc)) {
         return docDTO.getRules();
+      }
     }
     return null;
   }
@@ -1108,12 +1013,10 @@ public class HpcClientUtil {
   public static HpcUserDTO getUser(String token, String hpcUserURL, String hpcCertPath,
       String hpcCertPassword) {
     try {
-
-      WebClient client = HpcClientUtil.getWebClient(hpcUserURL, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+      WebClient client = HpcClientUtil.getWebClient(hpcUserURL, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.get();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         HpcUserDTO userDto = (HpcUserDTO) parseBasedOnConf(
             (InputStream) restResponse.getEntity(), HpcUserDTO.class);
         return userDto;
@@ -1121,11 +1024,9 @@ public class HpcClientUtil {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to get user: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get User due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get User due to: "));
     }
   }
 
@@ -1133,13 +1034,11 @@ public class HpcClientUtil {
   public static HpcUserDTO getUserByAdmin(String token, String hpcUserURL, String userId,
       String hpcCertPath, String hpcCertPassword) {
     try {
-
       WebClient client =
-          HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+        HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.get();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         HpcUserDTO userDto = (HpcUserDTO) parseBasedOnConf(
             (InputStream) restResponse.getEntity(), HpcUserDTO.class);
         return userDto;
@@ -1147,11 +1046,9 @@ public class HpcClientUtil {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to get user: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get User due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get User due to: "));
     }
   }
 
@@ -1161,47 +1058,43 @@ public class HpcClientUtil {
     try {
       boolean first = true;
       String paramsURL = "";
-      if (userId != null && userId.trim().length() > 0) {
-        paramsURL = "?nciUserId=" + URLEncoder.encode(userId);
+      if (!isStringBlank(userId)) {
+        paramsURL = "?nciUserId=" + MiscUtil.performUrlEncoding(userId);
         first = false;
       }
-      if (firstName != null && firstName.trim().length() > 0) {
+      if (!isStringBlank(firstName)) {
         if (first) {
-          paramsURL = "?firstNamePattern=" + URLEncoder.encode(firstName);
+          paramsURL = "?firstNamePattern=" + MiscUtil.performUrlEncoding(firstName);
           first = false;
         } else
-          paramsURL = paramsURL + "&firstNamePattern=" + URLEncoder.encode(firstName);
+          paramsURL = paramsURL + "&firstNamePattern=" + MiscUtil.performUrlEncoding(firstName);
       }
-      if (lastName != null && lastName.trim().length() > 0) {
+      if (!isStringBlank(lastName)) {
         if (first) {
-          paramsURL = "?lastNamePattern=" + URLEncoder.encode(lastName);
+          paramsURL = "?lastNamePattern=" + MiscUtil.performUrlEncoding(lastName);
           first = false;
         } else
-          paramsURL = paramsURL + "&lastNamePattern=" + URLEncoder.encode(lastName);
+          paramsURL = paramsURL + "&lastNamePattern=" + MiscUtil.performUrlEncoding(lastName);
       }
-
-      if (doc != null && doc.trim().length() > 0) {
+      if (!isStringBlank(doc)) {
         if (first) {
-          paramsURL = "?doc=" + URLEncoder.encode(doc);
+          paramsURL = "?doc=" + MiscUtil.performUrlEncoding(doc);
           first = false;
         } else
-          paramsURL = paramsURL + "&doc=" + URLEncoder.encode(doc);
+          paramsURL = paramsURL + "&doc=" + MiscUtil.performUrlEncoding(doc);
       }
-
       WebClient client =
-          HpcClientUtil.getWebClient(hpcUserURL + paramsURL, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+        HpcClientUtil.getWebClient(hpcUserURL + paramsURL, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.get();
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         HpcUserListDTO users = (HpcUserListDTO) parseBasedOnConf(
             (InputStream) restResponse.getEntity(), HpcUserListDTO.class);
         return users;
       }
-
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get Users due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get Users due to: "));
     }
     return null;
   }
@@ -1210,7 +1103,6 @@ public class HpcClientUtil {
   public static void populateBasePaths(HttpSession session, Model model,
       HpcDataManagementModelDTO modelDTO, String authToken, String userId, String collectionURL,
       String sslCertPath, String sslCertPassword) throws HpcWebException {
-
     Set<String> basePaths = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
     String queryParams = "?";
     for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
@@ -1224,8 +1116,8 @@ public class HpcClientUtil {
     if (permissions != null) {
       for (HpcPermissionForCollection permission : permissions.getPermissionsForCollections()) {
         if (permission != null && permission.getPermission() != null
-            && (permission.getPermission().equals(HpcPermission.WRITE)
-            || permission.getPermission().equals(HpcPermission.OWN)))
+            && (HpcPermission.WRITE.equals(permission.getPermission())
+            || HpcPermission.OWN.equals(permission.getPermission())))
           basePaths.add(permission.getCollectionPath());
       }
     }
@@ -1237,23 +1129,19 @@ public class HpcClientUtil {
       String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
       String hpcCertPath, String hpcCertPassword) {
     try {
-
-      WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+      WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(datafileDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_CREATED || restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseCreated(restResponse) || isResponseOk(restResponse)) {
         return (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil.getObject(restResponse,
             HpcBulkDataObjectRegistrationResponseDTO.class);
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to bulk register data files: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to bulk register data files due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to bulk register data files due to: "));
     }
   }
 
@@ -1271,33 +1159,27 @@ public class HpcClientUtil {
       } catch (HpcWebException e) {
         // Data file is not there!
       }
-
       WebClient client =
-          HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
+        HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
-          "application/json", datafileDTO));
+          MediaType.APPLICATION_JSON.toString(), datafileDTO));
       // InputStream inputStream = new BufferedInputStream(
       // new FileInputStream(datafileDTO.getSource().getFileId()));
       ContentDisposition cd2 =
           new ContentDisposition("attachment;filename=" + hpcDatafile.getName());
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject",
           hpcDatafile.getInputStream(), cd2));
-
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
       Response restResponse = client.put(new MultipartBody(atts));
-      if (restResponse.getStatus() == HttpServletResponse.SC_CREATED) {
+      if (isResponseCreated(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(restResponse, Optional.empty());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.empty());
     }
   }
 
@@ -1307,20 +1189,16 @@ public class HpcClientUtil {
       String hpcCertPassword) {
     try {
       WebClient client =
-          HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+        HpcClientUtil.getWebClient(hpcCollectionURL + path, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.put(collectionDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK || restResponse.getStatus() == HttpServletResponse.SC_CREATED) {
+      if (isResponseOk(restResponse) || isResponseCreated(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(restResponse, Optional.empty());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.empty());
     }
   }
 
@@ -1330,26 +1208,22 @@ public class HpcClientUtil {
       String hpcCertPassword) {
     try {
       WebClient client =
-          HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath, hpcCertPassword);
+        HpcClientUtil.getWebClient(hpcDatafileURL + path, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
-          "application/json", datafileDTO));
-
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+          MediaType.APPLICATION_JSON.toString(), datafileDTO));
       Response restResponse = client.put(new MultipartBody(atts));
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to update data file: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to update data file due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to update data file due to: "));
     }
   }
 
@@ -1360,10 +1234,10 @@ public class HpcClientUtil {
     HpcGroupMembersResponseDTO response = null;
     try {
       WebClient client =
-          HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
+        HpcClientUtil.getWebClient(hpcUserURL + "/" + groupName, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.post(groupDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         response = (HpcGroupMembersResponseDTO) parseBasedOnConf(
             (InputStream) restResponse.getEntity(),
             HpcGroupMembersResponseDTO.class);
@@ -1371,11 +1245,9 @@ public class HpcClientUtil {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to update group: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to update group due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to update group due to: "));
     }
     return response;
   }
@@ -1385,43 +1257,36 @@ public class HpcClientUtil {
       String userId, String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client =
-          HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath, hpcCertPassword);
-      client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+        HpcClientUtil.getWebClient(hpcUserURL + "/" + userId, hpcCertPath,
+        hpcCertPassword, Optional.of(token));
       Response restResponse = client.post(userDTO);
-      if (restResponse.getStatus() == HttpServletResponse.SC_OK) {
+      if (isResponseOk(restResponse)) {
         return true;
       } else {
         throw genHpcWebExceptionFromResponse(
             restResponse, Optional.of("Failed to update user: "));
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to update user due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to update user due to: "));
     }
   }
 
 
   public static HpcNotificationSubscriptionListDTO getUserNotifications(String token,
       String hpcQueryURL, String hpcCertPath, String hpcCertPassword) {
-
-    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, BEARER + token);
-
+    WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath,
+      hpcCertPassword, Optional.of(token));
     Response restResponse = client.get();
-
-    if (restResponse == null || restResponse.getStatus() != HttpServletResponse.SC_OK)
+    if (isResponseNullOrNotOk(restResponse))
       return null;
     try {
       return (HpcNotificationSubscriptionListDTO) parsePlainly(
           (InputStream) restResponse.getEntity(),
           HpcNotificationSubscriptionListDTO.class);
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException(
-          "Failed to get notification subscriptions due to: " + e.getMessage());
+      throw dumpStackTraceAndWrapException(e, Optional.of(
+        "Failed to get notification subscriptions due to: "));
     }
   }
 
@@ -1444,6 +1309,51 @@ public class HpcClientUtil {
 
     params.setDisableCNCheck(true);
     return client;
+  }
+
+
+  public static WebClient getWebClient(String url, String hpcCertPath,
+    String hpcCertPassword, Optional<String> hpcAuthToken) {
+    final WebClient retWebClientObj = getWebClient(url, hpcCertPath,
+      hpcCertPassword);
+    if (hpcAuthToken.isPresent()) {
+      retWebClientObj.header(HttpHeaders.AUTHORIZATION,
+        BEARER + hpcAuthToken.get());
+    }
+    return retWebClientObj;
+  }
+
+
+  private static HpcWebException dumpStackTraceAndWrapException(
+      Exception argException, Optional<String> argMsgStart) {
+    if (argException instanceof HpcWebException) {
+      return (HpcWebException) argException;
+    } else {
+      argException.printStackTrace();
+      return new HpcWebException(
+          argMsgStart.orElse("").concat(argException.getMessage()),
+          argException);
+    }
+  }
+
+
+  private static void enableSSL() {
+    TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
+      public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+        return null;
+      }
+
+      public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+
+      public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+    }};
+
+    try {
+      SSLContext sc = SSLContext.getInstance("SSL");
+      sc.init(null, trustAllCerts, new java.security.SecureRandom());
+      HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    } catch (Exception e) {
+    }
   }
 
 
@@ -1496,6 +1406,27 @@ public class HpcClientUtil {
     final String msg = errMsgStart.orElse("").concat(theDto.getMessage());
 
     return new HpcWebException(msg);
+  }
+
+
+  private static boolean isResponseNullOrNotOk(Response argResponse) {
+    return (null == argResponse ||
+      HttpServletResponse.SC_OK != argResponse.getStatus());
+  }
+
+
+  private static boolean isResponseCreated(Response argResponse) {
+    return HttpServletResponse.SC_CREATED == argResponse.getStatus();
+  }
+
+
+  private static boolean isResponseOk(Response argResponse) {
+    return HttpServletResponse.SC_OK == argResponse.getStatus();
+  }
+
+
+  private static boolean isStringBlank(String argString) {
+    return (null == argString || argString.trim().isEmpty());
   }
 
 
