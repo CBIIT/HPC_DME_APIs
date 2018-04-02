@@ -59,59 +59,50 @@ public class HpcProfileController extends AbstractHpcController {
    * @return
    */
   @RequestMapping(method = RequestMethod.GET)
-    public String profile(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
-                          HttpSession session, HttpServletRequest request) {
-        HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+  public String profile(@RequestBody(required = false) String q, Model model,
+      BindingResult bindingResult,
+      HttpSession session, HttpServletRequest request) {
+    HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
     if (user == null) {
-            ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
-            bindingResult.addError(error);
-            HpcLogin hpcLogin = new HpcLogin();
-            model.addAttribute("hpcLogin", hpcLogin);
-            return "redirect:/login?returnPath=profile";
-        }
-        String authToken = (String) session.getAttribute("hpcUserToken");
-        String userId = (String) session.getAttribute("hpcUserId");
-
-        HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-      if (modelDTO == null) {
-            modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-        session.setAttribute("userDOCModel", modelDTO);
-      }
-      HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken,
-          userId, collectionAclURL, sslCertPath, sslCertPassword);
-      final UriComponentsBuilder ucBuilder =
-        UriComponentsBuilder.fromHttpUrl(collectionAclURL)
-                            .queryParams(generateQueryParamsMap(modelDTO));
-      final HpcUserPermsForCollectionsDTO permissions =
-          HpcClientUtil.getPermissionForCollections(authToken,
-          ucBuilder.toUriString(), sslCertPath, sslCertPassword);
-
-        HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, collectionAclURL,
-            sslCertPath, sslCertPassword);
-
-        String queryParams = "?";
-
-        for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
-      for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-                queryParams += "collectionPath=" + rule.getBasePath() + "&";
-        }
-      }
-
-       HpcUserPermsForCollectionsDTO permissions = HpcClientUtil.getPermissionForCollections(authToken,  collectionAclURL+"/"+userId,  queryParams,
-            sslCertPath, sslCertPassword);
-
-        log.info("authToken: " + authToken);
-        log.info("userId: " + userId);
-        log.info("userDOCModel: " + modelDTO);
-        log.info("permissions: " + permissions);
-
-        HpcWebUser webUser = new HpcWebUser();
-        model.addAttribute("profile", user);
-        model.addAttribute("userDOCModel", modelDTO);
-        model.addAttribute("permissions", permissions);
-        return "profile";
+      ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+      bindingResult.addError(error);
+      HpcLogin hpcLogin = new HpcLogin();
+      model.addAttribute("hpcLogin", hpcLogin);
+      return "redirect:/login?returnPath=profile";
     }
+    String authToken = (String) session.getAttribute("hpcUserToken");
+    String userId = (String) session.getAttribute("hpcUserId");
+    HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session
+        .getAttribute("userDOCModel");
+    if (modelDTO == null) {
+      modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath,
+        sslCertPassword);
+      session.setAttribute("userDOCModel", modelDTO);
+    }
+    HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken,
+        userId, collectionAclURL, sslCertPath, sslCertPassword);
+    final UriComponentsBuilder ucBuilder =
+        UriComponentsBuilder.fromHttpUrl(collectionAclURL)
+            .queryParams(generateQueryParamsMap(modelDTO));
+    final HpcUserPermsForCollectionsDTO permissions =
+        HpcClientUtil.getPermissionForCollections(authToken,
+            ucBuilder.toUriString(), sslCertPath, sslCertPassword);
+    HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId,
+        collectionAclURL, sslCertPath, sslCertPassword);
+
+    log.info("authToken: " + authToken);
+    log.info("userId: " + userId);
+    log.info("userDOCModel: " + modelDTO);
+    log.info("permissions: " + permissions);
+
+    HpcWebUser webUser = new HpcWebUser();
+    model.addAttribute("profile", user);
+    model.addAttribute("userDOCModel", modelDTO);
+    model.addAttribute("permissions", permissions);
+    return "profile";
+  }
+
 
   private MultiValueMap<String, String> generateQueryParamsMap(
     HpcDataManagementModelDTO argModelDTO) {
