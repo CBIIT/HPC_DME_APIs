@@ -307,15 +307,13 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       } else {
         throw new HpcException(
             String.format("Failed to find item at following path: %s", path),
-            HpcErrorType.DATA_MANAGEMENT_ERROR,
-            HpcIntegratedSystem.IRODS);
+            HpcErrorType.INVALID_REQUEST_INPUT);
       }
     } catch (JargonException e) {
       throw new HpcException(
           String.format("Failed to check whether item at following path is " +
             "collection or data file: %s", path),
-          HpcErrorType.DATA_MANAGEMENT_ERROR,
-          HpcIntegratedSystem.IRODS,
+          HpcErrorType.INVALID_REQUEST_INPUT,
           e);
     }
   }
