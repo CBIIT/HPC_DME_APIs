@@ -9,7 +9,31 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.fasterxml.jackson.annotation.JsonView;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
@@ -25,27 +49,6 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
-import gov.nih.nci.hpc.web.util.MiscUtil;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * <p>
@@ -90,10 +93,7 @@ public class HpcDatafileController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-        final String encodedDmePath =
-          MiscUtil.urlEncodeDmePath(path);
-        return "redirect:/login?returnPath=datafile&action=" + action +
-              "&path=" + encodedDmePath;
+				return "redirect:/login?returnPath=datafile&action=" + action + "&path=" + path;
 			}
 
 			if (path == null)
@@ -167,20 +167,16 @@ public class HpcDatafileController extends AbstractHpcController {
 			final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		String[] action = request.getParameterValues("action");
-    if (action != null && action.length > 0 && action[0].equals("cancel")) {
-      final String encodedDmePath =
-        MiscUtil.urlEncodeDmePath(hpcDatafile.getPath());
-      return "redirect:/datafile?action=view&path=" + encodedDmePath;
-    } else if (action != null && action.length > 0 && action[0].equals("delete")) {
-      boolean deleted = HpcClientUtil
-          .deleteDatafile(authToken, serviceURL, hpcDatafile.getPath(), sslCertPath,
-              sslCertPassword);
-      if (deleted) {
-        redirectAttributes
-            .addFlashAttribute("error", "Data file " + hpcDatafile.getPath() + " is deleted!");
-        session.removeAttribute("selectedUsers");
-      }
-    }
+		if (action != null && action.length > 0 && action[0].equals("cancel"))
+			return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
+		else if (action != null && action.length > 0 && action[0].equals("delete")) {
+			boolean deleted = HpcClientUtil.deleteDatafile(authToken, serviceURL, hpcDatafile.getPath(), sslCertPath,
+					sslCertPassword);
+			if (deleted) {
+				redirectAttributes.addFlashAttribute("error", "Data file " + hpcDatafile.getPath() + " is deleted!");
+				session.removeAttribute("selectedUsers");
+			}
+		}
 
 		try {
 			if (hpcDatafile.getPath() == null || hpcDatafile.getPath().trim().length() == 0)
@@ -199,9 +195,7 @@ public class HpcDatafileController extends AbstractHpcController {
 		} finally {
 			model.addAttribute("hpcDatafile", hpcDatafile);
 		}
-    final String encodedDmePath =
-      MiscUtil.urlEncodeDmePath(hpcDatafile.getPath());
-    return "redirect:/datafile?action=view&path=" + encodedDmePath;
+		return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
 	}
 
 	@JsonView(Views.Public.class)

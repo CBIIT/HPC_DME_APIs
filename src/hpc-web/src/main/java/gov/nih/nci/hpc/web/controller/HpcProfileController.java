@@ -8,7 +8,6 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
-import gov.nih.nci.hpc.web.util.MiscUtil;
 import org.neo4j.cypher.internal.compiler.v2_1.functions.Str;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,11 +31,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @EnableAutoConfiguration
 @RequestMapping("/profile")
 public class HpcProfileController extends AbstractHpcController {
-
-  private static final String NAV_OUTCOME_PROFILE = "profile";
-  private static final String NAV_OUTCOME_REDIRECT_TO_LOGIN =
-    "redirect:/login?returnPath=profile";
-
     @Value("${gov.nih.nci.hpc.server.acl}")
     private String serverAclURL;
     @Value("${gov.nih.nci.hpc.server.user}")
@@ -65,26 +59,23 @@ public class HpcProfileController extends AbstractHpcController {
    * @return
    */
   @RequestMapping(method = RequestMethod.GET)
-  public String profile(
-    @RequestBody(required = false) String q,
-    Model model,
-    BindingResult bindingResult,
-    HttpSession session) {
-    final HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-    String navOutcome;
+    public String profile(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+                          HttpSession session, HttpServletRequest request) {
+        HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+
     if (user == null) {
-      bindingResult.addError(new ObjectError("hpcLogin",
-                                              "Invalid user session!"));
-      model.addAttribute("hpcLogin", new HpcLogin());
-      navOutcome = NAV_OUTCOME_REDIRECT_TO_LOGIN;
-    } else {
-      final String authToken = (String) session.getAttribute("hpcUserToken");
-      final String userId = (String) session.getAttribute("hpcUserId");
-      HpcDataManagementModelDTO modelDTO =
-          (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+            ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+            bindingResult.addError(error);
+            HpcLogin hpcLogin = new HpcLogin();
+            model.addAttribute("hpcLogin", hpcLogin);
+            return "redirect:/login?returnPath=profile";
+        }
+        String authToken = (String) session.getAttribute("hpcUserToken");
+        String userId = (String) session.getAttribute("hpcUserId");
+
+        HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
       if (modelDTO == null) {
-        modelDTO = HpcClientUtil.getDOCModel(
-            authToken, hpcModelURL, sslCertPath, sslCertPassword);
+            modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
         session.setAttribute("userDOCModel", modelDTO);
       }
       HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken,
@@ -96,38 +87,31 @@ public class HpcProfileController extends AbstractHpcController {
           HpcClientUtil.getPermissionForCollections(authToken,
           ucBuilder.toUriString(), sslCertPath, sslCertPassword);
 
-      log.info(String.format("authToken: %s", authToken));
-      log.info(String.format("userId: %s", userId));
-      log.info(String.format("userDOCModel: %s", modelDTO));
-      log.info(String.format("permissions: %s", permissions));
+        HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, collectionAclURL,
+            sslCertPath, sslCertPassword);
 
-      //HpcWebUser webUser = new HpcWebUser();
-      model.addAttribute("profile", user);
-      model.addAttribute("userDOCModel", modelDTO);
-      model.addAttribute("permissions", permissions);
-      navOutcome = NAV_OUTCOME_PROFILE;
-    }
+        String queryParams = "?";
 
-    return navOutcome;
-  }
-
-  private String generateQueryString(HpcDataManagementModelDTO argModelDTO) {
-    final StringBuilder sb = new StringBuilder("?");
-    boolean firstParamFlag = true;
-    for (HpcDocDataManagementRulesDTO docRule : argModelDTO.getDocRules()) {
+        for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
       for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-        if (firstParamFlag) {
-          firstParamFlag = false;
-        } else {
-          sb.append("&");
+                queryParams += "collectionPath=" + rule.getBasePath() + "&";
         }
-        sb.append("collectionPath=")
-          .append(MiscUtil.urlEncodeDmePath(rule.getBasePath()));
       }
+
+       HpcUserPermsForCollectionsDTO permissions = HpcClientUtil.getPermissionForCollections(authToken,  collectionAclURL+"/"+userId,  queryParams,
+            sslCertPath, sslCertPassword);
+
+        log.info("authToken: " + authToken);
+        log.info("userId: " + userId);
+        log.info("userDOCModel: " + modelDTO);
+        log.info("permissions: " + permissions);
+
+        HpcWebUser webUser = new HpcWebUser();
+        model.addAttribute("profile", user);
+        model.addAttribute("userDOCModel", modelDTO);
+        model.addAttribute("permissions", permissions);
+        return "profile";
     }
-    final String retQueryString = sb.toString();
-    return retQueryString;
-  }
 
   private MultiValueMap<String, String> generateQueryParamsMap(
     HpcDataManagementModelDTO argModelDTO) {

@@ -264,7 +264,9 @@
 															<input
 																type="text" id="userName" size="65" th:value="${selectedUsers}" placeholder="Enter User Id delimited with ; or click search button"/>&nbsp;&nbsp;&nbsp;
 																<a id="userNamelink" class="btn btn-link btn-sm"
-																th:href="@{'../finduser?source=permissions&amp;path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+																    th:href="@{../finduser(source=permissions,path=${permissions.getPath()},type=${permissions.getType()})}">
+																	Search
+																</a>
 															</td>
 														</tr>
 														<tr id='entryTableRow2' style="display: none" align="center" th:if="${permissions.isUserType()} == true">
@@ -273,7 +275,7 @@
 															<td style="white-space: nowrap" align="left"><input
 																type="text" id="groupName" size="65" th:value="${selectedGroups}" placeholder="Enter Group name delimited with ; or click search button"/>&nbsp;&nbsp;&nbsp;
 																<a id="groupNamelink" class="btn btn-link btn-sm"
-																th:href="@{'../findgroup?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+																    th:href="@{../findgroup(path=${permissions.getPath()},type=${permissions.getType()})}">Search</a>
 															</td>
 														</tr>
 														<tr id='entryTableRow1' style="display: none" align="center" th:if="${permissions.isUserType()} == false">
@@ -283,7 +285,7 @@
 															<input
 																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
 																<a id="userNamelink" class="btn btn-link btn-sm"
-																th:href="@{'../finduser?source=permission&amp;path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a>
+																th:href="@{../finduser(source=permission,path=${permissions.getPath()},type=${permissions.getType()})}">Search</a>
 																
 															</td>
 														</tr>
@@ -293,7 +295,7 @@
 															<td style="white-space: nowrap" align="left"><input
 																type="text" id="groupName" th:value="${selectedGroups}" />&nbsp;&nbsp;&nbsp;
 																<a id="groupNamelink" class="btn btn-link btn-sm"
-																th:href="@{'../findgroup?path='+${permissions.getPath()}+'&amp;type='+${permissions.getType()}}">Search</a></td>
+																th:href="@{../findgroup(path=${permissions.getPath()},type=${permissions.getType()})}">Search</a></td>
 														</tr>
 														<tr id='entryTableRow3' align="center">
 															<td style="white-space: nowrap" align="right"><label
