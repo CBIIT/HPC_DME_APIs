@@ -52,7 +52,6 @@
 	src="js/jquery/3.1.1/jquery.min.js"></script>
 <script
 	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-<script src="js/scripts.js"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
     var results = "[[${searchresults}]]";
@@ -70,10 +69,6 @@
 <script>
 var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
 
-app.filter('pathEncodingFilter', function () {
-  return urlEncodePathString;
-});
-
 app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
 
 	$scope.gridOptions1 = {
@@ -88,21 +83,18 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     columnDefs: [
                  { field: 'path', 
                 	 width:500, 
-                	 displayName: 'Path',
-                	 cellFilter: 'pathEncodingFilter',
-                	 cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?action=view&amp;path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD}}</a></div>'
+                	 displayName: 'Path', 
+                	 cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../collection?action=view&amp;path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  
                   },{
 						field : 'download',
 						width : 50,
 						displayName : 'Download',
-            cellFilter: 'pathEncodingFilter',
 						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
 					}
                  ,{
 						field : 'permission',
 						width : 120,
 						displayName : 'Permission',
-            cellFilter: 'pathEncodingFilter',
 						cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
 					}
                ],
@@ -248,8 +240,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
 	<script src="js/jquery.customSelect.min.js"></script>
 
-	<!--custome script for all page: moved into HEAD section-->
-	<!-- <script src="js/scripts.js"></script> -->
+	<!--custome script for all page-->
+	<script src="js/scripts.js"></script>
 <script>
 /*<![CDATA[*/
     function updatePage(action)

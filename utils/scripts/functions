@@ -178,6 +178,57 @@ function dm_register_collection {
 
 }
 
+#Register a dataObject using presigned S3 URL
+#Inputs:  <description.json>: The metadata json file for the dataObject 
+#         <destinaton-path>: The destination logical path
+#         <source-file>: The source file for synchronous registratio.
+function dm_register_dataobject_presigned {
+
+    local USAGE="USAGE: dm_register_dataobject <description.json> <destination-path> <source-file>"
+
+    if [ "$#" -lt 3 ]
+    then
+        echo "ERROR: using dm_register_dataobject_presigned" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+
+    local description="$1"
+    local destination_path="$2"
+    local source_file="$3"
+    dm_register "$description" "$destination_path" dataObject 
+    if [ "$?" -eq  1 ]
+    then
+      return 1
+    fi
+
+    local response_header=dataObject-registration-response-header.tmp
+    local response_msg=dataObject-registration-response-message.json.tmp
+
+    #verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
+    presigned_url=`get_json_value $response_msg uploadRequestURL`
+    if [ -z "$presigned_url" ]
+    then
+      echo "ERROR: Can not retrieve the presigned url from $response_msg" >&2
+      return 1
+    fi
+
+    rm $response_header $response_msg
+    response_header=presignedURL-registration-response-header.tmp
+    response_msg=presignedURL-registration-response-message.tmp
+    curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${source_file}" "${presigned_url}" -D $response_header -o $response_msg -s
+    if [ "$?" -ne 0 ]
+    then
+      echo "ERROR during presigned URL registration" >&2
+      echo "Check the files $response_header and $response_msg" >&2
+      return 1
+    fi
+
+    rm $response_header $response_msg
+}
+
+
 
 #Register a dataObject 
 #Inputs:  <description.json>: The metadata json file for the dataObject 
@@ -830,6 +881,7 @@ function dm_register_directory {
     #Add all other options
     command_args+=" --threads $numthreads"
     command_args+=" --archiveType $archiveType"
+    command_args+=" --checksum $checksum"
 
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file

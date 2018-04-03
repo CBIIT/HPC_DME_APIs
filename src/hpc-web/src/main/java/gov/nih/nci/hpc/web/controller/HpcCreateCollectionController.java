@@ -9,17 +9,13 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.web.HpcWebException;
-import gov.nih.nci.hpc.web.model.HpcCollectionModel;
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
-import gov.nih.nci.hpc.web.util.MiscUtil;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -30,6 +26,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.HpcCollectionModel;
+import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 
 /**
  * <p>
@@ -211,6 +216,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		HpcCollectionRegistrationDTO registrationDTO = null;
 
 		try {
+      //MiscUtil.validateDmePathForForbiddenChars(hpcCollection.getPath());
 			registrationDTO = constructRequest(request, session, hpcCollection.getPath(), hpcCollection);
 		} catch (HpcWebException e) {
 			model.addAttribute("hpcCollection", hpcCollection);
@@ -272,9 +278,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			model.addAttribute("hpcCollection", hpcCollection);
 			setCollectionPath(model, request, originPath);
 		}
-    final String encodedDmePath =
-      MiscUtil.urlEncodeDmePath(hpcCollection.getPath());
-		return "redirect:/collection?path=" + encodedDmePath + "&action=view";
+		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
 	}
 
 	private void setCollectionPath(Model model, HttpServletRequest request, String parentPath) {
