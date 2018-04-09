@@ -57,14 +57,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = hpcObject.getDto();
 		logger.debug("hpcDataObjectRegistrationDTO "+hpcDataObjectRegistrationDTO.toString());
 		List<Attachment> atts = new LinkedList<Attachment>();
-		String objectPath = hpcObject.getObjectPath().trim();
-		if(HpcClientUtil.containsWhiteSpace(objectPath))
-		{
-			System.out.println("White space in the file path "+ objectPath + " is replaced with underscore _ ");
-			objectPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(objectPath);
-			logger.debug("objectPath "+objectPath);
-		}
-		
+		String objectPath = hpcObject.getObjectPath().trim();		
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
 				HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
