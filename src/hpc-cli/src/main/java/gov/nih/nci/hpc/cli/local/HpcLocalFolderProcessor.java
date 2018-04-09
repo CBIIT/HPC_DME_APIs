@@ -35,11 +35,6 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException {
 		String collectionPath = getCollectionPath(localPath, filePathBaseName, entity.getPath());
-		if(HpcClientUtil.containsWhiteSpace(collectionPath))
-		{
-			System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
-			collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
-		}
 		if(!collectionPath.equals("/"))
 		  processCollection(entity, destinationBasePath, collectionPath);
 		return true;

@@ -136,11 +136,6 @@ public class HPCBatchCollection extends HPCBatchClient {
 						parentMetadataAttributes, createParentCollection);
 				
 				collectionPath = collectionPath.trim();
-				if(HpcClientUtil.containsWhiteSpace(collectionPath))
-				{
-					System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
-					collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
-				}
 				
 				System.out.println((i + 1) + ": Registering Collection " + collectionPath);
 
