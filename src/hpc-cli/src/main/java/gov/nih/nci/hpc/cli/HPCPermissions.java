@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
@@ -181,9 +182,11 @@ public class HPCPermissions extends HPCBatchClient {
 		headers.setAccept(mediaTypeList);
 		HttpEntity<?> entity = new HttpEntity<Object>(dto, headers);
 		try {
-			String url = hpcServerURL + (type.equalsIgnoreCase("collection") ? "/collection" : "/dataObject") + path
-					+ "/acl";
-			restTemplate.postForEntity(url, entity, null);
+      final String itemType = "collection".equalsIgnoreCase(type) ?
+        "collection" : "dataObject";
+      String url = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(itemType)
+        .path(path).path("acl").build().toUriString();
+      restTemplate.postForEntity(url, entity, null);
 		} catch (HttpStatusCodeException e) {
 			returnCode = Constants.CLI_5;
 			String message = "Failed to process record due to: " + e.getMessage();

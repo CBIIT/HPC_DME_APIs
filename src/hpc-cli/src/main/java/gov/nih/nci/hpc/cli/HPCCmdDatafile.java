@@ -32,6 +32,7 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -110,8 +111,8 @@ public class HPCCmdDatafile extends HPCCmdClient {
 		String returnCode = null;
 
 		try {
-			String serviceURL = hpcServerURL + "/" + hpcDataService;
-
+      String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
+        hpcDataService).build().toUriString();
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {
 				System.out.println("Invlaid Command");
 				return Constants.CLI_2;
@@ -126,8 +127,8 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				if (cmd.equals("deleteDatafile")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
-					serviceURL = serviceURL + path;		
-					
+					serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(path)
+            .build().toUriString();
 					jline.console.ConsoleReader reader;
 					reader = new jline.console.ConsoleReader();
 					reader.setExpandEvents(false);
@@ -144,12 +145,14 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				else if (cmd.equals("getDatafile")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
-					serviceURL = serviceURL + path;
+          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(path)
+            .build().toUriString();
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
 					restResponse = client.get();
 				} else if (cmd.equals("getDatafiles")) {
-					serviceURL = serviceURL + "/query";
+          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
+            "query").build().toUriString();
 					HpcCompoundMetadataQueryDTO criteriaClause = null;
 					try {
 						criteriaClause = buildCriteria(criteria);
