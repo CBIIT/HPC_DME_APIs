@@ -23,7 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.web.util.UriComponentsBuilder;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -184,7 +184,9 @@ public class HpcGlobusDirectoryListQuery {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("path", dirLocation.getFileId());
 		try {
-			String resource = BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()) + "/ls";
+      final String resource = UriComponentsBuilder.fromHttpUrl(
+        BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()))
+        .path("ls").build().toUriString();
 			return client.getResult(resource, params);
 
 		} catch (APIError apiError) {
@@ -197,7 +199,10 @@ public class HpcGlobusDirectoryListQuery {
 
 	private void autoActivate(String endpointName, JSONTransferAPIClient client) throws HpcException {
 		try {
-			String resource = BaseTransferAPIClient.endpointPath(endpointName) + "/autoactivate?if_expires_in=100";
+      final String resource = UriComponentsBuilder.fromHttpUrl(
+        BaseTransferAPIClient.endpointPath(endpointName))
+        .path("autoactivate").queryParam("if_expires_in", "100").build()
+        .toUriString();
 			client.postResult(resource, null, null);
 
 		} catch (Exception e) {

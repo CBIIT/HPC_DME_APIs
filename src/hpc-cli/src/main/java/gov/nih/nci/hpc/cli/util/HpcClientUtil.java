@@ -56,6 +56,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -174,7 +175,9 @@ public class HpcClientUtil {
     JsonParser parser = null;
 
     try {
-      WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", proxyURL,
+      final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
+        .path("authenticate").build().toUriString();
+      WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply, proxyURL,
           proxyPort, hpcCertPath, hpcCertPassword);
       String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
       client.header("Authorization", "Basic " + token);
@@ -294,7 +297,8 @@ public class HpcClientUtil {
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionURL,
       String proxyURL, String proxyPort, String hpcCertPath, String hpcCertPassword) {
     try {
-      String serviceURL = hpcCollectionURL + "?list=false";
+      String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcCollectionURL)
+        .queryParam("list", Boolean.FALSE).build().toUriString();
 
       WebClient client =
           getWebClient(serviceURL, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
@@ -366,9 +370,11 @@ public class HpcClientUtil {
       String proxyURL, String proxyPort, String path, boolean list, String hpcCertPath,
       String hpcCertPassword) {
     try {
-      WebClient client =
-          getWebClient(hpcDatafileURL + "/" + path + (list ? "?list=true" : "?list=false"),
-              proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
+      final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+        hpcDatafileURL).path(path).queryParam("list", Boolean.valueOf(list))
+        .build().toUriString();
+      WebClient client = getWebClient(apiUrl2Apply, proxyURL, proxyPort,
+        hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);

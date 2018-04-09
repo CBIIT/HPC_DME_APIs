@@ -56,6 +56,7 @@ import org.easybatch.core.processor.RecordProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class HpcLocalDirectoryListGenerator {
     protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -396,8 +397,10 @@ public class HpcLocalDirectoryListGenerator {
 
 		}
 
-		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/dataObject/" + basePath + objectPath,
-				hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
+    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
+      .path("dataObject").path(basePath).path(objectPath).build().toUriString();
+		WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 		client.header("Connection", "Keep-Alive");
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);

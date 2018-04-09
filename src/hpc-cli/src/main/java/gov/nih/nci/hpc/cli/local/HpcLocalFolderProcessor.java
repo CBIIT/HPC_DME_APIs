@@ -23,6 +23,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.easybatch.core.processor.RecordProcessingException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
@@ -59,13 +60,12 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
 		System.out.println("Registering Collection " + collectionPath);
 
-		if(!basePath.startsWith("/"))
-			basePath = "/"+basePath;
-		
-		WebClient client = HpcClientUtil.getWebClient(
-				connection.getHpcServerURL() + "/collection" + basePath + "/" + collectionPath,
-				connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(), connection.getHpcCertPath(),
-				connection.getHpcCertPassword());
+    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+      connection.getHpcServerURL()).path("collection").path(basePath).path(
+      collectionPath).build().toUriString();
+    WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
+      connection.getHpcCertPath(), connection.getHpcCertPassword());
 		client.header("Authorization", "Bearer " + connection.getAuthToken());
 		client.header("Connection", "Keep-Alive");
 
