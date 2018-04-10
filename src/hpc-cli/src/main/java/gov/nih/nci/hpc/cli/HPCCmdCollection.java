@@ -34,6 +34,7 @@ import org.irods.jargon.core.pub.domain.DataObject;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -115,8 +116,8 @@ public class HPCCmdCollection extends HPCCmdClient {
 		String returnCode = null;
 
 		try {
-			String serviceURL = hpcServerURL + "/" + hpcCollectionService;
-
+      String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
+        .path(hpcCollectionService).build().toUriString();
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {
 				System.out.println("Invlaid Command");
 				return Constants.CLI_2;
@@ -139,13 +140,15 @@ public class HPCCmdCollection extends HPCCmdClient {
 				} else if (cmd.equals("getCollection")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
-					serviceURL = serviceURL + path;
+          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(path)
+            .build().toUriString();
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
 					restResponse = client.get();
 					
 				}  else if (cmd.equals("getCollections")) {
-					serviceURL = serviceURL + "/query";
+          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path("query")
+            .build().toUriString();
 					HpcCompoundMetadataQueryDTO criteriaClause = null;
 					try {
 						criteriaClause = buildCriteria(criteria);
@@ -397,7 +400,8 @@ public class HPCCmdCollection extends HPCCmdClient {
 			boolean printFilePath, int fileCount) 
 	throws JsonParseException, IOException {
 		
-		String servicePath = serviceURL + path + "/children";
+    String servicePath = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
+      path).path("children").build().toUriString();
 		WebClient client = HpcClientUtil.getWebClient(servicePath, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 		Response restResponse = client.get();

@@ -18,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import gov.nih.nci.hpc.cli.domain.HPCBatchCollection;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -160,8 +161,12 @@ public class HPCCSVFile {
 				HttpEntity<HpcDataObjectRegistrationRequestDTO> entity = new HttpEntity<HpcDataObjectRegistrationRequestDTO>(hpcDataObjectRegistrationDTO, headers);
 				//System.out.println("Adding Metadata to .."+ hpcServerURL+"/"+hpcCollection+targetCollection);
 
-				ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange("http://localhost:7737/hpc-server/dataObject/tempZone/home/rods/"+getAttributeValueByName("File name",hpcDataObjectRegistrationDTO), HttpMethod.PUT,entity , HpcExceptionDTO.class);
-              	
+        final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+          "http://localhost:7737/hpc-server/dataObject/tempZone/home/rods/")
+          .path(getAttributeValueByName("File name",hpcDataObjectRegistrationDTO
+          )).build().toUriString();
+        ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(
+          apiUrl2Apply, HttpMethod.PUT, entity, HpcExceptionDTO.class);
 			}
         } 
         catch (Exception e) {

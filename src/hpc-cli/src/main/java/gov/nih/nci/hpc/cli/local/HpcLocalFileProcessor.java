@@ -43,7 +43,7 @@ import org.easybatch.core.processor.RecordProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClientException;
-
+import org.springframework.web.util.UriComponentsBuilder;
 
 
 public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
@@ -112,11 +112,6 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     dataObject.setCallerObjectId(null);
     String objectPath = getObjectPath(filePath, filePathBaseName, entity.getPath());
     logger.debug("objectPath " + objectPath);
-    if (HpcClientUtil.containsWhiteSpace(objectPath)) {
-      System.out.println(
-          "White space in the file path " + objectPath + " is replaced with underscore _ ");
-      objectPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(objectPath);
-    }
 		File file = new File(entity.getAbsolutePath());
    // File file = new File(Paths.generateFileSystemResourceUri(entity.getAbsolutePath()));
     if (!file.exists()) {
@@ -183,10 +178,12 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			objectPath = "/" + objectPath;
 		System.out.println("Processing: " + basePath + objectPath + " | checksum: "+hpcDataObjectRegistrationDTO.getChecksum());
 
-		WebClient client = HpcClientUtil.getWebClient(
-				connection.getHpcServerURL() + "/dataObject/" + basePath + objectPath,
-				connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(), connection.getHpcCertPath(),
-				connection.getHpcCertPassword());
+    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+      connection.getHpcServerURL()).path("dataObject").path(basePath).path(
+      objectPath).build().toUriString();
+		WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
+      connection.getHpcCertPath(), connection.getHpcCertPassword());
 		client.header("Authorization", "Bearer " + connection.getAuthToken());
 		client.header("Connection", "Keep-Alive");
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
@@ -279,11 +276,12 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("connection.getHpcServerProxyURL() "+connection.getHpcServerProxyURL());
     logger.debug("connection.getHpcCertPath() "+connection.getHpcCertPath());
     logger.debug("connection.getHpcCertPassword() "+connection.getHpcCertPassword());
-    WebClient client = HpcClientUtil.getWebClient(
-        connection.getHpcServerURL() + "/dataObject/" + basePath + objectPath,
-        connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
-        connection.getHpcCertPath(),
-        connection.getHpcCertPassword());
+    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+      connection.getHpcServerURL()).path("dataObject").path(basePath).path(
+      objectPath).build().toUriString();
+    WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
+      connection.getHpcCertPath(), connection.getHpcCertPassword());
     client.header("Authorization", "Bearer " + connection.getAuthToken());
     client.header("Connection", "Keep-Alive");
     client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
