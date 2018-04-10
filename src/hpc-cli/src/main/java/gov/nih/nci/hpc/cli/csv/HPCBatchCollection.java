@@ -35,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import gov.nih.nci.hpc.cli.HPCBatchClient;
 import gov.nih.nci.hpc.cli.util.Constants;
@@ -136,11 +137,6 @@ public class HPCBatchCollection extends HPCBatchClient {
 						parentMetadataAttributes, createParentCollection);
 				
 				collectionPath = collectionPath.trim();
-				if(HpcClientUtil.containsWhiteSpace(collectionPath))
-				{
-					System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
-					collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
-				}
 				
 				System.out.println((i + 1) + ": Registering Collection " + collectionPath);
 
@@ -161,12 +157,13 @@ public class HPCBatchCollection extends HPCBatchClient {
 				HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(
 						collectionDTO, headers);
 				try {
-					if (!collectionPath.startsWith("/"))
-						collectionPath = "/" + collectionPath;
-
-					System.out.println(hpcServerURL + "/" + hpcCollectionService + collectionPath);
-					response = restTemplate.exchange(hpcServerURL + "/" + hpcCollectionService + collectionPath,
-							HttpMethod.PUT, entity, HpcExceptionDTO.class);
+          final String apiUrl2Apply =
+            UriComponentsBuilder.fromHttpUrl(hpcServerURL)
+            .path(hpcCollectionService).path(collectionPath).build()
+            .toUriString();
+          System.out.println(apiUrl2Apply);
+          response = restTemplate.exchange(apiUrl2Apply, HttpMethod.PUT,
+            entity, HpcExceptionDTO.class);
 					if (response != null) {
 						HpcExceptionDTO exception = response.getBody();
 						if (exception != null) {

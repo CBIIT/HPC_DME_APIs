@@ -23,6 +23,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.easybatch.core.processor.RecordProcessingException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
@@ -35,11 +36,6 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException {
 		String collectionPath = getCollectionPath(localPath, filePathBaseName, entity.getPath());
-		if(HpcClientUtil.containsWhiteSpace(collectionPath))
-		{
-			System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
-			collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
-		}
 		if(!collectionPath.equals("/"))
 		  processCollection(entity, destinationBasePath, collectionPath);
 		return true;
@@ -64,13 +60,12 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
 		System.out.println("Registering Collection " + collectionPath);
 
-		if(!basePath.startsWith("/"))
-			basePath = "/"+basePath;
-		
-		WebClient client = HpcClientUtil.getWebClient(
-				connection.getHpcServerURL() + "/collection" + basePath + "/" + collectionPath,
-				connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(), connection.getHpcCertPath(),
-				connection.getHpcCertPassword());
+    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+      connection.getHpcServerURL()).path("collection").path(basePath).path(
+      collectionPath).build().toUriString();
+    WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
+      connection.getHpcCertPath(), connection.getHpcCertPassword());
 		client.header("Authorization", "Bearer " + connection.getAuthToken());
 		client.header("Connection", "Keep-Alive");
 

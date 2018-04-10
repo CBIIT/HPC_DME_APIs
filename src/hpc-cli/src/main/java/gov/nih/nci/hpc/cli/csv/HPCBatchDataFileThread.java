@@ -31,6 +31,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -112,12 +113,14 @@ public class HPCBatchDataFileThread implements Runnable {
 		hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
 
 		System.out.println("Adding file from " + source.getFileId());
-		if (!collName.startsWith("/"))
-			collName = "/" + collName;
 
 		hpcDataObjectRegistrationDTO.setSource(source);
 		hpcDataObjectRegistrationDTO.setCallerObjectId("/");
-		WebClient client = HpcClientUtil.getWebClient(basePath + collName, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
+
+    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(basePath).path(
+      collName).build().toUriString();
+    WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply, proxyURL,
+      proxyPort, hpcCertPath, hpcCertPassword);
 		List<Attachment> atts = new LinkedList<Attachment>();
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {

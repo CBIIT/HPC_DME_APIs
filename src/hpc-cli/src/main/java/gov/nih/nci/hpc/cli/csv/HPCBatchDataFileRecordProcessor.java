@@ -31,6 +31,7 @@ import org.easybatch.core.record.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -57,14 +58,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = hpcObject.getDto();
 		logger.debug("hpcDataObjectRegistrationDTO "+hpcDataObjectRegistrationDTO.toString());
 		List<Attachment> atts = new LinkedList<Attachment>();
-		String objectPath = hpcObject.getObjectPath().trim();
-		if(HpcClientUtil.containsWhiteSpace(objectPath))
-		{
-			System.out.println("White space in the file path "+ objectPath + " is replaced with underscore _ ");
-			objectPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(objectPath);
-			logger.debug("objectPath "+objectPath);
-		}
-		
+		String objectPath = hpcObject.getObjectPath().trim();		
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
 				HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
@@ -115,8 +109,11 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
 				hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();
-		WebClient client = HpcClientUtil.getWebClient(hpcObject.getBasePath() + "/" + objectPath, hpcObject.getProxyURL(), hpcObject.getProxyPort(),
-				hpcObject.getHpcCertPath(), hpcObject.getHpcCertPassword());
+		final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+      hpcObject.getBasePath()).path(objectPath).build().toUriString();
+    WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      hpcObject.getProxyURL(), hpcObject.getProxyPort(),
+      hpcObject.getHpcCertPath(), hpcObject.getHpcCertPassword());
 		// String token =
 		// DatatypeConverter.printBase64Binary((hpcObject.getUserId() + ":" +
 		// hpcObject.getPassword()).getBytes());
@@ -125,8 +122,8 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		// client.type(MediaType.MULTIPART_FORM_DATA);
 
 		try {
-			System.out.println("Processing: " + hpcObject.getBasePath() + "/" + objectPath);
-			logger.debug("Processing: " + hpcObject.getBasePath() + "/" + objectPath);
+      System.out.println("Processing: " + apiUrl2Apply);
+      logger.debug("Processing: " + apiUrl2Apply);
 			Response restResponse = client.put(new MultipartBody(atts));
 			long stop = System.currentTimeMillis();
 			logger.debug("restResponse.getStatus(): " + restResponse.getStatus());
