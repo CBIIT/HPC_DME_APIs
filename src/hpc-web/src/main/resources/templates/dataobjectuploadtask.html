@@ -85,7 +85,7 @@
 				<!--Row start-->
 				<div class="row">
 					<div class="col-lg-9 col-md-12">
-						<div class="panel panel-default">
+						<div class="panel panel-default" id="statusWrapper">
 							<div class="panel-heading" th:if="${hpcDataObjectUploadStatusDTO != null}">
 									<i class="fa fa-list-alt red"></i><strong>Task Details</strong>
 							</div>
@@ -139,12 +139,22 @@
 												th:text="${hpcDataObjectUploadStatusDTO.getDestinationLocation().getFileId()}"></label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectUploadStatusDTO.getResult() != null}">
-											<label for="Name">Transfer Completed:</label> <label
+											<label for="Name">Transfer Completed:</label> <label id="regComplete"
 												for="${hpcDataObjectUploadStatusDTO.getResult()}"
 												th:text="${hpcDataObjectUploadStatusDTO.getResult()}"></label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectUploadStatusDTO.getResult() == null}">
-											<label for="Name">Transfer Completed:</label> <label>In Progress</label>
+											<label for="Name">Transfer Completed:</label> <label id="regComplete">In Progress</label>
+										</div>
+										<div class="col-md-12 form-group" 
+										th:if="${hpcDataObjectUploadStatusDTO.getPercentComplete() != null 
+											and hpcDataObjectUploadStatusDTO.getPercentComplete() > 0}">
+										<div class="progress">
+    										<div class="progress-bar" id="progressBarTotal" role="progressbar" th:attr="aria-valuenow=${hpcDataObjectUploadStatusDTO.getPercentComplete()}" aria-valuemin="0" aria-valuemax="100"  th:style="'width:'+ ${hpcDataObjectUploadStatusDTO.getPercentComplete()}+'%;'">
+      											<span th:text="${hpcDataObjectUploadStatusDTO.getPercentComplete()}"></span>
+    											%
+    										</div>
+  										</div>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectUploadStatusDTO.getMessage() != null}">
 											<label for="Name">Message:</label> <label
@@ -169,6 +179,10 @@
 					</div>
 				</div>
 				<div class="row"></div>
+				<form class="form-horizontal" id="uploadForm" th:action="@{/uploadtask}" method="POST">	
+					<input type="hidden" id="taskId" name="taskId" th:value="${taskId}"/>
+					<input type="hidden" id="taskType" name="taskType" th:value="${taskType}"/>
+				</form>	
 			</section>
 		</section>
 		<!--main content end-->
@@ -188,5 +202,38 @@
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
+	<script th:inline="javascript">
+/*<![CDATA[*/
+           
+ var pollPercentComplete = setInterval(
+function getPercentComplete() {
+	
+	var regComplete = document.getElementById("regComplete").innerHTML;
+	if(regComplete == "true") {
+		clearInterval(pollPercentComplete);
+		return;
+	}
+	
+	var taskId = $("#taskId").val();
+	var taskType = $("#taskType").val();
+	$.ajax({
+		type : "GET",
+		url : "/uploadtask",
+		data : {taskId: taskId, type: taskType},
+		success : function(msg) {
+			console.log('SUCCESS: ', msg);
+			//location.reload();
+			var status = $("#statusWrapper", msg);
+			$("#statusWrapper").html(status);
+		},
+		error : function(e) {
+			console.log('ERROR: ', e);
+		}
+	});
+	
+}, 5000);	          
+           
+ /*]]>*/
+</script>          
 </body>
 </html>
