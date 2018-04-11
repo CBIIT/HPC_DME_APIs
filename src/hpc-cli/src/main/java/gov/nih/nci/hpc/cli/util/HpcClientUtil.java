@@ -176,11 +176,13 @@ public class HpcClientUtil {
 
     try {
       final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
-        .path("authenticate").build().toUriString();
+        .path("/authenticate").build().encode().toUri().toURL()
+        .toExternalForm();
       WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply, proxyURL,
           proxyPort, hpcCertPath, hpcCertPassword);
       String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
       client.header("Authorization", "Basic " + token);
+      // If necessary, here add "Content-Type" header set to "application/json;charset=UTF-8" via client.type("application/json;charset=UTF-8")
       Response restResponse = client.get();
       if (restResponse == null)
         return null;
@@ -298,12 +300,13 @@ public class HpcClientUtil {
       String proxyURL, String proxyPort, String hpcCertPath, String hpcCertPassword) {
     try {
       String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcCollectionURL)
-        .queryParam("list", Boolean.FALSE).build().toUriString();
+        .queryParam("list", Boolean.FALSE).build().encode().toUri().toURL()
+        .toExternalForm();
 
       WebClient client =
           getWebClient(serviceURL, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-
+      // If necessary, here add "Content-Type" header set to "application/json;charset=UTF-8" via client.type("application/json;charset=UTF-8")
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
@@ -371,12 +374,13 @@ public class HpcClientUtil {
       String hpcCertPassword) {
     try {
       final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-        hpcDatafileURL).path(path).queryParam("list", Boolean.valueOf(list))
-        .build().toUriString();
+        hpcDatafileURL).path(prependForwardSlashIfAbsent(path)).queryParam(
+        "list", Boolean.valueOf(list)).build().encode().toUri().toURL()
+        .toExternalForm();
       WebClient client = getWebClient(apiUrl2Apply, proxyURL, proxyPort,
         hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-
+      // If necessary, here add "Content-Type" header set to "application/json;charset=UTF-8" via client.type("application/json;charset=UTF-8")
       Response restResponse = client.invoke("GET", null);
       if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
@@ -472,7 +476,7 @@ public class HpcClientUtil {
       WebClient client =
           getWebClient(hpcDatafileURL, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-
+      client.type("application/json;charset=UTF-8");
       Response restResponse = client.invoke("PUT", datafileDTO);
       if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
         return (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil.getObject(restResponse,
@@ -497,6 +501,34 @@ public class HpcClientUtil {
       e.printStackTrace();
       throw new HpcCmdException("Failed to bulk register data files due to: " + e.getMessage());
     }
+  }
+
+
+  public static String constructPathString(String ... pathSegments) {
+    final StringBuilder sb = new StringBuilder();
+    String effSegment;
+    for (String someSegment : pathSegments) {
+      effSegment = someSegment.trim();
+      if (effSegment.startsWith("/")) {
+        effSegment = effSegment.substring(1);
+      }
+      sb.append("/").append(effSegment);
+    }
+    return sb.toString();
+  }
+
+  public static String prependForwardSlashIfAbsent(String arg) {
+    String result;
+    if (null == arg || arg.isEmpty()) {
+      result = "/";
+    } else {
+      result = arg.trim();
+      if (!result.startsWith("/")) {
+        result = "/".concat(result);
+      }
+    }
+
+    return result;
   }
 
 }

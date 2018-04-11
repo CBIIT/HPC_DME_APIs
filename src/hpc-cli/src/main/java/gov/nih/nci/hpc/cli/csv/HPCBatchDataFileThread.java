@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -117,8 +119,23 @@ public class HPCBatchDataFileThread implements Runnable {
 		hpcDataObjectRegistrationDTO.setSource(source);
 		hpcDataObjectRegistrationDTO.setCallerObjectId("/");
 
-    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(basePath).path(
-      collName).build().toUriString();
+    String apiUrl2Apply;
+		try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(basePath).path(
+        HpcClientUtil.prependForwardSlashIfAbsent(collName)).build().encode()
+        .toUri().toURL().toExternalForm();
+    } catch (MalformedURLException mue) {
+      final String infoMsg = new StringBuilder("Error in attempt to build URL")
+        .append(" for making REST service call.\nBase URL [").append(basePath)
+        .append("].\nCollection name/path [").append(collName).append("].")
+        .toString();
+      addErrorToLog(infoMsg, recordId);
+      // success = false;
+      processedRecordFlag = false;
+      addRecordToLog(record, headersMap);
+      return;
+    }
+
     WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply, proxyURL,
       proxyPort, hpcCertPath, hpcCertPassword);
 		List<Attachment> atts = new LinkedList<Attachment>();
@@ -153,12 +170,14 @@ public class HPCBatchDataFileThread implements Runnable {
 				}
 			}
 		}
-		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
-				hpcDataObjectRegistrationDTO));
+		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
+			"dataObjectRegistration", "application/json;charset=UTF-8",
+      hpcDataObjectRegistrationDTO));
 
 		String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
 		client.header("Authorization", "Basic " + token);
-		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+		client.type(MediaType.MULTIPART_FORM_DATA).accept(
+      "application/json;charset=UTF-8");
 
 		try {
 			System.out.println(basePath + collName);

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.List;
 import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -60,15 +61,27 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
 		System.out.println("Registering Collection " + collectionPath);
 
-    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-      connection.getHpcServerURL()).path("collection").path(basePath).path(
-      collectionPath).build().toUriString();
+		final String pathUnderServerUrl = HpcClientUtil.constructPathString(
+      "collection", basePath, collectionPath);
+    String apiUrl2Apply;
+		try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(connection
+        .getHpcServerURL()).path(pathUnderServerUrl).build().encode().toUri()
+        .toURL().toExternalForm();
+    } catch (MalformedURLException mue) {
+		  final String informativeMsg = new StringBuilder("Error in attempt to")
+        .append(" build URL for making REST service call.\nBase server URL [")
+        .append(connection.getHpcServerURL()).append("].\nPath under base")
+        .append(" serve URL [").append(pathUnderServerUrl).append("].\n")
+        .toString();
+      throw new RecordProcessingException(informativeMsg, mue);
+    }
     WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
       connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
       connection.getHpcCertPath(), connection.getHpcCertPassword());
 		client.header("Authorization", "Bearer " + connection.getAuthToken());
 		client.header("Connection", "Keep-Alive");
-
+		client.type("application/json;charset=UTF-8");
 		Response restResponse = client.invoke("PUT", collectionDTO);
 		if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
 			System.out.println("Success!");

@@ -186,7 +186,7 @@ public class HpcGlobusDirectoryListQuery {
 		try {
       final String resource = UriComponentsBuilder.fromHttpUrl(
         BaseTransferAPIClient.endpointPath(dirLocation.getFileContainerId()))
-        .path("ls").build().toUriString();
+        .path("/ls").build().encode().toUri().toURL().toExternalForm();
 			return client.getResult(resource, params);
 
 		} catch (APIError apiError) {
@@ -201,8 +201,8 @@ public class HpcGlobusDirectoryListQuery {
 		try {
       final String resource = UriComponentsBuilder.fromHttpUrl(
         BaseTransferAPIClient.endpointPath(endpointName))
-        .path("autoactivate").queryParam("if_expires_in", "100").build()
-        .toUriString();
+        .path("/autoactivate").queryParam("if_expires_in", "100").build()
+        .encode().toUri().toURL().toExternalForm();
 			client.postResult(resource, null, null);
 
 		} catch (Exception e) {

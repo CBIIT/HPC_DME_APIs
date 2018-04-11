@@ -46,7 +46,8 @@ public class HPCBatchDatafile extends HPCBatchClient {
 				authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 					hpcCertPassword);
       final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-        hpcServerURL).path(hpcDataService).build().toUriString();
+        hpcServerURL).path(HpcClientUtil.prependForwardSlashIfAbsent(
+				hpcDataService)).build().encode().toUri().toURL().toExternalForm();
       return new HPCBatchDataFileProcessor(fileName, threadCount, apiUrl2Apply,
         hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile,
         authToken).processData();
