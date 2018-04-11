@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.ws.rs;
 
 import java.io.InputStream;
 
+import java.nio.charset.StandardCharsets;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -54,7 +55,7 @@ public interface HpcDataManagementRestService {
    */
   @GET
   @Path("/pathRefType/{path:.*}")
-  @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+  @Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
   public Response interrogatePathRef(@PathParam("path") String path);
 
 
@@ -70,8 +71,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@PUT
 	@Path("/collection/{path:.*}")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response registerCollection(@PathParam("path") String path,
 			HpcCollectionRegistrationDTO collectionRegistration);
 
@@ -87,7 +88,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/collection/{path:.*}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getCollection(@PathParam("path") String path, @QueryParam("list") Boolean list);
 
 	/**
@@ -100,7 +101,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/collection/{path:.*}/children")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getCollectionChildren(@PathParam("path") String path);
 
 	/**
@@ -114,8 +115,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@POST
 	@Path("/collection/{path:.*}/download")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response downloadCollection(@PathParam("path") String path, HpcDownloadRequestDTO downloadRequest);
 
 	/**
@@ -127,7 +128,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/collection/download")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getCollectionDownloadStatus(@QueryParam("taskId") String taskId);
 	
 	
@@ -154,8 +155,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@POST
 	@Path("/collection/{path:.*}/acl")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response setCollectionPermissions(@PathParam("path") String path,
 			HpcEntityPermissionsDTO collectionPermissionsRequest);
 
@@ -168,7 +169,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/collection/{path:.*}/acl")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getCollectionPermissions(@PathParam("path") String path);
 
 	/**
@@ -183,7 +184,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/collection/{path:.*}/acl/user/{userId:.*}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getCollectionPermission(@PathParam("path") String path, @PathParam("userId") String userId);
 
 	/**
@@ -202,7 +203,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/collection/acl/user/{userId:.*}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getPermissionsOnCollectionsForUser(@QueryParam("collectionPath") String[] collectionsPaths,
 			@PathParam("userId") String userId);
 
@@ -216,7 +217,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/collection/acl")
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getAllPermissionsOnCollections(@QueryParam("collectionPath") String[] collectionPaths);
 
 	/**
@@ -232,8 +233,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@PUT
 	@Path("/dataObject/{path:.*}")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("multipart/form-data;charset=UTF-8")
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response registerDataObject(@PathParam("path") String path,
 			@Multipart(value = "dataObjectRegistration", type = "application/json") HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
 			@Multipart(value = "dataObject", type = "application/octet-stream", required = false) InputStream dataObjectInputStream);
@@ -247,8 +248,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@PUT
 	@Path("/registration")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response registerDataObjects(HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
 
 	/**
@@ -261,7 +262,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/registration/{taskId}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getDataObjectsRegistrationStatus(@PathParam("taskId") String taskId);
 
 	/**
@@ -277,7 +278,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/registration")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getRegistrationSummary(@QueryParam("page") Integer page,
 			@QueryParam("totalCount") Boolean totalCount);
 
@@ -290,7 +291,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/dataObject/{path:.*}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getDataObject(@PathParam("path") String path);
 
 	/**
@@ -307,8 +308,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@POST
 	@Path("/dataObject/{path:.*}/download")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML + "," + MediaType.APPLICATION_OCTET_STREAM)
+	@Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8, application/octet-stream;charset=UTF-8")
 	public Response downloadDataObject(@PathParam("path") String path, HpcDownloadRequestDTO downloadRequest,
 			@Context MessageContext mc);
 
@@ -321,7 +322,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/dataObject/download")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getDataObjectDownloadStatus(@QueryParam("taskId") String taskId);
 
 	/**
@@ -346,8 +347,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@POST
 	@Path("/dataObject/{path:.*}/acl")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response setDataObjectPermissions(@PathParam("path") String path,
 			HpcEntityPermissionsDTO dataObjectPermissionsRequest);
 
@@ -360,7 +361,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/dataObject/{path:.*}/acl")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getDataObjectPermissions(@PathParam("path") String path);
 
 	/**
@@ -374,7 +375,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/dataObject/{path:.*}/acl/user/{userId:.*}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getDataObjectPermission(@PathParam("path") String path, @PathParam("userId") String userId);
 
 	/**
@@ -387,8 +388,8 @@ public interface HpcDataManagementRestService {
 	 */
 	@POST
 	@Path("/download")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest);
 
 	/**
@@ -400,7 +401,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/download/{taskId}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getDataObjectsDownloadStatus(@PathParam("taskId") String taskId);
 
 	/**
@@ -415,7 +416,7 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/download")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getDownloadSummary(@QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount);
 
 	/**
@@ -425,6 +426,6 @@ public interface HpcDataManagementRestService {
 	 */
 	@GET
 	@Path("/dm/model")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
 	public Response getDataManagementModel();
 }
