@@ -4,6 +4,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -155,16 +156,19 @@ public class HPCCSVFile {
 				RestTemplate restTemplate = new RestTemplate();
 				HttpHeaders headers = new HttpHeaders();
 				List <MediaType> mediaTypeList = new ArrayList<MediaType>();
-				mediaTypeList.add(MediaType.APPLICATION_JSON);
+				mediaTypeList.add(new MediaType(MediaType.APPLICATION_JSON.getType(),
+					MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8));
 				headers.setAccept(mediaTypeList);
 				//headers.setContentType(MediaType.APPLICATION_JSON);
 				HttpEntity<HpcDataObjectRegistrationRequestDTO> entity = new HttpEntity<HpcDataObjectRegistrationRequestDTO>(hpcDataObjectRegistrationDTO, headers);
 				//System.out.println("Adding Metadata to .."+ hpcServerURL+"/"+hpcCollection+targetCollection);
 
+        final String additionalPath = HpcClientUtil.prependForwardSlashIfAbsent(
+          getAttributeValueByName("File name",hpcDataObjectRegistrationDTO));
         final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-          "http://localhost:7737/hpc-server/dataObject/tempZone/home/rods/")
-          .path(getAttributeValueByName("File name",hpcDataObjectRegistrationDTO
-          )).build().toUriString();
+          "http://localhost:7737/hpc-server/dataObject/tempZone/home/rods")
+          .path(additionalPath).build().encode().toUri().toURL()
+					.toExternalForm();
         ResponseEntity<HpcExceptionDTO> response = restTemplate.exchange(
           apiUrl2Apply, HttpMethod.PUT, entity, HpcExceptionDTO.class);
 			}

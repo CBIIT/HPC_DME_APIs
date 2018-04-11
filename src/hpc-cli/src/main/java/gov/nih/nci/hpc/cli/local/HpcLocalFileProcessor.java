@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -170,23 +171,40 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			throw new RecordProcessingException(message);
 		}
 
-		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
-				hpcDataObjectRegistrationDTO));
+		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
+			"dataObjectRegistration", "application/json;charset=UTF-8",
+      hpcDataObjectRegistrationDTO));
 		objectPath = objectPath.replace("//", "/");
 		objectPath = objectPath.replace("\\", "/");
 		if (objectPath.charAt(0) != File.separatorChar)
 			objectPath = "/" + objectPath;
 		System.out.println("Processing: " + basePath + objectPath + " | checksum: "+hpcDataObjectRegistrationDTO.getChecksum());
 
-    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-      connection.getHpcServerURL()).path("dataObject").path(basePath).path(
-      objectPath).build().toUriString();
+		final String pathFromServerUrl = HpcClientUtil.constructPathString(
+      "dataObject", basePath, objectPath);
+    String apiUrl2Apply;
+    try {
+			apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+				connection.getHpcServerURL()).path(pathFromServerUrl).build().encode()
+				.toUri().toURL().toExternalForm();
+		} catch (MalformedURLException mue) {
+			final String informativeMsg = new StringBuilder("Error in attempt to")
+					.append(" build URL for making REST service call.\nBase server URL [")
+					.append(connection.getHpcServerURL()).append("].\nPath under base")
+					.append(" server URL [").append(pathFromServerUrl).append("].\n")
+					.toString();
+      HpcClientUtil.writeException(mue, informativeMsg, null, logFile);
+      HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
+      throw new RecordProcessingException(informativeMsg, mue);
+		}
 		WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
       connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
       connection.getHpcCertPath(), connection.getHpcCertPassword());
 		client.header("Authorization", "Bearer " + connection.getAuthToken());
 		client.header("Connection", "Keep-Alive");
-		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+//		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+    client.type(MediaType.MULTIPART_FORM_DATA).accept(
+      "application/json;charset=UTF-8");
 
 		try {
 
@@ -242,9 +260,9 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     List<Attachment> atts = new LinkedList<Attachment>();
     hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(true);
     hpcDataObjectRegistrationDTO.setSource(null);
-    atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
-        "application/json",
-        hpcDataObjectRegistrationDTO));
+    atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
+      "dataObjectRegistration", "application/json;charset=UTF-8",
+      hpcDataObjectRegistrationDTO));
     objectPath = objectPath.replace("//", "/");
     objectPath = objectPath.replace("\\", "/");
     if (objectPath.charAt(0) != File.separatorChar) {
@@ -276,16 +294,33 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("connection.getHpcServerProxyURL() "+connection.getHpcServerProxyURL());
     logger.debug("connection.getHpcCertPath() "+connection.getHpcCertPath());
     logger.debug("connection.getHpcCertPassword() "+connection.getHpcCertPassword());
-    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-      connection.getHpcServerURL()).path("dataObject").path(basePath).path(
-      objectPath).build().toUriString();
+
+    final String pathFromServerUrl = HpcClientUtil.constructPathString(
+      "dataObject", basePath, objectPath);
+    String apiUrl2Apply;
+    try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(connection
+        .getHpcServerURL()).path(pathFromServerUrl).build().encode().toUri()
+        .toURL().toExternalForm();
+    } catch (MalformedURLException mue) {
+      final String informativeMsg = new StringBuilder("Error in attempt to")
+        .append(" build URL for making REST service call.\nBase server URL [")
+        .append(connection.getHpcServerURL()).append("].\nPath under base")
+        .append(" server URL [").append(pathFromServerUrl).append("].\n")
+        .toString();
+      HpcClientUtil.writeException(mue, informativeMsg, null, logFile);
+      HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
+      throw new RecordProcessingException(informativeMsg, mue);
+    }
+
     WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
       connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
       connection.getHpcCertPath(), connection.getHpcCertPassword());
     client.header("Authorization", "Bearer " + connection.getAuthToken());
     client.header("Connection", "Keep-Alive");
-    client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
-
+//    client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+    client.type(MediaType.MULTIPART_FORM_DATA).accept(
+      "application/json;charset=UTF-8");
     try {
 
       Response restResponse = client.put(new MultipartBody(atts));
@@ -471,6 +506,15 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			httpConnection = (HttpURLConnection) url.openConnection();
 			httpConnection.setDoOutput(true);
 			httpConnection.setRequestMethod("PUT");
+      /* If necessary, add additional request properties to make HTTP PUT for file upload work
+
+          Examples:
+
+          httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
+          httpConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+          httpConnection.setRequestProperty("Content-Type", "multipart/form-data;charset=UTF-8");
+
+       */
 			httpConnection.setChunkedStreamingMode(bufferSize);
 			httpConnection.setDoInput(true);
 			httpConnection.setDoOutput(true);

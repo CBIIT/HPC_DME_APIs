@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -372,8 +373,9 @@ public class HpcLocalDirectoryListGenerator {
 			throw new RecordProcessingException(exceptionAsString);
 		}
 
-		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
-				hpcDataObjectRegistrationDTO));
+		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
+      "dataObjectRegistration", "application/json;charset=UTF-8",
+      hpcDataObjectRegistrationDTO));
 		objectPath = objectPath.replace("//", "/");
 		objectPath = objectPath.replace("\\", "/");
 		if (objectPath.charAt(0) != File.separatorChar)
@@ -397,13 +399,27 @@ public class HpcLocalDirectoryListGenerator {
 
 		}
 
-    final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
-      .path("dataObject").path(basePath).path(objectPath).build().toUriString();
+		final String pathUnderServerUrl = HpcClientUtil.constructPathString(
+      "dataObject", basePath, objectPath);
+    String apiUrl2Apply;
+    try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
+        pathUnderServerUrl).build().encode().toUri().toURL().toExternalForm();
+    } catch (MalformedURLException mue) {
+      final String informativeMsg = new StringBuilder("Error in attempt to")
+          .append(" build URL for making REST service call.\nBase server URL [")
+          .append(hpcServerURL).append("].\nPath under base")
+          .append(" serve URL [").append(pathUnderServerUrl).append("].\n")
+          .toString();
+      throw new RecordProcessingException(informativeMsg, mue);
+    }
 		WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
       hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 		client.header("Connection", "Keep-Alive");
-		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+//		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+    client.type(MediaType.MULTIPART_FORM_DATA).accept(
+      "application/json;charset=UTF-8");
 
 		try {
 
@@ -535,8 +551,24 @@ public class HpcLocalDirectoryListGenerator {
 
 		}
 
-		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/collection" + basePath + "/" + collectionPath,
-				hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
+    String apiUrl2Apply;
+		String pathFromBaseServerUrl = HpcClientUtil.constructPathString(
+    "collection", basePath, collectionPath);
+		try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
+        pathFromBaseServerUrl).build().toUri().toURL().toExternalForm();
+    } catch (MalformedURLException mue) {
+      final String informativeMsg = new StringBuilder("Error in attempt to")
+        .append(" build URL for making REST service call.\nBase server URL [")
+        .append(hpcServerURL).append("].\nPath under base")
+        .append(" server URL [").append(pathFromBaseServerUrl).append("].\n")
+        .toString();
+      throw new HpcBatchException(informativeMsg, mue);
+    }
+//		WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/collection" + basePath + "/" + collectionPath,
+//				hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
+		WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 		client.header("Connection", "Keep-Alive");
 

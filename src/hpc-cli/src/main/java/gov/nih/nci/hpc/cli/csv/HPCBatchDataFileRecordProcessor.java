@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -106,11 +108,25 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		}
 
 		hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(false);
-		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
-				hpcDataObjectRegistrationDTO));
+		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
+			"dataObjectRegistration", "application/json;charset=UTF-8",
+      hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();
-		final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-      hpcObject.getBasePath()).path(objectPath).build().toUriString();
+    String apiUrl2Apply;
+		try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+          hpcObject.getBasePath()).path(HpcClientUtil.prependForwardSlashIfAbsent(
+          objectPath)).build().encode().toUri().toURL().toExternalForm();
+    } catch (MalformedURLException mue) {
+		  final String informativeMsg = new StringBuilder("Error in attempt to")
+        .append(" build URL for making REST service call.\nBasis URL [")
+        .append(hpcObject.getBasePath()).append("].\nData Object path [")
+        .append(objectPath).append("].").toString();
+      HpcLogWriter.getInstance()
+        .WriteLog(hpcObject.getLogFile(), "Record: " + record.getHeader()
+        .getNumber() + " with path: " + objectPath + "\n" + informativeMsg);
+		  throw new RecordProcessingException(informativeMsg);
+    }
     WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
       hpcObject.getProxyURL(), hpcObject.getProxyPort(),
       hpcObject.getHpcCertPath(), hpcObject.getHpcCertPassword());
@@ -118,9 +134,8 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		// DatatypeConverter.printBase64Binary((hpcObject.getUserId() + ":" +
 		// hpcObject.getPassword()).getBytes());
 		client.header("Authorization", "Bearer " + hpcObject.getAuthToken());
-		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+		client.type(MediaType.MULTIPART_FORM_DATA).accept("application/json;charset=UTF-8");
 		// client.type(MediaType.MULTIPART_FORM_DATA);
-
 		try {
       System.out.println("Processing: " + apiUrl2Apply);
       logger.debug("Processing: " + apiUrl2Apply);

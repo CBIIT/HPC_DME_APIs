@@ -112,7 +112,8 @@ public class HPCCmdDatafile extends HPCCmdClient {
 
 		try {
       String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
-        hpcDataService).build().toUriString();
+        HpcClientUtil.prependForwardSlashIfAbsent(hpcDataService)).build()
+        .encode().toUri().toURL().toExternalForm();
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {
 				System.out.println("Invlaid Command");
 				return Constants.CLI_2;
@@ -127,8 +128,9 @@ public class HPCCmdDatafile extends HPCCmdClient {
 				if (cmd.equals("deleteDatafile")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
-					serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(path)
-            .build().toUriString();
+					serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
+            HpcClientUtil.prependForwardSlashIfAbsent(path)).build()
+            .encode().toUri().toURL().toExternalForm();
 					jline.console.ConsoleReader reader;
 					reader = new jline.console.ConsoleReader();
 					reader.setExpandEvents(false);
@@ -140,19 +142,22 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					}	
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
+					//client.type("application/json;charset=UTF-8");
 					restResponse = client.delete();
 				}
 				else if (cmd.equals("getDatafile")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
-          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(path)
-            .build().toUriString();
+          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
+            HpcClientUtil.prependForwardSlashIfAbsent(path)).build()
+            .encode().toUri().toURL().toExternalForm();
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
+					// If necessary, here add "Content-Type" header set to "application/json;charset=UTF-8" via client.type("application/json;charset=UTF-8")
 					restResponse = client.get();
 				} else if (cmd.equals("getDatafiles")) {
           serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
-            "query").build().toUriString();
+            "/query").build().encode().toUri().toURL().toExternalForm();
 					HpcCompoundMetadataQueryDTO criteriaClause = null;
 					try {
 						criteriaClause = buildCriteria(criteria);
@@ -169,6 +174,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					}
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
+					client.type("application/json;charset=UTF-8");
 					restResponse = client.post(criteriaClause);
 				} 
 				System.out.println("Executing: " + serviceURL);

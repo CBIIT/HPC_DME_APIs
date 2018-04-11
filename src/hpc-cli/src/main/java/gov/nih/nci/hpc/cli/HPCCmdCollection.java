@@ -18,6 +18,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +34,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.json.JSONObject;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -116,8 +119,10 @@ public class HPCCmdCollection extends HPCCmdClient {
 		String returnCode = null;
 
 		try {
-      String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
-        .path(hpcCollectionService).build().toUriString();
+      final URI uri2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
+        .path(HpcClientUtil.prependForwardSlashIfAbsent(hpcCollectionService))
+        .build().encode().toUri();
+      String serviceURL = uri2Apply.toURL().toExternalForm();
 			if (cmd == null || cmd.isEmpty() || criteria == null || criteria.isEmpty()) {
 				System.out.println("Invlaid Command");
 				return Constants.CLI_2;
@@ -140,15 +145,17 @@ public class HPCCmdCollection extends HPCCmdClient {
 				} else if (cmd.equals("getCollection")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
-          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(path)
-            .build().toUriString();
+          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
+            HpcClientUtil.prependForwardSlashIfAbsent(path)).build().encode()
+            .toUri().toURL().toExternalForm();
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
+//					client.type("application/json;charset=UTF-8");
 					restResponse = client.get();
 					
 				}  else if (cmd.equals("getCollections")) {
-          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path("query")
-            .build().toUriString();
+          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
+            "/query").build().encode().toUri().toURL().toExternalForm();
 					HpcCompoundMetadataQueryDTO criteriaClause = null;
 					try {
 						criteriaClause = buildCriteria(criteria);
@@ -165,6 +172,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 					}
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
+					client.type("application/json;charset=UTF-8");
 					restResponse = client.post(criteriaClause);
 				}
 
@@ -388,9 +396,14 @@ public class HPCCmdCollection extends HPCCmdClient {
 		}			
 		
 		//Invoke delete API if user confirms
-		serviceURL = serviceURL + path + "/?recursive=" + recursive;
+//		serviceURL = serviceURL + path + "/?recursive=" + recursive;
+		serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL)
+      .path(HpcClientUtil.prependForwardSlashIfAbsent(path.concat("/")))
+      .queryParam("recursive", Boolean.valueOf(recursive).toString()).build()
+      .encode().toUri().toURL().toExternalForm();
 		WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
+//		client.type("application/json;charset=UTF-8");
 		return client.delete();
 		
 	}
@@ -399,11 +412,14 @@ public class HPCCmdCollection extends HPCCmdClient {
 	private int getDataObjectsPaths(String serviceURL, String path, String authToken, 
 			boolean printFilePath, int fileCount) 
 	throws JsonParseException, IOException {
-		
+
+	  final String pathFromServerUrl = HpcClientUtil.constructPathString(path,
+      "children");
     String servicePath = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
-      path).path("children").build().toUriString();
-		WebClient client = HpcClientUtil.getWebClient(servicePath, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
+      pathFromServerUrl).build().encode().toUri().toURL().toExternalForm();
+ 		WebClient client = HpcClientUtil.getWebClient(servicePath, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
+//    client.type("application/json;charset=UTF-8");
 		Response restResponse = client.get();
 		MappingJsonFactory factory = new MappingJsonFactory();
 		

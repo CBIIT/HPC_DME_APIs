@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -178,14 +179,17 @@ public class HPCPermissions extends HPCBatchClient {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Bearer " + authToken);
 		List<MediaType> mediaTypeList = new ArrayList<MediaType>();
-		mediaTypeList.add(MediaType.APPLICATION_JSON);
+		mediaTypeList.add(new MediaType(MediaType.APPLICATION_JSON.getType(),
+			MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8));
 		headers.setAccept(mediaTypeList);
 		HttpEntity<?> entity = new HttpEntity<Object>(dto, headers);
 		try {
       final String itemType = "collection".equalsIgnoreCase(type) ?
         "collection" : "dataObject";
-      String url = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(itemType)
-        .path(path).path("acl").build().toUriString();
+      final String pathUnderServerUrl = HpcClientUtil.constructPathString(
+        itemType, path, "acl");
+      String url = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
+        pathUnderServerUrl).build().encode().toUri().toURL().toExternalForm();
       restTemplate.postForEntity(url, entity, null);
 		} catch (HttpStatusCodeException e) {
 			returnCode = Constants.CLI_5;

@@ -13,6 +13,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -152,18 +154,18 @@ public class HPCBatchCollection extends HPCBatchClient {
 				// ":" + password).getBytes());
 				headers.add("Authorization", "Bearer " + authToken);
 				List<MediaType> mediaTypeList = new ArrayList<MediaType>();
-				mediaTypeList.add(MediaType.APPLICATION_JSON);
+				mediaTypeList.add(new MediaType(MediaType.APPLICATION_JSON.getType(),
+          MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8));
 				headers.setAccept(mediaTypeList);
 				HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(
 						collectionDTO, headers);
 				try {
-          final String apiUrl2Apply =
-            UriComponentsBuilder.fromHttpUrl(hpcServerURL)
-            .path(hpcCollectionService).path(collectionPath).build()
-            .toUriString();
-          System.out.println(apiUrl2Apply);
-          response = restTemplate.exchange(apiUrl2Apply, HttpMethod.PUT,
-            entity, HpcExceptionDTO.class);
+          final URI uri2Apply = UriComponentsBuilder.fromHttpUrl(
+            hpcServerURL).path(HpcClientUtil.constructPathString(
+            hpcCollectionService, collectionPath)).build().encode().toUri();
+          System.out.println(uri2Apply.toURL().toExternalForm());
+          response = restTemplate.exchange(uri2Apply, HttpMethod.PUT, entity,
+            HpcExceptionDTO.class);
 					if (response != null) {
 						HpcExceptionDTO exception = response.getBody();
 						if (exception != null) {
