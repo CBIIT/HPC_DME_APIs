@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.bus.impl;
 
+import gov.nih.nci.hpc.util.HpcUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -190,8 +191,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       throw new HpcException("Null path or metadata entries", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    if (StringUtils.containsWhitespace(path)) {
-      throw new HpcException("Path contains white space", HpcErrorType.INVALID_REQUEST_INPUT);
+//    if (StringUtils.containsWhitespace(path)) {
+//      throw new HpcException("Path contains white space", HpcErrorType.INVALID_REQUEST_INPUT);
+//    }
+    if (HpcUtil.doesPathContainForbiddenChars(path)) {
+      final StringBuilder sb = new StringBuilder();
+      for (char c : HpcUtil.FORBIDDEN_CHARS) {
+        if (sb.length() > 0) {
+          sb.append(", ");
+        }
+        sb.append(c);
+      }
+      final String forbiddenCharsDisplayString = sb.toString();
+      throw new HpcException("Path [" + path + "] contains forbidden" +
+        " character(s).  Following characters are forbidden: " +
+        forbiddenCharsDisplayString, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Create parent collections if requested to.
