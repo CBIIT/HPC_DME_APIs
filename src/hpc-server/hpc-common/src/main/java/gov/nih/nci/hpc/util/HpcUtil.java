@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.util;
 
+import java.util.Optional;
 import org.springframework.util.StringUtils;
 
 /**
@@ -16,6 +17,10 @@ import org.springframework.util.StringUtils;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcUtil {
+
+  public static final char[] FORBIDDEN_CHARS =
+    new char[] { '\\', ';', '"' };
+
   // ---------------------------------------------------------------------//
   // constructors
   // ---------------------------------------------------------------------//
@@ -44,4 +49,30 @@ public class HpcUtil {
     buf.append(absolutePath);
     return buf.toString();
   }
+
+
+  public static boolean doesPathContainForbiddenChars(String argPath) {
+    return doesPathContainForbiddenChars(argPath, Optional.empty());
+  }
+
+
+  public static boolean doesPathContainForbiddenChars(String argPath,
+    Optional<String> forbiddenChars) {
+    boolean pathClean = false;
+    char[] badChars = null;
+    if (forbiddenChars.isPresent() && !forbiddenChars.get().isEmpty()) {
+      badChars = forbiddenChars.get().toCharArray();
+    } else {
+      badChars = FORBIDDEN_CHARS;
+    }
+    for (char someBadChar : badChars) {
+      if (-1 != argPath.indexOf(someBadChar)) {
+        pathClean = true;
+        break;
+      }
+    }
+
+    return pathClean;
+  }
+
 }
