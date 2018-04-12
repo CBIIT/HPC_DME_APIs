@@ -39,7 +39,7 @@ public interface HpcReportRestService
 	 */
 	@POST
 	@Path("/report")
-	@Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
-	@Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response generateReport(HpcReportRequestDTO reportRequest);
 }
