@@ -43,7 +43,7 @@ public interface HpcDataBrowseRestService
      */
     @PUT
     @Path("/bookmark/{bookmarkName}")
-    @Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+    @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response addBookmark(@PathParam("bookmarkName") String bookmarkName,
     		                   HpcBookmarkRequestDTO bookmarkRequest);
     
@@ -56,7 +56,7 @@ public interface HpcDataBrowseRestService
      */
     @POST
     @Path("/bookmark/{bookmarkName}")
-    @Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+    @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response updateBookmark(@PathParam("bookmarkName") String bookmarkName,
     		                      HpcBookmarkRequestDTO bookmarkRequest);
     
@@ -78,7 +78,7 @@ public interface HpcDataBrowseRestService
      */
     @GET
     @Path("/bookmark/{bookmarkName}")
-    @Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getBookmark(@PathParam("bookmarkName") String bookmarkName);
     
     /**

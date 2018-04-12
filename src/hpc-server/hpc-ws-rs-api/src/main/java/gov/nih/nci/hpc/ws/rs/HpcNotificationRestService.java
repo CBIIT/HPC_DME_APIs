@@ -41,8 +41,8 @@ public interface HpcNotificationRestService
      */
 	@POST
     @Path("/notification")
-    @Consumes("application/json;charset=UTF-8, application/xml;charset=UTF-8")
-    @Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+    @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions);
 	
     /**
@@ -52,7 +52,7 @@ public interface HpcNotificationRestService
      */
 	@GET
     @Path("/notification")
-    @Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getNotificationSubscriptions();
 	
     /**
@@ -65,7 +65,7 @@ public interface HpcNotificationRestService
      */
 	@GET
     @Path("/notification/deliveryReceipts")
-    @Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getNotificationDeliveryReceipts(@QueryParam("page") Integer page,
                                                     @QueryParam("totalCount") Boolean totalCount);
 	
@@ -77,7 +77,7 @@ public interface HpcNotificationRestService
      */
 	@GET
     @Path("/notification/deliveryReceipt")
-    @Produces("application/json;charset=UTF-8, application/xml;charset=UTF-8")
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getNotificationDeliveryReceipt(@QueryParam("eventId") Integer eventId);
 }
 
