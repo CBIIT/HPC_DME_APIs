@@ -374,7 +374,7 @@ public class HpcLocalDirectoryListGenerator {
 		}
 
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
-      "dataObjectRegistration", "application/json;charset=UTF-8",
+      "dataObjectRegistration", "application/json; charset=UTF-8",
       hpcDataObjectRegistrationDTO));
 		objectPath = objectPath.replace("//", "/");
 		objectPath = objectPath.replace("\\", "/");
@@ -419,7 +419,7 @@ public class HpcLocalDirectoryListGenerator {
 		client.header("Connection", "Keep-Alive");
 //		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
     client.type(MediaType.MULTIPART_FORM_DATA).accept(
-      "application/json;charset=UTF-8");
+      "application/json; charset=UTF-8");
 
 		try {
 

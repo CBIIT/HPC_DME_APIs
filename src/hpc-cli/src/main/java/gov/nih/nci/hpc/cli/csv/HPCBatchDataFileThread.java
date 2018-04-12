@@ -171,13 +171,13 @@ public class HPCBatchDataFileThread implements Runnable {
 			}
 		}
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
-			"dataObjectRegistration", "application/json;charset=UTF-8",
+			"dataObjectRegistration", "application/json; charset=UTF-8",
       hpcDataObjectRegistrationDTO));
 
 		String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
 		client.header("Authorization", "Basic " + token);
 		client.type(MediaType.MULTIPART_FORM_DATA).accept(
-      "application/json;charset=UTF-8");
+      "application/json; charset=UTF-8");
 
 		try {
 			System.out.println(basePath + collName);

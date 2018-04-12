@@ -172,7 +172,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		}
 
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
-			"dataObjectRegistration", "application/json;charset=UTF-8",
+			"dataObjectRegistration", "application/json; charset=UTF-8",
       hpcDataObjectRegistrationDTO));
 		objectPath = objectPath.replace("//", "/");
 		objectPath = objectPath.replace("\\", "/");
@@ -204,7 +204,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		client.header("Connection", "Keep-Alive");
 //		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
     client.type(MediaType.MULTIPART_FORM_DATA).accept(
-      "application/json;charset=UTF-8");
+      "application/json; charset=UTF-8");
 
 		try {
 
@@ -261,7 +261,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(true);
     hpcDataObjectRegistrationDTO.setSource(null);
     atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
-      "dataObjectRegistration", "application/json;charset=UTF-8",
+      "dataObjectRegistration", "application/json; charset=UTF-8",
       hpcDataObjectRegistrationDTO));
     objectPath = objectPath.replace("//", "/");
     objectPath = objectPath.replace("\\", "/");
@@ -320,7 +320,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     client.header("Connection", "Keep-Alive");
 //    client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
     client.type(MediaType.MULTIPART_FORM_DATA).accept(
-      "application/json;charset=UTF-8");
+      "application/json; charset=UTF-8");
     try {
 
       Response restResponse = client.put(new MultipartBody(atts));
@@ -512,7 +512,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 
           httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
           httpConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-          httpConnection.setRequestProperty("Content-Type", "multipart/form-data;charset=UTF-8");
+          httpConnection.setRequestProperty("Content-Type", "multipart/form-data");
 
        */
 			httpConnection.setChunkedStreamingMode(bufferSize);
