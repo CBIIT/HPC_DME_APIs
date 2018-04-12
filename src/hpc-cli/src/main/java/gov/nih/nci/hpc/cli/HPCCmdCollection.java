@@ -150,7 +150,7 @@ public class HPCCmdCollection extends HPCCmdClient {
             .toUri().toURL().toExternalForm();
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
-//					client.type("application/json;charset=UTF-8");
+					//	If necessary, add client.type("application/json; charset=UTF-8");
 					restResponse = client.get();
 					
 				}  else if (cmd.equals("getCollections")) {
@@ -172,7 +172,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 					}
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
-					client.type("application/json;charset=UTF-8");
+					client.type("application/json; charset=UTF-8");
 					restResponse = client.post(criteriaClause);
 				}
 
@@ -403,7 +403,7 @@ public class HPCCmdCollection extends HPCCmdClient {
       .encode().toUri().toURL().toExternalForm();
 		WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
-//		client.type("application/json;charset=UTF-8");
+		//	If necessary, add	client.type("application/json; charset=UTF-8");
 		return client.delete();
 		
 	}
@@ -419,7 +419,7 @@ public class HPCCmdCollection extends HPCCmdClient {
       pathFromServerUrl).build().encode().toUri().toURL().toExternalForm();
  		WebClient client = HpcClientUtil.getWebClient(servicePath, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
-//    client.type("application/json;charset=UTF-8");
+		// if necessary, add client.type("application/json; charset=UTF-8");
 		Response restResponse = client.get();
 		MappingJsonFactory factory = new MappingJsonFactory();
 		

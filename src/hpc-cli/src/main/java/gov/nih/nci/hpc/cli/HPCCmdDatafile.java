@@ -142,7 +142,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					}	
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
-					//client.type("application/json;charset=UTF-8");
+					// if necessary, add client.type("application/json; charset=UTF-8");
 					restResponse = client.delete();
 				}
 				else if (cmd.equals("getDatafile")) {
@@ -153,7 +153,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
             .encode().toUri().toURL().toExternalForm();
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
-					// If necessary, here add "Content-Type" header set to "application/json;charset=UTF-8" via client.type("application/json;charset=UTF-8")
+					// If necessary, here add "Content-Type" header set to "application/json; charset=UTF-8" via client.type("application/json; charset=UTF-8")
 					restResponse = client.get();
 				} else if (cmd.equals("getDatafiles")) {
           serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
@@ -174,7 +174,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					}
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
-					client.type("application/json;charset=UTF-8");
+					client.type("application/json; charset=UTF-8");
 					restResponse = client.post(criteriaClause);
 				} 
 				System.out.println("Executing: " + serviceURL);

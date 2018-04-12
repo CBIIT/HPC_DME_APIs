@@ -81,7 +81,7 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
       connection.getHpcCertPath(), connection.getHpcCertPassword());
 		client.header("Authorization", "Bearer " + connection.getAuthToken());
 		client.header("Connection", "Keep-Alive");
-		client.type("application/json;charset=UTF-8");
+		client.type("application/json; charset=UTF-8");
 		Response restResponse = client.invoke("PUT", collectionDTO);
 		if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
 			System.out.println("Success!");

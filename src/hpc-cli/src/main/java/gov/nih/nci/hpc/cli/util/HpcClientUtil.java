@@ -182,7 +182,7 @@ public class HpcClientUtil {
           proxyPort, hpcCertPath, hpcCertPassword);
       String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
       client.header("Authorization", "Basic " + token);
-      // If necessary, here add "Content-Type" header set to "application/json;charset=UTF-8" via client.type("application/json;charset=UTF-8")
+      // If necessary, here add "Content-Type" header set to "application/json; charset=UTF-8" via client.type("application/json; charset=UTF-8")
       Response restResponse = client.get();
       if (restResponse == null)
         return null;
@@ -306,7 +306,7 @@ public class HpcClientUtil {
       WebClient client =
           getWebClient(serviceURL, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-      // If necessary, here add "Content-Type" header set to "application/json;charset=UTF-8" via client.type("application/json;charset=UTF-8")
+      // If necessary, here add "Content-Type" header set to "application/json; charset=UTF-8" via client.type("application/json; charset=UTF-8")
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
@@ -380,7 +380,7 @@ public class HpcClientUtil {
       WebClient client = getWebClient(apiUrl2Apply, proxyURL, proxyPort,
         hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-      // If necessary, here add "Content-Type" header set to "application/json;charset=UTF-8" via client.type("application/json;charset=UTF-8")
+      // If necessary, here add "Content-Type" header set to "application/json; charset=UTF-8" via client.type("application/json; charset=UTF-8")
       Response restResponse = client.invoke("GET", null);
       if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
@@ -476,7 +476,7 @@ public class HpcClientUtil {
       WebClient client =
           getWebClient(hpcDatafileURL, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-      client.type("application/json;charset=UTF-8");
+      client.type("application/json; charset=UTF-8");
       Response restResponse = client.invoke("PUT", datafileDTO);
       if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
         return (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil.getObject(restResponse,

@@ -109,7 +109,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 
 		hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(false);
 		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
-			"dataObjectRegistration", "application/json;charset=UTF-8",
+			"dataObjectRegistration", "application/json; charset=UTF-8",
       hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();
     String apiUrl2Apply;
@@ -134,7 +134,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		// DatatypeConverter.printBase64Binary((hpcObject.getUserId() + ":" +
 		// hpcObject.getPassword()).getBytes());
 		client.header("Authorization", "Bearer " + hpcObject.getAuthToken());
-		client.type(MediaType.MULTIPART_FORM_DATA).accept("application/json;charset=UTF-8");
+		client.type(MediaType.MULTIPART_FORM_DATA).accept("application/json; charset=UTF-8");
 		// client.type(MediaType.MULTIPART_FORM_DATA);
 		try {
       System.out.println("Processing: " + apiUrl2Apply);
