@@ -19,7 +19,7 @@ import org.springframework.util.StringUtils;
 public class HpcUtil {
 
   public static final char[] FORBIDDEN_CHARS =
-    new char[] { '\\', ';', '"' };
+    new char[] { '\\', ';' };
 
   // ---------------------------------------------------------------------//
   // constructors
