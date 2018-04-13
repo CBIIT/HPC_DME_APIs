@@ -89,7 +89,7 @@ public class HPCPermissions extends HPCBatchClient {
 		}
 
 		// Create the CSVFormat object with the header mapping
-		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader();
+		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader().withQuote(null);
 		try {
 			// initialize FileReader object
 			fileReader = new FileReader(fileName);
