@@ -15,6 +15,8 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-domain-databrowse="http://hpc.nci.nih.gov/domain/databrowse"
+	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
 	xmlns:hpc-dto-security="http://hpc.nci.nih.gov/dto/security"
 	targetNamespace="http://hpc.nci.nih.gov/dto/security" 
 	elementFormDefault="unqualified">
@@ -23,6 +25,10 @@
 		        schemaLocation="HpcUserTypes.xsd" />
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
 		        schemaLocation="HpcDataTransferTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/databrowse"
+		        schemaLocation="HpcDataBrowseTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datamanagement"
+		        schemaLocation="HpcDataManagementTypes.xsd" />	                
 
 	<!-- User DTO -->
 	<xsd:element name="HpcUserRequestDTO">
@@ -34,6 +40,12 @@
 				<xsd:element name="defaultBasePath" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
 				<xsd:element name="active" type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="bookmarks"
+				             type="hpc-domain-databrowse:HpcBookmark"
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="collectionsPermission"
+							type="hpc-domain-datamanagement:HpcPermissionForCollection" minOccurs="0" maxOccurs="unbounded" />
+							
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -46,7 +58,7 @@
 				<xsd:element name="doc" type="xsd:string" />
 				<xsd:element name="defaultBasePath" type="xsd:string" />
 				<xsd:element name="userRole" type="xsd:string" />
-				<xsd:element name="active" type="xsd:boolean" />
+				<xsd:element name="active" type="xsd:boolean" />		
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
