@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,11 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
+import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
@@ -42,6 +48,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataBrowseService;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
@@ -72,6 +79,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
   // The data management (iRODS) service.
   @Autowired private HpcDataManagementService dataManagementService = null;
+  
+  @Autowired private HpcDataBrowseService dataBrowseService = null;
 
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
@@ -157,6 +166,29 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     try {
       // Add the user to the system.
       securityService.addUser(nciAccount);
+      
+      //Set collection permissions
+      List<HpcPermissionForCollection> collectionsPermission = userRegistrationRequest.getCollectionsPermission();
+      if(!collectionsPermission.isEmpty()) {
+    	  for(HpcPermissionForCollection collectionPermission: collectionsPermission) {
+    		  HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
+    		    subjectPermission.setPermission(collectionPermission.getPermission());
+    		  	subjectPermission.setSubject(nciUserId);
+    		  	subjectPermission.setSubjectType(HpcSubjectType.USER);
+    		  	dataManagementService.setCollectionPermission(collectionPermission.getCollectionPath(), subjectPermission);
+    	  }
+      }
+      
+      //Add  bookmarks
+      List<HpcBookmark> bookmarks = userRegistrationRequest.getBookmarks();
+      if(!bookmarks.isEmpty()) {
+    	  for(HpcBookmark bookmark: bookmarks) {
+    		  
+    	    bookmark.setCreated(Calendar.getInstance());
+    		dataBrowseService.saveBookmark(nciUserId, bookmark);
+    	 }	  
+      }  
+      
       registrationCompleted = true;
 
     } finally {
