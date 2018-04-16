@@ -91,9 +91,9 @@ public class HpcUploadTaskController extends AbstractHpcController {
 			if (taskId == null || type == null)
 				return "redirect:/uploadtasks";
 
-			String queryServiceURL = registrationServiceURL + "/" + taskId;
-			HpcBulkDataObjectRegistrationStatusDTO uploadTask = HpcClientUtil.getDataObjectRegistrationTask(authToken,
-					queryServiceURL, sslCertPath, sslCertPassword);
+			HpcBulkDataObjectRegistrationStatusDTO uploadTask = HpcClientUtil
+				.getDataObjectRegistrationTask(authToken, this.registrationServiceURL,
+        taskId, this.sslCertPath, this.sslCertPassword);
 			model.addAttribute("hpcBulkDataObjectRegistrationTaskDTO", uploadTask.getTask());
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get registration status: " + e.getMessage());
