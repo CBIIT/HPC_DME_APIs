@@ -126,16 +126,4 @@
 		</jxb:bindings>
     </jxb:bindings>
     
-    <jxb:bindings schemaLocation="HpcDataBrowseTypes.xsd">
-		<jxb:bindings node="//xsd:complexType[@name='HpcBookmark']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.databrowse.HpcBookmark"/>
-		</jxb:bindings>
-    </jxb:bindings>
-    
-    <jxb:bindings schemaLocation="HpcDataManagementTypes.xsd">
-		<jxb:bindings node="//xsd:complexType[@name='HpcPermissionForCollection']">
-        	<jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection"/>
-		</jxb:bindings>
-    </jxb:bindings>
-
 </jxb:bindings>
