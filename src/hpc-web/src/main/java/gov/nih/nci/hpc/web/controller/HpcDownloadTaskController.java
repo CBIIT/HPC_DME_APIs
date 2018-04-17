@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,7 +93,9 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         bindingResult.addError(error);
         HpcLogin hpcLogin = new HpcLogin();
         model.addAttribute("hpcLogin", hpcLogin);
-        return "redirect:/login?returnPath=downloadtask&taskId=" + taskId + "&type=" + type;
+        return "redirect:/login?returnPath=downloadtask&taskId=" + MiscUtil
+          .performUrlEncoding(taskId) + "&type=" + MiscUtil.performUrlEncoding(
+          type);
       }
 
       if (taskId == null || type == null)
@@ -138,7 +141,9 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       String authToken = (String) session.getAttribute("hpcUserToken");
       if (authToken == null) {
         result.setMessage("Invalid user session, expired. Please login again.");
-        return "redirect:/login?returnPath=downloadtask&taskId=" + taskId + "&type=" + taskType;
+        return "redirect:/login?returnPath=downloadtask&taskId=" + MiscUtil
+          .performUrlEncoding(taskId) + "&type=" + MiscUtil.performUrlEncoding(
+          taskType);
       }
 
       model.addAttribute("taskId", taskId);

@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.web.model.HpcPermissionEntry;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntryType;
 import gov.nih.nci.hpc.web.model.HpcPermissions;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -164,8 +165,9 @@ public class HpcPermissionController extends AbstractHpcController {
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 			if (restResponse.getStatus() == 200) {
 				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				return "redirect:/permissions?assignType=User&type=" + permissionsRequest.getType() + "&path="
-						+ permissionsRequest.getPath();
+				return "redirect:/permissions?assignType=User&type=" + MiscUtil
+          .performUrlEncoding(permissionsRequest.getType()) + "&path=" +
+          MiscUtil.performUrlEncoding(permissionsRequest.getPath());
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(

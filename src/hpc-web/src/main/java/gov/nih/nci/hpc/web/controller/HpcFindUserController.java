@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -120,15 +121,21 @@ public class HpcFindUserController extends AbstractHpcController {
 				session.setAttribute("selectedUsers", buffer.toString());
 				if (selectedUsers != null && selectedUsers.length > 0)
 					if (hpcWebUser.getType() != null && hpcWebUser.getType().equals("group"))
-						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&groupName="
-								+ hpcWebUser.getPath() + "&type=" + hpcWebUser.getType();
+						return "redirect:/" + hpcWebUser.getSource() +
+							"?assignType=User&groupName=" + MiscUtil.performUrlEncoding(
+              hpcWebUser.getPath()) + "&type=" + MiscUtil.performUrlEncoding(
+              hpcWebUser.getType());
 					else
-						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
-								+ "&type=" + hpcWebUser.getType();
+						return "redirect:/" + hpcWebUser.getSource() +
+              "?assignType=User&path=" + MiscUtil.performUrlEncoding(hpcWebUser
+              .getPath()) + "&type=" + MiscUtil.performUrlEncoding(hpcWebUser
+              .getType());
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
-				return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
-						+ "&type=" + hpcWebUser.getType();
+				return "redirect:/" + hpcWebUser.getSource() +
+          "?assignType=User&path=" + MiscUtil.performUrlEncoding(hpcWebUser
+          .getPath()) + "&type=" + MiscUtil.performUrlEncoding(hpcWebUser
+          .getType());
 			}
 
 			String userId = null;

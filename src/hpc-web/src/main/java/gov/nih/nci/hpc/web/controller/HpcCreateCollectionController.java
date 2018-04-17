@@ -278,7 +278,8 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			model.addAttribute("hpcCollection", hpcCollection);
 			setCollectionPath(model, request, originPath);
 		}
-		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
+		return "redirect:/collection?path=" + MiscUtil.performUrlEncoding(
+      hpcCollection.getPath()) + "&action=view";
 	}
 
 	private void setCollectionPath(Model model, HttpServletRequest request, String parentPath) {

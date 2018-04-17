@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -267,8 +268,10 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
 					false);
 
-			String returnURL = webServerName + "/addbulk";
-			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&action=" + returnURL;
+			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
+				this.webServerName + "/addbulk");
+			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&" +
+        "action=" + percentEncodedReturnURL;
 		}
 
 		try {
