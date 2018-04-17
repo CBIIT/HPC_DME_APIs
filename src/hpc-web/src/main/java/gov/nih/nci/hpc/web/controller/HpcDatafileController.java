@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -93,7 +94,9 @@ public class HpcDatafileController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=datafile&action=" + action + "&path=" + path;
+				return "redirect:/login?returnPath=datafile&action=" + MiscUtil
+          .performUrlEncoding(action) + "&path=" + MiscUtil.performUrlEncoding(
+          path);
 			}
 
 			if (path == null)
@@ -168,7 +171,8 @@ public class HpcDatafileController extends AbstractHpcController {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		String[] action = request.getParameterValues("action");
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
-			return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
+			return "redirect:/datafile?path=" + MiscUtil.performUrlEncoding(
+        hpcDatafile.getPath()) + "&action=view";
 		else if (action != null && action.length > 0 && action[0].equals("delete")) {
 			boolean deleted = HpcClientUtil.deleteDatafile(authToken, serviceURL, hpcDatafile.getPath(), sslCertPath,
 					sslCertPassword);
@@ -195,7 +199,8 @@ public class HpcDatafileController extends AbstractHpcController {
 		} finally {
 			model.addAttribute("hpcDatafile", hpcDatafile);
 		}
-		return "redirect:/datafile?path=" + hpcDatafile.getPath() + "&action=view";
+		return "redirect:/datafile?path=" + MiscUtil.performUrlEncoding(hpcDatafile
+      .getPath()) + "&action=view";
 	}
 
 	@JsonView(Views.Public.class)

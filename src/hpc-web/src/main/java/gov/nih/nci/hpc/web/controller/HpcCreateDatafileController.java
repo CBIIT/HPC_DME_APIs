@@ -226,7 +226,10 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 		else if (action != null && action.length > 0 && action[0].equals("Globus")) {
 			session.setAttribute("datafilePath", hpcDataModel.getPath());
 			session.setAttribute("basePathSelected", basePath);
-			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&action=" + request.getRequestURL();
+      final String percentEncodedRequestUrl = MiscUtil.performUrlEncoding(
+        request.getRequestURL().toString());
+			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&" +
+        "action=" + percentEncodedRequestUrl;
 		}
 		String uploadType = request.getParameter("uploadType");
 
@@ -307,7 +310,8 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			}
 		}
 		// if (uploadType != null && uploadType.equals("sync"))
-		return "redirect:/datafile?path=" + hpcDataModel.getPath() + "&action=view";
+		return "redirect:/datafile?path=" + MiscUtil.performUrlEncoding(hpcDataModel
+			.getPath()) + "&action=view";
 		// else
 		// return "adddatafile";
 	}

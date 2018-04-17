@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -85,7 +86,9 @@ public class HpcUploadTaskController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=uploadtask&taskId=" + taskId + "&type=" + type;
+				return "redirect:/login?returnPath=uploadtask&taskId=" + MiscUtil
+					.performUrlEncoding(taskId) + "&type=" + MiscUtil.performUrlEncoding(
+          type);
 			}
 
 			if (taskId == null || type == null)

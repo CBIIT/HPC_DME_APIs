@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -306,7 +307,7 @@ public class HpcBrowseController extends AbstractHpcController {
     if (!postProcPath.startsWith("/")) {
       postProcPath = "/".concat(postProcPath);
     }
-    final String encodedPath = URLEncoder.encode(postProcPath, "UTF-8");
+    final String encodedPath = MiscUtil.performUrlEncoding(postProcPath);
     final String retNavString = String.format(
       "redirect:/datafile?action=view&path=%s&source=browse&init",
       encodedPath);

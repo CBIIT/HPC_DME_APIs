@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -103,7 +104,9 @@ public class HpcCollectionController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=collection&action=" + action + "&path=" + path;
+				return "redirect:/login?returnPath=collection&action=" + MiscUtil
+          .performUrlEncoding(action) + "&path=" + MiscUtil.performUrlEncoding(
+          path);
 			}
 
 			if (path == null) {
@@ -222,7 +225,8 @@ public class HpcCollectionController extends AbstractHpcController {
 			final RedirectAttributes redirectAttributes) {
 		String[] action = request.getParameterValues("action");
 		if (action != null && action.length > 0 && action[0].equals("cancel"))
-			return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
+			return "redirect:/collection?path=" + MiscUtil.performUrlEncoding(
+        hpcCollection.getPath()) + "&action=view";
 
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
@@ -240,7 +244,8 @@ public class HpcCollectionController extends AbstractHpcController {
 		} catch (Exception e) {
 			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
 		}
-		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
+		return "redirect:/collection?path=" + MiscUtil.performUrlEncoding(
+      hpcCollection.getPath()) + "&action=view";
 	}
 
 	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs) {
@@ -449,7 +454,8 @@ public class HpcCollectionController extends AbstractHpcController {
             model.addAttribute("hpcLogin", new HpcLogin());
             retNavOutcome = String.format(
               "redirect:/login?returnPath=collection&action=%s&path=%s",
-              collectionAction, collectionPath
+              MiscUtil.performUrlEncoding(collectionAction),
+              MiscUtil.performUrlEncoding(collectionPath)
             );
         }
         return retNavOutcome;
