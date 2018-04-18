@@ -35,7 +35,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -165,9 +167,12 @@ public class HpcPermissionController extends AbstractHpcController {
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 			if (restResponse.getStatus() == 200) {
 				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				return "redirect:/permissions?assignType=User&type=" + MiscUtil
-          .performUrlEncoding(permissionsRequest.getType()) + "&path=" +
-          MiscUtil.performUrlEncoding(permissionsRequest.getPath());
+				final Map<String, String> qParams = new HashMap<>();
+				qParams.put("assignType", "User");
+				qParams.put("type", permissionsRequest.getType());
+				qParams.put("path", permissionsRequest.getPath());
+				return "redirect:/permissions?".concat(MiscUtil
+          .generateEncodedQueryString(qParams));
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
