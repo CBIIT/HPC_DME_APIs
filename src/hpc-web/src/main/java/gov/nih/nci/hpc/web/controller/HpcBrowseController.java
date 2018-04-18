@@ -346,85 +346,145 @@ public class HpcBrowseController extends AbstractHpcController {
 	 * @param refresh
 	 * @return
 	 */
-	private HpcBrowserEntry getTreeNodes(String path, HpcBrowserEntry browserEntry, String authToken, Model model,
-			boolean getChildren, boolean partial, boolean refresh) {
-
-		path = path.trim();
-		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
-
-		if(refresh & selectedEntry != null) {
-			selectedEntry.setPopulated(false);
-		}
-
-		if (selectedEntry != null && selectedEntry.isPopulated())
-			return partial ? selectedEntry : browserEntry;
-		if (selectedEntry != null && selectedEntry.getChildren() != null)
-			selectedEntry.getChildren().clear();
-		if (selectedEntry == null)
-		{
-			selectedEntry = new HpcBrowserEntry();
-			selectedEntry.setName(path);
-		}
-
-		try
-		{
-			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionURL, path, true, false,
-					sslCertPath, sslCertPassword);
-
-			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
-				HpcCollection collection = collectionDTO.getCollection();
-				selectedEntry.setFullPath(collection.getAbsolutePath());
-				selectedEntry.setId(collection.getAbsolutePath());
-				selectedEntry.setName(collection.getCollectionName());
-				if (getChildren)
-					selectedEntry.setPopulated(true);
-				else
-					selectedEntry.setPopulated(false);
-				selectedEntry.setCollection(true);
-				for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
-					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
-					listChildEntry.setCollection(true);
-					listChildEntry.setFullPath(listEntry.getPath());
-					listChildEntry.setId(listEntry.getPath());
-					listChildEntry.setName(listEntry.getPath());
-					listChildEntry.setPopulated(false);
-					if (getChildren)
-						listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false, partial,
-								false);
-					else {
-						HpcBrowserEntry emptyEntry = new HpcBrowserEntry();
-						emptyEntry.setName("");
-						listChildEntry.getChildren().add(emptyEntry);
-					}
-					selectedEntry.getChildren().add(listChildEntry);
-				}
-				for (HpcCollectionListingEntry listEntry : collection.getDataObjects()) {
-					selectedEntry.setCollection(true);
-					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
-					listChildEntry.setCollection(false);
-					listChildEntry.setFullPath(listEntry.getPath());
-					listChildEntry.setId(listEntry.getPath());
-					listChildEntry.setName(listEntry.getPath());
-					listChildEntry.setPopulated(true);
-					selectedEntry.getChildren().add(listChildEntry);
-				}
-				if (selectedEntry.getChildren() == null || selectedEntry.getChildren().isEmpty()) {
-					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
-					listChildEntry.setCollection(false);
-					listChildEntry.setFullPath(" ");
-					listChildEntry.setId(" ");
-					listChildEntry.setName(" ");
-					listChildEntry.setPopulated(true);
-					selectedEntry.getChildren().add(listChildEntry);
-				}
+	private HpcBrowserEntry getTreeNodes(
+    String path,
+    HpcBrowserEntry browserEntry,
+    String authToken,
+    Model model,
+    boolean getChildren,
+    boolean partial,
+    boolean refresh) {
+    final String effPath = path.trim();
+		HpcBrowserEntry selectedEntry = getSelectedEntry(effPath, browserEntry);
+    if (null == selectedEntry) {
+      selectedEntry = new HpcBrowserEntry();
+      selectedEntry.setName(effPath);
+    } else {
+      if (refresh) {
+        selectedEntry.setPopulated(false);
+      }
+      if (selectedEntry.isPopulated()) {
+        return partial ? selectedEntry : browserEntry;
+      }
+      if (null != selectedEntry.getChildren()) {
+        selectedEntry.getChildren().clear();
+      }
+    }
+		try {
+			final HpcCollectionListDTO collDtos = HpcClientUtil.getCollection(
+        authToken,
+        this.collectionURL,
+        effPath,
+        true,
+        false,
+        this.sslCertPath,
+        this.sslCertPassword);
+			for (HpcCollectionDTO someCollDto : collDtos.getCollections()) {
+				HpcCollection coll = someCollDto.getCollection();
+        selectedEntry.setId(coll.getAbsolutePath());
+        selectedEntry.setName(coll.getCollectionName());
+				selectedEntry.setFullPath(coll.getAbsolutePath());
+        selectedEntry.setCollection(true);
+        selectedEntry.setPopulated(getChildren);
+        processSubCollections(
+          coll,
+          selectedEntry,
+          model,
+          authToken,
+          getChildren,
+          partial);
+        processDataObjects(coll, selectedEntry);
+        addStubDataObjectChildIfChildless(selectedEntry);
 			}
-		}
-		catch(HpcWebException e)
-		{
+		} catch (HpcWebException e) {
 			model.addAttribute("error", e.getMessage());
 		}
+
 		return partial ? selectedEntry : browserEntry;
 	}
+
+
+	private void addStubDataObjectChildIfChildless(HpcBrowserEntry
+    theBrowseEntry) {
+    if (theBrowseEntry.getChildren() == null ||
+        theBrowseEntry.getChildren().isEmpty()) {
+      theBrowseEntry.getChildren().add(genPopHpcBrowserEntry4StubDataObj());
+    }
+  }
+
+
+	private void processDataObjects(
+    HpcCollection theColl,
+    HpcBrowserEntry theBrowseEntry
+  ) {
+    for (HpcCollectionListingEntry someEntry : theColl.getDataObjects()) {
+      theBrowseEntry.setCollection(true);
+      theBrowseEntry.getChildren().add(
+        genPopHpcBrowserEntry4DataObj(someEntry));
+    }
+  }
+
+
+	private void processSubCollections(
+    HpcCollection theColl,
+    HpcBrowserEntry theBrowseEntry,
+    Model theModel,
+    String theAuthToken,
+    boolean fetchChildren,
+    boolean fetchPartial) {
+    for (HpcCollectionListingEntry someEntry : theColl.getSubCollections()) {
+      HpcBrowserEntry listChildEntry = genUnpopHpcBrowserEntry4Coll(someEntry);
+      if (fetchChildren) {
+        listChildEntry = getTreeNodes(someEntry.getPath(), listChildEntry,
+          theAuthToken, theModel,false, fetchPartial,false);
+      } else {
+        listChildEntry.getChildren().add(genStubNamelessHpcBrowserEntry());
+      }
+      theBrowseEntry.getChildren().add(listChildEntry);
+    }
+  }
+
+
+	private static HpcBrowserEntry genStubNamelessHpcBrowserEntry() {
+    final HpcBrowserEntry emptyEntry = new HpcBrowserEntry();
+    emptyEntry.setName("");
+    return emptyEntry;
+  }
+
+
+	private static HpcBrowserEntry genPopHpcBrowserEntry4StubDataObj() {
+    final HpcBrowserEntry browserEntry = new HpcBrowserEntry();
+    browserEntry.setId(" ");
+    browserEntry.setName(" ");
+    browserEntry.setFullPath(" ");
+    browserEntry.setCollection(false);
+    browserEntry.setPopulated(true);
+    return browserEntry;
+  }
+
+
+  private static HpcBrowserEntry genPopHpcBrowserEntry4DataObj(
+    HpcCollectionListingEntry collListingEntry) {
+    final HpcBrowserEntry browserEntry = new HpcBrowserEntry();
+    browserEntry.setId(collListingEntry.getPath());
+    browserEntry.setName(collListingEntry.getPath());
+    browserEntry.setFullPath(collListingEntry.getPath());
+    browserEntry.setCollection(false);
+    browserEntry.setPopulated(true);
+    return browserEntry;
+  }
+
+
+  private static HpcBrowserEntry genUnpopHpcBrowserEntry4Coll(
+    HpcCollectionListingEntry collListingEntry) {
+    final HpcBrowserEntry browserEntry = new HpcBrowserEntry();
+    browserEntry.setId(collListingEntry.getPath());
+    browserEntry.setName(collListingEntry.getPath());
+    browserEntry.setFullPath(collListingEntry.getPath());
+    browserEntry.setCollection(true);
+    browserEntry.setPopulated(false);
+    return browserEntry;
+  }
 
 
   /**
