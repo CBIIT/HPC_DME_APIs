@@ -236,7 +236,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             path, userId, userName, configurationId);
 
         // Validate the collection hierarchy.
-        dataManagementService.validateHierarchy(path, configurationId, false);
+        dataManagementService.validateContainerHierarchy(path, configurationId, false);
 
         // Add collection update event.
         addCollectionUpdatedEvent(path, true, false, userId);
@@ -719,7 +719,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       boolean registrationCompleted = false;
       try {
         // Validate the new data object complies with the hierarchy definition.
-        dataManagementService.validateHierarchy(collectionPath, configurationId, true);
+        dataManagementService.validateContainerHierarchy(collectionPath, configurationId, true);
 
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);

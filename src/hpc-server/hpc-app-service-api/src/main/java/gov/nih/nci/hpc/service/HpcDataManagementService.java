@@ -217,6 +217,19 @@ public interface HpcDataManagementService {
    */
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
       throws HpcException;
+  
+  
+  /**
+   * Validate the node of a path against a hierarchy definition.
+   *
+   * @param path The collection node.
+   * @param configurationId Use validation rules of this data management configuration.
+   * @param dataObjectRegistration If true, the service validates if data object registration is
+   *     allowed in this collection.
+   * @throws HpcException If the hierarchy is invalid.
+   */
+  public void validateContainerHierarchy(String path, String configurationId, boolean dataObjectRegistration)
+      throws HpcException;
 
   /**
    * Get collection by its path.
