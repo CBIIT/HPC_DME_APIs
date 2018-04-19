@@ -447,6 +447,26 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     dataHierarchyValidator.validateHierarchy(
         configurationId, collectionPathTypes, dataObjectRegistration);
   }
+  
+  @Override
+  public void validateContainerHierarchy(String path, String configurationId, boolean dataObjectRegistration)
+	      throws HpcException {
+	    // Calculate the collection path to validate.
+	    String validationCollectionPath = dataManagementProxy.getRelativePath(path);
+	    
+	    // Build the collection path types list.
+	    List<String> collectionPathTypes = new ArrayList<>();
+	   
+	    String collectionType = getCollectionType(validationCollectionPath);
+	    if (collectionType != null) {
+	        collectionPathTypes.add(collectionType);
+	    }
+	    
+
+	    // Perform the hierarchy validation.
+	    dataHierarchyValidator.validateHierarchy(
+	        configurationId, collectionPathTypes, dataObjectRegistration);
+	  }
 
   @Override
   public HpcCollection getCollection(String path, boolean list) throws HpcException {
