@@ -16,10 +16,10 @@ FROM r_coll_main t1,
   ( SELECT "BASE_PATH" pathname
     FROM "HPC_DATA_MANAGEMENT_CONFIGURATION"
     WHERE "DOC" IN ('DUMMY_NO_HIER', 'FS_ARCHIVE', 'NOHIERARCHY', 'TEST')) t2
-WHERE strpos(t1.coll_name, t2.pathname) > 0
+WHERE strpos(t1.coll_name, '/trash/home/') = 0
+  AND strpos(t1.coll_name, t2.pathname) > 0
   AND strpos(substring(t1.coll_name from (strpos(t1.coll_name, t2.pathname) + char_length(t2.pathname) + 1)), '/') = 0
-  AND trim(both from substring(t1.coll_name from (strpos(t1.coll_name, t2.pathname) + char_length(t2.pathname) + 1))) != ''
-  AND strpos(t1.coll_name, '/trash/home/') = 0
+  AND substring(t1.coll_name from (strpos(t1.coll_name, t2.pathname) + char_length(t2.pathname)) for 1) = '/'
 ORDER BY 1
 --LIMIT 100
 ;
