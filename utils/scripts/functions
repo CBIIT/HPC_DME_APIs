@@ -1376,3 +1376,50 @@ function dm_get_download_status {
     fi
 }
 
+
+
+
+#Add a bookmark for a user
+#Inputs:  <bookmark_name>: Name of the bookmark
+#         <description.json>: The json file containing the parameters
+function dm_add_bookmark () {
+
+    local USAGE="USAGE: dm_add_bookmark <bookmark_name> <description.json>"
+
+    if [ -z "$1" ] || [ -z "$2" ] 
+    then
+        echo "ERROR: using dm_register" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+   
+    local BOOKMARK_NAME="$1"
+    local DESCRIPTION_PATH="$2"
+    
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+    
+    local RESPONSE_MSG=bookmark-response-message.json.tmp
+    local RESPONSE_HEADER=add_bookmark-response-header.tmp
+
+    rm -f  $RESPONSE_MSG 2>/dev/null 
+    rm -f $RESPONSE_HEADER 2>/dev/null 
+
+    local CURL_FLAGS="${SERVER}/bookmark/${BOOKMARK_NAME}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    
+  
+    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status 
+        
+    check_connection $RESPONSE_HEADER
+}
+
+
