@@ -335,7 +335,7 @@ $('#tree1').bind('tree.init', function() {
     $("#bookmarksDiv").empty();
     var aBookmarkLink;
     for (i = 0; i < userBookmarks.length; i++) {
-      var linkHref = '/browse?refresh&path=' + userBookmarks[i].path;
+      var linkHref = '/browse?refresh&path=' + percentEncodePath(userBookmarks[i].path);
       aBookmarkLink = "<a href='bm-path'>bm-name</a>".replace("bm-path", linkHref)
                                                      .replace("bm-name", userBookmarks[i].name);
       $("#bookmarksDiv").append(aBookmarkLink);
@@ -348,16 +348,16 @@ $('#tree1').bind('tree.init', function() {
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "viewDetails": function (node) {
     	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
-    	                     node.fullPath + "&source=browse&init";
+    	                     percentEncodePath(node.fullPath) + "&source=browse&init";
     },
     "addCollection": function (node) {
-    	window.location = "/addCollection?parent="+node.fullPath+"&source=browse&init";
+    	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
     },
     "addDatafile": function (node) {
-    	window.location = "/addDatafile?parent="+node.fullPath+"&source=browse&init";
+    	window.location = "/addDatafile?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
     },
     "addBulk": function (node) {
-    	window.location = "/addbulk?parent="+node.fullPath+"&source=browse&init";
+    	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
     },
     "refreshNode": function (node) {
     	refreshNode(node);
