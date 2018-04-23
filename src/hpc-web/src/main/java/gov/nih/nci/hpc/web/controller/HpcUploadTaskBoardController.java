@@ -21,6 +21,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -98,10 +100,12 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 				page = Integer.parseInt(pageStr);
 			}
 			
-			String serviceURL = queryServiceURL + "?page=" + page + "&totalCount=true";
-			HpcRegistrationSummaryDTO registrations = HpcClientUtil.getRegistrationSummary(authToken, serviceURL, sslCertPath,
-					sslCertPassword);
-
+      final MultiValueMap<String,String> paramsMap = new LinkedMultiValueMap<>();
+      paramsMap.set("page", Integer.toString(page));
+      paramsMap.set("totalCount", Boolean.TRUE.toString());
+			HpcRegistrationSummaryDTO registrations = HpcClientUtil
+        .getRegistrationSummary(authToken, this.queryServiceURL, paramsMap,
+        this.sslCertPath, this.sslCertPassword);
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			if (registrations.getActiveTasks() != null && !registrations.getActiveTasks().isEmpty())
 				for (HpcBulkDataObjectRegistrationTaskDTO registration : registrations.getActiveTasks()) {

@@ -9,6 +9,9 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -104,8 +107,12 @@ public class HpcFindUserController extends AbstractHpcController {
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-
 			String[] actionType = request.getParameterValues("actionType");
+      final Map<String, String> qParamsA = new HashMap<>();
+      qParamsA.put("assignType", "User");
+      qParamsA.put("type", hpcWebUser.getType());
+      final String baseRedirectSpec = "redirect:/".concat(hpcWebUser
+        .getSource());
 			if (actionType != null && actionType.length > 0 && actionType[0].equals("selected")) {
 				String[] selectedUsers = request.getParameterValues("selectedUsers");
 				StringBuffer buffer = new StringBuffer();
@@ -118,17 +125,20 @@ public class HpcFindUserController extends AbstractHpcController {
 					}
 				}
 				session.setAttribute("selectedUsers", buffer.toString());
-				if (selectedUsers != null && selectedUsers.length > 0)
-					if (hpcWebUser.getType() != null && hpcWebUser.getType().equals("group"))
-						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&groupName="
-								+ hpcWebUser.getPath() + "&type=" + hpcWebUser.getType();
-					else
-						return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
-								+ "&type=" + hpcWebUser.getType();
+				if (selectedUsers != null && selectedUsers.length > 0) {
+          if (hpcWebUser.getType() != null && hpcWebUser.getType().equals("group")) {
+            qParamsA.put("groupName", hpcWebUser.getPath());
+          } else {
+            qParamsA.put("path", hpcWebUser.getPath());
+          }
+          return baseRedirectSpec.concat("?").concat(MiscUtil
+            .generateEncodedQueryString(qParamsA));
+        }
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
-				return "redirect:/" + hpcWebUser.getSource() + "?assignType=User&path=" + hpcWebUser.getPath()
-						+ "&type=" + hpcWebUser.getType();
+				qParamsA.put("path", hpcWebUser.getPath());
+				return baseRedirectSpec.concat("?").concat(MiscUtil
+          .generateEncodedQueryString(qParamsA));
 			}
 
 			String userId = null;

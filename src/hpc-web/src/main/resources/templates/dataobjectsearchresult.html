@@ -75,216 +75,222 @@
 	var app = angular.module('app', [ 'ngAnimate', 'ngTouch', 'ui.grid',
 			'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns',
 			'ui.grid.moveColumns', 'ui.grid.selection' ]);
-
 	app
-			.controller(
-					'MainCtrl',
-					[
-							'$scope',
-							'$http',
-							'$interval',
-							function($scope, $http, $interval) {
+    .filter('dme-path-encoding', function () {
+      return function (dmePathValue) {
+        return percentEncodePath(dmePathValue);
+      };
+    })
 
-								$scope.gridOptions1 = {
-									enableSorting : true,
-									enableFiltering : true,
-								    paginationPageSize: 100,
-								    enablePaginationControls: false,
-									enableRowSelection : true,
-									enableSelectAll : true,
-									treeRowHeaderAlwaysVisible : false,
-									columnDefs : [ {
-										field : 'path',
-										width : 500,
-										displayName : 'Path',
-										cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../datafile?action=view&amp;path={{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
-									},{
-										field : 'download',
-										width : 150,
-										displayName : 'Download',
-										cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
-									},{
-										field : 'permission',
-										width : 150,
-										displayName : 'Permission',
-										cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=dataObject&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>' 
-									}  ],
-									onRegisterApi : function(gridApi) {
-										$scope.gridApi = gridApi;
-									}
-								};
- 							    $scope.gridOptions1.totalItems = totalRows;
- 								$scope.gridOptions1.multiSelect = true;
-								//$scope.gridOptions1.data = resultsArray;
-								$scope.gridOptions1.data = results;
-								$scope.selectedRows = [];
-								
-								$scope.selectAll = function() {
-									$scope.gridApi.selection.selectAllRows();
-								};
+    .controller('MainCtrl', [
+      '$scope',
+      '$http',
+      '$interval',
+      function($scope, $http, $interval) {
+        $scope.gridOptions1 = {
+          enableSorting : true,
+          enableFiltering : true,
+          paginationPageSize: 100,
+          enablePaginationControls : false,
+          enableRowSelection : true,
+          enableSelectAll : true,
+          treeRowHeaderAlwaysVisible : false,
+          columnDefs : [
+            {
+              field : 'path',
+              width : 500,
+              displayName : 'Path',
+              cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../datafile?action=view&amp;path={{COL_FIELD | dme-path-encoding}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
+            },
+            {
+              field : 'download',
+              width : 150,
+              displayName : 'Download',
+              cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;path={{COL_FIELD | dme-path-encoding}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
+            },
+            {
+              field : 'permission',
+              width : 150,
+              displayName : 'Permission',
+              cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=dataObject&amp;path={{COL_FIELD | dme-path-encoding}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
+            }
+          ],
+          onRegisterApi : function(gridApi) {
+            $scope.gridApi = gridApi;
+          }
+        };
+        $scope.gridOptions1.totalItems = totalRows;
+        $scope.gridOptions1.multiSelect = true;
+        //$scope.gridOptions1.data = resultsArray;
+        $scope.gridOptions1.data = results;
+        $scope.selectedRows = [];
 
-								$scope.expandAll = function() {
-									$scope.gridApi.treeBase.expandAllRows();
-								};
+        $scope.selectAll = function() {
+          $scope.gridApi.selection.selectAllRows();
+        };
 
-								$scope.gridOptions1.onRegisterApi = function(gridApi) {
-									//set gridApi on scope
-									$scope.gridApi = gridApi;
-								    $scope.totalPages = totalPages;
-								    $scope.currentPage = currentPage;
-								    $scope.totalRows = totalRows;
-								    $scope.currentPageSize = currentPageSize;
+        $scope.expandAll = function() {
+          $scope.gridApi.treeBase.expandAllRows();
+        };
 
-								    $interval(function() {
-								    	if(hpcSelectedDatafileList != null)
-								    	{
-								    	for(var i=0;i<hpcSelectedDatafileList.length;i++)
-								    	  {
-								    		var row = hpcSelectedDatafileList[i];
-								    		//alert(row);
-								    		  var pageRow = row.substring(0,row.lastIndexOf(":"));
-//								    		  alert(pageRow);
-								    		  var page = pageRow.substring(0,pageRow.indexOf(":"));
-//								    		  alert(page);
-								    		  var row = pageRow.substring(pageRow.indexOf(":")+1);
-	//							    		  alert(row);
-		//						    		  alert($scope.currentPage);
-								    		  if(page == $scope.currentPage)
-								    		 	 $scope.gridApi.selection.selectRow($scope.gridOptions1.data[row]);
-								    	  }
-								    	}
-		                                }, 0, 1);
-								    
- 									gridApi.selection.on.rowSelectionChanged($scope, function(
-											row) {
-										var selectedRowIndex = $scope.gridOptions1.data.indexOf(row.entity);
-										if(row.isSelected) 
-										{
- 											if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
-												$scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
- 											selectedRowsData = $scope.selectedRows;	
-										}
-										else
-										{
-											var selectedPath = $scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path;
-											var indexFromSelectedRows = -1;
-											for(var x=0;x<$scope.selectedRows.length;x++)
-											{
-												if(selectedPath == $scope.selectedRows[x])
-													indexFromSelectedRows = x;
-											}
-											//$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
-											$scope.selectedRows.splice(indexFromSelectedRows, 1);
-										}
-										selectedRowsData = $scope.selectedRows;
-										console.log('SUCCESS: ', $scope.selectedRows);
-									});
- 									
- 									gridApi.selection.on.rowSelectionChangedBatch($scope, function(
-											row) {
- 												
-		 										var selectAll = false;
-		 										if(gridApi.selection.getSelectedRows().length > 0)
-		 											selectAll = true;
+        $scope.gridOptions1.onRegisterApi = function(gridApi) {
+          //set gridApi on scope
+          $scope.gridApi = gridApi;
+            $scope.totalPages = totalPages;
+            $scope.currentPage = currentPage;
+            $scope.totalRows = totalRows;
+            $scope.currentPageSize = currentPageSize;
 
-		 										gridApi.selection.getSelectedRows().forEach(function(row) {
-		 											console.log('SUCCESS: ', row);
-		 											var selectedRowIndex = $scope.gridOptions1.data.indexOf(row);
-		 											if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
-														$scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.path);
-												});
-	 										if(!selectAll)
- 											{
-												for(var z=0;z<$scope.gridOptions1.data.length;z++)
-												{
-	 												var row = $scope.gridOptions1.data[z];
-		 											var selectedRowIndex = $scope.gridOptions1.data.indexOf(row);
-													//alert("unselected "+$scope.currentPage + ":"+selectedRowIndex + ":" + row.path);
-													var selectedPath = $scope.currentPage + ":"+selectedRowIndex + ":" + row.path;
-													var indexFromSelectedRows = -1;
-													for(var x=0;x<$scope.selectedRows.length;x++)
-													{
-														if(selectedPath == $scope.selectedRows[x])
-															indexFromSelectedRows = x;
-													}
-													//$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
-													$scope.selectedRows.splice(indexFromSelectedRows, 1);
-	 											}	
- 											}
-										console.log('SUCCESS: ', $scope.selectedRows);
-										selectedRowsData = $scope.selectedRows;
-									});
-								};
-								
-								Array.prototype.contains = function(obj) {
-								    var i = this.length;
-								    while (i--) {
-								        if (this[i] == obj) {
-								            return true;
-								        }
-								    }
-								    return false;
-								};
-								
-								$scope.downloadSelectedRows = function() {
-									console.log('$scope.selectedRows: ', $scope.selectedRows);
-									console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
-									var updatedList = [];
-									if($scope.selectedRows != null)
-							    	{
-								    	if(hpcSelectedDatafileList != null)
-								    	{
-								    	  for(var i=hpcSelectedDatafileList.length-1;i>=0;i--)
-								    	  {
-	  							    		  var row = hpcSelectedDatafileList[i];
-								    		  var pageRow = row.substring(0,row.lastIndexOf(":"));
-								    		  var page = pageRow.substring(0,pageRow.indexOf(":"));
-								    		  if(page != $scope.currentPage)
-								    			  updatedList.push(row)
-								    	  }
-								    	}
-										
-								    	for(var i=0;i<selectedRowsData.length;i++)
-							    	    {
-								    		if(!updatedList.contains(selectedRowsData[i]))
-								    			updatedList.push(selectedRowsData[i]);
-								    	}
-							    	}
-									console.log(' after updatedList: ', updatedList);
-									
-									if(updatedList == null || updatedList.length == 0)
-									{
-										alert("Select at least one data file to download");
-										return false;
-									}
-									document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
-									if(source == "criteria")
-										document.getElementById("searchType").value = "criteria";
-									else
-										document.getElementById("searchType").value = "search";
-									document.getElementById("downloadFilesform").elements.namedItem("pageNumber").value =  currentPage;
-									document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
-									document.getElementById("downloadType").value = "datafiles";
-									document.getElementById("downloadFilesform").submit();
-								};
+            $interval(function() {
+              if(hpcSelectedDatafileList != null)
+              {
+              for(var i=0;i<hpcSelectedDatafileList.length;i++)
+                {
+                var row = hpcSelectedDatafileList[i];
+                //alert(row);
+                  var pageRow = row.substring(0,row.lastIndexOf(":"));
+  //								    		  alert(pageRow);
+                  var page = pageRow.substring(0,pageRow.indexOf(":"));
+  //								    		  alert(page);
+                  var row = pageRow.substring(pageRow.indexOf(":")+1);
+  //							    		  alert(row);
+  //						    		  alert($scope.currentPage);
+                  if(page == $scope.currentPage)
+                   $scope.gridApi.selection.selectRow($scope.gridOptions1.data[row]);
+                }
+              }
+                            }, 0, 1);
 
-								$scope.clearAll = function() {
-									$scope.gridApi.selection.clearSelectedRows();
-								};
+          gridApi.selection.on.rowSelectionChanged($scope, function(
+              row) {
+            var selectedRowIndex = $scope.gridOptions1.data.indexOf(row.entity);
+            if(row.isSelected)
+            {
+              if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
+                $scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
+              selectedRowsData = $scope.selectedRows;
+            }
+            else
+            {
+              var selectedPath = $scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path;
+              var indexFromSelectedRows = -1;
+              for(var x=0;x<$scope.selectedRows.length;x++)
+              {
+                if(selectedPath == $scope.selectedRows[x])
+                  indexFromSelectedRows = x;
+              }
+              //$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
+              $scope.selectedRows.splice(indexFromSelectedRows, 1);
+            }
+            selectedRowsData = $scope.selectedRows;
+            console.log('SUCCESS: ', $scope.selectedRows);
+          });
 
-								$scope.getId = function(grid, row, col) {
-									console.log(row);
-									if (row.treeNode.children[0].row.treeNode.children[0]) {
-										var entity = row.treeNode.children[0].row.treeNode.children[0].row.entity;
-										return entity.id;
-									} else if (row.treeNode.children[0]) {
-										var entity = row.treeNode.children[0].row.entity;
-										return entity.id;
-									}
+          gridApi.selection.on.rowSelectionChangedBatch($scope, function(
+              row) {
 
-									return row.entity.id;
-								}
-							} ]);
+                var selectAll = false;
+                if(gridApi.selection.getSelectedRows().length > 0)
+                  selectAll = true;
+
+                gridApi.selection.getSelectedRows().forEach(function(row) {
+                  console.log('SUCCESS: ', row);
+                  var selectedRowIndex = $scope.gridOptions1.data.indexOf(row);
+                  if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
+                    $scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.path);
+                });
+              if(!selectAll)
+              {
+                for(var z=0;z<$scope.gridOptions1.data.length;z++)
+                {
+                  var row = $scope.gridOptions1.data[z];
+                  var selectedRowIndex = $scope.gridOptions1.data.indexOf(row);
+                  //alert("unselected "+$scope.currentPage + ":"+selectedRowIndex + ":" + row.path);
+                  var selectedPath = $scope.currentPage + ":"+selectedRowIndex + ":" + row.path;
+                  var indexFromSelectedRows = -1;
+                  for(var x=0;x<$scope.selectedRows.length;x++)
+                  {
+                    if(selectedPath == $scope.selectedRows[x])
+                      indexFromSelectedRows = x;
+                  }
+                  //$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
+                  $scope.selectedRows.splice(indexFromSelectedRows, 1);
+                }
+              }
+            console.log('SUCCESS: ', $scope.selectedRows);
+            selectedRowsData = $scope.selectedRows;
+          });
+        };
+
+        Array.prototype.contains = function(obj) {
+            var i = this.length;
+            while (i--) {
+                if (this[i] == obj) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $scope.downloadSelectedRows = function() {
+          console.log('$scope.selectedRows: ', $scope.selectedRows);
+          console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
+          var updatedList = [];
+          if($scope.selectedRows != null)
+            {
+              if(hpcSelectedDatafileList != null)
+              {
+                for(var i=hpcSelectedDatafileList.length-1;i>=0;i--)
+                {
+                    var row = hpcSelectedDatafileList[i];
+                  var pageRow = row.substring(0,row.lastIndexOf(":"));
+                  var page = pageRow.substring(0,pageRow.indexOf(":"));
+                  if(page != $scope.currentPage)
+                    updatedList.push(row)
+                }
+              }
+
+              for(var i=0;i<selectedRowsData.length;i++)
+                {
+                if(!updatedList.contains(selectedRowsData[i]))
+                  updatedList.push(selectedRowsData[i]);
+              }
+            }
+          console.log(' after updatedList: ', updatedList);
+
+          if(updatedList == null || updatedList.length == 0)
+          {
+            alert("Select at least one data file to download");
+            return false;
+          }
+          document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
+          if(source == "criteria")
+            document.getElementById("searchType").value = "criteria";
+          else
+            document.getElementById("searchType").value = "search";
+          document.getElementById("downloadFilesform").elements.namedItem("pageNumber").value =  currentPage;
+          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
+          document.getElementById("downloadType").value = "datafiles";
+          document.getElementById("downloadFilesform").submit();
+        };
+
+        $scope.clearAll = function() {
+          $scope.gridApi.selection.clearSelectedRows();
+        };
+
+        $scope.getId = function(grid, row, col) {
+          console.log(row);
+          if (row.treeNode.children[0].row.treeNode.children[0]) {
+            var entity = row.treeNode.children[0].row.treeNode.children[0].row.entity;
+            return entity.id;
+          } else if (row.treeNode.children[0]) {
+            var entity = row.treeNode.children[0].row.entity;
+            return entity.id;
+          }
+
+          return row.entity.id;
+        }
+      } ]);
 /*]]>*/
 </script>
 <style>
