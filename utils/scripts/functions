@@ -1388,7 +1388,7 @@ function dm_add_bookmark () {
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "ERROR: using dm_register" >&2
+        echo "ERROR: using dm_add_bookmark" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
         return 1
@@ -1408,7 +1408,7 @@ function dm_add_bookmark () {
       exit 1
     fi
     
-    local RESPONSE_MSG=bookmark-response-message.json.tmp
+    local RESPONSE_MSG=iadd_bookmark-response-message.json.tmp
     local RESPONSE_HEADER=add_bookmark-response-header.tmp
 
     rm -f  $RESPONSE_MSG 2>/dev/null 
@@ -1421,5 +1421,50 @@ function dm_add_bookmark () {
         
     check_connection $RESPONSE_HEADER
 }
+
+#Register a user
+#Inputs:  <user id>: LDAP id of the user
+#         <description.json>: The json file containing the parameters
+function dm_register_user () {
+
+local USAGE="USAGE: dm_register_user <userId> <description.json>"
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using dm_registe_user" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+  
+    local USER_ID="$1"
+    local DESCRIPTION_PATH="$2"
+   
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+   
+    local RESPONSE_MSG=register_user-response-message.json.tmp
+    local RESPONSE_HEADER=register_user-response-header.tmp
+
+    rm -f  $RESPONSE_MSG 2>/dev/null
+    rm -f $RESPONSE_HEADER 2>/dev/null
+
+    local CURL_FLAGS="${SERVER}/user/${USER_ID}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+   
+ 
+    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+
+    check_connection $RESPONSE_HEADER
+
+}
+
 
 
