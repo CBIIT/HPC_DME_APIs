@@ -114,9 +114,9 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		long start = System.currentTimeMillis();
     String apiUrl2Apply;
 		try {
-      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-          hpcObject.getBasePath()).path(HpcClientUtil.prependForwardSlashIfAbsent(
-          objectPath)).build().encode().toUri().toURL().toExternalForm();
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcObject.getBasePath())
+				.path("/{dme-archive-path}").buildAndExpand(objectPath).encode().toUri()
+        .toURL().toExternalForm();
     } catch (MalformedURLException mue) {
 		  final String informativeMsg = new StringBuilder("Error in attempt to")
         .append(" build URL for making REST service call.\nBasis URL [")

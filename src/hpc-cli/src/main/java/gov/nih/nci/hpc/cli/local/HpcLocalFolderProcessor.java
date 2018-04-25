@@ -61,14 +61,15 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
 		System.out.println("Registering Collection " + collectionPath);
 
-		final String pathUnderServerUrl = HpcClientUtil.constructPathString(
-      "collection", basePath, collectionPath);
     String apiUrl2Apply;
 		try {
       apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(connection
-        .getHpcServerURL()).path(pathUnderServerUrl).build().encode().toUri()
-        .toURL().toExternalForm();
+        .getHpcServerURL()).path("/collection/{base-path}/{collection-path}")
+				.buildAndExpand(basePath, collectionPath)
+				.encode().toUri().toURL().toExternalForm();
     } catch (MalformedURLException mue) {
+      final String pathUnderServerUrl = HpcClientUtil.constructPathString(
+        "collection", basePath, collectionPath);
 		  final String informativeMsg = new StringBuilder("Error in attempt to")
         .append(" build URL for making REST service call.\nBase server URL [")
         .append(connection.getHpcServerURL()).append("].\nPath under base")
