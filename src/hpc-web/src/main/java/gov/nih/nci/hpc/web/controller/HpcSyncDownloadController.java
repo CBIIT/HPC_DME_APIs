@@ -97,18 +97,11 @@ public class HpcSyncDownloadController extends AbstractHpcController {
         model.addAttribute("Invalid user session, expired. Please login again.");
         return null;
       }
-
-      final String[] pathSegs = downloadFile.getDestinationPath().split("/");
-      final List<String> segmentsList = new ArrayList<>(pathSegs.length + 1);
-      for (String pathSeg : pathSegs) {
-        if (!pathSeg.isEmpty()) {
-          segmentsList.add(pathSeg);
-        }
-      }
-      segmentsList.add("download");
       final String serviceURL = UriComponentsBuilder.fromHttpUrl(
-        this.dataObjectServiceURL).pathSegment(segmentsList.toArray(pathSegs))
-        .build().toUri().toURL().toExternalForm();
+        this.dataObjectServiceURL).path("/{dme-archive-path}/download")
+        .buildAndExpand(downloadFile.getDestinationPath()).toUri().toURL()
+        .toExternalForm();
+
       final HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
       dto.setGenerateDownloadRequestURL(true);
 

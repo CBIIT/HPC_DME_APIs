@@ -142,17 +142,9 @@ public class HpcDownloadController extends AbstractHpcController {
 			final String basisURL = "collection".equals(downloadFile
         .getDownloadType()) ? this.collectionServiceURL :
         this.dataObjectServiceURL;
-			final String[] rawSegments = downloadFile.getDestinationPath().split("/");
-			final List<String> destPathSegments = new ArrayList<>(rawSegments.length);
-      for (String rawSegment : rawSegments) {
-        if (!rawSegment.isEmpty()) {
-          destPathSegments.add(rawSegment);
-        }
-      }
-			final String serviceURL = UriComponentsBuilder.fromHttpUrl(basisURL)
-        .pathSegment(destPathSegments.toArray(rawSegments)).pathSegment(
-        "download").build().toUri().toURL().toExternalForm();
-
+      final String serviceURL = UriComponentsBuilder.fromHttpUrl(basisURL)
+        .path("/{dme-archive-path}/download").buildAndExpand(downloadFile
+        .getDestinationPath()).toUri().toURL().toExternalForm();
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
 				HpcFileLocation location = new HpcFileLocation();
