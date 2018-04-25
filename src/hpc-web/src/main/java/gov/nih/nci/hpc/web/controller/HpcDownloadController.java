@@ -144,7 +144,7 @@ public class HpcDownloadController extends AbstractHpcController {
         this.dataObjectServiceURL;
       final String serviceURL = UriComponentsBuilder.fromHttpUrl(basisURL)
         .path("/{dme-archive-path}/download").buildAndExpand(downloadFile
-        .getDestinationPath()).toUri().toURL().toExternalForm();
+        .getDestinationPath()).encode().toUri().toURL().toExternalForm();
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
 				HpcFileLocation location = new HpcFileLocation();

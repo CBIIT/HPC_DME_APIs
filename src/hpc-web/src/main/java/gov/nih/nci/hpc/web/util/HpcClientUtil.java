@@ -318,7 +318,7 @@ public class HpcClientUtil {
       String theItemPath = argItemPath.trim();
       final String hpcServiceUrl = UriComponentsBuilder.fromHttpUrl(
         argServiceUrlPrefix).path("/{dme-archive-path}").buildAndExpand(
-        theItemPath).toUri().toURL().toExternalForm();
+        theItemPath).encode().toUri().toURL().toExternalForm();
 
       final WebClient client = HpcClientUtil.getWebClient(hpcServiceUrl,
                                 argSslCertPath, argSslCertPasswd);
@@ -365,8 +365,8 @@ public class HpcClientUtil {
       } else {
         ucBuilder.queryParam("list", Boolean.valueOf(list).toString());
       }
-      final String serviceURL = ucBuilder.buildAndExpand(path).toUri().toURL()
-        .toExternalForm();
+      final String serviceURL = ucBuilder.buildAndExpand(path).encode().toUri()
+        .toURL().toExternalForm();
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
@@ -401,7 +401,7 @@ public class HpcClientUtil {
     try {
       final String url2Apply = UriComponentsBuilder.fromHttpUrl(hpcDatafileURL)
         .path("/{dme-archive-path}").queryParam("list", Boolean.valueOf(list))
-        .buildAndExpand(path).toUri().toURL().toExternalForm();
+        .buildAndExpand(path).encode().toUri().toURL().toExternalForm();
       WebClient client = HpcClientUtil.getWebClient(url2Apply, hpcCertPath,
         hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -450,7 +450,7 @@ public class HpcClientUtil {
       if (null != doc && !doc.trim().isEmpty()) {
         ucBuilder.queryParam("doc", doc.trim());
       }
-      final String url2Apply = ucBuilder.build().toUri().toURL()
+      final String url2Apply = ucBuilder.build().encode().toUri().toURL()
         .toExternalForm();
       WebClient client =
           HpcClientUtil.getWebClient(url2Apply, hpcCertPath, hpcCertPassword);
@@ -525,8 +525,8 @@ public class HpcClientUtil {
       String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-        .fromHttpUrl(hpcUserURL).pathSegment(userId).build().toUri().toURL()
-        .toExternalForm(), hpcCertPath, hpcCertPassword);
+        .fromHttpUrl(hpcUserURL).pathSegment(userId).build().encode().toUri()
+        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
@@ -568,8 +568,8 @@ public class HpcClientUtil {
       String userId, String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-        .fromHttpUrl(hpcUserURL).pathSegment(userId).build().toUri().toURL()
-        .toExternalForm(), hpcCertPath, hpcCertPassword);
+        .fromHttpUrl(hpcUserURL).pathSegment(userId).build().encode().toUri()
+        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", userDTO);
@@ -603,7 +603,8 @@ public class HpcClientUtil {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcBookmarkURL).pathSegment(hpcBookmarkName).build()
-        .toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+        .encode().toUri().toURL().toExternalForm(), hpcCertPath,
+        hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", hpcBookmark);
@@ -636,7 +637,8 @@ public class HpcClientUtil {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcBookmarkURL).pathSegment(hpcBookmarkName).build()
-        .toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+        .encode().toUri().toURL().toExternalForm(), hpcCertPath,
+        hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
@@ -668,8 +670,8 @@ public class HpcClientUtil {
       String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-        .fromHttpUrl(hpcSavedSearchURL).pathSegment(searchName).build().toUri()
-        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+        .fromHttpUrl(hpcSavedSearchURL).pathSegment(searchName).build().encode()
+        .toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
@@ -734,8 +736,8 @@ public class HpcClientUtil {
     HpcGroupMembersResponseDTO response = null;
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-        .fromHttpUrl(hpcUserURL).pathSegment(groupName).build().toUri().toURL()
-        .toExternalForm(), hpcCertPath, hpcCertPassword);
+        .fromHttpUrl(hpcUserURL).pathSegment(groupName).build().encode().toUri()
+        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", groupDTO);
@@ -781,8 +783,8 @@ public class HpcClientUtil {
     HpcGroupMembersResponseDTO response = null;
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-        .fromHttpUrl(hpcUserURL).pathSegment(groupName).build().toUri().toURL()
-        .toExternalForm(), hpcCertPath, hpcCertPassword);
+        .fromHttpUrl(hpcUserURL).pathSegment(groupName).build().encode().toUri()
+        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("POST", groupDTO);
       if (restResponse.getStatus() == 200) {
@@ -826,8 +828,8 @@ public class HpcClientUtil {
     HpcGroupMembersResponseDTO response = null;
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-        .fromHttpUrl(hpcUserURL).pathSegment(groupName).build().toUri().toURL()
-        .toExternalForm(), hpcCertPath, hpcCertPassword);
+        .fromHttpUrl(hpcUserURL).pathSegment(groupName).build().encode().toUri()
+        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("DELETE", null);
       if (restResponse.getStatus() == 200) {
@@ -866,8 +868,8 @@ public class HpcClientUtil {
 
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcCollectionURL).path("/{dme-archive-path}")
-        .buildAndExpand(path).toUri().toURL().toExternalForm(), hpcCertPath,
-        hpcCertPassword);
+        .buildAndExpand(path).encode().toUri().toURL().toExternalForm(),
+        hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", collectionDTO);
@@ -901,8 +903,8 @@ public class HpcClientUtil {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcCollectionURL).path("/{dme-archive-path}")
-        .buildAndExpand(path).toUri().toURL().toExternalForm(), hpcCertPath,
-        hpcCertPassword);
+        .buildAndExpand(path).encode().toUri().toURL().toExternalForm(),
+        hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("PUT", collectionDTO);
@@ -935,8 +937,8 @@ public class HpcClientUtil {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcCollectionURL).path("/{dme-archive-path}")
-        .buildAndExpand(collectionPath).toUri().toURL().toExternalForm(),
-        hpcCertPath, hpcCertPassword);
+        .buildAndExpand(collectionPath).encode().toUri().toURL()
+        .toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
@@ -980,7 +982,8 @@ public class HpcClientUtil {
 
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcDatafileURL).path("/{dme-archive-path}").buildAndExpand(
-        path).toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+        path).encode().toUri().toURL().toExternalForm(), hpcCertPath,
+        hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
@@ -1059,7 +1062,8 @@ public class HpcClientUtil {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcDatafileURL).path("/{dme-archive-path}").buildAndExpand(
-        path).toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+        path).encode().toUri().toURL().toExternalForm(), hpcCertPath,
+        hpcCertPassword);
       client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
       List<Attachment> atts = new LinkedList<Attachment>();
       atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
@@ -1097,7 +1101,7 @@ public class HpcClientUtil {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcDatafileURL).path("/{dme-archive-path}").buildAndExpand(
-        path).toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+        path).encode().toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.delete();
@@ -1129,8 +1133,8 @@ public class HpcClientUtil {
       String userId, String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-        .fromHttpUrl(hpcUserURL).pathSegment(userId).build().toUri().toURL()
-        .toExternalForm(), hpcCertPath, hpcCertPassword);
+        .fromHttpUrl(hpcUserURL).pathSegment(userId).build().encode().toUri()
+        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("POST", userDTO);
@@ -1166,8 +1170,8 @@ public class HpcClientUtil {
       if (null != groupName && !groupName.trim().isEmpty()) {
         ucBuilder.queryParam("groupPattern", groupName.trim());
       }
-      WebClient client = HpcClientUtil.getWebClient(ucBuilder.build().toUri()
-        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+      WebClient client = HpcClientUtil.getWebClient(ucBuilder.build().encode()
+        .toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
       Response restResponse = client.invoke("GET", null);
@@ -1198,7 +1202,8 @@ public class HpcClientUtil {
     HpcNamedCompoundMetadataQueryDTO retVal = null;
     try {
       final String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcQueryURL)
-          .pathSegment(queryName).build().toUri().toURL().toExternalForm();
+        .pathSegment(queryName).build().encode().toUri().toURL()
+        .toExternalForm();
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath,
           hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -1318,7 +1323,7 @@ public class HpcClientUtil {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcServiceURL)
         .path("/{dme-archive-path}/acl/user/{user-id}")
-        .buildAndExpand(templateVarValues).toUri().toURL()
+        .buildAndExpand(templateVarValues).encode().toUri().toURL()
         .toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.get();
@@ -1343,8 +1348,8 @@ public class HpcClientUtil {
       if (null != basePaths && 0 < basePaths.length) {
         ucBuilder.queryParam("collectionPath", basePaths);
       }
-      WebClient client = HpcClientUtil.getWebClient(ucBuilder.build().toUri()
-        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+      WebClient client = HpcClientUtil.getWebClient(ucBuilder.build().encode()
+        .toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.get();
       HpcUserPermsForCollectionsDTO retVal = null;
@@ -1431,8 +1436,8 @@ public class HpcClientUtil {
     hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-          .fromHttpUrl(hpcQueryURL).queryParams(queryParamsMap).build().toUri()
-          .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
+          .fromHttpUrl(hpcQueryURL).queryParams(queryParamsMap).build().encode()
+          .toUri().toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.get();
       if (restResponse == null || restResponse.getStatus() != 200) {
@@ -1542,8 +1547,8 @@ public class HpcClientUtil {
     taskId, String hpcCertPath, String hpcCertPassword) {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
-        .fromHttpUrl(hpcQueryURL).pathSegment(taskId).build().toUri().toURL()
-        .toExternalForm(), hpcCertPath, hpcCertPassword);
+        .fromHttpUrl(hpcQueryURL).pathSegment(taskId).build().encode().toUri()
+        .toURL().toExternalForm(), hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.get();
 
