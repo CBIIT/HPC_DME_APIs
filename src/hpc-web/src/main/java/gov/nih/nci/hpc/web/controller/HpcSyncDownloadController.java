@@ -99,8 +99,8 @@ public class HpcSyncDownloadController extends AbstractHpcController {
       }
       final String serviceURL = UriComponentsBuilder.fromHttpUrl(
         this.dataObjectServiceURL).path("/{dme-archive-path}/download")
-        .buildAndExpand(downloadFile.getDestinationPath()).toUri().toURL()
-        .toExternalForm();
+        .buildAndExpand(downloadFile.getDestinationPath()).encode().toUri()
+        .toURL().toExternalForm();
 
       final HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
       dto.setGenerateDownloadRequestURL(true);

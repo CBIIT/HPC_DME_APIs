@@ -227,8 +227,8 @@ public class HpcPermissionController extends AbstractHpcController {
         return null;
       }
 			final String serviceAPIUrl = UriComponentsBuilder.fromHttpUrl(basisUrl)
-				.path("/{dme-archive-path}/acl").buildAndExpand(path).toUri().toURL()
-				.toExternalForm();
+				.path("/{dme-archive-path}/acl").buildAndExpand(path).encode().toUri()
+        .toURL().toExternalForm();
       return serviceAPIUrl;
     } catch (MalformedURLException e) {
       throw new HpcWebException("Unable to generate URL to invoke for ACL on" +
