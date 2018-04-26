@@ -8,15 +8,18 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
 public class ReportGenerator {
+
+  private static final int FIXED_SPACE_GAP_WIDTH = 5;
+  private static final int QTY_2_TRIGGER_FLUSH = 100;
 
   private static final String SEVEN_ARG_CONSTRUCTOR_SIGNATURE =
     ReportGenerator.class.getSimpleName() +
@@ -28,42 +31,36 @@ public class ReportGenerator {
     " Date pStartTime," +
     " Date pFinishTime)";
 
+  protected Comparator<ResidualItem> riComparatorByPathLen =
+    new Comparator<ResidualItem>() {
+      @Override
+      public int compare(ResidualItem o1, ResidualItem o2) {
+        final int o1PathLen = null == o1.itemPath ? 0 : o1.itemPath.length();
+        final int o2PathLen = null == o2.itemPath ? 0 : o2.itemPath.length();
+        return o1PathLen - o2PathLen;
+      }
+  };
 
-  @Value("${report.output.file-extension}")
-  private String reportFileExtension;
-
-  @Value("${report.output.filename-prefix}")
-  private String reportFilenamePrefix;
-
-  @Value("${report.output.filename-timestamp-format}")
-  private String reportFilenameTimestampPattern;
-
-  @Value("${report.output.dir}")
-  private String reportOutputDir;
-
-  @Value("${report.output.first-line-content}")
-  private String reportFirstLineContent;
-
-  @Value("${report.output.date-format}")
-  private String reportDatePattern;
-
-  @Value("${report.output.section-separator-line:--------------------------------------------------------------------------------}")
-  private String sectionSeparatorLine;
-
-  @Value("${report.output.section-separator-num-lines:2}")
-  private int sectionSeparatorNumLines;
-
+  private final int sectionSeparatorNumLines = 2;
   private List<String> docsList;
   private List<String> collectionsDeleted;
   private List<String> dataObjectsDeleted;
-
   private Optional<Date> startTime;
   private Optional<Date> finishTime;
   private Optional<List<ResidualItem>> collectionsOutstanding;
   private Optional<List<ResidualItem>> dataObjectsOutstanding;
-
   private SimpleDateFormat fileNameTimestampFormat;
   private SimpleDateFormat reportDateFormat;
+  private final String defaultReportFileExtension = ".txt";
+  private final String defaultReportFilenamePrefix = "archives-clean-report-";
+  private final String defaultReportFilenameTimestampPattern =
+      "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+  private final String defaultReportOutputDir = "C:\\tmp";
+  private final String reportDatePattern = "yyyy-MM-dd HH:mm:ss Z";
+  private final String reportFirstLineContent =
+      "HPC DME Archives Cleaning Report";
+  private final String sectionSeparatorLine = "----------------------------------------------------------------------------------------------------";
+
 
   public ReportGenerator() {
     final List<String> emptyListOfString = new ArrayList<>();
@@ -184,116 +181,173 @@ public class ReportGenerator {
   public String generate(String filePath2Report) {
     validateProperties();
 
-    final String fqPathForReportFile = StringUtils.hasText(filePath2Report) ?
+    String fqPathForReportFile = StringUtils.hasText(filePath2Report) ?
       filePath2Report : produceReportFilename();
 
-    try (BufferedWriter buffWriter = new BufferedWriter(new FileWriter(
-        fqPathForReportFile))) {
+/*
+    File outFile = new File(fqPathForReportFile);
+    if (outFile.exists()) {
+      throw new RuntimeException(this.getClass().getSimpleName() +
+        " will not overwrite existing file at " + outFile.getAbsolutePath() +
+        ".  Please specify a non-existent file system location for writing" +
+        " report.");
+    }
+    try {
+      outFile.createNewFile();
+    } catch (IOException ioe) {
+      throw new RuntimeException(this.getClass().getSimpleName() +
+        " failed to initiate new file at " + outFile.getAbsolutePath(), ioe);
+    }
+*/
+    FileWriter fWriter = null;
+    BufferedWriter buffWriter = null;
+    try {
+      fWriter = new FileWriter(fqPathForReportFile, false);
+      buffWriter = new BufferedWriter(fWriter);
+
       doReportTopSection(buffWriter);
+
       insertReportSectionSeparator(buffWriter);
       doReportSummarySection(buffWriter);
+
       insertReportSectionSeparator(buffWriter);
       doReportCollectionDetailsSection(buffWriter);
+
       insertReportSectionSeparator(buffWriter);
       doReportDataObjectsDetailsSection(buffWriter);
 
-      return fqPathForReportFile;
+      buffWriter.flush();
     } catch (IOException ioe) {
       throw new RuntimeException(this.getClass().getSimpleName() +
-          " failed to produce report file!", ioe);
+        " failed to produce report file!", ioe);
+    } finally {
+      // Any clean up as needed
+      try {
+        if (null != buffWriter) {
+          buffWriter.close();
+        }
+        if (null != fWriter) {
+          fWriter.close();
+        }
+      } catch (Exception e) {
+        // do nothing intentional
+      }
     }
+
+//    final String outputFileAbsPath = outFile.getAbsolutePath();
+//    outFile = null;
+//    return outputFileAbsPath;
+    return fqPathForReportFile;
   }
 
 
   private void doReportCollectionDetailsSection(BufferedWriter buffWriter) throws IOException {
     buffWriter.newLine();
-
     buffWriter.write("Following ");
-    buffWriter.write(this.collectionsDeleted.size());
+    buffWriter.write(String.valueOf(this.collectionsDeleted.size()));
     buffWriter.write(" Collections were successfully deleted:");
     buffWriter.newLine();
-
+    int largerQty = Math.max(this.collectionsDeleted.size(),
+      this.collectionsOutstanding.orElse(Collections.emptyList()).size());
+    int desiredWidth1 = String.valueOf(largerQty).length() +
+      FIXED_SPACE_GAP_WIDTH;
+    String rpadPattern1 = "%1$-" + desiredWidth1 + "s";
     int counter = 1;
     for (String aDeletedColl : this.collectionsDeleted) {
-      buffWriter.write(counter + ".");
+      buffWriter.write(String.format(rpadPattern1, counter + "."));
       buffWriter.write(aDeletedColl);
       buffWriter.newLine();
       counter += 1;
     }
-
     if (this.collectionsOutstanding.isPresent() &&
         !this.collectionsOutstanding.get().isEmpty()) {
       buffWriter.newLine();
-
       buffWriter.write("Following ");
-      buffWriter.write(this.collectionsOutstanding.get().size());
+      buffWriter.write(String.valueOf(this.collectionsOutstanding.get().size()));
       buffWriter.write(" Collections could not be deleted:");
       buffWriter.newLine();
-
+      buffWriter.flush();
       counter = 1;
+      int desiredWidth2 = Collections.max(this.collectionsOutstanding.get(),
+        this.riComparatorByPathLen).itemPath.length() + FIXED_SPACE_GAP_WIDTH;
+      String rpadPattern2 = "%1$-" + desiredWidth2 + "s";
       StringBuilder sb = new StringBuilder();
       for (ResidualItem ri : this.collectionsOutstanding.get()) {
-        sb.append(counter)
-          .append(". ")
-          .append(ri.itemPath)
-          .append("  |  Info: {")
-          .append(ri.serviceResponse)
-          .append("}");
+        sb.append(String.format(rpadPattern1, counter + "."))
+          .append(String.format(rpadPattern2, ri.itemPath))
+          .append("|");
+        for (int j = 0; j < FIXED_SPACE_GAP_WIDTH; j += 1) {
+          sb.append(" ");
+        }
+        sb.append("Info: ")
+          .append(ri.serviceResponse);
         String residualCollLine = sb.toString();
         sb.setLength(0);
         buffWriter.write(residualCollLine);
         buffWriter.newLine();
         counter += 1;
+        if (counter > 1 && counter % QTY_2_TRIGGER_FLUSH == 0) {
+          buffWriter.flush();
+        }
       }
     }
-
     buffWriter.newLine();
+    buffWriter.flush();
   }
 
 
   private void doReportDataObjectsDetailsSection(BufferedWriter buffWriter) throws IOException {
     buffWriter.newLine();
-
     buffWriter.write("Following ");
-    buffWriter.write(this.dataObjectsDeleted.size());
+    buffWriter.write(String.valueOf(this.dataObjectsDeleted.size()));
     buffWriter.write(" Data Objects were successfully deleted:");
     buffWriter.newLine();
-
+    int largerQty = Math.max(this.dataObjectsDeleted.size(),
+      this.dataObjectsOutstanding.orElse(Collections.emptyList()).size());
+    int desiredWidth1 = String.valueOf(largerQty).length() +
+      FIXED_SPACE_GAP_WIDTH;
+    String rpadPattern1 = "%1$-" + desiredWidth1 + "s";
     int counter = 1;
     for (String aDeletedDataObj : this.dataObjectsDeleted) {
-      buffWriter.write(counter + ".");
+      buffWriter.write(String.format(rpadPattern1, counter + "."));
       buffWriter.write(aDeletedDataObj);
       buffWriter.newLine();
       counter += 1;
     }
-
     if (this.dataObjectsOutstanding.isPresent() &&
         !this.dataObjectsOutstanding.get().isEmpty()) {
       buffWriter.newLine();
-
       buffWriter.write("Following ");
-      buffWriter.write(this.dataObjectsOutstanding.get().size());
+      buffWriter.write(String.valueOf(this.dataObjectsOutstanding.get().size()));
       buffWriter.write(" Data Objects could not be deleted:");
       buffWriter.newLine();
-
+      buffWriter.flush();
       counter = 1;
+      int desiredWidth2 = Collections.max(this.dataObjectsOutstanding.get(),
+        this.riComparatorByPathLen).itemPath.length() + FIXED_SPACE_GAP_WIDTH;
+      String rpadPattern2 = "%1$-" + desiredWidth2 + "s";
       StringBuilder sb = new StringBuilder();
       for (ResidualItem ri : this.dataObjectsOutstanding.get()) {
-        sb.append(counter)
-            .append(". ")
-            .append(ri.itemPath)
-            .append("  |  Info: {")
-            .append(ri.serviceResponse)
-            .append("}");
+        sb.append(String.format(rpadPattern1, counter + "."))
+          .append(String.format(rpadPattern2, ri.itemPath))
+          .append("|");
+        for (int j = 0; j < FIXED_SPACE_GAP_WIDTH; j += 1) {
+          sb.append(" ");
+        }
+        sb.append("Info: ")
+          .append(ri.serviceResponse);
         String residualDataObjLine = sb.toString();
         sb.setLength(0);
         buffWriter.write(residualDataObjLine);
         buffWriter.newLine();
         counter += 1;
+        if (counter > 1 && counter % QTY_2_TRIGGER_FLUSH == 0) {
+          buffWriter.flush();
+        }
       }
     }
-
     buffWriter.newLine();
+    buffWriter.flush();
   }
 
 
@@ -317,40 +371,42 @@ public class ReportGenerator {
 
     buffWriter.write(indent);
     buffWriter.write("# Collections Identified   =  ");
-    buffWriter.write(totalColls);
+    buffWriter.write(String.valueOf(totalColls));
 
     buffWriter.newLine();
 
     buffWriter.write(indent);
     buffWriter.write("# Collections Deleted      =  ");
-    buffWriter.write(this.collectionsDeleted.size());
+    buffWriter.write(String.valueOf(this.collectionsDeleted.size()));
 
     buffWriter.newLine();
 
     buffWriter.write(indent);
     buffWriter.write("# Collections Outstanding  =  ");
-    buffWriter.write(numOutstandColls);
+    buffWriter.write(String.valueOf(numOutstandColls));
 
     buffWriter.newLine();
 
     buffWriter.write(indent);
     buffWriter.write("# Data Objects Identified   =  ");
-    buffWriter.write(totalDataObjs);
+    buffWriter.write(String.valueOf(totalDataObjs));
 
     buffWriter.newLine();
 
     buffWriter.write(indent);
     buffWriter.write("# Data Objects Deleted      =  ");
-    buffWriter.write(this.dataObjectsDeleted.size());
+    buffWriter.write(String.valueOf(this.dataObjectsDeleted.size()));
 
     buffWriter.newLine();
 
     buffWriter.write(indent);
     buffWriter.write("# Data Objects Outstanding  =  ");
-    buffWriter.write(numOutstandDataObjs);
+    buffWriter.write(String.valueOf(numOutstandDataObjs));
 
     buffWriter.newLine();
     buffWriter.newLine();
+
+    buffWriter.flush();
   }
 
 
@@ -388,11 +444,13 @@ public class ReportGenerator {
         .append(" and finished at ")
         .append(this.reportDateFormat.format(this.finishTime.get()));
       String startFinishTimingInfo = sb.toString();
-      sb.setLength(0);
       buffWriter.write(startFinishTimingInfo);
       buffWriter.newLine();
       buffWriter.newLine();
+      sb.setLength(0);
     }
+
+    buffWriter.flush();
   }
 
 
@@ -401,20 +459,21 @@ public class ReportGenerator {
       buffWriter.write(this.sectionSeparatorLine);
       buffWriter.newLine();
     }
+    buffWriter.flush();
   }
 
 
   private String produceReportFilename() {
     if (null == this.fileNameTimestampFormat) {
       this.fileNameTimestampFormat = new SimpleDateFormat(
-        this.reportFilenameTimestampPattern);
+        this.defaultReportFilenameTimestampPattern);
     }
     final StringBuilder sb = new StringBuilder();
-    sb.append(this.reportOutputDir)
+    sb.append(this.defaultReportOutputDir)
       .append(File.separator)
-      .append(this.reportFilenamePrefix)
+      .append(this.defaultReportFilenamePrefix)
       .append(this.fileNameTimestampFormat.format(new Date()))
-      .append(this.reportFileExtension);
+      .append(this.defaultReportFileExtension);
     final String retFilename = sb.toString();
     return retFilename;
   }
