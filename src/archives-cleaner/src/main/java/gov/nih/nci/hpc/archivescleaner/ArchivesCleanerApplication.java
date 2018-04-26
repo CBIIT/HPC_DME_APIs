@@ -2,9 +2,13 @@ package gov.nih.nci.hpc.archivescleaner;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,7 +68,66 @@ public class ArchivesCleanerApplication implements CommandLineRunner {
 
 
 	@Override
-	public void run(String ... args) throws Exception {
+  public void run(String ... args) throws Exception {
+    final Map<String, Object> retMap = new HashMap<>();
+    retMap.put("docsList", Arrays.asList(
+      "DOC-alpha", "DOC-beta", "DOC-gamma", "DOC-zeta"));
+    retMap.put("deletedCollections", Arrays.asList(
+      "/alpha/bpath1/foo",
+      "/alpha/bpath2/bar",
+      "/beta/bpathX/uno",
+      "/beta/bpathX/dos",
+      "/beta/bpathX/tres",
+      "/gamma/bpApple/red",
+      "/gamma/bpApple/green",
+      "/gamma/bpApple/gold",
+      "/gamma/bpBanana/yellow",
+      "/gamma/bpBanana/green",
+      "/gamma/bpBanana/brown"
+    ));
+    retMap.put("deletedDataObjects", Arrays.asList(
+      "/alpha/bpath1/myfile1.txt",
+      "/alpha/bpath1/myfile2.txt",
+      "/alpha/bpath1/myfile3.txt",
+      "/beta/bpathX/sampleDoc1.pdf",
+      "/beta/bpathX/sampleDoc2.pdf",
+      "/gamma/bpApple/petPhotoA.jpg",
+      "/gamma/bpApple/petPhotoB.jpg",
+      "/gamma/bpApple/petPhotoC.jpg",
+      "/zeta/books-vol1.xlsx",
+      "/zeta/books-vol2.xlsx",
+      "/zeta/books-vol3.xlsx"
+    ));
+    retMap.put("outstandingCollections", Arrays.asList(
+      new ResidualItem("/alpha/bpath2/leftover", "Reason 1"),
+      new ResidualItem("/beta/bpathX/cuatro", "Reason 2"),
+      new ResidualItem("/gamma/bpBanana/black", "Reason 3")
+    ));
+    retMap.put("outstandingDataObjects", Arrays.asList(
+      new ResidualItem("/alpha/bpath1/my-leftover.docx", "Reason X"),
+      new ResidualItem("/beta/bpathX/remaining.pdf", "Reason Y"),
+      new ResidualItem("/gamma/bpBanana/crap.xml", "Reason Z")
+    ));
+    retMap.put("startTime", Date.from(LocalDateTime.now().minusMinutes(5L)
+      .atZone(ZoneId.systemDefault()).toInstant()));
+    retMap.put("finishTime", Date.from(LocalDateTime.now().minusSeconds(10L)
+      .atZone(ZoneId.systemDefault()).toInstant()));
+    final Map<String, Object> inputsMap = retMap;
+
+    ReportGenerator rg = new ReportGenerator(
+        (List<String>) inputsMap.get("docsList"),
+        (List<String>) inputsMap.get("deletedCollections"),
+        (List<String>) inputsMap.get("deletedDataObjects"),
+        (List<ResidualItem>) inputsMap.get("outstandingCollections"),
+        (List<ResidualItem>) inputsMap.get("outstandingDataObjects"),
+        (Date) inputsMap.get("startTime"),
+        (Date) inputsMap.get("finishTime")
+    );
+
+    rg.generate("C:\\tmp\\dummy-report-sample.txt");
+  }
+
+	public void runBACKUP(String ... args) throws Exception {
 	  if (args.length > 0) {
       StringBuilder sb = new StringBuilder();
       for (String someArg : args) {
