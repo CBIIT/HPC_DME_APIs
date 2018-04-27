@@ -13,15 +13,18 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -29,11 +32,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class ReportGeneratorTests {
 
-  @Rule
-  public TemporaryFolder tempFolderRule = new TemporaryFolder();
+//  @Rule
+//  public TemporaryFolder tempFolderRule = new TemporaryFolder();
 
+  @Autowired
+  ReportGenerator rgBean;
 
-//  @Test
+  @Test
   public void testNoArgConstructor() {
     final String outputMsgPreamble = this.getClass().getCanonicalName() + " testNoArgConstructor: ";
     System.out.println(outputMsgPreamble + "started");
@@ -56,7 +61,7 @@ public class ReportGeneratorTests {
   }
 
 
-//  @Test
+  @Test
   public void test7ArgConstructor_clean() {
     final String outputMsgPreamble = this.getClass().getCanonicalName() + " test7ArgConstructor_clean: ";
     System.out.println(outputMsgPreamble + "started");
@@ -119,7 +124,7 @@ public class ReportGeneratorTests {
   }
 
 
-//  @Test
+  @Test
   public void test7ArgConstructor_allArgsNull() {
     final String outputMsgPreamble = this.getClass().getCanonicalName() +
       " test7ArgConstructor_allArgsNull: ";
@@ -148,7 +153,7 @@ public class ReportGeneratorTests {
   }
 
 
-//  @Test
+  @Test
   public void test5ArgConstructor_clean() {
     final String outputMsgPreamble =
       this.getClass().getCanonicalName() + " test5ArgConstructor_clean: ";
@@ -218,7 +223,7 @@ public class ReportGeneratorTests {
   }
 
 
-//  @Test
+  @Test
   public void test5ArgConstructor_allArgsNull() {
     final String outputMsgPreamble =
       this.getClass().getCanonicalName() + " test5ArgConstructor_allArgsNull: ";
@@ -254,94 +259,64 @@ public class ReportGeneratorTests {
 
 
   @Test
-  public void testGenerate() {
+  public void testGenerate_specifyFilename() {
     final String outputMsgPreamble =
-      this.getClass().getCanonicalName() + " testGenerate: ";
+      this.getClass().getCanonicalName() + " testGenerate_specifyFilename: ";
 
     System.out.println(outputMsgPreamble + "started");
 
-    final Map<String, Object> retMap = new HashMap<>();
-
-    retMap.put("docsList", Arrays.asList(
-      "DOC-alpha", "DOC-beta", "DOC-gamma", "DOC-zeta"));
-
-    retMap.put("deletedCollections", Arrays.asList(
-      "/alpha/bpath1/foo",
-      "/alpha/bpath2/bar",
-      "/beta/bpathX/uno",
-      "/beta/bpathX/dos",
-      "/beta/bpathX/tres",
-      "/gamma/bpApple/red",
-      "/gamma/bpApple/green",
-      "/gamma/bpApple/gold",
-      "/gamma/bpBanana/yellow",
-      "/gamma/bpBanana/green",
-      "/gamma/bpBanana/brown"
-    ));
-
-    retMap.put("deletedDataObjects", Arrays.asList(
-      "/alpha/bpath1/myfile1.txt",
-      "/alpha/bpath1/myfile2.txt",
-      "/alpha/bpath1/myfile3.txt",
-      "/beta/bpathX/sampleDoc1.pdf",
-      "/beta/bpathX/sampleDoc2.pdf",
-      "/gamma/bpApple/petPhotoA.jpg",
-      "/gamma/bpApple/petPhotoB.jpg",
-      "/gamma/bpApple/petPhotoC.jpg",
-      "/zeta/books-vol1.xlsx",
-      "/zeta/books-vol2.xlsx",
-      "/zeta/books-vol3.xlsx"
-    ));
-
-    retMap.put("outstandingCollections", Arrays.asList(
-      new ResidualItem("/alpha/bpath2/leftover", "Reason 1"),
-      new ResidualItem("/beta/bpathX/cuatro", "Reason 2"),
-      new ResidualItem("/gamma/bpBanana/black", "Reason 3")
-    ));
-
-    retMap.put("outstandingDataObjects", Arrays.asList(
-      new ResidualItem("/alpha/bpath1/my-leftover.docx", "Reason X"),
-      new ResidualItem("/beta/bpathX/remaining.pdf", "Reason Y"),
-      new ResidualItem("/gamma/bpBanana/crap.xml", "Reason Z")
-    ));
-
-    retMap.put("startTime", Date.from(LocalDateTime.now().minusMinutes(5L)
-      .atZone(ZoneId.systemDefault()).toInstant()));
-
-    retMap.put("finishTme", Date.from(LocalDateTime.now().minusSeconds(10L)
-      .atZone(ZoneId.systemDefault()).toInstant()));
-
-    final Map<String, Object> inputsMap = retMap;
-
-    ReportGenerator rg = new ReportGenerator(
-      (List<String>) inputsMap.get("docsList"),
-      (List<String>) inputsMap.get("deletedCollections"),
-      (List<String>) inputsMap.get("deletedDataObjects"),
-      (List<ResidualItem>) inputsMap.get("outstandingCollections"),
-      (List<ResidualItem>) inputsMap.get("outstandingDataObjects"),
-      (Date) inputsMap.get("startTime"),
-      (Date) inputsMap.get("finishTime")
-    );
-    Assert.assertNotNull(rg);
-
-//    final String destDir = "C:\\tmp\\718-test-output";
-//Assert.assertTrue(new File(destDir).isDirectory());
-//System.out.println(outputMsgPreamble + "valid destination directory at " + destDir);
-//    final String fileName = "report-" +
-//      LocalDateTime.now().format(DateTimeFormatter.ofPattern(
-//      "yyyy_MM_dd_HHmmss")) + ".txt";
-//System.out.println(outputMsgPreamble + "desired file name is " + fileName);
-//    final String reportFilePath = destDir + File.separator + fileName;
-//Assert.assertFalse(new File(reportFilePath).exists());
-//System.out.println(outputMsgPreamble + "valid destination file path at " + reportFilePath);
+    final Map<String, Object> inputsMap = makeFictitiousReportInputs();
+    this.rgBean.setDocsList((List<String>) inputsMap.get("docsList"));
+    this.rgBean.setCollectionsDeleted((List<String>) inputsMap.get(
+      "deletedCollections"));
+    this.rgBean.setDataObjectsDeleted((List<String>) inputsMap.get(
+      "deletedDataObjects"));
+    this.rgBean.setCollectionsOutstanding(Optional.of(
+      (List<ResidualItem>) inputsMap.get("outstandingCollections")));
+    this.rgBean.setDataObjectsOutstanding(Optional.of(
+        (List<ResidualItem>) inputsMap.get("outstandingDataObjects")));
+    this.rgBean.setStartTime(Optional.of((Date) inputsMap.get("startTime")));
+    this.rgBean.setFinishTime(Optional.of((Date) inputsMap.get("finishTime")));
 
     String reportFilePath = "C:\\tmp\\718-test-output\\my-report.txt";
-    rg.generate(reportFilePath);
+    this.rgBean.generate(reportFilePath);
 
-//    System.out.println(outputMsgPreamble + "report generated, find it at " + reportFilePath);
+    File reportFile = new File(reportFilePath);
+    Assert.assertTrue(reportFile.exists() && reportFile.isFile());
+
     System.out.println(outputMsgPreamble + "finished");
   }
 
+
+  @Test
+  public void testGenerate_omitFilename() {
+    final String outputMsgPreamble =
+        this.getClass().getCanonicalName() + " testGenerate_omitFilename: ";
+
+    System.out.println(outputMsgPreamble + "started");
+
+    final Map<String, Object> inputsMap = makeFictitiousReportInputs();
+    this.rgBean.setDocsList((List<String>) inputsMap.get("docsList"));
+    this.rgBean.setCollectionsDeleted((List<String>) inputsMap.get(
+        "deletedCollections"));
+    this.rgBean.setDataObjectsDeleted((List<String>) inputsMap.get(
+        "deletedDataObjects"));
+    this.rgBean.setCollectionsOutstanding(Optional.of(
+        (List<ResidualItem>) inputsMap.get("outstandingCollections")));
+    this.rgBean.setDataObjectsOutstanding(Optional.of(
+        (List<ResidualItem>) inputsMap.get("outstandingDataObjects")));
+    this.rgBean.setStartTime(Optional.of((Date) inputsMap.get("startTime")));
+    this.rgBean.setFinishTime(Optional.of((Date) inputsMap.get("finishTime")));
+
+    String reportFileAbsPath = this.rgBean.generate();
+    System.out.print(outputMsgPreamble + " report file location is " +
+      reportFileAbsPath);
+
+    File reportFile = new File(reportFileAbsPath);
+    Assert.assertTrue(reportFile.exists() && reportFile.isFile());
+
+    System.out.println(outputMsgPreamble + "finished");
+  }
 
   //@Test
   public void testFileSystemWriteToFile() {
@@ -381,53 +356,55 @@ public class ReportGeneratorTests {
     final Map<String, Object> retMap = new HashMap<>();
 
     retMap.put("docsList", Arrays.asList(
-      "DOC-alpha", "DOC-beta", "DOC-gamma", "DOC-zeta"));
+        "DOC-alpha", "DOC-beta", "DOC-gamma", "DOC-zeta"));
 
     retMap.put("deletedCollections", Arrays.asList(
-      "/alpha/bpath1/foo",
-      "/alpha/bpath2/bar",
-      "/beta/bpathX/uno",
-      "/beta/bpathX/dos",
-      "/beta/bpathX/tres",
-      "/gamma/bpApple/red",
-      "/gamma/bpApple/green",
-      "/gamma/bpApple/gold",
-      "/gamma/bpBanana/yellow",
-      "/gamma/bpBanana/green",
-      "/gamma/bpBanana/brown"
+        "/alpha/bpath1/foo",
+        "/alpha/bpath2/bar",
+        "/beta/bpathX/uno",
+        "/beta/bpathX/dos",
+        "/beta/bpathX/tres",
+        "/gamma/bpApple/red",
+        "/gamma/bpApple/green",
+        "/gamma/bpApple/gold",
+        "/gamma/bpBanana/yellow",
+        "/gamma/bpBanana/green",
+        "/gamma/bpBanana/brown"
     ));
 
     retMap.put("deletedDataObjects", Arrays.asList(
-      "/alpha/bpath1/myfile1.txt",
-      "/alpha/bpath1/myfile2.txt",
-      "/alpha/bpath1/myfile3.txt",
-      "/beta/bpathX/sampleDoc1.pdf",
-      "/beta/bpathX/sampleDoc2.pdf",
-      "/gamma/bpApple/petPhotoA.jpg",
-      "/gamma/bpApple/petPhotoB.jpg",
-      "/gamma/bpApple/petPhotoC.jpg",
-      "/zeta/books-vol1.xlsx",
-      "/zeta/books-vol2.xlsx",
-      "/zeta/books-vol3.xlsx"
+        "/alpha/bpath1/myfile1.txt",
+        "/alpha/bpath1/myfile2.txt",
+        "/alpha/bpath1/myfile3.txt",
+        "/beta/bpathX/sampleDoc1.pdf",
+        "/beta/bpathX/sampleDoc2.pdf",
+        "/gamma/bpApple/petPhotoA.jpg",
+        "/gamma/bpApple/petPhotoB.jpg",
+        "/gamma/bpApple/petPhotoC.jpg",
+        "/zeta/books-vol1.xlsx",
+        "/zeta/books-vol2.xlsx",
+        "/zeta/books-vol3.xlsx"
     ));
 
     retMap.put("outstandingCollections", Arrays.asList(
-      new ResidualItem("/alpha/bpath2/leftover", "Reason 1"),
-      new ResidualItem("/beta/bpathX/cuatro", "Reason 2"),
-      new ResidualItem("/gamma/bpBanana/black", "Reason 3")
+        new ResidualItem("/alpha/bpath2/leftover", "Reason 1"),
+        new ResidualItem("/beta/bpathX/cuatro", "Reason 2"),
+        new ResidualItem("/gamma/bpBanana/black", "Reason 3")
     ));
 
     retMap.put("outstandingDataObjects", Arrays.asList(
-      new ResidualItem("/alpha/bpath1/my-leftover.docx", "Reason X"),
-      new ResidualItem("/beta/bpathX/remaining.pdf", "Reason Y"),
-      new ResidualItem("/gamma/bpBanana/crap.xml", "Reason Z")
+        new ResidualItem("/alpha/bpath1/my-leftover.docx", "Reason X"),
+        new ResidualItem("/beta/bpathX/remaining.pdf", "Reason Y"),
+        new ResidualItem("/gamma/bpBanana/crap.xml", "Reason Z")
     ));
 
-    retMap.put("startTime", Date.from(LocalDateTime.now().minusMinutes(5L)
-      .atZone(ZoneId.systemDefault()).toInstant()));
+    Calendar cal = Calendar.getInstance();
+    cal.set(2018, Calendar.JANUARY, 1, 9, 30, 42);
+    retMap.put("startTime", cal.getTime());
 
-    retMap.put("finishTme", Date.from(LocalDateTime.now().minusSeconds(10L)
-      .atZone(ZoneId.systemDefault()).toInstant()));
+    cal.add(Calendar.MINUTE, 10);
+    cal.add(Calendar.SECOND, 23);
+    retMap.put("finishTime", cal.getTime());
 
     return retMap;
   }
