@@ -12,11 +12,26 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
 public class ReportGenerator {
+
+  public static final int DEFAULT_SEPARATOR_LINES_QTY = 3;
+
+  public static final String DEFAULT_FILE_EXTENSION = ".txt";
+  public static final String DEFAULT_FILE_NAME_PREFIX =
+    "DmeCleanReport_";
+  public static final String DEFAULT_FILE_NAME_TIMESTAMP_PATTERN =
+    "yyyy_MM_dd'T'HH_mm_ss_SSS";
+  public static final String DEFAULT_REPORT_DATE_FORMAT_PATTERN =
+    "MMM dd, yyyy  hh:mm:ss a (z)";
+  public static final String DEFAULT_SEPARATOR_LINE =
+"*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-";
+  public static final String DEFAULT_TITLE_LINE = "RESULTS";
 
   private static final int FIXED_SPACE_GAP_WIDTH = 5;
   private static final int QTY_2_TRIGGER_FLUSH = 100;
@@ -41,7 +56,8 @@ public class ReportGenerator {
       }
   };
 
-  private final int sectionSeparatorNumLines = 2;
+  private int sectionSeparatorNumLines;
+
   private List<String> docsList;
   private List<String> collectionsDeleted;
   private List<String> dataObjectsDeleted;
@@ -51,16 +67,13 @@ public class ReportGenerator {
   private Optional<List<ResidualItem>> dataObjectsOutstanding;
   private SimpleDateFormat fileNameTimestampFormat;
   private SimpleDateFormat reportDateFormat;
-  private final String defaultReportFileExtension = ".txt";
-  private final String defaultReportFilenamePrefix = "archives-clean-report-";
-  private final String defaultReportFilenameTimestampPattern =
-      "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-  private final String defaultReportOutputDir = "C:\\tmp";
-  private final String reportDatePattern = "yyyy-MM-dd HH:mm:ss Z";
-  private final String reportFirstLineContent =
-      "HPC DME Archives Cleaning Report";
-  private final String sectionSeparatorLine = "----------------------------------------------------------------------------------------------------";
-
+  private String forFilenmGen_fileExtension;
+  private String forFilenmGen_prefix;
+  private String forFilenmGen_timestampPattern;
+  private String reportDatePattern;
+  private String reportFirstLineContent;
+  private String reportOutputDir;
+  private String sectionSeparatorLine;
 
   public ReportGenerator() {
     final List<String> emptyListOfString = new ArrayList<>();
@@ -180,7 +193,7 @@ public class ReportGenerator {
 
   public String generate(String filePath2Report) {
     validateProperties();
-
+    loadReportConfig();
     String fqPathForReportFile = StringUtils.hasText(filePath2Report) ?
       filePath2Report : produceReportFilename();
 
@@ -204,6 +217,7 @@ public class ReportGenerator {
     try {
       fWriter = new FileWriter(fqPathForReportFile, false);
       buffWriter = new BufferedWriter(fWriter);
+      buffWriter.flush();
 
       doReportTopSection(buffWriter);
 
@@ -412,44 +426,35 @@ public class ReportGenerator {
 
   private void doReportTopSection(BufferedWriter buffWriter) throws IOException {
     buffWriter.write(this.reportFirstLineContent);
-
     buffWriter.newLine();
     buffWriter.newLine();
-
-    StringBuilder sb = new StringBuilder();
-    for (String someDoc : this.docsList) {
-      if (sb.length() > 0) {
-        sb.append(", ");
-      }
-      sb.append(someDoc);
-    }
     if (this.docsList.size() > 1) {
       buffWriter.write("Targeted DOCs: ");
+      boolean firstDocProcessed = false;
+      for (String someDoc : this.docsList) {
+        if (firstDocProcessed) {
+          buffWriter.write(", ");
+        } else {
+          firstDocProcessed = true;
+        }
+        buffWriter.write(someDoc);
+      }
     } else {
-      buffWriter.write("Targeted DOC: ");
+      buffWriter.write("Targeted DOC: " + this.docsList.get(0));
     }
-    String docsListing = sb.toString();
-    sb.setLength(0);
-    buffWriter.write(docsListing);
-
     buffWriter.newLine();
     buffWriter.newLine();
-
     if (this.startTime.isPresent() && this.finishTime.isPresent()) {
       if (null == this.reportDateFormat) {
         this.reportDateFormat = new SimpleDateFormat(this.reportDatePattern);
       }
-      sb.append("Clean started at ")
-        .append(this.reportDateFormat.format(this.startTime.get()))
-        .append(" and finished at ")
-        .append(this.reportDateFormat.format(this.finishTime.get()));
-      String startFinishTimingInfo = sb.toString();
-      buffWriter.write(startFinishTimingInfo);
+      buffWriter.write("Clean started at ");
+      buffWriter.write(this.reportDateFormat.format(this.startTime.get()));
+      buffWriter.write(" and finished at ");
+      buffWriter.write(this.reportDateFormat.format(this.finishTime.get()));
       buffWriter.newLine();
       buffWriter.newLine();
-      sb.setLength(0);
     }
-
     buffWriter.flush();
   }
 
@@ -463,17 +468,55 @@ public class ReportGenerator {
   }
 
 
+  private void loadReportConfig() {
+    Properties props = new Properties();
+    try {
+      props.load(this.getClass().getResourceAsStream(
+          "/report-config.properties"));
+      this.reportFirstLineContent = props.getProperty("content.first.line",
+          DEFAULT_TITLE_LINE);
+      this.sectionSeparatorLine = props.getProperty("content.separator.line",
+          DEFAULT_SEPARATOR_LINE);
+      this.reportDatePattern = props.getProperty("content.date.format",
+          DEFAULT_REPORT_DATE_FORMAT_PATTERN);
+      this.forFilenmGen_fileExtension = props.getProperty(
+          "output.file.extension", DEFAULT_FILE_EXTENSION);
+      this.forFilenmGen_prefix = props.getProperty(
+          "output.file.name.prefix", DEFAULT_FILE_NAME_PREFIX);
+      this.forFilenmGen_timestampPattern = props.getProperty(
+          "output.file.name.embedded.timestamp.format",
+          DEFAULT_FILE_NAME_TIMESTAMP_PATTERN);
+      this.reportOutputDir = props.getProperty("output.dest.dir", "");
+    } catch (IOException ioe) {
+      throw new RuntimeException("Failed to load report config from file" +
+          " named report-config.properties at classpath root.", ioe);
+    }
+    try {
+      String temp = props.getProperty("content.separator.lines.qty");
+      this.sectionSeparatorNumLines = (null == temp) ?
+          DEFAULT_SEPARATOR_LINES_QTY : Integer.parseInt(temp);
+    } catch (NumberFormatException nfe) {
+      this.sectionSeparatorNumLines = DEFAULT_SEPARATOR_LINES_QTY;
+    }
+  }
+
+
   private String produceReportFilename() {
     if (null == this.fileNameTimestampFormat) {
       this.fileNameTimestampFormat = new SimpleDateFormat(
-        this.defaultReportFilenameTimestampPattern);
+        this.forFilenmGen_timestampPattern);
     }
     final StringBuilder sb = new StringBuilder();
-    sb.append(this.defaultReportOutputDir)
-      .append(File.separator)
-      .append(this.defaultReportFilenamePrefix)
-      .append(this.fileNameTimestampFormat.format(new Date()))
-      .append(this.defaultReportFileExtension);
+    if (StringUtils.hasText(this.reportOutputDir)) {
+      sb.append(this.reportOutputDir)
+        .append(File.separator);
+    }
+    sb.append(this.forFilenmGen_prefix)
+      .append(this.fileNameTimestampFormat.format(new Date()));
+    if (!this.forFilenmGen_fileExtension.startsWith(".")) {
+      sb.append(".");
+    }
+    sb.append(this.forFilenmGen_fileExtension);
     final String retFilename = sb.toString();
     return retFilename;
   }
@@ -498,5 +541,6 @@ public class ReportGenerator {
         " requires non-null, non-empty value for property dataObjectsDeleted!");
     }
   }
+
 
 }
