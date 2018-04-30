@@ -374,8 +374,8 @@ public class HpcClientUtil {
       String hpcCertPassword) {
     try {
       final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-        hpcDatafileURL).path(prependForwardSlashIfAbsent(path)).queryParam(
-        "list", Boolean.valueOf(list)).build().encode().toUri().toURL()
+        hpcDatafileURL).path("/{dme-archive-path}").queryParam("list", Boolean
+        .valueOf(list)).buildAndExpand(path).encode().toUri().toURL()
         .toExternalForm();
       WebClient client = getWebClient(apiUrl2Apply, proxyURL, proxyPort,
         hpcCertPath, hpcCertPassword);
