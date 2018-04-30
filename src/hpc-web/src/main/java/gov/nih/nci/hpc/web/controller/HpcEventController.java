@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -69,9 +70,9 @@ public class HpcEventController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
-
-			String serviceURL = receiptServiceURL + "?eventId=" + id;
-
+			final String serviceURL = UriComponentsBuilder.fromHttpUrl(
+        this.receiptServiceURL).queryParam("eventId", id).build().encode()
+				.toUri().toURL().toExternalForm();
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 

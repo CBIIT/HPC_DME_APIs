@@ -11,6 +11,8 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -52,6 +54,7 @@ import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -136,13 +139,12 @@ public class HpcDownloadController extends AbstractHpcController {
 				result.setMessage("Invalid user session, expired. Please login again.");
 				return result;
 			}
-
-			String serviceURL = null;
-			if (downloadFile.getDownloadType().equals("collection"))
-				serviceURL = collectionServiceURL + downloadFile.getDestinationPath() + "/download";
-			else
-				serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
-
+			final String basisURL = "collection".equals(downloadFile
+        .getDownloadType()) ? this.collectionServiceURL :
+        this.dataObjectServiceURL;
+      final String serviceURL = UriComponentsBuilder.fromHttpUrl(basisURL)
+        .path("/{dme-archive-path}/download").buildAndExpand(downloadFile
+        .getDestinationPath()).encode().toUri().toURL().toExternalForm();
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
 				HpcFileLocation location = new HpcFileLocation();

@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -208,24 +209,35 @@ public class HpcSearchController extends AbstractHpcController {
 		query = HpcClientUtil.getQuery(authToken, queryURL, search.getQueryName(), sslCertPath, sslCertPassword);
 		HpcSearchUtil.cacheSelectedRows(session, request, model);
 
-		String requestURL;
-		if (query != null
-				&& query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION))
-			requestURL = compoundCollectionSearchServiceURL + "/" + search.getQueryName() + "?totalCount=true&page="
-					+ search.getPageNumber();
-		else if (query != null && query.getNamedCompoundQuery().getCompoundQueryType()
-				.equals(HpcCompoundMetadataQueryType.DATA_OBJECT))
-			requestURL = compoundDataObjectSearchServiceURL + "/" + search.getQueryName() + "?totalCount=true&page="
-					+ search.getPageNumber();
-		else
-			return null;
+    UriComponentsBuilder ucBuilder = null;
+    if (null != query && null != query.getNamedCompoundQuery()) {
+      final HpcCompoundMetadataQueryType cqType = query.getNamedCompoundQuery()
+          .getCompoundQueryType();
+      if (HpcCompoundMetadataQueryType.COLLECTION.equals(cqType)) {
+        ucBuilder = UriComponentsBuilder.fromHttpUrl(
+            this.compoundCollectionSearchServiceURL);
+      } else if (HpcCompoundMetadataQueryType.DATA_OBJECT.equals(cqType)) {
+        ucBuilder = UriComponentsBuilder.fromHttpUrl(
+            this.compoundDataObjectSearchServiceURL);
+      }
+    }
 
-		session.setAttribute("namedCompoundQuery", query.getNamedCompoundQuery());
+    if (null == ucBuilder) {
+      return null;
+    }
 
-		if (query.getNamedCompoundQuery().getDetailedResponse())
-			requestURL = requestURL + "&detailedResponse=true";
+    session.setAttribute("namedCompoundQuery", query.getNamedCompoundQuery());
 
-		WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
+    ucBuilder.pathSegment(search.getQueryName()).queryParam("totalCount",
+      Boolean.TRUE).queryParam("page", Integer.valueOf(search.getPageNumber()));
+
+    if (query.getNamedCompoundQuery().getDetailedResponse()) {
+      ucBuilder.queryParam("detailedResponse", Boolean.TRUE);
+    }
+
+    final String requestURL = ucBuilder.build().encode().toUri().toURL().toExternalForm();
+
+    WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 
 		Response restResponse = client.invoke("GET", null);

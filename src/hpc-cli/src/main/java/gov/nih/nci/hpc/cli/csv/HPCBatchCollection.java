@@ -160,9 +160,10 @@ public class HPCBatchCollection extends HPCBatchClient {
 				HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(
 						collectionDTO, headers);
 				try {
-          final URI uri2Apply = UriComponentsBuilder.fromHttpUrl(
-            hpcServerURL).path(HpcClientUtil.constructPathString(
-            hpcCollectionService, collectionPath)).build().encode().toUri();
+          final URI uri2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
+						.path(HpcClientUtil.prependForwardSlashIfAbsent(
+							hpcCollectionService).concat("/{dme-archive-path}"))
+						.buildAndExpand(collectionPath).encode().toUri();
           System.out.println(uri2Apply.toURL().toExternalForm());
           response = restTemplate.exchange(uri2Apply, HttpMethod.PUT, entity,
             HpcExceptionDTO.class);

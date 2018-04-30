@@ -8,6 +8,8 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,48 +59,46 @@ public class HpcProfileController extends AbstractHpcController {
     @RequestMapping(method = RequestMethod.GET)
     public String profile(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
                           HttpSession session, HttpServletRequest request) {
-        HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+      HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+      if (user == null) {
+          ObjectError error = new ObjectError("hpcLogin",
+            "Invalid user session!");
+          bindingResult.addError(error);
+          HpcLogin hpcLogin = new HpcLogin();
+          model.addAttribute("hpcLogin", hpcLogin);
+          return "redirect:/login?returnPath=profile";
+      }
+      final String authToken = (String) session.getAttribute("hpcUserToken");
+      log.info("authToken: " + authToken);
+      final String userId = (String) session.getAttribute("hpcUserId");
+      log.info("userId: " + userId);
+      HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO)
+        session.getAttribute("userDOCModel");
+      if (modelDTO == null) {
+          modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
+            this.sslCertPath, this.sslCertPassword);
+          session.setAttribute("userDOCModel", modelDTO);
+      }
+      log.info("userDOCModel: " + modelDTO);
 
-        if (user == null) {
-            ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
-            bindingResult.addError(error);
-            HpcLogin hpcLogin = new HpcLogin();
-            model.addAttribute("hpcLogin", hpcLogin);
-            return "redirect:/login?returnPath=profile";
+      HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken,
+        userId, this.collectionAclURL, this.sslCertPath, this.sslCertPassword);
+      final List<String> collPaths = new ArrayList<>();
+      for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
+        for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
+          collPaths.add(rule.getBasePath());
         }
-        String authToken = (String) session.getAttribute("hpcUserToken");
-        String userId = (String) session.getAttribute("hpcUserId");
+      }
+      final HpcUserPermsForCollectionsDTO permissions = HpcClientUtil
+        .getPermissionForCollections(authToken, this.collectionAclURL, userId,
+        collPaths.toArray(), this.sslCertPath, this.sslCertPassword);
+      log.info("permissions: " + permissions);
 
-        HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-        if (modelDTO == null) {
-            modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-            session.setAttribute("userDOCModel", modelDTO);
-        }
+      model.addAttribute("profile", user);
+      model.addAttribute("userDOCModel", modelDTO);
+      model.addAttribute("permissions", permissions);
 
-        HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, collectionAclURL,
-            sslCertPath, sslCertPassword);
-
-        String queryParams = "?";
-
-        for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
-            for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
-                queryParams += "collectionPath=" + rule.getBasePath() + "&";
-            }
-        }
-
-       HpcUserPermsForCollectionsDTO permissions = HpcClientUtil.getPermissionForCollections(authToken,  collectionAclURL+"/"+userId,  queryParams,
-            sslCertPath, sslCertPassword);
-
-        log.info("authToken: " + authToken);
-        log.info("userId: " + userId);
-        log.info("userDOCModel: " + modelDTO);
-        log.info("permissions: " + permissions);
-
-        HpcWebUser webUser = new HpcWebUser();
-        model.addAttribute("profile", user);
-        model.addAttribute("userDOCModel", modelDTO);
-        model.addAttribute("permissions", permissions);
-        return "profile";
+      return "profile";
     }
 
 }

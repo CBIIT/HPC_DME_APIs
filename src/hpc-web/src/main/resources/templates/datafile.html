@@ -391,7 +391,8 @@
 	function cancelEdit()
 	{
 		document.getElementById("action").value = "cancel";
-		$('#datafileForm').attr('action', '/datafile?path=' +document.getElementById("path").value);
+		var percentEncodedDfPath = percentEncodePath(document.getElementById("path").value);
+		$('#datafileForm').attr('action', '/datafile?path=' + percentEncodedDfPath);
 		$("#datafileForm").submit();
 	}
 	
@@ -446,7 +447,7 @@
 								waitEle.style.display = "block";
 								$.ajax({
 									type : "DELETE",
-									url : "/datafile?deletepath="+document.getElementById("deletepath").value,
+									url : "/datafile?deletepath=" + percentEncodePath(document.getElementById("deletepath").value),
 									data : $form.serialize(),
 									success : function(msg) {
 										waitEle.style.display = "none";

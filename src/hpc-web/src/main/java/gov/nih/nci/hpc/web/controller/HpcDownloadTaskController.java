@@ -9,6 +9,9 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,7 +95,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         bindingResult.addError(error);
         HpcLogin hpcLogin = new HpcLogin();
         model.addAttribute("hpcLogin", hpcLogin);
-        return "redirect:/login?returnPath=downloadtask&taskId=" + taskId + "&type=" + type;
+        final Map<String, String> qParams = new HashMap<>();
+        qParams.put("returnPath", "downloadtask");
+        qParams.put("taskId", taskId);
+        qParams.put("type", type);
+        return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
+          qParams));
       }
 
       if (taskId == null || type == null)
@@ -138,7 +146,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       String authToken = (String) session.getAttribute("hpcUserToken");
       if (authToken == null) {
         result.setMessage("Invalid user session, expired. Please login again.");
-        return "redirect:/login?returnPath=downloadtask&taskId=" + taskId + "&type=" + taskType;
+        final Map<String, String> qParams = new HashMap<>();
+        qParams.put("returnPath", "downloadtask");
+        qParams.put("taskId", taskId);
+        qParams.put("type", taskType);
+        return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
+          qParams));
       }
 
       model.addAttribute("taskId", taskId);
