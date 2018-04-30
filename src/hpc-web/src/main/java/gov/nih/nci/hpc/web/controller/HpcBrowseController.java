@@ -111,13 +111,20 @@ public class HpcBrowseController extends AbstractHpcController {
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
 
-        // Detect if path refers to data file, and if so, redirect to data
-        // file view
-        final String slctdNodePath =
-          hpcBrowserEntry.getSelectedNodePath().trim();
-        if (isPathForDataFile(slctdNodePath, authToken)) {
-          return genRedirectNavForDataFileView(slctdNodePath);
-        }
+				// Detect if path refers to data file, and if so, redirect to data
+				// file view
+				
+				//Do this check only if we are clicking on Browse button
+				//after selecting the path. If we are here because we 
+				//clicked on a folder this check is not required 
+				if(hpcBrowserEntry.isPartial()) {
+					final String slctdNodePath =
+						hpcBrowserEntry.getSelectedNodePath().trim();
+				
+					if (isPathForDataFile(slctdNodePath, authToken)) {
+						return genRedirectNavForDataFileView(slctdNodePath);
+					}
+				}
 
 				// session.setAttribute("selectedBrowsePath",
 				// hpcBrowserEntry.getSelectedNodePath());
