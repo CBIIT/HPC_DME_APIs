@@ -12,12 +12,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 @Component
 public class RestTemplateFactory {
 
-  public static RestTemplate getRestTemplate() {
+  public RestTemplate getRestTemplate() {
     try {
       HttpComponentsClientHttpRequestFactory requestFactory = new
         HttpComponentsClientHttpRequestFactory(constructHttpClientPrototype());
@@ -27,6 +28,18 @@ public class RestTemplateFactory {
     }
   }
 
+
+  public RestTemplate getRestTemplate(ResponseErrorHandler pRespErrHandler) {
+    try {
+      HttpComponentsClientHttpRequestFactory requestFactory = new
+          HttpComponentsClientHttpRequestFactory(constructHttpClientPrototype());
+      RestTemplate productTemplate = new RestTemplate(requestFactory);
+      productTemplate.setErrorHandler(pRespErrHandler);
+      return productTemplate;
+    } catch (NoSuchAlgorithmException | KeyManagementException e) {
+      throw new RuntimeException("Unable to produce RestTemplate!", e);
+    }
+  }
 
   /**
    * Trust manager that does not perform any checks.
