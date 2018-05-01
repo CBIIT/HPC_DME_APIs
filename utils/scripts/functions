@@ -345,8 +345,10 @@ function dm_get_item {
 
     local TOTAL_PATH="$ITEM_PATH"
     local TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
+    local ITEM_TYPE="$( cut -d '/' -f 1 <<< "$TOTAL_PATH" )"
+    local DME_ARCHIVE_PATH="$( cut -d '/' -f 2- <<< "$TOTAL_PATH" )"
    
-    curl -G -X GET "$SERVER/$(urlencode $TOTAL_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -G -X GET "$SERVER/$ITEM_TYPE/$(urlencode $DME_ARCHIVE_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $RESPONSE_HEADER
 }
 
