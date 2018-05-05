@@ -240,9 +240,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // Generate system metadata and attach to the collection.
         metadataService.addSystemGeneratedMetadataToCollection(
             path, userId, userName, configurationId);
+           
+        //Retrieve the current request invoker, and then set the request
+        //invoker to the system account so that we have the privileges to
+        //perform hierarchy validation. Else, if the user does not have 
+        //permissions to view any of the parent folders, then access to
+        //the metadata of these folder is denied, and validation fails
+        HpcRequestInvoker invoker = securityService.getRequestInvoker();
+        securityService.setSystemRequestInvoker(ldapAuthentication);
         
         // Validate the collection hierarchy.
         dataManagementService.validateHierarchy(path, configurationId, false);
+        
+        //Validation is over, hence restore invoker to original
+        securityService.setRequestInvoker(invoker.getNciAccount(), ldapAuthentication, 
+        invoker.getAuthenticationType(), invoker.getDataManagementAccount());
         
         // Add collection update event.
         addCollectionUpdatedEvent(path, true, false, userId);
@@ -724,8 +736,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if (responseDTO.getRegistered()) {
       boolean registrationCompleted = false;
       try {
+    	  
+    	//Retrieve the current request invoker, and then set the request
+        //invoker to the system account so that we have the privileges to
+        //perform hierarchy validation. Else, if the user does not have 
+        //permissions to view any of the parent folders, then access to
+        //the metadata of these folder is denied, and validation fails
+        HpcRequestInvoker invoker = securityService.getRequestInvoker();
+        securityService.setSystemRequestInvoker(ldapAuthentication);  
+    	  
         // Validate the new data object complies with the hierarchy definition.
         dataManagementService.validateHierarchy(collectionPath, configurationId, true);
+        
+        //Validation is over, hence restore invoker to original
+        securityService.setRequestInvoker(invoker.getNciAccount(), ldapAuthentication, 
+        invoker.getAuthenticationType(), invoker.getDataManagementAccount());        
 
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
