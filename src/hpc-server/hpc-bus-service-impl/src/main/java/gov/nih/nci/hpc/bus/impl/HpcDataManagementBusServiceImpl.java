@@ -21,6 +21,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import com.google.common.hash.Hashing;
@@ -59,6 +60,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
@@ -131,6 +133,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
   // TheEvent Application Service Instance.
   @Autowired private HpcEventService eventService = null;
+  
+//LDAP authentication on/off switch.
+ @Value("${hpc.bus.ldapAuthentication}")
+ private Boolean ldapAuthentication = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -234,10 +240,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // Generate system metadata and attach to the collection.
         metadataService.addSystemGeneratedMetadataToCollection(
             path, userId, userName, configurationId);
-
+        
         // Validate the collection hierarchy.
-        dataManagementService.validateContainerHierarchy(path, configurationId, false);
-
+        dataManagementService.validateHierarchy(path, configurationId, false);
+        
         // Add collection update event.
         addCollectionUpdatedEvent(path, true, false, userId);
 
@@ -719,7 +725,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       boolean registrationCompleted = false;
       try {
         // Validate the new data object complies with the hierarchy definition.
-        dataManagementService.validateContainerHierarchy(collectionPath, configurationId, true);
+        dataManagementService.validateHierarchy(collectionPath, configurationId, true);
 
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
