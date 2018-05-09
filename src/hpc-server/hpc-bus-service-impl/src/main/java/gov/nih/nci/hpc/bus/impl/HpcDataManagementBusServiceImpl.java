@@ -133,10 +133,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
   // TheEvent Application Service Instance.
   @Autowired private HpcEventService eventService = null;
-  
-//LDAP authentication on/off switch.
- @Value("${hpc.bus.ldapAuthentication}")
- private Boolean ldapAuthentication = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -247,13 +243,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         //permissions to view any of the parent folders, then access to
         //the metadata of these folder is denied, and validation fails
         HpcRequestInvoker invoker = securityService.getRequestInvoker();
-        securityService.setSystemRequestInvoker(ldapAuthentication);
+        securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
         
         // Validate the collection hierarchy.
         dataManagementService.validateHierarchy(path, configurationId, false);
         
         //Validation is over, hence restore invoker to original
-        securityService.setRequestInvoker(invoker.getNciAccount(), ldapAuthentication, 
+        securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
         invoker.getAuthenticationType(), invoker.getDataManagementAccount());
         
         // Add collection update event.
@@ -743,13 +739,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         //permissions to view any of the parent folders, then access to
         //the metadata of these folder is denied, and validation fails
         HpcRequestInvoker invoker = securityService.getRequestInvoker();
-        securityService.setSystemRequestInvoker(ldapAuthentication);  
+        securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());  
     	  
         // Validate the new data object complies with the hierarchy definition.
         dataManagementService.validateHierarchy(collectionPath, configurationId, true);
         
         //Validation is over, hence restore invoker to original
-        securityService.setRequestInvoker(invoker.getNciAccount(), ldapAuthentication, 
+        securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
         invoker.getAuthenticationType(), invoker.getDataManagementAccount());        
 
         // Assign system account as an additional owner of the data-object.
