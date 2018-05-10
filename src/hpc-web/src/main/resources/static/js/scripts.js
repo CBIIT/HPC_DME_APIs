@@ -91,3 +91,26 @@ function initializeJS() {
 jQuery(document).ready(function(){
     initializeJS();
 });
+
+
+function percentEncodePath(argPath) {
+  var pathSegments = argPath.split('/');
+  var ppPathSegments = [];
+  var i = 0;
+  for (; i < pathSegments.length; i += 1) {
+    if ('' != pathSegments[i]) {
+      ppPathSegments.push( encodeURIComponent(pathSegments[i]) );
+    }
+  }
+  var result = '';
+  for (i = 0; i < ppPathSegments.length; i += 1) {
+    if ('' != result) {
+      result += '/';
+    }
+    result += ppPathSegments[i];
+  }
+  if (argPath.startsWith('/')) {
+    result = '/' + result;
+  }
+  return result;
+}
