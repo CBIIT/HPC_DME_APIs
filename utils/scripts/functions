@@ -129,7 +129,7 @@ function dm_register () {
     rm -f  $RESPONSE_MSG 2>/dev/null 
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
-    local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
     if [ "$TYPE" == "dataObject" ]
     then
@@ -294,7 +294,6 @@ function dm_sync_globus_endpoint  {
 
       local SRC_PATH=$(echo $NEW_FILE | cut -d' ' -f1)
       local DST_PATH=$(echo $NEW_FILE | cut -d' ' -f2)
-
       local FILE_ATTRIBUTES=$(get_file_attributes $SRC_PATH)      
       local DESC_JSON=$(get_json_description $FILE_ATTRIBUTES)
       echo $DESC_JSON >  temp.json
@@ -347,7 +346,7 @@ function dm_get_item {
     local TOTAL_PATH="$ITEM_PATH"
     local TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
    
-    curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -G -X GET "$SERVER/$(urlencode $TOTAL_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $RESPONSE_HEADER
 }
 
@@ -490,7 +489,7 @@ function dm_download_dataobject_sync {
 
     local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
 
-    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$OBJECT_PATH/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $RESPONSE_HEADER
 
 
@@ -1177,7 +1176,7 @@ function dm_download_collection_async {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/collection/$src_path/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/collection/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $response_hdr
 
 
@@ -1282,7 +1281,7 @@ function dm_download_async {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/$item_type/$src_path/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/$item_type/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $response_hdr || exit 1
 
 
@@ -1374,5 +1373,43 @@ function dm_get_download_status {
         rm -f $response_msg 2> /dev/null 
       fi
     fi
+}
+
+
+# Perform percent/URL encoding on given string 
+#
+# Copied from GitHub
+# https://gist.github.com/cdown/1163649
+#
+#Input: <string>  string to percent/URL encode
+urlencode() {
+    # urlencode <string>
+    old_lc_collate=$LC_COLLATE
+    LC_COLLATE=C
+    
+    local length="${#1}"
+    for (( i = 0; i < length; i++ )); do
+        local c="${1:i:1}"
+        case $c in
+            [a-zA-Z0-9.~_-]) printf "$c" ;;
+            *) printf '%%%02X' "'$c" ;;
+        esac
+    done
+    
+    LC_COLLATE=$old_lc_collate
+}
+
+
+# Perform percent/URL decoding on given string 
+#
+# Copied from GitHub
+# https://gist.github.com/cdown/1163649
+#
+#Input: <string>  string to percent/URL decode
+urldecode() {
+    # urldecode <string>
+
+    local url_encoded="${1//+/ }"
+    printf '%b' "${url_encoded//%/\\x}"
 }
 

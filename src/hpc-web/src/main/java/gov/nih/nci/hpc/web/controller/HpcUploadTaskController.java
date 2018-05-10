@@ -9,6 +9,9 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -85,15 +88,20 @@ public class HpcUploadTaskController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=uploadtask&taskId=" + taskId + "&type=" + type;
+				final Map<String, String> queryParams = new HashMap<>();
+				queryParams.put("returnPath", "uploadtask");
+        queryParams.put("taskId", taskId);
+        queryParams.put("type", type);
+				return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
+          queryParams));
 			}
 
 			if (taskId == null || type == null)
 				return "redirect:/uploadtasks";
 
-			String queryServiceURL = registrationServiceURL + "/" + taskId;
-			HpcBulkDataObjectRegistrationStatusDTO uploadTask = HpcClientUtil.getDataObjectRegistrationTask(authToken,
-					queryServiceURL, sslCertPath, sslCertPassword);
+			HpcBulkDataObjectRegistrationStatusDTO uploadTask = HpcClientUtil
+				.getDataObjectRegistrationTask(authToken, this.registrationServiceURL,
+        taskId, this.sslCertPath, this.sslCertPassword);
 			model.addAttribute("hpcBulkDataObjectRegistrationTaskDTO", uploadTask.getTask());
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get registration status: " + e.getMessage());

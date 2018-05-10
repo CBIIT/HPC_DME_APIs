@@ -9,17 +9,40 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.model.HpcPermissionEntry;
+import gov.nih.nci.hpc.web.model.HpcPermissionEntryType;
+import gov.nih.nci.hpc.web.model.HpcPermissions;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -35,28 +58,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
-import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
-import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.model.HpcPermissionEntry;
-import gov.nih.nci.hpc.web.model.HpcPermissionEntryType;
-import gov.nih.nci.hpc.web.model.HpcPermissions;
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -165,8 +167,12 @@ public class HpcPermissionController extends AbstractHpcController {
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 			if (restResponse.getStatus() == 200) {
 				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				return "redirect:/permissions?assignType=User&type=" + permissionsRequest.getType() + "&path="
-						+ permissionsRequest.getPath();
+				final Map<String, String> qParams = new HashMap<>();
+				qParams.put("assignType", "User");
+				qParams.put("type", permissionsRequest.getType());
+				qParams.put("path", permissionsRequest.getPath());
+				return "redirect:/permissions?".concat(MiscUtil
+          .generateEncodedQueryString(qParams));
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -207,16 +213,36 @@ public class HpcPermissionController extends AbstractHpcController {
 	}
 
 	private String getServiceURL(Model model, String path, String type) {
-		String serviceAPIUrl = null;
-		if (type.equals("collection"))
-			serviceAPIUrl = serverCollectionURL + path + "/acl";
-		else if (type.equals("dataObject"))
-			serviceAPIUrl = serverDataObjectURL + path + "/acl";
-		else {
-			model.addAttribute("updateStatus", "Invalid path type. Valid values are collection/dataObject");
-			return null;
-		}
-		return serviceAPIUrl;
+    try {
+      String basisUrl = null;
+      if ("collection".equals(type)) {
+        basisUrl = this.serverCollectionURL;
+      } else if ("dataObject".equals(type)) {
+        basisUrl = this.serverDataObjectURL;
+      } else {
+        model.addAttribute("updateStatus", "Invalid path type. Valid values" +
+          " are collection/dataObject");
+      }
+      if (null == basisUrl) {
+        return null;
+      }
+      final String[] pathSegments = path.split("/");
+      final String[] effPathSegments = new String[pathSegments.length + 1];
+      int j = 0;
+      for (int i = 0; i < pathSegments.length; i++) {
+        if (!pathSegments[i].isEmpty()) {
+          effPathSegments[j] = pathSegments[i];
+          j += 1;
+        }
+      }
+      final String serviceAPIUrl = UriComponentsBuilder.fromHttpUrl(basisUrl)
+        .pathSegment(effPathSegments).pathSegment("acl").build().toUri()
+        .toURL().toExternalForm();
+      return serviceAPIUrl;
+    } catch (MalformedURLException e) {
+      throw new HpcWebException("Unable to generate URL to invoke for ACL on" +
+        " " + type + " " + path + ".", e);
+    }
 	}
 
 	private void populatePermissions(Model model, String path, String type, String assignType, String token,

@@ -9,8 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.HashMap;
 import java.util.List;
 
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -278,7 +280,11 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			model.addAttribute("hpcCollection", hpcCollection);
 			setCollectionPath(model, request, originPath);
 		}
-		return "redirect:/collection?path=" + hpcCollection.getPath() + "&action=view";
+		final Map<String, String> qParams = new HashMap<>();
+		qParams.put("path", hpcCollection.getPath());
+		qParams.put("action", "view");
+		return "redirect:/collection?".concat(MiscUtil.generateEncodedQueryString(
+      qParams));
 	}
 
 	private void setCollectionPath(Model model, HttpServletRequest request, String parentPath) {
