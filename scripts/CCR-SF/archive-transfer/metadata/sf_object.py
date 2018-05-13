@@ -2,7 +2,6 @@ import logging
 
 from metadata.sf_parent import SFParent
 from metadata.sf_helper import SFHelper
-from upload.register_object import RegisterObject
 
 
 from collections import OrderedDict
