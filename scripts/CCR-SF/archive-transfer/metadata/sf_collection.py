@@ -24,7 +24,7 @@ class SFCollection(SFParent):
         if (self.addParent):
             self.build_parent_metadata()
 
-        print self.metadata
+        logging.info(self.metadata)
 
 
     def build_parent_metadata(self):
@@ -43,7 +43,6 @@ class SFCollection(SFParent):
     @staticmethod
     def get_archive_path(tarfile_name, path, type):
 
-        print "type is: " + type
         archive_path = "/FNL_SF_Archive" #super(SFCollection, self).get_archive_path()
         pi_coll_path = "/PI_Lab_" + SFHelper.get_pi_name(path)
         project_path = "/Project_" + SFHelper.get_project_name(path)
@@ -61,7 +60,7 @@ class SFCollection(SFParent):
         else:
             raise Exception("Incorrect collection type: " + type)
 
-        print archive_path
+        logging.info("Collection archive path for type: " + type + " is: "+ archive_path)
         return archive_path
 
 

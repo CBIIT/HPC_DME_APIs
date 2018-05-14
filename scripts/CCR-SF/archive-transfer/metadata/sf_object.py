@@ -24,29 +24,14 @@ class SFObject(object):
     def register(self):
         self.build_metadata()
 
-        #self.transfer()
-
-
 
     def build_metadata(self):
         self.build_object_metadata()
 
-        #build parent metadata
-        # pos = self.filename.rfind("/")
-        # self.collpath = self.filename[0:pos]
         if(self.addParent):
             self.build_parent_metadata()
 
-
-        #pos = self.filename.rfind("/")
-        #self.collpath = self.filename[0:pos]
-        #for coll in self.collpath.rsplit("/"):
-         #   SFCollectionHelper(coll, self.metadata).build_metadata()
-        print self.metadata
-
-        # create the metadata file
-        #with open(self.filepath + ".json", "a") as fp:
-         #   json.dump(self.metadata, fp)
+        logging.info(self.metadata)
 
 
     def build_object_metadata(self):
@@ -81,10 +66,6 @@ class SFObject(object):
 
         self.metadata["createParentCollections"] = True
         self.metadata["parentCollectionMetadataEntries"] = sf_parent.get_metadata_items()
-
-
-    def transfer(self):
-        RegisterObject(self.filepath, self.filepath + ".json").transfer()
 
 
     def get_metadata(self):
