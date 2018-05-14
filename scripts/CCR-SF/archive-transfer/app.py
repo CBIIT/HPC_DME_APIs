@@ -2,59 +2,94 @@ import logging
 import sys
 import os
 import json
+import time
 
 from metadata.sf_object import SFObject
 from metadata.sf_collection import SFCollection
 from metadata.sf_helper import SFHelper
 
 def main(args):
-    #Get the main gz file name 
-    tarfile_name = args[1]
-    
-    #get corresponding the content list file
-    try:
-        contentList = open(tarfile_name + ".list")
 
-    except IOError:
+    excludes = open("excluded_files", "a")
+    #Get the file containing the tarlist
+    tarfile_list = args[1]
+    tarfile_dir = args[2]
 
-        print "No content list file found for " + tarfile_name
-        return
+    for line_filepath in open(tarfile_list).readlines():
 
-    #loop through each line in the content list file
-    #We need to do an upload for each fatq.gz or BAM file
-    for line in open(tarfile_name + ".list").readlines():
-        
-        if line.rstrip().endswith('fastq.gz'):
-            print line
+        if not line_filepath.rstrip().endswith('tar.gz'):
 
-            #extract the fastq file from the list
+            #If this is not a .list or .md5 file also, then record exclusion. Else
+            #just ignore, do not record because we may find the associated tar later
+            if (not line_filepath.rstrip().endswith('.list') and
+               not line_filepath.rstrip().endswith('.md5')):
+                excludes.write(line_filepath)
+                logging.info("Ignoring file " + line_filepath.rstrip())
+            continue
 
-            #Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
-            filepath = line[3:].rstrip()
-            print filepath
+        #This is a tarball, so process
+        logging.info("Processing file: " + line_filepath)
+        #name of the tarfile
+        #tarfile_path = line_filepath.rstrip()
+        tarfile_name = line_filepath.rstrip()
 
-            # extract the fastq file from the archive
-            os.system("tar -xf " + tarfile_name + " " + filepath)
+        #Name of the tarfile
+        #tarfile_name = tarfile_path.split("/")[-1]
 
-            #Create PI metadata
-            path = filepath.split("Unaligned/")[1]
-            #path = filepath.split("/")[1]
-            print path
+        tarfile_path = tarfile_dir + "/" + tarfile_name
+        try:
+            tarfile_contents = open(tarfile_path + ".list")
 
-            # Register PI collection
-            register_collection(path, "PI_Lab", tarfile_name, False)
-
-            #Register Flowcell collection with Project type parent
-            register_collection(path, "Flowcell", tarfile_name, True)
-
-            #create Object metadata with Sample type parent and register object
-            register_object(path, "Sample", tarfile_name, True, filepath)
-
-            #delete the extracted tar file
-            os.system("rm " + filepath)
+        except IOError as e:
+            #There is no contents file for this tarball, so
+            #exclude the tarball found earlier
+            excludes.write(line_filepath)
+            logging.info("Ignoring file " + line_filepath.rstrip())
+            continue
 
 
+        #loop through each line in the contents file
+        #We need to do an upload for each fatq.gz or BAM file
+        for line in tarfile_contents.readlines():
 
+            if(line.rstrip().endswith("/")):
+                #This is a directory, nothing to do
+                continue
+
+            if line.rstrip().endswith('fastq.gz'):
+
+                #extract the fastq file from the list
+
+                #Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
+                filepath = line[3:].rstrip()
+                logging.info("file to archive: " + filepath)
+
+                # extract the fastq file from the archive
+                os.system("tar -xf " + tarfile_path + " " + filepath)
+
+                #Create PI metadata
+                path = filepath.split("Unaligned/")[1]
+                #path = filepath.split("/")[1]
+                logging.info("metadata base: " + path)
+
+                if len(path.split("/")) == 1:
+                    continue
+
+                # Register PI collection
+                register_collection(path, "PI_Lab", tarfile_name, False)
+
+                #Register Flowcell collection with Project type parent
+                register_collection(path, "Flowcell", tarfile_name, True)
+
+                #create Object metadata with Sample type parent and register object
+                register_object(path, "Sample", tarfile_name, True, filepath)
+
+                #delete the extracted tar file
+                os.system("rm " + filepath)
+
+            else:
+                excludes.write(tarfile_name + ": " + line)
+                logging.info("Ignoring file " + line.rstrip())
 
 
 def register_collection(filepath, type, tarfile_name, has_parent):
@@ -91,5 +126,9 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     os.system("dm_register_dataobject " + json_file_name + " " + archive_path + " " + fullpath)
 
 
+ts = time.gmtime()
+formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
+# 2018-05-14_07:56:07
+logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', level=logging.DEBUG)
 main(sys.argv)
 
