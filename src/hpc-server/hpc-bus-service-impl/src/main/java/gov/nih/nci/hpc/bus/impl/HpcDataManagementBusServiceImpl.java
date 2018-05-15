@@ -244,7 +244,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         //the metadata of these folder is denied, and validation fails
         HpcRequestInvoker invoker = securityService.getRequestInvoker();
 
-        logger.debug("method registerCollection (5-argument version): " +
+        logger.info("method registerCollection (5-argument version): " +
           "immediately after getting invoker data from securityService, " +
           "invoker state follows ...\n" + produceInvokerInfo(invoker));
 
@@ -253,7 +253,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // Validate the collection hierarchy.
         dataManagementService.validateHierarchy(path, configurationId, false);
 
-        logger.debug("method registerCollection (5-argument version): " +
+        logger.info("method registerCollection (5-argument version): " +
             "immediately before restoring invoker state via securityService, " +
             "invoker state to restore follows ...\n" + produceInvokerInfo(invoker));
 
@@ -2338,42 +2338,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     <xsd:element name="dataTransferAuthenticatedTokens"   type="hpc-domain-model:HpcDataTransferAuthenticatedToken" minOccurs="0" maxOccurs="unbounded" />
 
   */
-    if (null != pInvoker.getDataManagementAuthenticatedToken()) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(String.format("  dataManagementAuthenticatedToken = [%s]",
-        pInvoker.getDataManagementAuthenticatedToken()));
-    }
-    if (null != pInvoker.getAuthenticationType()) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append("  authenticationType = ").append(pInvoker
-        .getAuthenticationType());
-    }
-    sb.append(sb.length() > 0 ? ",\n" : "");
+    sb.append(String.format("  dataManagementAuthenticatedToken = [%s]",
+      pInvoker.getDataManagementAuthenticatedToken()));
+    sb.append(",\n");
+    sb.append("  authenticationType = ").append(pInvoker
+      .getAuthenticationType());
+    sb.append(",\n");
     sb.append("  ldapAuthentication = ").append(pInvoker
       .getLdapAuthentication());
-    if (null != pInvoker.getUserRole()) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append("  userRole = ").append(pInvoker.getUserRole());
-    }
-    if (null != pInvoker.getNciAccount()) {
-      propValObj = produceNciAccountInfo(pInvoker.getNciAccount(), 4);
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(String.format("  nciAccount = \n%s", propValObj));
-    }
-    if (null != pInvoker.getDataManagementAccount()) {
-      propValObj = produceIntegratedSystemAccountInfo(
-        pInvoker.getDataManagementAccount(), 4);
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(String.format("  dataManagementAccount = \n%s", propValObj));
-    }
-    if (null != pInvoker.getDataTransferAuthenticatedTokens()) {
-      propValObj = produceDataTransferAuthTokensInfo(
-        pInvoker.getDataTransferAuthenticatedTokens(), 4);
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(String.format("  dataTransferAuthenticatedTokens = \n%s",
-        propValObj));
-    }
+    sb.append(",\n");
+    sb.append("  userRole = ").append(pInvoker.getUserRole());
 
+    propValObj = (null == pInvoker.getNciAccount()) ? "<null reference!>" :
+      produceNciAccountInfo(pInvoker.getNciAccount(), 4);
+    sb.append(",\n");
+    sb.append(String.format("  nciAccount = \n%s", propValObj));
+
+    propValObj = (null == pInvoker.getDataManagementAccount()) ?
+      "<null reference!>" : produceIntegratedSystemAccountInfo(pInvoker
+      .getDataManagementAccount(), 4);
+    sb.append(",\n");
+    sb.append(String.format("  dataManagementAccount = \n%s", propValObj));
+
+    propValObj = (null == pInvoker.getDataTransferAuthenticatedTokens()) ?
+      "<null reference!>" : ( pInvoker.getDataTransferAuthenticatedTokens()
+      .isEmpty() ? "<empty, 0 tokens>" : produceDataTransferAuthTokensInfo(
+      pInvoker.getDataTransferAuthenticatedTokens(), 4));
+    sb.append(",\n");
+    sb.append(String.format("  dataTransferAuthenticatedTokens = \n%s",
+      propValObj));
     sb.append("\n]\n");
     sb.insert(0, "[\n");
     String strRep = sb.toString();
@@ -2395,31 +2388,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 //			<xsd:element name="defaultConfigurationId" type="xsd:string" />
 //			<xsd:element name="firstName"  type="xsd:string" />
 //			<xsd:element name="lastName"   type="xsd:string" />
-
-    if (!isBlank(pAccount.getUserId())) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(indentStr).append("  userId = ").append(pAccount.getUserId());
-    }
-    if (!isBlank(pAccount.getDoc())) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(indentStr).append("  doc = ").append(pAccount.getDoc());
-    }
-    if (!isBlank(pAccount.getDefaultConfigurationId())) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(indentStr).append("  defaultConfigurationId = ").append(
-        pAccount.getDefaultConfigurationId());
-    }
-    if (!isBlank(pAccount.getFirstName())) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(indentStr).append("  firstName = ").append(
-        pAccount.getFirstName());
-    }
-    if (!isBlank(pAccount.getLastName())) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(indentStr).append("  lastName = ").append(
-        pAccount.getLastName());
-    }
-
+    sb.append(indentStr);
+    sb.append("  userId = ");
+    sb.append(pAccount.getUserId());
+    sb.append(",\n");
+    sb.append(indentStr);
+    sb.append("  doc = ");
+    sb.append(pAccount.getDoc());
+    sb.append(",\n");
+    sb.append(indentStr);
+    sb.append("  defaultConfigurationId = ");
+    sb.append(pAccount.getDefaultConfigurationId());
+    sb.append(",\n");
+    sb.append(indentStr);
+    sb.append("  firstName = ");
+    sb.append(pAccount.getFirstName());
+    sb.append(",\n");
+    sb.append(indentStr);
+    sb.append("  lastName = ");
+    sb.append(pAccount.getLastName());
     sb.append("\n" + indentStr + "]\n");
     sb.insert(0, indentStr + "[\n");
     String strRep = sb.toString();
@@ -2440,26 +2427,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 //			<xsd:element name="username"           type="xsd:string" />
 //			<xsd:element name="password"           type="xsd:string" />
 //			<xsd:element name="properties"         type="hpc-domain-user:HpcIntegratedSystemAccountProperty" minOccurs="0" maxOccurs="unbounded" />
-    if (null != pAccount.getIntegratedSystem()) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(theIndent).append("  integratedSystem() = ").append(
-        pAccount.getIntegratedSystem());
-    }
-    if (!isBlank(pAccount.getUsername())) {
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(theIndent).append("  username = ").append(
-          pAccount.getUsername());
-    }
-    sb.append(sb.length() > 0 ? ",\n" : "");
-    sb.append(theIndent).append("  password = <omitted for security reasons>");
-    if (null != pAccount.getProperties() &&
-        !pAccount.getProperties().isEmpty()) {
-      String placeholder = "<omitted for brevity " +
-        pAccount.getProperties().size() + " properties>";
-      sb.append(sb.length() > 0 ? ",\n" : "");
-      sb.append(theIndent).append("  properties = ").append(placeholder);
-    }
-
+    sb.append(theIndent);
+    sb.append("  integratedSystem() = ");
+    sb.append(pAccount.getIntegratedSystem());
+    sb.append(",\n" + theIndent);
+    sb.append("  username = ");
+    sb.append(pAccount.getUsername());
+    sb.append(",\n" + theIndent);
+    sb.append("  password = <omitted for security reasons>");
+    sb.append(",\n" + theIndent);
+    sb.append("  properties = ");
+    String placeholder = (null == pAccount.getProperties()) ?
+      "<null reference!>" : ( pAccount.getProperties().isEmpty() ?
+      "<empty, 0 properties>" : "<omitted for brevity, " + pAccount
+      .getProperties().size() + " properties>" );
+    sb.append(placeholder);
     sb.append("\n" + theIndent + "]\n");
     sb.insert(0, theIndent + "[\n");
     String strRep = sb.toString();
@@ -2472,8 +2454,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   private String produceDataTransferAuthTokensInfo(
     Collection<HpcDataTransferAuthenticatedToken> pTokens,
     int indentNumSpaces) {
-    if (null == pTokens || pTokens.isEmpty()) {
-      return "";
+    if (null == pTokens) {
+      return "<null reference!>";
+    }
+    if (pTokens.isEmpty()) {
+      return "<empty collection!>";
     }
 
     StringBuilder sb = new StringBuilder();
@@ -2494,33 +2479,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 //			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 //			<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
       HpcDataTransferAuthenticatedToken token = tokensIter.next();
-      boolean propInfoPopulated = false;
-      if (!isBlank(token.getSystemAccountId())) {
-        sb.append(indent3lev);
-        sb.append("systemAccountId = ");
-        sb.append(token.getSystemAccountId());
-        propInfoPopulated = true;
-      }
-      if (!isBlank(token.getConfigurationId())) {
-        sb.append(propInfoPopulated ? ",\n" : "");
-        sb.append(indent3lev);
-        sb.append("configurationId = ");
-        sb.append(token.getConfigurationId());
-        propInfoPopulated = true;
-      }
-      if (null != token.getDataTransferType()) {
-        sb.append(propInfoPopulated ? ",\n" : "");
-        sb.append(indent3lev);
-        sb.append("dataTransferType = ");
-        sb.append(token.getDataTransferType());
-        propInfoPopulated = true;
-      }
-      if (null != token.getDataTransferAuthenticatedToken()) {
-        sb.append(propInfoPopulated ? ",\n" : "");
-        sb.append(indent3lev);
-        sb.append("dataTransferAuthenticatedToken = ");
-        sb.append(token.getDataTransferAuthenticatedToken());
-      }
+      sb.append(indent3lev);
+      sb.append("systemAccountId = ");
+      sb.append(token.getSystemAccountId());
+      sb.append(",\n" + indent3lev);
+      sb.append("configurationId = ");
+      sb.append(token.getConfigurationId());
+      sb.append(",\n" + indent3lev);
+      sb.append("dataTransferType = ");
+      sb.append(token.getDataTransferType());
+      sb.append(",\n" + indent3lev);
+      sb.append("dataTransferAuthenticatedToken = ");
+      sb.append(token.getDataTransferAuthenticatedToken());
       sb.append("\n");
       sb.append(indent2lev);
       sb.append("]\n");
