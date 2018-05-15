@@ -360,7 +360,7 @@ public class HpcSystemAccountLocator {
       logger.info(
           String.format(
               "accessProperPool: DOC is %s, DOC classifier to use is %s",
-              dmConfig.getDoc(), DOC_CLASSIFIER_DEFAULT));
+              dmConfig.getDoc(), docClassifier));
     }
     final List<PooledSystemAccountWrapper> retProperPool = classifier2PoolMap.get(docClassifier);
     logger.info("accessProperPool: about to return");
