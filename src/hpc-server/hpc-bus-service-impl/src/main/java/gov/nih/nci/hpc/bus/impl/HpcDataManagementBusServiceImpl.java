@@ -69,6 +69,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
@@ -237,29 +238,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         metadataService.addSystemGeneratedMetadataToCollection(
             path, userId, userName, configurationId);
            
-        //Retrieve the current request invoker, and then set the request
-        //invoker to the system account so that we have the privileges to
-        //perform hierarchy validation. Else, if the user does not have 
-        //permissions to view any of the parent folders, then access to
-        //the metadata of these folder is denied, and validation fails
-        HpcRequestInvoker invoker = securityService.getRequestInvoker();
-
-        logger.info("method registerCollection (5-argument version): " +
-          "immediately after getting invoker data from securityService, " +
-          "invoker state follows ...\n" + produceInvokerInfo(invoker));
-
-        securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        HpcRequestInvoker invoker = null;	
+       
+        //Set the request invoker to the system account since that has the privileges to
+        //perform hierarchy validation, specifically to get the collectionType metadata. 
+        if(!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(securityService.getRequestInvoker().getAuthenticationType())) {
+        	invoker = securityService.getRequestInvoker();
+        	securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        }
         
         // Validate the collection hierarchy.
         dataManagementService.validateHierarchy(path, configurationId, false);
 
-        logger.info("method registerCollection (5-argument version): " +
-            "immediately before restoring invoker state via securityService, " +
-            "invoker state to restore follows ...\n" + produceInvokerInfo(invoker));
 
         //Validation is over, hence restore invoker to original
-        securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
-        invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        if(invoker != null) {
+        	securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
+        		invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        }
         
         // Add collection update event.
         addCollectionUpdatedEvent(path, true, false, userId);
@@ -745,21 +741,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       boolean registrationCompleted = false;
       try {
     	  
-    	//Retrieve the current request invoker, and then set the request
-        //invoker to the system account so that we have the privileges to
-        //perform hierarchy validation. Else, if the user does not have 
-        //permissions to view any of the parent folders, then access to
-        //the metadata of these folder is denied, and validation fails
-        HpcRequestInvoker invoker = securityService.getRequestInvoker();
-        securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());  
+        HpcRequestInvoker invoker = null;
+        
+        //Set the request invoker to the system account since that has the privileges to
+        //perform hierarchy validation, specifically to get the collectionType metadata. 
+        if(!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(securityService.getRequestInvoker().getAuthenticationType())) {
+        	invoker = securityService.getRequestInvoker();
+        	securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        }
     	  
         // Validate the new data object complies with the hierarchy definition.
         dataManagementService.validateHierarchy(collectionPath, configurationId, true);
         
         //Validation is over, hence restore invoker to original
-        securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
-        invoker.getAuthenticationType(), invoker.getDataManagementAccount());        
-
+        if(invoker != null) {
+        	securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
+        		invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        }
+        
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
 
@@ -2321,191 +2320,5 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
   }
 
-
-  private String produceInvokerInfo(HpcRequestInvoker pInvoker) {
-    if (null == pInvoker) {
-      return "<null reference!>";
-    }
-    StringBuilder sb = new StringBuilder();
-    String propValObj = null;
-  /*
-    <xsd:element name="dataManagementAuthenticatedToken"  type="xsd:anyType" />
-    <xsd:element name="authenticationType"                type="hpc-domain-user:HpcAuthenticationType" />
-    <xsd:element name="ldapAuthentication"                type="xsd:boolean" />
-    <xsd:element name="userRole"                          type="hpc-domain-user:HpcUserRole" />
-    <xsd:element name="nciAccount"                        type="hpc-domain-user:HpcNciAccount" />
-    <xsd:element name="dataManagementAccount"             type="hpc-domain-user:HpcIntegratedSystemAccount" />
-    <xsd:element name="dataTransferAuthenticatedTokens"   type="hpc-domain-model:HpcDataTransferAuthenticatedToken" minOccurs="0" maxOccurs="unbounded" />
-
-  */
-    sb.append(String.format("  dataManagementAuthenticatedToken = [%s]",
-      pInvoker.getDataManagementAuthenticatedToken()));
-    sb.append(",\n");
-    sb.append("  authenticationType = ").append(pInvoker
-      .getAuthenticationType());
-    sb.append(",\n");
-    sb.append("  ldapAuthentication = ").append(pInvoker
-      .getLdapAuthentication());
-    sb.append(",\n");
-    sb.append("  userRole = ").append(pInvoker.getUserRole());
-
-    propValObj = (null == pInvoker.getNciAccount()) ? "<null reference!>" :
-      produceNciAccountInfo(pInvoker.getNciAccount(), 4);
-    sb.append(",\n");
-    sb.append(String.format("  nciAccount = \n%s", propValObj));
-
-    propValObj = (null == pInvoker.getDataManagementAccount()) ?
-      "<null reference!>" : produceIntegratedSystemAccountInfo(pInvoker
-      .getDataManagementAccount(), 4);
-    sb.append(",\n");
-    sb.append(String.format("  dataManagementAccount = \n%s", propValObj));
-
-    propValObj = (null == pInvoker.getDataTransferAuthenticatedTokens()) ?
-      "<null reference!>" : ( pInvoker.getDataTransferAuthenticatedTokens()
-      .isEmpty() ? "<empty, 0 tokens>" : produceDataTransferAuthTokensInfo(
-      pInvoker.getDataTransferAuthenticatedTokens(), 4));
-    sb.append(",\n");
-    sb.append(String.format("  dataTransferAuthenticatedTokens = \n%s",
-      propValObj));
-    sb.append("\n]\n");
-    sb.insert(0, "[\n");
-    String strRep = sb.toString();
-
-    return strRep;
-  }
-
-
-  private String produceNciAccountInfo(HpcNciAccount pAccount,
-    int indentNumSpaces) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < indentNumSpaces; i += 1) {
-      sb.append(" ");
-    }
-    String indentStr = sb.toString();
-    sb.setLength(0);
-//			<xsd:element name="userId"     type="xsd:string" />
-//			<xsd:element name="doc"        type="xsd:string" />
-//			<xsd:element name="defaultConfigurationId" type="xsd:string" />
-//			<xsd:element name="firstName"  type="xsd:string" />
-//			<xsd:element name="lastName"   type="xsd:string" />
-    sb.append(indentStr);
-    sb.append("  userId = ");
-    sb.append(pAccount.getUserId());
-    sb.append(",\n");
-    sb.append(indentStr);
-    sb.append("  doc = ");
-    sb.append(pAccount.getDoc());
-    sb.append(",\n");
-    sb.append(indentStr);
-    sb.append("  defaultConfigurationId = ");
-    sb.append(pAccount.getDefaultConfigurationId());
-    sb.append(",\n");
-    sb.append(indentStr);
-    sb.append("  firstName = ");
-    sb.append(pAccount.getFirstName());
-    sb.append(",\n");
-    sb.append(indentStr);
-    sb.append("  lastName = ");
-    sb.append(pAccount.getLastName());
-    sb.append("\n" + indentStr + "]\n");
-    sb.insert(0, indentStr + "[\n");
-    String strRep = sb.toString();
-
-    return strRep;
-  }
-
-
-  private String produceIntegratedSystemAccountInfo(HpcIntegratedSystemAccount pAccount,
-    int indentNumSpaces) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < indentNumSpaces; i += 1) {
-      sb.append(" ");
-    }
-    String theIndent = sb.toString();
-    sb.setLength(0);
-//			<xsd:element name="integratedSystem"   type="hpc-domain-user:HpcIntegratedSystem" />
-//			<xsd:element name="username"           type="xsd:string" />
-//			<xsd:element name="password"           type="xsd:string" />
-//			<xsd:element name="properties"         type="hpc-domain-user:HpcIntegratedSystemAccountProperty" minOccurs="0" maxOccurs="unbounded" />
-    sb.append(theIndent);
-    sb.append("  integratedSystem() = ");
-    sb.append(pAccount.getIntegratedSystem());
-    sb.append(",\n" + theIndent);
-    sb.append("  username = ");
-    sb.append(pAccount.getUsername());
-    sb.append(",\n" + theIndent);
-    sb.append("  password = <omitted for security reasons>");
-    sb.append(",\n" + theIndent);
-    sb.append("  properties = ");
-    String placeholder = (null == pAccount.getProperties()) ?
-      "<null reference!>" : ( pAccount.getProperties().isEmpty() ?
-      "<empty, 0 properties>" : "<omitted for brevity, " + pAccount
-      .getProperties().size() + " properties>" );
-    sb.append(placeholder);
-    sb.append("\n" + theIndent + "]\n");
-    sb.insert(0, theIndent + "[\n");
-    String strRep = sb.toString();
-
-    return  strRep;
-  }
-
-
-
-  private String produceDataTransferAuthTokensInfo(
-    Collection<HpcDataTransferAuthenticatedToken> pTokens,
-    int indentNumSpaces) {
-    if (null == pTokens) {
-      return "<null reference!>";
-    }
-    if (pTokens.isEmpty()) {
-      return "<empty collection!>";
-    }
-
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < indentNumSpaces; i += 1) {
-      sb.append(" ");
-    }
-    String indent1lev = sb.toString();
-    String indent2lev = indent1lev.concat("  ");
-    String indent3lev = indent2lev.concat("  ");
-    sb.setLength(0);
-
-    Iterator<HpcDataTransferAuthenticatedToken> tokensIter = pTokens.iterator();
-    IntStream.range(0, pTokens.size()).forEach(idx -> {
-      sb.append(indent2lev);
-      sb.append("@(" + String.valueOf(idx) + ") => [\n");
-//      <xsd:element name="systemAccountId" type="xsd:string" />
-//			<xsd:element name="configurationId" type="xsd:string" />
-//			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-//			<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
-      HpcDataTransferAuthenticatedToken token = tokensIter.next();
-      sb.append(indent3lev);
-      sb.append("systemAccountId = ");
-      sb.append(token.getSystemAccountId());
-      sb.append(",\n" + indent3lev);
-      sb.append("configurationId = ");
-      sb.append(token.getConfigurationId());
-      sb.append(",\n" + indent3lev);
-      sb.append("dataTransferType = ");
-      sb.append(token.getDataTransferType());
-      sb.append(",\n" + indent3lev);
-      sb.append("dataTransferAuthenticatedToken = ");
-      sb.append(token.getDataTransferAuthenticatedToken());
-      sb.append("\n");
-      sb.append(indent2lev);
-      sb.append("]\n");
-    });
-
-    sb.append("\n" + indent1lev + "}\n");
-    sb.insert(0, indent1lev + "{\n");
-    String strRep = sb.toString();
-
-    return strRep;
-  }
-
-
-  private static boolean isBlank(String pVal) {
-    return (null == pVal) || (pVal.trim().isEmpty());
-  }
 
 }
