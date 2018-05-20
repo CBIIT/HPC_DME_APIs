@@ -116,7 +116,10 @@ def record_exclusion(str):
 
 def extract_file_to_archive(tarfile_name, tarfile_path, line):
     # Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
-    filepath = line[3:].rstrip()
+    #filepath = line[3:].rstrip()
+    filepath = line.split("../")[-1]
+    filepath = filepath.split(" ")[-1]
+
 
     if len(filepath.split("/")) < 3:
         # There is no subdirectory structure - something not right
