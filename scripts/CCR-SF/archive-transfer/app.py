@@ -93,23 +93,23 @@ def main(args):
 
                     else:
                         # ignore this html
-                        record_exclusion(tarfile_name + ':' + line)
+                        record_exclusion(tarfile_name + ':' + line + ': html path not valid, may have Sample or other sub-directory')
                         continue
 
                 else:
                     #ignore this html
-                    record_exclusion(tarfile_name + ':' + line)
+                    record_exclusion(tarfile_name + ':' + line + ': html path not valid, could not extract flowcell_id')
                     continue
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                record_exclusion(tarfile_name + ':'  + line)
+                record_exclusion(tarfile_name + ':'  + line + ': Not tar.gz or html file')
 
 
 
 
 def record_exclusion(str):
-    excludes.write(str)
+    excludes.writelines(str)
     logging.warning('Ignoring file ' + str)
 
 
@@ -140,15 +140,16 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
 
         # If this is not a .list or .md5 file also, then record exclusion. Else
         # just ignore, do not record because we may find the associated tar later
-        if (not tarfile_name.rstrip().endswith('.list') and
+        if (not tarfile_name.rstrip().endswith('tar.gz.list') and
                 not tarfile_name.rstrip().endswith('.md5')):
-            excludes.write(tarfile_name)
-            logging.info('Ignoring file ' + tarfile_name.rstrip())
+            excludes_str = ': Invalid file format - not tar.gz, tar.gz.list or tar.gz.md5'
+            excludes.writelines(tarfile_name + excludes_str)
+            logging.info('Ignoring file ' + tarfile_name.rstrip() + excludes_str)
         return
 
     if '-' in tarfile_name:
         # this tarball contains '-', hence ignore for now because we wont be able to extract metadata correctly
-        excludes.write(tarfile_name)
+        excludes.writelines(tarfile_name + ': Invalid file format - contains - in filename, cannot parse for metadata')
         logging.info('Ingoring file' + tarfile_name.rstrip())
         return
 
@@ -159,8 +160,9 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
     except IOError as e:
         # There is no contents file for this tarball, so
         # exclude the tarball
-        excludes.write(tarfile_name)
-        logging.warning("Ignoring file " + tarfile_name.rstrip())
+        excludes_str = ': No contents file located'
+        excludes.writelines(tarfile_name + excludes_str)
+        logging.warning("Ignoring file " + tarfile_name.rstrip() + excludes_str)
         return
 
     return tarfile_contents
@@ -181,7 +183,7 @@ def register_collection(filepath, type, tarfile_name, has_parent):
     #Register the collection
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
     command = "dm_register_collection jsons/" + json_file_name + " " + archive_path
-    logger.info(command)
+    logging.info(command)
     os.system(command)
 
 
@@ -202,7 +204,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     archive_path = archive_path + '/' + file_name
 
     command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath
-    logger.info(command)
+    logging.info(command)
     os.system(command)
 
 
