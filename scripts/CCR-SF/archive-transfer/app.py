@@ -109,7 +109,7 @@ def main(args):
 
 
 def record_exclusion(str):
-    excludes.writelines(str)
+    excludes.writelines(str + '\n')
     logging.warning('Ignoring file ' + str)
 
 
@@ -142,15 +142,16 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         # just ignore, do not record because we may find the associated tar later
         if (not tarfile_name.rstrip().endswith('tar.gz.list') and
                 not tarfile_name.rstrip().endswith('.md5')):
-            excludes_str = ': Invalid file format - not tar.gz, tar.gz.list or tar.gz.md5'
-            excludes.writelines(tarfile_name + excludes_str)
+            excludes_str = ': Invalid file format - not tar.gz, tar.gz.list or tar.gz.md5 \n'
+            excludes.write(tarfile_name + excludes_str)
             logging.info('Ignoring file ' + tarfile_name.rstrip() + excludes_str)
         return
 
     if '-' in tarfile_name:
         # this tarball contains '-', hence ignore for now because we wont be able to extract metadata correctly
-        excludes.writelines(tarfile_name + ': Invalid file format - contains - in filename, cannot parse for metadata')
-        logging.info('Ingoring file' + tarfile_name.rstrip())
+        excludes_str = ': Invalid file format - contains - in filename, cannot parse for metadata \n'
+        excludes.write(tarfile_name + excludes_str)
+        logging.info('Ignoring file' + tarfile_name.rstrip() + excludes_str)
         return
 
     tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
@@ -160,8 +161,8 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
     except IOError as e:
         # There is no contents file for this tarball, so
         # exclude the tarball
-        excludes_str = ': No contents file located'
-        excludes.writelines(tarfile_name + excludes_str)
+        excludes_str = ': No contents file located \n'
+        excludes.write(tarfile_name + excludes_str)
         logging.warning("Ignoring file " + tarfile_name.rstrip() + excludes_str)
         return
 
