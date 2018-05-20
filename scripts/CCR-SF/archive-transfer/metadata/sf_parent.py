@@ -83,7 +83,7 @@ class SFParent(object):
         self.set_attribute("sequencing_platform", SFHelper.get_sequencing_platform(self.tarfile))
 
         #temporary - for pooling, read length, sequencing_application_type - Fixme
-        self.set_attribute("sequencing_application_type", SFHelper.get_sequencing_platform(self.path))
+        self.set_attribute("sequencing_application_type", SFHelper.get_sequencing_application_type(self.path))
         self.set_attribute("pooling", "Unspecified")
         self.set_attribute("read_length", "Unspecified")
 

@@ -8,47 +8,27 @@ from metadata.sf_object import SFObject
 from metadata.sf_collection import SFCollection
 from metadata.sf_helper import SFHelper
 
+
 def main(args):
 
-    excludes = open("excluded_files", "a")
     #Get the file containing the tarlist
     tarfile_list = args[1]
     tarfile_dir = args[2]
 
     for line_filepath in open(tarfile_list).readlines():
 
-        if not line_filepath.rstrip().endswith('tar.gz'):
-
-            #If this is not a .list or .md5 file also, then record exclusion. Else
-            #just ignore, do not record because we may find the associated tar later
-            if (not line_filepath.rstrip().endswith('.list') and
-               not line_filepath.rstrip().endswith('.md5')):
-                excludes.write(line_filepath)
-                logging.info("Ignoring file " + line_filepath.rstrip())
-            continue
-
-        #This is a tarball, so process
-        logging.info("Processing file: " + line_filepath)
-        #name of the tarfile
-        #tarfile_path = line_filepath.rstrip()
         tarfile_name = line_filepath.rstrip()
 
-        #Name of the tarfile
-        #tarfile_name = tarfile_path.split("/")[-1]
-
-        tarfile_path = tarfile_dir + "/" + tarfile_name
-        try:
-            tarfile_contents = open(tarfile_path + ".list")
-
-        except IOError as e:
-            #There is no contents file for this tarball, so
-            #exclude the tarball found earlier
-            excludes.write(line_filepath)
-            logging.info("Ignoring file " + line_filepath.rstrip())
+        tarfile_contents = get_tarball_contents(tarfile_name, tarfile_dir)
+        if tarfile_contents is None:
             continue
 
+        tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
 
-        #loop through each line in the contents file
+        # This is a valid tarball, so process
+        logging.info("Processing file: " + tarfile_path)
+
+        #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
         for line in tarfile_contents.readlines():
 
@@ -58,22 +38,14 @@ def main(args):
 
             if line.rstrip().endswith('fastq.gz'):
 
-                #extract the fastq file from the list
-
-                #Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
-                filepath = line[3:].rstrip()
-                logging.info("file to archive: " + filepath)
-
-                # extract the fastq file from the archive
-                os.system("tar -xf " + tarfile_path + " " + filepath)
-
-                #Create PI metadata
-                path = filepath.split("Unaligned/")[1]
-                #path = filepath.split("/")[1]
-                logging.info("metadata base: " + path)
-
-                if len(path.split("/")) == 1:
+                filepath = extract_file_to_archive(tarfile_name, tarfile_path, line)
+                if filepath is None:
                     continue
+
+                # Extract the info for PI metadata
+                path = filepath.split("Unaligned/")[1]
+
+                logging.info('metadata base: ' + path)
 
                 # Register PI collection
                 register_collection(path, "PI_Lab", tarfile_name, False)
@@ -85,11 +57,113 @@ def main(args):
                 register_object(path, "Sample", tarfile_name, True, filepath)
 
                 #delete the extracted tar file
-                os.system("rm " + filepath)
+                os.system("rm -rf ./Unaligned/*")
+
+            elif line.rstrip().endswith('laneBarcode.html') and '/all/' in line:
+
+                #Remove the string after the first '/all' because metadata path if present will be before that
+                head, sep, tail = line.partition('all/')
+
+                #Remove everything upto the Flowcell_id, because metadata path if present will be after that
+                flowcell_id = SFHelper.get_flowcell_id(tarfile_name)
+                if flowcell_id in head:
+
+                    path = head.split(flowcell_id + '/')[-1]
+
+                    #Ensure that metadata path does not have the Sample sub-directory and that it is valid
+                    if path.count('/') == 1 and '_' in path:
+
+                        filepath = extract_file_to_archive(tarfile_name, tarfile_path, line)
+                        if filepath is None:
+                            continue
+
+                        #Register the html in flowcell collection
+
+                        path = path + 'laneBarcode.html'
+                        logging.info('metadata base: ' + path)
+
+                        # Register PI collection
+                        register_collection(path, "PI_Lab", tarfile_name, False)
+
+                        # Register Flowcell collection with Project type parent
+                        register_collection(path, "Flowcell", tarfile_name, True)
+
+                        # create Object metadata with Flowcell type parent and register object
+                        register_object(path, "Flowcell", tarfile_name, False, filepath)
+
+                    else:
+                        # ignore this html
+                        record_exclusion(tarfile_name + ':' + line)
+                        continue
+
+                else:
+                    #ignore this html
+                    record_exclusion(tarfile_name + ':' + line)
+                    continue
 
             else:
-                excludes.write(tarfile_name + ": " + line)
-                logging.info("Ignoring file " + line.rstrip())
+                #For now, we ignore files that are not fastq.gz or html
+                record_exclusion(tarfile_name + ':'  + line)
+
+
+
+
+def record_exclusion(str):
+    excludes.write(str)
+    logging.warning('Ignoring file ' + str)
+
+
+
+def extract_file_to_archive(tarfile_name, tarfile_path, line):
+    # Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
+    filepath = line[3:].rstrip()
+
+    if len(filepath.split("/")) < 3:
+        # There is no subdirectory structure - something not right
+        record_exclusion(tarfile_name + ':' + line)
+        return
+
+    logging.info("file to archive: " + filepath)
+
+    # extract the fastq file from the archive
+    #os.system("tar -xf " + tarfile_path + " -C ./uploads " + filepath)
+    os.system("tar -xf " + tarfile_path + " " + filepath)
+    #filepath = './uploads/' + filepath
+
+    return filepath
+
+
+
+def get_tarball_contents(tarfile_name, tarfile_dir):
+
+    if not tarfile_name.rstrip().endswith('tar.gz'):
+
+        # If this is not a .list or .md5 file also, then record exclusion. Else
+        # just ignore, do not record because we may find the associated tar later
+        if (not tarfile_name.rstrip().endswith('.list') and
+                not tarfile_name.rstrip().endswith('.md5')):
+            excludes.write(tarfile_name)
+            logging.info('Ignoring file ' + tarfile_name.rstrip())
+        return
+
+    if '-' in tarfile_name:
+        # this tarball contains '-', hence ignore for now because we wont be able to extract metadata correctly
+        excludes.write(tarfile_name)
+        logging.info('Ingoring file' + tarfile_name.rstrip())
+        return
+
+    tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
+    try:
+        tarfile_contents = open(tarfile_path + '.list')
+
+    except IOError as e:
+        # There is no contents file for this tarball, so
+        # exclude the tarball
+        excludes.write(tarfile_name)
+        logging.warning("Ignoring file " + tarfile_name.rstrip())
+        return
+
+    return tarfile_contents
 
 
 def register_collection(filepath, type, tarfile_name, has_parent):
@@ -101,31 +175,38 @@ def register_collection(filepath, type, tarfile_name, has_parent):
     #Create the metadata json file
     file_name = filepath.split("/")[-1]
     json_file_name = type + "_" + file_name + ".json"
-    with open(json_file_name, "w") as fp:
+    with open('jsons/' + json_file_name, "w") as fp:
         json.dump(collection_metadata, fp)
 
     #Register the collection
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
-    os.system("dm_register_collection " + json_file_name + " " + archive_path)
+    command = "dm_register_collection jsons/" + json_file_name + " " + archive_path
+    logger.info(command)
+    os.system(command)
 
 
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     #Build metadata for the object
-    object_to_register = SFObject(filepath, tarfile_name, has_parent)
+    object_to_register = SFObject(filepath, tarfile_name, has_parent, type)
     object_metadata = object_to_register.get_metadata()
 
     # create the metadata json file
-    file_name = filepath.split("/")[-1]
-    json_file_name = "Object_" + file_name + ".json"
-    with open(json_file_name, "w") as fp:
+    file_name = 'DataObject_' + filepath.split("/")[-1]
+    json_file_name = "DataObject_" + file_name + ".json"
+    with open('jsons/' + json_file_name, "w") as fp:
         json.dump(object_metadata, fp)
 
     #register the object
-    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
-    os.system("dm_register_dataobject " + json_file_name + " " + archive_path + " " + fullpath)
+    archive_path = SFCollection.get_archive_path(tarfile_name, filepath.rsplit("/", 1)[0], type)
+    archive_path = archive_path + '/' + file_name
+
+    command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath
+    logger.info(command)
+    os.system(command)
 
 
+excludes = open("excluded_files", "a")
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07

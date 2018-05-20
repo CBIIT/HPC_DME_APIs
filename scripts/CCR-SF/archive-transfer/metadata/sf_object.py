@@ -11,14 +11,15 @@ import json
 class SFObject(object):
 
 
-    def __init__(self, filepath, tarfile, addParent):
+    def __init__(self, filepath, tarfile, addParent, parentType = None):
         self.filepath = filepath
         self.tarfile = tarfile
         self.addParent = addParent
         self.metadata = OrderedDict()
         self.metadata["metadataEntries"] = []
-        self.extensions = {"md5": "MD5SUM", "bai" : "INDEX", "bam" : "BAM", "fastq.gz" : "FASTQ"}
+        self.extensions = {"md5": "MD5SUM", "bai" : "INDEX", "bam" : "BAM", "fastq.gz" : "FASTQ", "html" : "HTML"}
         self.archive_path = None
+        self.parentType = parentType
 
 
     def register(self):
@@ -30,6 +31,8 @@ class SFObject(object):
 
         if(self.addParent):
             self.build_parent_metadata()
+        else:
+            self.metadata["createParentCollections"] = False
 
         logging.info(self.metadata)
 
@@ -42,7 +45,6 @@ class SFObject(object):
     def set_object_name(self):
         name = self.filepath.split("/")[-1]
         self.set_attribute("object_name", name)
-
 
 
     def set_file_type(self):
@@ -60,8 +62,14 @@ class SFObject(object):
 
 
     def build_parent_metadata(self):
+        #This assumes we are building for sample - Fixme
         parent_name = self.filepath.split("/")[-2]
-        sf_parent = SFParent(parent_name, "Sample", self.tarfile)
+
+        type = 'Sample'
+        if self.parentType is not None:
+            type = self.parentType
+
+        sf_parent = SFParent(parent_name, type, self.tarfile)
         sf_parent.build_metadata_items()
 
         self.metadata["createParentCollections"] = True
