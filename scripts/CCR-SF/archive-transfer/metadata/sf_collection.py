@@ -44,8 +44,9 @@ class SFCollection(SFParent):
     def get_archive_path(tarfile_name, path, type):
 
         archive_path = "/FNL_SF_Archive" #super(SFCollection, self).get_archive_path()
+
         pi_coll_path = "/PI_Lab_" + SFHelper.get_pi_name(path)
-        project_path = "/Project_" + SFHelper.get_project_name(path)
+        project_path = "/Project_" + SFHelper.get_project_name(path).replace(' ', '_')
         flowcell_path = "/Flowcell_" + SFHelper.get_flowcell_id(tarfile_name)
         sample_path = "/Sample_" + SFHelper.get_sample_name(path)
 

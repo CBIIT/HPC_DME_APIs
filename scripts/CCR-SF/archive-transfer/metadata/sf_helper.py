@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime
 
 
@@ -9,8 +10,12 @@ class SFHelper(object):
     def get_pi_name(path):
         # derive pi name
         path_elements = path.split("_")
+
         #Assumes that PI name is in the beginning, and last and first names are separated by an '_'
         pi_name = path_elements[0] + "_" + path_elements[1]
+
+        #Assumes that PI name is in the beginning, and the format is FirstnameLastname
+        #pi_name = re.sub(r'([A-Z])', r' \1', path_elements[0])
         return pi_name
 
 
@@ -18,15 +23,25 @@ class SFHelper(object):
     def get_contact_name(path):
         # derive pi name
         path_elements = path.split("_")
-        # Assumes the contact name follows the PI name, and the last and first names are separated by an '_'
-        pi_name = path_elements[2] + "_" + path_elements[3]
-        return pi_name
+        # Assumes the contact name follows the PI name separated from it by a '_',
+
+        # the contact last and first names are separated by an '_'
+        contact_name = path_elements[2] + "_" + path_elements[3]
+
+        # the contact name format is FirstnameLastname
+        #contact_name = re.sub(r'([A-Z])', r'_\1', path_elements[1])
+        return contact_name
 
 
     @staticmethod
     def get_project_id(path):
         path_elements = path.split("_")
+
+        #Assumes that the PI name and contact names have their first and last names separated by '_'
         project_id = path_elements[4]
+
+        #Assumes that PI and contact names are in the format 'FirstnameLastname'
+        #project_id = path_elements[2]
         return project_id
 
     @staticmethod
@@ -71,7 +86,7 @@ class SFHelper(object):
     def get_sequencing_platform(tarfile):
         sequencing_platform = 'Unspecified'
         #Rule: First letter after the first '_' (i.e. 2nd column) in the tar filename
-        sequencing_platform_code = tarfile.split("_")[1][0]
+        sequencing_platform_code = tarfile.rstrip().split('_')[1][0]
         if(sequencing_platform_code == 'N'):
             sequencing_platform = 'NextSeq'
         elif (sequencing_platform_code == 'J' or sequencing_platform_code == 'D'):
