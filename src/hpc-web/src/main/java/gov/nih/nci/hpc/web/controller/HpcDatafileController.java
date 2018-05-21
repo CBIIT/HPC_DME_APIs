@@ -12,10 +12,8 @@ package gov.nih.nci.hpc.web.controller;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 
-import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -96,12 +94,9 @@ public class HpcDatafileController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				final Map<String, String> qParams = new HashMap<>();
-				qParams.put("returnPath", "datafile");
-				qParams.put("action", action);
-				qParams.put("path", path);
-				return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
-          qParams));
+				return "redirect:/login?returnPath=datafile&action=" + MiscUtil
+          .performUrlEncoding(action) + "&path=" + MiscUtil.performUrlEncoding(
+          path);
 			}
 
 			if (path == null)
@@ -175,13 +170,9 @@ public class HpcDatafileController extends AbstractHpcController {
 			final RedirectAttributes redirectAttributes) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		String[] action = request.getParameterValues("action");
-		if (action != null && action.length > 0 && action[0].equals("cancel")) {
-		  final Map<String, String> qParams = new HashMap<>();
-		  qParams.put("path", hpcDatafile.getPath());
-		  qParams.put("action", "view");
-      return "redirect:/datafile?".concat(MiscUtil.generateEncodedQueryString(
-        qParams));
-    }
+		if (action != null && action.length > 0 && action[0].equals("cancel"))
+			return "redirect:/datafile?path=" + MiscUtil.performUrlEncoding(
+        hpcDatafile.getPath()) + "&action=view";
 		else if (action != null && action.length > 0 && action[0].equals("delete")) {
 			boolean deleted = HpcClientUtil.deleteDatafile(authToken, serviceURL, hpcDatafile.getPath(), sslCertPath,
 					sslCertPassword);
@@ -208,11 +199,8 @@ public class HpcDatafileController extends AbstractHpcController {
 		} finally {
 			model.addAttribute("hpcDatafile", hpcDatafile);
 		}
-		final Map<String, String> queryMap = new HashMap<>();
-		queryMap.put("path", hpcDatafile.getPath());
-		queryMap.put("action", "view");
-		return "redirect:/datafile?".concat(MiscUtil.generateEncodedQueryString(
-      queryMap));
+		return "redirect:/datafile?path=" + MiscUtil.performUrlEncoding(hpcDatafile
+      .getPath()) + "&action=view";
 	}
 
 	@JsonView(Views.Public.class)

@@ -10,8 +10,6 @@
 package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.web.util.MiscUtil;
-import java.util.HashMap;
-import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -88,12 +86,9 @@ public class HpcUploadTaskController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				final Map<String, String> queryParams = new HashMap<>();
-				queryParams.put("returnPath", "uploadtask");
-        queryParams.put("taskId", taskId);
-        queryParams.put("type", type);
-				return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
-          queryParams));
+				return "redirect:/login?returnPath=uploadtask&taskId=" + MiscUtil
+					.performUrlEncoding(taskId) + "&type=" + MiscUtil.performUrlEncoding(
+          type);
 			}
 
 			if (taskId == null || type == null)

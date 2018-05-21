@@ -12,10 +12,8 @@ package gov.nih.nci.hpc.web.controller;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 
-import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -269,11 +267,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			setCriteria(model, request, session);
 			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
 					false);
-			final Map<String, String> qParams = new HashMap<>();
-			qParams.put("method", "GET");
-			qParams.put("action", this.webServerName.concat("/addbulk"));
-			return "redirect:https://www.globus.org/app/browse-endpoint?".concat(
-        MiscUtil.generateEncodedQueryString(qParams));
+
+			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
+				this.webServerName + "/addbulk");
+			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&" +
+        "action=" + percentEncodedReturnURL;
 		}
 
 		try {
