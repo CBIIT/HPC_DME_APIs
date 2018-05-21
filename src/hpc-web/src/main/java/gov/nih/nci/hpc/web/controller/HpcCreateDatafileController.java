@@ -9,6 +9,8 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -226,10 +228,11 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 		else if (action != null && action.length > 0 && action[0].equals("Globus")) {
 			session.setAttribute("datafilePath", hpcDataModel.getPath());
 			session.setAttribute("basePathSelected", basePath);
-      final String percentEncodedRequestUrl = MiscUtil.performUrlEncoding(
-        request.getRequestURL().toString());
-			return "redirect:https://www.globus.org/app/browse-endpoint?method=GET&" +
-        "action=" + percentEncodedRequestUrl;
+			final Map<String, String> qParams = new HashMap<>();
+			qParams.put("method", "GET");
+			qParams.put("action", request.getRequestURL().toString());
+			return "redirect:https://www.globus.org/app/browse-endpoint?".concat(
+        MiscUtil.generateEncodedQueryString(qParams));
 		}
 		String uploadType = request.getParameter("uploadType");
 
@@ -310,8 +313,11 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			}
 		}
 		// if (uploadType != null && uploadType.equals("sync"))
-		return "redirect:/datafile?path=" + MiscUtil.performUrlEncoding(hpcDataModel
-			.getPath()) + "&action=view";
+    final Map<String, String> queryParams = new HashMap<>();
+		queryParams.put("path", hpcDataModel.getPath());
+		queryParams.put("action", "view");
+		return "redirect:/datafile?".concat(MiscUtil.generateEncodedQueryString(
+      queryParams));
 		// else
 		// return "adddatafile";
 	}

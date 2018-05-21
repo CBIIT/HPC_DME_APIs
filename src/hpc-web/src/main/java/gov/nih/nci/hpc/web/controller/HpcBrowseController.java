@@ -15,7 +15,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -314,10 +316,14 @@ public class HpcBrowseController extends AbstractHpcController {
     if (!postProcPath.startsWith("/")) {
       postProcPath = "/".concat(postProcPath);
     }
-    final String encodedPath = MiscUtil.performUrlEncoding(postProcPath);
-    final String retNavString = String.format(
-      "redirect:/datafile?action=view&path=%s&source=browse&init",
-      encodedPath);
+    final Map<String, String> paramsMap = new HashMap<>();
+    paramsMap.put("action", "view");
+    paramsMap.put("path", postProcPath);
+    paramsMap.put("source", "browse");
+    paramsMap.put("init", "1");
+    final String retNavString = "redirect:/datafile?".concat(
+      MiscUtil.generateEncodedQueryString(paramsMap));
+
     return retNavString;
   }
 
