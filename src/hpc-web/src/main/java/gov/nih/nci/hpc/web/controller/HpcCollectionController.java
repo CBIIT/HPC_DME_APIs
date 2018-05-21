@@ -103,12 +103,9 @@ public class HpcCollectionController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				final Map<String, String> paramsMap = new HashMap<>();
-				paramsMap.put("returnPath", "collection");
-				paramsMap.put("action", action);
-				paramsMap.put("path", path);
-				return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
-          paramsMap));
+				return "redirect:/login?returnPath=collection&action=" + MiscUtil
+          .performUrlEncoding(action) + "&path=" + MiscUtil.performUrlEncoding(
+          path);
 			}
 
 			if (path == null) {
@@ -226,13 +223,10 @@ public class HpcCollectionController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
 		String[] action = request.getParameterValues("action");
-		if (action != null && action.length > 0 && action[0].equals("cancel")) {
-      final Map<String, String> paramsMap = new HashMap<>();
-      paramsMap.put("path", hpcCollection.getPath());
-      paramsMap.put("action", "view");
-      return "redirect:/collection?".concat(MiscUtil.generateEncodedQueryString(
-        paramsMap));
-    }
+		if (action != null && action.length > 0 && action[0].equals("cancel"))
+			return "redirect:/collection?path=" + MiscUtil.performUrlEncoding(
+        hpcCollection.getPath()) + "&action=view";
+
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
 			if (hpcCollection.getPath() == null || hpcCollection.getPath().trim().length() == 0)
@@ -249,11 +243,8 @@ public class HpcCollectionController extends AbstractHpcController {
 		} catch (Exception e) {
 			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
 		}
-		final Map<String, String> paramsMap = new HashMap<>();
-		paramsMap.put("path", hpcCollection.getPath());
-		paramsMap.put("action", "view");
-		return "redirect:/collection?".concat(MiscUtil.generateEncodedQueryString(
-      paramsMap));
+		return "redirect:/collection?path=" + MiscUtil.performUrlEncoding(
+      hpcCollection.getPath()) + "&action=view";
 	}
 
 	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs) {
@@ -352,11 +343,14 @@ public class HpcCollectionController extends AbstractHpcController {
 			model.addAttribute("error", String.format(
 					ERROR_MSG_TEMPLATE__$DELETE_FAILED_WITH_REASON, e.getMessage()));
 			copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
-			final Map<String, String> qParams = new HashMap<>();
-			qParams.put("path", collPath);
-			qParams.put("action", collAction);
-			retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?").concat(
-        MiscUtil.generateEncodedQueryString(qParams));
+//			final Map<String, String> qParams = new HashMap<>();
+//			qParams.put("path", collPath);
+//			qParams.put("action", collAction);
+//			retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?").concat(
+//        MiscUtil.generateEncodedQueryString(qParams));
+      retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?")
+        .concat("path=").concat(MiscUtil.performUrlEncoding(collPath))
+        .concat("&action=").concat(MiscUtil.performUrlEncoding(collAction));
 		}
 		return retNavOutcome;
 	}
@@ -393,10 +387,13 @@ public class HpcCollectionController extends AbstractHpcController {
         copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
         final String allowedAction = (String) model.asMap().get("action");
         final Map<String, String> qParams = new HashMap<>();
-        qParams.put("path", collPath);
-        qParams.put("action", allowedAction);
+//        qParams.put("path", collPath);
+//        qParams.put("action", allowedAction);
+//        retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?")
+//          .concat(MiscUtil.generateEncodedQueryString(qParams));
         retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?")
-          .concat(MiscUtil.generateEncodedQueryString(qParams));
+          .concat("path=").concat(MiscUtil.performUrlEncoding(collPath))
+          .concat("&action=").concat(MiscUtil.performUrlEncoding(collAction));
         return retNavOutcome;
     }
 
@@ -464,12 +461,11 @@ public class HpcCollectionController extends AbstractHpcController {
             bindingResult.addError(new ObjectError("hpcLogin",
                                         "Invalid user session!"));
             model.addAttribute("hpcLogin", new HpcLogin());
-            final Map<String, String> qParams = new HashMap<>();
-            qParams.put("returnPath", "collection");
-            qParams.put("action", collectionAction);
-            qParams.put("path", collectionPath);
-            retNavOutcome = "redirect:/login?".concat(MiscUtil
-              .generateEncodedQueryString(qParams));
+            retNavOutcome = String.format(
+              "redirect:/login?returnPath=collection&action=%s&path=%s",
+              MiscUtil.performUrlEncoding(collectionAction),
+              MiscUtil.performUrlEncoding(collectionPath)
+            );
         }
         return retNavOutcome;
     }
