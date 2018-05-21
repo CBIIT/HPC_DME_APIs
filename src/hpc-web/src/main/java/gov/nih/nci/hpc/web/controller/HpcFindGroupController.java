@@ -9,7 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -113,14 +112,12 @@ public class HpcFindGroupController extends AbstractHpcController {
 				}
 				session.setAttribute("selectedGroups", buffer.toString());
 				if (selectedGroups != null && selectedGroups.length > 0)
-					return "redirect:/permissions?assignType=Group&path=" + MiscUtil
-						.performUrlEncoding(hpcWebGroup.getPath()) + "&type=" + MiscUtil
-            .performUrlEncoding(hpcWebGroup.getType());
+					return "redirect:/permissions?assignType=Group&path=" + hpcWebGroup.getPath() + "&type="
+							+ hpcWebGroup.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedGroups");
-				return "redirect:/permissions?assignType=Group&path=" + MiscUtil
-          .performUrlEncoding(hpcWebGroup.getPath()) + "&type=" + MiscUtil
-          .performUrlEncoding(hpcWebGroup.getType());
+				return "redirect:/permissions?assignType=Group&path=" + hpcWebGroup.getPath() + "&type="
+						+ hpcWebGroup.getType();
 			}
 
 			String groupName = null;
