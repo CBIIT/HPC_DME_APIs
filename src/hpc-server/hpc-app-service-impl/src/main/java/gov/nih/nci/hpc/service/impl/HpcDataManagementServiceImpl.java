@@ -422,6 +422,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
       throws HpcException {
+	  
     // Calculate the collection path to validate.
     String validationCollectionPath = dataManagementProxy.getRelativePath(path);
     validationCollectionPath =

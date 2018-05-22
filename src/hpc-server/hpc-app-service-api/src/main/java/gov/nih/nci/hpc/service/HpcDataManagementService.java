@@ -217,7 +217,7 @@ public interface HpcDataManagementService {
    */
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
       throws HpcException;
-
+  
   /**
    * Get collection by its path.
    *

@@ -14,12 +14,15 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-databrowse="http://hpc.nci.nih.gov/domain/databrowse"
+	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"	
 	xmlns:hpc-dto-databrowse="http://hpc.nci.nih.gov/dto/databrowse"
 	targetNamespace="http://hpc.nci.nih.gov/dto/databrowse"
 	elementFormDefault="unqualified">
 	
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/databrowse"
 		        schemaLocation="HpcDataBrowseTypes.xsd" />
+    <xsd:import namespace="http://hpc.nci.nih.gov/domain/datamanagement"
+		        schemaLocation="HpcDataManagementTypes.xsd" />
 
 	<!-- Compound Metadata Query -->
 	<xsd:element name="HpcBookmarkRequestDTO">
@@ -27,6 +30,9 @@
 			<xsd:sequence>
 			    <xsd:element name="path" type="xsd:string" />
 			    <xsd:element name="group" type="xsd:string" />
+			    <xsd:element name="userId" type="xsd:string" minOccurs="0"/>
+			    <xsd:element name="permission" type="hpc-domain-datamanagement:HpcPermission" minOccurs="0"/> 
+			
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	

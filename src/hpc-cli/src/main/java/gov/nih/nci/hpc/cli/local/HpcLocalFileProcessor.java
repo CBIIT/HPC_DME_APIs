@@ -180,15 +180,17 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			objectPath = "/" + objectPath;
 		System.out.println("Processing: " + basePath + objectPath + " | checksum: "+hpcDataObjectRegistrationDTO.getChecksum());
 
-		final String pathFromServerUrl = HpcClientUtil.constructPathString(
-      "dataObject", basePath, objectPath);
     String apiUrl2Apply;
     try {
 			apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
-				connection.getHpcServerURL()).path(pathFromServerUrl).build().encode()
-				.toUri().toURL().toExternalForm();
+				connection.getHpcServerURL())
+				.path("/dataObject/{base-path}/{object-path}")
+        .buildAndExpand(basePath, objectPath).encode()
+        .toUri().toURL().toExternalForm();
 		} catch (MalformedURLException mue) {
-			final String informativeMsg = new StringBuilder("Error in attempt to")
+      final String pathFromServerUrl = HpcClientUtil.constructPathString(
+        "dataObject", basePath, objectPath);
+      final String informativeMsg = new StringBuilder("Error in attempt to")
 					.append(" build URL for making REST service call.\nBase server URL [")
 					.append(connection.getHpcServerURL()).append("].\nPath under base")
 					.append(" server URL [").append(pathFromServerUrl).append("].\n")
@@ -295,14 +297,15 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("connection.getHpcCertPath() "+connection.getHpcCertPath());
     logger.debug("connection.getHpcCertPassword() "+connection.getHpcCertPassword());
 
-    final String pathFromServerUrl = HpcClientUtil.constructPathString(
-      "dataObject", basePath, objectPath);
     String apiUrl2Apply;
     try {
       apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(connection
-        .getHpcServerURL()).path(pathFromServerUrl).build().encode().toUri()
+        .getHpcServerURL()).path("/dataObject/{base-path}/{object-path}")
+        .buildAndExpand(basePath, objectPath).encode().toUri()
         .toURL().toExternalForm();
     } catch (MalformedURLException mue) {
+      final String pathFromServerUrl = HpcClientUtil.constructPathString(
+        "dataObject", basePath, objectPath);
       final String informativeMsg = new StringBuilder("Error in attempt to")
         .append(" build URL for making REST service call.\nBase server URL [")
         .append(connection.getHpcServerURL()).append("].\nPath under base")

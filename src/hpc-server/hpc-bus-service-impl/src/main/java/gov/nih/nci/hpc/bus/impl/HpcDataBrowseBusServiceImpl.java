@@ -15,12 +15,17 @@ import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataBrowseBusService;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataBrowseService;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
@@ -38,6 +43,9 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 
   // Security Application Service instance.
   @Autowired private HpcSecurityService securityService = null;
+  
+  //Data Management Application Service instance
+  @Autowired private HpcDataManagementService dataManagementService = null;
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -62,15 +70,29 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
       throw new HpcException(
           "Null or empty bookmark name / bookmark request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    
 
-    // Get the user-id of this request invoker.
-    String nciUserId = securityService.getRequestInvoker().getNciAccount().getUserId();
-
+    HpcRequestInvoker invoker = securityService.getRequestInvoker();
+    String nciUserId = bookmarkRequest.getUserId();
+    if(nciUserId == null) {
+    	//No userId specified, so set it to be the userId of the requester
+    	nciUserId = invoker.getNciAccount().getUserId();
+    } else {
+    	//Ensure that the reauestor is authorized to add bookmark for someone else
+    	if (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
+    			!invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+    		throw new HpcException(
+    	            "Not authorizated to add bookmark for user " + nciUserId + ". Please contact system administrator",
+    	            HpcRequestRejectReason.NOT_AUTHORIZED);
+    	}
+    }
+    
+    
     if (dataBrowseService.getBookmark(nciUserId, bookmarkName) != null) {
       throw new HpcException(
           "Bookmark name already exists: " + bookmarkName, HpcErrorType.INVALID_REQUEST_INPUT);
     }
-
+    
     HpcBookmark bookmark = new HpcBookmark();
     bookmark.setName(bookmarkName);
     bookmark.setPath(bookmarkRequest.getPath());
@@ -79,6 +101,19 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 
     // Save the bookmark.
     dataBrowseService.saveBookmark(nciUserId, bookmark);
+    
+  //Set the permission to the bookmark path 
+    if(bookmarkRequest.getPermission() != null) {
+      HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
+      subjectPermission.setPermission(bookmarkRequest.getPermission());
+      subjectPermission.setSubject(nciUserId);
+      try {
+        dataManagementService.setCollectionPermission(bookmarkRequest.getPath(), subjectPermission);
+      } catch(Exception e) {
+    	dataBrowseService.deleteBookmark(nciUserId, bookmarkName);
+    	throw e;
+      }
+    }
   }
 
   @Override
@@ -89,10 +124,22 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
       throw new HpcException(
           "Null or empty bookmark name / bookmark request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-
-    // Get the user-id of this request invoker.
-    String nciUserId = securityService.getRequestInvoker().getNciAccount().getUserId();
-
+    
+    HpcRequestInvoker invoker = securityService.getRequestInvoker();    
+    String nciUserId = bookmarkRequest.getUserId();
+    if(nciUserId == null) {
+    	//No userId specified, so set it to be the userId of the requester
+    	nciUserId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    } else {
+    	//Ensure that the reauestor is authorized to add bookmark for someone else
+    	if (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
+			!invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+		throw new HpcException(
+	            "Not authorizated to update bookmark for user " + nciUserId + ". Please contact system administrator",
+	            HpcRequestRejectReason.NOT_AUTHORIZED);
+	}
+}
+    
     // Get the bookmark.
     HpcBookmark bookmark = dataBrowseService.getBookmark(nciUserId, bookmarkName);
     if (bookmark == null) {
@@ -110,6 +157,18 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 
     // Save the bookmark.
     dataBrowseService.saveBookmark(nciUserId, bookmark);
+    
+    //Set the permission to the bookmark path 
+    if(bookmarkRequest.getPermission() != null) {
+      HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
+      subjectPermission.setPermission(bookmarkRequest.getPermission());
+      subjectPermission.setSubject(nciUserId);
+      try {
+        dataManagementService.setCollectionPermission(bookmarkRequest.getPath(), subjectPermission);
+      } finally {
+    	dataBrowseService.deleteBookmark(nciUserId, bookmarkName);
+      }
+    }
   }
 
   @Override

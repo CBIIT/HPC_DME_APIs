@@ -186,10 +186,11 @@ public class HPCPermissions extends HPCBatchClient {
 		try {
       final String itemType = "collection".equalsIgnoreCase(type) ?
         "collection" : "dataObject";
-      final String pathUnderServerUrl = HpcClientUtil.constructPathString(
-        itemType, path, "acl");
+//      final String pathUnderServerUrl = HpcClientUtil.constructPathString(
+//        itemType, path, "acl");
       String url = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
-        pathUnderServerUrl).build().encode().toUri().toURL().toExternalForm();
+        "/{item-type}/{dme-archive-path}/acl").buildAndExpand(itemType, path)
+				.encode().toUri().toURL().toExternalForm();
       restTemplate.postForEntity(url, entity, null);
 		} catch (HttpStatusCodeException e) {
 			returnCode = Constants.CLI_5;

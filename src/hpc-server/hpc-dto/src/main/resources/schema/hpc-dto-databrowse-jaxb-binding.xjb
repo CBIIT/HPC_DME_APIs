@@ -38,6 +38,12 @@
 		<jxb:bindings node="//xsd:complexType[@name='HpcBookmark']">
         	<jxb:class ref="gov.nih.nci.hpc.domain.databrowse.HpcBookmark"/>
 		</jxb:bindings>
+	</jxb:bindings>
+   
+    <jxb:bindings schemaLocation="HpcDataManagementTypes.xsd">
+		<jxb:bindings node="//xsd:simpleType[@name='HpcPermission']">
+        	<jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermission"/>
+		</jxb:bindings>
     </jxb:bindings>
     
 </jxb:bindings>

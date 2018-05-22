@@ -226,17 +226,8 @@ public class HpcPermissionController extends AbstractHpcController {
       if (null == basisUrl) {
         return null;
       }
-      final String[] pathSegments = path.split("/");
-      final String[] effPathSegments = new String[pathSegments.length + 1];
-      int j = 0;
-      for (int i = 0; i < pathSegments.length; i++) {
-        if (!pathSegments[i].isEmpty()) {
-          effPathSegments[j] = pathSegments[i];
-          j += 1;
-        }
-      }
-      final String serviceAPIUrl = UriComponentsBuilder.fromHttpUrl(basisUrl)
-        .pathSegment(effPathSegments).pathSegment("acl").build().toUri()
+			final String serviceAPIUrl = UriComponentsBuilder.fromHttpUrl(basisUrl)
+				.path("/{dme-archive-path}/acl").buildAndExpand(path).encode().toUri()
         .toURL().toExternalForm();
       return serviceAPIUrl;
     } catch (MalformedURLException e) {
