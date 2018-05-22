@@ -122,27 +122,29 @@ function dm_register () {
       echo "ERROR: Can not access the \"$DESCRIPTION\" file" >&2
       exit 1
     fi
-    
-    local RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
-    local RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
+
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local RESPONSE_MSG=${COMBINED_PID_AND_EPOCH_TS}-${TYPE}-registration-response-message.json.tmp
+    local RESPONSE_HEADER=${COMBINED_PID_AND_EPOCH_TS}-${TYPE}-registration-response-header.tmp
 
     rm -f  $RESPONSE_MSG 2>/dev/null 
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
     local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
     
     if [ "$TYPE" == "dataObject" ]
     then
         if [ -z "$DATAOBJECT_FILE" ]
         then
-            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" $CURL_FLAGS -H "Accept: application/json"  2> $CURL_STATUS_FILE
         else
-            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> $HPC_DM_UTILS/temp/curl-status 
+            curl -F "dataObjectRegistration=@$DESCRIPTION;type=application/json" -F "dataObject=@$DATAOBJECT_FILE;type=application/octet-stream" $CURL_FLAGS  -H "Accept: application/json"  2> $CURL_STATUS_FILE
         fi
     elif [ "$TYPE" == "collection" ]
     then
             
-           curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS  -H "Accept: application/json" 2>$HPC_DM_UTILS/temp/curl-status
+           curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS  -H "Accept: application/json" 2>$CURL_STATUS_FILE
     else
         echo "ERROR: Unsupported registration type:$TYPE"
         exit 1
@@ -171,8 +173,10 @@ function dm_register_collection {
 
     dm_register $DESCRIPTION $DESTINATION_PATH collection || exit 1
 
-    local RESPONSE_HEADER=collection-registration-response-header.tmp
-    local RESPONSE_MSG=collection-registration-response-message.json.tmp
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+
+    local RESPONSE_HEADER=${COMBINED_PID_AND_EPOCH_TS}-collection-registration-response-header.tmp
+    local RESPONSE_MSG=${COMBINED_PID_AND_EPOCH_TS}-collection-registration-response-message.json.tmp
 
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 
@@ -203,8 +207,10 @@ function dm_register_dataobject_presigned {
       return 1
     fi
 
-    local response_header=dataObject-registration-response-header.tmp
-    local response_msg=dataObject-registration-response-message.json.tmp
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    
+    local response_header=${COMBINED_PID_AND_EPOCH_TS}-dataObject-registration-response-header.tmp
+    local response_msg=${COMBINED_PID_AND_EPOCH_TS}-dataObject-registration-response-message.json.tmp
 
     #verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
     presigned_url=`get_json_value $response_msg uploadRequestURL`
@@ -215,8 +221,8 @@ function dm_register_dataobject_presigned {
     fi
 
     rm $response_header $response_msg
-    response_header=presignedURL-registration-response-header.tmp
-    response_msg=presignedURL-registration-response-message.tmp
+    response_header=${COMBINED_PID_AND_EPOCH_TS}-presignedURL-registration-response-header.tmp
+    response_msg=${COMBINED_PID_AND_EPOCH_TS}-presignedURL-registration-response-message.tmp
     curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${source_file}" "${presigned_url}" -D $response_header -o $response_msg -s
     if [ "$?" -ne 0 ]
     then
@@ -254,9 +260,10 @@ function dm_register_dataobject {
     then
       return 1
     fi
-
-    local RESPONSE_HEADER=dataObject-registration-response-header.tmp
-    local RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+    
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local RESPONSE_HEADER=${COMBINED_PID_AND_EPOCH_TS}-dataObject-registration-response-header.tmp
+    local RESPONSE_MSG=${COMBINED_PID_AND_EPOCH_TS}-dataObject-registration-response-message.json.tmp
 
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 }
@@ -283,8 +290,9 @@ function dm_sync_globus_endpoint  {
     fi
 
 
-    local RESPONSE_HEADER=dataObject-registration-response-header.tmp
-    local RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local RESPONSE_HEADER=${COMBINED_PID_AND_EPOCH_TS}-dataObject-registration-response-header.tmp
+    local RESPONSE_MSG=${COMBINED_PID_AND_EPOCH_TS}-dataObject-registration-response-message.json.tmp
 
 
     local FILE_LIST="./test.txt /TEST_Archive/test.txt"
@@ -296,8 +304,9 @@ function dm_sync_globus_endpoint  {
       local DST_PATH=$(echo $NEW_FILE | cut -d' ' -f2)
       local FILE_ATTRIBUTES=$(get_file_attributes $SRC_PATH)      
       local DESC_JSON=$(get_json_description $FILE_ATTRIBUTES)
-      echo $DESC_JSON >  temp.json
-      echo "dm_register_dataobject  temp.json $DST_PATH $SRC_PATH"
+      local TEMP_JSON_FILE=temp-${COMBINED_PID_AND_EPOCH}.json
+      echo $DESC_JSON >  $TEMP_JSON
+      echo "dm_register_dataobject  $TEMP_JSON $DST_PATH $SRC_PATH"
       echo "verify_registration  $REPONSE_HEADER $RESPONSE_MSG $DST_PATH"
 
       rm -f $RESPONSE_HEADER 2>/dev/null
@@ -323,21 +332,21 @@ function dm_get_item {
         return 1
     fi
     local ITEM_PATH="$1"
-
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
     local RESPONSE_MSG
     local RESPONSE_HEADER
     if [ ! -z "$2" ]
     then
       RESPONSE_MSG="$2"
     else
-      RESPONSE_MSG=get-item-response-message.json.tmp
+      RESPONSE_MSG=${COMBINED_PID_AND_EPOCH_TS}-get-item-response-message.json.tmp
     fi 
 
     if [ ! -z "$3" ]
     then
       RESPONSE_HEADER="$3"
     else
-      RESPONSE_HEADER=get-item-response-header.tmp
+      RESPONSE_HEADER=${COMBINED_PID_AND_EPOCH_TS}-get-item-response-header.tmp
     fi 
 
     CONFIG=$(get_config) || exit 1
@@ -347,8 +356,9 @@ function dm_get_item {
     local TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
     local ITEM_TYPE="$( cut -d '/' -f 1 <<< "$TOTAL_PATH" )"
     local DME_ARCHIVE_PATH="$( cut -d '/' -f 2- <<< "$TOTAL_PATH" )"
-   
-    curl -G -X GET "$SERVER/$ITEM_TYPE/$(urlencode $DME_ARCHIVE_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
+    local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
+
+    curl -G -X GET "$SERVER/$ITEM_TYPE/$(urlencode $DME_ARCHIVE_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $CURL_STATUS_FILE 
     check_connection $RESPONSE_HEADER
 }
 
@@ -370,9 +380,9 @@ function dm_get_dataobject {
     fi
     local ITEM_PATH="$1"
 
-
-    local RESPONSE_MSG=${2-get-item-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-get-item-response-header.tmp}
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local RESPONSE_MSG="${COMBINED_PID_AND_EPOCH_TS}-2-get-item-response-message.json.tmp"
+    local RESPONSE_HEADER="${COMBINED_PID_AND_EPOCH_TS}-3-get-item-response-header.tmp"
 
     dm_get_item dataObject/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER" || exit 1
 
@@ -417,9 +427,9 @@ function dm_get_collection {
         return
     fi
     local ITEM_PATH="$1"
-
-    local RESPONSE_MSG=${2-get-item-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-get-item-response-header.tmp}
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local RESPONSE_MSG="${COMBINED_PID_AND_EPOCH_TS}-2-get-item-response-message.json.tmp"
+    local RESPONSE_HEADER="${COMBINED_PID_AND_EPOCH_TS}-3-get-item-response-header.tmp"
 
     dm_get_item collection/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER" || exit 1
 
@@ -464,15 +474,13 @@ function dm_download_dataobject_sync {
         return 1
     fi
 
-    local RESPONSE_HEADER=download-dataobject-response-header.tmp
-
-   
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local RESPONSE_HEADER=${COMBINED_PID_AND_EPOCH_TS}-download-dataobject-response-header.tmp
     local OBJECT_PATH="$1"
     local DESTINATION_PATH="$2"
 
     if [ -d "$DESTINATION_PATH"  ]
     then
-      
         #Download the file with the same file name 
         local FILE_NAME=$(basename "$OBJECT_PATH")
         if [ "$?" -ne 0 ]
@@ -491,7 +499,8 @@ function dm_download_dataobject_sync {
 
     local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
 
-    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status 
+    local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
+    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $CURL_STATUS_FILE 
     check_connection $RESPONSE_HEADER
 
 
@@ -544,7 +553,8 @@ function dm_delete_datafile {
     command_args+=" --path \"$file_path\" "
   
     #Generate the command for the client: 
-    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local command_file=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-cmd-file
     echo "deleteDatafile  " $command_args >  $command_file
 
     case "$(uname -s)" in
@@ -651,7 +661,8 @@ function dm_delete_collection {
     command_args+="--recursive $recursive "
 
     #Generate the command for the client: 
-    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local command_file=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-cmd-file
     echo "deleteCollection  " $command_args >  $command_file
 
     case "$(uname -s)" in
@@ -885,11 +896,12 @@ function dm_register_directory {
     command_args+=" --checksum $checksum"
 
     #Generate the command for the client: 
-    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local command_file=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-cmd-file
     echo "registerFromFilePath  " $command_args >  $command_file
 
-    local log_file=./dm_log
-    local error_file=./dm_error
+    local log_file=./${COMBINED_PID_AND_EPOCH_TS}_dm_log
+    local error_file=./${COMBINED_PID_AND_EPOCH_TS}_dm_error
 
     case "$(uname -s)" in
     
@@ -1065,11 +1077,12 @@ function dm_register_globus_directory {
     command_args+=" --patternType $patternType"
 
     #Generate the command for the client: 
-    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local command_file=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-cmd-file
     echo "registerFromGlobusPath --globusEndpoint $globus_endpoint --globusSourcePath $src_path --destinationArchivePath $dst_path" $command_args >  $command_file
 
-    local log_file=./dm_log
-    local error_file=./dm_error
+    local log_file=./${COMBINED_PID_AND_EPOCH_TS}_dm_log
+    local error_file=./${COMBINED_PID_AND_EPOCH_TS}_dm_error
 
     
     case "$(uname -s)" in
@@ -1163,7 +1176,8 @@ function dm_download_collection_async {
         return 1
     fi 
 
-    local request_file=$HPC_DM_UTILS/temp/async-download.json.tmp
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local request_file=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-async-download.json.tmp
      
     #Update the globus endpoint
     updated_endpoint=$(cat $template_file | sed "s@$container@$globus_endpoint@")
@@ -1172,13 +1186,14 @@ function dm_download_collection_async {
     updated_destination=$(echo "$updated_endpoint" | sed "s#${destination}#${dst_path}#")
     echo  "$updated_destination" > $request_file
 
-    local response_hdr=download-dataobject-response-header.tmp
-    local response_msg=download-dataobject-response-message.json.tmp
+    local response_hdr=${COMBINED_PID_AND_EPOCH_TS}-download-dataobject-response-header.tmp
+    local response_msg=${COMBINED_PID_AND_EPOCH_TS}-download-dataobject-response-message.json.tmp
 
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/collection/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+    local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
+    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/collection/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $CURL_STATUS_FILE
     check_connection $response_hdr
 
 
@@ -1266,7 +1281,8 @@ function dm_download_async {
         exit 1
     fi 
 
-    local request_file=$HPC_DM_UTILS/temp/async-download.json.tmp
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local request_file=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-async-download.json.tmp
      
     #Update the globus endpoint
     updated_endpoint=$(cat $template_file | sed "s@$container@$globus_endpoint@")
@@ -1277,13 +1293,14 @@ function dm_download_async {
 
 
     echo "Sending request to download the $item_type $src_path to Globus..."
-    local response_hdr=download-$item_type-response-header.tmp
-    local response_msg=download-$item_type-response-message.json.tmp
+    local response_hdr=${COMBINED_PID_AND_EPOCH_TS}-download-$item_type-response-header.tmp
+    local response_msg=${COMBINED_PID_AND_EPOCH_TS}-download-$item_type-response-message.json.tmp
 
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/$item_type/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+    local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
+    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/$item_type/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $CURL_STATUS_FILE
     check_connection $response_hdr || exit 1
 
 
@@ -1340,17 +1357,15 @@ function dm_get_download_status {
       request_type=/${request_type}
     fi
 
-
-
-    local response_msg=${2-get-downlaod-status-response-message.json.tmp}
-    local response_header=${3-get-item-response-header.tmp}
-
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local response_msg=${COMBINED_PID_AND_EPOCH_TS}-2-get-downlaod-status-response-message.json.tmp
+    local response_header=${COMBINED_PID_AND_EPOCH_TS}-3-get-item-response-header.tmp
 
     config=$(get_config) || exit 1
     server=$(get_server) || exit 1
-
    
-    curl -G -X GET ${server}${request_type}/download?task_id="$taskId"  $config  -H "Accept: application/json" -D $response_header -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
+    curl -G -X GET ${server}${request_type}/download?task_id="$taskId"  $config  -H "Accept: application/json" -D $response_header -o $response_msg -s 2> $CURL_STATUS_FILE
     check_connection $response_header
 
     #TO CONTINUE
@@ -1409,16 +1424,15 @@ function dm_add_bookmark () {
       exit 1
     fi
     
-    local RESPONSE_MSG=iadd_bookmark-response-message.json.tmp
-    local RESPONSE_HEADER=add_bookmark-response-header.tmp
-
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local RESPONSE_MSG=${COMBINED_PID_AND_EPOCH_TS}-add_bookmark-response-message.json.tmp
+    local RESPONSE_HEADER=${COMBINED_PID_AND_EPOCH_TS}-add_bookmark-response-header.tmp
     rm -f  $RESPONSE_MSG 2>/dev/null 
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
     local CURL_FLAGS="${SERVER}/bookmark/${BOOKMARK_NAME}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
-    
-  
-    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status 
+    local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
+    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $CURL_STATUS_FILE 
         
     check_connection $RESPONSE_HEADER
 }
@@ -1438,10 +1452,9 @@ local USAGE="USAGE: dm_register_user <userId> <description.json>"
         return 1
     fi
 
-  
     local USER_ID="$1"
     local DESCRIPTION_PATH="$2"
-   
+
     USERID=$(get_username) || exit 1
     SERVER=$(get_server) || exit 1
     CONFIG=$(get_config) || exit 1
@@ -1451,23 +1464,20 @@ local USAGE="USAGE: dm_register_user <userId> <description.json>"
       echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
       exit 1
     fi
-   
-    local RESPONSE_MSG=register_user-response-message.json.tmp
-    local RESPONSE_HEADER=register_user-response-header.tmp
+
+    local COMBINED_PID_AND_EPOCH_TS=$(gen_combined_pid_epoch)
+    local RESPONSE_MSG=${COMBINED_PID_AND_EPOCH_TS}-register_user-response-message.json.tmp
+    local RESPONSE_HEADER=${COMBINED_PID_AND_EPOCH_TS}-register_user-response-header.tmp
 
     rm -f  $RESPONSE_MSG 2>/dev/null
     rm -f $RESPONSE_HEADER 2>/dev/null
 
     local CURL_FLAGS="${SERVER}/user/${USER_ID}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
-   
- 
-    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+    local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
+    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $CURL_STATUS_FILE
 
     check_connection $RESPONSE_HEADER
-
 }
-
-
 
 
 # Perform percent/URL encoding on given string 
@@ -1507,3 +1517,8 @@ urldecode() {
     printf '%b' "${url_encoded//%/\\x}"
 }
 
+
+gen_combined_pid_epoch() {
+  COMBINED=$$"_"$(date +%s)
+  echo $COMBINED
+}
