@@ -60,42 +60,29 @@
 <script>
 //<![CDATA[
 	var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
-  app.filter('percent-encoding', function () {
-    return function (argStr) {
-      return encodeURIComponent(argStr);
-    };
-  });
-	app.controller('MainCtrl', [
-	  '$scope',
-	  '$http',
-	  '$interval',
-	  'uiGridGroupingConstants',
-    function ($scope, $http, $interval, uiGridGroupingConstants ) {
-      $scope.gridOptions1 = {
-        enableSorting: true,
-        enableFiltering: true,
-        paginationPageSize: 25,
-        treeRowHeaderAlwaysVisible: false,
-        columnDefs : [
-          {
-            field : 'groupName',
-            width : 400,
-            displayName : 'Group Name'
-          },
-          {
-            field : 'groupName',
-            width : 120,
-            displayName : 'Edit',
-            cellTemplate : '<div class="ui-grid-cell-contents"><a id="editlink" class="btn btn-link btn-sm" href="../updategroup?groupName={{COL_FIELD | percent-encoding}}">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
-          }
-        ],
-        onRegisterApi : function(gridApi) {
-          $scope.grid1Api = gridApi;
-        }
-      };
-      $scope.gridOptions1.data = results;
-    }
-  ]);
+	app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
+				$scope.gridOptions1 = {
+				    enableSorting: true,
+				    enableFiltering: true,
+				    paginationPageSize: 25,
+				    treeRowHeaderAlwaysVisible: false,
+					columnDefs : [ {
+						field : 'groupName',
+						width : 400,
+						displayName : 'Group Name'
+					}, {
+						field : 'groupName',
+						width : 120,
+						displayName : 'Edit',
+						cellTemplate : '<div class="ui-grid-cell-contents"><a id="editlink" class="btn btn-link btn-sm" href="../updategroup?groupName={{COL_FIELD CUSTOM_FILTERS}}">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
+					}],
+					onRegisterApi : function(gridApi) {
+						$scope.grid1Api = gridApi;
+					}
+				};
+				$scope.gridOptions1.data = results;
+
+			} ]);
 	/*]]>*/
 </script>
 <style>

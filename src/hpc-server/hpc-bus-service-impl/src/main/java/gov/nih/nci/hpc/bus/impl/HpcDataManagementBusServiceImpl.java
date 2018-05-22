@@ -13,12 +13,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +65,13 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -230,20 +238,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         metadataService.addSystemGeneratedMetadataToCollection(
             path, userId, userName, configurationId);
            
-        //Retrieve the current request invoker, and then set the request
-        //invoker to the system account so that we have the privileges to
-        //perform hierarchy validation. Else, if the user does not have 
-        //permissions to view any of the parent folders, then access to
-        //the metadata of these folder is denied, and validation fails
-        HpcRequestInvoker invoker = securityService.getRequestInvoker();
-        securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        HpcRequestInvoker invoker = null;	
+       
+        //Set the request invoker to the system account since that has the privileges to
+        //perform hierarchy validation, specifically to get the collectionType metadata. 
+        if(!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(securityService.getRequestInvoker().getAuthenticationType())) {
+        	invoker = securityService.getRequestInvoker();
+        	securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        }
         
         // Validate the collection hierarchy.
         dataManagementService.validateHierarchy(path, configurationId, false);
-        
+
+
         //Validation is over, hence restore invoker to original
-        securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
-        invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        if(invoker != null) {
+        	securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
+        		invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        }
         
         // Add collection update event.
         addCollectionUpdatedEvent(path, true, false, userId);
@@ -729,21 +741,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       boolean registrationCompleted = false;
       try {
     	  
-    	//Retrieve the current request invoker, and then set the request
-        //invoker to the system account so that we have the privileges to
-        //perform hierarchy validation. Else, if the user does not have 
-        //permissions to view any of the parent folders, then access to
-        //the metadata of these folder is denied, and validation fails
-        HpcRequestInvoker invoker = securityService.getRequestInvoker();
-        securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());  
+        HpcRequestInvoker invoker = null;
+        
+        //Set the request invoker to the system account since that has the privileges to
+        //perform hierarchy validation, specifically to get the collectionType metadata. 
+        if(!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(securityService.getRequestInvoker().getAuthenticationType())) {
+        	invoker = securityService.getRequestInvoker();
+        	securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        }
     	  
         // Validate the new data object complies with the hierarchy definition.
         dataManagementService.validateHierarchy(collectionPath, configurationId, true);
         
         //Validation is over, hence restore invoker to original
-        securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
-        invoker.getAuthenticationType(), invoker.getDataManagementAccount());        
-
+        if(invoker != null) {
+        	securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
+        		invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        }
+        
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
 
@@ -2304,5 +2319,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       throw new HpcException(exceptionMsg, HpcErrorType.INVALID_REQUEST_INPUT);
     }
   }
+
 
 }
