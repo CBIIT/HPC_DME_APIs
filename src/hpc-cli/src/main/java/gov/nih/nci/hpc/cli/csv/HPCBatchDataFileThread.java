@@ -122,8 +122,8 @@ public class HPCBatchDataFileThread implements Runnable {
     String apiUrl2Apply;
 		try {
       apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(basePath).path(
-        HpcClientUtil.prependForwardSlashIfAbsent(collName)).build().encode()
-        .toUri().toURL().toExternalForm();
+        "/{dme-archive-path}").buildAndExpand(collName).encode().toUri().toURL()
+        .toExternalForm();
     } catch (MalformedURLException mue) {
       final String infoMsg = new StringBuilder("Error in attempt to build URL")
         .append(" for making REST service call.\nBase URL [").append(basePath)

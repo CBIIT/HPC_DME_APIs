@@ -235,7 +235,7 @@ public class HpcSearchController extends AbstractHpcController {
       ucBuilder.queryParam("detailedResponse", Boolean.TRUE);
     }
 
-    final String requestURL = ucBuilder.build().toUri().toURL().toExternalForm();
+    final String requestURL = ucBuilder.build().encode().toUri().toURL().toExternalForm();
 
     WebClient client = HpcClientUtil.getWebClient(requestURL, sslCertPath, sslCertPassword);
 		client.header("Authorization", "Bearer " + authToken);

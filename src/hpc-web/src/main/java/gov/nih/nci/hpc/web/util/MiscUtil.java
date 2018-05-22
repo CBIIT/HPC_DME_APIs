@@ -32,8 +32,8 @@ public class MiscUtil {
 
   public static String generateEncodedQueryString(MultiValueMap<String, String>
     argQueryParamsMap) {
-    return ucBuilder.replaceQueryParams(argQueryParamsMap).build().toUri()
-      .getRawQuery();
+    return ucBuilder.replaceQueryParams(argQueryParamsMap).build().encode()
+      .toUri().getRawQuery();
   }
 
 
