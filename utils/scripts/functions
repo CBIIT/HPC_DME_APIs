@@ -1398,9 +1398,10 @@ function dm_get_download_status {
 #Add a bookmark for a user
 #Inputs:  <bookmark_name>: Name of the bookmark
 #         <description.json>: The json file containing the parameters
+#         [REST-response]
 function dm_add_bookmark () {
 
-    local USAGE="USAGE: dm_add_bookmark <bookmark_name> <description.json>"
+    local USAGE="USAGE: dm_add_bookmark <bookmark_name> <description.json> [REST-response]"
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
@@ -1433,20 +1434,40 @@ function dm_add_bookmark () {
     local CURL_FLAGS="${SERVER}/bookmark/${BOOKMARK_NAME}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
     curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $CURL_STATUS_FILE 
-        
+
+    #Exit with connection error if response header has no data
     check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 201 ]
+    then
+      echo "ERROR adding bookmark \"$BOOKMARK_NAME\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      rm -f $RESPONSE_MSG 2> /dev/null
+    fi
 }
 
 #Register a user
 #Inputs:  <user id>: LDAP id of the user
 #         <description.json>: The json file containing the parameters
+#         [REST-response]
 function dm_register_user () {
 
-local USAGE="USAGE: dm_register_user <userId> <description.json>"
+local USAGE="USAGE: dm_register_user <userId> <description.json> [REST-response]"
 
     if [ -z "$1" ] || [ -z "$2" ]
     then
-        echo "ERROR: using dm_registe_user" >&2
+        echo "ERROR: using dm_register_user" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
         return 1
@@ -1476,7 +1497,26 @@ local USAGE="USAGE: dm_register_user <userId> <description.json>"
     local CURL_STATUS_FILE=$HPC_DM_UTILS/temp/${COMBINED_PID_AND_EPOCH_TS}-curl-status
     curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $CURL_STATUS_FILE
 
+    #Exit with connection error if response header has no data
     check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 201 ]
+    then
+      echo "ERROR enrolling user \"$USER_ID\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      rm -f "$RESPONSE_MSG" 2 > /dev/null
+    fi
 }
 
 
