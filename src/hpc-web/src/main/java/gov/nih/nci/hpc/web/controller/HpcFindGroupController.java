@@ -9,9 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.web.util.MiscUtil;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -111,26 +108,16 @@ public class HpcFindGroupController extends AbstractHpcController {
 						buffer.append(tokens.nextToken());
 						if (tokens.hasMoreTokens())
 							buffer.append(";");
-
 					}
 				}
 				session.setAttribute("selectedGroups", buffer.toString());
-				if (selectedGroups != null && selectedGroups.length > 0) {
-				  final Map<String, String> qParams1 = new HashMap<>();
-				  qParams1.put("assignType", "Group");
-				  qParams1.put("path", hpcWebGroup.getPath());
-				  qParams1.put("type", hpcWebGroup.getType());
-					return "redirect:/permissions?".concat(MiscUtil
-            .generateEncodedQueryString(qParams1));
-				}
+				if (selectedGroups != null && selectedGroups.length > 0)
+					return "redirect:/permissions?assignType=Group&path=" + hpcWebGroup.getPath() + "&type="
+							+ hpcWebGroup.getType();
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedGroups");
-        final Map<String, String> qParams2 = new HashMap<>();
-        qParams2.put("assignType", "Group");
-        qParams2.put("path", hpcWebGroup.getPath());
-        qParams2.put("type", hpcWebGroup.getType());
-        return "redirect:/permissions?".concat(MiscUtil
-          .generateEncodedQueryString(qParams2));
+				return "redirect:/permissions?assignType=Group&path=" + hpcWebGroup.getPath() + "&type="
+						+ hpcWebGroup.getType();
 			}
 
 			String groupName = null;
