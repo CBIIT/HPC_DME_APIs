@@ -11,8 +11,19 @@ class SFHelper(object):
         # derive pi name
         path_elements = path.split("_")
 
-        #Assumes that PI name is in the beginning, and last and first names are separated by an '_'
-        pi_name = path_elements[0] + "_" + path_elements[1]
+        # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
+
+        if path_elements[3].isalpha():
+            # If the 4th is alpha, then pick the first 2
+            pi_name = path_elements[0] + "_" + path_elements[1]
+        else:
+            if path_elements[2].isalpha():
+                # else if the first 3 are alpha pick 0 and 2
+                pi_name = path_elements[0] + "_" + path_elements[2]
+            else:
+                # else if the first 2 are alpha, pick 0 and 1
+                pi_name = path_elements[0] + "_" + path_elements[1]
+
 
         #Assumes that PI name is in the beginning, and the format is FirstnameLastname
         #pi_name = re.sub(r'([A-Z])', r' \1', path_elements[0])
@@ -26,10 +37,16 @@ class SFHelper(object):
         # Assumes the contact name follows the PI name separated from it by a '_',
 
         # the contact last and first names are separated by an '_'
-        contact_name = path_elements[2] + "_" + path_elements[3]
+        if path_elements[3].isalpha():
+            contact_name = path_elements[2] + "_" + path_elements[3]
+        else:
+            contact_name = ""
 
         # the contact name format is FirstnameLastname
-        #contact_name = re.sub(r'([A-Z])', r'_\1', path_elements[1])
+        #if path_elements[1].isalpha():
+            #contact_name = re.sub(r'([A-Z])', r'_\1', path_elements[1])
+        #else:
+            #contact_name = ""
         return contact_name
 
 

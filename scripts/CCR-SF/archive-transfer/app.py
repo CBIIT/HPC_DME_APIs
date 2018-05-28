@@ -207,12 +207,31 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath.rsplit("/", 1)[0], type)
     archive_path = archive_path + '/' + file_name
 
-    command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath
+    response_message = "dataObject-registration-response-message.json.tmp"
+    response_header = "dataObject-registration-response-header.tmp"
+
+    command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath \
+              + " -D " + response_header
+
     logging.info(command)
+    includes.write(command)
     os.system(command)
+
+    with open(response_header) as f:
+        with open(includes, "a") as f1:
+            for line in f:
+                f1.write(line)
+
+    os.system("rm - f " + response_message + " 2>/dev/null")
+    os.system("rm - f " + response_header + " 2>/dev/null")
+
+
+
+
 
 
 excludes = open("excluded_files", "a")
+includes = open("registered_files", "a")
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
