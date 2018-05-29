@@ -40,7 +40,7 @@ class SFHelper(object):
         if path_elements[3].isalpha():
             contact_name = path_elements[2] + "_" + path_elements[3]
         else:
-            contact_name = ""
+            contact_name = None
 
         # the contact name format is FirstnameLastname
         #if path_elements[1].isalpha():
