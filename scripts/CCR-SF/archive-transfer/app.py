@@ -190,6 +190,9 @@ def register_collection(filepath, type, tarfile_name, has_parent):
     response_message = "collection-registration-response-message.json.tmp"
     response_header = "collection-registration-response-header.tmp"
 
+    os.system("rm - f " + response_message + " 2>/dev/null")
+    os.system("rm - f " + response_header + " 2>/dev/null")
+
     command = "dm_register_collection jsons/" + json_file_name + " " + archive_path
     logging.info(command)
     os.system(command)
@@ -198,8 +201,6 @@ def register_collection(filepath, type, tarfile_name, has_parent):
         for line in f:
             includes.write(line)
 
-    os.system("rm - f " + response_message + " 2>/dev/null")
-    os.system("rm - f " + response_header + " 2>/dev/null")
 
 
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
@@ -221,6 +222,9 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     response_message = "dataObject-registration-response-message.json.tmp"
     response_header = "dataObject-registration-response-header.tmp"
 
+    os.system("rm - f " + response_message + " 2>/dev/null")
+    os.system("rm - f " + response_header + " 2>/dev/null")
+
     command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath
 
     logging.info(command)
@@ -230,11 +234,6 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     with open(response_header) as f:
         for line in f:
             includes.write(line)
-
-    includes.close()
-
-    os.system("rm - f " + response_message + " 2>/dev/null")
-    os.system("rm - f " + response_header + " 2>/dev/null")
 
 
 
