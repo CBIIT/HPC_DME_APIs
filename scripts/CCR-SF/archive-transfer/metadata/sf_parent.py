@@ -89,7 +89,9 @@ class SFParent(object):
 
 
     def set_project_attributes(self):
-        self.set_attribute("contact_name", SFHelper.get_contact_name(self.path))
+        contact_name = SFHelper.get_contact_name(self.path)
+        if contact_name is not None:
+            self.set_attribute("contact_name", contact_name)
         self.set_attribute("project_name", SFHelper.get_project_name(self.path))
         self.set_attribute("project_id_CSAS_NAS", SFHelper.get_project_id(self.path))
 
