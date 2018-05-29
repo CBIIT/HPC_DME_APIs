@@ -38,7 +38,7 @@ def main(args):
 
             if line.rstrip().endswith('fastq.gz'):
 
-                filepath = extract_file_to_archive(tarfile_name, tarfile_path, line)
+                filepath = extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
                 if filepath is None:
                     continue
 
