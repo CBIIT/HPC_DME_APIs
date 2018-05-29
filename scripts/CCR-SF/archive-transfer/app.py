@@ -195,10 +195,8 @@ def register_collection(filepath, type, tarfile_name, has_parent):
     os.system(command)
 
     with open(response_header) as f:
-        with open(includes, "a") as f1:
-            for line in f:
-                f1.write(line)
-    includes.close()
+        for line in f:
+            includes.write(line)
 
     os.system("rm - f " + response_message + " 2>/dev/null")
     os.system("rm - f " + response_header + " 2>/dev/null")
@@ -223,17 +221,15 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     response_message = "dataObject-registration-response-message.json.tmp"
     response_header = "dataObject-registration-response-header.tmp"
 
-    command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath 
-
+    command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath
 
     logging.info(command)
     includes.write(command)
     os.system(command)
 
     with open(response_header) as f:
-        with open(includes, "a") as f1:
-            for line in f:
-                f1.write(line)
+        for line in f:
+            includes.write(line)
 
     includes.close()
 
@@ -252,4 +248,5 @@ formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
 logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', level=logging.DEBUG)
 main(sys.argv)
-
+excludes.close()
+includes.close()
