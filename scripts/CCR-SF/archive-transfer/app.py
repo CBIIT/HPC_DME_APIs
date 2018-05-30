@@ -36,7 +36,7 @@ def main(args):
                 #This is a directory, nothing to do
                 continue
 
-            if line.rstrip().endswith('fastq.gz'):
+            if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
                 filepath = extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
                 if filepath is None:
