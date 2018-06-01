@@ -146,7 +146,7 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			final String serviceURL = UriComponentsBuilder.fromHttpUrl(
         this.queryServiceURL).pathSegment(search.getCriteriaName()).build()
-        .toUri().toURL().toExternalForm();
+				.encode().toUri().toURL().toExternalForm();
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 

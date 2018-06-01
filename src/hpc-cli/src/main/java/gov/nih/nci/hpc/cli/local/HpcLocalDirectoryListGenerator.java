@@ -399,13 +399,14 @@ public class HpcLocalDirectoryListGenerator {
 
 		}
 
-		final String pathUnderServerUrl = HpcClientUtil.constructPathString(
-      "dataObject", basePath, objectPath);
     String apiUrl2Apply;
     try {
       apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
-        pathUnderServerUrl).build().encode().toUri().toURL().toExternalForm();
+        "/dataObject/{base-path}/{object-path}").buildAndExpand(basePath,
+				objectPath).encode().toUri().toURL().toExternalForm();
     } catch (MalformedURLException mue) {
+      final String pathUnderServerUrl = HpcClientUtil.constructPathString(
+        "dataObject", basePath, objectPath);
       final String informativeMsg = new StringBuilder("Error in attempt to")
           .append(" build URL for making REST service call.\nBase server URL [")
           .append(hpcServerURL).append("].\nPath under base")
@@ -552,12 +553,13 @@ public class HpcLocalDirectoryListGenerator {
 		}
 
     String apiUrl2Apply;
-		String pathFromBaseServerUrl = HpcClientUtil.constructPathString(
-    "collection", basePath, collectionPath);
 		try {
       apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
-        pathFromBaseServerUrl).build().toUri().toURL().toExternalForm();
+        "/collection/{base-path}/{collection-path}").buildAndExpand(basePath,
+        collectionPath).encode().toUri().toURL().toExternalForm();
     } catch (MalformedURLException mue) {
+      String pathFromBaseServerUrl = HpcClientUtil.constructPathString(
+      "collection", basePath, collectionPath);
       final String informativeMsg = new StringBuilder("Error in attempt to")
         .append(" build URL for making REST service call.\nBase server URL [")
         .append(hpcServerURL).append("].\nPath under base")

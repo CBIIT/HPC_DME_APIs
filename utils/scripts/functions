@@ -345,8 +345,10 @@ function dm_get_item {
 
     local TOTAL_PATH="$ITEM_PATH"
     local TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
+    local ITEM_TYPE="$( cut -d '/' -f 1 <<< "$TOTAL_PATH" )"
+    local DME_ARCHIVE_PATH="$( cut -d '/' -f 2- <<< "$TOTAL_PATH" )"
    
-    curl -G -X GET "$SERVER/$(urlencode $TOTAL_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -G -X GET "$SERVER/$ITEM_TYPE/$(urlencode $DME_ARCHIVE_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $RESPONSE_HEADER
 }
 
@@ -1374,6 +1376,203 @@ function dm_get_download_status {
       fi
     fi
 }
+
+
+
+
+#Add a bookmark for a user
+#Inputs:  <bookmark_name>: Name of the bookmark
+#         <description.json>: The json file containing the parameters
+function dm_add_bookmark () {
+
+    local USAGE="USAGE: dm_add_bookmark <bookmark_name> <description.json> [REST-response]"
+
+    if [ -z "$1" ] || [ -z "$2" ] 
+    then
+        echo "ERROR: using dm_add_bookmark" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+   
+    local BOOKMARK_NAME="$1"
+    local DESCRIPTION_PATH="$2"
+    
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+    
+    local RESPONSE_MSG=iadd_bookmark-response-message.json.tmp
+    local RESPONSE_HEADER=add_bookmark-response-header.tmp
+
+    rm -f  $RESPONSE_MSG 2>/dev/null 
+    rm -f $RESPONSE_HEADER 2>/dev/null 
+
+    local CURL_FLAGS="${SERVER}/bookmark/${BOOKMARK_NAME}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    
+  
+    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status 
+
+    #Exit with connection error if response header has no data    
+    check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 201 ]
+    then
+      echo "ERROR enrolling user \"$BOOKMARK_NAME\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      rm -f "$RESPONSE_MSG" 2 > /dev/null
+    fi
+
+
+
+
+}
+
+#Register a user
+#Inputs:  <user id>: LDAP id of the user
+#         <description.json>: The json file containing the parameters
+function dm_register_user () {
+
+local USAGE="USAGE: dm_register_user <userId> <description.json> [REST-response]"
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using dm_register_user" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+  
+    local USER_ID="$1"
+    local DESCRIPTION_PATH="$2"
+   
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+   
+    local RESPONSE_MSG=register_user-response-message.json.tmp
+    local RESPONSE_HEADER=register_user-response-header.tmp
+
+    rm -f  $RESPONSE_MSG 2>/dev/null
+    rm -f $RESPONSE_HEADER 2>/dev/null
+
+    local CURL_FLAGS="${SERVER}/user/${USER_ID}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+   
+ 
+    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+    
+    #Exit with connection error if response header has no data
+    check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 201 ]
+    then
+      echo "ERROR enrolling user \"$USER_ID\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      rm -f "$RESPONSE_MSG" 2 > /dev/null
+    fi
+}
+
+
+#Update an existing user
+#Inputs:  <user id>: LDAP id of the user
+#         <description.json>: The json file containing the parameters
+function dm_update_user () {
+
+local USAGE="USAGE: dm_update_user <userId> <description.json> [REST-response]"
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using dm_update_user" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+
+    local USER_ID="$1"
+    local DESCRIPTION_PATH="$2"
+
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+
+    local RESPONSE_MSG=register_user-response-message.json.tmp
+    local RESPONSE_HEADER=register_user-response-header.tmp
+
+    rm -f  $RESPONSE_MSG 2>/dev/null
+    rm -f $RESPONSE_HEADER 2>/dev/null
+
+    local CURL_FLAGS="${SERVER}/user/${USER_ID}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+
+
+    curl -X POST -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+
+    #Exit with connection error if response header has no data
+    check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 200 ]
+    then
+      echo "ERROR updating user \"$USER_ID\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      rm -f "$RESPONSE_MSG" 2 > /dev/null
+    fi
+}
+
+
+
 
 
 # Perform percent/URL encoding on given string 

@@ -145,9 +145,9 @@ public class HPCCmdCollection extends HPCCmdClient {
 				} else if (cmd.equals("getCollection")) {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
-          serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
-            HpcClientUtil.prependForwardSlashIfAbsent(path)).build().encode()
-            .toUri().toURL().toExternalForm();
+					serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
+						"/{dme-archive-path}").buildAndExpand(path).encode()
+						.toUri().toURL().toExternalForm();
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
 					//	If necessary, add client.type("application/json; charset=UTF-8");
@@ -398,8 +398,9 @@ public class HPCCmdCollection extends HPCCmdClient {
 		//Invoke delete API if user confirms
 //		serviceURL = serviceURL + path + "/?recursive=" + recursive;
 		serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL)
-      .path(HpcClientUtil.prependForwardSlashIfAbsent(path.concat("/")))
-      .queryParam("recursive", Boolean.valueOf(recursive).toString()).build()
+      .path("/{dme-archive-path}")
+      .queryParam("recursive", Boolean.valueOf(recursive).toString())
+      .buildAndExpand(path)
       .encode().toUri().toURL().toExternalForm();
 		WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
@@ -412,11 +413,9 @@ public class HPCCmdCollection extends HPCCmdClient {
 	private int getDataObjectsPaths(String serviceURL, String path, String authToken, 
 			boolean printFilePath, int fileCount) 
 	throws JsonParseException, IOException {
-
-	  final String pathFromServerUrl = HpcClientUtil.constructPathString(path,
-      "children");
-    String servicePath = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
-      pathFromServerUrl).build().encode().toUri().toURL().toExternalForm();
+	  String servicePath = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
+      "/{dme-archive-path}/children").buildAndExpand(path).encode().toUri()
+      .toURL().toExternalForm();
  		WebClient client = HpcClientUtil.getWebClient(servicePath, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 		client.header("Authorization", "Bearer " + authToken);
 		// if necessary, add client.type("application/json; charset=UTF-8");
