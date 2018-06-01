@@ -13,14 +13,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import com.google.common.hash.Hashing;
@@ -59,8 +65,13 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -110,10 +121,14 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService {
+
+  private static final String MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS =
+    "Path \"%s\" contains forbidden character(s).  Following characters are" +
+    " forbidden: %s.";
+
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
-
   // The Data Management Application Service Instance.
   @Autowired private HpcDataManagementService dataManagementService = null;
 
@@ -194,19 +209,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if (StringUtils.containsWhitespace(path)) {
       throw new HpcException("Path contains white space", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    if (HpcUtil.doesPathContainForbiddenChars(path)) {
-      final StringBuilder sb = new StringBuilder();
-      for (char c : HpcUtil.FORBIDDEN_CHARS) {
-        if (sb.length() > 0) {
-          sb.append(", ");
-        }
-        sb.append(c);
-      }
-      final String forbiddenCharsDisplayString = sb.toString();
-      throw new HpcException("Path [" + path + "] contains forbidden" +
-        " character(s).  Following characters are forbidden: " +
-        forbiddenCharsDisplayString, HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+    validateDmeArchivePathHasNoForbiddenChars(path);
 
     // Create parent collections if requested to.
     createParentCollections(
@@ -234,10 +237,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // Generate system metadata and attach to the collection.
         metadataService.addSystemGeneratedMetadataToCollection(
             path, userId, userName, configurationId);
-
+           
+        HpcRequestInvoker invoker = null;	
+       
+        //Set the request invoker to the system account since that has the privileges to
+        //perform hierarchy validation, specifically to get the collectionType metadata. 
+        if(!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(securityService.getRequestInvoker().getAuthenticationType())) {
+        	invoker = securityService.getRequestInvoker();
+        	securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        }
+        
         // Validate the collection hierarchy.
         dataManagementService.validateHierarchy(path, configurationId, false);
 
+
+        //Validation is over, hence restore invoker to original
+        if(invoker != null) {
+        	securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
+        		invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        }
+        
         // Add collection update event.
         addCollectionUpdatedEvent(path, true, false, userId);
 
@@ -289,6 +308,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     return created;
   }
+
+
 
   @Override
   public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException {
@@ -682,6 +703,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       throw new HpcException(
           "Null path or dataObjectRegistrationDTO", HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    validateDmeArchivePathHasNoForbiddenChars(path);
 
     // Checksum validation (if requested by caller).
     validateChecksum(dataObjectFile, dataObjectRegistration.getChecksum());
@@ -718,9 +740,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if (responseDTO.getRegistered()) {
       boolean registrationCompleted = false;
       try {
+    	  
+        HpcRequestInvoker invoker = null;
+        
+        //Set the request invoker to the system account since that has the privileges to
+        //perform hierarchy validation, specifically to get the collectionType metadata. 
+        if(!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(securityService.getRequestInvoker().getAuthenticationType())) {
+        	invoker = securityService.getRequestInvoker();
+        	securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        }
+    	  
         // Validate the new data object complies with the hierarchy definition.
         dataManagementService.validateHierarchy(collectionPath, configurationId, true);
-
+        
+        //Validation is over, hence restore invoker to original
+        if(invoker != null) {
+        	securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
+        		invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        }
+        
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
 
@@ -879,6 +917,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         throw new HpcException(
             "Null / Empty path in registration request", HpcErrorType.INVALID_REQUEST_INPUT);
       }
+
+      validateDmeArchivePathHasNoForbiddenChars(path);
 
       // Validate no multiple registration requests for the same path.
       if (dataObjectRegistrationRequests.put(path, dataObjectRegistrationRequest) != null) {
@@ -2262,4 +2302,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     return 0;
   }
+
+
+  private void validateDmeArchivePathHasNoForbiddenChars(String path) throws
+    HpcException {
+    if (HpcUtil.doesPathContainForbiddenChars(path)) {
+      final String forbiddenCharsDisplayString = HpcUtil
+        .generateForbiddenCharsFormatted(
+          Optional.empty(),
+          Optional.empty(),
+          Optional.of("{"),
+          Optional.of("} (enclosed in curly braces)"));
+      final String exceptionMsg = String.format(
+        MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS,
+        path, forbiddenCharsDisplayString);
+      throw new HpcException(exceptionMsg, HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+  }
+
+
 }

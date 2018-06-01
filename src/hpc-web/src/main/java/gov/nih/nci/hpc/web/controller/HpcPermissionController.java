@@ -35,9 +35,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -167,12 +165,9 @@ public class HpcPermissionController extends AbstractHpcController {
 			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
 			if (restResponse.getStatus() == 200) {
 				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				final Map<String, String> qParams = new HashMap<>();
-				qParams.put("assignType", "User");
-				qParams.put("type", permissionsRequest.getType());
-				qParams.put("path", permissionsRequest.getPath());
-				return "redirect:/permissions?".concat(MiscUtil
-          .generateEncodedQueryString(qParams));
+				return "redirect:/permissions?assignType=User&type=" + MiscUtil
+          .performUrlEncoding(permissionsRequest.getType()) + "&path=" +
+          MiscUtil.performUrlEncoding(permissionsRequest.getPath());
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
 				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -226,17 +221,8 @@ public class HpcPermissionController extends AbstractHpcController {
       if (null == basisUrl) {
         return null;
       }
-      final String[] pathSegments = path.split("/");
-      final String[] effPathSegments = new String[pathSegments.length + 1];
-      int j = 0;
-      for (int i = 0; i < pathSegments.length; i++) {
-        if (!pathSegments[i].isEmpty()) {
-          effPathSegments[j] = pathSegments[i];
-          j += 1;
-        }
-      }
-      final String serviceAPIUrl = UriComponentsBuilder.fromHttpUrl(basisUrl)
-        .pathSegment(effPathSegments).pathSegment("acl").build().toUri()
+			final String serviceAPIUrl = UriComponentsBuilder.fromHttpUrl(basisUrl)
+				.path("/{dme-archive-path}/acl").buildAndExpand(path).encode().toUri()
         .toURL().toExternalForm();
       return serviceAPIUrl;
     } catch (MalformedURLException e) {

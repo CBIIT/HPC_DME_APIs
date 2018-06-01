@@ -71,8 +71,8 @@ public class HpcEventController extends AbstractHpcController {
 		try {
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			final String serviceURL = UriComponentsBuilder.fromHttpUrl(
-        this.receiptServiceURL).queryParam("eventId", id).build().toUri()
-        .toURL().toExternalForm();
+        this.receiptServiceURL).queryParam("eventId", id).build().encode()
+				.toUri().toURL().toExternalForm();
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 

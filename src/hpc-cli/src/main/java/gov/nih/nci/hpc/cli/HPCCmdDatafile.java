@@ -129,8 +129,8 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
 					serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
-            HpcClientUtil.prependForwardSlashIfAbsent(path)).build()
-            .encode().toUri().toURL().toExternalForm();
+            "/{dme-archive-path}").buildAndExpand(path).encode().toUri().toURL()
+						.toExternalForm();
 					jline.console.ConsoleReader reader;
 					reader = new jline.console.ConsoleReader();
 					reader.setExpandEvents(false);
@@ -149,8 +149,8 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					Iterator iterator = criteria.keySet().iterator();
 					String path = (String) iterator.next();
           serviceURL = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
-            HpcClientUtil.prependForwardSlashIfAbsent(path)).build()
-            .encode().toUri().toURL().toExternalForm();
+            "/{dme-archive-path}").buildAndExpand(path).encode().toUri().toURL()
+            .toExternalForm();
 					WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath, hpcCertPassword);
 					client.header("Authorization", "Bearer " + authToken);
 					// If necessary, here add "Content-Type" header set to "application/json; charset=UTF-8" via client.type("application/json; charset=UTF-8")

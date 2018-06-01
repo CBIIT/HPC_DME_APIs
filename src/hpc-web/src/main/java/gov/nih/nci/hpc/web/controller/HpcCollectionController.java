@@ -69,8 +69,7 @@ public class HpcCollectionController extends AbstractHpcController {
       FEEDBACK_MSG__$DELETE_SUCCEEDED = "Collection has been deleted!",
       KEY_PREFIX = "fdc-",
       NAV_OUTCOME_FORWARD_PREFIX = "forward:",
-      NAV_OUTCOME_REDIRECT_PREFIX = "redirect:",
-      URI_PATTERN__$COLLECTION_DETAIL_VIEW = "/collection?path=%s&action=%s";
+      NAV_OUTCOME_REDIRECT_PREFIX = "redirect:";
 
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String serviceURL;
@@ -353,9 +352,11 @@ public class HpcCollectionController extends AbstractHpcController {
 			model.addAttribute("error", String.format(
 					ERROR_MSG_TEMPLATE__$DELETE_FAILED_WITH_REASON, e.getMessage()));
 			copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
-            retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat(
-                    String.format(URI_PATTERN__$COLLECTION_DETAIL_VIEW,
-                            collPath, collAction));
+			final Map<String, String> qParams = new HashMap<>();
+			qParams.put("path", collPath);
+			qParams.put("action", collAction);
+			retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?").concat(
+        MiscUtil.generateEncodedQueryString(qParams));
 		}
 		return retNavOutcome;
 	}
@@ -391,9 +392,11 @@ public class HpcCollectionController extends AbstractHpcController {
         }
         copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
         final String allowedAction = (String) model.asMap().get("action");
-        retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat(
-                String.format(URI_PATTERN__$COLLECTION_DETAIL_VIEW,
-                        collPath, allowedAction));
+        final Map<String, String> qParams = new HashMap<>();
+        qParams.put("path", collPath);
+        qParams.put("action", allowedAction);
+        retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?")
+          .concat(MiscUtil.generateEncodedQueryString(qParams));
         return retNavOutcome;
     }
 
