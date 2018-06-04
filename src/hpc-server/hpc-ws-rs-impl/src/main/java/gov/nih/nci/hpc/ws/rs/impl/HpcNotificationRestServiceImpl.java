@@ -15,6 +15,7 @@ import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcNotificationRestService;
 
@@ -63,18 +64,18 @@ public class HpcNotificationRestServiceImpl extends HpcRestServiceImpl
     //---------------------------------------------------------------------//  
 	
     @Override
-    public Response subscribeNotifications(HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
-    {	
-		try {
-			 notificationBusService.subscribeNotifications(notificationSubscriptions);
-			 
-		} catch(HpcException e) {
+    public Response subscribeNotifications(
+      HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) {
+			try {
+        HpcNotificationSubscriptionsResponseDTO serviceResponseDto =
+          notificationBusService.subscribeNotifications(
+          notificationSubscriptions);
+        return okResponse(serviceResponseDto, false);
+			} catch(HpcException e) {
 			    return errorResponse(e);
-		}
-		
-		return okResponse(null, false);
-	}
-    
+			}
+	  }
+
     @Override
     public Response getNotificationSubscriptions()
     {
