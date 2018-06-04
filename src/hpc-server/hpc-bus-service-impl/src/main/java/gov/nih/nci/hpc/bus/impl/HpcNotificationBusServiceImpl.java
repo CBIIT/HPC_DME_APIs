@@ -14,16 +14,19 @@ import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
+import gov.nih.nci.hpc.dto.notification.HpcAddOrUpdateNotificationSubscriptionProblem;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsResponseDTO;
+import gov.nih.nci.hpc.dto.notification.HpcRemoveNotificationSubscriptionProblem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
-
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcNotificationBusServiceImpl implements HpcNotificationBusService {
+
+  private static final String MSG__NULL_OBJ_4_ACTIONS =
+    "Failed to perform notification subscription action(s) because " +
+    " there was missing representation of action(s).";
+
+
+  private static final String MSG__OBJ_4_ACTIONS_HAS_NO_ACTIONS =
+    "Failed to perform notification subscription action(s) because " +
+    " the representation of the action(s) contained no actions.";
+
+
+  private static final String  MSG_TEMPLATE__ACTION_FAILED_MORE_2_COME =
+    "Notification subscription could not be <action>; details follow" +
+    " on next lines.";
+
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
@@ -46,6 +64,12 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+  private List<HpcAddOrUpdateNotificationSubscriptionProblem> addOrUpdateNotifSubProblems;
+  private List<HpcRemoveNotificationSubscriptionProblem> removeNotifSubProblems;
+
+  private List<HpcEventType> removedSubs;
+  private List<HpcNotificationSubscription> addedOrUpdatedNotifSubs;
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -63,28 +87,17 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
   //---------------------------------------------------------------------//
 
   @Override
-  public void subscribeNotifications(
-      HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) throws HpcException {
-    // Input validation.
-    if (notificationSubscriptions == null
-        || notificationSubscriptions.getAddUpdateSubscriptions() == null) {
-      throw new HpcException(
-          "Null List<HpcNotificationSubscription>", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    // Add/Update subscriptions for the user.
-    for (HpcNotificationSubscription notificationSubscription :
-        notificationSubscriptions.getAddUpdateSubscriptions()) {
-      notificationService.addUpdateNotificationSubscription(notificationSubscription);
-    }
-
-    // Delete subscriptions for the user.
-    if (notificationSubscriptions.getDeleteSubscriptions() != null) {
-      for (HpcEventType eventType : notificationSubscriptions.getDeleteSubscriptions()) {
-        notificationService.deleteNotificationSubscription(eventType);
-      }
-    }
+  public HpcNotificationSubscriptionsResponseDTO subscribeNotifications(
+    HpcNotificationSubscriptionsRequestDTO notificationSubscriptions)
+    throws HpcException {
+    validateSubscriptionReqDto(notificationSubscriptions);
+    helpProcessSubscriptionAddsAndUpdates(notificationSubscriptions);
+    helpProcessSubscriptionRemovals(notificationSubscriptions);
+    HpcNotificationSubscriptionsResponseDTO responseDto =
+      produceSubscriptionProcessingResponse();
+    return responseDto;
   }
+
 
   @Override
   public HpcNotificationSubscriptionListDTO getNotificationSubscriptions() throws HpcException {
@@ -139,7 +152,127 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
   }
   //---------------------------------------------------------------------//
   // Helper Methods
-  //---------------------------------------------------------------------//
+  //---------------------------------------------------
+
+
+  /*
+   * Helps with processing adds and updates to notification subscriptions.
+   *
+   * @param notificationSubscriptions - data transfer object conveying the
+   *         notification actions (adds, updates, and removes)
+   */
+  private void helpProcessSubscriptionAddsAndUpdates(
+      HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) {
+    if (null == this.addedOrUpdatedNotifSubs) {
+      this.addedOrUpdatedNotifSubs = new ArrayList<>();
+    } else {
+      this.addedOrUpdatedNotifSubs.clear();
+    }
+    if (null == this.addOrUpdateNotifSubProblems) {
+      this.addOrUpdateNotifSubProblems = new ArrayList<>();
+    } else {
+      this.addOrUpdateNotifSubProblems.clear();
+    }
+    if (null != notificationSubscriptions) {
+      for (HpcNotificationSubscription someSub : notificationSubscriptions
+        .getAddUpdateSubscriptions()) {
+        try {
+          notificationService.addUpdateNotificationSubscription(someSub);
+          this.addedOrUpdatedNotifSubs.add(someSub);
+        } catch (HpcException hpce) {
+          HpcAddOrUpdateNotificationSubscriptionProblem problem =
+            new HpcAddOrUpdateNotificationSubscriptionProblem();
+          problem.setSubscription(someSub);
+          problem.setProblem(hpce.getMessage());
+          this.addOrUpdateNotifSubProblems.add(problem);
+          recordErrorToLog(hpce, Optional.empty());
+        }
+      }
+    }
+  }
+
+
+  /*
+   * Helps with processing removals of notification subscriptions.
+   *
+   * @param notificationSubscriptions - data transfer object conveying the
+   *         notification actions (adds, updates, and removes)
+   */
+  private void helpProcessSubscriptionRemovals(
+      HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) {
+    if (null == this.removedSubs) {
+      this.removedSubs = new ArrayList<>();
+    } else {
+      this.removedSubs.clear();
+    }
+    if (null == this.removeNotifSubProblems) {
+      this.removeNotifSubProblems = new ArrayList<>();
+    } else {
+      this.removeNotifSubProblems.clear();
+    }
+    if (notificationSubscriptions.getDeleteSubscriptions() != null) {
+      for (HpcEventType removeSubEvent : notificationSubscriptions
+          .getDeleteSubscriptions()) {
+        try {
+          notificationService.deleteNotificationSubscription(removeSubEvent);
+          this.removedSubs.add(removeSubEvent);
+        } catch (HpcException hpce) {
+          HpcRemoveNotificationSubscriptionProblem problem =
+            new HpcRemoveNotificationSubscriptionProblem();
+          problem.setRemoveSubscriptionEvent(removeSubEvent);
+          problem.setProblem(hpce.getMessage());
+          this.removeNotifSubProblems.add(problem);
+          recordErrorToLog(hpce, Optional.of("removed"));
+        }
+      }
+    }
+  }
+
+
+  private HpcNotificationSubscriptionsResponseDTO
+            produceSubscriptionProcessingResponse() {
+    HpcNotificationSubscriptionsResponseDTO respDTO = new
+      HpcNotificationSubscriptionsResponseDTO();
+
+    if (null != this.addedOrUpdatedNotifSubs && !this.addedOrUpdatedNotifSubs
+        .isEmpty()) {
+      respDTO.getAddedOrUpdatedSubscriptions().addAll(
+        this.addedOrUpdatedNotifSubs);
+    }
+    if (null != this.addOrUpdateNotifSubProblems && !this
+        .addOrUpdateNotifSubProblems.isEmpty()) {
+      respDTO.getSubscriptionsCouldNotBeAddedOrUpdated().addAll(
+        this.addOrUpdateNotifSubProblems);
+    }
+
+    if (null != this.removedSubs && !this.removedSubs.isEmpty()) {
+      respDTO.getRemovedSubscriptions().addAll(this.removedSubs);
+    }
+    if (null != this.removeNotifSubProblems && !this.removeNotifSubProblems
+        .isEmpty()) {
+      respDTO.getSubscriptionsCouldNotBeRemoved().addAll(
+        this.removeNotifSubProblems);
+    }
+
+    return respDTO;
+  }
+
+
+
+  private void recordErrorToLog(HpcException hpce, Optional<String>
+    subscriptionAction) {
+    final String firstErrorMsg = MSG_TEMPLATE__ACTION_FAILED_MORE_2_COME
+      .replace("<action>", subscriptionAction.orElse("added/updated"));
+    logger.error(firstErrorMsg);
+    logger.error("HpcException received: ");
+    logger.error("*****    message = " + hpce.getMessage());
+    logger.error("*****    errorType = " + hpce.getErrorType().value());
+    logger.error("*****    integratedSystem = " + hpce.getIntegratedSystem()
+      .value());
+    logger.error("*****    requestRejectReason = " +
+      hpce.getRequestRejectReason().value());
+  }
+
 
   /**
    * Construct a notification delivery receipt DTO.
@@ -171,4 +304,38 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
 
     return deliveryReceiptDTO;
   }
+
+
+  /*
+   * Validate whether received <code>HpcNotificationSubscriptionsRequestDTO
+   * </code> instance contains adequate data for processing notification
+   * subscription operations (add, modify, or remove).
+   *
+   * @param vsrDto - <code>HpcNotificationSubscriptionsRequestDTO</code>
+   *                 instance
+   * @throws HpcException if instance contains inadequate data
+   */
+  private void validateSubscriptionReqDto(
+      HpcNotificationSubscriptionsRequestDTO vsrDto) throws HpcException {
+
+    if (null == vsrDto) {
+      logger.info(MSG__NULL_OBJ_4_ACTIONS);
+      throw new HpcException(MSG__NULL_OBJ_4_ACTIONS,
+        HpcErrorType.INVALID_REQUEST_INPUT);
+    } else {
+      final List<HpcNotificationSubscription> nsList =
+        vsrDto.getAddUpdateSubscriptions();
+      final List<HpcEventType> eventList =
+        vsrDto.getDeleteSubscriptions();
+      if ( (null == nsList || nsList.isEmpty()) &&
+          (null == eventList || eventList.isEmpty()) ) {
+        logger.info(MSG__OBJ_4_ACTIONS_HAS_NO_ACTIONS);
+        logger.info("Representation of notification subscription action(s): " +
+            vsrDto.toString());
+        throw new HpcException(MSG__OBJ_4_ACTIONS_HAS_NO_ACTIONS,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+  }
+
 }
