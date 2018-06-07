@@ -281,7 +281,7 @@ public class HpcIRODSConnection {
         irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount, authenticationScheme);
 
       } else {
-
+    	logger.info("username:" + dataManagementAccount.getUsername(), "password:" + dataManagementAccount.getPassword());
         // Authenticate the data management account.
         AuthResponse authResponse =
             irodsFileSystem
@@ -299,8 +299,11 @@ public class HpcIRODSConnection {
       return irodsAccount;
 
     } catch (AuthenticationException ae) {
-      logger.info("iRODS authentication failed: " + dataManagementAccount.getUsername(), ae);
-      return null;
+      throw new HpcException(
+    		  "iRODS authentication failed: " + dataManagementAccount.getUsername() + ", " + ae.getMessage(),
+    		  HpcErrorType.DATA_MANAGEMENT_ERROR,
+              HpcIntegratedSystem.IRODS,
+              ae);
 
     } catch (JargonException e) {
       throw new HpcException(
