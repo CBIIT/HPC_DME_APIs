@@ -169,7 +169,7 @@ function dm_register_collection {
     local DESCRIPTION="$1"
     local DESTINATION_PATH="$2"
 
-    dm_register $DESCRIPTION $DESTINATION_PATH collection || exit 1
+    dm_register "$DESCRIPTION" "$DESTINATION_PATH" collection || exit 1
 
     local RESPONSE_HEADER=collection-registration-response-header.tmp
     local RESPONSE_MSG=collection-registration-response-message.json.tmp
