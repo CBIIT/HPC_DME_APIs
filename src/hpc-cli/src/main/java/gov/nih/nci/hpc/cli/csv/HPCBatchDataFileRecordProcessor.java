@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,7 +30,10 @@ import org.easybatch.core.mapper.RecordMappingException;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.easybatch.core.processor.RecordProcessor;
 import org.easybatch.core.record.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -42,22 +47,20 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
+  protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	@Override
 	public Record processRecord(Record record) throws RecordProcessingException {
 		// TODO Auto-generated method stub
-		InputStream inputStream = null;
+	    logger.debug("processRecord "+record.toString());
+	    InputStream inputStream = null;
 		HpcExceptionDTO response = null;
 		HPCDataObject hpcObject = (HPCDataObject) record.getPayload();
+		logger.debug("hpcObject "+hpcObject.toString());
 		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = hpcObject.getDto();
+		logger.debug("hpcDataObjectRegistrationDTO "+hpcDataObjectRegistrationDTO.toString());
 		List<Attachment> atts = new LinkedList<Attachment>();
-		String objectPath = hpcObject.getObjectPath().trim();
-		if(HpcClientUtil.containsWhiteSpace(objectPath))
-		{
-			System.out.println("White space in the file path "+ objectPath + " is replaced with underscore _ ");
-			objectPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(objectPath);
-		}
-		
+		String objectPath = hpcObject.getObjectPath().trim();		
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
 				HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
@@ -76,6 +79,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 					atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObject", inputStream, cd2));
 					hpcDataObjectRegistrationDTO.setSource(null);
 				} catch (FileNotFoundException e) {
+				  logger.debug("FileNotFoundException "+e.getMessage());
 					HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(),
 							hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
 					HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
@@ -84,6 +88,7 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 					throw new RecordMappingException(
 							"Invalid or missing file source location. Message: " + e.getMessage());
 				} catch (IOException e) {
+				  logger.debug("IOException "+e.getMessage());
 					HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(),
 							hpcObject.getCsvRecord(), hpcObject.getHeadersMap());
 					HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(),
@@ -103,22 +108,40 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		}
 
 		hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(false);
-		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
-				hpcDataObjectRegistrationDTO));
+		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
+			"dataObjectRegistration", "application/json; charset=UTF-8",
+      hpcDataObjectRegistrationDTO));
 		long start = System.currentTimeMillis();
-		WebClient client = HpcClientUtil.getWebClient(hpcObject.getBasePath() + "/" + objectPath, hpcObject.getProxyURL(), hpcObject.getProxyPort(),
-				hpcObject.getHpcCertPath(), hpcObject.getHpcCertPassword());
+    String apiUrl2Apply;
+		try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcObject.getBasePath())
+				.path("/{dme-archive-path}").buildAndExpand(objectPath).encode().toUri()
+        .toURL().toExternalForm();
+    } catch (MalformedURLException mue) {
+		  final String informativeMsg = new StringBuilder("Error in attempt to")
+        .append(" build URL for making REST service call.\nBasis URL [")
+        .append(hpcObject.getBasePath()).append("].\nData Object path [")
+        .append(objectPath).append("].").toString();
+      HpcLogWriter.getInstance()
+        .WriteLog(hpcObject.getLogFile(), "Record: " + record.getHeader()
+        .getNumber() + " with path: " + objectPath + "\n" + informativeMsg);
+		  throw new RecordProcessingException(informativeMsg);
+    }
+    WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      hpcObject.getProxyURL(), hpcObject.getProxyPort(),
+      hpcObject.getHpcCertPath(), hpcObject.getHpcCertPassword());
 		// String token =
 		// DatatypeConverter.printBase64Binary((hpcObject.getUserId() + ":" +
 		// hpcObject.getPassword()).getBytes());
 		client.header("Authorization", "Bearer " + hpcObject.getAuthToken());
-		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+		client.type(MediaType.MULTIPART_FORM_DATA).accept("application/json; charset=UTF-8");
 		// client.type(MediaType.MULTIPART_FORM_DATA);
-
 		try {
-			System.out.println("Processing: " + hpcObject.getBasePath() + "/" + objectPath);
+      System.out.println("Processing: " + apiUrl2Apply);
+      logger.debug("Processing: " + apiUrl2Apply);
 			Response restResponse = client.put(new MultipartBody(atts));
 			long stop = System.currentTimeMillis();
+			logger.debug("restResponse.getStatus(): " + restResponse.getStatus());
 			if (!(restResponse.getStatus() == 201 || restResponse.getStatus() == 200)) {
 				System.out.println("Failed!");
 				MappingJsonFactory factory = new MappingJsonFactory();

@@ -9,10 +9,16 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import gov.nih.nci.hpc.web.util.MiscUtil;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -71,6 +77,9 @@ public class HpcBrowseController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
 
+	@Value("${gov.nih.nci.hpc.server.pathreftype}")
+  private String hpcPathRefTypeURL;
+
 
 	/**
 	 * POST Action. When a tree node is expanded, this action fetches its child
@@ -104,6 +113,21 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
+
+				// Detect if path refers to data file, and if so, redirect to data
+				// file view
+				
+				//Do this check only if we are clicking on Browse button
+				//after selecting the path. If we are here because we 
+				//clicked on a folder this check is not required 
+				if(hpcBrowserEntry.isPartial()) {
+					final String slctdNodePath =
+						hpcBrowserEntry.getSelectedNodePath().trim();
+				
+					if (isPathForDataFile(slctdNodePath, authToken)) {
+						return genRedirectNavForDataFileView(slctdNodePath);
+					}
+				}
 
 				// session.setAttribute("selectedBrowsePath",
 				// hpcBrowserEntry.getSelectedNodePath());
@@ -192,6 +216,11 @@ public class HpcBrowseController extends AbstractHpcController {
         path = path.trim();
         session.setAttribute("selectedBrowsePath", path);
 
+        // Detect if path refers to data file, and if so, redirect to data file view
+				if (isPathForDataFile(path, authToken)) {
+          return genRedirectNavForDataFileView(path);
+        }
+
         HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
         if (browserEntry == null) {
           browserEntry = new HpcBrowserEntry();
@@ -271,6 +300,31 @@ public class HpcBrowseController extends AbstractHpcController {
       }
     }
     return retBookmarkList;
+  }
+
+
+  /**
+   * Generates navigation outcome string for redirecting to the data
+   * file/object view.
+   *
+   * @param path The path of the data file/object
+   * @return navigation outcome string
+   */
+  private String genRedirectNavForDataFileView(String path)
+  throws UnsupportedEncodingException {
+    String postProcPath = path.trim();
+    if (!postProcPath.startsWith("/")) {
+      postProcPath = "/".concat(postProcPath);
+    }
+    final Map<String, String> paramsMap = new HashMap<>();
+    paramsMap.put("action", "view");
+    paramsMap.put("path", postProcPath);
+    paramsMap.put("source", "browse");
+    paramsMap.put("init", "1");
+    final String retNavString = "redirect:/datafile?".concat(
+      MiscUtil.generateEncodedQueryString(paramsMap));
+
+    return retNavString;
   }
 
 
@@ -385,6 +439,22 @@ public class HpcBrowseController extends AbstractHpcController {
 		}
 		return partial ? selectedEntry : browserEntry;
 	}
+
+
+  /**
+   * Determines whether given DME path refers to data file.
+   * @param argPath The DME path.
+   * @param argAuthToken The DME auth token.
+   * @return boolean true if path refers to a data file, false otherwise
+   * @throws HpcWebException on determining that path does not exist
+   */
+	private boolean isPathForDataFile(String argPath, String argAuthToken)
+      throws HpcWebException {
+    final Optional<String> pathElementType = HpcClientUtil.getPathElementType(
+      argAuthToken, this.hpcPathRefTypeURL, argPath,
+      sslCertPath, sslCertPassword);
+    return "data file".equals(pathElementType.orElse(""));
+  }
 
 
 	private HpcBrowserEntry trimPath(HpcBrowserEntry entry, String parentPath) {

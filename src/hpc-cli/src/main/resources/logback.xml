@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
     <configuration>
+        <property file="${hpc.client.properties}" />
     	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
     		<encoder>
     			<Pattern>.%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg %n
@@ -11,10 +12,10 @@
     	</appender>
 
       	<appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    		<File>hpc-cli.log</File>
+    		<File>${hpc.log.file}</File>
     		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
     		    <!-- daily rollover -->
-    			<FileNamePattern>hpc-cli.%d{yyyy-MM-dd}.log</FileNamePattern>
+    			<FileNamePattern>${hpc.log.file}.%d{yyyy-MM-dd}.log</FileNamePattern>
 
     			<!-- keep 30 days' worth of history -->
     			<maxHistory>30</maxHistory>			
@@ -26,13 +27,14 @@
       	</appender>
 
     	<logger name="org.codingpedia" additivity="false">
-    	    <level value="ERROR" />
+    	    <level value="${hpc.log.level}" />
     		<appender-ref ref="dailyRollingFileAppender"/>
-    		<appender-ref ref="consoleAppender" />
+			<!-- <appender-ref ref="consoleAppender" /> -->
     	</logger>
 
     	<root>
-    		<level value="ERROR" />
-    		<appender-ref ref="consoleAppender" />
+    		<level value="${hpc.log.level}" />
+    		<!-- <appender-ref ref="consoleAppender" /> -->
+    		<appender-ref ref="dailyRollingFileAppender"/>
     	</root>
     </configuration>

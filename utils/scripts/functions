@@ -129,7 +129,7 @@ function dm_register () {
     rm -f  $RESPONSE_MSG 2>/dev/null 
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
-    local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/${DESTINATION_PATH}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
     if [ "$TYPE" == "dataObject" ]
     then
@@ -177,6 +177,57 @@ function dm_register_collection {
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 
 }
+
+#Register a dataObject using presigned S3 URL
+#Inputs:  <description.json>: The metadata json file for the dataObject 
+#         <destinaton-path>: The destination logical path
+#         <source-file>: The source file for synchronous registratio.
+function dm_register_dataobject_presigned {
+
+    local USAGE="USAGE: dm_register_dataobject <description.json> <destination-path> <source-file>"
+
+    if [ "$#" -lt 3 ]
+    then
+        echo "ERROR: using dm_register_dataobject_presigned" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return
+    fi
+
+    local description="$1"
+    local destination_path="$2"
+    local source_file="$3"
+    dm_register "$description" "$destination_path" dataObject 
+    if [ "$?" -eq  1 ]
+    then
+      return 1
+    fi
+
+    local response_header=dataObject-registration-response-header.tmp
+    local response_msg=dataObject-registration-response-message.json.tmp
+
+    #verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
+    presigned_url=`get_json_value $response_msg uploadRequestURL`
+    if [ -z "$presigned_url" ]
+    then
+      echo "ERROR: Can not retrieve the presigned url from $response_msg" >&2
+      return 1
+    fi
+
+    rm $response_header $response_msg
+    response_header=presignedURL-registration-response-header.tmp
+    response_msg=presignedURL-registration-response-message.tmp
+    curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${source_file}" "${presigned_url}" -D $response_header -o $response_msg -s
+    if [ "$?" -ne 0 ]
+    then
+      echo "ERROR during presigned URL registration" >&2
+      echo "Check the files $response_header and $response_msg" >&2
+      return 1
+    fi
+
+    rm $response_header $response_msg
+}
+
 
 
 #Register a dataObject 
@@ -243,7 +294,6 @@ function dm_sync_globus_endpoint  {
 
       local SRC_PATH=$(echo $NEW_FILE | cut -d' ' -f1)
       local DST_PATH=$(echo $NEW_FILE | cut -d' ' -f2)
-
       local FILE_ATTRIBUTES=$(get_file_attributes $SRC_PATH)      
       local DESC_JSON=$(get_json_description $FILE_ATTRIBUTES)
       echo $DESC_JSON >  temp.json
@@ -295,8 +345,10 @@ function dm_get_item {
 
     local TOTAL_PATH="$ITEM_PATH"
     local TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
+    local ITEM_TYPE="$( cut -d '/' -f 1 <<< "$TOTAL_PATH" )"
+    local DME_ARCHIVE_PATH="$( cut -d '/' -f 2- <<< "$TOTAL_PATH" )"
    
-    curl -G -X GET "$SERVER/$TOTAL_PATH"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -G -X GET "$SERVER/$ITEM_TYPE/$(urlencode $DME_ARCHIVE_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $RESPONSE_HEADER
 }
 
@@ -395,6 +447,7 @@ function dm_get_collection {
 
 
 
+
 #Download a dataObject synchronously 
 #Inputs: logic-path 
 #        destination-file
@@ -438,7 +491,7 @@ function dm_download_dataobject_sync {
 
     local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
 
-    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$OBJECT_PATH/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $RESPONSE_HEADER
 
 
@@ -452,6 +505,181 @@ function dm_download_dataobject_sync {
       rm -f $RESPONSE_HEADER 2> /dev/null
     fi
 }
+
+
+#Delete a datafile from the archive using the cmd line client.
+#Inputs:  <file-path>: The path on the file system 
+
+function dm_delete_datafile {
+
+    local USAGE="USAGE: dm_delete_datafile <file-path>"
+
+    check_java
+    if [ "$?" -ne 0 ]
+    then 
+      return 1
+    fi
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR using dm_delete_datafile" >&2
+        echo "$USAGE" >&2
+        exit 1 
+    fi
+    
+    local file_path="$1"
+   
+    #Check if the jar exists:
+    local jar_file=$(get_jar)
+    local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
+    if [ ! -f $jar_path ]
+    then
+      echo "Can not find $jar_path " >&2
+      return 1
+    fi
+
+    command_args=""
+
+    #Pass the mandatory arguments
+    command_args+=" --path \"$file_path\" "
+  
+    #Generate the command for the client: 
+    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    echo "deleteDatafile  " $command_args >  $command_file
+
+    case "$(uname -s)" in
+    
+       Darwin|Linux)
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        exit_code="$?"
+       ;;
+    
+       CYGWIN*|MINGW32*|MSYS*)
+            java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+        exit_code="$?"
+       ;;
+    
+       *)
+         echo 'Current OS not supported' 
+         exit 1
+         ;;
+    esac
+
+    if [ "$exit_code" -eq  "1" ]
+    then
+      echo "The datafile deletion did not fully complete successfully" >&2
+      echo "Check complete log and error files" >&2
+      return 1
+    fi
+
+}
+
+#Print Usage of dm_register_directory function
+function dm_show_delete_collection_usage {
+  read -d  '' usage <<- EOF
+  Usage: dm_delete_collection [OPTIONS] <collection-path> 
+
+  Delete the collection at the specified path. 
+  OPTIONS:
+  -r                      Recursive delete. This will delete all the files and sub-collections under the specified collection recursively. 
+EOF
+  echo "$usage"
+}
+
+#Delete a collection from the archive using the cmd line client.
+#Inputs:  <source-path>: The path on the file system 
+
+function dm_delete_collection {
+
+    local USAGE="USAGE: dm_delete_collection <collection-path>"
+    local OPTIND
+    
+    #Set the default parameters
+    numthreads=1
+    recursive=false
+  
+   while getopts ":rt:" option
+    do
+      case "${option}" in
+       
+        r)
+	  recursive=true
+          ;;
+        *)
+          echo "ERROR: Unsupported option ${option}" >&2
+          dm_show_delete_collection_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
+
+    shift $(( OPTIND-1 ))   
+
+    check_java
+    if [ "$?" -ne 0 ]
+    then 
+      return 1
+    fi
+
+    if [ -z "$1" ] 
+    then
+        echo "ERROR: using dm_delete_collection" >&2
+        usage=$(dm_show_delete_collection_usage)
+        echo "$usage" >&2
+        exit 1
+    fi
+
+
+    local collection_path="$1"
+
+    #Check if the jar exists:
+    local jar_file=$(get_jar)
+    local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
+    if [ ! -f $jar_path ]
+    then
+       echo "Can not find $jar_path " >&2
+       return 1
+     fi
+
+    command_args=""
+
+    #Pass the mandatory arguments
+    command_args+="--path \"$collection_path\" "
+
+    #Pass the optional ones
+    command_args+="--recursive $recursive "
+
+    #Generate the command for the client: 
+    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    echo "deleteCollection  " $command_args >  $command_file
+
+    case "$(uname -s)" in
+    
+       Darwin|Linux)
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        exit_code="$?"
+       ;;
+    
+       CYGWIN*|MINGW32*|MSYS*)
+            java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+        exit_code="$?"
+       ;;
+    
+       *)
+         echo 'Current OS not supported' 
+         exit 1
+         ;;
+    esac
+
+    if [ "$exit_code" -eq  "1" ]
+    then
+      echo "The collection deletion did not fully complete successfully" >&2
+      echo "Check complete log and error files" >&2
+      return 1
+    fi
+}
+
 
 
 #Print Usage of dm_register_directory function
@@ -654,6 +882,7 @@ function dm_register_directory {
     #Add all other options
     command_args+=" --threads $numthreads"
     command_args+=" --archiveType $archiveType"
+    command_args+=" --checksum $checksum"
 
     #Generate the command for the client: 
     local command_file=$HPC_DM_UTILS/temp/cmd-file
@@ -949,7 +1178,7 @@ function dm_download_collection_async {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/collection/$src_path/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/collection/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $response_hdr
 
 
@@ -1054,7 +1283,7 @@ function dm_download_async {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/$item_type/$src_path/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/$item_type/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
     check_connection $response_hdr || exit 1
 
 
@@ -1146,5 +1375,240 @@ function dm_get_download_status {
         rm -f $response_msg 2> /dev/null 
       fi
     fi
+}
+
+
+
+
+#Add a bookmark for a user
+#Inputs:  <bookmark_name>: Name of the bookmark
+#         <description.json>: The json file containing the parameters
+function dm_add_bookmark () {
+
+    local USAGE="USAGE: dm_add_bookmark <bookmark_name> <description.json> [REST-response]"
+
+    if [ -z "$1" ] || [ -z "$2" ] 
+    then
+        echo "ERROR: using dm_add_bookmark" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+   
+    local BOOKMARK_NAME="$1"
+    local DESCRIPTION_PATH="$2"
+    
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+    
+    local RESPONSE_MSG=iadd_bookmark-response-message.json.tmp
+    local RESPONSE_HEADER=add_bookmark-response-header.tmp
+
+    rm -f  $RESPONSE_MSG 2>/dev/null 
+    rm -f $RESPONSE_HEADER 2>/dev/null 
+
+    local CURL_FLAGS="${SERVER}/bookmark/${BOOKMARK_NAME}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    
+  
+    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status 
+
+    #Exit with connection error if response header has no data    
+    check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 201 ]
+    then
+      echo "ERROR enrolling user \"$BOOKMARK_NAME\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      rm -f "$RESPONSE_MSG" 2 > /dev/null
+    fi
+
+
+
+
+}
+
+#Register a user
+#Inputs:  <user id>: LDAP id of the user
+#         <description.json>: The json file containing the parameters
+function dm_register_user () {
+
+local USAGE="USAGE: dm_register_user <userId> <description.json> [REST-response]"
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using dm_register_user" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+  
+    local USER_ID="$1"
+    local DESCRIPTION_PATH="$2"
+   
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+   
+    local RESPONSE_MSG=register_user-response-message.json.tmp
+    local RESPONSE_HEADER=register_user-response-header.tmp
+
+    rm -f  $RESPONSE_MSG 2>/dev/null
+    rm -f $RESPONSE_HEADER 2>/dev/null
+
+    local CURL_FLAGS="${SERVER}/user/${USER_ID}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+   
+ 
+    curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+    
+    #Exit with connection error if response header has no data
+    check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 201 ]
+    then
+      echo "ERROR enrolling user \"$USER_ID\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      rm -f "$RESPONSE_MSG" 2 > /dev/null
+    fi
+}
+
+
+#Update an existing user
+#Inputs:  <user id>: LDAP id of the user
+#         <description.json>: The json file containing the parameters
+function dm_update_user () {
+
+local USAGE="USAGE: dm_update_user <userId> <description.json> [REST-response]"
+
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        echo "ERROR: using dm_update_user" >&2
+        echo "Received: $@" >&2
+        echo "$USAGE" >&2
+        return 1
+    fi
+
+
+    local USER_ID="$1"
+    local DESCRIPTION_PATH="$2"
+
+    USERID=$(get_username) || exit 1
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ ! -e "$DESCRIPTION_PATH" ]
+    then
+      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      exit 1
+    fi
+
+    local RESPONSE_MSG=register_user-response-message.json.tmp
+    local RESPONSE_HEADER=register_user-response-header.tmp
+
+    rm -f  $RESPONSE_MSG 2>/dev/null
+    rm -f $RESPONSE_HEADER 2>/dev/null
+
+    local CURL_FLAGS="${SERVER}/user/${USER_ID}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+
+
+    curl -X POST -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+
+    #Exit with connection error if response header has no data
+    check_connection $RESPONSE_HEADER
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 200 ]
+    then
+      echo "ERROR updating user \"$USER_ID\" " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+
+      rm -f "$RESPONSE_MSG" 2 > /dev/null
+    fi
+}
+
+
+
+
+
+# Perform percent/URL encoding on given string 
+#
+# Copied from GitHub
+# https://gist.github.com/cdown/1163649
+#
+#Input: <string>  string to percent/URL encode
+urlencode() {
+    # urlencode <string>
+    old_lc_collate=$LC_COLLATE
+    LC_COLLATE=C
+    
+    local length="${#1}"
+    for (( i = 0; i < length; i++ )); do
+        local c="${1:i:1}"
+        case $c in
+            [a-zA-Z0-9.~_-]) printf "$c" ;;
+            *) printf '%%%02X' "'$c" ;;
+        esac
+    done
+    
+    LC_COLLATE=$old_lc_collate
+}
+
+
+# Perform percent/URL decoding on given string 
+#
+# Copied from GitHub
+# https://gist.github.com/cdown/1163649
+#
+#Input: <string>  string to percent/URL decode
+urldecode() {
+    # urldecode <string>
+
+    local url_encoded="${1//+/ }"
+    printf '%b' "${url_encoded//%/\\x}"
 }
 

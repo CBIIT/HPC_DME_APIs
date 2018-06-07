@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +33,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -112,12 +115,29 @@ public class HPCBatchDataFileThread implements Runnable {
 		hpcDataObjectRegistrationDTO.getMetadataEntries().addAll(listOfhpcCollection);
 
 		System.out.println("Adding file from " + source.getFileId());
-		if (!collName.startsWith("/"))
-			collName = "/" + collName;
 
 		hpcDataObjectRegistrationDTO.setSource(source);
 		hpcDataObjectRegistrationDTO.setCallerObjectId("/");
-		WebClient client = HpcClientUtil.getWebClient(basePath + collName, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
+
+    String apiUrl2Apply;
+		try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(basePath).path(
+        "/{dme-archive-path}").buildAndExpand(collName).encode().toUri().toURL()
+        .toExternalForm();
+    } catch (MalformedURLException mue) {
+      final String infoMsg = new StringBuilder("Error in attempt to build URL")
+        .append(" for making REST service call.\nBase URL [").append(basePath)
+        .append("].\nCollection name/path [").append(collName).append("].")
+        .toString();
+      addErrorToLog(infoMsg, recordId);
+      // success = false;
+      processedRecordFlag = false;
+      addRecordToLog(record, headersMap);
+      return;
+    }
+
+    WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply, proxyURL,
+      proxyPort, hpcCertPath, hpcCertPassword);
 		List<Attachment> atts = new LinkedList<Attachment>();
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
@@ -150,12 +170,14 @@ public class HPCBatchDataFileThread implements Runnable {
 				}
 			}
 		}
-		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration", "application/json",
-				hpcDataObjectRegistrationDTO));
+		atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment(
+			"dataObjectRegistration", "application/json; charset=UTF-8",
+      hpcDataObjectRegistrationDTO));
 
 		String token = DatatypeConverter.printBase64Binary((userId + ":" + password).getBytes());
 		client.header("Authorization", "Basic " + token);
-		client.type(MediaType.MULTIPART_FORM_DATA).accept(MediaType.APPLICATION_JSON);
+		client.type(MediaType.MULTIPART_FORM_DATA).accept(
+      "application/json; charset=UTF-8");
 
 		try {
 			System.out.println(basePath + collName);

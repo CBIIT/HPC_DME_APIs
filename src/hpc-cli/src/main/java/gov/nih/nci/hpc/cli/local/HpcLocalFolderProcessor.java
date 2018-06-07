@@ -1,16 +1,5 @@
 package gov.nih.nci.hpc.cli.local;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.easybatch.core.processor.RecordProcessingException;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -19,14 +8,23 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
-import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.cli.util.Paths;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.List;
+import javax.ws.rs.core.Response;
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.easybatch.core.processor.RecordProcessingException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
@@ -39,11 +37,6 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
 			throws RecordProcessingException {
 		String collectionPath = getCollectionPath(localPath, filePathBaseName, entity.getPath());
-		if(HpcClientUtil.containsWhiteSpace(collectionPath))
-		{
-			System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
-			collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
-		}
 		if(!collectionPath.equals("/"))
 		  processCollection(entity, destinationBasePath, collectionPath);
 		return true;
@@ -68,16 +61,28 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 
 		System.out.println("Registering Collection " + collectionPath);
 
-		if(!basePath.startsWith("/"))
-			basePath = "/"+basePath;
-		
-		WebClient client = HpcClientUtil.getWebClient(
-				connection.getHpcServerURL() + "/collection" + basePath + "/" + collectionPath,
-				connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(), connection.getHpcCertPath(),
-				connection.getHpcCertPassword());
+    String apiUrl2Apply;
+		try {
+      apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(connection
+        .getHpcServerURL()).path("/collection/{base-path}/{collection-path}")
+				.buildAndExpand(basePath, collectionPath)
+				.encode().toUri().toURL().toExternalForm();
+    } catch (MalformedURLException mue) {
+      final String pathUnderServerUrl = HpcClientUtil.constructPathString(
+        "collection", basePath, collectionPath);
+		  final String informativeMsg = new StringBuilder("Error in attempt to")
+        .append(" build URL for making REST service call.\nBase server URL [")
+        .append(connection.getHpcServerURL()).append("].\nPath under base")
+        .append(" serve URL [").append(pathUnderServerUrl).append("].\n")
+        .toString();
+      throw new RecordProcessingException(informativeMsg, mue);
+    }
+    WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply,
+      connection.getHpcServerProxyURL(), connection.getHpcServerProxyPort(),
+      connection.getHpcCertPath(), connection.getHpcCertPassword());
 		client.header("Authorization", "Bearer " + connection.getAuthToken());
 		client.header("Connection", "Keep-Alive");
-
+		client.type("application/json; charset=UTF-8");
 		Response restResponse = client.invoke("PUT", collectionDTO);
 		if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
 			System.out.println("Success!");
@@ -101,36 +106,40 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
 		}
 	}
 
-	private String getCollectionPath(String localPath, String collectionPathBaseName, String collectionPath) {
-	   String fullFilePathName = null;
+  private String getCollectionPath(String localPath, String collectionPathBaseName,
+      String collectionPath) {
+    String fullFilePathName = null;
 	   File fullFile = new File(localPath);
-       String fullLocalPathName = null;
-       File fullLocalFile = new File(collectionPath);
-	      try {
-	      fullFilePathName = fullFile.getCanonicalPath();
-	      fullLocalPathName = fullLocalFile.getCanonicalPath();
-	    } catch (IOException e) {
-	      System.out.println("Failed to read file path: "+localPath);
-	    }
+//    File fullFile = new File(Paths.generateFileSystemResourceUri(localPath));
+    String fullLocalPathName = null;
+    File fullLocalFile = new File(collectionPath);
+//    File fullLocalFile = new File(Paths.generateFileSystemResourceUri(collectionPath));
+    try {
+      fullFilePathName = fullFile.getCanonicalPath();
+      fullLocalPathName = fullLocalFile.getCanonicalPath();
+    } catch (IOException e) {
+      System.out.println("Failed to read file path: " + localPath);
+    }
 
-	  collectionPath = collectionPath.replace("\\", "/");
-	  localPath = localPath.replace("\\", "/");
-	  fullFilePathName = fullFilePathName.replace('\\', '/');
-	  if(collectionPath.equals(localPath))
-	    return "/";
-	  
-	  if(collectionPathBaseName != null && collectionPathBaseName.isEmpty())
-	  {
-		String name = "/" + collectionPathBaseName;
-		if (collectionPath.indexOf(name) != -1)
-			return collectionPath.substring(collectionPath.indexOf(name) + 1);
-	  }
-	  else
-	  {
-        if (fullLocalPathName.indexOf(fullFilePathName) != -1)
-          return fullLocalPathName.substring(collectionPath.indexOf(fullFilePathName) + fullFilePathName.length() + 1);
-	  }
-      return collectionPath;
-	}
+    collectionPath = collectionPath.replace("\\", "/");
+    localPath = localPath.replace("\\", "/");
+    fullFilePathName = fullFilePathName.replace('\\', '/');
+    if (collectionPath.equals(localPath)) {
+      return "/";
+    }
+
+    if (collectionPathBaseName != null && collectionPathBaseName.isEmpty()) {
+      String name = "/" + collectionPathBaseName;
+      if (collectionPath.indexOf(name) != -1) {
+        return collectionPath.substring(collectionPath.indexOf(name) + 1);
+      }
+    } else {
+      if (fullLocalPathName.indexOf(fullFilePathName) != -1) {
+        return fullLocalPathName
+            .substring(collectionPath.indexOf(fullFilePathName) + fullFilePathName.length() + 1);
+      }
+    }
+    return collectionPath;
+  }
 
 }

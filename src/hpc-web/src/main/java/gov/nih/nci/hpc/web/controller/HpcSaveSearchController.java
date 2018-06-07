@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -143,9 +144,9 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			}
 
 			String authToken = (String) session.getAttribute("hpcUserToken");
-			// Encode search name
-			String serviceURL = queryServiceURL + "/" + URLEncoder.encode(search.getCriteriaName(), "UTF-8");
-
+			final String serviceURL = UriComponentsBuilder.fromHttpUrl(
+        this.queryServiceURL).pathSegment(search.getCriteriaName()).build()
+				.encode().toUri().toURL().toExternalForm();
 			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
 			client.header("Authorization", "Bearer " + authToken);
 

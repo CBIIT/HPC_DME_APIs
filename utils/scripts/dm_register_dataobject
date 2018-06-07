@@ -10,4 +10,4 @@
 # Generate an HPC DM token 
 
 source $HPC_DM_UTILS/scripts/functions
-dm_register_dataobject $@
+dm_register_dataobject "$@"

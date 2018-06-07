@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,6 +56,7 @@ import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -95,9 +97,12 @@ public class HpcSyncDownloadController extends AbstractHpcController {
         model.addAttribute("Invalid user session, expired. Please login again.");
         return null;
       }
+      final String serviceURL = UriComponentsBuilder.fromHttpUrl(
+        this.dataObjectServiceURL).path("/{dme-archive-path}/download")
+        .buildAndExpand(downloadFile.getDestinationPath()).encode().toUri()
+        .toURL().toExternalForm();
 
-      String serviceURL = dataObjectServiceURL + downloadFile.getDestinationPath() + "/download";
-      HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
+      final HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
       dto.setGenerateDownloadRequestURL(true);
 
       WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
