@@ -3,11 +3,38 @@ package gov.nih.nci.hpc.web.util;
 import gov.nih.nci.hpc.web.HpcWebException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class MiscUtil {
 
-    private static final String EMPTY_STRING = "";
-    private static final String FORWARD_SLASH = "/";
+  private static final String EMPTY_STRING = "";
+  private static final String FORWARD_SLASH = "/";
+
+  private static UriComponentsBuilder ucBuilder = UriComponentsBuilder
+    .newInstance().scheme("http").host("www.somehost.net").pathSegment("some",
+    "path");
+
+
+  public static String generateEncodedQueryString(Map<String, String>
+    argQueryParamsMap) {
+    final MultiValueMap<String, String> effMap = new LinkedMultiValueMap<>();
+    for (String key : argQueryParamsMap.keySet()) {
+      effMap.put(key, Collections.singletonList(argQueryParamsMap.get(key)));
+    }
+    return generateEncodedQueryString(effMap);
+  }
+
+
+  public static String generateEncodedQueryString(MultiValueMap<String, String>
+    argQueryParamsMap) {
+    return ucBuilder.replaceQueryParams(argQueryParamsMap).build().encode()
+      .toUri().getRawQuery();
+  }
 
 
   public static String performUrlEncoding(String argInputStr) throws HpcWebException {
@@ -54,49 +81,5 @@ public class MiscUtil {
       }
       return encodedDmePath;
     }
-
-
- /*
-  private static String removePrefix(String argText, String argPrefix) {
-    String modText = null;
-    if (null == argText) {
-      modText = null;
-    } else if (EMPTY_STRING.equals(argText) ||
-        null == argPrefix ||
-        EMPTY_STRING.equals(argPrefix) ||
-        !argText.startsWith(argPrefix)) {
-      modText = argText;
-    } else {
-      modText = argText.substring(argPrefix.length() +
-          argText.indexOf(argPrefix));
-    }
-    return modText;
-  }
-*/
-
-/*
-  private static String removeSuffix(String argText, String argSuffix) {
-    String modText = null;
-    if (null == argText) {
-      modText = null;
-    } else if (EMPTY_STRING.equals(argText) ||
-        null == argSuffix ||
-        EMPTY_STRING.equals(argSuffix) ||
-        !argText.endsWith(argSuffix)) {
-      modText = argText;
-    } else {
-      modText = argText.substring(0, argText.lastIndexOf(argSuffix));
-    }
-    return modText;
-  }
-*/
-
-
-/*
-  private static String trimForwardSlashFromEnds(String argTheText) {
-    return removeSuffix(
-        removePrefix(argTheText, FORWARD_SLASH), FORWARD_SLASH);
-  }
-*/
 
 }

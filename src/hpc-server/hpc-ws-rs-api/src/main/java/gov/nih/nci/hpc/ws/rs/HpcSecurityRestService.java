@@ -46,7 +46,7 @@ public interface HpcSecurityRestService
      */
     @PUT
     @Path("/user/{nciUserId}")
-    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response registerUser(@PathParam("nciUserId") String nciUserId,
     		                     HpcUserRequestDTO userRegistrationRequest);
 
@@ -59,7 +59,7 @@ public interface HpcSecurityRestService
      */
     @POST
     @Path("/user/{nciUserId}")
-    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response updateUser(@PathParam("nciUserId") String nciUserId,
     		                   HpcUserRequestDTO userUpdateRequest);
 
@@ -71,7 +71,7 @@ public interface HpcSecurityRestService
      */
     @GET
     @Path("/user/{nciUserId}")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getUser(@PathParam("nciUserId") String nciUserId);
     
     /**
@@ -81,7 +81,7 @@ public interface HpcSecurityRestService
      */
     @GET
     @Path("/user")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getInvoker();
     
     /**
@@ -98,7 +98,7 @@ public interface HpcSecurityRestService
      */
     @GET
     @Path("/user/active")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getActiveUsers(@QueryParam("nciUserId") String nciUserId,
     		                       @QueryParam("firstNamePattern") String firstNamePattern,
     		                       @QueryParam("lastNamePattern") String lastNamePattern,
@@ -119,7 +119,7 @@ public interface HpcSecurityRestService
      */
     @GET
     @Path("/user/all")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getAllUsers(@QueryParam("nciUserId") String nciUserId,
     		                    @QueryParam("firstNamePattern") String firstNamePattern,
     		                    @QueryParam("lastNamePattern") String lastNamePattern,
@@ -133,7 +133,7 @@ public interface HpcSecurityRestService
      */
     @GET
     @Path("/authenticate")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response authenticate();
 
     /**
@@ -145,8 +145,8 @@ public interface HpcSecurityRestService
      */
 	@PUT
 	@Path("/group/{groupName}")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response registerGroup(@PathParam("groupName") String groupName,
 			                      HpcGroupMembersRequestDTO groupMembersRequest);
 	
@@ -159,8 +159,8 @@ public interface HpcSecurityRestService
      */
 	@POST
 	@Path("/group/{groupName}")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response updateGroup(@PathParam("groupName") String groupName,
 			                    HpcGroupMembersRequestDTO groupMembersRequest);
 	
@@ -172,7 +172,7 @@ public interface HpcSecurityRestService
      */
     @GET
     @Path("/group/{groupName}")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getGroup(@PathParam("groupName") String groupName);
     
     /**
@@ -185,7 +185,7 @@ public interface HpcSecurityRestService
      */
     @GET
     @Path("/group")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getGroups(@QueryParam("groupPattern") String groupPattern);
     
     /**
@@ -206,7 +206,7 @@ public interface HpcSecurityRestService
      */
     @PUT
     @Path("/systemAccount")
-    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration);
 }
 

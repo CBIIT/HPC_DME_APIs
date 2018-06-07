@@ -48,6 +48,18 @@ public interface HpcDataManagementService {
    */
   public boolean isPathParentDirectory(String path) throws HpcException;
 
+
+  /**
+   * Determine if path refers to collection or data file.
+   *
+   * @param path The path.
+   * @return Boolean to convey whether path refers to collection or data file;
+   *          true for collection and false for data file.
+   * @throws HpcException on data management system failure
+   */
+  public boolean interrogatePathRef(String path) throws HpcException;
+
+
   /**
    * Create a data object's file.
    *
@@ -205,7 +217,7 @@ public interface HpcDataManagementService {
    */
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
       throws HpcException;
-
+  
   /**
    * Get collection by its path.
    *

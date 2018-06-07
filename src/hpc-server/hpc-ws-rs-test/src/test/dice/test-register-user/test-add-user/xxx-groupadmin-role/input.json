@@ -1,0 +1,7 @@
+{
+   "userId": "testid",
+   "firstName": "testfirst",
+   "lastName": "testlast",
+   "doc":"FNLCR",
+   "userRole" :"GROUP_ADMIN"
+}

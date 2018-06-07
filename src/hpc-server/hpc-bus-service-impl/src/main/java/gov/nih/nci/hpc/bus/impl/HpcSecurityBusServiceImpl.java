@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataBrowseService;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
@@ -72,7 +74,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
   // The data management (iRODS) service.
   @Autowired private HpcDataManagementService dataManagementService = null;
-
+  
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
   private Boolean ldapAuthentication = null;
@@ -157,8 +159,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     try {
       // Add the user to the system.
       securityService.addUser(nciAccount);
+      
       registrationCompleted = true;
-
+      
     } finally {
       if (!registrationCompleted) {
         // Registration failed. Remove the data management account.

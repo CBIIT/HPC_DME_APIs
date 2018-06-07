@@ -43,8 +43,8 @@ public interface HpcDataSearchRestService
      */
 	@POST
 	@Path("/collection/query")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response queryCollections(HpcCompoundMetadataQueryDTO compoundMetadataQuery);
 	
     /**
@@ -59,7 +59,7 @@ public interface HpcDataSearchRestService
      */
 	@GET
 	@Path("/collection/query/{queryName}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response queryCollections(@PathParam("queryName") String queryName,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse,
 			                         @QueryParam("page") Integer page,
@@ -73,8 +73,8 @@ public interface HpcDataSearchRestService
      */
 	@POST
 	@Path("/dataObject/query")
-	@Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQuery);
 	
     /**
@@ -89,7 +89,7 @@ public interface HpcDataSearchRestService
      */
 	@GET
 	@Path("/dataObject/query/{queryName}")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response queryDataObjects(@PathParam("queryName") String queryName,
 			                         @QueryParam("detailedResponse") Boolean detailedResponse,
 			                         @QueryParam("page") Integer page,
@@ -104,7 +104,7 @@ public interface HpcDataSearchRestService
      */
     @PUT
     @Path("/query/{queryName}")
-    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response addQuery(@PathParam("queryName") String queryName,
     		                 HpcCompoundMetadataQueryDTO compoundMetadataQuery);
     
@@ -117,7 +117,7 @@ public interface HpcDataSearchRestService
      */
     @POST
     @Path("/query/{queryName}")
-    @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response updateQuery(@PathParam("queryName") String queryName,
     		                    HpcCompoundMetadataQueryDTO compoundMetadataQuery);
     
@@ -139,7 +139,7 @@ public interface HpcDataSearchRestService
      */
     @GET
     @Path("/query/{queryName}")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getQuery(@PathParam("queryName") String queryName);
     
     /**
@@ -149,7 +149,7 @@ public interface HpcDataSearchRestService
      */
     @GET
     @Path("/query")
-    @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
     public Response getQueries();
 	
   /**
@@ -160,7 +160,7 @@ public interface HpcDataSearchRestService
    */
 	@GET
 	@Path("/metadataAttributes")
-	@Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response getMetadataAttributes(@QueryParam("levelLabel") String levelLabel);
 	
     /**

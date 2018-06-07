@@ -10,6 +10,8 @@
 package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.web.util.MiscUtil;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,14 +53,6 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/downloadtask")
 public class HpcDownloadTaskController extends AbstractHpcController {
-
-  public static final String NAV_OUTCOME_DOWNLOADTASKS =
-    "redirect:/downloadtasks";
-  public static final String NAV_OUTCOME_DATAOBJ_DOWNLOADTASK =
-    "dataobjectdownloadtask";
-  public static final String NAV_OUTCOME_DATAOBJS_DOWNLOADTASK =
-    "dataobjectsdownloadtask";
-
   @Value("${gov.nih.nci.hpc.server.download}")
   private String dataObjectsDownloadServiceURL;
 
@@ -101,11 +95,16 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         bindingResult.addError(error);
         HpcLogin hpcLogin = new HpcLogin();
         model.addAttribute("hpcLogin", hpcLogin);
-        return "redirect:/login?returnPath=downloadtask&taskId=" + taskId + "&type=" + type;
+        final Map<String, String> qParams = new HashMap<>();
+        qParams.put("returnPath", "downloadtask");
+        qParams.put("taskId", taskId);
+        qParams.put("type", type);
+        return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
+          qParams));
       }
 
       if (taskId == null || type == null)
-        return NAV_OUTCOME_DOWNLOADTASKS;
+        return "redirect:/downloadtasks";
 
       if (type.equals(HpcDownloadTaskType.COLLECTION.name()))
         return displayCollectionTask(authToken, taskId, model);
@@ -116,18 +115,26 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       else {
         String message = "Data file not found!";
         model.addAttribute("error", message);
-        return NAV_OUTCOME_DOWNLOADTASKS;
+        return "redirect:/downloadtasks";
       }
     } catch (Exception e) {
       model.addAttribute("error", "Failed to get data file: " + e.getMessage());
       e.printStackTrace();
-      return NAV_OUTCOME_DOWNLOADTASKS;
+      return "redirect:/downloadtasks";
     }
   }
 
 
   /**
    * POST action to retry failed download files.
+   * 
+   * @param downloadFile
+   * @param model
+   * @param bindingResult
+   * @param session
+   * @param request
+   * @param response
+   * @return
    */
   @JsonView(Views.Public.class)
   @RequestMapping(method = RequestMethod.POST)
@@ -139,7 +146,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       String authToken = (String) session.getAttribute("hpcUserToken");
       if (authToken == null) {
         result.setMessage("Invalid user session, expired. Please login again.");
-        return "redirect:/login?returnPath=downloadtask&taskId=" + taskId + "&type=" + taskType;
+        final Map<String, String> qParams = new HashMap<>();
+        qParams.put("returnPath", "downloadtask");
+        qParams.put("taskId", taskId);
+        qParams.put("type", taskType);
+        return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
+          qParams));
       }
 
       model.addAttribute("taskId", taskId);
@@ -147,20 +159,18 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       HpcBulkDataObjectDownloadRequestDTO dto = new HpcBulkDataObjectDownloadRequestDTO();
       if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())
           || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name())) {
-
+        
         String queryServiceURL = null;
-        if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())) {
-          queryServiceURL = collectionDownloadServiceURL + "?taskId=" + taskId;
-        } else {
-          queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
-        }
-
+        if (taskType.equals(HpcDownloadTaskType.COLLECTION.name()))
+            queryServiceURL = collectionDownloadServiceURL + "?taskId=" + taskId;
+        else
+            queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
+            
         HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
             .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
         if (downloadTask.getFailedItems() != null && !downloadTask.getFailedItems().isEmpty()) {
-          for (HpcCollectionDownloadTaskItem item : downloadTask.getFailedItems()) {
+          for (HpcCollectionDownloadTaskItem item : downloadTask.getFailedItems())
             dto.getDataObjectPaths().add(item.getPath());
-          }
           dto.setDestination(downloadTask.getDestinationLocation());
           dto.setDestinationOverwrite(true);
         }
@@ -168,28 +178,27 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           HpcBulkDataObjectDownloadResponseDTO downloadDTO =
               (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil.downloadFiles(authToken,
                   dataObjectsDownloadServiceURL, dto, sslCertPath, sslCertPassword);
-          if (downloadDTO != null) {
+          if (downloadDTO != null)
+          {
             result.setMessage(
                 "Download request successfull. Task Id: " + downloadDTO.getTaskId());
-            model.addAttribute("error",
-                "Retry download request is submitted successfully. Task Id: " + downloadDTO
-                    .getTaskId());
+            model.addAttribute("error", "Retry download request is submitted successfully. Task Id: " + downloadDTO.getTaskId());
           }
 
           model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-          return NAV_OUTCOME_DATAOBJS_DOWNLOADTASK;
+          return "dataobjectsdownloadtask";
 
         } catch (Exception e) {
           result.setMessage("Download request is not successfull: " + e.getMessage());
           model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-          return NAV_OUTCOME_DATAOBJS_DOWNLOADTASK;
+          return "dataobjectsdownloadtask";
         }
 
       } else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT.name())) {
         String queryServiceURL = dataObjectDownloadServiceURL + "?taskId=" + taskId;
         HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil
             .getDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
-        final String serviceURL = generateDownloadDataFileServiceURL(downloadTask);
+        String serviceURL = dataObjectServiceURL + downloadTask.getPath() + "/download";
         if (!downloadTask.getResult()) {
           HpcDownloadRequestDTO downloadDTO = new HpcDownloadRequestDTO();
           downloadDTO.setDestination(downloadTask.getDestinationLocation());
@@ -198,32 +207,19 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           model.addAttribute("error", responseBody.getMessage());
         }
         model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
-        return NAV_OUTCOME_DATAOBJ_DOWNLOADTASK;
+        return "dataobjectdownloadtask";
       }
     } catch (HttpStatusCodeException e) {
-      return handleExceptionOnDownloadRequest(result, e.getMessage());
+      result.setMessage("Download request is not successfull: " + e.getMessage());
+      return "redirect:/downloadtasks";
     } catch (RestClientException e) {
-      return handleExceptionOnDownloadRequest(result, e.getMessage());
+      result.setMessage("Download request is not successfull: " + e.getMessage());
+      return "redirect:/downloadtasks";
     } catch (Exception e) {
-      return handleExceptionOnDownloadRequest(result, e.getMessage());
+      result.setMessage("Download request is not successfull: " + e.getMessage());
+      return "redirect:/downloadtasks";
     }
-    return NAV_OUTCOME_DOWNLOADTASKS;
-  }
-
-  private String handleExceptionOnDownloadRequest(
-    AjaxResponseBody result, String message) {
-    result.setMessage(
-      String.format("Download request is not successful: %s", message));
-    return NAV_OUTCOME_DOWNLOADTASKS;
-  }
-
-  private String generateDownloadDataFileServiceURL(
-    HpcDataObjectDownloadStatusDTO downloadTask) {
-    final StringBuilder sb = new StringBuilder(dataObjectServiceURL);
-    sb.append(MiscUtil.urlEncodeDmePath(downloadTask.getPath()));
-    sb.append("/download");
-    final String retServiceURL = sb.toString();
-    return retServiceURL;
+    return "redirect:/downloadtasks";
   }
 
   private String displayDataObjectTask(String authToken, String taskId, Model model) {
@@ -231,7 +227,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil.getDataObjectDownloadTask(authToken,
         queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
-    return NAV_OUTCOME_DATAOBJ_DOWNLOADTASK;
+    return "dataobjectdownloadtask";
   }
 
   private String displayCollectionTask(String authToken, String taskId, Model model) {
@@ -239,7 +235,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
         .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-    return NAV_OUTCOME_DATAOBJS_DOWNLOADTASK;
+    return "dataobjectsdownloadtask";
   }
 
   private String diplayDataObjectListTask(String authToken, String taskId, Model model) {
@@ -247,6 +243,6 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
         .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
-    return NAV_OUTCOME_DATAOBJS_DOWNLOADTASK;
+    return "dataobjectsdownloadtask";
   }
 }

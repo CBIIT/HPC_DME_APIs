@@ -9,32 +9,16 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.HpcWebException;
-import gov.nih.nci.hpc.web.model.HpcCollectionModel;
-import gov.nih.nci.hpc.web.model.HpcLogin;
-import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
-import gov.nih.nci.hpc.web.util.HpcClientUtil;
-import gov.nih.nci.hpc.web.util.HpcCollectionUtil;
-import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+
+import gov.nih.nci.hpc.web.util.HpcCollectionUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -49,6 +33,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
+
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.HpcCollectionModel;
+import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
  * <p>
@@ -71,8 +69,7 @@ public class HpcCollectionController extends AbstractHpcController {
       FEEDBACK_MSG__$DELETE_SUCCEEDED = "Collection has been deleted!",
       KEY_PREFIX = "fdc-",
       NAV_OUTCOME_FORWARD_PREFIX = "forward:",
-      NAV_OUTCOME_REDIRECT_PREFIX = "redirect:",
-      URI_PATTERN__$COLLECTION_DETAIL_VIEW = "/collection?path=%s&action=%s";
+      NAV_OUTCOME_REDIRECT_PREFIX = "redirect:";
 
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String serviceURL;
@@ -106,8 +103,12 @@ public class HpcCollectionController extends AbstractHpcController {
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
 				model.addAttribute("hpcLogin", hpcLogin);
-				return "redirect:/login?returnPath=collection&action=" + action + "&path=" +
-                MiscUtil.urlEncodeDmePath(path);
+				final Map<String, String> paramsMap = new HashMap<>();
+				paramsMap.put("returnPath", "collection");
+				paramsMap.put("action", action);
+				paramsMap.put("path", path);
+				return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
+          paramsMap));
 			}
 
 			if (path == null) {
@@ -225,12 +226,13 @@ public class HpcCollectionController extends AbstractHpcController {
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
 		String[] action = request.getParameterValues("action");
-		final String encodedDmePath =
-      MiscUtil.urlEncodeDmePath(hpcCollection.getPath());
-		if (action != null && action.length > 0 && action[0].equals("cancel"))
-			return "redirect:/collection?path=" + encodedDmePath +
-              "&action=view";
-
+		if (action != null && action.length > 0 && action[0].equals("cancel")) {
+      final Map<String, String> paramsMap = new HashMap<>();
+      paramsMap.put("path", hpcCollection.getPath());
+      paramsMap.put("action", "view");
+      return "redirect:/collection?".concat(MiscUtil.generateEncodedQueryString(
+        paramsMap));
+    }
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
 			if (hpcCollection.getPath() == null || hpcCollection.getPath().trim().length() == 0)
@@ -247,8 +249,11 @@ public class HpcCollectionController extends AbstractHpcController {
 		} catch (Exception e) {
 			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
 		}
-		return "redirect:/collection?path=" + encodedDmePath +
-            "&action=view";
+		final Map<String, String> paramsMap = new HashMap<>();
+		paramsMap.put("path", hpcCollection.getPath());
+		paramsMap.put("action", "view");
+		return "redirect:/collection?".concat(MiscUtil.generateEncodedQueryString(
+      paramsMap));
 	}
 
 	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs) {
@@ -346,12 +351,12 @@ public class HpcCollectionController extends AbstractHpcController {
 			e.printStackTrace();
 			model.addAttribute("error", String.format(
 					ERROR_MSG_TEMPLATE__$DELETE_FAILED_WITH_REASON, e.getMessage()));
-			final String urlEncodedDmeCollPath =
-			  MiscUtil.urlEncodeDmePath(collPath);
 			copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
-            retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat(
-                    String.format(URI_PATTERN__$COLLECTION_DETAIL_VIEW,
-                            urlEncodedDmeCollPath, collAction));
+			final Map<String, String> qParams = new HashMap<>();
+			qParams.put("path", collPath);
+			qParams.put("action", collAction);
+			retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?").concat(
+        MiscUtil.generateEncodedQueryString(qParams));
 		}
 		return retNavOutcome;
 	}
@@ -387,11 +392,11 @@ public class HpcCollectionController extends AbstractHpcController {
         }
         copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
         final String allowedAction = (String) model.asMap().get("action");
-        final String urlEncodedDmePath =
-          MiscUtil.urlEncodeDmePath(collPath);
-        retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat(
-                String.format(URI_PATTERN__$COLLECTION_DETAIL_VIEW,
-                        urlEncodedDmePath, allowedAction));
+        final Map<String, String> qParams = new HashMap<>();
+        qParams.put("path", collPath);
+        qParams.put("action", allowedAction);
+        retNavOutcome = NAV_OUTCOME_REDIRECT_PREFIX.concat("/collection?")
+          .concat(MiscUtil.generateEncodedQueryString(qParams));
         return retNavOutcome;
     }
 
@@ -459,11 +464,12 @@ public class HpcCollectionController extends AbstractHpcController {
             bindingResult.addError(new ObjectError("hpcLogin",
                                         "Invalid user session!"));
             model.addAttribute("hpcLogin", new HpcLogin());
-            retNavOutcome = String.format(
-              "redirect:/login?returnPath=collection&action=%s&path=%s",
-              collectionAction,
-              MiscUtil.urlEncodeDmePath(collectionPath)
-            );
+            final Map<String, String> qParams = new HashMap<>();
+            qParams.put("returnPath", "collection");
+            qParams.put("action", collectionAction);
+            qParams.put("path", collectionPath);
+            retNavOutcome = "redirect:/login?".concat(MiscUtil
+              .generateEncodedQueryString(qParams));
         }
         return retNavOutcome;
     }

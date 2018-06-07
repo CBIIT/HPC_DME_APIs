@@ -13,6 +13,7 @@ import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import gov.nih.nci.hpc.cli.HPCBatchClient;
 import gov.nih.nci.hpc.cli.util.Constants;
@@ -44,8 +45,12 @@ public class HPCBatchDatafile extends HPCBatchClient {
 			if(authToken == null)
 				authToken = HpcClientUtil.getAuthenticationToken(userId, password, hpcServerURL, hpcServerProxyURL, hpcServerProxyPort, hpcCertPath,
 					hpcCertPassword);
-			return new HPCBatchDataFileProcessor(fileName, threadCount, hpcServerURL + "/" + hpcDataService,
-					hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile, authToken).processData();
+      final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+        hpcServerURL).path(HpcClientUtil.prependForwardSlashIfAbsent(
+				hpcDataService)).build().encode().toUri().toURL().toExternalForm();
+      return new HPCBatchDataFileProcessor(fileName, threadCount, apiUrl2Apply,
+        hpcCertPath, hpcCertPassword, null, null, logFile, logRecordsFile,
+        authToken).processData();
 		} catch (Exception e) {
 			System.out.println("Cannot read the input file: "+e.getMessage());
 			return Constants.CLI_2;

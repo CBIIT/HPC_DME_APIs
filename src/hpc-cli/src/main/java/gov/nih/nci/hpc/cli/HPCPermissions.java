@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
@@ -87,7 +89,7 @@ public class HPCPermissions extends HPCBatchClient {
 		}
 
 		// Create the CSVFormat object with the header mapping
-		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader();
+		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader().withQuote(null);
 		try {
 			// initialize FileReader object
 			fileReader = new FileReader(fileName);
@@ -177,13 +179,19 @@ public class HPCPermissions extends HPCBatchClient {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Bearer " + authToken);
 		List<MediaType> mediaTypeList = new ArrayList<MediaType>();
-		mediaTypeList.add(MediaType.APPLICATION_JSON);
+		mediaTypeList.add(new MediaType(MediaType.APPLICATION_JSON.getType(),
+			MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8));
 		headers.setAccept(mediaTypeList);
 		HttpEntity<?> entity = new HttpEntity<Object>(dto, headers);
 		try {
-			String url = hpcServerURL + (type.equalsIgnoreCase("collection") ? "/collection" : "/dataObject") + path
-					+ "/acl";
-			restTemplate.postForEntity(url, entity, null);
+      final String itemType = "collection".equalsIgnoreCase(type) ?
+        "collection" : "dataObject";
+//      final String pathUnderServerUrl = HpcClientUtil.constructPathString(
+//        itemType, path, "acl");
+      String url = UriComponentsBuilder.fromHttpUrl(hpcServerURL).path(
+        "/{item-type}/{dme-archive-path}/acl").buildAndExpand(itemType, path)
+				.encode().toUri().toURL().toExternalForm();
+      restTemplate.postForEntity(url, entity, null);
 		} catch (HttpStatusCodeException e) {
 			returnCode = Constants.CLI_5;
 			String message = "Failed to process record due to: " + e.getMessage();

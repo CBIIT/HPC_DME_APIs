@@ -13,6 +13,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +37,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import gov.nih.nci.hpc.cli.HPCBatchClient;
 import gov.nih.nci.hpc.cli.util.Constants;
@@ -88,7 +91,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 		}
 
 		// Create the CSVFormat object with the header mapping
-		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader();
+		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader().withQuote(null);
 
 		try {
 
@@ -136,11 +139,6 @@ public class HPCBatchCollection extends HPCBatchClient {
 						parentMetadataAttributes, createParentCollection);
 				
 				collectionPath = collectionPath.trim();
-				if(HpcClientUtil.containsWhiteSpace(collectionPath))
-				{
-					System.out.println("White space in the file path "+ collectionPath + " is replaced with underscore _ ");
-					collectionPath = HpcClientUtil.replaceWhiteSpaceWithUnderscore(collectionPath);
-				}
 				
 				System.out.println((i + 1) + ": Registering Collection " + collectionPath);
 
@@ -156,17 +154,19 @@ public class HPCBatchCollection extends HPCBatchClient {
 				// ":" + password).getBytes());
 				headers.add("Authorization", "Bearer " + authToken);
 				List<MediaType> mediaTypeList = new ArrayList<MediaType>();
-				mediaTypeList.add(MediaType.APPLICATION_JSON);
+				mediaTypeList.add(new MediaType(MediaType.APPLICATION_JSON.getType(),
+          MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8));
 				headers.setAccept(mediaTypeList);
 				HttpEntity<HpcCollectionRegistrationDTO> entity = new HttpEntity<HpcCollectionRegistrationDTO>(
 						collectionDTO, headers);
 				try {
-					if (!collectionPath.startsWith("/"))
-						collectionPath = "/" + collectionPath;
-
-					System.out.println(hpcServerURL + "/" + hpcCollectionService + collectionPath);
-					response = restTemplate.exchange(hpcServerURL + "/" + hpcCollectionService + collectionPath,
-							HttpMethod.PUT, entity, HpcExceptionDTO.class);
+          final URI uri2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
+						.path(HpcClientUtil.prependForwardSlashIfAbsent(
+							hpcCollectionService).concat("/{dme-archive-path}"))
+						.buildAndExpand(collectionPath).encode().toUri();
+          System.out.println(uri2Apply.toURL().toExternalForm());
+          response = restTemplate.exchange(uri2Apply, HttpMethod.PUT, entity,
+            HpcExceptionDTO.class);
 					if (response != null) {
 						HpcExceptionDTO exception = response.getBody();
 						if (exception != null) {

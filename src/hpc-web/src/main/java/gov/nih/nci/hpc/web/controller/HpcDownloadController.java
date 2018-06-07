@@ -9,9 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.io.InputStream;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -53,6 +54,7 @@ import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <p>
@@ -67,21 +69,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @EnableAutoConfiguration
 @RequestMapping("/download")
 public class HpcDownloadController extends AbstractHpcController {
-
-  private static final String ASYNC = "async";
-  private static final String DOWNLOAD_URI_SEGMENT = "download";
-  private static final String ERROR_MSG_INVALID_SESSION_SHORT =
-    "Invalid user session!";
-  private static final String ERROR_MSG_INVALID_SESSION =
-    "Invalid user session, expired. Please login again.";
-  private static final String FORWARD_SLASH = "/";
-  private static final String NAV_OUTCOME_DOWNLOAD = "download";
-  private static final String NAV_OUTCOME_INDEX = "index";
-
-  private static final String ERROR_MSG_TEMPLATE =
-    "Download request is not successful: %s";
-
-  @Value("${gov.nih.nci.hpc.server.dataObject}")
+	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String dataObjectServiceURL;
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionServiceURL;
@@ -97,107 +85,84 @@ public class HpcDownloadController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(
-    @RequestBody(required = false)
-      String q,
-    Model model,
-    BindingResult bindingResult,
-    HttpSession session,
-    HttpServletRequest request) {
-    final String downloadType = request.getParameter("type");
-    final String downloadFilePath = request.getParameter("path");
-    final String fileName = extractFileNameFromFilePath(downloadFilePath);
-    model.addAttribute("hpcDownloadDatafile", new HpcDownloadDatafile());
-    model.addAttribute("downloadType", downloadType);
+	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request) {
+		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
+		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+		String downloadFilePath = request.getParameter("path");
+		String downloadType = request.getParameter("type");
 		model.addAttribute("downloadFilePath", downloadFilePath);
-		if (null != fileName) {
+		if (downloadFilePath != null) {
+			String fileName = downloadFilePath;
+			int index = downloadFilePath.lastIndexOf("/");
+
+			if (index == -1)
+				index = downloadFilePath.lastIndexOf("//");
+
+			if (index != -1)
+				fileName = downloadFilePath.substring(index + 1);
 			model.addAttribute("downloadFilePathName", fileName);
 		}
-		final HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-		String navOutcome;
+		model.addAttribute("downloadType", downloadType);
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
-      bindingResult.addError(new
-        ObjectError("hpcLogin", ERROR_MSG_INVALID_SESSION_SHORT));
-      model.addAttribute("hpcLogin", new HpcLogin());
-			navOutcome = NAV_OUTCOME_INDEX;
-		} else {
-		  navOutcome = NAV_OUTCOME_DOWNLOAD;
-    }
-
-		return navOutcome;
+			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+			bindingResult.addError(error);
+			HpcLogin hpcLogin = new HpcLogin();
+			model.addAttribute("hpcLogin", hpcLogin);
+			return "index";
+		}
+		return "download";
 	}
 
 	/**
 	 * POST action to initiate asynchronous download.
+	 * 
+	 * @param downloadFile
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @return
 	 */
-  @JsonView(Views.Public.class)
-  @RequestMapping(method = RequestMethod.POST)
-  @ResponseBody
-  public AjaxResponseBody download(
-      @Valid @ModelAttribute("hpcDownloadDatafile")
-        HpcDownloadDatafile downloadFile,
-      HttpSession session) {
-    AjaxResponseBody result = new AjaxResponseBody();
-    final String authToken = (String) session.getAttribute("hpcUserToken");
-    if (authToken == null) {
-      result.setMessage(ERROR_MSG_INVALID_SESSION);
-    } else {
-      try {
-        final String serviceURL = generateServiceURL(downloadFile);
-        final HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
-        if (null != downloadFile.getSearchType() &&
-            ASYNC.equals(downloadFile.getSearchType())) {
-          final HpcFileLocation location = new HpcFileLocation();
-          location.setFileContainerId(downloadFile.getEndPointName());
-          location.setFileId(downloadFile.getEndPointLocation());
-          dto.setDestination(location);
-        }
-        result = HpcClientUtil.downloadDataFile(authToken, serviceURL, dto,
-            sslCertPath, sslCertPassword);
-      } catch (HttpStatusCodeException e) {
-        result.setMessage(String.format(ERROR_MSG_TEMPLATE, e.getMessage()));
-      } catch (RestClientException e) {
-        result.setMessage(String.format(ERROR_MSG_TEMPLATE, e.getMessage()));
-      } catch (Exception e) {
-        result.setMessage(String.format(ERROR_MSG_TEMPLATE, e.getMessage()));
-      }
-    }
+	@JsonView(Views.Public.class)
+	@RequestMapping(method = RequestMethod.POST)
+	@ResponseBody
+	public AjaxResponseBody download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile,
+			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+			HttpServletResponse response) {
+		AjaxResponseBody result = new AjaxResponseBody();
+		try {
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			if (authToken == null) {
+				result.setMessage("Invalid user session, expired. Please login again.");
+				return result;
+			}
+			final String basisURL = "collection".equals(downloadFile
+        .getDownloadType()) ? this.collectionServiceURL :
+        this.dataObjectServiceURL;
+      final String serviceURL = UriComponentsBuilder.fromHttpUrl(basisURL)
+        .path("/{dme-archive-path}/download").buildAndExpand(downloadFile
+        .getDestinationPath()).encode().toUri().toURL().toExternalForm();
+			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
+			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getEndPointName());
+				location.setFileId(downloadFile.getEndPointLocation());
+				dto.setDestination(location);
+			}
 
-    return result;
-  }
-
-
-  private String extractFileNameFromFilePath(String argFilePath) {
-    String retFileName;
-    if (null == argFilePath) {
-      retFileName = null;
-    } else {
-      int index = argFilePath.lastIndexOf(FORWARD_SLASH);
-      if (-1 == index) {
-        index = argFilePath.lastIndexOf(FORWARD_SLASH.concat(FORWARD_SLASH));
-      }
-      retFileName = (-1 == index) ? argFilePath :
-                                      argFilePath.substring(1 + index);
-    }
-
-    return retFileName;
-  }
-
-
-	private String generateServiceURL(
-			@Valid @ModelAttribute("hpcDownloadDatafile")
-        HpcDownloadDatafile downloadFile) {
-		final StringBuilder sb = new StringBuilder();
-		if ("collection".equals(downloadFile.getDownloadType())) {
-			sb.append(collectionServiceURL);
-		} else {
-		  sb.append(dataObjectServiceURL);
+			return HpcClientUtil.downloadDataFile(authToken, serviceURL, dto, sslCertPath, sslCertPassword);
+		} catch (HttpStatusCodeException e) {
+			result.setMessage("Download request is not successfull: " + e.getMessage());
+			return result;
+		} catch (RestClientException e) {
+			result.setMessage("Download request is not successfull: " + e.getMessage());
+			return result;
+		} catch (Exception e) {
+			result.setMessage("Download request is not successfull: " + e.getMessage());
+			return result;
 		}
-    sb.append(MiscUtil.urlEncodeDmePath(downloadFile.getDestinationPath()))
-      .append(FORWARD_SLASH)
-      .append(DOWNLOAD_URI_SEGMENT);
-		final String serviceURL = sb.toString();
-
-		return serviceURL;
 	}
 }

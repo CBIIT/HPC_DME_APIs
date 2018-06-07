@@ -56,6 +56,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -174,10 +175,14 @@ public class HpcClientUtil {
     JsonParser parser = null;
 
     try {
-      WebClient client = HpcClientUtil.getWebClient(hpcServerURL + "/authenticate", proxyURL,
+      final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(hpcServerURL)
+        .path("/authenticate").build().encode().toUri().toURL()
+        .toExternalForm();
+      WebClient client = HpcClientUtil.getWebClient(apiUrl2Apply, proxyURL,
           proxyPort, hpcCertPath, hpcCertPassword);
       String token = DatatypeConverter.printBase64Binary((userId + ":" + passwd).getBytes());
       client.header("Authorization", "Basic " + token);
+      // If necessary, here add "Content-Type" header set to "application/json; charset=UTF-8" via client.type("application/json; charset=UTF-8")
       Response restResponse = client.get();
       if (restResponse == null)
         return null;
@@ -294,12 +299,14 @@ public class HpcClientUtil {
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionURL,
       String proxyURL, String proxyPort, String hpcCertPath, String hpcCertPassword) {
     try {
-      String serviceURL = hpcCollectionURL + "?list=false";
+      String serviceURL = UriComponentsBuilder.fromHttpUrl(hpcCollectionURL)
+        .queryParam("list", Boolean.FALSE).build().encode().toUri().toURL()
+        .toExternalForm();
 
       WebClient client =
           getWebClient(serviceURL, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-
+      // If necessary, here add "Content-Type" header set to "application/json; charset=UTF-8" via client.type("application/json; charset=UTF-8")
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
@@ -366,11 +373,14 @@ public class HpcClientUtil {
       String proxyURL, String proxyPort, String path, boolean list, String hpcCertPath,
       String hpcCertPassword) {
     try {
-      WebClient client =
-          getWebClient(hpcDatafileURL + "/" + path + (list ? "?list=true" : "?list=false"),
-              proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
+      final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(
+        hpcDatafileURL).path("/{dme-archive-path}").queryParam("list", Boolean
+        .valueOf(list)).buildAndExpand(path).encode().toUri().toURL()
+        .toExternalForm();
+      WebClient client = getWebClient(apiUrl2Apply, proxyURL, proxyPort,
+        hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-
+      // If necessary, here add "Content-Type" header set to "application/json; charset=UTF-8" via client.type("application/json; charset=UTF-8")
       Response restResponse = client.invoke("GET", null);
       if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
@@ -457,12 +467,6 @@ public class HpcClientUtil {
     return false;
   }
 
-  public static String replaceWhiteSpaceWithUnderscore(final String testCode) {
-    if (testCode != null) {
-      return testCode.replaceAll("\\s+", "_");
-    }
-    return testCode;
-  }
 
   public static HpcBulkDataObjectRegistrationResponseDTO registerBulkDatafiles(String token,
       String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
@@ -472,7 +476,7 @@ public class HpcClientUtil {
       WebClient client =
           getWebClient(hpcDatafileURL, proxyURL, proxyPort, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-
+      client.type("application/json; charset=UTF-8");
       Response restResponse = client.invoke("PUT", datafileDTO);
       if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
         return (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil.getObject(restResponse,
@@ -497,6 +501,34 @@ public class HpcClientUtil {
       e.printStackTrace();
       throw new HpcCmdException("Failed to bulk register data files due to: " + e.getMessage());
     }
+  }
+
+
+  public static String constructPathString(String ... pathSegments) {
+    final StringBuilder sb = new StringBuilder();
+    String effSegment;
+    for (String someSegment : pathSegments) {
+      effSegment = someSegment.trim();
+      if (effSegment.startsWith("/")) {
+        effSegment = effSegment.substring(1);
+      }
+      sb.append("/").append(effSegment);
+    }
+    return sb.toString();
+  }
+
+  public static String prependForwardSlashIfAbsent(String arg) {
+    String result;
+    if (null == arg || arg.isEmpty()) {
+      result = "/";
+    } else {
+      result = arg.trim();
+      if (!result.startsWith("/")) {
+        result = "/".concat(result);
+      }
+    }
+
+    return result;
   }
 
 }

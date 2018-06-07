@@ -17,11 +17,36 @@
   <parent>
     <groupId>gov.nih.nci.hpc</groupId>
     <artifactId>hpc-server</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.7.1</version>
   </parent>
   <artifactId>hpc-ws-rs-impl</artifactId>
   <packaging>bundle</packaging>
-
+  <properties>
+    <ca.certs.filename>cacerts</ca.certs.filename>
+    <ca.certs.jks.filename>cacerts.jks</ca.certs.jks.filename>
+    <hpc.client.cert.filename>hpc-client.crt</hpc.client.cert.filename>
+    <hpc.client.entry.dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US
+    </hpc.client.entry.dname>
+    <hpc.client.jks.filename>hpc-client-keystore.jks</hpc.client.jks.filename>
+    <hpc.client.jks.pass>hpc-client-pwd</hpc.client.jks.pass>
+    <hpc.client.key.alias>hpc-client-key</hpc.client.key.alias>
+    <hpc.client.key.pass>hpc-client-pwd</hpc.client.key.pass>
+    <hpc.server.entry.dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US
+    </hpc.server.entry.dname>
+    <hpc.server.jks.keystore.filename>keystore.jks</hpc.server.jks.keystore.filename>
+    <hpc.server.key.alias>hpc-server-key</hpc.server.key.alias>
+    <hpc.server.key.pass>changeit</hpc.server.key.pass>
+    <hpc.server.store.pass>hpc-server-store-pwd</hpc.server.store.pass>
+    <irods.cert.alias>NIH-IRODS</irods.cert.alias>
+    <irods.cert.filename>irods.crt</irods.cert.filename>
+    <ldap.root.cert.alias>NIH-DPKI-ROOT-1A</ldap.root.cert.alias>
+    <ldap.root.cert.filename>ldap-root.crt</ldap.root.cert.filename>
+    <main.resources.dir>${basedir}/src/main/resources</main.resources.dir>
+    <nih.ldap.cert.alias>NIH-DPKI-CA-1A</nih.ldap.cert.alias>
+    <nih.ldap.cert.filename>ldap-intermediate.crt</nih.ldap.cert.filename>
+    <store.pass>changeit</store.pass>
+    <validity.days>36500</validity.days>
+  </properties>
   <build>
     <plugins>
       <plugin>
@@ -81,40 +106,19 @@
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <!-- <version>${jackson.version}</version> -->
+    </dependency>
   </dependencies>
 
   <profiles>
     <profile>
-      <id>generate-keystore-jks-files</id>
+      <id>generate-ca-certs</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <activeByDefault>true</activeByDefault>
       </activation>
-      <properties>
-        <ca.certs.filename>cacerts</ca.certs.filename>
-        <ca.certs.jks.filename>cacerts.jks</ca.certs.jks.filename>
-        <hpc.client.cert.filename>hpc-client.crt</hpc.client.cert.filename>
-        <hpc.client.entry.dname>CN=HPC Client, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US
-        </hpc.client.entry.dname>
-        <hpc.client.jks.filename>hpc-client-keystore.jks</hpc.client.jks.filename>
-        <hpc.client.jks.pass>hpc-client-pwd</hpc.client.jks.pass>
-        <hpc.client.key.alias>hpc-client-key</hpc.client.key.alias>
-        <hpc.client.key.pass>hpc-client-pwd</hpc.client.key.pass>
-        <hpc.server.entry.dname>CN=HPC Server, OU=NIH, O=NCI, L=Frederick, ST=MD, C=US
-        </hpc.server.entry.dname>
-        <hpc.server.jks.keystore.filename>keystore.jks</hpc.server.jks.keystore.filename>
-        <hpc.server.key.alias>hpc-server-key</hpc.server.key.alias>
-        <hpc.server.key.pass>changeit</hpc.server.key.pass>
-        <hpc.server.store.pass>hpc-server-store-pwd</hpc.server.store.pass>
-        <irods.cert.alias>NIH-IRODS</irods.cert.alias>
-        <irods.cert.filename>irods.crt</irods.cert.filename>
-        <ldap.root.cert.alias>NIH-DPKI-ROOT-1A</ldap.root.cert.alias>
-        <ldap.root.cert.filename>ldap-root.crt</ldap.root.cert.filename>
-        <main.resources.dir>${basedir}/src/main/resources</main.resources.dir>
-        <nih.ldap.cert.alias>NIH-DPKI-CA-1A</nih.ldap.cert.alias>
-        <nih.ldap.cert.filename>ldap-intermediate.crt</nih.ldap.cert.filename>
-        <store.pass>changeit</store.pass>
-        <validity.days>36500</validity.days>
-      </properties>
       <build>
         <plugins>
           <plugin>
@@ -125,9 +129,6 @@
                 <fileset>
                   <directory>${main.resources.dir}</directory>
                   <includes>
-                    <include>${hpc.client.cert.filename}</include>
-                    <include>${hpc.client.jks.filename}</include>
-                    <include>${hpc.server.jks.keystore.filename}</include>
                     <include>${ca.certs.jks.filename}</include>
                     <include>${ca.certs.filename}</include>
                   </includes>
@@ -180,6 +181,199 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>keytool-maven-plugin</artifactId>
             <executions>
+              <execution>
+                <id>importLdapRootCertificate</id>
+                <goals>
+                  <goal>importCertificate</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+                  <file>${main.resources.dir}/certs/${ldap.root.cert.filename}</file>
+                  <storepass>${store.pass}</storepass>
+                  <alias>${ldap.root.cert.alias}</alias>
+                  <trustcacerts>true</trustcacerts>
+                  <noprompt>true</noprompt>
+                  <skipIfExist>false</skipIfExist>
+                </configuration>
+              </execution>
+              <execution>
+                <id>importIrodsCertificate</id>
+                <goals>
+                  <goal>importCertificate</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+                  <file>${main.resources.dir}/certs/${irods.cert.filename}</file>
+                  <storepass>${store.pass}</storepass>
+                  <alias>${irods.cert.alias}</alias>
+                  <trustcacerts>true</trustcacerts>
+                  <noprompt>true</noprompt>
+                  <skipIfExist>false</skipIfExist>
+                </configuration>
+              </execution>
+              <execution>
+                <id>importLdapIntermediateCertificate</id>
+                <goals>
+                  <goal>importCertificate</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+                  <file>${main.resources.dir}/certs/${nih.ldap.cert.filename}</file>
+                  <storepass>${store.pass}</storepass>
+                  <alias>${nih.ldap.cert.alias}</alias>
+                  <trustcacerts>true</trustcacerts>
+                  <noprompt>true</noprompt>
+                  <skipIfExist>false</skipIfExist>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-artifacts</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${main.resources.dir}/${ca.certs.jks.filename}</file>
+                      <type>jks</type>
+                      <classifier>cacerts</classifier>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>generate-keystore-jks-files</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${main.resources.dir}</directory>
+                  <includes>
+                    <include>${ca.certs.jks.filename}</include>
+                    <include>${ca.certs.filename}</include>
+                    <include>${hpc.client.cert.filename}</include>
+                    <include>${hpc.client.jks.filename}</include>
+                    <include>${hpc.server.jks.keystore.filename}</include>
+                  </includes>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-java-default-cacerts</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${main.resources.dir}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${JAVA_HOME}/jre/lib/security</directory>
+                      <includes>
+                        <include>${ca.certs.filename}</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.coderplus.maven.plugins</groupId>
+            <artifactId>copy-rename-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>rename-java-default-cacerts</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <sourceFile>${main.resources.dir}/${ca.certs.filename}</sourceFile>
+                  <destinationFile>${main.resources.dir}/${ca.certs.jks.filename}</destinationFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>keytool-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>importLdapRootCertificate</id>
+                <goals>
+                  <goal>importCertificate</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+                  <file>${main.resources.dir}/certs/${ldap.root.cert.filename}</file>
+                  <storepass>${store.pass}</storepass>
+                  <alias>${ldap.root.cert.alias}</alias>
+                  <trustcacerts>true</trustcacerts>
+                  <noprompt>true</noprompt>
+                  <skipIfExist>false</skipIfExist>
+                </configuration>
+              </execution>
+              <execution>
+                <id>importIrodsCertificate</id>
+                <goals>
+                  <goal>importCertificate</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+                  <file>${main.resources.dir}/certs/${irods.cert.filename}</file>
+                  <storepass>${store.pass}</storepass>
+                  <alias>${irods.cert.alias}</alias>
+                  <trustcacerts>true</trustcacerts>
+                  <noprompt>true</noprompt>
+                  <skipIfExist>false</skipIfExist>
+                </configuration>
+              </execution>
+              <execution>
+                <id>importLdapIntermediateCertificate</id>
+                <goals>
+                  <goal>importCertificate</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+                  <file>${main.resources.dir}/certs/${nih.ldap.cert.filename}</file>
+                  <storepass>${store.pass}</storepass>
+                  <alias>${nih.ldap.cert.alias}</alias>
+                  <trustcacerts>true</trustcacerts>
+                  <noprompt>true</noprompt>
+                  <skipIfExist>false</skipIfExist>
+                </configuration>
+              </execution>
               <execution>
                 <id>generateServerKeystore</id>
                 <goals>
@@ -242,54 +436,6 @@
                   <skipIfExist>true</skipIfExist>
                 </configuration>
               </execution>
-              <execution>
-                <id>importLdapRootCertificate</id>
-                <goals>
-                  <goal>importCertificate</goal>
-                </goals>
-                <phase>generate-resources</phase>
-                <configuration>
-                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
-                  <file>${main.resources.dir}/certs/${ldap.root.cert.filename}</file>
-                  <storepass>${store.pass}</storepass>
-                  <alias>${ldap.root.cert.alias}</alias>
-                  <trustcacerts>true</trustcacerts>
-                  <noprompt>true</noprompt>
-                  <skipIfExist>false</skipIfExist>
-                </configuration>
-              </execution>
-              <execution>
-                <id>importLdapIntermediateCertificate</id>
-                <goals>
-                  <goal>importCertificate</goal>
-                </goals>
-                <phase>generate-resources</phase>
-                <configuration>
-                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
-                  <file>${main.resources.dir}/certs/${nih.ldap.cert.filename}</file>
-                  <storepass>${store.pass}</storepass>
-                  <alias>${nih.ldap.cert.alias}</alias>
-                  <trustcacerts>true</trustcacerts>
-                  <noprompt>true</noprompt>
-                  <skipIfExist>false</skipIfExist>
-                </configuration>
-              </execution>
-              <execution>
-                <id>importIrodsCertificate</id>
-                <goals>
-                  <goal>importCertificate</goal>
-                </goals>
-                <phase>generate-resources</phase>
-                <configuration>
-                  <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
-                  <file>${main.resources.dir}/certs/${irods.cert.filename}</file>
-                  <storepass>${store.pass}</storepass>
-                  <alias>${irods.cert.alias}</alias>
-                  <trustcacerts>true</trustcacerts>
-                  <noprompt>true</noprompt>
-                  <skipIfExist>false</skipIfExist>
-                </configuration>
-              </execution>
             </executions>
           </plugin>
           <plugin>
@@ -305,14 +451,14 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>${main.resources.dir}/${hpc.server.jks.keystore.filename}</file>
-                      <type>jks</type>
-                      <classifier>keystore</classifier>
-                    </artifact>
-                    <artifact>
                       <file>${main.resources.dir}/${ca.certs.jks.filename}</file>
                       <type>jks</type>
                       <classifier>cacerts</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>${main.resources.dir}/${hpc.server.jks.keystore.filename}</file>
+                      <type>jks</type>
+                      <classifier>keystore</classifier>
                     </artifact>
                   </artifacts>
                 </configuration>

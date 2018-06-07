@@ -32,6 +32,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -81,11 +82,14 @@ public class HpcGlobusDirectoryListProcessor {
 		Object authenticatedToken = null;
 		try {
 			HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructBulkRequest(criteriaMap);
-
-			HpcBulkDataObjectRegistrationResponseDTO responseDTO = HpcClientUtil.registerBulkDatafiles(
-					connection.getAuthToken(), connection.getHpcServerURL() + "/registration", registrationDTO,
-					connection.getHpcCertPath(), connection.getHpcCertPassword(), connection.getHpcServerProxyURL(),
-					connection.getHpcServerProxyPort());
+			final String apiUrl2Apply = UriComponentsBuilder.fromHttpUrl(connection
+        .getHpcServerURL()).path("/registration").build().encode()
+        .toUri().toURL().toExternalForm();
+			HpcBulkDataObjectRegistrationResponseDTO responseDTO = HpcClientUtil
+        .registerBulkDatafiles(connection.getAuthToken(), apiUrl2Apply,
+        registrationDTO, connection.getHpcCertPath(),
+        connection.getHpcCertPassword(), connection.getHpcServerProxyURL(),
+        connection.getHpcServerProxyPort());
 			if (responseDTO != null) {
 				StringBuffer info = new StringBuffer();
 				if (registrationDTO.getDryRun()) {

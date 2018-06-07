@@ -3,6 +3,12 @@ var linkSearchNameCellTemplate = '<div class="ngCellText" ng-class="col.colIndex
 '  <a href="search?queryName={{row.getProperty(\'message\')}}">{{row.getProperty(col.field)}}</a>' +
 '</div>';
 
+app.filter('percentEncoding', function () {
+  return function (argStr) {
+    return encodeURIComponent(argStr);
+  };
+});
+
 app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
 	$scope.searchesloading = true;
 	$http.get('/savedSearchList').
@@ -24,11 +30,31 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
     enableSorting: true,
     enableColumnResizing: true, 
     columnDefs: [
-                 { field: 'searchName', width:300, displayName: 'Search Name', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
-                 { field: 'searchType', width:200, displayName : 'Search Type' },
-                 { field: 'createdOn', width:200, displayName : 'Created On'},
-                 { field: 'delete', width:200, displayName: 'Delete', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="deleteSearch?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">Delete</a></div>'  }
-               ],
+      {
+        field : 'searchName',
+        width : 300,
+        displayName : 'Search Name',
+        cellFilter: 'percentEncoding',
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="search?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
+      },
+      {
+        field : 'searchType',
+        width : 200,
+        displayName : 'Search Type'
+      },
+      {
+        field : 'createdOn',
+        width : 200,
+        displayName : 'Created On'
+      },
+      {
+        field : 'delete',
+        width : 200,
+        displayName : 'Delete',
+        cellFilter: 'percentEncoding',
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="deleteSearch?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">Delete</a></div>'
+      }
+    ],
   };
 
 $scope.notificationsloading = true;

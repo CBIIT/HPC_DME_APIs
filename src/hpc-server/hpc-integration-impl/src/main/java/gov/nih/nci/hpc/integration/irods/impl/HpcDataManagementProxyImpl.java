@@ -295,6 +295,30 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   }
 
   @Override
+  public boolean interrogatePathRef(Object authenticatedToken, String path)
+      throws HpcException {
+    try {
+      IRODSFile file =
+          irodsConnection
+              .getIRODSFileFactory(authenticatedToken)
+              .instanceIRODSFile(getAbsolutePath(path));
+      if (file.exists()) {
+        return file.isDirectory();
+      } else {
+        throw new HpcException(
+            String.format("Failed to find item at following path: %s", path),
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    } catch (JargonException e) {
+      throw new HpcException(
+          String.format("Failed to check whether item at following path is " +
+            "collection or data file: %s", path),
+          HpcErrorType.INVALID_REQUEST_INPUT,
+          e);
+    }
+  }
+
+  @Override
   public HpcPathAttributes getPathAttributes(Object authenticatedToken, String path)
       throws HpcException {
     try {

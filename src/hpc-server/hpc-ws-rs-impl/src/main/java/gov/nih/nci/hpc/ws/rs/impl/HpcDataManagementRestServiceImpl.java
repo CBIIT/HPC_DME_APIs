@@ -9,27 +9,10 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import org.apache.commons.io.FileUtils;
-import org.apache.cxf.common.util.StringUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
@@ -62,6 +45,24 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
+import org.apache.cxf.common.util.StringUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 /**
  * HPC Data Management REST Service Implementation.
@@ -102,6 +103,32 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   // ---------------------------------------------------------------------//
   // HpcDataManagementRestService Interface Implementation
   // ---------------------------------------------------------------------//
+
+  @Override
+  public Response interrogatePathRef(String path) {
+    try {
+      final String pathElemType =
+        dataManagementBusService.interrogatePathRef(path) ?
+        "collection" : "data file";
+      final Map<String, String> responseMap = new HashMap<>();
+      responseMap.put("path", path);
+      responseMap.put("elementType", pathElemType);
+      try {
+        final String jsonResponseStr =
+            new ObjectMapper().writeValueAsString(responseMap);
+        return okResponse(jsonResponseStr, true);
+      } catch (JsonProcessingException jpe) {
+        // (String message, HpcErrorType errorType, Throwable cause)
+        final String errMsg =
+          String.format("Failure during conversion of Map to JSON: %s",
+                        responseMap.toString());
+        throw new HpcException(errMsg, HpcErrorType.UNEXPECTED_ERROR, jpe);
+      }
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+  }
+
 
   @Override
   public Response registerCollection(
@@ -183,11 +210,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response deleteCollection(String path, Boolean recursive) {
     try {
     	
-      recursive = recursive != null ? recursive : false;
-      if(recursive) {
-    	  //Delete all the data objects in this hierarchy first
-    	  deleteDataObjectsInCollections(path);
-;      }
+      recursive = recursive != null ? recursive : false;    
       dataManagementBusService.deleteCollection(toNormalizedPath(path), recursive);
 
     } catch (HpcException e) {
@@ -531,37 +554,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(response, false);
   }
 
-  // ---------------------------------------------------------------------//
-  // Helper Methods
-  // ---------------------------------------------------------------------//
-  /**
-   * Recursively delete all the data objects from the specified collection and from 
-   * it's sub-collections.
-   * @param path The path at the root of the hierarchy to delete from.
-   */
-  private void deleteDataObjectsInCollections(String path) throws HpcException {
-	
-	  HpcCollectionDTO collectionDto = dataManagementBusService.getCollectionChildren(path);
-	  
-	    if (collectionDto.getCollection() != null) {
-	    	List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
-	    	if(!CollectionUtils.isEmpty(dataObjects)) {
-	    		//Delete data objects in this collection
-	    		for(HpcCollectionListingEntry entry: dataObjects) {
-	    			dataManagementBusService.deleteDataObject(entry.getPath());
-	    		}
-	    	}
-	    	
-	    	List<HpcCollectionListingEntry> subCollections = collectionDto.getCollection().getSubCollections();
-	    	if(!CollectionUtils.isEmpty(subCollections)) {
-	    		//Recursively delete data objects from this sub-collection and 
-	    		//it's sub-collections
-	    		for(HpcCollectionListingEntry entry: subCollections) {
-	    			deleteDataObjectsInCollections(entry.getPath());
-	    		}
-	    	}
-	    }
-  }
+  
   
   
   /**
