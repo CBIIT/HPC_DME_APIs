@@ -34,7 +34,7 @@ def main(args):
 
             if(line.rstrip().endswith("/")):
                 #This is a directory, nothing to do
-                continue
+                continue:
 
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
@@ -108,10 +108,9 @@ def main(args):
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                record_exclusion(tarfile_name + ':'  + line + ': Not tar.gz or html file')
+                record_exclusion(tarfile_name + ':'  + line + ': Not fastq.gz or html file')
 
-
-
+        logging.info('Done processing file: ' + tarfile_path)
 
 def record_exclusion(str):
     excludes.writelines(str + '\n')
@@ -149,8 +148,9 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         # If this is not a .list or .md5 file also, then record exclusion. Else
         # just ignore, do not record because we may find the associated tar later
         if (not tarfile_name.rstrip().endswith('tar.gz.list') and
+                not tarfile_name.rstrip().endswith('_archive.list') and
                 not tarfile_name.rstrip().endswith('.md5')):
-            excludes_str = ': Invalid file format - not tar.gz, tar.gz.list or tar.gz.md5 \n'
+            excludes_str = ': Invalid file format - not tar.gz, _archive.list, tar.gz.list or tar.gz.md5 \n'
             excludes.write(tarfile_name + excludes_str)
             logging.info('Ignoring file ' + tarfile_name.rstrip() + excludes_str)
         return
@@ -169,7 +169,7 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
     except IOError as e:
         #tar.gz.list is not present, so try _archive.list
         try:
-            tarfile_contents = open(tarfile_path.split("tar.gz")[0] + "_archive.list")
+            tarfile_contents = open(tarfile_path.split(".tar.gz")[0] + "_archive.list")
         except IOError as e:
             # There is no contents file for this tarball, so create one
             command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
