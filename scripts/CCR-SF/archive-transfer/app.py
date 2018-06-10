@@ -38,6 +38,11 @@ def main(args):
 
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
+                if('Undetermined' in line):
+                    record_exclusion(
+                        tarfile_name + ':' + line + ': Path contains Undetermined files')
+                    continue
+
                 filepath = extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
                 if filepath is None:
                     continue
@@ -162,12 +167,22 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         tarfile_contents = open(tarfile_path + '.list')
 
     except IOError as e:
-        # There is no contents file for this tarball, so
-        # exclude the tarball
-        excludes_str = ': No contents file located \n'
-        excludes.write(tarfile_name + excludes_str)
-        logging.warning("Ignoring file " + tarfile_name.rstrip() + excludes_str)
-        return
+        #tar.gz.list is not present, so try _archive.list
+        try:
+            tarfile_contents = open(tarfile_path.split("tar.gz")[0] + "_archive.list")
+        except IOError as e:
+            # There is no contents file for this tarball, so create one
+            command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
+            os.system(command)
+            logging.info("Created contents file: " + command)
+            tarfile_contents = open(tarfile_name + '.list')
+
+
+            # exclude the tarball
+            #excludes_str = ': No contents file located \n'
+            #excludes.write(tarfile_name + excludes_str)
+            #logging.warning("Ignoring file " + tarfile_name.rstrip() + excludes_str)
+            #return
 
     return tarfile_contents
 
