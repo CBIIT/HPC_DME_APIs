@@ -34,7 +34,7 @@ def main(args):
 
             if(line.rstrip().endswith("/")):
                 #This is a directory, nothing to do
-                continue:
+                continue
 
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
