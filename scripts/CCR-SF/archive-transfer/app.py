@@ -94,9 +94,9 @@ def main(args):
                         logging.info('metadata base: ' + path)
 
                         #Ensure tha the path has extractable PI name
-                        if(len(path.split('_')) < 3 or path.split('_')[0].isdigit() or path.split('_')[1].isdigit()):
-                            record_exclusion(tarfile_name + ':' + line + ': PI name not available')
-                            continue
+                        #if(len(path.split('_')) < 3 or path.split('_')[0].isdigit() or path.split('_')[1].isdigit()):
+                            #record_exclusion(tarfile_name + ':' + line + ': PI name not available')
+                            #continue
 
                         # Register PI collection
                         register_collection(path, "PI_Lab", tarfile_name, False)
