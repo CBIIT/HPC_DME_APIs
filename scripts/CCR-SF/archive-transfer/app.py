@@ -80,12 +80,18 @@ def main(args):
 
                         filepath = extract_file_to_archive(tarfile_name, tarfile_path, line)
                         if filepath is None:
+                            record_exclusion(tarfile_name + ':' + line + ': could not extract file for archiving')
                             continue
 
                         #Register the html in flowcell collection
 
                         path = path + 'laneBarcode.html'
                         logging.info('metadata base: ' + path)
+
+                        #Ensure tha the path has extractable PI name
+                        if(len(path.split('_')) < 3 or path.split('_')[0].isdigit() or path.split('_')[1].isdigit()):
+                            record_exclusion(tarfile_name + ':' + line + ': PI name not available')
+                            continue
 
                         # Register PI collection
                         register_collection(path, "PI_Lab", tarfile_name, False)
