@@ -30,13 +30,23 @@ def main(args):
 
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
+        found_undetermined = False
         for line in tarfile_contents.readlines():
+
+            if(found_undetermined):
+                continue
 
             if(line.rstrip().endswith("/")):
                 #This is a directory, nothing to do
                 continue
 
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
+
+                if('Undetermined' in line):
+                    record_exclusion(
+                        tarfile_name + ':' + line + ': Tar contains Undetermined files')
+                    found_undetermined = True
+                    continue
 
                 filepath = extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
                 if filepath is None:
@@ -75,12 +85,18 @@ def main(args):
 
                         filepath = extract_file_to_archive(tarfile_name, tarfile_path, line)
                         if filepath is None:
+                            record_exclusion(tarfile_name + ':' + line + ': could not extract file for archiving')
                             continue
 
                         #Register the html in flowcell collection
 
                         path = path + 'laneBarcode.html'
                         logging.info('metadata base: ' + path)
+
+                        #Ensure tha the path has extractable PI name
+                        #if(len(path.split('_')) < 3 or path.split('_')[0].isdigit() or path.split('_')[1].isdigit()):
+                            #record_exclusion(tarfile_name + ':' + line + ': PI name not available')
+                            #continue
 
                         # Register PI collection
                         register_collection(path, "PI_Lab", tarfile_name, False)
@@ -103,10 +119,9 @@ def main(args):
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                record_exclusion(tarfile_name + ':'  + line + ': Not tar.gz or html file')
+                record_exclusion(tarfile_name + ':'  + line + ': Not fastq.gz or valid html file')
 
-
-
+        logging.info('Done processing file: ' + tarfile_path)
 
 def record_exclusion(str):
     excludes.writelines(str + '\n')
@@ -144,8 +159,9 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         # If this is not a .list or .md5 file also, then record exclusion. Else
         # just ignore, do not record because we may find the associated tar later
         if (not tarfile_name.rstrip().endswith('tar.gz.list') and
+                not tarfile_name.rstrip().endswith('_archive.list') and
                 not tarfile_name.rstrip().endswith('.md5')):
-            excludes_str = ': Invalid file format - not tar.gz, tar.gz.list or tar.gz.md5 \n'
+            excludes_str = ': Invalid file format - not tar.gz, _archive.list, tar.gz.list or tar.gz.md5 \n'
             excludes.write(tarfile_name + excludes_str)
             logging.info('Ignoring file ' + tarfile_name.rstrip() + excludes_str)
         return
@@ -162,12 +178,22 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         tarfile_contents = open(tarfile_path + '.list')
 
     except IOError as e:
-        # There is no contents file for this tarball, so
-        # exclude the tarball
-        excludes_str = ': No contents file located \n'
-        excludes.write(tarfile_name + excludes_str)
-        logging.warning("Ignoring file " + tarfile_name.rstrip() + excludes_str)
-        return
+        #tar.gz.list is not present, so try _archive.list
+        try:
+            tarfile_contents = open(tarfile_path.split(".tar.gz")[0] + "_archive.list")
+        except IOError as e:
+            # There is no contents file for this tarball, so create one
+            command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
+            os.system(command)
+            logging.info("Created contents file: " + command)
+            tarfile_contents = open(tarfile_name + '.list')
+
+
+            # exclude the tarball
+            #excludes_str = ': No contents file located \n'
+            #excludes.write(tarfile_name + excludes_str)
+            #logging.warning("Ignoring file " + tarfile_name.rstrip() + excludes_str)
+            #return
 
     return tarfile_contents
 
