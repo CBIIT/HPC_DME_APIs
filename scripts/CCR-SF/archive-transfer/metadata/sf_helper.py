@@ -13,16 +13,19 @@ class SFHelper(object):
 
         # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
 
-        if path_elements[3].isalpha():
+        if len(path_elements) > 3 and path_elements[3].isalpha():
             # If the 4th is alpha, then pick the first 2
             pi_name = path_elements[0] + "_" + path_elements[1]
         else:
-            if path_elements[2].isalpha():
+            if len(path_elements) > 2 and path_elements[2].isalpha():
                 # else if the first 3 are alpha pick 0 and 2
                 pi_name = path_elements[0] + "_" + path_elements[2]
             else:
-                # else if the first 2 are alpha, pick 0 and 1
-                pi_name = path_elements[0] + "_" + path_elements[1]
+                if path_elements[1].isalpha():
+                    # else if the first 2 are alpha, pick 0 and 1
+                    pi_name = path_elements[0] + "_" + path_elements[1]
+                else:
+                    pi_name = path_elements[0]
 
 
         #Assumes that PI name is in the beginning, and the format is FirstnameLastname
@@ -37,7 +40,7 @@ class SFHelper(object):
         # Assumes the contact name follows the PI name separated from it by a '_',
 
         # the contact last and first names are separated by an '_'
-        if path_elements[3].isalpha():
+        if len(path_elements) > 3 and path_elements[3].isalpha():
             contact_name = path_elements[2] + "_" + path_elements[3]
         else:
             contact_name = None
@@ -55,7 +58,9 @@ class SFHelper(object):
         path_elements = path.split("_")
 
         #Assumes that the PI name and contact names have their first and last names separated by '_'
-        project_id = path_elements[4]
+        for element in path_elements:
+            if element.isdigit():
+                project_id = element
 
         #Assumes that PI and contact names are in the format 'FirstnameLastname'
         #project_id = path_elements[2]
