@@ -53,7 +53,9 @@ def main(args):
                     continue
 
                 # Extract the info for PI metadata
-                path = filepath.split("Unaligned/")[1]
+
+                filepath_normal = filepath.replace("Unaligned_", "Unaligned/")
+                path = filepath_normal.split("Unaligned/")[1]
 
                 logging.info('metadata base: ' + path)
 
