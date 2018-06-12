@@ -13,6 +13,7 @@ import json
 from pprint import pprint
 import urllib
 from time import sleep
+from utils  import verify_mrf_depth
 
 #A script to automatically archive hitif projects
 
@@ -90,8 +91,6 @@ def email_completion(message):
     """Email a warning message"""
     subject="COMPLETED: HPCDME script completed a registration job" 
     send_email(subject, message)
-
-
 
 def get_immediate_subdirectories(a_dir):
     now = time.time()
@@ -293,6 +292,7 @@ def register_experiment(user_collection_path, experiment_dir, registered_experim
 parser = argparse.ArgumentParser()
 parser.add_argument("users_file", help = 'A csv file that contains the users information')
 parser.add_argument("archive_database", help = 'The path to the directory that contains the archive database and working area.')
+parser.add_argument("measurments_data", help = 'The path to the directory that contains the measurments.')
 
 args = parser.parse_args()
 
@@ -300,15 +300,19 @@ args = parser.parse_args()
 #Read the users CSV File 
 users_file = args.users_file
 archive_database=args.archive_database 
+
+users_dir = args.measurments_data
+
 #archive_database="/cygdrive/V/HiTIF_Management/Archiving_Scripts/CV7000/CV7000_HPCDME"
 base_path = "/HiTIF_Archive" 
 
 current_time=time.strftime("%Y-%m-%d_%H-%M-%S")
 log_path = os.path.join(archive_database, "logging-" + current_time + ".txt")
-logging.basicConfig(filename=log_path, level=logging.ERROR, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 print "started logging file {0}".format(log_path)
 #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
+archive_database=os.path.abspath(archive_database)
 if not os.path.exists(archive_database):
     logging.debug("The archive database {0} is not found.".format(archive_database))
     error_exit()
@@ -332,7 +336,6 @@ n_errors = 0
 #The maximum number of allowed file registration erros
 max_errors = 3
 try:
-    users_dir = os.path.dirname(os.path.abspath(users_file))
     registered_pis_file = os.path.join(archive_database, "registered_pis.txt")
     registered_users_file = os.path.join(archive_database, "registered_users.txt")
     registered_pis = registration_log(registered_pis_file)
@@ -372,20 +375,33 @@ try:
         create_folder(experiment_database_path)
         os.chdir(experiment_database_path)
     
-        #Register the experiment collection in the archive
-        exp_collection_path = register_experiment(user_collection_path, experiment, registered_experiments)
     
         #Initialize measurments log
         registered_measurments = registration_log(os.path.join(experiment_database_path, "registered_measurments.txt"))
-    
+       
         measurments_path = get_immediate_subdirectories(exp_dir)
         for measurment in measurments_path:
-       
-          tar_file_name = measurment.replace(" ", '_') + ".tar.gz"
-          data_object_path = exp_collection_path + "/" + tar_file_name
+     
+           
+          measurment_src_path = os.path.join(exp_dir, measurment)
     
           #Check if the measurment is already archieved in the local database
           if not registered_measurments.item_exists(measurment):
+
+            #Check if it is a real measurment by verifying the location of the mrf to be at depth 1
+            if not verify_mrf_depth(measurment_src_path):
+                #Mark the folder as done and email warning:
+                message = "The direcotry {0} does not contain 1 mrf file at depth 0".format(measurment_src_path)
+                logging.warning(message)
+                email_warning(message)
+                registered_measurments.add_item(measurment)
+                continue
+
+            #Register the experiment collection in the archive
+            exp_collection_path = register_experiment(user_collection_path, experiment, registered_experiments)
+
+            tar_file_name = measurment.replace(" ", '_') + ".tar.gz"
+            data_object_path = exp_collection_path + "/" + tar_file_name
     
             #Check if the measurment is already registered in the archive.
             archive_status = check_dataobject(data_object_path) 
@@ -395,8 +411,7 @@ try:
             if archive_status == 'EMPTY' or archive_status == 'URL_EXPIRED':
 
                 #Archive the measurment.
-                measurment_src_path = os.path.join(exp_dir, measurment)
-                logging.debug("Registering the measurment:{0}".format(measurment_src_path))
+                logging.info("Registering the measurment:{0}".format(measurment_src_path))
                 #tar the measurment folder and upload it to cleversave 
                 make_tarfile(tar_file_path, measurment_src_path)
                 metadata={"experiment_name":measurment}
