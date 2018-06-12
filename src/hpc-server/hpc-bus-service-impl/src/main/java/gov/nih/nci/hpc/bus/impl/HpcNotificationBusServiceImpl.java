@@ -52,6 +52,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
     "Notification subscription could not be <action>; details follow" +
     " on next lines.";
 
+  private static final String NULL_REF_IN_LOGGING = "<null ref>";
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
@@ -258,6 +259,22 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
   }
 
 
+  private String extractValForLogging(Object obj) {
+    String retVal;
+    if (null == obj) {
+      retVal = NULL_REF_IN_LOGGING;
+    } else if (obj.getClass().isEnum()) {
+      try {
+        retVal = obj.getClass().getMethod("value").invoke(obj).toString();
+      } catch (Exception e) {
+        retVal = "???";
+      }
+    } else {
+      retVal = obj.toString();
+    }
+
+    return retVal;
+  }
 
   private void recordErrorToLog(HpcException hpce, Optional<String>
     subscriptionAction) {
@@ -265,12 +282,14 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
       .replace("<action>", subscriptionAction.orElse("added/updated"));
     logger.error(firstErrorMsg);
     logger.error("HpcException received: ");
-    logger.error("*****    message = " + hpce.getMessage());
-    logger.error("*****    errorType = " + hpce.getErrorType().value());
-    logger.error("*****    integratedSystem = " + hpce.getIntegratedSystem()
-      .value());
+    logger.error("*****    message = " +
+      extractValForLogging(hpce.getMessage()));
+    logger.error("*****    errorType = " +
+      extractValForLogging(hpce.getErrorType()));
+    logger.error("*****    integratedSystem = " +
+      extractValForLogging(hpce.getIntegratedSystem()));
     logger.error("*****    requestRejectReason = " +
-      hpce.getRequestRejectReason().value());
+      extractValForLogging(hpce.getRequestRejectReason()));
   }
 
 
