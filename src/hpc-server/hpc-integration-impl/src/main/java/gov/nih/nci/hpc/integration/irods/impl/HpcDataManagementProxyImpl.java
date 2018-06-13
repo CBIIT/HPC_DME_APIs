@@ -111,8 +111,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   @Override
   public void createCollectionDirectory(Object authenticatedToken, String path)
       throws HpcException {
+	  IRODSFile collectionFile = null;
     try {
-      IRODSFile collectionFile =
+      collectionFile =
           irodsConnection
               .getIRODSFileFactory(authenticatedToken)
               .instanceIRODSFile(getAbsolutePath(path));
@@ -124,13 +125,17 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
+    } finally {
+    	closeIRODSFile(collectionFile, path);
     }
+    
   }
 
   @Override
   public void createDataObjectFile(Object authenticatedToken, String path) throws HpcException {
-    try {
-      IRODSFile dataObjectFile =
+	  IRODSFile dataObjectFile = null;
+	  try {
+      dataObjectFile =
           irodsConnection
               .getIRODSFileFactory(authenticatedToken)
               .instanceIRODSFile(getAbsolutePath(path));
@@ -148,6 +153,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           ioe);
+    } finally {
+    	closeIRODSFile(dataObjectFile, path);
     }
   }
 
@@ -297,8 +304,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   @Override
   public boolean interrogatePathRef(Object authenticatedToken, String path)
       throws HpcException {
+	  IRODSFile file = null;
     try {
-      IRODSFile file =
+      file =
           irodsConnection
               .getIRODSFileFactory(authenticatedToken)
               .instanceIRODSFile(getAbsolutePath(path));
@@ -315,18 +323,21 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
             "collection or data file: %s", path),
           HpcErrorType.INVALID_REQUEST_INPUT,
           e);
+    } finally {
+    	closeIRODSFile(file, path);
     }
   }
 
   @Override
   public HpcPathAttributes getPathAttributes(Object authenticatedToken, String path)
       throws HpcException {
+	IRODSFile file = null;
+	HpcPathAttributes attributes = new HpcPathAttributes();
     try {
-      IRODSFile file =
+      file =
           irodsConnection
               .getIRODSFileFactory(authenticatedToken)
               .instanceIRODSFile(getAbsolutePath(path));
-      HpcPathAttributes attributes = new HpcPathAttributes();
       attributes.setExists(file.exists());
       attributes.setIsDirectory(file.isDirectory());
       attributes.setIsFile(file.isFile());
@@ -336,15 +347,17 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
         attributes.getFiles().addAll(Arrays.asList(file.list()));
       }
 
-      return attributes;
-
     } catch (JargonException e) {
       throw new HpcException(
           "Failed to check if a path exists: " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
+    } finally {
+    	closeIRODSFile(file, path);
     }
+    
+    return attributes;
   }
 
   @Override
@@ -1331,5 +1344,23 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
             "iRODS permission not supported: " + iRodsPermission.toString(),
             HpcErrorType.UNEXPECTED_ERROR);
     }
+  }
+  
+  /**
+   * Close an open IRODSFile.
+   * 
+   * @param file The file to close
+   * @throws HpcException if the file could not be closed
+   */
+  private void closeIRODSFile(IRODSFile file, String path) throws HpcException {
+	  try {
+  		if (file != null && file.exists()) {
+  			file.close();
+  		}
+  	} catch (JargonException e) {
+  		throw new HpcException("Failed to close file at " + path + ": " + e.getMessage(),
+  			HpcErrorType.DATA_MANAGEMENT_ERROR,
+  			HpcIntegratedSystem.IRODS, e);
+  	}
   }
 }
