@@ -121,8 +121,11 @@ class SFHelper(object):
         sequencing_application_type = 'Unspecified'
         if('RNA_' in path):
             sequencing_application_type = 'RNA'
-        if('Chip_' in path):
+        elif('Chip_' in path):
             sequencing_application_type = 'Chip'
+        elif('exomelib' in path):
+            sequencing_application_type = 'exomelib'
+
 
         return sequencing_application_type
 
