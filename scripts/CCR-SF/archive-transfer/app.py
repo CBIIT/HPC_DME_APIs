@@ -259,15 +259,25 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     includes.write(command)
     os.system(command)
 
+    #Get size of file in bytes
+    filesize = os.path.getsize(fullpath)
+
+    #Record the result
     with open(response_header) as f:
         for line in f:
             includes.write(line)
+        includes.write("File size = %n", filesize)
+
+    if(200 in response_header or 201 in response_header):
+        #Compute total number of files registered so far, and total bytes
+        files_registered += 1
+        bytes_stored += filesize
 
 
 
 
-
-
+files_registered = 0
+bytes_stored = 0L
 excludes = open("excluded_files", "a")
 includes = open("registered_files", "a")
 ts = time.gmtime()
@@ -276,4 +286,6 @@ formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', level=logging.DEBUG)
 main(sys.argv)
 excludes.close()
+includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(number_of_files, number_of_bytes))
 includes.close()
+logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(number_of_files, number_of_bytes))
