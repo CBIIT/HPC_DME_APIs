@@ -266,7 +266,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     with open(response_header) as f:
         for line in f:
             includes.write(line)
-        includes.write("File size = %n", filesize)
+        includes.write("File size = {0}".format(filesize))
 
     if(200 in response_header or 201 in response_header):
         #Compute total number of files registered so far, and total bytes
