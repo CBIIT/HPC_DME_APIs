@@ -101,9 +101,6 @@ import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -121,19 +118,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 public class HpcClientUtil {
 
-  private static final String AJAX_MESSAGE_TEMPLATE__ASYNC_DOWNLOAD_SUBMITTED =
-    "<strong>Asynchronous download request is submitted successfully!<br>" +
-    "TaskId: %s <strong>";
-
   private static final String ELEM_TYPE__DATA_FILE = "data file";
 
   private static final String ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE =
     "Failed to determine type of DME entity at path, %s." +
     "  Exception message: %s.";
-
-  private static final String EXCEPTION_MESSAGE_TEMPLATE__PRESIGNED_URL_S3_ONLY =
-    "Presigned URL for download is supported on S3 based destination archive" +
-    " only.  Requested path is archived on a POSIX based file system: ";
 
   private static final String JSON_RESPONSE_ATTRIB__ELEMENT_TYPE =
       "elementType";
@@ -871,7 +860,6 @@ public class HpcClientUtil {
       HpcCollectionRegistrationDTO collectionDTO, String path, String hpcCertPath,
       String hpcCertPassword) {
     try {
-      MiscUtil.validateWordForDmeItemNaming(extractItemNameFromPath(path));
       HpcCollectionListDTO collection =
           getCollection(token, hpcCollectionURL, path, false, hpcCertPath, hpcCertPassword);
       if (collection != null && collection.getCollectionPaths() != null
@@ -982,7 +970,6 @@ public class HpcClientUtil {
       String hpcDatafileURL, HpcDataObjectRegistrationRequestDTO datafileDTO, String path,
       String hpcCertPath, String hpcCertPassword) {
     try {
-      MiscUtil.validateWordForDmeItemNaming(extractItemNameFromPath(path));
       try {
         HpcDataObjectListDTO datafile =
             getDatafiles(token, hpcDatafileURL, path, false, hpcCertPath, hpcCertPassword);
@@ -1514,59 +1501,45 @@ public class HpcClientUtil {
     return response;
   }
 
-  public static AjaxResponseBody downloadDataFile(
-    String token,
-    String serviceURL,
-    HpcDownloadRequestDTO dto,
-    String hpcCertPath,
-    String hpcCertPassword)
-    throws JsonParseException, IOException {
-    WebClient client = HpcClientUtil.getWebClient(
-      serviceURL, hpcCertPath, hpcCertPassword);
-    client.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+  public static AjaxResponseBody downloadDataFile(String token, String serviceURL,
+      HpcDownloadRequestDTO dto, String hpcCertPath, String hpcCertPassword)
+      throws JsonParseException, IOException {
+    AjaxResponseBody result = new AjaxResponseBody();
+    WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
+    client.header("Authorization", "Bearer " + token);
 
-    Response restResponse = null;
-    AjaxResponseBody ajaxResponseMsg = null;
-    boolean tryAgainFlag = false;
-    do {
-      restResponse = client.invoke(HttpMethod.POST.name(), dto);
-      if (HttpStatus.OK.value() == restResponse.getStatus()) {
-        Object obj = HpcClientUtil.getObject(
-          restResponse, HpcDataObjectDownloadResponseDTO.class);
-        if (obj instanceof HpcDataObjectDownloadResponseDTO &&
-            StringUtils.hasText( ( (HpcDataObjectDownloadResponseDTO) obj )
-            .getTaskId() ) ) {
-          ajaxResponseMsg = new AjaxResponseBody();
-          ajaxResponseMsg.setMessage(String.format(
-            AJAX_MESSAGE_TEMPLATE__ASYNC_DOWNLOAD_SUBMITTED,
-            ((HpcDataObjectDownloadResponseDTO) obj).getTaskId() ) );
-        }
-        tryAgainFlag = false;
-      } else if (HttpStatus.BAD_REQUEST.value() == restResponse.getStatus() &&
-                  null != restResponse.getEntity() &&
-                  restResponse.getEntity().toString().startsWith(
-                    EXCEPTION_MESSAGE_TEMPLATE__PRESIGNED_URL_S3_ONLY)) {
-        dto.setGenerateDownloadRequestURL(false);
-        tryAgainFlag = true;
-      } else {
-        tryAgainFlag = false;
-      }
-    } while (tryAgainFlag);
+    Response restResponse = client.invoke("POST", dto);
+    if (restResponse.getStatus() == 200) {
+      HpcDataObjectDownloadResponseDTO downloadDTO =
+          (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse,
+              HpcDataObjectDownloadResponseDTO.class);
+      String taskId = "Unknown";
+      if (downloadDTO != null)
+        taskId = downloadDTO.getTaskId();
 
-    if (null == ajaxResponseMsg) {
-      String feedbackMsg = null;
+      result.setMessage(
+          "<strong>Asynchronous download request is submitted successfully! <br>TaskId: " + taskId
+              + "<strong>");
+      return result;
+    } else {
+      ObjectMapper mapper = new ObjectMapper();
+      AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+          new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+          new JacksonAnnotationIntrospector());
+      mapper.setAnnotationIntrospector(intr);
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+      MappingJsonFactory factory = new MappingJsonFactory(mapper);
+      JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
       try {
-        HpcExceptionDTO exceptionDto = genHpcExceptionDtoOnNonOkRestResponse(
-          restResponse);
-        feedbackMsg = exceptionDto.getMessage();
+        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+        result.setMessage("Download request is not successfull: " + exception.getMessage());
+        return result;
       } catch (Exception e) {
-        feedbackMsg = e.getMessage();
+        result.setMessage("Download request is not successfull: " + e.getMessage());
+        return result;
       }
-      ajaxResponseMsg = new AjaxResponseBody();
-      ajaxResponseMsg.setMessage("Download request is not successful: " + feedbackMsg);
     }
-
-    return ajaxResponseMsg;
   }
 
   public static HpcBulkDataObjectRegistrationStatusDTO
@@ -1924,19 +1897,6 @@ public class HpcClientUtil {
   private static String prependLeadingForwardSlashIfNeeded(String argInputStr) {
     return (null == argInputStr || argInputStr.isEmpty()) ? "/" :
       argInputStr.startsWith("/") ? argInputStr : "/".concat(argInputStr);
-  }
-
-  private static String extractItemNameFromPath(String path) {
-    String pPath = path.trim();
-    if (pPath.endsWith("/")) {
-      pPath = pPath.substring(0, pPath.length() - 1);
-    }
-    String extractedName = pPath;
-    final int lastSlashIdx = pPath.lastIndexOf("/");
-    if (lastSlashIdx > -1) {
-      extractedName = pPath.substring(lastSlashIdx + 1);
-    }
-    return extractedName;
   }
 
 }
