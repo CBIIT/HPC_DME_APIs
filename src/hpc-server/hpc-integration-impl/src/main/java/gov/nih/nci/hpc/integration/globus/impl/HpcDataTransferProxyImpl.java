@@ -130,9 +130,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken) throws HpcException {
+  public HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken)
+      throws HpcException {
 
-logger.info(String.format("acceptsTransferRequests: entered with received authenticatedToken parameter = %s", authenticatedToken.toString()));
+    logger.info(
+        String.format(
+            "acceptsTransferRequests: entered with received authenticatedToken parameter = %s",
+            authenticatedToken.toString()));
 
     JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
     return retryTemplate.execute(
@@ -140,15 +144,22 @@ logger.info(String.format("acceptsTransferRequests: entered with received authen
           try {
             JSONObject jsonTasksLists =
                 client.getResult("/task_list?filter=status:ACTIVE,INACTIVE").document;
-logger.info(String.format("acceptsTransferRequests: Made request to Globus for transfer tasks, resulting JSON is \n[\n%s\n]\n", jsonTasksLists.toString()));
+            logger.info(
+                String.format(
+                    "acceptsTransferRequests: Made request to Globus for transfer tasks, resulting JSON is \n[\n%s\n]\n",
+                    jsonTasksLists.toString()));
             final int qSize = jsonTasksLists.getInt("total");
             final boolean underCap = qSize < globusQueueSize;
-logger.info(String.format("acceptsTransferRequests: from JSON response, determined that qSize = %s and underCap = %s", Integer.toString(qSize), Boolean.toString(underCap)));
-            final HpcTransferAcceptanceResponse transferAcceptanceResponse = new HpcGlobusTransferAcceptanceResponse(underCap, qSize);
-logger.info("acceptsTransferRequests: About to return");
+            logger.info(
+                String.format(
+                    "acceptsTransferRequests: from JSON response, determined that qSize = %s and underCap = %s",
+                    Integer.toString(qSize), Boolean.toString(underCap)));
+            final HpcTransferAcceptanceResponse transferAcceptanceResponse =
+                new HpcGlobusTransferAcceptanceResponse(underCap, qSize);
+            logger.info("acceptsTransferRequests: About to return");
             return transferAcceptanceResponse;
           } catch (Exception e) {
-logger.error("acceptsTransferRequests: About to throw exception", e);
+            logger.error("acceptsTransferRequests: About to throw exception", e);
             throw new HpcException(
                 "[GLOBUS] Failed to determine active tasks count",
                 HpcErrorType.DATA_TRANSFER_ERROR,
@@ -184,13 +195,25 @@ logger.error("acceptsTransferRequests: About to throw exception", e);
             baseArchiveDestination.getFileLocation(),
             uploadRequest.getPath(),
             uploadRequest.getCallerObjectId(),
-            baseArchiveDestination.getType());
+            baseArchiveDestination.getType(),
+            false);
 
     if (uploadRequest.getSourceFile() != null) {
       // This is a synchronous upload request. Simply store the data to the file-system.
       // No Globus action is required here.
       return saveFile(
           uploadRequest.getSourceFile(), archiveDestinationLocation, baseArchiveDestination);
+    }
+
+    // If the archive destination file exists, generate a new archive destination w/ unique path.
+    if (getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
+      archiveDestinationLocation =
+          getArchiveDestinationLocation(
+              baseArchiveDestination.getFileLocation(),
+              uploadRequest.getPath(),
+              uploadRequest.getCallerObjectId(),
+              baseArchiveDestination.getType(),
+              true);
     }
 
     // Submit a request to Globus to transfer the data.
@@ -593,7 +616,8 @@ logger.error("acceptsTransferRequests: About to throw exception", e);
     return retryTemplate.execute(
         arg0 -> {
           try {
-            JSONObject jsonReport = client.getResult("/endpoint_manager/task/" + dataTransferRequestId).document;
+            JSONObject jsonReport =
+                client.getResult("/endpoint_manager/task/" + dataTransferRequestId).document;
 
             HpcGlobusDataTransferReport report = new HpcGlobusDataTransferReport();
             report.status = jsonReport.getString("status");
