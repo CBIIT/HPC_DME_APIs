@@ -22,6 +22,8 @@ def main(args):
 
         tarfile_contents = get_tarball_contents(tarfile_name, tarfile_dir)
         if tarfile_contents is None:
+            record_exclusion(
+                tarfile_name + ': Could not extract contents')
             continue
 
         tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
@@ -35,6 +37,8 @@ def main(args):
         for line in tarfile_contents.readlines():
 
             if(found_undetermined):
+                record_exclusion(
+                    tarfile_name + ':' + line + ': Tar contains Undetermined files')
                 continue
 
             if(line.rstrip().endswith("/")):
@@ -58,8 +62,8 @@ def main(args):
                 #filepath_normal = filepath.replace("Unaligned_", "Unaligned/")
                 #path = filepath_normal.split("Unaligned/")[1]
                 #remove "Unaligned..../" from the path
-                path = re.sub("Unaligned\.*\/", "", filepath)
-                #strip 'Project_' if it exists
+                path = re.sub(r'Unaligned.*/', '', filepath)
+                              #strip 'Project_' if it exists
                 path = path.replace("Project_", "")
 
                 logging.info('metadata base: ' + path)
@@ -161,23 +165,23 @@ def extract_file_to_archive(tarfile_name, tarfile_path, line):
 
 def get_tarball_contents(tarfile_name, tarfile_dir):
 
+    logging.info("Getting contents for: " + tarfile_name)
+
     if not tarfile_name.rstrip().endswith('tar.gz'):
 
-        # If this is not a .list or .md5 file also, then record exclusion. Else
+        # If this is not a .list, _archive.list, or .md5 file also, then record exclusion. Else
         # just ignore, do not record because we may find the associated tar later
         if (not tarfile_name.rstrip().endswith('tar.gz.list') and
                 not tarfile_name.rstrip().endswith('_archive.list') and
                 not tarfile_name.rstrip().endswith('.md5')):
             excludes_str = ': Invalid file format - not tar.gz, _archive.list, tar.gz.list or tar.gz.md5 \n'
-            excludes.write(tarfile_name + excludes_str)
-            logging.info('Ignoring file ' + tarfile_name.rstrip() + excludes_str)
+            record_exclusion(tarfile_name + excludes_str)
         return
 
     if '-' in tarfile_name:
         # this tarball contains '-', hence ignore for now because we wont be able to extract metadata correctly
         excludes_str = ': Invalid file format - contains - in filename, cannot parse for metadata \n'
-        excludes.write(tarfile_name + excludes_str)
-        logging.info('Ignoring file' + tarfile_name.rstrip() + excludes_str)
+        record_exclusion(tarfile_name + excludes_str)
         return
 
     tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
