@@ -12,6 +12,7 @@ import gov.nih.nci.hpc.bus.HpcNotificationBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryReceipt;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.dto.notification.HpcAddOrUpdateNotificationSubscriptionProblem;
@@ -53,6 +54,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
     " on next lines.";
 
   private static final String NULL_REF_IN_LOGGING = "<null ref>";
+  public static final String ERROR_MSG__INVALID_ADD_UPDT_NOTIF_SUBSCRPTN_RQST = "Invalid add/update notification subscription request";
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
@@ -352,6 +354,51 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
         logger.info("Representation of notification subscription action(s): " +
             vsrDto.toString());
         throw new HpcException(MSG__OBJ_4_ACTIONS_HAS_NO_ACTIONS,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+      } else {
+        validateSubscriptionAddUpdateRequests(nsList);
+        validateSubscriptionRemoveRequests(eventList);
+      }
+    }
+  }
+
+
+  private void validateSubscriptionAddUpdateRequests(
+    List<HpcNotificationSubscription> subAddUpdateReqList) throws HpcException {
+    boolean missingEventType = false;
+    boolean missingNotifMethods = false;
+    boolean notifMethodUnresolved = false;
+    for (HpcNotificationSubscription req : subAddUpdateReqList) {
+      if (null == req.getEventType()) {
+        missingEventType = true;
+      } else {
+        List<HpcNotificationDeliveryMethod> notifDms =
+          req.getNotificationDeliveryMethods();
+        if (null == notifDms || notifDms.isEmpty()) {
+          missingNotifMethods = true;
+        } else {
+          for (HpcNotificationDeliveryMethod dm : notifDms) {
+            if (null == dm) {
+              notifMethodUnresolved = true;
+            }
+          }
+        }
+      }
+      if (missingEventType || missingNotifMethods || notifMethodUnresolved) {
+        throw new HpcException(
+          ERROR_MSG__INVALID_ADD_UPDT_NOTIF_SUBSCRPTN_RQST,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+  }
+
+
+  private void validateSubscriptionRemoveRequests(
+    List<HpcEventType> removeReqList) throws HpcException {
+    for (HpcEventType someEventType : removeReqList) {
+      if (null == someEventType) {
+        throw new HpcException(
+          ERROR_MSG__INVALID_ADD_UPDT_NOTIF_SUBSCRPTN_RQST,
           HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
