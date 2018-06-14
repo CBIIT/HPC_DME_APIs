@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import time
+import re
 
 from metadata.sf_object import SFObject
 from metadata.sf_collection import SFCollection
@@ -54,8 +55,12 @@ def main(args):
 
                 # Extract the info for PI metadata
 
-                filepath_normal = filepath.replace("Unaligned_", "Unaligned/")
-                path = filepath_normal.split("Unaligned/")[1]
+                #filepath_normal = filepath.replace("Unaligned_", "Unaligned/")
+                #path = filepath_normal.split("Unaligned/")[1]
+                #remove "Unaligned..../" from the path
+                path = re.sub("Unaligned\.*\/", "", filepath)
+                #strip 'Project_' if it exists
+                path = path.replace("Project_", "")
 
                 logging.info('metadata base: ' + path)
 
