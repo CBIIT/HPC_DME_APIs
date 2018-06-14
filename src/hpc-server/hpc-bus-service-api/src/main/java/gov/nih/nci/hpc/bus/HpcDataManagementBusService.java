@@ -43,6 +43,11 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public interface HpcDataManagementBusService {
 
+  public static final String EXCEPTION_MESSAGE_TEMPLATE__PRESIGNED_URL_S3_ONLY =
+    "Presigned URL for download is supported on S3 based destination archive" +
+    " only.  Requested path is archived on a POSIX based file system: ";
+
+
   /**
    * Determine if path refers to collection or data file.
    *
@@ -388,7 +393,7 @@ public interface HpcDataManagementBusService {
    * @throws HpcException on service failure.
    */
   public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
-  
+
   // TODO - Remove after file size was updated in prod
   public HpcFileSizeUpdateDTO updateFileSize(HpcFileSizeUpdateDTO fileSizeUpdate) throws HpcException;
 }
