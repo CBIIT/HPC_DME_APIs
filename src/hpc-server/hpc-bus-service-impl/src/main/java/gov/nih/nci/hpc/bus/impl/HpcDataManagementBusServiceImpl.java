@@ -43,6 +43,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -66,6 +67,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -1072,22 +1074,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           "Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    String configurationId = dataManagementService.findDataManagementConfigurationId(path);
+    String configurationId =
+      dataManagementService.findDataManagementConfigurationId(path);
     HpcDataManagementConfiguration configuration =
         dataManagementService.getDataManagementConfiguration(configurationId);
-    //If POSIX Archive, set presigned URL to false
-    if (downloadRequest.getGenerateDownloadRequestURL() != null
-        && downloadRequest.getGenerateDownloadRequestURL()
-        && configuration != null
-        && (configuration.getS3Configuration() == null
-            || configuration.getS3Configuration().getUrl() == null))
-    {
-      downloadRequest.setGenerateDownloadRequestURL(false);
+    //  If not S3 Archive (POSIX Archive), throw exception to flag that POSIX
+    //  archive not supported for presigned URL
+    if (Boolean.TRUE.equals(downloadRequest.getGenerateDownloadRequestURL()) &&
+          false == hasS3StorageConfig(configuration)) {
+      throw new HpcException(EXCEPTION_MESSAGE_TEMPLATE__PRESIGNED_URL_S3_ONLY
+        + path, HpcErrorType.INVALID_REQUEST_INPUT);
     }
-//      throw new HpcException(
-//          "Presigned URL for download is supported on S3 based destination archive only. Requested path is archived on a POSIX based file system: "
-//              + path,
-//          HpcErrorType.INVALID_REQUEST_INPUT);
 
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
@@ -1133,6 +1130,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         downloadResponse.getDownloadRequestURL(),
         metadata.getDataTransferType().value());
   }
+
+
+  private boolean hasS3StorageConfig(HpcDataManagementConfiguration dmConfig) {
+    boolean retSignal = false;
+    if (null != dmConfig &&
+          null != dmConfig.getS3Configuration()) {
+      HpcDataTransferConfiguration dtConfig = dmConfig.getS3Configuration();
+      if (null != dtConfig.getUrl() &&
+           null != dtConfig.getUploadRequestURLExpiration() &&
+           hasSufficientDetailForS3(dtConfig.getBaseArchiveDestination()) &&
+           hasSufficientDetailForS3(dtConfig.getBaseDownloadSource())) {
+          retSignal = true;
+      }
+    }
+    return retSignal;
+  }
+
+
+  private boolean hasSufficientDetailForS3(HpcArchive theArchive) {
+    boolean retSignal = false;
+    if (null != theArchive &&
+         null != theArchive.getFileLocation() &&
+         null != theArchive.getFileLocation().getFileContainerId() &&
+         null != theArchive.getFileLocation().getFileId()) {
+      retSignal = true;
+    }
+    return retSignal;
+  }
+
 
   @Override
   public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(String taskId)
