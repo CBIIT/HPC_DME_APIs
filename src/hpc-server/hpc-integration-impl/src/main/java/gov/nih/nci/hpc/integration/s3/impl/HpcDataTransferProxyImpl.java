@@ -93,7 +93,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             baseArchiveDestination.getFileLocation(),
             uploadRequest.getPath(),
             uploadRequest.getCallerObjectId(),
-            baseArchiveDestination.getType());
+            baseArchiveDestination.getType(),
+            false);
+    
+    // If the archive destination file exists, generate a new archive destination w/ unique path.
+    if(getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
+      archiveDestinationLocation =
+          getArchiveDestinationLocation(
+              baseArchiveDestination.getFileLocation(),
+              uploadRequest.getPath(),
+              uploadRequest.getCallerObjectId(),
+              baseArchiveDestination.getType(),
+              true);
+    }
 
     if (uploadRequest.getGenerateUploadRequestURL()) {
       // Generate an upload request URL for the caller to use to upload directly.
