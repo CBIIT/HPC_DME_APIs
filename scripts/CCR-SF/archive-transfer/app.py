@@ -33,13 +33,13 @@ def main(args):
 
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
-        found_undetermined = False
+        #found_undetermined = False
         for line in tarfile_contents.readlines():
 
-            if(found_undetermined):
-                record_exclusion(
-                    tarfile_name + ':' + line + ': Tar contains Undetermined files')
-                continue
+            #if(found_undetermined):
+            #    record_exclusion(
+            #        tarfile_name + ':' + line + ': Tar contains Undetermined files')
+            #    continue
 
             if(line.rstrip().endswith("/")):
                 #This is a directory, nothing to do
@@ -50,7 +50,7 @@ def main(args):
                 if('Undetermined' in line):
                     record_exclusion(
                         tarfile_name + ':' + line + ': Tar contains Undetermined files')
-                    found_undetermined = True
+                    #found_undetermined = True
                     continue
 
                 filepath = extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
@@ -62,7 +62,7 @@ def main(args):
                 #filepath_normal = filepath.replace("Unaligned_", "Unaligned/")
                 #path = filepath_normal.split("Unaligned/")[1]
                 #remove "Unaligned..../" from the path
-                path = re.sub(r'Unaligned.*/', '', filepath)
+                path = re.sub(r'Unaligned[^/]*/', '', filepath)
                               #strip 'Project_' if it exists
                 path = path.replace("Project_", "")
 
