@@ -1,4 +1,4 @@
-package gov.nih.nci.cra.cleversafereportsserver;
+package gov.nih.nci.hpc.reports.app;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
