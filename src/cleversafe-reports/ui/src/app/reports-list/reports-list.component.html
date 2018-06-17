@@ -1,9 +1,0 @@
-<ul class="heroes">
-  <li *ngFor="let report of reports"
-      [class.selected]="report === selectedReport"
-      (click)="onSelect(report)">
-    {{report.name}}
-  </li>
-</ul>
-
-<app-vault-summary-report *ngIf="selectedReport === reports[0]"></app-vault-summary-report>
