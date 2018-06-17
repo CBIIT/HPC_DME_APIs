@@ -27,7 +27,7 @@ public class ReportsController {
         RestTemplate restTemplate = new RestTemplateBuilder().basicAuthorization("ncifhpcdmsvcp", "").build();
 
         logger.error("Eran");
-        ResponseEntity<String> reportData = restTemplate.getForEntity("https://fr-s-clvrsf-mgr.ncifcrf.gov/manager/api/json/1.0/listVaults.adm", String.class)
+        ResponseEntity<String> reportData = restTemplate.getForEntity("https://fr-s-clvrsf-mgr.ncifcrf.gov/manager/api/json/1.0/listVaults.adm", String.class);
         logger.error("Eran: " + reportData);
 
         VaultSummary[] report = new VaultSummary[2];
