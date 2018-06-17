@@ -32,13 +32,12 @@ class SFHelper(object):
 
         #Assumes that PI name is in the beginning, and the format is FirstnameLastname
         #pi_name = re.sub(r'([A-Z])', r' \1', path_elements[0])
-        ("pi_name from " + path + " is " + pi_name)
+        logging.info("pi_name from " + path + " is " + pi_name)
         return pi_name
 
 
     @staticmethod
     def get_contact_name(path):
-        logging.info("Getting contact_name from path: " + path)
 
         # derive pi name
         path_elements = path.split("_")
@@ -56,8 +55,8 @@ class SFHelper(object):
         #else:
             #contact_name = ""
 
-        ("contact_name from " + path + " is " + contact_name)
         return contact_name
+
 
 
     @staticmethod
@@ -81,7 +80,7 @@ class SFHelper(object):
     def get_project_name(path):
         # derive project name
         project_name = path.split("/")[0]
-        
+
         return project_name
 
 
