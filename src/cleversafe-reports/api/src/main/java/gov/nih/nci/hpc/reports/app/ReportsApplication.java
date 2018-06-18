@@ -1,8 +1,6 @@
 package gov.nih.nci.hpc.reports.app;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -10,7 +8,10 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan({"gov.nih.nci.hpc.reports.*"})
 public class ReportsApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
+
+		DisableSSLCertificateCheckUtil.disableChecks();
+
 		SpringApplication.run(ReportsApplication.class, args);
 	}
 }
