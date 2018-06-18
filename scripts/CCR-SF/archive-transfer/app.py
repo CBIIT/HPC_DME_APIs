@@ -201,6 +201,8 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
 
 def register_collection(filepath, type, tarfile_name, has_parent):
 
+    logging.info("Registering " + type + " collection for " + filepath)
+
     #Build metadata for the collection
     collection = SFCollection(filepath, type, tarfile_name, has_parent)
     collection_metadata = collection.get_metadata()

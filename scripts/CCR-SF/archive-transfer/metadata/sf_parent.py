@@ -23,8 +23,6 @@ class SFParent(object):
 
         if(self.type == "PI_Lab"):
             self.set_pi_lab_attributes()
-            pi_name = SFHelper.get_pi_name(self.path)
-            self.archive_path = self.base_path + self.type + "_" + pi_name
 
         elif(self.type == "Sample"):
             self.set_sample_attributes()
@@ -64,12 +62,13 @@ class SFParent(object):
 
 
     def set_pi_lab_attributes(self):
-        self.set_attribute("pi_name", SFHelper.get_pi_name(self.path))
+        pi_name = SFHelper.get_pi_name(self.path)
+        self.set_attribute("pi_name", pi_name)
+        self.archive_path = self.base_path + self.type + "_" + pi_name
 
 
     def set_sample_attributes(self):
         self.set_attribute("sample_name", SFHelper.get_sample_name(self.path))
-
 
         #temporary - for sample_id, #source_organism - Fixme
         self.set_attribute("sample_id", "Unspecified")

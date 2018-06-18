@@ -99,8 +99,10 @@ class SFHelper(object):
 
     @staticmethod
     def get_flowcell_id(tarfile):
+        logging.info("Getting flowcell_id from tarfile: " + tarfile)
         #Rule: After the last underscore in tar filename
-        flowcell_str = tarfile.split(".")[0].split("_")[-1]
+        #flowcell_str = tarfile.split(".")[0].split("_")[-1]
+        flowcell_str = tarfile.split(".")[0].split("_")[3]
         flowcell_id = flowcell_str[1:len(flowcell_str)]
         return flowcell_id
 
