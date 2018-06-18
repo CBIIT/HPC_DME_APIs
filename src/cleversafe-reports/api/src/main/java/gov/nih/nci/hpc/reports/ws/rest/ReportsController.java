@@ -1,12 +1,12 @@
 package gov.nih.nci.hpc.reports.ws.rest;
 
 import gov.nih.nci.hpc.reports.model.VaultSummary;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.client.RestTemplate;
@@ -14,27 +14,48 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/reports")
 public class ReportsController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private JSONParser jsonParser = new JSONParser();
 
     @RequestMapping("/vaultsummary")
-    public VaultSummary[] getVaultSummary() {
+    public VaultSummary[] getVaultSummary() throws Exception {
 
         RestTemplate restTemplate = new RestTemplateBuilder().basicAuthorization("ncifhpcdmsvcp", "").build();
-
-        logger.error("Eran");
         ResponseEntity<String> reportData = restTemplate.getForEntity("https://fr-s-clvrsf-mgr.ncifcrf.gov/manager/api/json/1.0/listVaults.adm", String.class);
-        logger.error("Eran: " + reportData);
+        logger.error("Eran: " + reportData.getBody());
 
-        VaultSummary[] report = new VaultSummary[2];
+        Collection<VaultSummary> vaultSummaries = fromJSON(reportData.getBody());
+        VaultSummary[] vaultSummariesArray = new VaultSummary[vaultSummaries.size()];
+        return vaultSummaries.toArray(vaultSummariesArray);
+    }
 
-        report[0] = new VaultSummary();
-        report[1] = new VaultSummary();
+    private Collection<VaultSummary> fromJSON(String responseStr) throws ParseException {
+        Collection<VaultSummary> vaultSummaries = new ArrayList<VaultSummary>();
+        JSONObject responseData =  (JSONObject) ((JSONObject) jsonParser.parse(responseStr)).get("responseData");
 
-        return report;
+        JSONArray vaults = (JSONArray) responseData.get("vaults");
+        if (vaults != null) {
+            Iterator<JSONObject> vaultsIterator = vaults.iterator();
+            while (vaultsIterator.hasNext()) {
+                JSONObject vault = vaultsIterator.next();
+                VaultSummary vaultSummary = new VaultSummary();
+                vaultSummary.setName((String) vault.get("name"));
+                vaultSummary.setDescription((String) vault.get("description"));
+                vaultSummary.setCapacity((Long) vault.get("usableSize"));
+                vaultSummary.setUsed((Long) vault.get("usedLogicalSizeFromStorage"));
+                vaultSummaries.add(vaultSummary);
+            }
+        }
+
+        return vaultSummaries;
     }
 }
