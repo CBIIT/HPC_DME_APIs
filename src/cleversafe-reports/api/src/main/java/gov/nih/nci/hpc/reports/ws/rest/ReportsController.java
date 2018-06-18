@@ -5,6 +5,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,9 @@ public class ReportsController {
 
         RestTemplate restTemplate = new RestTemplateBuilder().basicAuthorization("ncifhpcdmsvcp", "").build();
         ResponseEntity<String> reportData = restTemplate.getForEntity("https://fr-s-clvrsf-mgr.ncifcrf.gov/manager/api/json/1.0/listVaults.adm", String.class);
-        logger.error("Eran: " + reportData.getBody());
+        if(!reportData.getStatusCode().equals(HttpStatus.OK)) {
+            throw new Exception("Failed to call service: " + reportData.getStatusCode());
+        }
 
         Collection<VaultSummary> vaultSummaries = fromJSON(reportData.getBody());
         VaultSummary[] vaultSummariesArray = new VaultSummary[vaultSummaries.size()];
