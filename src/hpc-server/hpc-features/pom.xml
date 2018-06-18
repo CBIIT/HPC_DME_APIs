@@ -196,9 +196,20 @@
 			</build>
 		</profile>
     <profile>
-      <id>skip-generate-keystore-jks-files</id>
+      <id>excludeApiServerCert</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <!--
+           If system property named include includeApiServerCert is absent or is present
+           but has value that is not true, then activate this profile.
+
+           -DincludeApiServerCert omitted
+           ** OR **
+           -DincludeApiServerCert=<some-value>, where <some-value> != true
+         -->
+        <property>
+          <name>includeApiServerCert</name>
+          <value>!true</value>
+        </property>
       </activation>
       <build>
         <plugins>
@@ -223,9 +234,18 @@
       </build>
     </profile>
 		<profile>
-      <id>generate-keystore-jks-files</id>
+      <id>includeApiServerCert</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <!--
+             If system property named include includeApiServerCert is present
+             and equal to true, then activate this profile.
+
+             -DincludeApiServerCert=true
+          -->
+        <property>
+          <name>includeApiServerCert</name>
+          <value>true</value>
+        </property>
       </activation>
       <build>
         <plugins>
