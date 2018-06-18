@@ -55,17 +55,12 @@ public class ArchivesCleanerApplication implements CommandLineRunner {
 
 
     private static String timeForDisplay(Duration pDuration) {
-      StringBuilder sb = new StringBuilder();
-      int index = 0;
-      for (TemporalUnit unitOfInterest : UNITS_OF_INTEREST) {
-        long x = pDuration.get(unitOfInterest);
-        if (1 <= x) {
-          sb.append(sb.length() == 0 ? "" : ", ")
-            .append(x).append(" ").append(UNIT_LABELS[index]);
-        }
-        index += 1;
-      }
-      return sb.toString();
+      long wholeMin = pDuration.toMinutes();
+      long wholeSec = pDuration.getSeconds() - (60 * wholeMin);
+      long wholeTenthSec = Double.valueOf(pDuration.getNano() /
+        Math.pow(10,8)).longValue();
+      return String.format("%d:%02d.%d [min:sec]", wholeMin, wholeSec,
+                           wholeTenthSec);
     }
 
     private LocalDateTime started;
@@ -81,7 +76,7 @@ public class ArchivesCleanerApplication implements CommandLineRunner {
       try {
         Thread.sleep(this.sleepInterval);
 
-        System.out.println("Elapsed time of task is %s." + timeForDisplay(Duration
+        System.out.println("Elapsed time of task is " + timeForDisplay(Duration
             .between(this.started, LocalDateTime.now())));
       } catch (InterruptedException ie) {
         return;
