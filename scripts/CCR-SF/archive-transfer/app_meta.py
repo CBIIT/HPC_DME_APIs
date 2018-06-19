@@ -232,7 +232,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     # create the metadata json file
     file_name = 'DataObject_' + filepath.split("/")[-1]
     json_file_name = file_name + ".json"
-    with open('jsons/' + json_file_name, "w") as fp:
+    with open('jsons_dryrun/' + json_file_name, "w") as fp:
         json.dump(object_metadata, fp)
 
     #register the object
@@ -260,8 +260,8 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
 files_registered = 0
 bytes_stored = 0L
-excludes = open("excluded_files", "a")
-includes = open("registered_files", "a")
+excludes = open("excluded_files_dryrun", "a")
+includes = open("registered_files_dryrun", "a")
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
