@@ -127,6 +127,7 @@ def main(args):
 
 def record_exclusion(str):
     excludes.writelines(str + '\n')
+    excludes.flush()
     logging.warning('Ignoring file ' + str)
 
 
@@ -275,6 +276,8 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
         files_registered += 1
         bytes_stored += filesize
         includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
+
+    includes.flush()
 
 
 
