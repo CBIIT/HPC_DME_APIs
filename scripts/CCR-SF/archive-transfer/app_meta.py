@@ -52,7 +52,7 @@ def main(args):
 
                 # Extract the info for PI metadata
 
-                path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
+                path = re.sub(r'Unaligned[^/]*/', '', filepath)
                               #strip 'Project_' if it exists
                 path = path.replace("Project_", "")
 
@@ -215,20 +215,11 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 
     #Register the collection
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
-    
-    response_message = "collection-registration-response-message.json.tmp"
-    response_header = "collection-registration-response-header.tmp"
 
-    os.system("rm - f " + response_message + " 2>/dev/null")
-    os.system("rm - f " + response_header + " 2>/dev/null")
 
     command = "dm_register_collection jsons/" + json_file_name + " " + archive_path
     logging.info(command)
-    os.system(command)
 
-    with open(response_header) as f:
-        for line in f:
-            includes.write(line)
 
 
 
@@ -248,32 +239,21 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath.rsplit("/", 1)[0], type)
     archive_path = archive_path + '/' + file_name
 
-    response_message = "dataObject-registration-response-message.json.tmp"
-    response_header = "dataObject-registration-response-header.tmp"
-
-    os.system("rm - f " + response_message + " 2>/dev/null")
-    os.system("rm - f " + response_header + " 2>/dev/null")
-
     command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath
 
     logging.info(command)
     includes.write(command)
-    os.system(command)
 
     #Get size of file in bytes
     filesize = os.path.getsize(fullpath)
 
     #Record the result
-    with open(response_header) as f:
-        for line in f:
-            includes.write(line)
-        includes.write("\nFile size = {0}\n".format(filesize))
+    includes.write("\nFile size = {0}\n".format(filesize))
 
-    if('200' in response_header or '201' in response_header):
-        #Compute total number of files registered so far, and total bytes
-        files_registered += 1
-        bytes_stored += filesize
-        includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
+    #Compute total number of files registered so far, and total bytes
+    files_registered += 1
+    bytes_stored += filesize
+    includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
 
 
 
@@ -285,7 +265,7 @@ includes = open("registered_files", "a")
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
-logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', level=logging.DEBUG)
+logging.basicConfig(filename='ccr-sf_transfer_dryrun' + formatted_time + '.log', level=logging.DEBUG)
 main(sys.argv)
 excludes.close()
 includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(number_of_files, number_of_bytes))
