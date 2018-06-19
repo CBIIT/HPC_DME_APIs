@@ -52,13 +52,10 @@ def main(args):
 
                 # Extract the info for PI metadata
 
-                #path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
-                path = re.sub(r'.*uploads/', '', filepath)
+                path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
 
                 #strip 'Project_' if it exists
                 path = path.replace("Project_", "")
-
-
 
                 logging.info('metadata base: ' + path)
 
@@ -136,24 +133,23 @@ def record_exclusion(str):
 
 def extract_file_to_archive(tarfile_name, tarfile_path, line):
     # Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
-    #filepath = line[3:].rstrip()
-    #filepath = line.rstrip().split("../")[-1]
-    #filepath = filepath.split(" ")[-1]
-
-    filepath = re.sub(r'.*Unaligned[^/]*/', '', line)
+    filepath = line.rstrip().split("../")[-1]
+    filepath = filepath.split(" ")[-1]
+    filepath = filepath.lstrip('/')
 
 
-    #if len(filepath.split("/")) < 3:
-    if len(filepath.split("/")) < 2:
+    if len(filepath.split("/")) < 3:
         # There is no subdirectory structure - something not right
         record_exclusion(tarfile_name + ':' + line)
         return
 
-    logging.info("file to archive: " + filepath)
-
     # extract the fastq file from the archive
-    os.system("tar -xf " + tarfile_path + " -C uploads/ " + filepath)
+    command = "tar -xf " + tarfile_path + " -C uploads/ " + filepath
+    logging.info(command)
+    os.system(command)
     filepath = 'uploads/' + filepath
+
+    logging.info("file to archive: " + filepath)
 
     return filepath
 
