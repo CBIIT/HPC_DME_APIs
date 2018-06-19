@@ -52,7 +52,7 @@ def main(args):
 
                 # Extract the info for PI metadata
 
-                path = re.sub(r'Unaligned[^/]*/', '', filepath)
+                path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
                               #strip 'Project_' if it exists
                 path = path.replace("Project_", "")
 
