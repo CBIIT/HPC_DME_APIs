@@ -52,9 +52,13 @@ def main(args):
 
                 # Extract the info for PI metadata
 
-                path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
-                              #strip 'Project_' if it exists
+                #path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
+                path = re.sub(r'.*uploads/', '', filepath)
+
+                #strip 'Project_' if it exists
                 path = path.replace("Project_", "")
+
+
 
                 logging.info('metadata base: ' + path)
 
@@ -133,11 +137,14 @@ def record_exclusion(str):
 def extract_file_to_archive(tarfile_name, tarfile_path, line):
     # Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
     #filepath = line[3:].rstrip()
-    filepath = line.rstrip().split("../")[-1]
-    filepath = filepath.split(" ")[-1]
+    #filepath = line.rstrip().split("../")[-1]
+    #filepath = filepath.split(" ")[-1]
+
+    filepath = re.sub(r'.*Unaligned[^/]*/', '', line)
 
 
-    if len(filepath.split("/")) < 3:
+    #if len(filepath.split("/")) < 3:
+    if len(filepath.split("/")) < 2:
         # There is no subdirectory structure - something not right
         record_exclusion(tarfile_name + ':' + line)
         return
