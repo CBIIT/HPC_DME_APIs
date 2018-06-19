@@ -67,8 +67,8 @@ def main(args):
                 #create Object metadata with Sample type parent and register object
                 register_object(path, "Sample", tarfile_name, True, filepath)
 
-                #delete the extracted tar file
-                os.system("rm -rf ./Unaligned*")
+                #delete the extracted file
+                os.system("rm -rf uploads/*")
 
             elif line.rstrip().endswith('laneBarcode.html') and '/all/' in line:
 
@@ -145,9 +145,8 @@ def extract_file_to_archive(tarfile_name, tarfile_path, line):
     logging.info("file to archive: " + filepath)
 
     # extract the fastq file from the archive
-    #os.system("tar -xf " + tarfile_path + " -C ./uploads " + filepath)
-    os.system("tar -xf " + tarfile_path + " " + filepath)
-    #filepath = './uploads/' + filepath
+    os.system("tar -xf " + tarfile_path + " -C uploads/ " + filepath)
+    filepath = 'uploads/' + filepath
 
     return filepath
 
