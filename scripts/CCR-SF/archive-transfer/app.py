@@ -139,7 +139,6 @@ def extract_file_to_archive(tarfile_name, tarfile_path, line):
 
 
     if len(filepath.split("/")) < 3:
-
         # There is no subdirectory structure - something not right
         record_exclusion(tarfile_name + ':' + line)
         return
@@ -236,6 +235,7 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     #Build metadata for the object
+    global files_registered, bytes_stored
     object_to_register = SFObject(filepath, tarfile_name, has_parent, type)
     object_metadata = object_to_register.get_metadata()
 
@@ -289,6 +289,6 @@ formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', level=logging.DEBUG)
 main(sys.argv)
 excludes.close()
-includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(number_of_files, number_of_bytes))
+includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
 includes.close()
-logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(number_of_files, number_of_bytes))
+logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))

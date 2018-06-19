@@ -228,6 +228,7 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     #Build metadata for the object
+    global files_registered, bytes_stored
     object_to_register = SFObject(filepath, tarfile_name, has_parent, type)
     object_metadata = object_to_register.get_metadata()
 
@@ -253,8 +254,8 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     includes.write("\nFile size = {0}\n".format(filesize))
 
     #Compute total number of files registered so far, and total bytes
-    files_registered += 1
-    bytes_stored += filesize
+    files_registered = files_registered + 1
+    bytes_stored += bytes_stored + filesize
     includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
 
 
@@ -270,6 +271,6 @@ formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 logging.basicConfig(filename='ccr-sf_transfer_dryrun' + formatted_time + '.log', level=logging.DEBUG)
 main(sys.argv)
 excludes.close()
-includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(number_of_files, number_of_bytes))
+includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
 includes.close()
-logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(number_of_files, number_of_bytes))
+logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
