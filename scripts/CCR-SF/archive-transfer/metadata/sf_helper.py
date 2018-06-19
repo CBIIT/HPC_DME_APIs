@@ -24,7 +24,7 @@ class SFHelper(object):
                 # else if the first 3 are alpha pick 0 and 2
                 pi_name = path_elements[0] + "_" + path_elements[2]
             else:
-                if path_elements[1].isalpha():
+                if len(path_elements) > 1 and path_elements[1].isalpha():
                     # else if the first 2 are alpha, pick 0 and 1
                     pi_name = path_elements[0] + "_" + path_elements[1]
                 else:
@@ -104,6 +104,7 @@ class SFHelper(object):
         #flowcell_str = tarfile.split(".")[0].split("_")[-1]
         flowcell_str = tarfile.split(".")[0].split("_")[3]
         flowcell_id = flowcell_str[1:len(flowcell_str)]
+        logging.info("Flowcell_id from tarfile: " + tarfile + " is " + flowcell_id)
         return flowcell_id
 
 
