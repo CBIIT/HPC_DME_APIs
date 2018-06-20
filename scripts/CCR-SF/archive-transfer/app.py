@@ -23,8 +23,6 @@ def main(args):
 
         tarfile_contents = get_tarball_contents(tarfile_name, tarfile_dir)
         if tarfile_contents is None:
-            record_exclusion(
-                tarfile_name + ': Could not extract contents')
             continue
 
         tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
@@ -146,7 +144,9 @@ def extract_file_to_archive(tarfile_name, tarfile_path, line):
         return
 
     # extract the fastq file from the archive
-    os.system("tar -xf " + tarfile_path + " -C uploads/ " + filepath)
+    command = "tar -xf " + tarfile_path + " -C uploads/ " + filepath
+    logging.info(command)
+    os.system(command)
     filepath = 'uploads/' + filepath
 
     logging.info("file to archive: " + filepath)
@@ -170,6 +170,8 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
                 not tarfile_name.endswith('.md5')):
             excludes_str = ': Invalid file format - not tar.gz, _archive.list, tar.gz.list or tar.gz.md5 \n'
             record_exclusion(tarfile_name + excludes_str)
+        else:
+            logging.info(tarfile_name + ': No contents to extract')
         return
 
     if '-' in tarfile_name:
@@ -180,7 +182,8 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
 
     tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
     contentFiles = [tarfile_path + '.list', tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '_archive.list',
-                    tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.gz')[0] + '_list.txt', tarfile_name + '.list']
+                    tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.gz')[0] + '_list.txt',
+                    tarfile_path.split('.tar')[0] + '_file_list.txt', tarfile_name + '.list']
 
     tarfile_contents = None
 
