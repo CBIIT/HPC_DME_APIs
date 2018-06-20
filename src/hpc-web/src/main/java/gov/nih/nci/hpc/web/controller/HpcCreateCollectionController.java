@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -218,7 +219,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		HpcCollectionRegistrationDTO registrationDTO = null;
 
 		try {
-      //MiscUtil.validateDmePathForForbiddenChars(hpcCollection.getPath());
+			HpcClientUtil.validateArchivePathName(hpcCollection.getPath());
 			registrationDTO = constructRequest(request, session, hpcCollection.getPath(), hpcCollection);
 		} catch (HpcWebException e) {
 			model.addAttribute("hpcCollection", hpcCollection);
