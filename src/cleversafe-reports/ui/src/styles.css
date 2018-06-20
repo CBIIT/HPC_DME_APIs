@@ -1,1 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import './styles/bootstrap.min.css';
+/*@import './styles/bootstrap-theme.css';*/
+/*@import './styles/elegant-icons-style.css';*/
+/*@import './styles/font-awesome.min.css';*/
+@import './styles/widgets.css';
+/*@import './styles/style.css';*/
+@import './styles/style-responsive.css';
+@import './styles/select.css';

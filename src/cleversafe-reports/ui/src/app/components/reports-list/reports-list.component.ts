@@ -19,15 +19,12 @@ export class ReportsListComponent implements OnInit {
     }];
 
   selectedReport: ReportType;
+  none: ReportType
   vaultSummaryReport: ReportType = ReportType.VAULT_SUMMARY;
 
   constructor() { }
 
   ngOnInit() {
+    this.none = ReportType.NONE;
   }
-
-  onSelect(report: Report): void {
-    this.selectedReport = report.type;
-  }
-
 }
