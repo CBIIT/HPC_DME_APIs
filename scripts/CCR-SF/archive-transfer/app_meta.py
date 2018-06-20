@@ -263,7 +263,8 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     includes.flush()
 
     #Record to csv file: tarfile name, file path, archive path
-    csv_file.write(tarfile_name + ", " + fullpath + ", " + archive_path + "\n")
+    normalized_filepath = fullpath.split("uploads/")[-1]
+    csv_file.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + "\n")
 
 
 
