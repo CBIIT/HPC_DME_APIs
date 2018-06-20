@@ -158,15 +158,16 @@ def extract_file_to_archive(tarfile_name, tarfile_path, line):
 def get_tarball_contents(tarfile_name, tarfile_dir):
 
     logging.info("Getting contents for: " + tarfile_name)
+    tarfile_name = tarfile_name.rstrip()
 
-    if not tarfile_name.rstrip().endswith('tar.gz') and not tarfile_name.rstrip().endswith('tar'):
+    if not tarfile_name.endswith('tar.gz') and not tarfile_name.endswith('tar'):
 
         # If this is not a .list, _archive.list, or .md5 file also, then record exclusion. Else
         # just ignore, do not record because we may find the associated tar later
-        if (not tarfile_name.rstrip().endswith('tar.gz.list') and
-                not tarfile_name.rstrip().endswith('_archive.list') and
-                not tarfile_name.rstrip().endswith('list.txt') and
-                not tarfile_name.rstrip().endswith('.md5')):
+        if (not tarfile_name.endswith('tar.gz.list') and
+                not tarfile_name.endswith('_archive.list') and
+                not tarfile_name.endswith('list.txt') and
+                not tarfile_name.endswith('.md5')):
             excludes_str = ': Invalid file format - not tar.gz, _archive.list, tar.gz.list or tar.gz.md5 \n'
             record_exclusion(tarfile_name + excludes_str)
         return
@@ -179,7 +180,7 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
 
     tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
     contentFiles = [tarfile_path + '.list', tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '_archive.list',
-                    tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.gz')[0] + '_list.txt']
+                    tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.gz')[0] + '_list.txt', tarfile_name + '.list']
 
     tarfile_contents = None
 
