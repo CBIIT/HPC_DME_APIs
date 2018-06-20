@@ -161,12 +161,13 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
 
     logging.info("Getting contents for: " + tarfile_name)
 
-    if not tarfile_name.rstrip().endswith('tar.gz'):
+    if not tarfile_name.rstrip().endswith('tar.gz') and not tarfile_name.rstrip().endswith('tar'):
 
         # If this is not a .list, _archive.list, or .md5 file also, then record exclusion. Else
         # just ignore, do not record because we may find the associated tar later
         if (not tarfile_name.rstrip().endswith('tar.gz.list') and
                 not tarfile_name.rstrip().endswith('_archive.list') and
+                not tarfile_name.rstrip().endswith('list.txt') and
                 not tarfile_name.rstrip().endswith('.md5')):
             excludes_str = ': Invalid file format - not tar.gz, _archive.list, tar.gz.list or tar.gz.md5 \n'
             record_exclusion(tarfile_name + excludes_str)
@@ -179,24 +180,42 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         return
 
     tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
-    try:
-        tarfile_contents = open(tarfile_path + '.list')
 
-    except IOError as e:
+    contentFiles = [tarfile_path + '.list', tarfile_path.split('.tar')[0] + '_archive.list',
+                    tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.gz')[0] + '_list.txt']
+
+    tarfile_contents = None
+
+    for filename in contentFiles:
+        if os.path.exists(filename):
+            tarfile_contents = open(filename)
+            break
+
+    if tarfile_contents is None:
+        command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
+        # os.system(command)
+        subprocess.call(command, shell=True)
+        logging.info("Created contents file: " + command)
+        tarfile_contents = open(tarfile_name + '.list')
+
+    #try:
+    #    tarfile_contents = open(tarfile_path + '.list')
+
+    #except IOError as e:
         #tar.gz.list is not present, so try _archive.list
-        try:
-            tarfile_contents = open(tarfile_path.split(".tar.gz")[0] + "_archive.list")
-        except IOError as e:
-            try:
-                tarfile_contents = open(tarfile_path.split(".gz")[0] + '.list.txt')
-            except IOError as e:
+    #    try:
+    #        tarfile_contents = open(tarfile_path.split(".tar.gz")[0] + "_archive.list")
+    #    except IOError as e:
+    #        try:
+    #            tarfile_contents = open(tarfile_path.split(".gz")[0] + '.list.txt')
+    #        except IOError as e:
 
                 # There is no contents file for this tarball, so create one
-                command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
+    #            command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
                 #os.system(command)
-                subprocess.call(command, shell=True)
-                logging.info("Created contents file: " + command)
-                tarfile_contents = open(tarfile_name + '.list')
+    #            subprocess.call(command, shell=True)
+    #            logging.info("Created contents file: " + command)
+    #            tarfile_contents = open(tarfile_name + '.list')
 
     return tarfile_contents
 
