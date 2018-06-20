@@ -74,6 +74,9 @@ class SFHelper(object):
             if element.isdigit():
                 project_id = element
 
+        if project_id is None:
+            project_id = 'placeholder'
+
         #Assumes that PI and contact names are in the format 'FirstnameLastname'
         #project_id = path_elements[2]
 
