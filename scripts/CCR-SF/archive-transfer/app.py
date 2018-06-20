@@ -178,7 +178,7 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         return
 
     tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
-    contentFiles = [tarfile_path + '.list', tarfile_path.split('.tar')[0] + '_archive.list',
+    contentFiles = [tarfile_path + '.list', tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '_archive.list',
                     tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.gz')[0] + '_list.txt']
 
     tarfile_contents = None
