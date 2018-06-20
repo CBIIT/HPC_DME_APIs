@@ -446,57 +446,63 @@ function dm_get_collection {
 }
 
 
-
-
 #Download a dataObject synchronously 
 #Inputs: logic-path 
 #        destination-file
 function dm_download_dataobject_sync {
-
-
-    local USAGE="USAGE:dm_download_dataobject_sync <logic-path> <destination-file>"
-
-    if [ "$#" -lt 2 ] 
+  local USAGE="USAGE:dm_download_dataobject_sync [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
+  local OPTIND
+  #Set the default parameters
+  local APPLY_PRESIGNED=0
+  local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
+  while getopts ":p" option
+    do
+      case "${option}" in
+        p)
+          APPLY_PRESIGNED=1
+          TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template.json"
+        ;;
+        *)
+          echo "ERROR: Unsupported option ${option}" >&2
+          printf "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+  done
+  shift $(( OPTIND-1 ))
+  if [ "$#" -lt 2 ] 
+  then
+    echo "ERROR: using dm_downlaod_dataobject_sync" >&2
+    echo "received $@" 
+    printf "$USAGE" >&2
+    return 1
+  fi
+  local OBJECT_PATH="$1"
+  local DESTINATION_PATH="$2"
+  if [ -d "$DESTINATION_PATH"  ]
+  then
+    #Download the file with the same file name 
+    local FILE_NAME=$(basename "$OBJECT_PATH")
+    if [ "$?" -ne 0 ]
     then
-        echo "ERROR: using dm_downlaod_dataobject_sync" >&2
-        echo "recieved $@" 
-        echo "$USAGE" >&2
-        return 1
+      echo "ERROR:Can not retrieve the file name from \"$OBJECT_PATH\"" >&2
+      return 1
     fi
-
-    local RESPONSE_HEADER=download-dataobject-response-header.tmp
-
-   
-    local OBJECT_PATH="$1"
-    local DESTINATION_PATH="$2"
-
-    if [ -d "$DESTINATION_PATH"  ]
-    then
-      
-        #Download the file with the same file name 
-        local FILE_NAME=$(basename "$OBJECT_PATH")
-        if [ "$?" -ne 0 ]
-        then
-          echo "ERROR:Can not retrieve the file name from \"$OBJECT_PATH\"" >&2
-          return 1
-        fi
-
-        local DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
-    fi
-
-
-    local SERVER=$(get_server)
-    
-    local CONFIG=$(get_config)
-
-    local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
-
-    curl -H "Content-Type: application/json" -d @$TEMPLATE -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download  $CONFIG -H "Accept: application/json" -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status 
+    local DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
+  fi
+  local CONFIG=$(get_config)
+  local SERVER=$(get_server)
+  local CODE=0
+  local RESPONSE_HEADER=download-dataobject-response-header.tmp
+  if [ $APPLY_PRESIGNED -eq 0 ]
+  then
+    curl -H "Content-Type: application/json" -H "Accept: application/json" \
+      $CONFIG -d @$TEMPLATE \
+      -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download \
+      -D $RESPONSE_HEADER -o $DESTINATION_PATH -s \
+      2> $HPC_DM_UTILS/temp/curl-status
     check_connection $RESPONSE_HEADER
-
-
-    local CODE=$(get_http_code "$RESPONSE_HEADER") 
-
+    CODE=$(get_http_code "$RESPONSE_HEADER")
     if [ "$CODE" -ne 200 ]
     then 
       #In this case the destination path file will contain the error code
@@ -504,6 +510,65 @@ function dm_download_dataobject_sync {
     else
       rm -f $RESPONSE_HEADER 2> /dev/null
     fi
+  else
+    local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header.tmp
+    local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=obtain-presigned-url-response-message.tmp
+
+    curl -H "Content-Type: application/json" -H "Accept: application/json" \
+      $CONFIG -d @$TEMPLATE \
+      -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download \
+      -D $RESPONSE_HEADER_OBTAIN_PRESIGNED \
+      -o $RESPONSE_MESSAGE_OBTAIN_PRESIGNED \
+      -s 2> $HPC_DM_UTILS/temp/curl-status
+
+    check_connection $RESPONSE_HEADER_OBTAIN_PRESIGNED
+
+    CODE=$(get_http_code "$RESPONSE_HEADER_OBTAIN_PRESIGNED")
+    if [ "$CODE" -ne 200 ]
+    then
+      if [ "$CODE" -eq 400 ]
+      then
+        print_error_message $RESPONSE_MESSAGE_OBTAIN_PRESIGNED 400
+      else
+        >&2 echo "Request to obtain presigned URL failed.  See response data below."
+        >&2 echo "( Response data is also available in the following 2 files: "
+        >&2 echo "  1. $(pwd)/$RESPONSE_HEADER_OBTAIN_PRESIGNED"
+        >&2 echo "  2. $(pwd)/$RESPONSE_MESSAGE_OBTAIN_PRESIGNED"
+        >&2 echo ")"
+        >&2 echo ""
+        >&2 cat $RESPONSE_HEADER_OBTAIN_PRESIGNED
+        >&2 cat $RESPONSE_MESSAGE_OBTAIN_PRESIGNED
+      fi
+    else 
+      local PRESIGNED_URL=$(get_json_value  $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  downloadRequestURL)
+      if [ -z "$PRESIGNED_URL" ]
+      then
+        >&2 echo "Request to obtain presigned URL was successfully processed, but response is missing the URL.  See response data below."
+        >&2 echo "( Response data is also available in the following 2 files: "
+        >&2 echo "  1. $(pwd)/$RESPONSE_HEADER_OBTAIN_PRESIGNED"
+        >&2 echo "  2. $(pwd)/$RESPONSE_MESSAGE_OBTAIN_PRESIGNED"
+        >&2 echo ")"
+        >&2 echo ""
+        >&2 cat $RESPONSE_HEADER_OBTAIN_PRESIGNED
+        >&2 cat $RESPONSE_MESSAGE_OBTAIN_PRESIGNED
+      else
+        curl -X GET $PRESIGNED_URL -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status
+        check_connection $RESPONSE_HEADER
+
+        CODE=$(get_http_code "$RESPONSE_HEADER")
+        if [ "$CODE" -ne 200 ]
+        then 
+          >&2 echo "Failed to download file from obtained presigned URL.  See response data below."
+          >&2 echo "  ( Response data from request available in file $DESTINATION_PATH. )"
+          >&2 echo ""
+          >&2 cat $RESPONSE_HEADER
+          >&2 cat $DESTINATION_PATH
+        else
+          rm -f  $RESPONSE_HEADER  $RESPONSE_HEADER_OBTAIN_PRESIGNED  $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  2> /dev/null
+        fi
+      fi
+    fi
+  fi
 }
 
 
