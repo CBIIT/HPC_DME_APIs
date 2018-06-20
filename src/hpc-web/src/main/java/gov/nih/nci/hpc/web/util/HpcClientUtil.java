@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -71,6 +72,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -866,6 +868,7 @@ public class HpcClientUtil {
           && collection.getCollectionPaths().size() > 0)
         throw new HpcWebException("Failed to create. Collection already exists: " + path);
 
+      validateArchivePathName(path);
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcCollectionURL).path("/{dme-archive-path}")
         .buildAndExpand(path).encode().toUri().toURL().toExternalForm(),
@@ -980,6 +983,7 @@ public class HpcClientUtil {
         // Data file is not there!
       }
 
+      validateArchivePathName(path);
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcDatafileURL).path("/{dme-archive-path}").buildAndExpand(
         path).encode().toUri().toURL().toExternalForm(), hpcCertPath,
@@ -1026,6 +1030,8 @@ public class HpcClientUtil {
       String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
       String hpcCertPath, String hpcCertPassword) {
     try {
+      validateDataObjectRegistrationDestinationPaths(
+        datafileDTO.getDataObjectRegistrationItems());
 
       WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
@@ -1898,5 +1904,127 @@ public class HpcClientUtil {
     return (null == argInputStr || argInputStr.isEmpty()) ? "/" :
       argInputStr.startsWith("/") ? argInputStr : "/".concat(argInputStr);
   }
+
+
+  private static Properties appProperties;
+
+
+  private static void initApplicationProperties() {
+    if (null == appProperties) {
+      loadApplicationProperties();
+    }
+  }
+
+
+  private static void loadApplicationProperties() {
+    Properties theProperties = new Properties();
+    try {
+      theProperties.load(HpcClientUtil.class.getResourceAsStream(
+        "/application.properties"));
+      if (null == appProperties) {
+        appProperties = theProperties;
+      } else {
+        appProperties.clear();
+        appProperties.putAll(theProperties);
+      }
+    } catch (IOException e) {
+      throw new HpcWebException("Unable to load application properties!", e);
+    }
+  }
+
+
+  private static String produceForbiddenCharsDisplayString() {
+    if (null == appProperties) {
+      loadApplicationProperties();
+    }
+    char[] fcArr = appProperties.getProperty(
+      "dme.archive.naming.forbidden.chararacters").toCharArray();
+    StringBuilder sb = new StringBuilder();
+    for (char fc : fcArr) {
+      if (sb.length() > 0) {
+        sb.append(" ");
+      }
+      sb.append(fc);
+    }
+    sb.insert(0, "{");
+    sb.append("}");
+    return sb.toString();
+  }
+
+
+  public static void validateArchivePathName(String pathName) {
+    if (StringUtils.hasText(pathName)) {
+      if (null == appProperties) {
+        loadApplicationProperties();
+      }
+      char[] fcArr = appProperties.getProperty(
+        "dme.archive.naming.forbidden.chararacters").toCharArray();
+      for (char fc : fcArr) {
+        if (pathName.contains(String.valueOf(fc))) {
+          String errorMsg = appProperties.getProperty(
+            "error.message.template.invalid.path.forbidden.chars")
+            .replace("PLACEHOLDER-PATH", pathName)
+            .replace("PLACEHOLDER-CHARSET",
+              produceForbiddenCharsDisplayString());
+          throw new HpcWebException(errorMsg);
+        }
+      }
+    }
+  }
+
+
+  private static void validateDataObjectRegistrationDestinationPaths(
+      List<HpcDataObjectRegistrationItemDTO> dataObjRegItems) {
+    List<String> invalidPaths = new ArrayList<>();
+    List<String> otherErrors = new ArrayList<>();
+    for (HpcDataObjectRegistrationItemDTO regItem : dataObjRegItems) {
+      try {
+        validateArchivePathName(regItem.getPath());
+      } catch (HpcWebException e) {
+        String exceptionMsg = e.getMessage().trim();
+        int firstSpacePos = exceptionMsg.indexOf(" ");
+        if (-1 == firstSpacePos) {
+          otherErrors.add(exceptionMsg);
+        } else {
+          invalidPaths.add(exceptionMsg.substring(0, firstSpacePos));
+        }
+      }
+    }
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < invalidPaths.size(); i++) {
+      if (i > 0) {
+        sb.append(", ");
+      }
+      if (i == invalidPaths.size() - 1) {
+        sb.append("& ");
+      }
+      sb.append(invalidPaths.get(i));
+    }
+    String invalidPaths4Display = sb.toString();
+    sb.setLength(0);
+    for (int j = 0; j < otherErrors.size(); j++) {
+      sb.append("\n[[ ")
+        .append(otherErrors.get(j))
+        .append(" ]]");
+    }
+    String otherErrors4Display = sb.toString();
+    sb.setLength(0);
+    if (!invalidPaths4Display.isEmpty()) {
+      String invalidPathsMsg = appProperties.getProperty(
+        "error.message.template.multiple.invalid.paths.forbidden.chars")
+        .replace("PLACEHOLDER-PATHS", invalidPaths4Display)
+        .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
+      sb.append(invalidPathsMsg);
+    }
+    if (!otherErrors4Display.isEmpty()) {
+      sb.append("\n\nOther errors: ")
+        .append(otherErrors4Display);
+    }
+    if (sb.length() > 0) {
+      String combinedErrorMsgs = sb.toString();
+      throw new HpcWebException(combinedErrorMsgs);
+    }
+  }
+
 
 }
