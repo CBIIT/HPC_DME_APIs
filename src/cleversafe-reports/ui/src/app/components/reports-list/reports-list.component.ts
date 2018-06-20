@@ -26,5 +26,6 @@ export class ReportsListComponent implements OnInit {
 
   ngOnInit() {
     this.none = ReportType.NONE;
+    this.selectedReport = ReportType.NONE;
   }
 }
