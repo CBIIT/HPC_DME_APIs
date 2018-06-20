@@ -1135,25 +1135,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   private boolean hasS3StorageConfig(HpcDataManagementConfiguration dmConfig) {
     boolean retSignal = false;
     if (null != dmConfig &&
-          null != dmConfig.getS3Configuration()) {
-      HpcDataTransferConfiguration dtConfig = dmConfig.getS3Configuration();
-      if (null != dtConfig.getUrl() &&
-           null != dtConfig.getUploadRequestURLExpiration() &&
-           hasSufficientDetailForS3(dtConfig.getBaseArchiveDestination()) &&
-           hasSufficientDetailForS3(dtConfig.getBaseDownloadSource())) {
-          retSignal = true;
-      }
-    }
-    return retSignal;
-  }
-
-
-  private boolean hasSufficientDetailForS3(HpcArchive theArchive) {
-    boolean retSignal = false;
-    if (null != theArchive &&
-         null != theArchive.getFileLocation() &&
-         null != theArchive.getFileLocation().getFileContainerId() &&
-         null != theArchive.getFileLocation().getFileId()) {
+          null != dmConfig.getS3Configuration() &&
+          null != dmConfig.getS3Configuration().getUrl()) {
       retSignal = true;
     }
     return retSignal;

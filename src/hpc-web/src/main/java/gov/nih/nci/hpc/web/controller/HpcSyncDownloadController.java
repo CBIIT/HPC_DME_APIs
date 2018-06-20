@@ -113,56 +113,47 @@ public class HpcSyncDownloadController extends AbstractHpcController {
       List dataTransferTypes = (List)respHeaders.get("DATA_TRANSFER_TYPE");
       
       if (restResponse.getStatus() == 200) {
-        if(dataTransferTypes != null && dataTransferTypes.get(0) != null && dataTransferTypes.get(0).equals("S_3"))
-        {
-          HpcDataObjectDownloadResponseDTO downloadDTO =
-              (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(restResponse,
-                  HpcDataObjectDownloadResponseDTO.class);
-          String downloadRequestURL = null;
-          if (downloadDTO != null)
-            downloadRequestURL = downloadDTO.getDownloadRequestURL();
-          downloadToUrl(downloadRequestURL, 1000000, downloadFile.getDownloadFileName(), response);
+          if (null != dataTransferTypes &&
+              "S_3".equals(dataTransferTypes.get(0))) {
+            HpcDataObjectDownloadResponseDTO downloadDTO =
+              (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(
+              restResponse, HpcDataObjectDownloadResponseDTO.class);
+            downloadToUrl(downloadDTO.getDownloadRequestURL(), 1000000,
+              downloadFile.getDownloadFileName(), response);
+          } else {
+            handleStreamingDownloadData(downloadFile, response, restResponse);
+          }
+          model.addAttribute("message", "Download completed successfully!");
+      } else if (restResponse.getStatus() == 400) {
+        // Bad request so assume that request can be retried without any state
+        //  to indicate S3-presigned-URL desired (or other such special
+        //  handling)
+        dto.setGenerateDownloadRequestURL(false);
+        restResponse = client.invoke("POST", dto);
+        if (restResponse.getStatus() == 200) {
+          handleStreamingDownloadData(downloadFile, response, restResponse);
+        } else {
+          return handleDownloadProblem(model, restResponse);
         }
-        else
-        {
-           response.setContentType("application/octet-stream");
-           response.setHeader("Content-Disposition", "attachment; filename=" +
-           downloadFile.getDownloadFileName());
-           IOUtils.copy((InputStream) restResponse.getEntity(), response.getOutputStream());
-        }
-        model.addAttribute("message", "Download completed successfully!");
       } else {
-        ObjectMapper mapper = new ObjectMapper();
-        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-            new JacksonAnnotationIntrospector());
-        mapper.setAnnotationIntrospector(intr);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        MappingJsonFactory factory = new MappingJsonFactory(mapper);
-        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
-        try {
-          HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-          model.addAttribute("message", "Failed to download: " + exception.getMessage());
-          return new ByteArrayResource(("Failed to download: " + exception.getMessage()).getBytes());
-        } catch (Exception e) {
-          model.addAttribute("message", "Failed to download: " + e.getMessage());
-          return new ByteArrayResource(("Failed to download: " + e.getMessage()).getBytes());
-        }
+        return handleDownloadProblem(model, restResponse);
       }
     } catch (HttpStatusCodeException e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
-      return new ByteArrayResource(("Failed to download: " + e.getMessage()).getBytes());
+      return new ByteArrayResource(("Failed to download: " +
+        e.getMessage()).getBytes());
     } catch (RestClientException e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
-      return new ByteArrayResource(("Failed to download: " + e.getMessage()).getBytes());
+      return new ByteArrayResource(("Failed to download: " +
+        e.getMessage()).getBytes());
     } catch (Exception e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
-      return new ByteArrayResource(("Failed to download: " + e.getMessage()).getBytes());
+      return new ByteArrayResource(("Failed to download: " +
+        e.getMessage()).getBytes());
     }
     return null;
   }
+
 
   public void downloadToUrl(String urlStr, int bufferSize, String fileName,
       HttpServletResponse response) throws HpcWebException {
@@ -175,6 +166,46 @@ public class HpcSyncDownloadController extends AbstractHpcController {
     } catch (IOException e) {
       throw new HpcWebException(e);
     }
+  }
+
+
+  private Resource handleDownloadProblem(Model model, Response restResponse)
+    throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+        new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+        new JacksonAnnotationIntrospector());
+    mapper.setAnnotationIntrospector(intr);
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    MappingJsonFactory factory = new MappingJsonFactory(mapper);
+    JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+    try {
+      HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+      model.addAttribute("message", "Failed to download: " +
+        exception.getMessage());
+      return new ByteArrayResource(("Failed to download: " +
+        exception.getMessage()).getBytes());
+    } catch (Exception e) {
+      model.addAttribute("message", "Failed to download: " + e.getMessage());
+      return new ByteArrayResource(("Failed to download: " +
+        e.getMessage()).getBytes());
+    }
+  }
+
+
+  private void handleStreamingDownloadData(
+    @Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile
+      downloadFile,
+    HttpServletResponse response,
+    Response restResponse) throws IOException
+  {
+    response.setContentType("application/octet-stream");
+    response.setHeader("Content-Disposition", "attachment; filename=" +
+      downloadFile.getDownloadFileName());
+    IOUtils.copy((InputStream) restResponse.getEntity(),
+      response.getOutputStream());
   }
 
 }
