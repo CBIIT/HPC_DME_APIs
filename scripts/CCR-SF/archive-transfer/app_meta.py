@@ -186,18 +186,15 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         try:
             tarfile_contents = open(tarfile_path.split(".tar.gz")[0] + "_archive.list")
         except IOError as e:
-            # There is no contents file for this tarball, so create one
-            command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
-            os.system(command)
-            logging.info("Created contents file: " + command)
-            tarfile_contents = open(tarfile_name + '.list')
+            try:
+                tarfile_contents = open(tarfile_path + '.list.txt')
+            except IOError as e:
 
-
-            # exclude the tarball
-            #excludes_str = ': No contents file located \n'
-            #excludes.write(tarfile_name + excludes_str)
-            #logging.warning("Ignoring file " + tarfile_name.rstrip() + excludes_str)
-            #return
+                # There is no contents file for this tarball, so create one
+                command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
+                os.system(command)
+                logging.info("Created contents file: " + command)
+                tarfile_contents = open(tarfile_name + '.list')
 
     return tarfile_contents
 
