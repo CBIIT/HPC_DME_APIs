@@ -4,6 +4,7 @@ import os
 import json
 import time
 import re
+import subprocess
 
 from metadata.sf_object import SFObject
 from metadata.sf_collection import SFCollection
@@ -187,12 +188,13 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
             tarfile_contents = open(tarfile_path.split(".tar.gz")[0] + "_archive.list")
         except IOError as e:
             try:
-                tarfile_contents = open(tarfile_path + '.list.txt')
+                tarfile_contents = open(tarfile_path.split(".gz")[0] + '.list.txt')
             except IOError as e:
 
                 # There is no contents file for this tarball, so create one
                 command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
-                os.system(command)
+                #os.system(command)
+                subprocess.call(command, shell=True)
                 logging.info("Created contents file: " + command)
                 tarfile_contents = open(tarfile_name + '.list')
 
