@@ -1,4 +1,25 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<h1>{{title}}</h1>
-<app-reports-list></app-reports-list>
-<app-messages></app-messages>
+<body>
+  <div class="header">
+    <header class="header dark-bg">
+      <div class="toggle-nav">
+      <div class="icon-reorder tooltips"
+           data-original-title="Toggle Navigation" data-placement="bottom"></div>
+      </div>
+      <!--logo start-->
+      <a href="/" class="logo">HPC <span class="lite">{{title}}</span></a>
+      <br/>
+      <!--logo end-->
+    </header>
+  </div>
+
+  <section id="container" class="">
+    <section id="main-content">
+      <section class="wrapper">
+        <app-reports-list></app-reports-list>
+        <app-messages></app-messages>
+      </section>
+    </section>
+  </section>
+</body>
+
+
