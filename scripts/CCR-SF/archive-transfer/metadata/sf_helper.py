@@ -65,6 +65,7 @@ class SFHelper(object):
     @staticmethod
     def get_project_id(path):
         logging.info("Getting project_id from path: " + path)
+        project_id = 'placeholder'
 
         #path_elements = path.split("_")
         path_elements = (path.split("/")[0]).split("_")
@@ -74,14 +75,13 @@ class SFHelper(object):
             if element.isdigit():
                 project_id = element
 
-        if project_id is None:
-            project_id = 'placeholder'
 
         #Assumes that PI and contact names are in the format 'FirstnameLastname'
         #project_id = path_elements[2]
 
         logging.info("project_id from " + path + " is " + project_id)
         return project_id
+
 
     @staticmethod
     def get_project_name(path):
