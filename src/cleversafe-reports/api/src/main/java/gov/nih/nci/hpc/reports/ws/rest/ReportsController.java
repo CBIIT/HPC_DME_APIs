@@ -26,6 +26,8 @@ public class ReportsController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private JSONParser jsonParser = new JSONParser();
+    private long teraBytes = 1024 * 1024 * 1024 * 1024;
+
 
     @RequestMapping("/vaultsummary")
     public VaultSummary[] getVaultSummary() throws Exception {
@@ -53,8 +55,8 @@ public class ReportsController {
                 VaultSummary vaultSummary = new VaultSummary();
                 vaultSummary.setName((String) vault.get("name"));
                 vaultSummary.setDescription((String) vault.get("description"));
-                vaultSummary.setCapacity((Long) vault.get("usableSize"));
-                vaultSummary.setUsed((Long) vault.get("usedLogicalSizeFromStorage"));
+                vaultSummary.setCapacity((Long) vault.get("usableSize") / teraBytes);
+                vaultSummary.setUsed((Long) vault.get("usedLogicalSizeFromStorage") / teraBytes);
                 vaultSummaries.add(vaultSummary);
             }
         }
