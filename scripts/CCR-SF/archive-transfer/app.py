@@ -202,26 +202,6 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
         logging.info("Created contents file: " + command)
         tarfile_contents = open(tarfile_name + '.list')
 
-    #try:
-    #    tarfile_contents = open(tarfile_path + '.list')
-
-    #except IOError as e:
-        #tar.gz.list is not present, so try _archive.list
-    #    try:
-    #        tarfile_contents = open(tarfile_path.split(".tar.gz")[0] + "_archive.list")
-
-    #    except IOError as e:
-    #        try:
-    #            tarfile_contents = open(tarfile_path.split(".gz")[0] + '.list.txt')
-
-    #        except IOError as e:
-                # There is no contents file for this tarball, so create one
-    #            command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
-                #os.system(command)
-    #            subprocess.call(command, shell=True)
-    #            logging.info("Created contents file: " + command)
-    #            tarfile_contents = open(tarfile_name + '.list')
-
     return tarfile_contents
 
 
@@ -304,13 +284,18 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     includes.flush()
 
-
+    #Record to csv file: tarfile name, file path, archive path
+    csv_file.write(tarfile_name, fullpath, archive_path)
 
 
 files_registered = 0
 bytes_stored = 0L
 excludes = open("excluded_files", "a")
 includes = open("registered_files", "a")
+
+csv_file = open("sf_metadata.csv", "a")
+csv_file.write("Tarfile, Archivefile, ArchivePath\n")
+
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
