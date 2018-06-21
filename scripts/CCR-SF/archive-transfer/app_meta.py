@@ -51,12 +51,7 @@ def main(args):
 
                 # Extract the info for PI metadata
 
-                path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
-
-                #strip 'Project_' if it exists
-                path = path.replace("Project_", "")
-
-                logging.info('metadata base: ' + path)
+                path = get_meta_path(filepath)
 
                 # Register PI collection
                 register_collection(path, "PI_Lab", tarfile_name, False)
@@ -124,7 +119,23 @@ def main(args):
 
         logging.info('Done processing file: ' + tarfile_path)
 
+
+
+def get_meta_path(filepath, log = True):
+    path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
+
+    # strip 'Project_' if it exists
+    path = path.replace("Project_", "")
+
+    if log is True:
+        logging.info('metadata base: ' + path)
+
+    return path
+
+
 def record_exclusion(str):
+    global excludes
+
     excludes.writelines(str + '\n')
     excludes.flush()
     logging.warning('Ignoring file ' + str)
@@ -231,7 +242,7 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     #Build metadata for the object
-    global files_registered, bytes_stored
+    global files_registered, bytes_stored, includes, csv_file
     object_to_register = SFObject(filepath, tarfile_name, has_parent, type)
     object_metadata = object_to_register.get_metadata()
 
@@ -264,7 +275,10 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     #Record to csv file: tarfile name, file path, archive path
     normalized_filepath = fullpath.split("uploads/")[-1]
-    csv_file.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + "\n")
+    path = get_meta_path(fullpath, False)
+    csv_file.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
+        SFHelper.get_flowcell_id(tarfile_name) + ", " +  SFHelper.get_pi_name(path) + ", " +
+        SFHelper.get_project_id(path) + "\n")
 
 
 
@@ -275,7 +289,7 @@ excludes = open("excluded_files_dryrun", "a")
 includes = open("registered_files_dryrun", "a")
 
 csv_file = open("sf_metadata.csv", "a")
-csv_file.write("Tarfile, Archivefile, ArchivePath\n")
+csv_file.write("Tarfile, ArchiveFile, ArchivePath, Flowcell_Id, PI_Name, Project_Id\n")
 
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)

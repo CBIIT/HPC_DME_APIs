@@ -74,6 +74,7 @@ class SFHelper(object):
         for element in path_elements:
             if element.isdigit():
                 project_id = element
+                break
 
 
         #Assumes that PI and contact names are in the format 'FirstnameLastname'
