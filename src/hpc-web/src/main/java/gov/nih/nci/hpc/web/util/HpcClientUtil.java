@@ -867,7 +867,6 @@ public class HpcClientUtil {
           && collection.getCollectionPaths().size() > 0)
         throw new HpcWebException("Failed to create. Collection already exists: " + path);
 
-      validateArchivePathName(path);
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcCollectionURL).path("/{dme-archive-path}")
         .buildAndExpand(path).encode().toUri().toURL().toExternalForm(),
@@ -982,7 +981,6 @@ public class HpcClientUtil {
         // Data file is not there!
       }
 
-      validateArchivePathName(path);
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcDatafileURL).path("/{dme-archive-path}").buildAndExpand(
         path).encode().toUri().toURL().toExternalForm(), hpcCertPath,
@@ -1929,44 +1927,7 @@ public class HpcClientUtil {
   }
 
 
-  private static String produceForbiddenCharsDisplayString() {
-    if (null == appProperties) {
-      loadApplicationProperties();
-    }
-    char[] fcArr = appProperties.getProperty(
-      "dme.archive.naming.forbidden.chararacters").toCharArray();
-    StringBuilder sb = new StringBuilder();
-    for (char fc : fcArr) {
-      if (sb.length() > 0) {
-        sb.append(" ");
-      }
-      sb.append(fc);
-    }
-    sb.insert(0, "{");
-    sb.append("}");
-    return sb.toString();
-  }
 
-
-  public static void validateArchivePathName(String pathName) {
-    if (StringUtils.hasText(pathName)) {
-      if (null == appProperties) {
-        loadApplicationProperties();
-      }
-      char[] fcArr = appProperties.getProperty(
-        "dme.archive.naming.forbidden.chararacters").toCharArray();
-      for (char fc : fcArr) {
-        if (pathName.contains(String.valueOf(fc))) {
-          String errorMsg = appProperties.getProperty(
-            "error.message.template.invalid.path.forbidden.chars")
-            .replace("PLACEHOLDER-PATH", pathName)
-            .replace("PLACEHOLDER-CHARSET",
-              produceForbiddenCharsDisplayString());
-          throw new HpcWebException(errorMsg);
-        }
-      }
-    }
-  }
 
 
 
