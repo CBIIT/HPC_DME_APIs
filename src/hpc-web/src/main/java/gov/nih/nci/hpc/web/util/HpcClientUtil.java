@@ -28,7 +28,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -1030,9 +1029,6 @@ public class HpcClientUtil {
       String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
       String hpcCertPath, String hpcCertPassword) {
     try {
-      validateDataObjectRegistrationDestinationPaths(
-        datafileDTO.getDataObjectRegistrationItems());
-
       WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
@@ -1973,58 +1969,6 @@ public class HpcClientUtil {
   }
 
 
-  private static void validateDataObjectRegistrationDestinationPaths(
-      List<HpcDataObjectRegistrationItemDTO> dataObjRegItems) {
-    List<String> invalidPaths = new ArrayList<>();
-    List<String> otherErrors = new ArrayList<>();
-    for (HpcDataObjectRegistrationItemDTO regItem : dataObjRegItems) {
-      try {
-        validateArchivePathName(regItem.getPath());
-      } catch (HpcWebException e) {
-        String exceptionMsg = e.getMessage().trim();
-        int firstSpacePos = exceptionMsg.indexOf(" ");
-        if (-1 == firstSpacePos) {
-          otherErrors.add(exceptionMsg);
-        } else {
-          invalidPaths.add(exceptionMsg.substring(0, firstSpacePos));
-        }
-      }
-    }
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < invalidPaths.size(); i++) {
-      if (i > 0) {
-        sb.append(", ");
-      }
-      if (i == invalidPaths.size() - 1) {
-        sb.append("& ");
-      }
-      sb.append(invalidPaths.get(i));
-    }
-    String invalidPaths4Display = sb.toString();
-    sb.setLength(0);
-    for (int j = 0; j < otherErrors.size(); j++) {
-      sb.append("\n[[ ")
-        .append(otherErrors.get(j))
-        .append(" ]]");
-    }
-    String otherErrors4Display = sb.toString();
-    sb.setLength(0);
-    if (!invalidPaths4Display.isEmpty()) {
-      String invalidPathsMsg = appProperties.getProperty(
-        "error.message.template.multiple.invalid.paths.forbidden.chars")
-        .replace("PLACEHOLDER-PATHS", invalidPaths4Display)
-        .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
-      sb.append(invalidPathsMsg);
-    }
-    if (!otherErrors4Display.isEmpty()) {
-      sb.append("\n\nOther errors: ")
-        .append(otherErrors4Display);
-    }
-    if (sb.length() > 0) {
-      String combinedErrorMsgs = sb.toString();
-      throw new HpcWebException(combinedErrorMsgs);
-    }
-  }
 
 
 }
