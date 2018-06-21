@@ -57,6 +57,8 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
+	@Value("${dme.archive.naming.forbidden.chararacters}")
+  private String forbiddenCharacters;
 
 	/**
 	 * Get selected collection details from its path
@@ -126,6 +128,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		}
 
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
+		model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
 		return "addcollection";
 	}
 
@@ -152,6 +155,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		populateFormAttributes(request, session, model, basePath,
 				collectionType, refresh, false);
 		model.addAttribute("create", true);
+    model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
 		return "addcollection";
 	}
 
@@ -270,6 +274,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			}
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to create collection: " + e.getMessage());
+      model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
 			return "addcollection";
 		} finally {
 			if (originPath == null)
