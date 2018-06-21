@@ -13,16 +13,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,8 +121,12 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService {
 
   private static final String MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS =
-    "Path \"%s\" contains forbidden character(s).  Following characters are" +
-    " forbidden: %s.";
+    "Path PLACEHOLDER-PATH contains forbidden character(s).  Following" +
+    " characters are forbidden: PLACEHOLDER-CHARSET.";
+
+  private static final String MSG_TEMPLATE__MULTI_INVALID_PATHS =
+    "PLACEHOLDER-PATHS are invalid DME archive paths because each contains " +
+    "forbidden character(s) from following set: PLACEHOLDER-CHARSET.";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -895,6 +895,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       return responseDTO;
     }
 
+    validateDataObjectRegistrationDestinationPaths(
+      bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems());
+
     // Break the DTO into a map of registration requests and ensure no duplication
     // of registration paths.
     Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests = new HashMap<>();
@@ -920,7 +923,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             "Null / Empty path in registration request", HpcErrorType.INVALID_REQUEST_INPUT);
       }
 
-      validateDmeArchivePathHasNoForbiddenChars(path);
+      //validateDmeArchivePathHasNoForbiddenChars(path);
 
       // Validate no multiple registration requests for the same path.
       if (dataObjectRegistrationRequests.put(path, dataObjectRegistrationRequest) != null) {
@@ -2313,21 +2316,99 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
 
+  private String produceForbiddenCharsDisplayString() {
+    final String retString = HpcUtil.generateForbiddenCharsFormatted(
+      Optional.empty(), Optional.empty(),
+      Optional.of("{"), Optional.of("}"));
+    return retString;
+  }
+
+
   private void validateDmeArchivePathHasNoForbiddenChars(String path) throws
     HpcException {
     if (HpcUtil.doesPathContainForbiddenChars(path)) {
-      final String forbiddenCharsDisplayString = HpcUtil
-        .generateForbiddenCharsFormatted(
-          Optional.empty(),
-          Optional.empty(),
-          Optional.of("{"),
-          Optional.of("} (enclosed in curly braces)"));
-      final String exceptionMsg = String.format(
-        MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS,
-        path, forbiddenCharsDisplayString);
+      final String exceptionMsg = MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS
+        .replace("PLACEHOLDER-PATH", path)
+        .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
       throw new HpcException(exceptionMsg, HpcErrorType.INVALID_REQUEST_INPUT);
     }
   }
 
+  private void validateDataObjectRegistrationDestinationPaths(
+    List<HpcDataObjectRegistrationItemDTO> dataObjRegItems)
+    throws HpcException {
+    List<String> invalidPaths = new ArrayList<>();
+    List<String> otherErrors = new ArrayList<>();
+    for (HpcDataObjectRegistrationItemDTO regItem : dataObjRegItems) {
+      try {
+        validateDmeArchivePathHasNoForbiddenChars(regItem.getPath());
+      } catch (HpcException e) {
+        String exceptionMsg = e.getMessage();
+        String badPathForbidCharsMsg = MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS
+          .replace("PLACEHOLDER-PATH", regItem.getPath())
+          .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
+        if (badPathForbidCharsMsg.equals(exceptionMsg)) {
+          invalidPaths.add(regItem.getPath());
+        } else {
+          otherErrors.add(exceptionMsg);
+        }
+      }
+    }
+    StringBuilder sb = new StringBuilder();
+    sb.append(constructMultiInvalidPathsErrMsg(invalidPaths));
+    if (sb.length() > 0) {
+      sb.append("\n\n\n");
+    }
+    sb.append(constructOtherErrorsMsg(otherErrors));
+    if (sb.length() > 0) {
+      String accumulatedErrorsMsg = sb.toString();
+      throw new HpcException(accumulatedErrorsMsg,
+        HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+  }
+
+
+  private String constructMultiInvalidPathsErrMsg(List<String> invalidPaths) {
+    String retMsg = "";
+    if (null != invalidPaths && !invalidPaths.isEmpty()) {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < invalidPaths.size(); i++) {
+        if (i > 0) {
+          sb.append(", ");
+        }
+        if (i == invalidPaths.size() - 1) {
+          sb.append("& ");
+        }
+        sb.append(invalidPaths.get(i));
+      }
+      final String thePaths4Display = sb.toString();
+
+      final String forbiddenChars4Display =
+        HpcUtil.generateForbiddenCharsFormatted(
+          Optional.empty(), Optional.empty(),
+          Optional.of("{"), Optional.of("}"));
+
+      retMsg = MSG_TEMPLATE__MULTI_INVALID_PATHS
+        .replace("PLACEHOLDER-PATHS", thePaths4Display)
+        .replace("PLACEHOLDER-CHARSET", forbiddenChars4Display);
+    }
+
+    return retMsg;
+  }
+
+
+  private String constructOtherErrorsMsg(List<String> otherErrors) {
+    String retMsg = "";
+    if (null != otherErrors && !otherErrors.isEmpty()) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Other errors: ");
+      for (int j = 0; j < otherErrors.size(); j++) {
+        sb.append("\n[[ ").append(otherErrors.get(j)).append(" ]]");
+      }
+      retMsg = sb.toString();
+    }
+
+    return retMsg;
+  }
 
 }
