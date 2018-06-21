@@ -61,6 +61,8 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 	private String serverURL;
 	@Value("${gov.nih.nci.hpc.server.bulkregistration}")
 	private String bulkRegistrationURL;
+	@Value("${dme.archive.naming.forbidden.chararacters}")
+	private String forbiddenChars;
 
 	/**
 	 * Get selected collection details from its path
@@ -152,7 +154,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 		}
 		model.addAttribute("hpcDatafile", new HpcDatafileModel());
 		model.addAttribute("serverURL", serverURL);
-
+    model.addAttribute("invalidCharacters4PathName", forbiddenChars);
 		return "adddatafile";
 	}
 
@@ -264,6 +266,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 
 				populateFormAttributes(request, session, model, basePath,
 						collectionType, false, true);
+        model.addAttribute("invalidCharacters4PathName", forbiddenChars);
 				return "adddatafile";
 			}
 			// if (uploadType != null && uploadType.equals("async")) {
@@ -292,6 +295,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			// }
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to create data file: " + e.getMessage());
+      model.addAttribute("invalidCharacters4PathName", forbiddenChars);
 			return "adddatafile";
 		} finally {
 			if (!registered) {
@@ -361,6 +365,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 				collectionType, refresh, true);
 		model.addAttribute("create", true);
 		model.addAttribute("serverURL", serverURL);
+    model.addAttribute("invalidCharacters4PathName", forbiddenChars);
 		return "adddatafile";
 	}
 

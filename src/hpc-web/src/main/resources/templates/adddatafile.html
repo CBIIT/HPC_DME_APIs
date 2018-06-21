@@ -56,6 +56,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var attributeNames = [[${attributeNames}]];
+    var invalidCharacters4PathName = [[${invalidCharacters4PathName}]];
 /*]]>*/
 </script>
 
@@ -334,27 +335,63 @@
 	    return false;
 	}	
 
+  function checkPathForInvalidChars(path) {
+    var invalidCharsFound = false;
+    var i;
+    for (i = 0; i < invalidCharacters4PathName.length; i++) {
+      var badChar = invalidCharacters4PathName.charAt(i);
+      if (path.indexOf(badChar) != -1) {
+        invalidCharsFound = true;
+        break;
+      }
+    }
+    return invalidCharsFound;
+  }
+
+  function produceInvalidChars4Display(separator, leftEndDecorator, rightEndDecorator) {
+    var displayText = '';
+    var listSeparation = separator ? separator : ' ';
+    for (var i = 0; i < invalidCharacters4PathName.length; i++) {
+      displayText += ((i == 0 ? '' : listSeparation) + invalidCharacters4PathName.charAt(i));
+    }
+    if (leftEndDecorator && rightEndDecorator) {
+      displayText = leftEndDecorator + displayText + rightEndDecorator;
+    }
+    return displayText;
+  }
+
 	function validate()
 	{
-		if(!document.getElementById("path").value)
+	  var inputPath = document.getElementById("path").value
+	  if (inputPath) {
+	    inputPath = inputPath.trim();
+	  }
+
+		if (!inputPath)
 		{
-			alert("Path is missng!")
-			return false;
-		}
-		
-		var fileName = document.getElementById("hpcDatafile").value;
-		if(fileName == null || fileName == "")
-		{
-			alert("Data file is missng!")
+			alert("Path is missing!")
 			return false;
 		}
 
-		if (!(/^\S{3,}$/.test(document.getElementById("path").value)))
+		var fileName = document.getElementById("hpcDatafile").value;
+		if (fileName == null || fileName == "")
+		{
+			alert("Data file is missing!")
+			return false;
+		}
+
+		if (!(/^\S{3,}$/.test(inputPath)))
 		{
 			alert("Space is not allowed in the path!")
 			return false;
 		}
-		
+
+		if (checkPathForInvalidChars(inputPath)) {
+		  alert("Path cannot contains any of following invalid characters: " +
+		    produceInvalidChars4Display());
+		  return false;
+		}
+
 		if(attributeNames)
 		{
 			for(var i=0;i<attributeNames.length;i++)
