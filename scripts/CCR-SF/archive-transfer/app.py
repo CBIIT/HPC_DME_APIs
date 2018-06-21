@@ -295,10 +295,16 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
 
     # Record to csv file: tarfile name, file path, archive path
+    flowcell_id = SFHelper.get_flowcell_id(tarfile_name)
     normalized_filepath = fullpath.split("uploads/")[-1]
-    path = get_meta_path(fullpath, False)
+    if filepath.endswith('html'):
+        head, sep, tail = fullpath.partition('all/')
+        path = head.split(flowcell_id + '/')[-1]
+    else:
+        path = get_meta_path(fullpath, False)
+
     csv_file.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
-        SFHelper.get_flowcell_id(tarfile_name) + ", " + SFHelper.get_pi_name(path) + ", " +
+        flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " +
         SFHelper.get_project_id(path) + "\n")
 
 
