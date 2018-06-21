@@ -122,7 +122,8 @@ def main(args):
 
 
 def get_meta_path(filepath, log = True):
-    path = re.sub(r'.*Unaligned[^/]*/', '', filepath)
+    path = filepath.replace("uploads/", "")
+    path = re.sub(r'.*Unaligned[^/]*/', '', path)
 
     # strip 'Project_' if it exists
     path = path.replace("Project_", "")
