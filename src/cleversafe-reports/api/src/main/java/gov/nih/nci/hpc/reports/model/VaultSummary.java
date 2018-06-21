@@ -6,6 +6,7 @@ public class VaultSummary {
     private String description = null;
     private Long capacity = null;
     private Long used = null;
+    private String creationDate = null;
 
     public String getName() {
         return name;
@@ -34,6 +35,13 @@ public class VaultSummary {
     }
     public void setUsed(Long used) {
         this.used =  used;
+    }
+
+    public String getCreationDate() {
+        return creationDate;
+    }
+    public void setCreationDate(String creationDate) {
+        this.creationDate = creationDate;
     }
 
 }
