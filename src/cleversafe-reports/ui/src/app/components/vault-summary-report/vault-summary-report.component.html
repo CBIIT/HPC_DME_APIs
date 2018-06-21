@@ -4,12 +4,14 @@
     <tr>
       <th>Name</th>
       <th>Description</th>
+      <th>Creation Date</th>
       <th>Capacity</th>
       <th>Used</th>
     </tr>
     <tr *ngFor="let vault of vaults">
       <td>{{vault.name}}</td>
       <td>{{vault.description}}</td>
+      <td style="white-space: nowrap;">{{vault.creationDate}}</td>
       <td>{{vault.capacity}}</td>
       <td>{{vault.used}}</td>
     </tr>

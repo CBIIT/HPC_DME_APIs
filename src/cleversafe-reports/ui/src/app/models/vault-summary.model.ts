@@ -4,4 +4,5 @@ export class VaultSummary {
   description: string;
   capacity: number;
   used: number;
+  creationDate: string;
 }
