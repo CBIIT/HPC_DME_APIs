@@ -125,8 +125,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     " characters are forbidden: PLACEHOLDER-CHARSET.";
 
   private static final String MSG_TEMPLATE__MULTI_INVALID_PATHS =
-    "PLACEHOLDER-PATHS are invalid DME archive paths because each contains " +
-    "forbidden character(s) from following set: PLACEHOLDER-CHARSET.";
+  "The following destination paths for DME archive are invalid:\n" +
+  "PLACEHOLDER-PATHS \n\nEach invalid path contains forbidden character(s)" +
+  " from following set: PLACEHOLDER-CHARSET.";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -2372,14 +2373,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     String retMsg = "";
     if (null != invalidPaths && !invalidPaths.isEmpty()) {
       StringBuilder sb = new StringBuilder();
+      String indent = "     ";
       for (int i = 0; i < invalidPaths.size(); i++) {
-        if (i > 0) {
-          sb.append(", ");
-        }
-        if (i == invalidPaths.size() - 1) {
-          sb.append("& ");
-        }
-        sb.append(invalidPaths.get(i));
+        sb.append("\n").append(indent)
+          .append(i).append(". ")
+          .append(invalidPaths.get(i));
       }
       final String thePaths4Display = sb.toString();
 

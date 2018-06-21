@@ -322,7 +322,9 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 
 			// clearSessionAttrs(session);
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed to create data file: " + e.getMessage());
+		  String msg = e.getMessage().replace("\n", "<br/>");
+		  model.addAttribute("error", "Failed to create data file: <br/><br/>" +
+        msg);
 			return "adddatafilebulk";
 		} finally {
 			if (parent == null || parent.isEmpty()) {
