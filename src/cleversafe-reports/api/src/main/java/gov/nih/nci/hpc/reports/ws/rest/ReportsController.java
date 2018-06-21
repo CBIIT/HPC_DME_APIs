@@ -57,7 +57,7 @@ public class ReportsController {
                 vaultSummary.setDescription((String) vault.get("description"));
                 vaultSummary.setCapacity((Long) vault.get("usableSize") / teraBytes);
                 vaultSummary.setUsed((Long) vault.get("usedLogicalSizeFromStorage") / teraBytes);
-                vaultSummary.setCreationDate((String) vault.get("creationDate"));
+                vaultSummary.setCreationDate(((String) vault.get("creationDate")).substring(0, 15));
                 vaultSummaries.add(vaultSummary);
             }
         }
