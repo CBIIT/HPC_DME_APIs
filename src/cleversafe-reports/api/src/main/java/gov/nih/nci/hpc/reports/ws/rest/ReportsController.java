@@ -45,10 +45,15 @@ public class ReportsController {
     }
 
     @RequestMapping("/vaultsummarytemp")
-    public ResponseEntity<String> getVaultSummaryTemp() throws Exception {
+    public String getVaultSummaryTemp() throws Exception {
 
         RestTemplate restTemplate = new RestTemplateBuilder().basicAuthorization("ncifhpcdmsvcp", "").build();
-        return restTemplate.getForEntity("https://fr-s-clvrsf-mgr.ncifcrf.gov/manager/api/json/1.0/listVaults.adm", String.class);
+        ResponseEntity<String> reportData = restTemplate.getForEntity("https://fr-s-clvrsf-mgr.ncifcrf.gov/manager/api/json/1.0/listVaults.adm", String.class);
+        if (!reportData.getStatusCode().equals(HttpStatus.OK)) {
+            throw new Exception("Failed to call service: " + reportData.getStatusCode());
+        }
+
+        return reportData.getBody();
     }
 
     private Collection<VaultSummary> fromJSON(String responseStr) throws ParseException {
