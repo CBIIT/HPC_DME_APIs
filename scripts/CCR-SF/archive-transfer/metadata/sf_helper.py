@@ -21,7 +21,7 @@ class SFHelper(object):
             # If the 4th is alpha, then pick the first 2
             pi_name = path_elements[0] + "_" + path_elements[1]
         else:
-            if len(path_elements) > 2 and path_elements[2].isalpha():
+            if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
                 # else if the first 3 are alpha pick 0 and 2
                 pi_name = path_elements[0] + "_" + path_elements[2]
             else:
