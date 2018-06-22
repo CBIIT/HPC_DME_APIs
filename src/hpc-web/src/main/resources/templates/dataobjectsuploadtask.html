@@ -146,13 +146,13 @@
 								</div>
 
 							</div>
-							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() > 0}">
+							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
 								</h2>
 							</div>
 							<div class="panel-body"
-								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() > 0}">
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
 								<div class="panel panel-default"
 									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems()}" style="margin-top:5px" >
 									<div class="col-md-12 form-group">
@@ -176,13 +176,20 @@
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() > 0}">
+							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() &gt; 0}">
+								<div class="col-md-3">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>Failed</strong>
+									</h2>
+								</div>
+								<div class="col-md-3 col-md-offset-6">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
+									<strong> <a id="uploadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryUpload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-refresh" title="Retry Failed" aria-hidden="true"></i></a></strong>
 								</h2>
+								</div>
 							</div>
 							<div class="panel-body"
-								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() > 0}">
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() &gt; 0}">
 								<div class="panel panel-default"
 									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems()}"  style="margin-top:5px">
 									<div class="col-md-12 form-group">
@@ -263,6 +270,14 @@
 	
 	
 <script th:inline="javascript">	
+
+function retryUpload(task, taskType)
+{
+	document.getElementById("taskId").value = task;
+	document.getElementById("taskType").value = taskType;
+	$("#uploadForm").submit();
+	
+}
 
 var pollPercentComplete = setInterval(
 function getPercentComplete() {

@@ -119,6 +119,7 @@
 		<value>dataObjectRegistrationItems</value>
 		<value>parentCollectionMetadataEntries</value>
 		<value>permissionsForCollections</value>
+		<value>failedItemsRequest</value>
 	</util:list>
 
 	<!-- JSON Provider -->
