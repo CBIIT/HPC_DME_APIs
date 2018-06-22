@@ -2227,9 +2227,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         item.getTask().setPercentComplete(null);
         taskDTO.getFailedItems().add(item.getTask());
       }
+      taskDTO.getFailedItemsRequest().add(dataObjectRegistrationRequestToDTO(item.getRequest(), item.getTask().getPath()));
     }
   }
 
+  private HpcDataObjectRegistrationItemDTO dataObjectRegistrationRequestToDTO(HpcDataObjectRegistrationRequest request, String path)
+  {
+    HpcDataObjectRegistrationItemDTO dto = new HpcDataObjectRegistrationItemDTO();
+    dto.setCallerObjectId(request.getCallerObjectId());
+    dto.setCreateParentCollections(request.getCreateParentCollections());
+    dto.setPath(path);
+    dto.setSource(request.getSource());
+    dto.getMetadataEntries().addAll(request.getMetadataEntries());
+    dto.getParentCollectionMetadataEntries().addAll(request.getParentCollectionMetadataEntries());
+    return dto;
+  }
+  
   private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
       throws HpcException {
     // Input validation.

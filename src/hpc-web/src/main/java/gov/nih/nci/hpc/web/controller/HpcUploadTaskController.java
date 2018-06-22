@@ -10,8 +10,11 @@
 package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.web.util.MiscUtil;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -31,13 +34,19 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -111,4 +120,71 @@ public class HpcUploadTaskController extends AbstractHpcController {
 	}
 	
 
+	  /**
+	   * POST action to retry failed upload files.
+	   * 
+	   * @param uploadFile
+	   * @param model
+	   * @param bindingResult
+	   * @param session
+	   * @param request
+	   * @param response
+	   * @return
+	   */
+	  @JsonView(Views.Public.class)
+	  @RequestMapping(method = RequestMethod.POST)
+	  public String retryUpload(@RequestBody(required = false) String body,
+	      @RequestParam String taskId, Model model,
+	      BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
+	    AjaxResponseBody result = new AjaxResponseBody();
+	    try {
+	      String authToken = (String) session.getAttribute("hpcUserToken");
+	      if (authToken == null) {
+	        result.setMessage("Invalid user session, expired. Please login again.");
+	        final Map<String, String> qParams = new HashMap<>();
+	        qParams.put("returnPath", "uploadtask");
+	        qParams.put("taskId", taskId);
+	        return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
+	          qParams));
+	      }
+
+	      model.addAttribute("taskId", taskId);
+          HpcBulkDataObjectRegistrationStatusDTO uploadTask = HpcClientUtil
+              .getDataObjectRegistrationTask(authToken, this.registrationServiceURL,
+                    taskId, this.sslCertPath, this.sslCertPassword);
+
+	      HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructBulkRequest(request, session,
+	          uploadTask);
+
+         HpcBulkDataObjectRegistrationResponseDTO responseDTO = HpcClientUtil.registerBulkDatafiles(authToken,
+             registrationServiceURL, registrationDTO, sslCertPath, sslCertPassword);
+         if (responseDTO != null) {
+             StringBuffer info = new StringBuffer();
+             for (HpcDataObjectRegistrationItemDTO responseItem : responseDTO.getDataObjectRegistrationItems()) {
+                 info.append(responseItem.getPath()).append("<br/>");
+             }
+             model.addAttribute("error",
+                     "Bulk Data file registration request is submmited! Task Id: " + responseDTO.getTaskId());
+         }
+		model.addAttribute("hpcBulkDataObjectRegistrationTaskDTO", uploadTask.getTask());
+
+	    } catch (HttpStatusCodeException e) {
+	      result.setMessage("Upload request is not successfull: " + e.getMessage());
+	        return "dataobjectsuploadtask";
+	    } catch (RestClientException e) {
+	      result.setMessage("Upload request is not successfull: " + e.getMessage());
+	        return "dataobjectsuploadtask";
+	    } catch (Exception e) {
+	      result.setMessage("Upload request is not successfull: " + e.getMessage());
+	        return "dataobjectsuploadtask";
+	    }
+	    return "dataobjectsuploadtask";
+	  }
+
+	    protected HpcBulkDataObjectRegistrationRequestDTO constructBulkRequest(HttpServletRequest request,
+            HttpSession session, HpcBulkDataObjectRegistrationStatusDTO uploadTask) {
+        HpcBulkDataObjectRegistrationRequestDTO dto = new HpcBulkDataObjectRegistrationRequestDTO();
+        dto.getDataObjectRegistrationItems().addAll(uploadTask.getTask().getFailedItemsRequest());
+        return dto;
+    }
 }
