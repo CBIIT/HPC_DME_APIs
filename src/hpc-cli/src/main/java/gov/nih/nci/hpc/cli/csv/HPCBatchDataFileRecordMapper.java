@@ -7,6 +7,8 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.csv;
 
+import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +55,8 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 	}
 
 	@Override
-	public GenericRecord processRecord(final ApacheCommonCsvRecord record) throws RecordMappingException {
+	public GenericRecord processRecord(final ApacheCommonCsvRecord record)
+		throws RecordMappingException, HpcCmdException {
 		CSVRecord csvRecord = record.getPayload();
 		String objectPath = null;
 		List<HpcMetadataEntry> metadataAttributes = new ArrayList<HpcMetadataEntry>();
@@ -76,6 +79,15 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
 				continue;
 			} else if (entry.getKey().equals("object_path")) {
 				objectPath = cellVal;
+				// validateDmeArchivePath method below could throw HpcCmdException
+				try {
+					HpcClientUtil.validateDmeArchivePath(objectPath);
+				} catch (HpcCmdException e) {
+					String enhancedMsg = "Failed to process record in CSV file;" +
+						" reason: [" + e.getMessage() + "]\n" +
+						"  Echo CSV record: [" + csvRecord.toString() + "]\n\n";
+					throw new HpcCmdException(enhancedMsg);
+				}
 				continue;
 			}
 			if (StringUtils.isNotBlank(cellVal)) {
