@@ -7,9 +7,10 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_pi_name(path):
+    def get_pi_name(path, log = True):
 
-        logging.info("Getting pi_name from path: " + path)
+        if log is True:
+            logging.info("Getting pi_name from path: " + path)
         # derive pi name
         #path_elements = path.split("_")
         path_elements = (path.split("/")[0]).split("_")
@@ -20,11 +21,11 @@ class SFHelper(object):
             # If the 4th is alpha, then pick the first 2
             pi_name = path_elements[0] + "_" + path_elements[1]
         else:
-            if len(path_elements) > 2 and path_elements[2].isalpha():
+            if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
                 # else if the first 3 are alpha pick 0 and 2
                 pi_name = path_elements[0] + "_" + path_elements[2]
             else:
-                if path_elements[1].isalpha():
+                if len(path_elements) > 1 and path_elements[1].isalpha():
                     # else if the first 2 are alpha, pick 0 and 1
                     pi_name = path_elements[0] + "_" + path_elements[1]
                 else:
@@ -33,7 +34,8 @@ class SFHelper(object):
 
         #Assumes that PI name is in the beginning, and the format is FirstnameLastname
         #pi_name = re.sub(r'([A-Z])', r' \1', path_elements[0])
-        logging.info("pi_name from " + path + " is " + pi_name)
+        if log is True:
+            logging.info("pi_name from " + path + " is " + pi_name)
         return pi_name
 
 
@@ -63,8 +65,11 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_project_id(path):
-        logging.info("Getting project_id from path: " + path)
+    def get_project_id(path, log = True):
+
+        if log is True:
+            logging.info("Getting project_id from path: " + path)
+        project_id = 'placeholder'
 
         #path_elements = path.split("_")
         path_elements = (path.split("/")[0]).split("_")
@@ -73,12 +78,16 @@ class SFHelper(object):
         for element in path_elements:
             if element.isdigit():
                 project_id = element
+                break
+
 
         #Assumes that PI and contact names are in the format 'FirstnameLastname'
         #project_id = path_elements[2]
 
-        logging.info("project_id from " + path + " is " + project_id)
+        if log is True:
+            logging.info("project_id from " + path + " is " + project_id)
         return project_id
+
 
     @staticmethod
     def get_project_name(path):
@@ -98,12 +107,19 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_flowcell_id(tarfile):
-        logging.info("Getting flowcell_id from tarfile: " + tarfile)
+    def get_flowcell_id(tarfile, log = True):
+
+        if log is True:
+            logging.info("Getting flowcell_id from tarfile: " + tarfile)
+
         #Rule: After the last underscore in tar filename
         #flowcell_str = tarfile.split(".")[0].split("_")[-1]
         flowcell_str = tarfile.split(".")[0].split("_")[3]
         flowcell_id = flowcell_str[1:len(flowcell_str)]
+
+        if log is True:
+            logging.info("Flowcell_id from tarfile: " + tarfile + " is " + flowcell_id)
+
         return flowcell_id
 
 
