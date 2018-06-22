@@ -122,6 +122,7 @@ def main(args):
 
 
 def get_meta_path(filepath, log = True):
+
     path = filepath.replace("uploads/", "")
     path = re.sub(r'.*Unaligned[^/]*/', '', path)
 
@@ -135,6 +136,8 @@ def get_meta_path(filepath, log = True):
 
 
 def record_exclusion(str):
+    global excludes
+
     excludes.writelines(str + '\n')
     excludes.flush()
     logging.warning('Ignoring file ' + str)
@@ -184,11 +187,11 @@ def get_tarball_contents(tarfile_name, tarfile_dir):
             logging.info(tarfile_name + ': No contents to extract')
         return
 
-    if '-' in tarfile_name:
+    #if '-' in tarfile_name:
         # this tarball contains '-', hence ignore for now because we wont be able to extract metadata correctly
-        excludes_str = ': Invalid file format - contains - in filename, cannot parse for metadata \n'
-        record_exclusion(tarfile_name + excludes_str)
-        return
+        #excludes_str = ': Invalid file format - contains - in filename, cannot parse for metadata \n'
+        #record_exclusion(tarfile_name + excludes_str)
+        #return
 
     tarfile_path = tarfile_dir + '/' + tarfile_name
     contentFiles = [tarfile_path + '.list', tarfile_path + '_archive.list',
