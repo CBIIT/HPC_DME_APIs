@@ -2226,8 +2226,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       } else {
         item.getTask().setPercentComplete(null);
         taskDTO.getFailedItems().add(item.getTask());
+        taskDTO.getFailedItemsRequest().add(dataObjectRegistrationRequestToDTO(item.getRequest(), item.getTask().getPath()));
       }
-      taskDTO.getFailedItemsRequest().add(dataObjectRegistrationRequestToDTO(item.getRequest(), item.getTask().getPath()));
     }
   }
 
