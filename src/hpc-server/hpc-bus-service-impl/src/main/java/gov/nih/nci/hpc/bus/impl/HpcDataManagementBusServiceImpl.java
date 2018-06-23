@@ -907,7 +907,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectRegistrationRequest.setSource(dataObjectRegistrationItem.getSource());
       dataObjectRegistrationRequest
           .getMetadataEntries()
-          .addAll(dataObjectRegistrationItem.getMetadataEntries());
+          .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
       dataObjectRegistrationRequest
           .getParentCollectionMetadataEntries()
           .addAll(dataObjectRegistrationItem.getParentCollectionMetadataEntries());
@@ -2060,7 +2060,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
         new HpcDataObjectRegistrationItemDTO();
     dataObjectRegistration.setPath(basePath + scanItem.getFilePath());
-    dataObjectRegistration.getMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
+    dataObjectRegistration.getDataObjectMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
     dataObjectRegistration.setCreateParentCollections(true);
     dataObjectRegistration
         .getParentCollectionMetadataEntries()
@@ -2238,7 +2238,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dto.setCreateParentCollections(request.getCreateParentCollections());
     dto.setPath(path);
     dto.setSource(request.getSource());
-    dto.getMetadataEntries().addAll(request.getMetadataEntries());
+    dto.getDataObjectMetadataEntries().addAll(request.getMetadataEntries());
     dto.getParentCollectionMetadataEntries().addAll(request.getParentCollectionMetadataEntries());
     return dto;
   }
