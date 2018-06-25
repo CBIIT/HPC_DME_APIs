@@ -1,6 +1,5 @@
 package gov.nih.nci.hpc.reports.ws.rest;
 
-import gov.nih.nci.hpc.reports.model.CraReport;
 import gov.nih.nci.hpc.reports.model.VaultSummary;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -41,14 +40,9 @@ public class ReportsController {
 
         Collection<VaultSummary> vaultSummaries = fromJSON(reportData.getBody());
         VaultSummary[] vaultSummariesArray = new VaultSummary[vaultSummaries.size()];
+
+        logger.info("Vault Summary Report size: " + vaultSummaries.size());
         return vaultSummaries.toArray(vaultSummariesArray);
-    }
-
-    @RequestMapping("/vaultsummarytemp")
-    public ResponseEntity<?> getVaultSummaryTemp() throws Exception {
-
-        RestTemplate restTemplate = new RestTemplateBuilder().basicAuthorization("ncifhpcdmsvcp", "").build();
-        return restTemplate.getForEntity("https://fr-s-clvrsf-mgr.ncifcrf.gov/manager/api/json/1.0/listVaults.adm", Object.class);
     }
 
     private Collection<VaultSummary> fromJSON(String responseStr) throws ParseException {
