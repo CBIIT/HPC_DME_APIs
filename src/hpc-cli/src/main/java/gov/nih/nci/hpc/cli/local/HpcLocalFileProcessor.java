@@ -113,6 +113,9 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     dataObject.setCallerObjectId(null);
     String objectPath = getObjectPath(filePath, filePathBaseName, entity.getPath());
     logger.debug("objectPath " + objectPath);
+
+    performObjectPathValidation(objectPath, entity.getAbsolutePath(), filePath);
+
 		File file = new File(entity.getAbsolutePath());
    // File file = new File(Paths.generateFileSystemResourceUri(entity.getAbsolutePath()));
     if (!file.exists()) {
@@ -486,6 +489,28 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	  }
 	    return objectPath;
 	}
+
+
+  private void performObjectPathValidation(
+    String archiveDestDataObjPath,
+    String srcLocalFileAbsPath,
+    String srcLocalFilePath) throws RecordProcessingException {
+	  try {
+	    HpcClientUtil.validateDmeArchivePath(archiveDestDataObjPath);
+    } catch (HpcCmdException e) {
+      HpcClientUtil.writeRecord(srcLocalFilePath, srcLocalFileAbsPath,
+        this.recordFile);
+      final String errorMsg = "Failed to register Data File at DME archive" +
+        " destination path '" + archiveDestDataObjPath + "'.\n     " +
+        e.getMessage();
+	    HpcLogWriter.getInstance().WriteLog(this.logFile, errorMsg);
+	    System.out.println("...  ERROR!\n" + errorMsg);
+	    System.out.println("--------------------------------------------------");
+
+      throw new RecordProcessingException(errorMsg, e);
+    }
+  }
+
 
 	public void uploadToUrl(String urlStr, File file, int bufferSize, String checksum) throws HpcBatchException {
 
