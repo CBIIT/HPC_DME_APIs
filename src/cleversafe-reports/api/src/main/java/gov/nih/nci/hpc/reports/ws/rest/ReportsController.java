@@ -26,7 +26,7 @@ public class ReportsController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private JSONParser jsonParser = new JSONParser();
-    private long teraBytes = 1099511627776L;
+    private double teraBytes = 1099511627776.0;
 
 
     @RequestMapping("/vaultsummary")
