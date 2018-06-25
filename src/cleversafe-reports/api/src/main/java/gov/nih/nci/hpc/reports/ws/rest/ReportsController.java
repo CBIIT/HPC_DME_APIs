@@ -26,7 +26,7 @@ public class ReportsController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private JSONParser jsonParser = new JSONParser();
-    private long teraBytes = 1099511627776L;
+    private double teraBytes = 1099511627776.0;
 
 
     @RequestMapping("/vaultsummary")
@@ -40,6 +40,8 @@ public class ReportsController {
 
         Collection<VaultSummary> vaultSummaries = fromJSON(reportData.getBody());
         VaultSummary[] vaultSummariesArray = new VaultSummary[vaultSummaries.size()];
+
+        logger.info("Vault Summary Report size: " + vaultSummaries.size());
         return vaultSummaries.toArray(vaultSummariesArray);
     }
 
