@@ -4,8 +4,8 @@ public class VaultSummary {
 
     private String name = null;
     private String description = null;
-    private Long capacity = null;
-    private Long used = null;
+    private Double capacity = null;
+    private Double used = null;
     private String creationDate = null;
 
     public String getName() {
@@ -23,17 +23,17 @@ public class VaultSummary {
         this.description = description;
     }
 
-    public Long getCapacity() {
+    public Double getCapacity() {
         return capacity;
     }
-    public void setCapacity(Long capacity) {
+    public void setCapacity(Double capacity) {
         this.capacity = capacity;
     }
 
-    public Long getUsed() {
+    public Double getUsed() {
         return used;
     }
-    public void setUsed(Long used) {
+    public void setUsed(Double used) {
         this.used =  used;
     }
 
