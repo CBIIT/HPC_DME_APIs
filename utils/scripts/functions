@@ -113,6 +113,13 @@ function dm_register () {
     local DESTINATION_PATH="$2"
     local TYPE="$3"
 
+    local VALDN_RES=$(validate_archive_path $DESTINATION_PATH)
+    if [ "" != "$VALDN_RES" ]
+    then
+      echo "$VALDN_RES" >&2
+      return 1
+    fi
+    
     USERID=$(get_username) || exit 1
     SERVER=$(get_server) || exit 1
     CONFIG=$(get_config) || exit 1
@@ -1677,3 +1684,25 @@ urldecode() {
     printf '%b' "${url_encoded//%/\\x}"
 }
 
+
+# Validates a given archive path string, specifically to verify that it 
+# does not contain any of the forbidden characters in archive paths.
+# The forbidden characters comprise the following quoted string "?;\".
+#
+# Input: <string> archive path
+function validate_archive_path () {
+  local USAGE="USAGE: validate_archive_path <archive-path>"
+  if [ -z "$1" ]
+  then
+    echo "ERROR: using validate_archive_path" >&2
+    echo "Received: $@" >&2
+    echo "$USAGE" >&2
+  else
+    local ARCHIVE_PATH="$1"
+    local GREP_RESULT=$(echo $ARCHIVE_PATH | grep -e '[\?;\\]')
+    if [ -n "$GREP_RESULT" ]
+    then
+      echo "ERROR: Given archive path '$ARCHIVE_PATH' contains forbidden character(s) from the set { ? ; \ }."
+    fi
+  fi
+}
