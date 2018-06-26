@@ -3,8 +3,6 @@ import os
 import re
 import subprocess
 from common.sf_global import SFGlobal
-
-
 from metadata.sf_helper import SFHelper
 
 
