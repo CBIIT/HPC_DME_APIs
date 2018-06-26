@@ -13,7 +13,7 @@ export class VaultSummaryReportService {
   constructor(private httpClient: HttpClient, private messageService: MessageService) { }
 
   getVaultSummaryReport(): Observable<VaultSummary[]> {
-    this.log('Getting Vault Summary Report Data...');
+    //this.log('Getting Vault Summary Report Data...');
     return this.httpClient.get<VaultSummary[]>(this.vaultSummaryReportUrl)
   }
 

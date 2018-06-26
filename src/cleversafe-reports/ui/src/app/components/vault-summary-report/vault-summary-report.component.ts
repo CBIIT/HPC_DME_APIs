@@ -19,5 +19,4 @@ export class VaultSummaryReportComponent implements OnInit {
   ngOnInit() {
     this.getVaultSummaryReport();
   }
-
 }
