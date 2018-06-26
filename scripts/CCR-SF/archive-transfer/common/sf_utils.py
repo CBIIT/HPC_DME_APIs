@@ -2,10 +2,10 @@ import logging
 import os
 import re
 import subprocess
+from metadata.sf_global import SFGlobal
 
 
 from metadata.sf_helper import SFHelper
-
 
 
 class SFUtils(object):
@@ -27,11 +27,10 @@ class SFUtils(object):
 
     @staticmethod
     def record_exclusion(tarfile_name, file_name, str):
-        global excludes, excludes_csv
 
-        excludes.writelines(tarfile_name + ": " + file_name + " - " + str + '\n')
-        excludes.flush()
-        excludes_csv.write(tarfile_name + ", " + file_name + ", " + str + "\n")
+        SFGlobal.excludes.writelines(tarfile_name + ": " + file_name + " - " + str + '\n')
+        SFGlobal.excludes.flush()
+        SFGlobal.excludes_csv.write(tarfile_name + ", " + file_name + ", " + str + "\n")
         logging.warning('Ignoring file ' + str)
 
 
@@ -116,8 +115,6 @@ class SFUtils(object):
     @staticmethod
     def record_to_csv(self, tarfile_name, filepath, fullpath):
 
-        global includes_csv
-
         flowcell_id = SFHelper.get_flowcell_id(tarfile_name)
         normalized_filepath = fullpath.split("uploads/")[-1]
         if filepath.endswith('html'):
@@ -126,7 +123,7 @@ class SFUtils(object):
         else:
             path = SFUtils.get_meta_path(fullpath, False)
 
-        includes_csv.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
+        SFGlobal.includes_csv.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
                    flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " +
                    SFHelper.get_project_id(path, tarfile_name) + ", " +
                    SFHelper.get_project_name(path) + ", " +
