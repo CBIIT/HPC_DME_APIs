@@ -13,31 +13,33 @@ class SFHelper(object):
             logging.info("Getting pi_name from path: " + path)
 
         if 'Undetermined' in path:
-            return 'SF_Archive_flowcell_info'
+            pi_name = 'SF_Archive_flowcell_info'
 
-        # derive pi name
-        #path_elements = path.split("_")
-        path_elements = (path.split("/")[0]).split("_")
-
-        # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
-
-        if len(path_elements) > 3 and path_elements[3].isalpha():
-            # If the 4th is alpha, then pick the first 2
-            pi_name = path_elements[0] + "_" + path_elements[1]
         else:
-            if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
-                # else if the first 3 are alpha pick 0 and 2
-                pi_name = path_elements[0] + "_" + path_elements[2]
+            # derive pi name
+            #path_elements = path.split("_")
+            path_elements = (path.split("/")[0]).split("_")
+
+            # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
+
+            if len(path_elements) > 3 and path_elements[3].isalpha():
+                # If the 4th is alpha, then pick the first 2
+                pi_name = path_elements[0] + "_" + path_elements[1]
             else:
-                if len(path_elements) > 1 and path_elements[1].isalpha():
-                    # else if the first 2 are alpha, pick 0 and 1
-                    pi_name = path_elements[0] + "_" + path_elements[1]
+                if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
+                    # else if the first 3 are alpha pick 0 and 2
+                    pi_name = path_elements[0] + "_" + path_elements[2]
                 else:
-                    pi_name = path_elements[0]
+                    if len(path_elements) > 1 and path_elements[1].isalpha():
+                        # else if the first 2 are alpha, pick 0 and 1
+                        pi_name = path_elements[0] + "_" + path_elements[1]
+                    else:
+                        pi_name = path_elements[0]
 
 
-        #Assumes that PI name is in the beginning, and the format is FirstnameLastname
-        #pi_name = re.sub(r'([A-Z])', r' \1', path_elements[0])
+            #Assumes that PI name is in the beginning, and the format is FirstnameLastname
+            #pi_name = re.sub(r'([A-Z])', r' \1', path_elements[0])
+
         if log is True:
             logging.info("pi_name from " + path + " is " + pi_name)
         return pi_name
@@ -76,20 +78,20 @@ class SFHelper(object):
         project_id = 'Unspecified'
 
         if 'Undetermined' in path:
-            return SFHelper.get_run_name(tarfile)
+            project_id =  SFHelper.get_run_name(tarfile)
 
-        #path_elements = path.split("_")
-        path_elements = (path.split("/")[0]).split("_")
+        else:
+            #path_elements = path.split("_")
+            path_elements = (path.split("/")[0]).split("_")
 
-        #Assumes that the PI name and contact names have their first and last names separated by '_'
-        for element in path_elements:
-            if element.isdigit() and len(str(element)) is 5:
-                project_id = element
-                break
+            #Assumes that the PI name and contact names have their first and last names separated by '_'
+            for element in path_elements:
+                if element.isdigit() and len(str(element)) is 5:
+                    project_id = element
+                    break
 
-
-        #Assumes that PI and contact names are in the format 'FirstnameLastname'
-        #project_id = path_elements[2]
+            #Assumes that PI and contact names are in the format 'FirstnameLastname'
+            #project_id = path_elements[2]
 
         if log is True:
             logging.info("project_id from " + path + " is " + project_id)
@@ -98,8 +100,13 @@ class SFHelper(object):
 
     @staticmethod
     def get_project_name(path):
-        # derive project name
-        project_name = path.split("/")[0]
+
+        if 'Undetermined' in path:
+            project_name =  'Undetermined'
+
+        else:
+            # derive project name
+            project_name = path.split("/")[0]
 
         return project_name
 
@@ -107,8 +114,14 @@ class SFHelper(object):
     @staticmethod
     def get_sample_name(path):
         logging.info("Getting sample_name from path: " + path)
-        # derive sample name
-        sample_name = path.split("Sample_")[-1]
+
+        if 'Sample_' not in path:
+            sample_name = 'Undetermined'
+
+        else:
+            # derive sample name
+            sample_name = path.split("Sample_")[-1]
+
         logging.info("sample_name from " + path + " is " + sample_name)
         return sample_name
 
