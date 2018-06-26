@@ -9,7 +9,8 @@ import subprocess
 from metadata.sf_object import SFObject
 from metadata.sf_collection import SFCollection
 from metadata.sf_helper import SFHelper
-from metadata.sf_utils import SFUtils
+from common.sf_utils import SFUtils
+from common.sf_global import SFGlobal
 
 
 def main(args):
@@ -141,8 +142,8 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
+    global files_registered, bytes_stored
     #Build metadata for the object
-    global files_registered, bytes_stored, includes, csv_file
     object_to_register = SFObject(filepath, tarfile_name, has_parent, type)
     object_metadata = object_to_register.get_metadata()
 
@@ -181,21 +182,18 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
 files_registered = 0
 bytes_stored = 0L
-excludes = open("excluded_files_dryrun", "a")
-includes = open("registered_files_dryrun", "a")
 
-includes_csv = open("sf_included.csv", "a")
-includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
-excludes_csv = open("sf_excluded.csv", "a")
-excludes_csv.write("Tarfile, Extracted File, Reason")
+SFGlobal.includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
+SFGlobal.excludes_csv.write("Tarfile, Extracted File, Reason")
 
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
 logging.basicConfig(filename='ccr-sf_transfer_dryrun' + formatted_time + '.log', level=logging.DEBUG)
 main(sys.argv)
-excludes.close()
-excludes_csv.close()
-includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
-includes_csv.close()
+SFGlobal.excludes.close()
+SFGlobal.excludes_csv.close()
+SFGlobal.includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
+SFGlobal.includes.close()
+SFGlobal.includes_csv.close()
 logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
