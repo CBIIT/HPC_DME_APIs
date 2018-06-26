@@ -7,6 +7,7 @@
  ******************************************************************************/
 package gov.nih.nci.hpc.cli.csv;
 
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -60,7 +61,22 @@ public class HPCBatchDataFileRecordProcessor implements RecordProcessor {
 		HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = hpcObject.getDto();
 		logger.debug("hpcDataObjectRegistrationDTO "+hpcDataObjectRegistrationDTO.toString());
 		List<Attachment> atts = new LinkedList<Attachment>();
-		String objectPath = hpcObject.getObjectPath().trim();		
+		String objectPath = hpcObject.getObjectPath().trim();
+    try {
+      HpcClientUtil.validateDmeArchivePath(objectPath);
+    } catch (HpcCmdException e) {
+      HpcCSVFileWriter.getInstance().writeRecord(
+        hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
+        hpcObject.getHeadersMap());
+      String theErrorMsg = "Record #" + record.getHeader().getNumber() +
+        " with DME archive destination path '" + objectPath + "' could not" +
+        " be processed.\n     " + e.getMessage();
+      HpcLogWriter.getInstance().WriteLog(hpcObject.getLogFile(), theErrorMsg);
+      System.out.print("Error: ");
+      System.out.println(theErrorMsg);
+      System.out.println("---------------------------------");
+      throw new RecordProcessingException(theErrorMsg, e);
+    }
 		if (hpcDataObjectRegistrationDTO.getSource().getFileContainerId() == null) {
 			if (hpcDataObjectRegistrationDTO.getSource().getFileId() == null) {
 				HpcCSVFileWriter.getInstance().writeRecord(hpcObject.getErrorRecordsFile(), hpcObject.getCsvRecord(),
