@@ -23,7 +23,7 @@ class SFUtils(object):
             logging.info('metadata base: ' + path)
 
         return path
-    
+
 
     @staticmethod
     def record_exclusion(tarfile_name, file_name, str):

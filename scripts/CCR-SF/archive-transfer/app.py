@@ -118,6 +118,8 @@ def main(args):
 
 def register_collection(filepath, type, tarfile_name, has_parent):
 
+    global includes
+
     logging.info("Registering " + type + " collection for " + filepath)
 
     #Build metadata for the collection
@@ -150,6 +152,8 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 
 
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
+
+    global includes
 
     #Build metadata for the object
     global files_registered, bytes_stored
