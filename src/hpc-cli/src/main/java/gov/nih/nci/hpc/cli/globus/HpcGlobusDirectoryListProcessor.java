@@ -93,13 +93,13 @@ public class HpcGlobusDirectoryListProcessor {
 			if (responseDTO != null) {
 				StringBuffer info = new StringBuffer();
 				if (registrationDTO.getDryRun()) {
-					System.out.println("Dryrun results:");
+					System.out.println("Dry run results:");
 					for (HpcDataObjectRegistrationItemDTO responseItem : responseDTO.getDataObjectRegistrationItems()) {
 						System.out.println(responseItem.getPath());
 					}
 				} else {
 					System.out.println(
-							"Bulk Data file registration request is submmited! Task Id: " + responseDTO.getTaskId());
+							"Bulk Data file registration request is submitted! Task Id: " + responseDTO.getTaskId());
 				}
 			}
 
@@ -119,14 +119,19 @@ public class HpcGlobusDirectoryListProcessor {
 		return returnCode;
 	}
 
+
 	private void writeException(Exception e, String message, String exceptionAsString) {
-		HpcLogWriter.getInstance().WriteLog(logFile, message);
-		StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
-		if (exceptionAsString == null)
-			exceptionAsString = sw.toString();
-		HpcLogWriter.getInstance().WriteLog(logFile, exceptionAsString);
-	}
+    System.out.println("ERROR!  " + message);
+    System.out.println("--------------------------------------------------");
+
+    HpcLogWriter.getInstance().WriteLog(logFile, message);
+    if (exceptionAsString == null) {
+      StringWriter sw = new StringWriter();
+      e.printStackTrace(new PrintWriter(sw));
+      exceptionAsString = sw.toString();
+    }
+    HpcLogWriter.getInstance().WriteLog(logFile, exceptionAsString);
+  }
 
 	protected HpcBulkDataObjectRegistrationRequestDTO constructBulkRequest(Map<String, String> criteriaMap) {
 		HpcBulkDataObjectRegistrationRequestDTO dto = new HpcBulkDataObjectRegistrationRequestDTO();
