@@ -9,6 +9,7 @@ import subprocess
 from metadata.sf_object import SFObject
 from metadata.sf_collection import SFCollection
 from metadata.sf_helper import SFHelper
+from metadata.sf_utils import SFUtils
 
 
 def main(args):
@@ -21,7 +22,7 @@ def main(args):
 
         tarfile_name = line_filepath.rstrip()
 
-        tarfile_contents = get_tarball_contents(tarfile_name, tarfile_dir)
+        tarfile_contents = SFUtils.get_tarball_contents(tarfile_name, tarfile_dir)
         if tarfile_contents is None:
             continue
 
@@ -40,37 +41,26 @@ def main(args):
 
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
-                #if('Undetermined' in line):
-                #    record_exclusion(
-                #        tarfile_name + ':' + line + ': Tar contains Undetermined files')
-                #    continue
+                if 'Phix' in line or '10X' in line:
+                    SFUtils.record_exclusion(tarfile_name, line, 'Phix or 10X file, ignoring')
+                    continue
 
-                filepath = extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
+                filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
                 if filepath is None:
                     continue
 
                 # Extract the info for PI metadata
 
-                path = get_meta_path(filepath)
+                path = SFUtils.get_meta_path(filepath)
 
-                if ('Undetermined' in line):
+                # Register PI collection
+                register_collection(path, "PI_Lab", tarfile_name, False)
 
-                    # Register Project collection with PI_Lab type parent
-                    register_collection(path, "Project", tarfile_name, True)
+                #Register Flowcell collection with Project type parent
+                register_collection(path, "Flowcell", tarfile_name, True)
 
-                    #Create Object with Flowcell type parent and register object
-                    register_object(path, "Flowcell", tarfile_name, True, filepath)
-
-                else:
-
-                    # Register PI collection
-                    register_collection(path, "PI_Lab", tarfile_name, False)
-
-                    #Register Flowcell collection with Project type parent
-                    register_collection(path, "Flowcell", tarfile_name, True)
-
-                    #create Object metadata with Sample type parent and register object
-                    register_object(path, "Sample", tarfile_name, True, filepath)
+                #create Object metadata with Sample type parent and register object
+                register_object(path, "Sample", tarfile_name, True, filepath)
 
                 #delete the extracted tar file
                 os.system("rm -rf uploads/*")
@@ -89,20 +79,15 @@ def main(args):
                     #Ensure that metadata path does not have the Sample sub-directory and that it is valid
                     if path.count('/') == 1 and '_' in path:
 
-                        filepath = extract_file_to_archive(tarfile_name, tarfile_path, line)
+                        filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line)
                         if filepath is None:
-                            record_exclusion(tarfile_name + ':' + line + ': could not extract file for archiving')
+                            SFUtils.record_exclusion(tarfile_name, line, 'could not extract file for archiving')
                             continue
 
                         #Register the html in flowcell collection
 
                         path = path + 'laneBarcode.html'
                         logging.info('metadata base: ' + path)
-
-                        #Ensure tha the path has extractable PI name
-                        #if(len(path.split('_')) < 3 or path.split('_')[0].isdigit() or path.split('_')[1].isdigit()):
-                            #record_exclusion(tarfile_name + ':' + line + ': PI name not available')
-                            #continue
 
                         # Register PI collection
                         register_collection(path, "PI_Lab", tarfile_name, False)
@@ -115,117 +100,20 @@ def main(args):
 
                     else:
                         # ignore this html
-                        record_exclusion(tarfile_name + ':' + line + ': html path not valid, may have Sample or other sub-directory')
+                        SFUtils.record_exclusion(tarfile_name, line, 'html path not valid, may have Sample or other sub-directory')
                         continue
 
                 else:
                     #ignore this html
-                    record_exclusion(tarfile_name + ':' + line + ': html path not valid, could not extract flowcell_id')
+                    SFUtils.record_exclusion(tarfile_name, line, 'html path not valid, could not extract flowcell_id')
                     continue
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                record_exclusion(tarfile_name + ':'  + line + ': Not fastq.gz or valid html file')
+                SFUtils.record_exclusion(tarfile_name, line, 'Not fastq.gz or valid html file')
 
         logging.info('Done processing file: ' + tarfile_path)
 
-
-
-def get_meta_path(filepath, log = True):
-
-    path = filepath.replace("uploads/", "")
-    path = re.sub(r'.*Unaligned[^/]*/', '', path)
-
-    # strip 'Project_' if it exists
-    path = path.replace("Project_", "")
-
-    if log is True:
-        logging.info('metadata base: ' + path)
-
-    return path
-
-
-def record_exclusion(str):
-    global excludes
-
-    excludes.writelines(str + '\n')
-    excludes.flush()
-    logging.warning('Ignoring file ' + str)
-
-
-
-def extract_file_to_archive(tarfile_name, tarfile_path, line):
-    # Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
-    filepath = line.rstrip().split("../")[-1]
-    filepath = filepath.split(" ")[-1]
-    filepath = filepath.lstrip('/')
-
-
-    if len(filepath.split("/")) < 3:
-        # There is no subdirectory structure - something not right
-        record_exclusion(tarfile_name + ':' + line)
-        return
-
-    # extract the fastq file from the archive
-    command = "tar -xf " + tarfile_path + " -C uploads/ " + filepath
-    logging.info(command)
-    #os.system(command)
-    filepath = 'uploads/' + filepath
-
-    logging.info("file to archive: " + filepath)
-
-    return filepath
-
-
-
-def get_tarball_contents(tarfile_name, tarfile_dir):
-
-    logging.info("Getting contents for: " + tarfile_name)
-    tarfile_name = tarfile_name.rstrip()
-
-    if not tarfile_name.endswith('tar.gz') and not tarfile_name.endswith('tar'):
-
-        # If this is not a .list, _archive.list, or .md5 file also, then record exclusion. Else
-        # just ignore, do not record because we may find the associated tar later
-        if (not tarfile_name.endswith('tar.gz.list') and
-                not tarfile_name.endswith('_archive.list') and
-                not tarfile_name.endswith('list.txt') and
-                not tarfile_name.endswith('.md5')):
-            excludes_str = ': Invalid file format - not tar.gz, _archive.list, tar.gz.list or tar.gz.md5 \n'
-            record_exclusion(tarfile_name + excludes_str)
-        else:
-            logging.info(tarfile_name + ': No contents to extract')
-        return
-
-    #if '-' in tarfile_name:
-        # this tarball contains '-', hence ignore for now because we wont be able to extract metadata correctly
-        #excludes_str = ': Invalid file format - contains - in filename, cannot parse for metadata \n'
-        #record_exclusion(tarfile_name + excludes_str)
-        #return
-
-    tarfile_path = tarfile_dir + '/' + tarfile_name
-    contentFiles = [tarfile_path + '.list', tarfile_name + '.list', tarfile_path + '_archive.list',
-                    tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '.list',
-                    tarfile_path.split('.tar')[0] + '_archive.list', tarfile_path.split('.tar')[0] + '.archive.list',
-                    tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.tar')[0] + '.list.txt',
-                    tarfile_path.split('.gz')[0] + '_list.txt', tarfile_path.split('.tar')[0] + '_list.txt',
-                    tarfile_path.split('.tar')[0] + '_file_list.txt']
-
-    tarfile_contents = None
-
-    for filename in contentFiles:
-        if os.path.exists(filename):
-            tarfile_contents = open(filename)
-            break
-
-    if tarfile_contents is None:
-        command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
-        # os.system(command)
-        subprocess.call(command, shell=True)
-        logging.info("Created contents file: " + command)
-        tarfile_contents = open(tarfile_name + '.list')
-
-    return tarfile_contents
 
 
 def register_collection(filepath, type, tarfile_name, has_parent):
@@ -285,20 +173,8 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
     includes.flush()
 
-    # Record to csv file: tarfile name, file path, archive path
-    flowcell_id = SFHelper.get_flowcell_id(tarfile_name)
-    normalized_filepath = fullpath.split("uploads/")[-1]
-    if filepath.endswith('html'):
-        head, sep, tail = fullpath.partition('all/')
-        path = head.split(flowcell_id + '/')[-1]
-    else:
-        path = get_meta_path(fullpath, False)
+    SFUtils.record_to_csv(tarfile_name, filepath, fullpath)
 
-    csv_file.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
-                   flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " +
-                   SFHelper.get_project_id(path, tarfile_name) + ", " +
-                   SFHelper.get_project_name(path) + ", " +
-                   SFHelper.get_sample_name(path) + ", " + SFHelper.get_run_name(tarfile_name) + "\n")
 
 
 
@@ -308,8 +184,10 @@ bytes_stored = 0L
 excludes = open("excluded_files_dryrun", "a")
 includes = open("registered_files_dryrun", "a")
 
-csv_file = open("sf_metadata.csv", "a")
-csv_file.write("Tarfile, ArchiveFile in Tar, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
+includes_csv = open("sf_included.csv", "a")
+includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
+excludes_csv = open("sf_excluded.csv", "a")
+excludes_csv.write("Tarfile, Extracted File, Reason")
 
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
@@ -317,6 +195,7 @@ formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 logging.basicConfig(filename='ccr-sf_transfer_dryrun' + formatted_time + '.log', level=logging.DEBUG)
 main(sys.argv)
 excludes.close()
+excludes_csv.close()
 includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
-includes.close()
+includes_csv.close()
 logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))

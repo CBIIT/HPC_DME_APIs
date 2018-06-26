@@ -9,32 +9,47 @@ class SFHelper(object):
     @staticmethod
     def get_pi_name(path, log = True):
 
+        pi_names = {"Staudt": "Louis_Staudt", "Soppet": "Daniel_Soppet", "Schrump": "David_Schrump", "Shrump": "David_Schrump",
+                    "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "Raffeld": "Mark_Raffeld",
+                    "Keller": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
+                    "Oberdoerffer": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Yves_Pommier": "Yves", "vinson": "Chuck_Vinson"}
+        pi_name = 'CCRSF'
+
         if log is True:
             logging.info("Getting pi_name from path: " + path)
+
 
         if 'Undetermined' in path:
             pi_name = 'SF_Archive_flowcell_info'
 
         else:
-            # derive pi name
-            #path_elements = path.split("_")
-            path_elements = (path.split("/")[0]).split("_")
+            for element in pi_names:
+                if element in path:
+                    #Perform mapping using pi_names if match is found
+                    pi_name = pi_names[element]
+                    break
 
-            # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
 
-            if len(path_elements) > 3 and path_elements[3].isalpha():
-                # If the 4th is alpha, then pick the first 2
-                pi_name = path_elements[0] + "_" + path_elements[1]
-            else:
-                if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
+            if 'CCRSF' in pi_name:
+
+                # derive pi name
+                path_elements = (path.split("/")[0]).split("_")
+
+                # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
+
+                if len(path_elements) > 4 and path_elements[3].isalpha() and path_elements[4].isdigit() and len(str(path_elements[4])):
+                    # If the 4th is alpha, and 5th is a 5 digit number, then pick the first 2
+                    pi_name = path_elements[0] + "_" + path_elements[1]
+            #else:
+                #if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
                     # else if the first 3 are alpha pick 0 and 2
-                    pi_name = path_elements[0] + "_" + path_elements[2]
-                else:
-                    if len(path_elements) > 1 and path_elements[1].isalpha():
+                    #pi_name = path_elements[0] + "_" + path_elements[2]
+                #else:
+                    #if len(path_elements) > 1 and path_elements[1].isalpha():
                         # else if the first 2 are alpha, pick 0 and 1
-                        pi_name = path_elements[0] + "_" + path_elements[1]
-                    else:
-                        pi_name = path_elements[0]
+                        #pi_name = path_elements[0] + "_" + path_elements[1]
+                    #else:
+                        #pi_name = path_elements[0]
 
 
             #Assumes that PI name is in the beginning, and the format is FirstnameLastname
@@ -55,7 +70,7 @@ class SFHelper(object):
         # Assumes the contact name follows the PI name separated from it by a '_',
 
         # the contact last and first names are separated by an '_'
-        if len(path_elements) > 3 and path_elements[3].isalpha():
+        if len(path_elements) > 4 and path_elements[3].isalpha() and path_elements[4].isdigit() and len(str(path_elements[4])):
             contact_name = path_elements[2] + "_" + path_elements[3]
         else:
             contact_name = None
