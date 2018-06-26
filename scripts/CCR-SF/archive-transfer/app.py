@@ -40,10 +40,10 @@ def main(args):
 
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
-                if('Undetermined' in line):
-                    record_exclusion(
-                        tarfile_name + ':' + line + ': Tar contains Undetermined files')
-                    continue
+                #if('Undetermined' in line):
+                #    record_exclusion(
+                #        tarfile_name + ':' + line + ': Tar contains Undetermined files')
+                #    continue
 
                 filepath = extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
                 if filepath is None:
@@ -53,14 +53,24 @@ def main(args):
 
                 path = get_meta_path(filepath)
 
-                # Register PI collection
-                register_collection(path, "PI_Lab", tarfile_name, False)
+                if ('Undetermined' in line):
 
-                #Register Flowcell collection with Project type parent
-                register_collection(path, "Flowcell", tarfile_name, True)
+                    # Register Project collection with PI_Lab type parent
+                    register_collection(path, "Project", tarfile_name, True)
 
-                #create Object metadata with Sample type parent and register object
-                register_object(path, "Sample", tarfile_name, True, filepath)
+                    # Create Object with Flowcell type parent and register object
+                    register_object(path, "Flowcell", tarfile_name, True, filepath)
+
+                else:
+
+                    # Register PI collection
+                    register_collection(path, "PI_Lab", tarfile_name, False)
+
+                    #Register Flowcell collection with Project type parent
+                    register_collection(path, "Flowcell", tarfile_name, True)
+
+                    #create Object metadata with Sample type parent and register object
+                    register_object(path, "Sample", tarfile_name, True, filepath)
 
                 #delete the extracted file
                 os.system("rm -rf uploads/*")
@@ -309,7 +319,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     csv_file.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
         flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " +
-        SFHelper.get_project_id(path) + "\n")
+        SFHelper.get_project_id(path, tarfile_name) + "\n")
 
 
 files_registered = 0
