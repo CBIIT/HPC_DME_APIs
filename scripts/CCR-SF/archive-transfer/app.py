@@ -203,6 +203,12 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 files_registered = 0
 bytes_stored = 0L
 
+SFGlobal.excludes = open("excluded_files", "a")
+SFGlobal.includes = open("registered_files", "a")
+
+SFGlobal.includes_csv = open("sf_included.csv", "a")
+SFGlobal.excludes_csv = open("sf_excluded.csv", "a")
+
 SFGlobal.includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
 SFGlobal.excludes_csv.write("Tarfile, Extracted File, Reason")
 

@@ -171,8 +171,8 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     #Compute total number of files registered so far, and total bytes
     files_registered = files_registered + 1
     bytes_stored = 0 #+= bytes_stored + filesize
-    includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
-    includes.flush()
+    SFGlobal.includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
+    SFGlobal.includes.flush()
 
     SFUtils.record_to_csv(tarfile_name, filepath, fullpath)
 
@@ -182,6 +182,12 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
 files_registered = 0
 bytes_stored = 0L
+
+SFGlobal.excludes = open("excluded_files", "a")
+SFGlobal.includes = open("registered_files", "a")
+
+SFGlobal.includes_csv = open("sf_included.csv", "a")
+SFGlobal.excludes_csv = open("sf_excluded.csv", "a")
 
 SFGlobal.includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
 SFGlobal.excludes_csv.write("Tarfile, Extracted File, Reason")
