@@ -58,7 +58,7 @@ class SFUtils(object):
         return filepath
 
 
-
+    @staticmethod
     def get_tarball_contents(tarfile_name, tarfile_dir):
 
         logging.info("Getting contents for: " + tarfile_name)
@@ -111,7 +111,8 @@ class SFUtils(object):
 
 
 
-# Record to csv file: tarfile name, file path, archive path
+    # Record to csv file: tarfile name, file path, archive path
+    @staticmethod
     def record_to_csv(self, tarfile_name, filepath, fullpath):
 
         global includes_csv
