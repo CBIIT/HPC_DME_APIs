@@ -11,6 +11,10 @@ class SFHelper(object):
 
         if log is True:
             logging.info("Getting pi_name from path: " + path)
+
+        if 'Undetermined' in path:
+            return 'SF_Archive_flowcell_info'
+
         # derive pi name
         #path_elements = path.split("_")
         path_elements = (path.split("/")[0]).split("_")
@@ -65,18 +69,21 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_project_id(path, log = True):
+    def get_project_id(path, tarfile, log = True):
 
         if log is True:
             logging.info("Getting project_id from path: " + path)
-        project_id = 'placeholder'
+        project_id = 'Unspecified'
+
+        if 'Undetermined' in path:
+            return SFHelper.get_run_name(tarfile)
 
         #path_elements = path.split("_")
         path_elements = (path.split("/")[0]).split("_")
 
         #Assumes that the PI name and contact names have their first and last names separated by '_'
         for element in path_elements:
-            if element.isdigit():
+            if element.isdigit() and len(str(element)) is 5:
                 project_id = element
                 break
 
