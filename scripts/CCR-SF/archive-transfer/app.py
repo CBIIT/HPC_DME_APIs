@@ -318,8 +318,9 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
         path = get_meta_path(fullpath, False)
 
     csv_file.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
-        flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " +
-        SFHelper.get_project_id(path, tarfile_name) + "\n")
+                   flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " +
+                   SFHelper.get_project_id(path, tarfile_name) + ", " +
+                   SFHelper.get_project_name(path) + ", " + SFHelper.get_run_name(tarfile_name) + "\n")
 
 
 files_registered = 0
@@ -328,7 +329,7 @@ excludes = open("excluded_files", "a")
 includes = open("registered_files", "a")
 
 csv_file = open("sf_metadata.csv", "a")
-csv_file.write("Tarfile, Archivefile, ArchivePath\n")
+csv_file.write("Tarfile, ArchiveFile, ArchivePath, Flowcell_Id, PI_Name, Project_Id, Project_Name, Run_Name\n")
 
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
