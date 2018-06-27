@@ -178,7 +178,7 @@ files_registered = 0
 bytes_stored = 0L
 
 includes_csv = open("sf_included.csv", "a")
-includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
+includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name, Contact_Name, Sequencing_Platform, Sequencing_Application_Type\n")
 includes_csv.close()
 
 excludes_csv = open("sf_excluded.csv", "a")
