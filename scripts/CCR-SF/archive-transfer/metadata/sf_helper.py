@@ -10,9 +10,9 @@ class SFHelper(object):
     def get_pi_name(path, log = True):
 
         pi_names = {"Staudt": "Louis_Staudt", "Soppet": "Daniel_Soppet", "Schrump": "David_Schrump", "Shrump": "David_Schrump",
-                    "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "Raffeld": "Mark_Raffeld",
-                    "Keller": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
-                    "Oberdoerffer": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Yves_Pommier": "Yves", "vinson": "Chuck_Vinson"}
+                    "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "Mark_Raffeld_Brenda": "Mark_Raffeld",
+                    "Jonathan_Keller_Sun": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
+                    "Philipp_Oberdoerffer_Kim": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Pommier": "Yves_Pommier", "Vinson": "Chuck_Vinson"}
         pi_name = 'CCRSF'
 
         if log is True:
