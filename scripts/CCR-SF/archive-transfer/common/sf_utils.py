@@ -77,11 +77,10 @@ class SFUtils(object):
 
             # If this is not a .list, _archive.list, or .md5 file also, then record exclusion. Else
             # just ignore, do not record because we may find the associated tar later
-            if (not tarfile_name.endswith('tar.gz.list') and
-                not tarfile_name.endswith('_archive.list') and
+            if (not tarfile_name.endswith('.list') and
                 not tarfile_name.endswith('list.txt') and
                 not tarfile_name.endswith('.md5')):
-                excludes_str = ': Invalid file format - not tar.gz, _archive.list, tar.gz.list or tar.gz.md5'
+                excludes_str = ': Invalid file format - not tar.gz or tar.gz.md5 or acceptable content list format'
                 SFUtils.record_exclusion(tarfile_name, "All files", excludes_str)
             else:
                 logging.info(tarfile_name + ': No contents to extract')
