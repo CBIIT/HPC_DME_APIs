@@ -53,7 +53,7 @@ class SFUtils(object):
         # extract the fastq file from the archive
         command = "tar -xf " + tarfile_path + " -C uploads/ " + filepath
         logging.info(command)
-        os.system(command)
+        #os.system(command)
         filepath = 'uploads/' + filepath
 
         logging.info("file to archive: " + filepath)
