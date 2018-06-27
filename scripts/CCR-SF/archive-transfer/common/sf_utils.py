@@ -129,7 +129,6 @@ class SFUtils(object):
         includes_csv.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " + flowcell_id +
             ", " + SFHelper.get_pi_name(path) + ", " + SFHelper.get_project_id(path, tarfile_name) +
             ", " + SFHelper.get_project_name(path) + ", " + SFHelper.get_sample_name(path) +
-            ", " + SFHelper.get_run_name(tarfile_name) + ", " + SFHelper.get_contact_name(path) +
-            ", " + SFHelper.get_sequencing_platform(tarfile_name) + ", " +
-            SFHelper.get_sequencing_application_type(path) + "\n")
+            ", " + SFHelper.get_run_name(tarfile_name) + ", " + SFHelper.get_sequencing_platform(tarfile_name) +
+            ", " + SFHelper.get_sequencing_application_type(path) + "\n")
         includes_csv.close()
