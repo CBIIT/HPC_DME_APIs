@@ -42,7 +42,7 @@ def main(args):
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
                 if 'Phix' in line or '10X' in line:
-                    SFUtils.record_exclusion(tarfile_name, line, 'Phix or 10X file, ignoring')
+                    SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'Phix or 10X file, ignoring')
                     continue
 
                 filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
@@ -81,7 +81,7 @@ def main(args):
 
                         filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line)
                         if filepath is None:
-                            SFUtils.record_exclusion(tarfile_name, line, 'could not extract file for archiving')
+                            SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'could not extract file for archiving')
                             continue
 
                         #Register the html in flowcell collection
@@ -100,17 +100,17 @@ def main(args):
 
                     else:
                         # ignore this html
-                        SFUtils.record_exclusion(tarfile_name, line, 'html path not valid, may have Sample or other sub-directory')
+                        SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid, may have Sample or other sub-directory')
                         continue
 
                 else:
                     #ignore this html
-                    SFUtils.record_exclusion(tarfile_name, line, 'html path not valid, could not extract flowcell_id')
+                    SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid, could not extract flowcell_id')
                     continue
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                SFUtils.record_exclusion(tarfile_name, line, 'Not fastq.gz or valid html file')
+                SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'Not fastq.gz or valid html file')
 
         logging.info('Done processing file: ' + tarfile_path)
 
