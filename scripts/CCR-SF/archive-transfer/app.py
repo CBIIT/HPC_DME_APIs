@@ -42,7 +42,7 @@ def main(args):
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
                 if 'Phix' in line or '10X' in line:
-                    SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'Phix or 10X file, ignoring')
+                    SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'Phix or 10X file ')
                     continue
 
                 filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
@@ -100,12 +100,12 @@ def main(args):
 
                     else:
                         # ignore this html
-                        SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid, may have Sample or other sub-directory')
+                        SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid - may have other sub-directory')
                         continue
 
                 else:
                     #ignore this html
-                    SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid, could not extract flowcell_id')
+                    SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid - could not extract flowcell_id')
                     continue
 
             else:
