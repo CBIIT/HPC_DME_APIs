@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import subprocess
-from common.sf_global import SFGlobal
+
 from metadata.sf_helper import SFHelper
 
 
@@ -26,9 +26,14 @@ class SFUtils(object):
     @staticmethod
     def record_exclusion(tarfile_name, file_name, str):
 
-        SFGlobal.excludes.writelines(tarfile_name + ": " + file_name + " - " + str + '\n')
-        SFGlobal.excludes.flush()
-        SFGlobal.excludes_csv.write(tarfile_name + ", " + file_name + ", " + str + "\n")
+        excludes = open("excluded_files_dryrun", "a")
+        excludes.writelines(tarfile_name + ": " + file_name + " - " + str + '\n')
+        excludes.close()
+
+        excludes_csv = open("sf_excluded.csv", "a")
+        excludes_csv.write(tarfile_name + ", " + file_name + ", " + str + "\n")
+        excludes_csv.close()
+
         logging.warning('Ignoring file ' + str)
 
 
@@ -121,8 +126,10 @@ class SFUtils(object):
         else:
             path = SFUtils.get_meta_path(fullpath, False)
 
-        SFGlobal.includes_csv.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
+        includes_csv = open("sf_included.csv", "a")
+        includes_csv.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " +
                    flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " +
                    SFHelper.get_project_id(path, tarfile_name) + ", " +
                    SFHelper.get_project_name(path) + ", " +
                    SFHelper.get_sample_name(path) + ", " + SFHelper.get_run_name(tarfile_name) + "\n")
+        includes_csv.close()

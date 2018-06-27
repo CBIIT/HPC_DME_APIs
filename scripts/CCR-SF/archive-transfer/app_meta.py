@@ -10,7 +10,6 @@ from metadata.sf_object import SFObject
 from metadata.sf_collection import SFCollection
 from metadata.sf_helper import SFHelper
 from common.sf_utils import SFUtils
-from common.sf_global import SFGlobal
 
 
 def main(args):
@@ -139,7 +138,6 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 
 
 
-
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     global files_registered, bytes_stored
@@ -160,46 +158,42 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     command = "dm_register_dataobject jsons_dryrun/" + json_file_name + " " + archive_path + " " + fullpath
 
     logging.info(command)
-    SFGlobal.includes.write(command)
 
-    #Get size of file in bytes
-    #filesize = os.path.getsize(fullpath)
+    includes = open("registered_files_dryrun", "a")
 
-    #Record the result
-    #includes.write("\nFile size = {0}\n".format(filesize))
+    includes.write(command)
 
     #Compute total number of files registered so far, and total bytes
     files_registered = files_registered + 1
     bytes_stored = 0 #+= bytes_stored + filesize
-    SFGlobal.includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
-    SFGlobal.includes.flush()
+
+    includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
+    includes.close()
 
     SFUtils.record_to_csv(tarfile_name, filepath, fullpath, archive_path)
-
-
 
 
 
 files_registered = 0
 bytes_stored = 0L
 
-SFGlobal.includes = open("registered_files_dryrun", "a")
-SFGlobal.excludes = open("excluded_files_dryrun", "a")
+includes_csv = open("sf_included.csv", "a")
+includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
+includes_csv.close()
 
-SFGlobal.includes_csv = open("sf_included.csv", "a")
-SFGlobal.includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
-
-SFGlobal.excludes_csv = open("sf_excluded.csv", "a")
-SFGlobal.excludes_csv.write("Tarfile, Extracted File, Reason\n")
+excludes_csv = open("sf_excluded.csv", "a")
+excludes_csv.write("Tarfile, Extracted File, Reason\n")
+excludes_csv.close()
 
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
 logging.basicConfig(filename='ccr-sf_transfer_dryrun' + formatted_time + '.log', level=logging.DEBUG)
+
 main(sys.argv)
-SFGlobal.excludes.close()
-SFGlobal.excludes_csv.close()
-SFGlobal.includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
-SFGlobal.includes.close()
-SFGlobal.includes_csv.close()
+
+includes = open("registered_files_dryrun", "a")
+includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
+includes.close()
+
 logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
