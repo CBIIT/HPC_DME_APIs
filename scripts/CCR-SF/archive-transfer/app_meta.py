@@ -160,7 +160,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     command = "dm_register_dataobject jsons_dryrun/" + json_file_name + " " + archive_path + " " + fullpath
 
     logging.info(command)
-    includes.write(command)
+    SFGlobal.includes.write(command)
 
     #Get size of file in bytes
     #filesize = os.path.getsize(fullpath)
@@ -183,14 +183,14 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 files_registered = 0
 bytes_stored = 0L
 
-SFGlobal.excludes = open("excluded_files", "a")
-SFGlobal.includes = open("registered_files", "a")
+SFGlobal.excludes = open("excluded_files_dryrun", "a")
+SFGlobal.includes = open("registered_files_dryrun", "a")
 
 SFGlobal.includes_csv = open("sf_included.csv", "a")
 SFGlobal.excludes_csv = open("sf_excluded.csv", "a")
 
 SFGlobal.includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name\n")
-SFGlobal.excludes_csv.write("Tarfile, Extracted File, Reason")
+SFGlobal.excludes_csv.write("Tarfile, Extracted File, Reason\n")
 
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
