@@ -196,7 +196,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
         SFGlobal.includes.flush()
 
-    SFUtils.record_to_csv(tarfile_name, filepath, fullpath)
+    SFUtils.record_to_csv(tarfile_name, filepath, fullpath, archive_path)
 
 
 

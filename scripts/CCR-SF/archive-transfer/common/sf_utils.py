@@ -111,7 +111,7 @@ class SFUtils(object):
 
     # Record to csv file: tarfile name, file path, archive path
     @staticmethod
-    def record_to_csv(self, tarfile_name, filepath, fullpath):
+    def record_to_csv(tarfile_name, filepath, fullpath, archive_path):
 
         flowcell_id = SFHelper.get_flowcell_id(tarfile_name)
         normalized_filepath = fullpath.split("uploads/")[-1]
