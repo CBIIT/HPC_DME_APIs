@@ -1699,7 +1699,9 @@ function validate_archive_path () {
     echo "$USAGE" >&2
   else
     local ARCHIVE_PATH="$1"
-    local GREP_RESULT=$(echo $ARCHIVE_PATH | grep -e '[\?;\\]')
+    # forbidden chars are [space character] plus {? ; \}
+    # notice that in grep regex below, ? be escaped as \? and \ must be escaped as \\
+    local GREP_RESULT=$(echo $ARCHIVE_PATH | grep -E '[[:space:]]|[\?;\\]')
     if [ -n "$GREP_RESULT" ]
     then
       echo "ERROR: Given archive path '$ARCHIVE_PATH' contains forbidden character(s) from the set { ? ; \ }."
