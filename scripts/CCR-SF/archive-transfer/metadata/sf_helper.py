@@ -99,10 +99,12 @@ class SFHelper(object):
             #path_elements = path.split("_")
             path_elements = (path.split("/")[0]).split("_")
 
-            #Assumes that the PI name and contact names have their first and last names separated by '_'
+            #The project_id is the first string containing only digits. If this string
+            #is not a 5 digit number then use default project_id
             for element in path_elements:
-                if element.isdigit() and len(str(element)) is 5:
-                    project_id = element
+                if element.isdigit():
+                    if len(str(element)) is 5:
+                        project_id = element
                     break
 
             #Assumes that PI and contact names are in the format 'FirstnameLastname'
