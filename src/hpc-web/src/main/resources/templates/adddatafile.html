@@ -352,7 +352,11 @@
     var displayText = '';
     var listSeparation = separator ? separator : ' ';
     for (var i = 0; i < invalidCharacters4PathName.length; i++) {
-      displayText += ((i == 0 ? '' : listSeparation) + invalidCharacters4PathName.charAt(i));
+      var badChar = invalidCharacters4PathName.charAt(i);
+      if (' ' == badChar) {
+        badChar = '[space character]';
+      }
+      displayText += ((i == 0 ? '' : listSeparation) + badChar);
     }
     if (leftEndDecorator && rightEndDecorator) {
       displayText = leftEndDecorator + displayText + rightEndDecorator;
@@ -377,12 +381,6 @@
 		if (fileName == null || fileName == "")
 		{
 			alert("Data file is missing!")
-			return false;
-		}
-
-		if (!(/^\S{3,}$/.test(inputPath)))
-		{
-			alert("Space is not allowed in the path!")
 			return false;
 		}
 
