@@ -90,7 +90,7 @@ class SFHelper(object):
 
         if log is True:
             logging.info("Getting project_id from path: " + path)
-        project_id = 'Unspecified'
+        project_id = '00000'
 
         if 'Undetermined' in path:
             project_id =  SFHelper.get_run_name(tarfile)
