@@ -63,13 +63,13 @@ class SFObject(object):
 
     def build_parent_metadata(self):
         #This assumes we are building for sample - Fixme
-        parent_name = self.filepath.split("/")[-2]
+        parent_path = self.filepath.split("/")[-2]
 
         type = 'Sample'
         if self.parentType is not None:
             type = self.parentType
 
-        sf_parent = SFParent(parent_name, type, self.tarfile)
+        sf_parent = SFParent(parent_path, type, self.tarfile)
         sf_parent.build_metadata_items()
 
         self.metadata["createParentCollections"] = True
