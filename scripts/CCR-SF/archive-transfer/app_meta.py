@@ -41,7 +41,7 @@ def main(args):
 
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
-                if SFUtils.path_contains_exclude_str(tarfile_name, path):
+                if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
                     continue
 
                 filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
