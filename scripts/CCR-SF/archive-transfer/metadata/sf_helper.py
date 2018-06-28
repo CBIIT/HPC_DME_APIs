@@ -143,8 +143,10 @@ class SFHelper(object):
             sample_name = 'Undetermined'
 
         else:
-            # derive sample name
-            sample_name = path.split("Sample_")[-1]
+            # derive sample name - first remove the filename part
+            sample_path = path.rsplit("/", 1)[0]
+            #Then get the sample name part
+            sample_name = sample_path.split("Sample_")[-1]
 
         logging.info("sample_name from " + path + " is " + sample_name)
         return sample_name
