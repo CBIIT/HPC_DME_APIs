@@ -8,6 +8,17 @@ from metadata.sf_helper import SFHelper
 
 class SFUtils(object):
 
+
+    @staticmethod
+    def path_contains_exclude_str(tarfile_name, path):
+        exclusion_list = ['10X', 'Phix', 'demux', 'demultiplex']
+        if any(ext in path for ext in exclusion_list):
+            SFUtils.record_exclusion(tarfile_name, path.rstrip(), 'Path contains substring from exclusion list')
+            return True
+        return False
+
+
+
     @staticmethod
     def get_meta_path(filepath, log = True):
 
