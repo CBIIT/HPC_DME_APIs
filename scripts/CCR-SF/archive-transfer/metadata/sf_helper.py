@@ -10,9 +10,14 @@ class SFHelper(object):
     def get_pi_name(path, log = True):
 
         pi_names = {"Staudt": "Louis_Staudt", "Soppet": "Daniel_Soppet", "Schrump": "David_Schrump", "Shrump": "David_Schrump",
-                    "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "Mark_Raffeld_Brenda": "Mark_Raffeld",
+                    "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "KentHuter": "Kent_Hunter",
                     "Jonathan_Keller_Sun": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
-                    "Philipp_Oberdoerffer_Kim": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Pommier": "Yves_Pommier", "Vinson": "Chuck_Vinson"}
+                    "Philipp_Oberdoerffer_Kim": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Pommier": "Yves_Pommier", "Vinson": "Chuck_Vinson",
+                    "Batchelor": "Eric_Batchelor", "Brownell": "Issac_Brownell", "Ji_Luo": "Ji_Luo", "ShivGrewal": "Shiv_Grewal",
+                    "Mark_Raffeld_Brenda": "Mark_Raffeld", "Javed": "Javed_Khan", "_tumor": "Tomas_Villmas", "_pancreas": "Tomas_Villmas",
+                    "JingHuang": "Jing_Huang", "Aladjem": "Mirit_Aladjem", "Muegge": "Kathrin_Muegge", "Li_Yang": "Li_Yang", "Pastan": "Ira_Pastan",
+                    "Thiele": "Carol_Thiele", "Bosselut": "Remy_Bosselut", "Frederick_Barr": "Frederick_Barr", "Trinchieri": "Giorgio_Trinchieri",
+                    "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer"}
         pi_name = 'CCRSF'
 
         if log is True:
@@ -22,7 +27,7 @@ class SFHelper(object):
         if 'Undetermined' in path:
             pi_name = 'SF_Archive_flowcell_info'
 
-        else:
+        elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path:
             for element in pi_names:
                 if element in path:
                     #Perform mapping using pi_names if match is found
@@ -37,10 +42,12 @@ class SFHelper(object):
 
                 # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
 
-                if len(path_elements) > 4 and path_elements[3].isalpha() and path_elements[4].isdigit() and len(str(path_elements[4])):
-                    # If the 4th is alpha, and 5th is a 5 digit number, then pick the first 2
+                if len(path_elements) > 3 and path_elements[3].isalpha() and path_elements[4].isdigit():
+                    # If the 4th is alpha, and 5th is a number, then pick the first 2
                     pi_name = path_elements[0] + "_" + path_elements[1]
-            #else:
+                elif len(path_elements) > 1 and path_elements[1].isalpha() and path_elements[2].isdigit():
+                    # If the 2nd is alpha, and 3rd is a number, then pick the first 2
+                    pi_name = path_elements[0] + "_" + path_elements[1]
                 #if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
                     # else if the first 3 are alpha pick 0 and 2
                     #pi_name = path_elements[0] + "_" + path_elements[2]
@@ -70,7 +77,7 @@ class SFHelper(object):
         # Assumes the contact name follows the PI name separated from it by a '_',
 
         # the contact last and first names are separated by an '_'
-        if len(path_elements) > 4 and path_elements[3].isalpha() and path_elements[4].isdigit() and len(str(path_elements[4])):
+        if len(path_elements) > 4 and path_elements[3].isalpha() and path_elements[4].isdigit() and len(str(path_elements[4] is 5)):
             contact_name = path_elements[2] + "_" + path_elements[3]
         else:
             contact_name = None
@@ -90,7 +97,7 @@ class SFHelper(object):
 
         if log is True:
             logging.info("Getting project_id from path: " + path)
-        project_id = '00000'
+        project_id = 'Unspecified'
 
         if 'Undetermined' in path:
             project_id =  SFHelper.get_run_name(tarfile)

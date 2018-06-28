@@ -41,8 +41,7 @@ def main(args):
 
             if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
-                if 'Phix' in line or '10X' in line:
-                    SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'Phix or 10X file ')
+                if SFUtils.path_contains_exclude_str(tarfile_name, path):
                     continue
 
                 filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
