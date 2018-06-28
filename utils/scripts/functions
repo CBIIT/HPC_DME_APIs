@@ -113,7 +113,7 @@ function dm_register () {
     local DESTINATION_PATH="$2"
     local TYPE="$3"
 
-    local VALDN_RES=$(validate_archive_path $DESTINATION_PATH)
+    local VALDN_RES=$(validate_archive_path "$DESTINATION_PATH")
     if [ "" != "$VALDN_RES" ]
     then
       echo "$VALDN_RES" >&2
@@ -261,7 +261,7 @@ function dm_register_dataobject {
     then
       return 1
     fi
-
+    
     local RESPONSE_HEADER=dataObject-registration-response-header.tmp
     local RESPONSE_MSG=dataObject-registration-response-message.json.tmp
 
@@ -1692,11 +1692,11 @@ urldecode() {
 # Input: <string> archive path
 function validate_archive_path () {
   local USAGE="USAGE: validate_archive_path <archive-path>"
-  if [ -z "$1" ]
+  if [[ $# -ne 1 ]]
   then
-    echo "ERROR: using validate_archive_path" >&2
-    echo "Received: $@" >&2
-    echo "$USAGE" >&2
+    echo "ERROR: using validate_archive_path"
+    echo "Received: $@"
+    echo "$USAGE"
   else
     local ARCHIVE_PATH="$1"
     # forbidden chars are [space character] plus {? ; \}
@@ -1704,7 +1704,7 @@ function validate_archive_path () {
     local GREP_RESULT=$(echo $ARCHIVE_PATH | grep -E '[[:space:]]|[\?;\\]')
     if [ -n "$GREP_RESULT" ]
     then
-      echo "ERROR: Given archive path '$ARCHIVE_PATH' contains forbidden character(s) from the set { ? ; \ }."
+      echo "ERROR: Given archive path '$ARCHIVE_PATH' contains forbidden character(s) from the set { [space character] ? ; \ }."
     fi
   fi
 }
