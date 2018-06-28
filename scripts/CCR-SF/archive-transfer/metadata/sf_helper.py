@@ -42,10 +42,10 @@ class SFHelper(object):
 
                 # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
 
-                if len(path_elements) > 3 and path_elements[3].isalpha() and path_elements[4].isdigit():
+                if len(path_elements) > 4 and path_elements[3].isalpha() and path_elements[4].isdigit():
                     # If the 4th is alpha, and 5th is a number, then pick the first 2
                     pi_name = path_elements[0] + "_" + path_elements[1]
-                elif len(path_elements) > 1 and path_elements[1].isalpha() and path_elements[2].isdigit():
+                elif len(path_elements) > 2 and path_elements[1].isalpha() and path_elements[2].isdigit():
                     # If the 2nd is alpha, and 3rd is a number, then pick the first 2
                     pi_name = path_elements[0] + "_" + path_elements[1]
                 #if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
