@@ -9,31 +9,59 @@ class SFHelper(object):
     @staticmethod
     def get_pi_name(path, log = True):
 
+        pi_names = {"Staudt": "Louis_Staudt", "Soppet": "Daniel_Soppet", "Schrump": "David_Schrump", "Shrump": "David_Schrump",
+                    "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "KentHuter": "Kent_Hunter",
+                    "Jonathan_Keller_Sun": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
+                    "Philipp_Oberdoerffer_Kim": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Pommier": "Yves_Pommier", "Vinson": "Chuck_Vinson",
+                    "Batchelor": "Eric_Batchelor", "Brownell": "Issac_Brownell", "Ji_Luo": "Ji_Luo", "ShivGrewal": "Shiv_Grewal",
+                    "Mark_Raffeld_Brenda": "Mark_Raffeld", "Javed": "Javed_Khan", "_tumor": "Tomas_Villmas", "_pancreas": "Tomas_Villmas",
+                    "JingHuang": "Jing_Huang", "Aladjem": "Mirit_Aladjem", "Muegge": "Kathrin_Muegge", "Li_Yang": "Li_Yang", "Pastan": "Ira_Pastan",
+                    "Thiele": "Carol_Thiele", "Bosselut": "Remy_Bosselut", "Frederick_Barr": "Frederick_Barr", "Trinchieri": "Giorgio_Trinchieri",
+                    "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer"}
+        pi_name = 'CCRSF'
+
         if log is True:
             logging.info("Getting pi_name from path: " + path)
-        # derive pi name
-        #path_elements = path.split("_")
-        path_elements = (path.split("/")[0]).split("_")
 
-        # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
 
-        if len(path_elements) > 3 and path_elements[3].isalpha():
-            # If the 4th is alpha, then pick the first 2
-            pi_name = path_elements[0] + "_" + path_elements[1]
-        else:
-            if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
-                # else if the first 3 are alpha pick 0 and 2
-                pi_name = path_elements[0] + "_" + path_elements[2]
-            else:
-                if len(path_elements) > 1 and path_elements[1].isalpha():
-                    # else if the first 2 are alpha, pick 0 and 1
+        if 'Undetermined' in path:
+            pi_name = 'SF_Archive_flowcell_info'
+
+        elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path:
+            for element in pi_names:
+                if element in path:
+                    #Perform mapping using pi_names if match is found
+                    pi_name = pi_names[element]
+                    break
+
+
+            if 'CCRSF' in pi_name:
+
+                # derive pi name
+                path_elements = (path.split("/")[0]).split("_")
+
+                # Assumes that PI name is in the beginning, and last and first names are separated by an '_'
+
+                if len(path_elements) > 3 and path_elements[3].isalpha() and path_elements[4].isdigit():
+                    # If the 4th is alpha, and 5th is a number, then pick the first 2
                     pi_name = path_elements[0] + "_" + path_elements[1]
-                else:
-                    pi_name = path_elements[0]
+                elif len(path_elements) > 1 and path_elements[1].isalpha() and path_elements[2].isdigit():
+                    # If the 2nd is alpha, and 3rd is a number, then pick the first 2
+                    pi_name = path_elements[0] + "_" + path_elements[1]
+                #if len(path_elements) > 2 and path_elements[2].isalpha() and path_elements[2] not in ['RAS', 'cegx', 'swift']:
+                    # else if the first 3 are alpha pick 0 and 2
+                    #pi_name = path_elements[0] + "_" + path_elements[2]
+                #else:
+                    #if len(path_elements) > 1 and path_elements[1].isalpha():
+                        # else if the first 2 are alpha, pick 0 and 1
+                        #pi_name = path_elements[0] + "_" + path_elements[1]
+                    #else:
+                        #pi_name = path_elements[0]
 
 
-        #Assumes that PI name is in the beginning, and the format is FirstnameLastname
-        #pi_name = re.sub(r'([A-Z])', r' \1', path_elements[0])
+            #Assumes that PI name is in the beginning, and the format is FirstnameLastname
+            #pi_name = re.sub(r'([A-Z])', r' \1', path_elements[0])
+
         if log is True:
             logging.info("pi_name from " + path + " is " + pi_name)
         return pi_name
@@ -49,7 +77,7 @@ class SFHelper(object):
         # Assumes the contact name follows the PI name separated from it by a '_',
 
         # the contact last and first names are separated by an '_'
-        if len(path_elements) > 3 and path_elements[3].isalpha():
+        if len(path_elements) > 4 and path_elements[3].isalpha() and path_elements[4].isdigit() and len(str(path_elements[4] is 5)):
             contact_name = path_elements[2] + "_" + path_elements[3]
         else:
             contact_name = None
@@ -65,24 +93,29 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_project_id(path, log = True):
+    def get_project_id(path, tarfile, log = True):
 
         if log is True:
             logging.info("Getting project_id from path: " + path)
-        project_id = 'placeholder'
+        project_id = 'Unspecified'
 
-        #path_elements = path.split("_")
-        path_elements = (path.split("/")[0]).split("_")
+        if 'Undetermined' in path:
+            project_id =  SFHelper.get_run_name(tarfile)
 
-        #Assumes that the PI name and contact names have their first and last names separated by '_'
-        for element in path_elements:
-            if element.isdigit():
-                project_id = element
-                break
+        else:
+            #path_elements = path.split("_")
+            path_elements = (path.split("/")[0]).split("_")
 
+            #The project_id is the first string containing only digits. If this string
+            #is not a 5 digit number then use default project_id
+            for element in path_elements:
+                if element.isdigit():
+                    if len(str(element)) is 5:
+                        project_id = element
+                    break
 
-        #Assumes that PI and contact names are in the format 'FirstnameLastname'
-        #project_id = path_elements[2]
+            #Assumes that PI and contact names are in the format 'FirstnameLastname'
+            #project_id = path_elements[2]
 
         if log is True:
             logging.info("project_id from " + path + " is " + project_id)
@@ -91,8 +124,13 @@ class SFHelper(object):
 
     @staticmethod
     def get_project_name(path):
-        # derive project name
-        project_name = path.split("/")[0]
+
+        if 'Undetermined' in path:
+            project_name =  'Undetermined'
+
+        else:
+            # derive project name
+            project_name = path.split("/")[0]
 
         return project_name
 
@@ -100,8 +138,14 @@ class SFHelper(object):
     @staticmethod
     def get_sample_name(path):
         logging.info("Getting sample_name from path: " + path)
-        # derive sample name
-        sample_name = path.split("Sample_")[-1]
+
+        if 'Sample_' not in path:
+            sample_name = 'Undetermined'
+
+        else:
+            # derive sample name
+            sample_name = path.split("Sample_")[-1]
+
         logging.info("sample_name from " + path + " is " + sample_name)
         return sample_name
 
