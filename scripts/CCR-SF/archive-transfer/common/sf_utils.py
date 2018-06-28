@@ -56,10 +56,10 @@ class SFUtils(object):
         filepath = filepath.lstrip('/')
 
 
-        if len(filepath.split("/")) < 3:
-            # There is no subdirectory structure - something not right
-            SFUtils.record_exclusion(tarfile_name, line, 'No subdirectory structure found')
-            return
+        #if len(filepath.split("/")) < 3:
+        #    # There is no subdirectory structure - something not right
+        #    SFUtils.record_exclusion(tarfile_name, line, 'No subdirectory structure found')
+        #    return
 
         # extract the fastq file from the archive
         command = "tar -xf " + tarfile_path + " -C uploads/ " + filepath
