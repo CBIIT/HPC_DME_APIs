@@ -63,7 +63,10 @@ class SFObject(object):
 
     def build_parent_metadata(self):
         #This assumes we are building for sample - Fixme
-        parent_path = self.filepath.split("/")[-2]
+        if len(self.filepath.split("/")) > 1:
+            parent_path = self.filepath.split("/")[-2]
+        else:
+            parent_path = self.filepath
 
         type = 'Sample'
         if self.parentType is not None:
