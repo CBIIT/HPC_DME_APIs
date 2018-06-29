@@ -164,7 +164,7 @@ public class HpcUploadTaskController extends AbstractHpcController {
                  info.append(responseItem.getPath()).append("<br/>");
              }
              model.addAttribute("error",
-                     "Bulk Data file registration request is submmited! Task Id: " + responseDTO.getTaskId());
+                     "Bulk Data file registration request is submmited! Task Id: <a href='uploadtask?type=&taskId=" + responseDTO.getTaskId()+"'>"+responseDTO.getTaskId()+"</a>");
          }
 		model.addAttribute("hpcBulkDataObjectRegistrationTaskDTO", uploadTask.getTask());
 

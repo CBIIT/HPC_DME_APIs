@@ -88,7 +88,7 @@
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
 									<a class="close" data-dismiss="alert">×</a> <label
-										for="${error}" th:text="${error}"></label>
+										for="${error}" th:utext="${error}"></label>
 								</div>
 							</div>
 							<!--panel-body start-->
@@ -184,7 +184,7 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6">
 								<h2>
-									<strong> <a id="uploadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryUpload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i>Retry</a></strong>
+									<strong> <a id="uploadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryUpload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}" ><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
 								</h2>
 								</div>
 							</div>
