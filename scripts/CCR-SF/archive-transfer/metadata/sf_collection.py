@@ -43,6 +43,8 @@ class SFCollection(SFParent):
     @staticmethod
     def get_archive_path(tarfile_name, path, type):
 
+        logging.info("Getting collection archive path for type: " + type + " and path " + path)
+
         archive_path = "/FNL_SF_Archive" #super(SFCollection, self).get_archive_path()
 
         pi_coll_path = "/Auto_PI_Lab_" + SFHelper.get_pi_name(path, False)
