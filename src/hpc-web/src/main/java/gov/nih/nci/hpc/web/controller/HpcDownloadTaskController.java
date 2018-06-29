@@ -182,7 +182,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           {
             result.setMessage(
                 "Download request successfull. Task Id: " + downloadDTO.getTaskId());
-            model.addAttribute("error", "Retry download request is submitted successfully. Task Id: " + downloadDTO.getTaskId());
+            model.addAttribute("error",
+                    "Download request successfull. Task Id: <a href='downloadtask?type="+taskType+"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
           }
 
           model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
