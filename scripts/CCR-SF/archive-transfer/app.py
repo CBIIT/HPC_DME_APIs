@@ -164,7 +164,8 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
         json.dump(object_metadata, fp)
 
     #register the object
-    archive_path = SFCollection.get_archive_path(tarfile_name, filepath.rsplit("/", 1)[0], type)
+    #archive_path = SFCollection.get_archive_path(tarfile_name, filepath.rsplit("/", 1)[0], type)
+    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
     archive_path = archive_path + '/' + file_name
 
     response_message = "dataObject-registration-response-message.json.tmp"
