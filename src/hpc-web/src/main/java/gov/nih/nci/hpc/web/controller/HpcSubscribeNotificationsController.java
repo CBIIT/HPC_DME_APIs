@@ -17,14 +17,24 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationTrigger;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.dto.notification.HpcAddOrUpdateNotificationSubscriptionProblem;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsResponseDTO;
+import gov.nih.nci.hpc.dto.notification.HpcRemoveNotificationSubscriptionProblem;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcNotification;
@@ -33,17 +43,19 @@ import gov.nih.nci.hpc.web.model.HpcNotificationTriggerModel;
 import gov.nih.nci.hpc.web.model.HpcNotificationTriggerModelEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
+import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,10 +85,167 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @EnableAutoConfiguration
 @RequestMapping("/subscribe")
-public class HpcSubscribeNotificationsController extends AbstractHpcController {
+public class HpcSubscribeNotificationsController extends
+    gov.nih.nci.hpc.web.controller.AbstractHpcController {
+
+
+  private static class SubscriptionProblemsBundle {
+    private Optional<List<String>> problems;
+
+    private SubscriptionProblemsBundle() {
+      this.problems = Optional.empty();
+    }
+
+    private SubscriptionProblemsBundle(List<String> problemsVal) {
+      this.problems = (null == problemsVal || problemsVal.isEmpty()) ?
+        Optional.empty() : Optional.of(problemsVal);
+    }
+
+    private Optional<List<String>> getProblems() {
+      return this.problems;
+    }
+
+    private void setProblems(Optional<List<String>> arg) {
+      this.problems = arg;
+    }
+  }
+
+
+  private static class SubscriptionProblemsBundleDeserializer implements
+    JsonDeserializer<SubscriptionProblemsBundle> {
+
+    @Override
+    public SubscriptionProblemsBundle deserialize(
+      JsonElement jsonElement,
+      Type type,
+      JsonDeserializationContext jsonDeserializationContext)
+    throws JsonParseException {
+
+      SubscriptionProblemsBundle resultObj = null;
+      if (jsonElement.isJsonObject()) {
+        List<String> problems = new ArrayList<>();
+        JsonObject jsonObj = jsonElement.getAsJsonObject();
+        if (jsonObj.has("subscriptionsCouldNotBeAddedOrUpdated")) {
+          // Single instance or List of HpcAddOrUpdateNotificationSubscriptionProblem
+          Consumer<JsonElement> consumer1 = elem -> {
+            String problemMsg = MSG_TEMPLATE__ADD_UPDT_SBSCRPTN_PRBLM
+              .replace("PLACEHOLDER_EVENT",
+                elem.getAsJsonObject()
+                    .getAsJsonObject("subscription")
+                    .getAsJsonPrimitive("eventType")
+                    .getAsString())
+              .replace("PLACEHOLDER_PROBLEM",
+                elem.getAsJsonObject()
+                    .getAsJsonPrimitive("problem")
+                    .getAsString());
+            problems.add(problemMsg);
+          };
+          JsonElement tmpElem = jsonObj.get("subscriptionsCouldNotBeAddedOrUpdated");
+          if (tmpElem.isJsonArray()) {
+            tmpElem.getAsJsonArray().forEach(consumer1);
+          }
+          else if (tmpElem.isJsonObject()) {
+            consumer1.accept(tmpElem);
+          }
+        }
+      /*
+        if (jsonObj.has("addedOrUpdatedSubscriptions")) {
+          // Single instance or List of HpcNotificationSubscription
+          // if desired, add logic to transform the content for this member
+        }
+        if (jsonObj.has("removedSubscriptions")) {
+          // Single instance or List of HpcEventType
+          // if desired, add logic to transform the content for this member
+        }
+      */
+        if (jsonObj.has("subscriptionsCouldNotBeRemoved")) {
+          // Single instance or List of HpcRemoveNotificationSubscriptionProblem
+          Consumer<JsonElement> consumer2 = elem -> {
+            String problemMsg = MSG_TEMPLATE__RMV_SBSCRPTN_PRBLM
+                .replace("PLACEHOLDER_EVENT",
+                    elem.getAsJsonObject()
+                        .getAsJsonPrimitive("removeSubscriptionEvent")
+                        .getAsString())
+                .replace("PLACEHOLDER_PROBLEM",
+                    elem.getAsJsonObject()
+                        .getAsJsonPrimitive("problem")
+                        .getAsString());
+            problems.add(problemMsg);
+          };
+          JsonElement tmpElem = jsonObj.get("subscriptionsCouldNotBeRemoved");
+          if (tmpElem.isJsonArray()) {
+            tmpElem.getAsJsonArray().forEach(consumer2);
+          }
+          else if (tmpElem.isJsonObject()) {
+            consumer2.accept(tmpElem);
+          }
+        }
+        resultObj = new SubscriptionProblemsBundle(problems);
+      }
+
+      return resultObj;
+    }
+
+  }
+
 
   public static final String PROPERTY_KEY__NOTIFICATION_EXCLUDE_LIST =
       "gov.nih.nci.notification.exclude.list";
+
+//  private static final Feature[] JSON_DESERIAL_FEATURES_4_ACTIVATION = new
+//    Feature[] { Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY };
+
+  private static final String MSG_TEMPLATE__ADD_UPDT_SBSCRPTN_PRBLM =
+      "Unable to add/update Notifications for PLACEHOLDER_EVENT.  Reason: PLACEHOLDER_PROBLEM.";
+
+  private static final String MSG_TEMPLATE__RMV_SBSCRPTN_PRBLM =
+    "Unable to remove Notifications for PLACEHOLDER_EVENT.  Reason: PLACEHOLDER_PROBLEM.";
+
+
+  private static String buildProblemMsgs(
+    HpcNotificationSubscriptionsResponseDTO respDto) {
+    List<String> problemMsgs = new ArrayList<>();
+    respDto.getSubscriptionsCouldNotBeAddedOrUpdated()
+      .stream()
+      .forEach(problem -> {
+        problemMsgs.add(generateProblemMsg(problem));
+      });
+    respDto.getSubscriptionsCouldNotBeRemoved()
+      .stream()
+      .forEach(problem -> {
+        problemMsgs.add(generateProblemMsg(problem));
+      });
+    String result = problemMsgs.stream()
+      .reduce((str1, str2) -> (str1 + "\n" + str2))
+      .orElse("");
+
+    return result;
+  }
+
+
+  private static String generateProblemMsg(
+    HpcAddOrUpdateNotificationSubscriptionProblem problem) {
+    String msg = MSG_TEMPLATE__ADD_UPDT_SBSCRPTN_PRBLM
+      .replace("PLACEHOLDER_EVENT",
+        problem.getSubscription().getEventType().name())
+      .replace("PLACEHOLDER_PROBLEM",
+        problem.getProblem());
+
+    return msg;
+  }
+
+
+  private static String generateProblemMsg(
+    HpcRemoveNotificationSubscriptionProblem problem) {
+    String msg = MSG_TEMPLATE__RMV_SBSCRPTN_PRBLM
+      .replace("PLACEHOLDER_EVENT",
+        problem.getRemoveSubscriptionEvent().name())
+      .replace("PLACEHOLDER_PROBLEM",
+        problem.getProblem());
+
+    return msg;
+  }
+
 
   @Value("${gov.nih.nci.hpc.server.notification}")
   private String notificationURL;
@@ -145,12 +314,34 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
       HpcNotificationSubscriptionsRequestDTO subscriptionsRequestDTO =
         buildDto4ServiceRequest(request, session);
 
-      WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
+      WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath,
+        sslCertPassword);
       client.header("Authorization", "Bearer " + authToken);
-
       Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
       if (restResponse.getStatus() == 200) {
-        model.addAttribute("updateStatus", "Updated successfully");
+        if (restResponse.getEntity() instanceof InputStream) {
+          String responseBody = IOUtils.toString((InputStream)
+            restResponse.getEntity());
+          Gson gsonObj = new GsonBuilder()
+            .registerTypeAdapter(SubscriptionProblemsBundle.class, new
+              SubscriptionProblemsBundleDeserializer())
+            .create();
+          SubscriptionProblemsBundle spBundle = gsonObj.fromJson(responseBody,
+            SubscriptionProblemsBundle.class);
+          String statusMsg = "Updated successfully";
+          if (null != spBundle && spBundle.getProblems().isPresent()) {
+              StringBuilder sb = new StringBuilder();
+              List<String> problems = spBundle.getProblems().get();
+              for (String problem : problems) {
+                if (sb.length() > 0) {
+                  sb.append("\n");
+                }
+                sb.append(problem);
+              }
+              statusMsg = sb.toString();
+          }
+          model.addAttribute("updateStatus", statusMsg);
+        }
       } else {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -208,12 +399,18 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
    */
   private HpcNotificationSubscriptionsRequestDTO buildDto4ServiceRequest(
       HttpServletRequest request, HttpSession session) {
+
     classifyEventTypes(request);
-    HpcNotificationSubscriptionsRequestDTO dto = new
+
+    final HpcNotificationSubscriptionsRequestDTO dto = new
         HpcNotificationSubscriptionsRequestDTO();
-    dto.getAddUpdateSubscriptions().addAll(generateAddUpdtModel(request,
-        session));
-    dto.getDeleteSubscriptions().addAll(generateRemoveModel(session));
+
+    List<HpcNotificationSubscription> addUpdtModel = generateAddUpdtModel(
+      request, session);
+    List<HpcEventType> removeModel = generateRemoveModel(session, addUpdtModel);
+
+    dto.getAddUpdateSubscriptions().addAll(addUpdtModel);
+    dto.getDeleteSubscriptions().addAll(removeModel);
 
     return dto;
   }
@@ -329,17 +526,39 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
    *          Updated kind
    */
   private Optional<HpcNotificationSubscription> constructCollUpdtSubscrptn(
-      HttpServletRequest request) {
-    Optional<List<HpcNotificationTrigger>> collUpdtTriggersOptional =
-        constructCollUpdtTriggers(request);
+      HttpServletRequest request,
+      List<HpcNotificationSubscription> currSubscriptions) {
+
     HpcNotificationSubscription collUpdtSubscription = null;
-    if (collUpdtTriggersOptional.isPresent()) {
-      collUpdtSubscription = new HpcNotificationSubscription();
-      collUpdtSubscription.setEventType(HpcEventType.COLLECTION_UPDATED);
-      collUpdtSubscription.getNotificationDeliveryMethods().add(
-          HpcNotificationDeliveryMethod.EMAIL);
-      collUpdtSubscription.getNotificationTriggers().addAll(
+
+    Optional<HpcNotificationSubscription> currCollUpdtSubscription =
+      Optional.empty();
+    if (null != currSubscriptions && !currSubscriptions.isEmpty()) {
+      currSubscriptions.stream()
+        .filter(subscription -> HpcEventType.COLLECTION_UPDATED.equals(
+          subscription.getEventType()) )
+        .findAny();
+    }
+
+    Optional<List<HpcNotificationTrigger>> collUpdtTriggersOptional =
+      constructCollUpdtTriggers(request);
+
+    if (currCollUpdtSubscription.isPresent()) {
+      if (collUpdtTriggersOptional.isPresent()) {
+        currCollUpdtSubscription.get().getNotificationTriggers().clear();
+        currCollUpdtSubscription.get().getNotificationTriggers().addAll(
           collUpdtTriggersOptional.get());
+        collUpdtSubscription = currCollUpdtSubscription.get();
+      }
+    } else {
+      if (collUpdtTriggersOptional.isPresent()) {
+        collUpdtSubscription = new HpcNotificationSubscription();
+        collUpdtSubscription.setEventType(HpcEventType.COLLECTION_UPDATED);
+        collUpdtSubscription.getNotificationDeliveryMethods().add(
+          HpcNotificationDeliveryMethod.EMAIL);
+        collUpdtSubscription.getNotificationTriggers().addAll(
+          collUpdtTriggersOptional.get());
+      }
     }
 
     return (null == collUpdtSubscription) ? Optional.empty() : Optional.of(
@@ -394,13 +613,18 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
    */
   private List<HpcNotificationSubscription> generateAddUpdtModel(
       HttpServletRequest request, HttpSession session) {
-    List<HpcNotificationSubscription> addUpdtModel = new ArrayList<>();
-    constructCollUpdtSubscrptn(request).ifPresent(notifSub ->
-        addUpdtModel.add(notifSub));
-
     List<HpcNotificationSubscription> tmpSubscriptions =
-        getUserNotificationSubscriptions((String) session.getAttribute(
-            "hpcUserToken"));
+      getUserNotificationSubscriptions((String) session.getAttribute(
+      "hpcUserToken"));
+
+    final List<HpcNotificationSubscription> addUpdtModel = new ArrayList<>();
+
+    constructCollUpdtSubscrptn(request, tmpSubscriptions).ifPresent(
+      notifSub -> {
+        addUpdtModel.add(notifSub);
+      }
+    );
+
     if (null == tmpSubscriptions) {
       // Since there are currently no Subscriptions, set up adding new
       //  Subscription per Event Type selected in request.
@@ -442,7 +666,9 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
    * @param session - HttpSession instance
    * @return List<HpcEventType> representing actions to remove Subscriptions
    */
-  private List<HpcEventType> generateRemoveModel(HttpSession session) {
+  private List<HpcEventType> generateRemoveModel(HttpSession session,
+    List<HpcNotificationSubscription> addUpdateModel) {
+
     List<HpcEventType> removeModel = new ArrayList<>();
 
     // Set up removing Subscriptions to Event Types which are currently
@@ -459,6 +685,19 @@ public class HpcSubscribeNotificationsController extends AbstractHpcController {
             .findFirst()
             .ifPresent(firstNotifSub -> removeModel.add(unslctdEventType));
       });
+    }
+
+    // If "Collection Updated" Event Type is already represented in Add/Update
+    //  Subscriptions model state, then ensure that Remove Subscriptions model
+    //  state excludes "Collection Updated" Event Type.
+    if (null != addUpdateModel &&
+        addUpdateModel.stream()
+          .filter(subscription ->
+            HpcEventType.COLLECTION_UPDATED.equals(subscription.getEventType())
+          )
+          .findAny()
+          .isPresent()) {
+      removeModel.remove(HpcEventType.COLLECTION_UPDATED);
     }
 
     return removeModel;
