@@ -129,7 +129,7 @@ class SFHelper(object):
 
         else:
             # derive project name
-            if len(path.split("/") > 2):
+            if len(path.split("/")) > 2:
                 project_name = path.split("/")[-3]
             else:
                 project_name = path.split("/")[0]
