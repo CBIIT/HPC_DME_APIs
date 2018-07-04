@@ -11,7 +11,7 @@ class SFUtils(object):
 
     @staticmethod
     def path_contains_exclude_str(tarfile_name, path):
-        exclusion_list = ['10X', 'Phix', 'demux', 'demultiplex']
+        exclusion_list = ['10X', 'Phix', 'PhiX', 'demux', 'demultiplex']
         if any(ext in path for ext in exclusion_list):
             SFUtils.record_exclusion(tarfile_name, path.rstrip(), 'Path contains substring from exclusion list')
             return True
@@ -78,7 +78,7 @@ class SFUtils(object):
         logging.info("Getting contents for: " + tarfile_name)
         tarfile_name = tarfile_name.rstrip()
 
-        if '10x' in tarfile_name or 'singlecell' in tarfile_name:
+        if '10x' in tarfile_name or 'singlecell' in tarfile_name or 'lane123456' in tarfile_name:
             excludes_str = ': Invalid tar file -  10x or singlecell'
             SFUtils.record_exclusion(tarfile_name, "All files", excludes_str)
             return
@@ -138,7 +138,7 @@ class SFUtils(object):
 
         includes_csv = open("sf_included.csv", "a")
         includes_csv.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path + ", " + flowcell_id +
-            ", " + SFHelper.get_pi_name(path) + ", " + SFHelper.get_project_id(path, tarfile_name) +
-            ", " + SFHelper.get_project_name(path) + ", " + SFHelper.get_sample_name(path) +
+            ", " + SFHelper.get_pi_name(path) + ", " + SFHelper.get_project_id(path) +
+            ", " + SFHelper.get_project_name(path, tarfile_name) + ", " + SFHelper.get_sample_name(path) +
             ", " + SFHelper.get_run_name(tarfile_name) + ", " + SFHelper.get_sequencing_platform(tarfile_name)  + "\n")
         includes_csv.close()

@@ -17,7 +17,7 @@ class SFHelper(object):
                     "Mark_Raffeld_Brenda": "Mark_Raffeld", "Javed": "Javed_Khan", "_tumor": "Tomas_Villmas", "_pancreas": "Tomas_Villmas",
                     "JingHuang": "Jing_Huang", "Aladjem": "Mirit_Aladjem", "Muegge": "Kathrin_Muegge", "Li_Yang": "Li_Yang", "Pastan": "Ira_Pastan",
                     "Thiele": "Carol_Thiele", "Bosselut": "Remy_Bosselut", "Frederick_Barr": "Frederick_Barr", "Trinchieri": "Giorgio_Trinchieri",
-                    "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer"}
+                    "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer", "Sample_SPECS_2070": "Louis_Staudt"}
         pi_name = 'CCRSF'
 
         if log is True:
@@ -93,16 +93,13 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_project_id(path, tarfile, log = True):
+    def get_project_id(path, log = True):
 
         if log is True:
             logging.info("Getting project_id from path: " + path)
         project_id = 'Unspecified'
 
-        if 'Undetermined' in path:
-            project_id =  SFHelper.get_run_name(tarfile)
-
-        else:
+        if 'Undetermined' not in path:
             #path_elements = path.split("_")
             path_elements = (path.split("/")[0]).split("_")
 
@@ -123,14 +120,22 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_project_name(path):
+    def get_project_name(path, tarfile):
 
         if 'Undetermined' in path:
-            project_name =  'Undetermined'
+            project_name =  SFHelper.get_run_name(tarfile)
+            #Remove '_lanex' from the project_name if present
+            project_name = project_name.split("_lane")[0]
 
         else:
             # derive project name
-            project_name = path.split("/")[0]
+            if len(path.split("/") > 2):
+                project_name = path.split("/")[-3]
+            else:
+                project_name = path.split("/")[0]
+                #Hardcoded exclusion
+                if(project_name is 'SAMPLE_SPECS_2070'):
+                    project_name = 'Staudt_Roland_49mRNA_11_2_15'
 
         return project_name
 
@@ -140,7 +145,10 @@ class SFHelper(object):
         logging.info("Getting sample_name from path: " + path)
 
         if 'Sample_' not in path:
-            sample_name = 'Undetermined'
+            #sample_name = 'Undetermined'
+            #Use part of the file name i.e. upto '_S' for the sample_path
+            file_name = path.rsplit("/", 1)[-1]
+            sample_name = file_name.rsplit("_S", 1)[0]
 
         else:
             # derive sample name - first remove the filename part
@@ -194,6 +202,11 @@ class SFHelper(object):
             sequencing_platform = 'NextSeq'
         elif (sequencing_platform_code == 'J' or sequencing_platform_code == 'D'):
             sequencing_platform = 'HiSeq'
+        else:
+            flowcell_id = SFHelper.get_flowcell_id(tarfile)
+            if re.match("(\d){8}-(\w){5}", flowcell_id):
+                sequencing_platform = 'MiSeq'
+
 
         return sequencing_platform
 
