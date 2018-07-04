@@ -124,8 +124,6 @@ class SFHelper(object):
 
         if 'Undetermined' in path:
             project_name =  SFHelper.get_run_name(tarfile)
-            #Remove '_lanex' from the project_name if present
-            project_name = project_name.split("_lane")[0]
 
         else:
             # derive project name
@@ -190,6 +188,8 @@ class SFHelper(object):
     def get_run_name(tarfile):
         #Rule: String before the '.tar' in the tar filename
         run_name = tarfile.split(".")[0]
+        # Remove '_lane' from the project_name if present
+        run_name = run_name.split("_lane")[0]
         return run_name
 
 
