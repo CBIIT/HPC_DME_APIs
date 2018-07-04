@@ -132,7 +132,7 @@ class SFHelper(object):
             else:
                 project_name = path.split("/")[0]
                 #Hardcoded exclusion
-                if(project_name is 'Sample_SPECS_2070'):
+                if(project_name == 'Sample_SPECS_2070'):
                     project_name = 'Staudt_Roland_49mRNA_11_2_15'
 
         return project_name
