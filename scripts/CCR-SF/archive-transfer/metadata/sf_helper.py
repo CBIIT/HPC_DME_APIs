@@ -122,7 +122,7 @@ class SFHelper(object):
     @staticmethod
     def get_project_name(path, tarfile):
 
-        if 'Undetermined' in path:
+        if 'Undetermined' in path or len(path.split("/")) == 1:
             project_name =  SFHelper.get_run_name(tarfile)
 
         else:
@@ -132,7 +132,7 @@ class SFHelper(object):
             else:
                 project_name = path.split("/")[0]
                 #Hardcoded exclusion
-                if(project_name is 'SAMPLE_SPECS_2070'):
+                if(project_name is 'Sample_SPECS_2070'):
                     project_name = 'Staudt_Roland_49mRNA_11_2_15'
 
         return project_name
