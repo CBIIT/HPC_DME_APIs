@@ -39,10 +39,10 @@ def main(args):
                 #This is a directory, nothing to do
                 continue
 
-            if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
+            if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
+                continue
 
-                if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
-                    continue
+            if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
 
                 filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
                 if filepath is None:
@@ -64,7 +64,7 @@ def main(args):
                 #delete the extracted tar file
                 os.system("rm -rf uploads/*")
 
-            elif line.rstrip().endswith('laneBarcode.html') and '/all/' in line:
+            elif line.rstrip().endswith('laneBarcode.html') and '/all/' in line and not 'Control_Sample' in line:
 
                 #Remove the string after the first '/all' because metadata path if present will be before that
                 head, sep, tail = line.partition('all/')
