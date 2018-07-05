@@ -49,27 +49,28 @@ class SFUtils(object):
 
 
     @staticmethod
-    def extract_file_to_archive(tarfile_name, tarfile_path, line):
+    def extract_files_from_tar(tarfile_path, extract_path):
+
+        # extract files from the archive
+        command = "tar -xf " + tarfile_path + " -C " + extract_path
+        logging.info(command)
+        os.system(command)
+        logging.info("Extracted tarball " + tarfile_path)
+
+
+
+    @staticmethod
+    def get_filepath_to_archive(line, extract_path):
         # Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
         filepath = line.rstrip().split("../")[-1]
         filepath = filepath.split(" ")[-1]
         filepath = filepath.lstrip('/')
 
-
-        #if len(filepath.split("/")) < 3:
-        #    # There is no subdirectory structure - something not right
-        #    SFUtils.record_exclusion(tarfile_name, line, 'No subdirectory structure found')
-        #    return
-
-        # extract the fastq file from the archive
-        command = "tar -xf " + tarfile_path + " -C uploads/ " + filepath
-        logging.info(command)
-        #os.system(command)
-        filepath = 'uploads/' + filepath
+        filepath = extract_path + filepath
 
         logging.info("file to archive: " + filepath)
-
         return filepath
+
 
 
     @staticmethod

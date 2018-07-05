@@ -17,6 +17,7 @@ def main(args):
     #Get the file containing the tarlist
     tarfile_list = args[1]
     tarfile_dir = args[2]
+    extract_path = args[3]
 
     for line_filepath in open(tarfile_list).readlines():
 
@@ -31,6 +32,9 @@ def main(args):
         # This is a valid tarball, so process
         logging.info("Processing file: " + tarfile_path)
 
+        # Extract all files and store in extract_path directory
+        #SFUtils.extract_files_from_tar(tarfile_path, extract_path)
+
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
         for line in tarfile_contents.readlines():
@@ -42,14 +46,11 @@ def main(args):
             if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
                 continue
 
-            if line.rstrip().endswith('fastq.gz') or line.rstrip().endswith('fastq.gz.md5'):
+            filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
 
-                filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line.rstrip())
-                if filepath is None:
-                    continue
+            if filepath.endswith('fastq.gz') or filepath.endswith('fastq.gz.md5'):
 
                 # Extract the info for PI metadata
-
                 path = SFUtils.get_meta_path(filepath)
 
                 # Register PI collection
@@ -61,10 +62,7 @@ def main(args):
                 #create Object metadata with Sample type parent and register object
                 register_object(path, "Sample", tarfile_name, True, filepath)
 
-                #delete the extracted tar file
-                os.system("rm -rf uploads/*")
-
-            elif line.rstrip().endswith('laneBarcode.html') and '/all/' in line and not 'Control_Sample' in line:
+            elif filepath.endswith('laneBarcode.html') and '/all/' in filepath and not 'Control_Sample' in filepath:
 
                 #Remove the string after the first '/all' because metadata path if present will be before that
                 head, sep, tail = line.partition('all/')
@@ -77,11 +75,6 @@ def main(args):
 
                     #Ensure that metadata path does not have the Sample sub-directory and that it is valid
                     if path.count('/') == 1 and '_' in path:
-
-                        filepath = SFUtils.extract_file_to_archive(tarfile_name, tarfile_path, line)
-                        if filepath is None:
-                            SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'could not extract file for archiving')
-                            continue
 
                         #Register the html in flowcell collection
 
@@ -109,9 +102,11 @@ def main(args):
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'Not fastq.gz or valid html file')
+                SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'Not fastq.gz, fastq.gz.md5 or valid html file')
 
         logging.info('Done processing file: ' + tarfile_path)
+        #delete the extracted tar file
+        os.system("rm -rf " + extract_path + "/*")
 
 
 
@@ -132,8 +127,16 @@ def register_collection(filepath, type, tarfile_name, has_parent):
     #Register the collection
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
 
+    #response_header = "collection-registration-response-header.tmp"
+    #os.system("rm - f " + response_header + " 2>/dev/null")
+
     command = "dm_register_collection jsons_dryrun/" + json_file_name + " " + archive_path
     logging.info(command)
+    os.system(command)
+
+    #with open(response_header) as f:
+        #for line in f:
+        #   logging.info(line)
 
 
 
@@ -151,17 +154,17 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
         json.dump(object_metadata, fp)
 
     #register the object
-    #archive_path = SFCollection.get_archive_path(tarfile_name, filepath.rsplit("/", 1)[0], type)
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
     archive_path = archive_path + '/' + file_name
 
+    #response_header = "dataObject-registration-response-header.tmp"
+    #os.system("rm - f " + response_header + " 2>/dev/null")
+
     command = "dm_register_dataobject jsons_dryrun/" + json_file_name + " " + archive_path + " " + fullpath
-
     logging.info(command)
-
     includes = open("registered_files_dryrun", "a")
-
     includes.write(command)
+    #os.system(command)
 
     #Compute total number of files registered so far, and total bytes
     files_registered = files_registered + 1
