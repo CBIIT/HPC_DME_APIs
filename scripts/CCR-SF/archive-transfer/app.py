@@ -143,6 +143,8 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 
 
 
+
+
 def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     global files_registered, bytes_stored
@@ -210,8 +212,9 @@ excludes_csv.close()
 ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
-logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', level=logging.DEBUG)
+logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', format='%(levelname)s: %(asctime)s %(message)s', level=logging.DEBUG)
 logging.info("Begin processing....")
+
 
 main(sys.argv)
 
