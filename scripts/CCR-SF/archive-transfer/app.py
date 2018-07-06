@@ -148,7 +148,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     object_metadata = object_to_register.get_metadata()
 
     # create the metadata json file
-    file_name = 'DataObject_' + filepath.split("/")[-1]
+    file_name = filepath.split("/")[-1]
     json_file_name = file_name + ".json"
     with open('jsons/' + json_file_name, "w") as fp:
         json.dump(object_metadata, fp)
