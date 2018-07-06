@@ -37,7 +37,7 @@ class SFUtils(object):
     @staticmethod
     def record_exclusion(tarfile_name, file_name, str):
 
-        excludes = open("excluded_files_dryrun", "a")
+        excludes = open("excluded_files", "a")
         excludes.writelines(tarfile_name + ": " + file_name + " - " + str + '\n')
         excludes.close()
 
@@ -121,6 +121,7 @@ class SFUtils(object):
             logging.info("Created contents file: " + command)
             tarfile_contents = open(tarfile_name + '.list')
 
+        logging.info("Obtained contents for: " + tarfile_name)
         return tarfile_contents
 
 

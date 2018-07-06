@@ -162,7 +162,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     command = "dm_register_dataobject jsons_dryrun/" + json_file_name + " " + archive_path + " " + fullpath
     logging.info(command)
-    includes = open("registered_files_dryrun", "a")
+    includes = open("registered_files", "a")
     includes.write(command)
     #os.system(command)
 
@@ -192,10 +192,11 @@ ts = time.gmtime()
 formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 # 2018-05-14_07:56:07
 logging.basicConfig(filename='ccr-sf_transfer_dryrun' + formatted_time + '.log', level=logging.DEBUG)
+logging.info("Begin processing....")
 
 main(sys.argv)
 
-includes = open("registered_files_dryrun", "a")
+includes = open("registered_files", "a")
 includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
 includes.close()
 
