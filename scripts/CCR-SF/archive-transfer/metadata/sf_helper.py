@@ -25,7 +25,7 @@ class SFHelper(object):
 
 
         if 'Undetermined' in path:
-            pi_name = 'SF_Archive_flowcell_info'
+            pi_name = 'SF_Archive_Flowcell_Info'
 
         elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path:
             for element in pi_names:
