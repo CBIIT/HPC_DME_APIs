@@ -106,7 +106,7 @@ def main(args):
 
         logging.info('Done processing file: ' + tarfile_path)
         # delete the extracted file
-        os.system("rm -rf uploads/*")
+        os.system("rm -rf " + extract_path + "*")
 
 
 

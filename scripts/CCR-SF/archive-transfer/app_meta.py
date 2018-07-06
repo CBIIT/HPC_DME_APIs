@@ -106,7 +106,7 @@ def main(args):
 
         logging.info('Done processing file: ' + tarfile_path)
         #delete the extracted tar file
-        os.system("rm -rf " + extract_path + "/*")
+        os.system("rm -rf " + extract_path + "*")
 
 
 
@@ -132,7 +132,7 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 
     command = "dm_register_collection jsons_dryrun/" + json_file_name + " " + archive_path
     logging.info(command)
-    os.system(command)
+    #os.system(command)
 
     #with open(response_header) as f:
         #for line in f:
