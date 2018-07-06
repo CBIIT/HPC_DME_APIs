@@ -179,7 +179,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
         #Compute total number of files registered so far, and total bytes
         files_registered += 1
         bytes_stored += filesize
-        includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
+        includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
     else:
         includes.write("Error registering file \n")
 

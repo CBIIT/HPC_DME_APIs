@@ -170,7 +170,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     files_registered = files_registered + 1
     bytes_stored = 0 #+= bytes_stored + filesize
 
-    includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
+    includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
     includes.close()
 
     SFUtils.record_to_csv(tarfile_name, filepath, fullpath, archive_path)
