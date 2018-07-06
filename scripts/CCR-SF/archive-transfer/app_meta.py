@@ -132,6 +132,9 @@ def register_collection(filepath, type, tarfile_name, has_parent):
 
     command = "dm_register_collection jsons_dryrun/" + json_file_name + " " + archive_path
     logging.info(command)
+    includes = open("registered_files", "a")
+    includes.write(command)
+    includes.close()
     #os.system(command)
 
     #with open(response_header) as f:
