@@ -171,15 +171,19 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
 
     #Get size of file in bytes
     filesize = os.path.getsize(fullpath)
+    logging.info("\nFile size = {0}\n".format(filesize))
+
+    archived = False
 
     #Record the result
     with open(response_header) as f:
         for line in f:
             logging.info(line)
-        logging.info("\nFile size = {0}\n".format(filesize))
+            if('200' in line or '201' in line):
+                archived = True
 
-    if('200' in response_header or '201' in response_header):
-        #Compute total number of files registered so far, and total bytes
+    #Compute total number of files registered so far, and total bytes
+    if archived:
         files_registered += 1
         bytes_stored += filesize
         includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
