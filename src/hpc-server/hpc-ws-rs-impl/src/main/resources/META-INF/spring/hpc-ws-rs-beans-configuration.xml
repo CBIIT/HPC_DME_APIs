@@ -228,6 +228,8 @@
 					value="${hpc.ws.rs.auth.data-management.get-data-objects-download-status}" />
 				<entry key="getDataManagementModel"
 					value="${hpc.ws.rs.auth.data-management.get-data-management-model}" />
+				<entry key="renamePaths"
+					value="${hpc.ws.rs.auth.data-management.rename-paths}" />
 
 				<!-- Data Search Service Authorizations -->
 				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />

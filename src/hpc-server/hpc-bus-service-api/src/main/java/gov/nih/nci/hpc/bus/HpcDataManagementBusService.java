@@ -14,6 +14,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -29,7 +31,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcFileSizeUpdateDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -43,17 +44,12 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public interface HpcDataManagementBusService {
 
-  public static final String EXCEPTION_MESSAGE_TEMPLATE__PRESIGNED_URL_S3_ONLY =
-    "Presigned URL for download is supported on S3 based destination archive" +
-    " only.  Requested path is archived on a POSIX based file system: ";
-
-
   /**
    * Determine if path refers to collection or data file.
    *
    * @param path The path.
-   * @return A boolean result that is true if path refers to collection
-   *         or false if it refers to data file.
+   * @return A boolean result that is true if path refers to collection or false if it refers to
+   *     data file.
    * @throws HpcException on service failure.
    */
   public boolean interrogatePathRef(String path) throws HpcException;
@@ -393,7 +389,13 @@ public interface HpcDataManagementBusService {
    * @throws HpcException on service failure.
    */
   public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
-
-  // TODO - Remove after file size was updated in prod
-  public HpcFileSizeUpdateDTO updateFileSize(HpcFileSizeUpdateDTO fileSizeUpdate) throws HpcException;
+  
+  /**
+   * Rename a list of data objects and/or collections.
+   *
+   * @param bulkRenameRequest The bulk data objects / collections rename request.
+   * @return A response DTO containing result of each rename request on the list.
+   * @throws HpcException on service failure.
+   */
+  public HpcBulkRenameResponseDTO renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest) throws HpcException;
 }

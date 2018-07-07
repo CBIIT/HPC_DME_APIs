@@ -8,7 +8,7 @@
  */
 package gov.nih.nci.hpc.bus.impl;
 
-import gov.nih.nci.hpc.util.HpcUtil;
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import com.google.common.hash.Hashing;
@@ -39,7 +38,6 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -62,20 +60,18 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
-
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -95,12 +91,13 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcFileSizeUpdateDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcRenameRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcRenameResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
@@ -111,7 +108,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
-import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+import gov.nih.nci.hpc.util.HpcUtil;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -120,14 +117,18 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
  */
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService {
 
+  //---------------------------------------------------------------------//
+  // Constants
+  //---------------------------------------------------------------------//
+
   private static final String MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS =
-    "Path PLACEHOLDER-PATH contains forbidden character(s).  Following" +
-    " characters are forbidden: PLACEHOLDER-CHARSET.";
+      "Path PLACEHOLDER-PATH contains forbidden character(s).  Following"
+          + " characters are forbidden: PLACEHOLDER-CHARSET.";
 
   private static final String MSG_TEMPLATE__MULTI_INVALID_PATHS =
-  "The following destination paths for DME archive are invalid:\n" +
-  "PLACEHOLDER-PATHS \n\nEach invalid path contains forbidden character(s)" +
-  " from following set: PLACEHOLDER-CHARSET.";
+      "The following destination paths for DME archive are invalid:\n"
+          + "PLACEHOLDER-PATHS \n\nEach invalid path contains forbidden character(s)"
+          + " from following set: PLACEHOLDER-CHARSET.";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -240,26 +241,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // Generate system metadata and attach to the collection.
         metadataService.addSystemGeneratedMetadataToCollection(
             path, userId, userName, configurationId);
-           
-        HpcRequestInvoker invoker = null;	
-       
+
+        HpcRequestInvoker invoker = null;
+
         //Set the request invoker to the system account since that has the privileges to
-        //perform hierarchy validation, specifically to get the collectionType metadata. 
-        if(!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(securityService.getRequestInvoker().getAuthenticationType())) {
-        	invoker = securityService.getRequestInvoker();
-        	securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        //perform hierarchy validation, specifically to get the collectionType metadata.
+        if (!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(
+            securityService.getRequestInvoker().getAuthenticationType())) {
+          invoker = securityService.getRequestInvoker();
+          securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
         }
-        
+
         // Validate the collection hierarchy.
         dataManagementService.validateHierarchy(path, configurationId, false);
 
-
         //Validation is over, hence restore invoker to original
-        if(invoker != null) {
-        	securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
-        		invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        if (invoker != null) {
+          securityService.setRequestInvoker(
+              invoker.getNciAccount(),
+              invoker.getLdapAuthentication(),
+              invoker.getAuthenticationType(),
+              invoker.getDataManagementAccount());
         }
-        
+
         // Add collection update event.
         addCollectionUpdatedEvent(path, true, false, userId);
 
@@ -311,8 +315,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     return created;
   }
-
-
 
   @Override
   public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException {
@@ -474,12 +476,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     // Validate the collection is empty if recursive flag is not set.
-    if(!recursive) {
-    	if (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty()) {
-    		throw new HpcException(
-    				"Collection is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-    	}
-    } 
+    if (!recursive) {
+      if (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty()) {
+        throw new HpcException(
+            "Collection is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
 
     // Validate the invoker is the owner of the data object.
     HpcPermission permission = dataManagementService.getCollectionPermission(path).getPermission();
@@ -494,17 +496,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         metadataService.getCollectionMetadataEntries(collection.getAbsolutePath());
 
     // Delete the collection.
-    
+
     boolean deleted = true;
     String message = null;
-    
+
     try {
-    	if(recursive) {
-  	  		//Delete all the data objects in this hierarchy first
-  	  		deleteDataObjectsInCollections(path);
-    	}
-    
-    	dataManagementService.delete(path, false);
+      if (recursive) {
+        //Delete all the data objects in this hierarchy first
+        deleteDataObjectsInCollections(path);
+      }
+
+      dataManagementService.delete(path, false);
 
     } catch (HpcException e) {
       // Collection deletion failed. Capture this in the audit record.
@@ -743,25 +745,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if (responseDTO.getRegistered()) {
       boolean registrationCompleted = false;
       try {
-    	  
+
         HpcRequestInvoker invoker = null;
-        
+
         //Set the request invoker to the system account since that has the privileges to
-        //perform hierarchy validation, specifically to get the collectionType metadata. 
-        if(!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(securityService.getRequestInvoker().getAuthenticationType())) {
-        	invoker = securityService.getRequestInvoker();
-        	securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
+        //perform hierarchy validation, specifically to get the collectionType metadata.
+        if (!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(
+            securityService.getRequestInvoker().getAuthenticationType())) {
+          invoker = securityService.getRequestInvoker();
+          securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
         }
-    	  
+
         // Validate the new data object complies with the hierarchy definition.
         dataManagementService.validateHierarchy(collectionPath, configurationId, true);
-        
+
         //Validation is over, hence restore invoker to original
-        if(invoker != null) {
-        	securityService.setRequestInvoker(invoker.getNciAccount(), invoker.getLdapAuthentication(), 
-        		invoker.getAuthenticationType(), invoker.getDataManagementAccount());
+        if (invoker != null) {
+          securityService.setRequestInvoker(
+              invoker.getNciAccount(),
+              invoker.getLdapAuthentication(),
+              invoker.getAuthenticationType(),
+              invoker.getDataManagementAccount());
         }
-        
+
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
 
@@ -879,9 +885,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         .addAll(
             toDataObjectRegistrationItems(
                 bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()));
-    
+
     // Normalize the path of the data object registration items (i.e. remove redundant '/', etc).
-    bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().forEach(item -> item.setPath(toNormalizedPath(item.getPath())));
+    bulkDataObjectRegistrationRequest
+        .getDataObjectRegistrationItems()
+        .forEach(item -> item.setPath(toNormalizedPath(item.getPath())));
 
     // If dry-run was requested, simply return the entire list of individual data
     // object registrations.
@@ -897,7 +905,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     validateDataObjectRegistrationDestinationPaths(
-      bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems());
+        bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems());
 
     // Break the DTO into a map of registration requests and ensure no duplication
     // of registration paths.
@@ -1078,16 +1086,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           "Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    String configurationId =
-      dataManagementService.findDataManagementConfigurationId(path);
+    String configurationId = dataManagementService.findDataManagementConfigurationId(path);
     HpcDataManagementConfiguration configuration =
         dataManagementService.getDataManagementConfiguration(configurationId);
     //  If not S3 Archive (POSIX Archive), throw exception to flag that POSIX
     //  archive not supported for presigned URL
-    if (Boolean.TRUE.equals(downloadRequest.getGenerateDownloadRequestURL()) &&
-          false == hasS3StorageConfig(configuration)) {
-      throw new HpcException(EXCEPTION_MESSAGE_TEMPLATE__PRESIGNED_URL_S3_ONLY
-        + path, HpcErrorType.INVALID_REQUEST_INPUT);
+    if (Boolean.TRUE.equals(downloadRequest.getGenerateDownloadRequestURL())
+        && false == hasS3StorageConfig(configuration)) {
+      throw new HpcException(
+          "Presigned URL for download is supported on S3 based destination archive"
+              + " only.  Requested path is archived on a POSIX based file system: "
+              + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Get the System generated metadata.
@@ -1134,18 +1144,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         downloadResponse.getDownloadRequestURL(),
         metadata.getDataTransferType().value());
   }
-
-
-  private boolean hasS3StorageConfig(HpcDataManagementConfiguration dmConfig) {
-    boolean retSignal = false;
-    if (null != dmConfig &&
-          null != dmConfig.getS3Configuration() &&
-          null != dmConfig.getS3Configuration().getUrl()) {
-      retSignal = true;
-    }
-    return retSignal;
-  }
-
 
   @Override
   public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(String taskId)
@@ -1396,51 +1394,69 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return dataManagementModel;
   }
 
-  // TODO - remove after file size updated in prod
   @Override
-  public HpcFileSizeUpdateDTO updateFileSize(HpcFileSizeUpdateDTO request) throws HpcException {
-    HpcFileSizeUpdateDTO response = new HpcFileSizeUpdateDTO();
-    for (String path : request.getPaths()) {
-      HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
-      try {
-        systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
-      } catch (HpcException e) {
-        response.getPaths().add(path + ": " + e.getMessage());
-        continue;
-      }
+  public HpcBulkRenameResponseDTO renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest)
+      throws HpcException {
+    // Input validation.
+    if (bulkRenameRequest == null) {
+      throw new HpcException("Null rename request", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
-      if (systemGeneratedMetadata.getSourceSize() != null) {
-        response
-            .getPaths()
-            .add(path + ": already have file size - " + systemGeneratedMetadata.getSourceSize());
-        continue;
-      }
+    if (bulkRenameRequest.getRenameRequests().isEmpty()) {
+      throw new HpcException(
+          "No rename request items in bulk request", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
-      // Lookup the archive for this data object.
-      HpcPathAttributes archivePathAttributes =
-          dataTransferService.getPathAttributes(
-              systemGeneratedMetadata.getDataTransferType(),
-              systemGeneratedMetadata.getArchiveLocation(),
-              true,
-              systemGeneratedMetadata.getConfigurationId());
-      if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
-        // Update the data management (iRODS) data object's system-metadata.
-        metadataService.updateDataObjectSystemGeneratedMetadata(
-            path, null, null, null, null, null, null, null, archivePathAttributes.getSize());
-        response.getPaths().add(path + ": updatef file size - " + archivePathAttributes.getSize());
-      } else {
-        response.getPaths().add(path + ": file not found in Cleversafe");
+    // Validate rename requests.
+    for (HpcRenameRequestDTO renameRequest : bulkRenameRequest.getRenameRequests()) {
+      if (StringUtils.isEmpty(renameRequest.getPath())
+          || StringUtils.isEmpty(renameRequest.getName())) {
+        throw new HpcException(
+            "Undefined path or name in rename request: [path: "
+                + renameRequest.getPath()
+                + "] [Name: "
+                + renameRequest.getName()
+                + "]",
+            HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
-    return response;
+    // Perform the rename requests.
+    HpcBulkRenameResponseDTO bulkRenameResponse = new HpcBulkRenameResponseDTO();
+    bulkRenameRequest
+        .getRenameRequests()
+        .forEach(
+            renameRequest -> {
+              // Normalize the path.
+              renameRequest.setPath(toNormalizedPath(renameRequest.getPath()));
+
+              // Create a response for this rename request.
+              HpcRenameResponseDTO renameResponse = new HpcRenameResponseDTO();
+              renameResponse.setRequest(renameRequest);
+
+              try {
+                dataManagementService.rename(renameRequest.getPath(), renameRequest.getName());
+
+                // Rename request is successful.
+                renameResponse.setResult(true);
+
+              } catch (HpcException e) {
+                // Rename request failed.
+                renameResponse.setResult(false);
+                renameResponse.setMessage(e.getMessage());
+              }
+
+              // Add this response to the bulk response.
+              bulkRenameResponse.getRenameResponses().add(renameResponse);
+            });
+
+    return bulkRenameResponse;
   }
 
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
-  
-  
+
   /**
    * Get the data object source size. (Either source or dataObjectFile are not null)
    *
@@ -1583,7 +1599,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcFileLocation destinationLocation,
       File destinationFile,
       String taskId,
-      String downloadRequestURL, 
+      String downloadRequestURL,
       String dataTransferType) {
     // Construct and return a DTO
     HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
@@ -1684,39 +1700,37 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     return permissionResponses;
   }
-  
-  
-//---------------------------------------------------------------------//
- // Helper Methods
- // ---------------------------------------------------------------------//
- /**
-  * Recursively delete all the data objects from the specified collection and from 
-  * it's sub-collections.
-  * @param path The path at the root of the hierarchy to delete from.
-  */
- private void deleteDataObjectsInCollections(String path) throws HpcException {
-	
-	  HpcCollectionDTO collectionDto = getCollectionChildren(path);
-	  
-	    if (collectionDto.getCollection() != null) {
-	    	List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
-	    	if(!CollectionUtils.isEmpty(dataObjects)) {
-	    		//Delete data objects in this collection
-	    		for(HpcCollectionListingEntry entry: dataObjects) {
-	    			deleteDataObject(entry.getPath());
-	    		}
-	    	}
-	    	
-	    	List<HpcCollectionListingEntry> subCollections = collectionDto.getCollection().getSubCollections();
-	    	if(!CollectionUtils.isEmpty(subCollections)) {
-	    		//Recursively delete data objects from this sub-collection and 
-	    		//it's sub-collections
-	    		for(HpcCollectionListingEntry entry: subCollections) {
-	    			deleteDataObjectsInCollections(entry.getPath());
-	    		}
-	    	}
-	    }
- }
+
+  /**
+   * Recursively delete all the data objects from the specified collection and from it's
+   * sub-collections.
+   *
+   * @param path The path at the root of the hierarchy to delete from.
+   */
+  private void deleteDataObjectsInCollections(String path) throws HpcException {
+
+    HpcCollectionDTO collectionDto = getCollectionChildren(path);
+
+    if (collectionDto.getCollection() != null) {
+      List<HpcCollectionListingEntry> dataObjects = collectionDto.getCollection().getDataObjects();
+      if (!CollectionUtils.isEmpty(dataObjects)) {
+        //Delete data objects in this collection
+        for (HpcCollectionListingEntry entry : dataObjects) {
+          deleteDataObject(entry.getPath());
+        }
+      }
+
+      List<HpcCollectionListingEntry> subCollections =
+          collectionDto.getCollection().getSubCollections();
+      if (!CollectionUtils.isEmpty(subCollections)) {
+        //Recursively delete data objects from this sub-collection and
+        //it's sub-collections
+        for (HpcCollectionListingEntry entry : subCollections) {
+          deleteDataObjectsInCollections(entry.getPath());
+        }
+      }
+    }
+  }
 
   /**
    * Perform group permission requests on an entity (collection or data object)
@@ -2316,28 +2330,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return 0;
   }
 
-
   private String produceForbiddenCharsDisplayString() {
-    final String retString = HpcUtil.generateForbiddenCharsFormatted(
-      Optional.empty(), Optional.empty(),
-      Optional.of("{"), Optional.of("}"));
+    final String retString =
+        HpcUtil.generateForbiddenCharsFormatted(
+            Optional.empty(), Optional.empty(),
+            Optional.of("{"), Optional.of("}"));
     return retString;
   }
 
-
-  private void validateDmeArchivePathHasNoForbiddenChars(String path) throws
-    HpcException {
+  private void validateDmeArchivePathHasNoForbiddenChars(String path) throws HpcException {
     if (HpcUtil.doesPathContainForbiddenChars(path)) {
-      final String exceptionMsg = MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS
-        .replace("PLACEHOLDER-PATH", path)
-        .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
+      final String exceptionMsg =
+          MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS
+              .replace("PLACEHOLDER-PATH", path)
+              .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
       throw new HpcException(exceptionMsg, HpcErrorType.INVALID_REQUEST_INPUT);
     }
   }
 
   private void validateDataObjectRegistrationDestinationPaths(
-    List<HpcDataObjectRegistrationItemDTO> dataObjRegItems)
-    throws HpcException {
+      List<HpcDataObjectRegistrationItemDTO> dataObjRegItems) throws HpcException {
     List<String> invalidPaths = new ArrayList<>();
     List<String> otherErrors = new ArrayList<>();
     for (HpcDataObjectRegistrationItemDTO regItem : dataObjRegItems) {
@@ -2345,9 +2357,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         validateDmeArchivePathHasNoForbiddenChars(regItem.getPath());
       } catch (HpcException e) {
         String exceptionMsg = e.getMessage();
-        String badPathForbidCharsMsg = MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS
-          .replace("PLACEHOLDER-PATH", regItem.getPath())
-          .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
+        String badPathForbidCharsMsg =
+            MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS
+                .replace("PLACEHOLDER-PATH", regItem.getPath())
+                .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
         if (badPathForbidCharsMsg.equals(exceptionMsg)) {
           invalidPaths.add(regItem.getPath());
         } else {
@@ -2363,11 +2376,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     sb.append(constructOtherErrorsMsg(otherErrors));
     if (sb.length() > 0) {
       String accumulatedErrorsMsg = sb.toString();
-      throw new HpcException(accumulatedErrorsMsg,
-        HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException(accumulatedErrorsMsg, HpcErrorType.INVALID_REQUEST_INPUT);
     }
   }
-
 
   private String constructMultiInvalidPathsErrMsg(List<String> invalidPaths) {
     String retMsg = "";
@@ -2375,25 +2386,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       StringBuilder sb = new StringBuilder();
       String indent = "     ";
       for (int i = 0; i < invalidPaths.size(); i++) {
-        sb.append("\n").append(indent)
-          .append(i).append(". ")
-          .append(invalidPaths.get(i));
+        sb.append("\n").append(indent).append(i).append(". ").append(invalidPaths.get(i));
       }
       final String thePaths4Display = sb.toString();
 
       final String forbiddenChars4Display =
-        HpcUtil.generateForbiddenCharsFormatted(
-          Optional.empty(), Optional.empty(),
-          Optional.of("{"), Optional.of("}"));
+          HpcUtil.generateForbiddenCharsFormatted(
+              Optional.empty(), Optional.empty(),
+              Optional.of("{"), Optional.of("}"));
 
-      retMsg = MSG_TEMPLATE__MULTI_INVALID_PATHS
-        .replace("PLACEHOLDER-PATHS", thePaths4Display)
-        .replace("PLACEHOLDER-CHARSET", forbiddenChars4Display);
+      retMsg =
+          MSG_TEMPLATE__MULTI_INVALID_PATHS
+              .replace("PLACEHOLDER-PATHS", thePaths4Display)
+              .replace("PLACEHOLDER-CHARSET", forbiddenChars4Display);
     }
 
     return retMsg;
   }
-
 
   private String constructOtherErrorsMsg(List<String> otherErrors) {
     String retMsg = "";
@@ -2409,4 +2418,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return retMsg;
   }
 
+  private boolean hasS3StorageConfig(HpcDataManagementConfiguration dmConfig) {
+    boolean retSignal = false;
+    if (null != dmConfig
+        && null != dmConfig.getS3Configuration()
+        && null != dmConfig.getS3Configuration().getUrl()) {
+      retSignal = true;
+    }
+    return retSignal;
+  }
 }
