@@ -100,7 +100,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       HpcAuthenticationType authenticationType,
       boolean ldapAuthentication)
       throws HpcException {
-    return irodsConnection.authenticate(dataManagementAccount, authenticationType, ldapAuthentication);
+    return irodsConnection.authenticate(
+        dataManagementAccount, authenticationType, ldapAuthentication);
   }
 
   @Override
@@ -111,7 +112,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   @Override
   public void createCollectionDirectory(Object authenticatedToken, String path)
       throws HpcException {
-	  IRODSFile collectionFile = null;
+    IRODSFile collectionFile = null;
     try {
       collectionFile =
           irodsConnection
@@ -125,16 +126,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
+
     } finally {
-    	closeIRODSFile(collectionFile, path);
+      closeIRODSFile(collectionFile);
     }
-    
   }
 
   @Override
   public void createDataObjectFile(Object authenticatedToken, String path) throws HpcException {
-	  IRODSFile dataObjectFile = null;
-	  try {
+    IRODSFile dataObjectFile = null;
+    try {
       dataObjectFile =
           irodsConnection
               .getIRODSFileFactory(authenticatedToken)
@@ -147,32 +148,60 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
+
     } catch (IOException ioe) {
       throw new HpcException(
           "Failed to create a file: " + ioe.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           ioe);
+
     } finally {
-    	closeIRODSFile(dataObjectFile, path);
+      closeIRODSFile(dataObjectFile);
     }
   }
 
   @Override
   public boolean delete(Object authenticatedToken, String path) throws HpcException {
     try {
-      IRODSFile dataObjectFile =
+      IRODSFile irodsPath =
           irodsConnection
               .getIRODSFileFactory(authenticatedToken)
               .instanceIRODSFile(getAbsolutePath(path));
-      return dataObjectFile.deleteWithForceOption();
+      return irodsPath.deleteWithForceOption();
 
     } catch (Exception e) {
       throw new HpcException(
-          "Failed to delete a file: " + e.getMessage(),
+          "Failed to delete a path: " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
+    }
+  }
+
+  @Override
+  public boolean move(Object authenticatedToken, String fromPath, String toPath)
+      throws HpcException {
+    IRODSFile irodsFromPath = null;
+    IRODSFile irodsToPath = null;
+
+    try {
+      IRODSFileFactory irodsFileFactory = irodsConnection.getIRODSFileFactory(authenticatedToken);
+      irodsFromPath = irodsFileFactory.instanceIRODSFile(getAbsolutePath(fromPath));
+      irodsToPath = irodsFileFactory.instanceIRODSFile(getAbsolutePath(toPath));
+
+      return irodsFromPath.renameTo(irodsToPath);
+
+    } catch (Exception e) {
+      throw new HpcException(
+          "Failed to rename a path: " + e.getMessage(),
+          HpcErrorType.DATA_MANAGEMENT_ERROR,
+          HpcIntegratedSystem.IRODS,
+          e);
+
+    } finally {
+      closeIRODSFile(irodsFromPath);
+      closeIRODSFile(irodsToPath);
     }
   }
 
@@ -302,9 +331,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   }
 
   @Override
-  public boolean interrogatePathRef(Object authenticatedToken, String path)
-      throws HpcException {
-	  IRODSFile file = null;
+  public boolean interrogatePathRef(Object authenticatedToken, String path) throws HpcException {
+    IRODSFile file = null;
     try {
       file =
           irodsConnection
@@ -317,22 +345,25 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
             String.format("Failed to find item at following path: %s", path),
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
+
     } catch (JargonException e) {
       throw new HpcException(
-          String.format("Failed to check whether item at following path is " +
-            "collection or data file: %s", path),
+          String.format(
+              "Failed to check whether item at following path is " + "collection or data file: %s",
+              path),
           HpcErrorType.INVALID_REQUEST_INPUT,
           e);
+
     } finally {
-    	closeIRODSFile(file, path);
+      closeIRODSFile(file);
     }
   }
 
   @Override
   public HpcPathAttributes getPathAttributes(Object authenticatedToken, String path)
       throws HpcException {
-	IRODSFile file = null;
-	HpcPathAttributes attributes = new HpcPathAttributes();
+    IRODSFile file = null;
+    HpcPathAttributes attributes = new HpcPathAttributes();
     try {
       file =
           irodsConnection
@@ -353,10 +384,11 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
+
     } finally {
-    	closeIRODSFile(file, path);
+      closeIRODSFile(file);
     }
-    
+
     return attributes;
   }
 
@@ -1345,22 +1377,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
             HpcErrorType.UNEXPECTED_ERROR);
     }
   }
-  
+
   /**
    * Close an open IRODSFile.
-   * 
+   *
    * @param file The file to close
    * @throws HpcException if the file could not be closed
    */
-  private void closeIRODSFile(IRODSFile file, String path) throws HpcException {
-	  try {
-  		if (file != null && file.exists()) {
-  			file.close();
-  		}
-  	} catch (JargonException e) {
-  		throw new HpcException("Failed to close file at " + path + ": " + e.getMessage(),
-  			HpcErrorType.DATA_MANAGEMENT_ERROR,
-  			HpcIntegratedSystem.IRODS, e);
-  	}
+  private void closeIRODSFile(IRODSFile file) throws HpcException {
+    try {
+      if (file != null && file.exists()) {
+        file.close();
+      }
+    } catch (JargonException e) {
+      throw new HpcException(
+          "Failed to close file at " + file.getAbsolutePath() + ": " + e.getMessage(),
+          HpcErrorType.DATA_MANAGEMENT_ERROR,
+          HpcIntegratedSystem.IRODS,
+          e);
+    }
   }
 }

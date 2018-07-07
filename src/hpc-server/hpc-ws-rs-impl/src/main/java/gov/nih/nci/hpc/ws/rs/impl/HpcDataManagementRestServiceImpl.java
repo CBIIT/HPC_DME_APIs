@@ -9,17 +9,29 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
+import org.apache.cxf.common.util.StringUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -37,7 +49,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcFileSizeUpdateDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -45,24 +56,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import org.apache.commons.io.FileUtils;
-import org.apache.cxf.common.util.StringUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 
 /**
  * HPC Data Management REST Service Implementation.
@@ -536,27 +529,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(docModel, true);
   }
-
-  //TODO - Remove this service after file size was corrected.
-  @POST
-  @Path("/fileSize")
-  @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-  @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-  public Response updateFileSize(HpcFileSizeUpdateDTO request) {
-    HpcFileSizeUpdateDTO response = null;
+  
+  @Override
+  public Response renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest)
+  {
+    HpcBulkRenameResponseDTO bulkRenameResponse = null;
     try {
-      response = dataManagementBusService.updateFileSize(request);
+      bulkRenameResponse = dataManagementBusService.renamePaths(bulkRenameRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
     }
 
-    return okResponse(response, false);
+    return okResponse(bulkRenameResponse, true);
   }
+  
+  //---------------------------------------------------------------------//
+  // Helper Methods
+  //---------------------------------------------------------------------//
 
-  
-  
-  
   /**
    * Copy input stream to File and close the input stream.
    *
@@ -580,7 +571,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return dataObjectFile;
   }
-
+  
   /**
    * Create a Response object out of the DTO. Also set the download file path on the message
    * context, so that the cleanup interceptor can remove it after requested file reached the caller.

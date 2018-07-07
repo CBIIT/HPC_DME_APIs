@@ -77,6 +77,15 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure (unless 'quiet' is set to 'true').
    */
   public void delete(String path, boolean quiet) throws HpcException;
+  
+  /**
+   * Rename a path (data object or directory). 
+   *
+   * @param path The data object or collection path to rename.
+   * @param name The new name.
+   * @throws HpcException on service failure.
+   */
+  public void rename(String path, String name) throws HpcException;
 
   /**
    * Add an audit record in the DB Note: Currently, there is no 'audit trail' functionality

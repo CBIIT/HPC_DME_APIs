@@ -235,7 +235,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public boolean interrogatePathRef(String path) throws HpcException {
     return dataManagementProxy.interrogatePathRef(
-            dataManagementAuthenticator.getAuthenticatedToken(), path);
+        dataManagementAuthenticator.getAuthenticatedToken(), path);
   }
 
   @Override
@@ -281,6 +281,36 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         throw (e);
       }
     }
+  }
+
+  @Override
+  public void rename(String path, String name) throws HpcException {
+    Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+
+    // Validate the renamed path exists.
+    HpcPathAttributes fromPathAttributes =
+        dataManagementProxy.getPathAttributes(authenticatedToken, path);
+    if (!fromPathAttributes.getExists()) {
+      throw new HpcException("Path doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    
+    // Validate the new name.
+    if(name.indexOf('/') >= 0) {
+      throw new HpcException("Invalid name", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    
+    // Build path of the renamed data object or collection.
+    String toPath = path.substring(0, path.lastIndexOf('/') + 1) + name; 
+    
+    // Validate the renamed path doesn't exist already.
+    HpcPathAttributes toPathAttributes =
+        dataManagementProxy.getPathAttributes(authenticatedToken, toPath);
+    if (toPathAttributes.getExists()) {
+      throw new HpcException("Rename destination already exists", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    
+    // Perform the rename request.
+    dataManagementProxy.move(authenticatedToken, path, toPath);
   }
 
   @Override
@@ -422,7 +452,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
       throws HpcException {
-	  
+
     // Calculate the collection path to validate.
     String validationCollectionPath = dataManagementProxy.getRelativePath(path);
     validationCollectionPath =
@@ -521,7 +551,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   @Override
   public String registerDataObjects(
-      String userId, String uiURL, Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+      String userId,
+      String uiURL,
+      Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
       throws HpcException {
     // Input validation
     if (StringUtils.isEmpty(userId)) {
@@ -607,7 +639,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     registrationResult.setCreated(registrationTask.getCreated());
     registrationResult.setCompleted(completed);
     registrationResult.getItems().addAll(registrationTask.getItems());
-    
+
     // Calculate the effective transfer speed (Bytes per second). This is done by averaging the effective transfer speed
     // of all successful registration items.
     int effectiveTransferSpeed = 0;
@@ -618,8 +650,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         completedItems++;
       }
     }
-    registrationResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
-    
+    registrationResult.setEffectiveTransferSpeed(
+        completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
+
     // Persist to DB.
     dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
   }
