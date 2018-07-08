@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,31 +285,44 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   }
 
   @Override
-  public void rename(String path, String name) throws HpcException {
+  public void rename(String path, String name, Optional<Boolean> pathTypeValidation)
+      throws HpcException {
     Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 
     // Validate the renamed path exists.
-    HpcPathAttributes fromPathAttributes =
+    HpcPathAttributes pathAttributes =
         dataManagementProxy.getPathAttributes(authenticatedToken, path);
-    if (!fromPathAttributes.getExists()) {
+    if (!pathAttributes.getExists()) {
       throw new HpcException("Path doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    
+
+    // Optionally perform path type validation.
+    if (pathTypeValidation.isPresent()) {
+      if (pathTypeValidation.get()) {
+        if (!pathAttributes.getIsDirectory()) {
+          throw new HpcException("Path is not of a collection", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+      } else if (!pathAttributes.getIsFile()) {
+        throw new HpcException("Path is not a of data object", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
     // Validate the new name.
-    if(name.indexOf('/') >= 0) {
+    if (name.indexOf('/') >= 0) {
       throw new HpcException("Invalid name", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    
+
     // Build path of the renamed data object or collection.
-    String toPath = path.substring(0, path.lastIndexOf('/') + 1) + name; 
-    
+    String toPath = path.substring(0, path.lastIndexOf('/') + 1) + name;
+
     // Validate the renamed path doesn't exist already.
     HpcPathAttributes toPathAttributes =
         dataManagementProxy.getPathAttributes(authenticatedToken, toPath);
     if (toPathAttributes.getExists()) {
-      throw new HpcException("Rename destination already exists", HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException(
+          "Rename destination already exists", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    
+
     // Perform the rename request.
     dataManagementProxy.move(authenticatedToken, path, toPath);
   }

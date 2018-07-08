@@ -9,7 +9,7 @@ package gov.nih.nci.hpc.service;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
@@ -48,17 +48,15 @@ public interface HpcDataManagementService {
    */
   public boolean isPathParentDirectory(String path) throws HpcException;
 
-
   /**
    * Determine if path refers to collection or data file.
    *
    * @param path The path.
-   * @return Boolean to convey whether path refers to collection or data file;
-   *          true for collection and false for data file.
+   * @return Boolean to convey whether path refers to collection or data file; true for collection
+   *     and false for data file.
    * @throws HpcException on data management system failure
    */
   public boolean interrogatePathRef(String path) throws HpcException;
-
 
   /**
    * Create a data object's file.
@@ -77,15 +75,17 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure (unless 'quiet' is set to 'true').
    */
   public void delete(String path, boolean quiet) throws HpcException;
-  
+
   /**
-   * Rename a path (data object or directory). 
+   * Rename a path (data object or directory).
    *
    * @param path The data object or collection path to rename.
    * @param name The new name.
+   * @param pathTypeValidation (Optional) True to validate if the path is a collection, False to validate if
+   *     it is a data object. If null - no validation is performed (other than the path exists)
    * @throws HpcException on service failure.
    */
-  public void rename(String path, String name) throws HpcException;
+  public void rename(String path, String name, Optional<Boolean> pathTypeValidation) throws HpcException;
 
   /**
    * Add an audit record in the DB Note: Currently, there is no 'audit trail' functionality
@@ -226,7 +226,7 @@ public interface HpcDataManagementService {
    */
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
       throws HpcException;
-  
+
   /**
    * Get collection by its path.
    *
