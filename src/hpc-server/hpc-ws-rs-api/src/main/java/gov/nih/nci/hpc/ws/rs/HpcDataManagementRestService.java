@@ -126,6 +126,17 @@ public interface HpcDataManagementRestService {
       @PathParam("path") String path, @QueryParam("recursive") Boolean recursive);
 
   /**
+   * Rename a collection.
+   *
+   * @param path The collection path.
+   * @param name The new collection name.
+   * @return The REST service response.
+   */
+  @POST
+  @Path("/collection/{path:.*}/rename/{name}")
+  public Response renameCollection(@PathParam("path") String path, @PathParam("name") String name);
+
+  /**
    * Set a collection's permissions.
    *
    * @param path The collection path.
@@ -299,6 +310,17 @@ public interface HpcDataManagementRestService {
   public Response deleteDataObject(@PathParam("path") String path);
 
   /**
+   * Rename a data object.
+   *
+   * @param path The data object path.
+   * @param name The new data object name.
+   * @return The REST service response.
+   */
+  @POST
+  @Path("/dataObject/{path:.*}/rename/{name}")
+  public Response renameDataObject(@PathParam("path") String path, @PathParam("name") String name);
+
+  /**
    * Set a data object's permissions.
    *
    * @param path The data object path.
@@ -382,7 +404,7 @@ public interface HpcDataManagementRestService {
   @Path("/dm/model")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getDataManagementModel();
-  
+
   /**
    * Rename a list of data objects and/or collections.
    *

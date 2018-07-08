@@ -230,6 +230,10 @@
 					value="${hpc.ws.rs.auth.data-management.get-data-management-model}" />
 				<entry key="renamePaths"
 					value="${hpc.ws.rs.auth.data-management.rename-paths}" />
+				<entry key="renameCollection"
+					value="${hpc.ws.rs.auth.data-management.rename-collection}" />
+				<entry key="renameDataObject"
+					value="${hpc.ws.rs.auth.data-management.rename-data-object}" />
 
 				<!-- Data Search Service Authorizations -->
 				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />

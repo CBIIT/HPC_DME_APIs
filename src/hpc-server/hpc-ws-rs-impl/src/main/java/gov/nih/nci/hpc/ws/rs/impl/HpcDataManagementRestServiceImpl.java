@@ -101,20 +101,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response interrogatePathRef(String path) {
     try {
       final String pathElemType =
-        dataManagementBusService.interrogatePathRef(path) ?
-        "collection" : "data file";
+          dataManagementBusService.interrogatePathRef(path) ? "collection" : "data file";
       final Map<String, String> responseMap = new HashMap<>();
       responseMap.put("path", path);
       responseMap.put("elementType", pathElemType);
       try {
-        final String jsonResponseStr =
-            new ObjectMapper().writeValueAsString(responseMap);
+        final String jsonResponseStr = new ObjectMapper().writeValueAsString(responseMap);
         return okResponse(jsonResponseStr, true);
       } catch (JsonProcessingException jpe) {
         // (String message, HpcErrorType errorType, Throwable cause)
         final String errMsg =
-          String.format("Failure during conversion of Map to JSON: %s",
-                        responseMap.toString());
+            String.format("Failure during conversion of Map to JSON: %s", responseMap.toString());
         throw new HpcException(errMsg, HpcErrorType.UNEXPECTED_ERROR, jpe);
       }
     } catch (HpcException e) {
@@ -122,14 +119,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
   }
 
-
   @Override
   public Response registerCollection(
       String path, HpcCollectionRegistrationDTO collectionRegistration) {
     boolean collectionCreated = true;
     try {
       collectionCreated =
-          dataManagementBusService.registerCollection(toNormalizedPath(path), collectionRegistration);
+          dataManagementBusService.registerCollection(
+              toNormalizedPath(path), collectionRegistration);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -202,8 +199,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response deleteCollection(String path, Boolean recursive) {
     try {
-    	
-      recursive = recursive != null ? recursive : false;    
+      recursive = recursive != null ? recursive : false;
       dataManagementBusService.deleteCollection(toNormalizedPath(path), recursive);
 
     } catch (HpcException e) {
@@ -212,7 +208,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(null, false);
   }
-  
+
+  @Override
+  public Response renameCollection(String path, String name) {
+    try {
+      dataManagementBusService.renamePath(toNormalizedPath(path), true, name);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+  }
 
   @Override
   public Response setCollectionPermissions(
@@ -428,6 +435,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(dataObjectDeleteResponse, false);
   }
+  
+  @Override
+  public Response renameDataObject(String path, String name) {
+    try {
+      dataManagementBusService.renamePath(toNormalizedPath(path), false, name);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+  }
 
   @Override
   public Response setDataObjectPermissions(
@@ -529,10 +548,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(docModel, true);
   }
-  
+
   @Override
-  public Response renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest)
-  {
+  public Response renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest) {
     HpcBulkRenameResponseDTO bulkRenameResponse = null;
     try {
       bulkRenameResponse = dataManagementBusService.renamePaths(bulkRenameRequest);
@@ -543,7 +561,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(bulkRenameResponse, true);
   }
-  
+
   //---------------------------------------------------------------------//
   // Helper Methods
   //---------------------------------------------------------------------//
@@ -571,7 +589,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return dataObjectFile;
   }
-  
+
   /**
    * Create a Response object out of the DTO. Also set the download file path on the message
    * context, so that the cleanup interceptor can remove it after requested file reached the caller.
@@ -581,7 +599,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @return an OK response.
    */
   private Response downloadResponse(
-      HpcDataObjectDownloadResponseDTO downloadResponse, MessageContext messageContext, Map<String, String> header) {
+      HpcDataObjectDownloadResponseDTO downloadResponse,
+      MessageContext messageContext,
+      Map<String, String> header) {
     if (downloadResponse == null) {
       return okResponse(null, false, header);
     }
@@ -591,8 +611,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       // delete it after the file was received by the caller.
       messageContext.put(
           DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE, downloadResponse.getDestinationFile());
-      response = okResponse(
-          downloadResponse.getDestinationFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE, header);
+      response =
+          okResponse(
+              downloadResponse.getDestinationFile(),
+              MediaType.APPLICATION_OCTET_STREAM_TYPE,
+              header);
     } else {
       response = okResponse(downloadResponse, false, header);
     }
