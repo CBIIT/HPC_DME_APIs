@@ -26,6 +26,8 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
@@ -68,8 +71,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @RequestMapping("/browse")
 public class HpcBrowseController extends AbstractHpcController {
 
-  @Value("${gov.nih.nci.hpc.server.bookmark}")
-  private String bookmarkServiceURL;
+	@Value("${gov.nih.nci.hpc.server.bookmark}")
+	private String bookmarkServiceURL;
 
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionURL;
@@ -78,7 +81,10 @@ public class HpcBrowseController extends AbstractHpcController {
 	private String hpcModelURL;
 
 	@Value("${gov.nih.nci.hpc.server.pathreftype}")
-  private String hpcPathRefTypeURL;
+	private String hpcPathRefTypeURL;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 
 	/**
@@ -148,8 +154,10 @@ public class HpcBrowseController extends AbstractHpcController {
 				session.setAttribute("browserEntry", browserEntry);
 			}
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to browse: " + e.getMessage());
+			String errMsg = "Failed to browse: " + e.getMessage();
+			redirectAttributes.addFlashAttribute("error", errMsg);
 			model.addAttribute("error", e.getMessage());
+			logger.error(errMsg, e);
 		} finally {
 		}
 		return "browse";
@@ -247,12 +255,64 @@ public class HpcBrowseController extends AbstractHpcController {
       model.addAttribute("userBookmarks", fetchCurrentUserBookmarks(session));
       return "browse";
     } catch (Exception e) {
-      model.addAttribute("message", "Failed to get tree. Reason: " + e.getMessage());
-      e.printStackTrace();
-      return "browse";
+    	String errMsg = "Failed to get tree. Reason: " + e.getMessage();
+        model.addAttribute("message", errMsg);
+        logger.error(errMsg, e);
+        return "browse";
     }
   }
 
+  
+  
+  
+  
+  /**
+	 * GET operation on bookmarks
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/bookmarks", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody List<HpcBookmark> getBookmarks(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request) {
+		List<HpcBookmark> bookmarks = null;
+		try {
+			// Verify User session
+			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			if (user == null || authToken == null) {
+				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+				bindingResult.addError(error);
+				HpcLogin hpcLogin = new HpcLogin();
+				model.addAttribute("hpcLogin", hpcLogin);
+				return bookmarks;
+			}
+
+			bookmarks = (List<HpcBookmark>) session.getAttribute("bookmarks");
+			if (bookmarks == null) {
+				HpcBookmarkListDTO dto = HpcClientUtil.getBookmarks(authToken, bookmarkServiceURL, sslCertPath,
+						sslCertPassword);
+				bookmarks = dto.getBookmarks();
+				bookmarks.sort(Comparator.comparing(HpcBookmark::getName));
+				session.setAttribute("bookmarks", bookmarks);
+				
+			}
+			model.addAttribute("userBookmarks", bookmarks);
+
+		} catch (Exception e) {
+			String errMsg = "Failed to retrieve bookmarks. Reason: " + e.getMessage();
+			model.addAttribute("message", errMsg);
+			logger.error(errMsg, e);
+			return bookmarks;
+		}
+		return bookmarks;
+	}
+	
+	
 
   private HpcBrowserEntry addPathEntries(String path, HpcBrowserEntry browserEntry) {
     if (path.indexOf("/") != -1) {
@@ -298,6 +358,7 @@ public class HpcBrowseController extends AbstractHpcController {
         retBookmarkList = dto.getBookmarks();
         retBookmarkList.sort(Comparator.comparing(HpcBookmark::getName));
       }
+      session.setAttribute("bookmarks", retBookmarkList);
     }
     return retBookmarkList;
   }
