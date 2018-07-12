@@ -331,8 +331,13 @@ $('#tree1').bind('tree.open', function (e,data) {
 
 
 $('#tree1').bind('tree.init', function() {
-  var postTreeInit = function() {
-    $("#bookmarksDiv").empty();
+    refreshBookmarks(userBookmarks)
+});
+
+
+function refreshBookmarks(userBookmarks) {
+	
+	$("#bookmarksDiv").empty();
     var aBookmarkLink;
     for (i = 0; i < userBookmarks.length; i++) {
       var linkHref = '/browse?refresh&path=' + percentEncodePath(userBookmarks[i].path);
@@ -341,9 +346,9 @@ $('#tree1').bind('tree.init', function() {
       $("#bookmarksDiv").append(aBookmarkLink);
       $("#bookmarksDiv").append("<br/>");
     }
-  };
-  setTimeout(postTreeInit, 500);
-});
+	
+}
+
 
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "viewDetails": function (node) {
@@ -365,15 +370,30 @@ $('#tree1').jqTreeContextMenu($('#myMenu'), {
 }); 
 
   $('#toggleBookmarksElem').bind('click', function() {
-    $('#bookmarksDiv').toggle();
+    
 
-    if ($('#bookmarksDiv:visible').length == 0) {
+    if ($('#bookmarksDiv:visible').length > 0) {
       $('#toggleBookmarksElem > i').removeClass('glyphicon-folder-open');
       $('#toggleBookmarksElem > i').addClass('glyphicon-folder-close');
     } else {
-      $('#toggleBookmarksElem > i').removeClass('glyphicon-folder-close');
-      $('#toggleBookmarksElem > i').addClass('glyphicon-folder-open');
+      $.ajax({
+          type : "GET",
+          dataType: "json",
+          url : "/browse/bookmarks",
+          success : function(data) {
+       
+          	var bookmarks = data;
+          	refreshBookmarks(bookmarks)
+          	$('#toggleBookmarksElem > i').removeClass('glyphicon-folder-close');
+            $('#toggleBookmarksElem > i').addClass('glyphicon-folder-open');
+          
+          },
+    	  error : function(e) {
+    		 console.log('ERROR: ', e);
+    	  }
+      });
     }
+    $('#bookmarksDiv').toggle();
   });
 
 /*]]>*/
