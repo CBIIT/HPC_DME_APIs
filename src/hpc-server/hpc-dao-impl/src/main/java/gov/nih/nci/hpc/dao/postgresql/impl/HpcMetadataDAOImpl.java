@@ -161,14 +161,14 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 
   private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL =
-      "select collection.level_label, array_agg(collection.meta_attr_name) as attributes "
+      "select collection.level_label, array_agg(distinct collection.meta_attr_name) as attributes "
           + "from public.\"r_coll_hierarchy_meta_attr_name\" collection, unnest(collection.object_ids) as object_id "
           + "where object_id in ("
           + USER_ACCESS_SQL
           + ") ";
 
   private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL =
-      "select dataObject.level_label, array_agg(dataObject.meta_attr_name) as attributes "
+      "select dataObject.level_label, array_agg(distinct dataObject.meta_attr_name) as attributes "
           + "from public.\"r_data_hierarchy_meta_attr_name\" dataObject " 
           + "where dataObject.object_ids && ("
           + USER_ACCESS_ARRAY_SQL
