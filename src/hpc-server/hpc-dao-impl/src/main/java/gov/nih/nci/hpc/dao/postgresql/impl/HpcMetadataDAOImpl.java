@@ -161,18 +161,32 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 
   private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL =
-      "select collection.level_label, array_agg(distinct collection.meta_attr_name) as attributes "
+      "select collection.level_label, collection.meta_attr_name "
           + "from public.\"r_coll_hierarchy_meta_attr_name\" collection, unnest(collection.object_ids) as object_id "
-          + "where object_id in ("
+          + "where object_id in "
           + USER_ACCESS_SQL
-          + ") ";
+          + " GROUP BY level_label, meta_attr_name";
 
   private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL =
-      "select dataObject.level_label, array_agg(distinct dataObject.meta_attr_name) as attributes "
-          + "from public.\"r_data_hierarchy_meta_attr_name\" dataObject " 
-          + "where dataObject.object_ids && ("
-          + USER_ACCESS_ARRAY_SQL
-          + ") ";
+      "select dataObject.level_label, dataObject.meta_attr_name "
+          + "from public.\"r_data_hierarchy_meta_attr_name\" dataObject, unnest(dataObject.object_ids) as object_id " 
+          + "where object_id in "
+          + USER_ACCESS_SQL
+          + " GROUP BY level_label, meta_attr_name";
+  
+  private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL =   
+	"with top_collection as ("
+	+ GET_COLLECTION_METADATA_ATTRIBUTES_SQL 
+	+ ") select level_label, array_agg(distinct meta_attr_name) as attributes "
+	+ "FROM top_collection"; 
+  
+  
+  private static final String GET_DATA_OBJECT_METADATA_AGGREGATE_SQL =
+	"with top_dataObject as ("
+	+ GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL 
+	+ ") select level_label, array_agg(distinct meta_attr_name) as attributes "
+	+ "FROM top_dataObject";  
+		  
 
   private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL =
       " group by level_label order by level_label";
@@ -409,7 +423,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   public List<HpcMetadataLevelAttributes> getCollectionMetadataAttributes(
       String levelLabel, String dataManagementUsername) throws HpcException {
     return getMetadataAttributes(
-        GET_COLLECTION_METADATA_ATTRIBUTES_SQL,
+        GET_COLLECTION_METADATA_AGGREGATE_SQL,
         levelLabel,
         dataManagementUsername,
         COLLECTION_LEVEL_LABEL_EQUAL_FILTER);
@@ -419,7 +433,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   public List<HpcMetadataLevelAttributes> getDataObjectMetadataAttributes(
       String levelLabel, String dataManagementUsername) throws HpcException {
     return getMetadataAttributes(
-        GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL,
+        GET_DATA_OBJECT_METADATA_AGGREGATE_SQL,
         levelLabel,
         dataManagementUsername,
         DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER);
