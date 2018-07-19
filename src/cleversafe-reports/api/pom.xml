@@ -51,22 +51,25 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<!--
 				<groupId>io.swagger</groupId>
 				<artifactId>swagger-codegen-maven-plugin</artifactId>
-				<version>2.3.1</version>
+				<version>2.3.1</version>-->
 				<executions>
 					<execution>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<inputSpec>${project.basedir}/src/main/resources/cleversafe-reports-swagger.json</inputSpec>
+							<inputSpec>${project.basedir}/src/main/resources/cleversafe-reports-oas.json</inputSpec>
 							<language>spring</language>
 							<modelPackage>gov.nih.nci.hpc.reports.nmodel</modelPackage>
 							<apiPackage>gov.nih.nci.hpc.reports.ws.rest</apiPackage>
 							<generateApis>true</generateApis>
 							<generateModels>true</generateModels>
-							<generateSupportingFiles>false</generateSupportingFiles>
+							<generateSupportingFiles>true</generateSupportingFiles>
 							<configOptions>
 								<interfaceOnly>true</interfaceOnly>
 								<serializableModel>true</serializableModel>
