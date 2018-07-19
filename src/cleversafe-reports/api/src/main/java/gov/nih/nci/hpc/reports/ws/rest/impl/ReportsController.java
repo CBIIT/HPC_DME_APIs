@@ -3,6 +3,7 @@ package gov.nih.nci.hpc.reports.ws.rest.impl;
 import gov.nih.nci.hpc.reports.model.VaultSummary;
 import gov.nih.nci.hpc.reports.nmodel.NewVaultSummary;
 import gov.nih.nci.hpc.reports.nmodel.VaultSummaryResponse;
+import gov.nih.nci.hpc.reports.ws.rest.ReportsApi;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,7 +26,7 @@ import java.util.Iterator;
 @CrossOrigin
 @RestController
 @RequestMapping("/reports")
-public class ReportsController {
+public class ReportsController implements ReportsApi {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private JSONParser jsonParser = new JSONParser();
