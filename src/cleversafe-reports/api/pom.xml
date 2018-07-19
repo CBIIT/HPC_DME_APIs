@@ -60,7 +60,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<inputSpec>${project.basedir}/src/main/resources/reports.json</inputSpec>
+							<inputSpec>${project.basedir}/src/main/resources/cleversafe-reports-swagger.json</inputSpec>
 							<language>spring</language>
 							<modelPackage>gov.nih.nci.hpc.reports.nmodel</modelPackage>
 							<apiPackage>gov.nih.nci.hpc.reports.ws.rest</apiPackage>

@@ -1,0 +1,121 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "API to retrieve Cleversafe reports",
+    "version": "1.0.0",
+    "title": "Cleverasfe Reports  ",
+
+    "contact": {
+      "name": "Eran Rosenberg",
+      "email": "eran.rosenberg@nih.gov"
+    },
+    "license": {
+      "name": "NCI ",
+      "url": "http://ncip.github.com/HPC/LICENSE.txt"
+    }
+  },
+  "host": "fr-s-hpcdm-gp-d.ncifcrf.gov:7738",
+  "basePath": "/reports",
+  "tags": [{
+    "name": "Reports",
+    "description": "Reports API"
+  }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/newvaultsummary": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Vault Summary Report",
+        "description": "Get vault summary report from Cleversafe",
+        "operationId": "getNewVaultSummary",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Report generated successfully",
+            "schema": {
+              "$ref": "#/definitions/VaultSummaryResponse"
+            },
+            "examples": {
+              "application/json": [{
+                "tbd": "example"
+              }]
+            }
+          },
+          "500": {
+            "description": "Failed to generate report",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            },
+            "examples": {
+              "application/json": [{
+                "tbd": "example"
+              }]
+            }
+          }
+        }
+      }
+    }
+  },
+  "parameters": {
+  },
+
+  "definitions": {
+    "NewVaultSummary": {
+      "type": "object",
+      "description": "Vault Summary",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Vault name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Vault description"
+        },
+        "capacity": {
+          "type": "number",
+          "description": "Vault capacity in TB"
+        },
+        "used": {
+          "type": "number",
+          "description": "Vault capacity used in TB"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Vault creation date",
+          "example": "1995-09-07T10:40:52Z",
+          "format": "date-time"
+        }
+      }
+    },
+
+    "VaultSummaryResponse": {
+      "description": "Vault Summary Response DTO",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/NewVaultSummary"
+      }
+    },
+
+    "Error": {
+      "description": "Error details",
+      "properties": {
+        "stackTrace": {
+          "description": "The error stack trace",
+          "type": "string"
+        },
+        "message": {
+          "description": "A message describing the error",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
