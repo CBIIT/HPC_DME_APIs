@@ -1,8 +1,17 @@
+/**
+ * ReportsController.java
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ */
 package gov.nih.nci.hpc.reports.ws.rest.impl;
 
+import gov.nih.nci.hpc.reports.model.NewVaultSummary;
 import gov.nih.nci.hpc.reports.model.VaultSummary;
-import gov.nih.nci.hpc.reports.nmodel.NewVaultSummary;
-import gov.nih.nci.hpc.reports.nmodel.VaultSummaryResponse;
+import gov.nih.nci.hpc.reports.model.VaultSummaryResponse;
+import gov.nih.nci.hpc.reports.service.ReportsService;
 import gov.nih.nci.hpc.reports.ws.rest.ReportsApi;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -10,6 +19,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +36,14 @@ import java.util.Iterator;
 @CrossOrigin
 @RestController
 @RequestMapping("/reports")
-public class ReportsController implements ReportsApi {
+class ReportsController implements ReportsApi {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private JSONParser jsonParser = new JSONParser();
     private double teraBytes = 1099511627776.0;
+
+    @Autowired
+    private ReportsService reportsService;
 
 
     @RequestMapping("/vaultsummary")
@@ -52,6 +65,11 @@ public class ReportsController implements ReportsApi {
     public ResponseEntity<VaultSummaryResponse> getNewVaultSummary() {
         return null;
 
+    }
+
+    @RequestMapping("/testvaultsummary")
+    public VaultSummary[] getTestVaultSummary() throws Exception {
+        return reportsService.getVaultSummary();
     }
 
     private Collection<VaultSummary> fromJSON(String responseStr) throws ParseException {

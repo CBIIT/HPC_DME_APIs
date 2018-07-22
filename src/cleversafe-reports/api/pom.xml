@@ -65,7 +65,7 @@
 						<configuration>
 							<inputSpec>${project.basedir}/src/main/resources/cleversafe-reports-oas.json</inputSpec>
 							<language>spring</language>
-							<modelPackage>gov.nih.nci.hpc.reports.nmodel</modelPackage>
+							<modelPackage>gov.nih.nci.hpc.reports.model</modelPackage>
 							<apiPackage>gov.nih.nci.hpc.reports.ws.rest</apiPackage>
 							<generateApis>true</generateApis>
 							<generateModels>true</generateModels>
