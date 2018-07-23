@@ -121,9 +121,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
 
 				// Detect if path refers to data file, and if so, redirect to data
-				// file view
-				
-				//Do this check only if we are clicking on Browse button
+				// file view.Do this check only if we are clicking on Browse button
 				//after selecting the path. If we are here because we 
 				//clicked on a folder this check is not required 
 				if(hpcBrowserEntry.isPartial()) {
@@ -135,8 +133,6 @@ public class HpcBrowseController extends AbstractHpcController {
 					}
 				}
 
-				// session.setAttribute("selectedBrowsePath",
-				// hpcBrowserEntry.getSelectedNodePath());
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
 						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
@@ -164,6 +160,69 @@ public class HpcBrowseController extends AbstractHpcController {
 	}
 
 
+	
+	/**
+	 * POST Action. When a tree node is expanded, this AJAX action fetches its child
+	 * nodes
+	 * 
+	 * @param hpcBrowserEntry
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @param redirectAttributes
+	 * @return
+	 */
+	@RequestMapping(value = "/collection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody List<HpcBrowserEntry> browseCollection(@ModelAttribute("hpcBrowse") HpcBrowserEntry hpcBrowserEntry,
+			Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+			HttpServletResponse response,
+			final RedirectAttributes redirectAttributes, final String refreshNode) {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
+		List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
+		boolean getChildren = false;
+		boolean refresh = false;
+
+		if (!StringUtils.isBlank(refreshNode)) {
+			refresh = true;
+			getChildren = true;
+		}
+
+		try {
+			if (hpcBrowserEntry.getSelectedNodePath() != null) {
+
+				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
+						authToken,
+						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
+				if (hpcBrowserEntry.isPartial()) {
+					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
+				}
+
+				browserEntry = trimPath(browserEntry, browserEntry.getName());
+				entries.add(browserEntry);
+				model.addAttribute("userBookmarks", fetchCurrentUserBookmarks(session));
+				model.addAttribute("browserEntryList", entries);
+				model.addAttribute("browserEntry", browserEntry);
+				model.addAttribute("scrollLoc", hpcBrowserEntry.getScrollLoc());
+				session.setAttribute("browserEntry", browserEntry);
+			}
+		} catch (Exception e) {
+			String errMsg = "Failed to browse: " + e.getMessage();
+			redirectAttributes.addFlashAttribute("error", errMsg);
+			model.addAttribute("error", e.getMessage());
+			logger.error(errMsg, e);
+		} 
+		
+		return entries;
+	}
+
+	
+	
+	
+	
   /**
    * GET operation on Browse. Builds initial tree
    *
@@ -225,9 +284,9 @@ public class HpcBrowseController extends AbstractHpcController {
         session.setAttribute("selectedBrowsePath", path);
 
         // Detect if path refers to data file, and if so, redirect to data file view
-				if (isPathForDataFile(path, authToken)) {
-          return genRedirectNavForDataFileView(path);
-        }
+				//if (isPathForDataFile(path, authToken)) {
+         // return genRedirectNavForDataFileView(path);
+       // }
 
         HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
         if (browserEntry == null) {
@@ -262,8 +321,6 @@ public class HpcBrowseController extends AbstractHpcController {
     }
   }
 
-  
-  
   
   
   /**
@@ -451,10 +508,12 @@ public class HpcBrowseController extends AbstractHpcController {
 				selectedEntry.setFullPath(collection.getAbsolutePath());
 				selectedEntry.setId(collection.getAbsolutePath());
 				selectedEntry.setName(collection.getCollectionName());
-				if (getChildren)
-					selectedEntry.setPopulated(true);
-				else
-					selectedEntry.setPopulated(false);
+				
+				//this will ensure that the next time we access this path
+				//we dont read again from DB, unless an explicit refresh 
+				//request has been made
+				selectedEntry.setPopulated(true);
+				
 				selectedEntry.setCollection(true);
 				for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
 					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();

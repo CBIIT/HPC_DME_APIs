@@ -61,6 +61,7 @@
     var basePathName = [[${basePath}]];
     var scrollLoc = [[${scrollLoc}]];
     var userBookmarks = [[${userBookmarks}]];
+    var refresh = null;
 /*]]>*/
 </script>
 	
@@ -253,6 +254,8 @@ $(function() {
             }
         }
     });
+    
+   
 });
 
 
@@ -264,20 +267,13 @@ $('#tree1').on('click', '.refresh', function(e) {
 });
 
 function refreshNode(node) {    
-    var node_id = node.id;
 
 	console.log('parent: ' + node.parent.id);
-	document.getElementById("refreshNode").value = node_id;
-
-	document.getElementById("selectedNodePath").value = node.fullPath;
-	document.getElementById("processingIcon"+node.id).style.visibility = "visible";
-	document.getElementById("selectedNodeId").value = node.id;
-	document.getElementById("scrollLoc").value = scrollLoc;
-
-	$("#browseForm").submit();
+	refresh = node.id;
+	browseNode(node);
 	$('#tree1').tree('openNode', node);
 	$('#tree1').tree('selectNode', node);
-}//);
+}
 
 //bind 'tree.click' event
 $('#tree1').bind(
@@ -318,20 +314,59 @@ function scrollWindow()
 	}*/
 }
 
-$('#tree1').bind('tree.open', function (e,data) {  
-	document.getElementById("selectedNodePath").value = e.node.fullPath;
+
+
+ $('#tree1').bind('tree.open', function (e,data) {  
+	//document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
-    document.getElementById("processingIcon"+node.id).style.visibility = "visible";
-	document.getElementById("selectedNodeId").value = node.id;
-	document.getElementById("scrollLoc").value = scrollLoc;
-	$("#browseForm").submit();
+	//document.getElementById("scrollLoc").value = scrollLoc;
+	//$("#browseForm").submit();
+	if(!refresh) {
+		browseNode(node);
+	} else {
+		refresh = null;
+	}
 	$('#tree1').tree('selectNode', node);
 }
 );
 
 
+function browseNode(node) {
+	  
+	  document.getElementById("selectedNodeId").value = node.id;
+	  document.getElementById("processingIcon"+ node.id).style.visibility = "visible";
+	  
+      $.ajax({
+          type : "POST",
+          data: {selectedNodePath: node.fullPath, refreshNode: refresh, scrollLoc: scrollLoc},
+          dataType: "json",
+          url : "/browse/collection",
+          success : function(msg) {
+       
+          	data = msg;
+          	$('#tree1').tree('loadData', data);
+       
+          },
+    	  error : function(e) {
+    		 console.log('ERROR: ', e);
+    	  }
+      });
+};
+
+
+
 $('#tree1').bind('tree.init', function() {
-    refreshBookmarks(userBookmarks)
+	if ($('#bookmarksDiv:visible').length > 0) {
+    	refreshBookmarks(userBookmarks)
+	}
+	node = $('#tree1').tree('getNodeById', '/FNL_SF_Archive');
+	for (var i=0; i < node.children.length; i++) {
+	 	var child = node.children[i];
+        if (child.collection) {
+	        $('#tree1').tree('closeNode', child, false);
+        }
+     }
+	
 });
 
 
