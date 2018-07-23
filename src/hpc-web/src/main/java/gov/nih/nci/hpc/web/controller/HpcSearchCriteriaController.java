@@ -142,7 +142,6 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		populateMetadata(model, authToken, user, "collection", session);
 		populateOperators(model);
 		populateLevelOperators(model);
-		logger.info("Obtained search criteria for user: " + user.getFirstName() + " " + user.getLastName());
 		return "criteria";
 	}
 
@@ -484,10 +483,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		List<String> dataobjectLevels = new ArrayList<String>();
 
 		List<String> attrs = new ArrayList<String>();
-		logger.info("getting MetadataAttributeNames for user: " + user.getFirstName() + " " + user.getLastName());
 		HpcMetadataAttributesListDTO dto = HpcClientUtil.getMetadataAttrNames(authToken, hpcMetadataAttrsURL,
 				sslCertPath, sslCertPassword);
-		logger.info("obtained MetadataAttributeNames for user: " + user.getFirstName() + " " + user.getLastName());
 		
 		if (dto != null && dto.getCollectionMetadataAttributes() != null) {
 			for (HpcMetadataLevelAttributes levelAttrs : dto.getCollectionMetadataAttributes()) {
@@ -537,9 +534,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		try {
 			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
 			if (modelDTO == null) {	
-				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());
 				modelDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, sslCertPath, sslCertPassword);
-				logger.info("obtained DOCModel for user: " + user.getFirstName() + " " + user.getLastName());
 				session.setAttribute("userDOCModel", modelDTO);
 			}
 

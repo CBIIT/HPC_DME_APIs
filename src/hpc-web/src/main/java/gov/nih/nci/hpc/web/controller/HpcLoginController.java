@@ -96,14 +96,12 @@ public class HpcLoginController extends AbstractHpcController {
 				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());			
 				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath,
 						sslCertPassword);
-				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());
 				
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
-				logger.info("getting basepath for user: " + user.getFirstName() + " " + user.getLastName());							
 				HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, hpcLogin.getUserId(),
 						collectionAclURL, sslCertPath, sslCertPassword);
-				logger.info("Obtained base path for user: " + user.getFirstName() + " " + user.getLastName());			
+						
 				
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
