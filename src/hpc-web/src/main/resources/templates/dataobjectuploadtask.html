@@ -145,6 +145,7 @@
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectUploadStatusDTO.getResult() == null}">
 											<label for="Name">Transfer Completed:</label> <label id="regComplete">In Progress</label>
+											<input type="hidden" name="inProgress" id="inProgress" value="true"/>
 										</div>
 										<div class="col-md-12 form-group" 
 										th:if="${hpcDataObjectUploadStatusDTO.getPercentComplete() != null 
@@ -208,8 +209,8 @@
  var pollPercentComplete = setInterval(
 function getPercentComplete() {
 	
-	var regComplete = document.getElementById("regComplete").innerHTML;
-	if(regComplete == "true") {
+	var inProgress = document.getElementById("inProgress");
+	if(inProgress == null) {
 		clearInterval(pollPercentComplete);
 		return;
 	}

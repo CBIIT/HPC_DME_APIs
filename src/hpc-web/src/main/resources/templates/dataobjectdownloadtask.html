@@ -151,6 +151,7 @@
 												th:text="${hpcDataObjectDownloadStatusDTO.getResult()}"></label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getResult() == null}">
+											<input type="hidden" name="inProgress" id="inProgress" value="true"/>
 											<label for="Name">Transfer Completed:</label> <label id="regComplete">In Progress</label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getPercentComplete() != null
@@ -224,8 +225,8 @@ function retryDownload(task, taskType)
 var pollPercentComplete = setInterval(
 		function getPercentComplete() {
 			
-			var regComplete = document.getElementById("regComplete").innerHTML;
-			if(regComplete == "true") {
+			var inProgress = document.getElementById("inProgress");
+			if(inProgress == null) {
 				clearInterval(pollPercentComplete);
 				return;
 			}
