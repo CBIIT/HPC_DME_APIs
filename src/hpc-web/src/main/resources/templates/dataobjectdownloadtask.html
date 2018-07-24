@@ -238,7 +238,7 @@ var pollPercentComplete = setInterval(
 				url : "/downloadtask",
 				data : {taskId: taskId, type: taskType},
 				success : function(msg) {
-					console.log('SUCCESS: ', msg);
+					console.log('SUCCESS: ', "Refreshing the page");
 					//location.reload();
 					var status = $("#statusWrapper", msg);
 					$("#statusWrapper").html(status);
