@@ -148,7 +148,6 @@
 							</div>
 							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
 								<h2>
-									<input type="hidden" name="inProgress" id="inProgress" value="true"/>
 									<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
 								</h2>
 							</div>
@@ -284,8 +283,8 @@ function retryUpload(task, taskType)
 var pollPercentComplete = setInterval(
 function getPercentComplete() {
 	
-	var inProgress = document.getElementById("inProgress");
-	if(inProgress == null) {
+	var regComplete = document.getElementById("regComplete").innerHTML;
+	if(regComplete == "true") {
 		clearInterval(pollPercentComplete);
 		return;
 	}
