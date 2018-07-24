@@ -284,8 +284,8 @@ function retryUpload(task, taskType)
 var pollPercentComplete = setInterval(
 function getPercentComplete() {
 	
-	var regComplete = document.getElementById("regComplete").innerHTML;
-	if(regComplete == "true") {
+	var inProgress = document.getElementById("inProgress");
+	if(inProgress == null) {
 		clearInterval(pollPercentComplete);
 		return;
 	}
