@@ -359,13 +359,18 @@ $('#tree1').bind('tree.init', function() {
 	if ($('#bookmarksDiv:visible').length > 0) {
     	refreshBookmarks(userBookmarks)
 	}
-	node = $('#tree1').tree('getNodeById', '/FNL_SF_Archive');
-	for (var i=0; i < node.children.length; i++) {
-	 	var child = node.children[i];
-        if (child.collection) {
-	        $('#tree1').tree('closeNode', child, false);
-        }
-     }
+	var tree = $('#tree1').tree('getTree');
+	if(tree.children != null && tree.children.length > 0) {
+	    var topNode = tree.children[0];
+	    if(topNode.children != null) {
+	      for (var i=0; i < topNode.children.length; i++) {
+	 	      var child = topNode.children[i];
+              if (child.collection) {
+	            $('#tree1').tree('closeNode', child, false);
+              }
+           }
+	    }
+	 }
 	
 });
 
