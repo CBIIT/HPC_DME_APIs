@@ -38,7 +38,7 @@
 		  
 		  <prop key="hpc.integration.globus.queueSize">90</prop>
 		  
-	      <prop key="hpc.integration.ldap.URL">ldaps://ldapad.nih.gov:636</prop>
+	      <prop key="hpc.integration.ldap.URL">ldaps://nihdcadhub2.nih.gov</prop>
 	      <prop key="hpc.integration.ldap.username">Configure Me</prop>
 	      <prop key="hpc.integration.ldap.password">Configure Me</prop>
 	      <prop key="hpc.integration.ldap.base">OU=NIH,OU=AD,DC=nih,DC=gov</prop>
