@@ -13,7 +13,7 @@ hpc.ssl.keystore.password=< Configure Me >
 #hpc.server.proxy.url=10.1.200.240
 #hpc.server.proxy.port=3128
 
-hpc.user=konkapv
+hpc.user=menons2
 
 #Globus settings
 #default globus endpoint to be used in registration and download
@@ -38,8 +38,4 @@ upload.buffer.size=10000000
 hpc.log.level=ERROR
 hpc.log.file=hpc-cli.log
 ###HPC CLI Logging END####
-<<<<<<< HEAD
 hpc.jar.version=hpc-cli-1.8.0-SNAPSHOT.jar
-=======
-hpc.jar.version=hpc-cli-1.7.2.jar
->>>>>>> origin/master

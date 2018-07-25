@@ -176,17 +176,17 @@ public class HpcClientUtil {
             }
         }
       }
-      if (configurationId != null) {
+//      if (configurationId != null) {
         if (modelDTO != null) {
           // TODO
           for (HpcDocDataManagementRulesDTO rulesDTO : modelDTO.getDocRules()) {
             for (HpcDataManagementRulesDTO rule : rulesDTO.getRules()) {
-              if (rule.getId().equals(configurationId))
+              if ((configurationId != null && rule.getId().equals(configurationId)) || rule.getBasePath().equals(parent))
                 return rule.getBasePath();
             }
           }
         }
-      }
+ //     }
     }
     return null;
 

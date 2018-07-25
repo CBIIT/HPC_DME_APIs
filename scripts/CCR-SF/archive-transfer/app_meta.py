@@ -32,8 +32,8 @@ def main(args):
         # This is a valid tarball, so process
         logging.info("Processing file: " + tarfile_path)
 
-        #Extract all files and store in extract_path directory
-        SFUtils.extract_files_from_tar(tarfile_path, extract_path)
+        # Extract all files and store in extract_path directory
+        #SFUtils.extract_files_from_tar(tarfile_path, extract_path)
 
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
@@ -62,7 +62,7 @@ def main(args):
                 #create Object metadata with Sample type parent and register object
                 register_object(path, "Sample", tarfile_name, True, filepath)
 
-            elif line.rstrip().endswith('laneBarcode.html') and '/all/' in line and not 'Control_Sample' in line:
+            elif filepath.endswith('laneBarcode.html') and '/all/' in filepath and not 'Control_Sample' in filepath:
 
                 #Remove the string after the first '/all' because metadata path if present will be before that
                 head, sep, tail = line.partition('all/')
@@ -102,10 +102,10 @@ def main(args):
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                SFUtils.record_exclusion(tarfile_name , line.rstrip(), 'Not fastq.gz or valid html file')
+                SFUtils.record_exclusion(tarfile_name, line.rstrip(), 'Not fastq.gz, fastq.gz.md5 or valid html file')
 
         logging.info('Done processing file: ' + tarfile_path)
-        # delete the extracted file
+        #delete the extracted tar file
         os.system("rm -rf " + extract_path + "*")
 
 
@@ -121,24 +121,22 @@ def register_collection(filepath, type, tarfile_name, has_parent):
     #Create the metadata json file
     file_name = filepath.split("/")[-1]
     json_file_name = type + "_" + file_name + ".json"
-    with open('jsons/' + json_file_name, "w") as fp:
+    with open('jsons_dryrun/' + json_file_name, "w") as fp:
         json.dump(collection_metadata, fp)
 
     #Register the collection
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
 
-    response_header = "collection-registration-response-header.tmp"
-    os.system("rm - f " + response_header + " 2>/dev/null")
+    #response_header = "collection-registration-response-header.tmp"
+    #os.system("rm - f " + response_header + " 2>/dev/null")
 
-    command = "dm_register_collection jsons/" + json_file_name + " " + archive_path
+    command = "dm_register_collection jsons_dryrun/" + json_file_name + " " + archive_path
     logging.info(command)
-    os.system(command)
+    #os.system(command)
 
-    with open(response_header) as f:
-        for line in f:
-            logging.info(line)
-
-
+    #with open(response_header) as f:
+        #for line in f:
+        #   logging.info(line)
 
 
 
@@ -152,43 +150,27 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath):
     # create the metadata json file
     file_name = filepath.split("/")[-1]
     json_file_name = file_name + ".json"
-    with open('jsons/' + json_file_name, "w") as fp:
+    with open('jsons_dryrun/' + json_file_name, "w") as fp:
         json.dump(object_metadata, fp)
 
     #register the object
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
     archive_path = archive_path + '/' + file_name
 
-    response_header = "dataObject-registration-response-header.tmp"
-    os.system("rm - f " + response_header + " 2>/dev/null")
+    #response_header = "dataObject-registration-response-header.tmp"
+    #os.system("rm - f " + response_header + " 2>/dev/null")
 
-    command = "dm_register_dataobject jsons/" + json_file_name + " " + archive_path + " " + fullpath
+    command = "dm_register_dataobject jsons_dryrun/" + json_file_name + " " + archive_path + " " + fullpath
     logging.info(command)
     includes = open("registered_files", "a")
     includes.write(command)
-    os.system(command)
-
-    #Get size of file in bytes
-    filesize = os.path.getsize(fullpath)
-    logging.info("\nFile size = {0}\n".format(filesize))
-
-    archived = False
-
-    #Record the result
-    with open(response_header) as f:
-        for line in f:
-            logging.info(line)
-            if('200' in line or '201' in line):
-                archived = True
+    #os.system(command)
 
     #Compute total number of files registered so far, and total bytes
-    if archived:
-        files_registered += 1
-        bytes_stored += filesize
-        includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
-    else:
-        includes.write("Error registering file \n")
+    files_registered = files_registered + 1
+    bytes_stored = 0 #+= bytes_stored + filesize
 
+    includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
     includes.close()
 
     SFUtils.record_to_csv(tarfile_name, filepath, fullpath, archive_path)
@@ -212,7 +194,6 @@ formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
 logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', format='%(levelname)s: %(asctime)s %(message)s', level=logging.DEBUG)
 logging.info("Begin processing....")
 
-
 main(sys.argv)
 
 includes = open("registered_files", "a")
@@ -220,4 +201,3 @@ includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format
 includes.close()
 
 logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
-
