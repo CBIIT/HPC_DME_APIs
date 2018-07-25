@@ -43,12 +43,14 @@ class SFCollection(SFParent):
     @staticmethod
     def get_archive_path(tarfile_name, path, type):
 
+        logging.info("Getting collection archive path for type: " + type + " and path " + path)
+
         archive_path = "/FNL_SF_Archive" #super(SFCollection, self).get_archive_path()
 
-        pi_coll_path = "/PI_Lab_" + SFHelper.get_pi_name(path)
-        project_path = "/Project_" + SFHelper.get_project_name(path).replace(' ', '_')
-        flowcell_path = "/Flowcell_" + SFHelper.get_flowcell_id(tarfile_name)
-        sample_path = "/Sample_" + SFHelper.get_sample_name(path)
+        pi_coll_path = "/Auto_PI_Lab_" + SFHelper.get_pi_name(path, False)
+        project_path = "/Project_" + SFHelper.get_project_name(path, tarfile_name).replace(' ', '_')
+        flowcell_path = "/Flowcell_" + SFHelper.get_flowcell_id(tarfile_name, False)
+
 
         if(type == "PI_Lab"):
             archive_path =  archive_path + pi_coll_path
@@ -57,6 +59,7 @@ class SFCollection(SFParent):
         elif (type == "Flowcell"):
             archive_path = archive_path + pi_coll_path + project_path + flowcell_path
         elif (type == "Sample"):
+            sample_path = "/Sample_" + SFHelper.get_sample_name(path)
             archive_path = archive_path + pi_coll_path + project_path + flowcell_path + sample_path
         else:
             raise Exception("Incorrect collection type: " + type)

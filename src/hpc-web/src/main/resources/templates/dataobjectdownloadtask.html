@@ -92,7 +92,9 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectDownloadStatusDTO.getResult() == false}">
 								<h2>
+									<!-- 
 									<strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-refresh" title="Retry Failed" aria-hidden="true"></i></a></strong>
+									-->
 								</h2>
 								</div>
 							</div>
@@ -237,7 +239,7 @@ var pollPercentComplete = setInterval(
 				url : "/downloadtask",
 				data : {taskId: taskId, type: taskType},
 				success : function(msg) {
-					console.log('SUCCESS: ', msg);
+					console.log('SUCCESS: ', "Refreshing the page");
 					//location.reload();
 					var status = $("#statusWrapper", msg);
 					$("#statusWrapper").html(status);
