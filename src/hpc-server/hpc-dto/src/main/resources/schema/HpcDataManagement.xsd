@@ -96,7 +96,7 @@
 			<xsd:element name="source"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
-			<xsd:element name="metadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
+			<xsd:element name="dataObjectMetadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
 				maxOccurs="unbounded" />
 			<xsd:element name="createParentCollections" type="xsd:boolean"
 				minOccurs="0" />
@@ -161,6 +161,9 @@
 			<xsd:element name="inProgressItems"
 				type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="failedItemsRequest"
+					type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO"
+					minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="effectiveTransferSpeed" type="xsd:int" minOccurs="0" />
 			<xsd:element name="percentComplete" type="xsd:int" minOccurs="0" />

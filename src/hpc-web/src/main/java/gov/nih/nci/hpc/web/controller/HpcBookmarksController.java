@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -56,6 +58,9 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcBookmarksController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	/**
 	 * GET operation on bookmarks
@@ -70,10 +75,10 @@ public class HpcBookmarksController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String get(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-
+		
 		try {
 			// Verify User session
-			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+ 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			if (user == null || authToken == null) {
 				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
@@ -90,15 +95,15 @@ public class HpcBookmarksController extends AbstractHpcController {
 						sslCertPassword);
 				bookmarks = dto.getBookmarks();
 				bookmarks.sort(Comparator.comparing(HpcBookmark::getName));
+				session.setAttribute("bookmarks", bookmarks);
 			}
 
 			model.addAttribute("bookmarksList", bookmarks);
-			HpcBookmark hpcBookmark = new HpcBookmark();
-			model.addAttribute("hpcBookmark", hpcBookmark);
 
 		} catch (Exception e) {
-			model.addAttribute("message", "Failed to get tree. Reason: " + e.getMessage());
-			e.printStackTrace();
+			String errMsg = "Failed to retrieve bookmarks. Reason: " + e.getMessage();
+			model.addAttribute("message", errMsg);
+			logger.error(errMsg, e);
 			return "bookmarks";
 		}
 		return "bookmarks";
@@ -139,13 +144,13 @@ public class HpcBookmarksController extends AbstractHpcController {
 					List<HpcBookmark> bookmarks = bookmarksDTO.getBookmarks();
 					bookmarks.sort(Comparator.comparing(HpcBookmark::getName));
 					model.addAttribute("bookmarksList", bookmarks);
-					model.addAttribute("hpcBookmark", hpcBookmark);
+					session.setAttribute("bookmarks", bookmarks);
 				}
 			}
 		} catch (Exception e) {
-			result.setMessage("Failed to delete bookmark: " + e.getMessage());
-		} finally {
-			model.addAttribute("hpcBookmark", hpcBookmark);
+			String errMsg = "Failed to delete bookmark: " + e.getMessage();
+			result.setMessage(errMsg);
+			logger.error(errMsg, e);
 		}
 		return result;
 	}

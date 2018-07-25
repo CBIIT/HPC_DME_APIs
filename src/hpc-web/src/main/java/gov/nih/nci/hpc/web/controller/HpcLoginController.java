@@ -26,11 +26,16 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+
+
 
 /**
  * <p>
@@ -58,7 +63,10 @@ public class HpcLoginController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
 	private String collectionAclURL;
 	
-
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	
+	
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(Model model, HttpSession session, HttpServletRequest request) {
 		HpcLogin hpcLogin = new HpcLogin();
@@ -85,12 +93,16 @@ public class HpcLoginController extends AbstractHpcController {
 					throw new HpcWebException("Invlaid User");
 				session.setAttribute("hpcUser", user);
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
+				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());			
 				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath,
 						sslCertPassword);
+				
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
 				HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, hpcLogin.getUserId(),
 						collectionAclURL, sslCertPath, sslCertPassword);
+						
+				
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
 				model.addAttribute("loginOutput", "Invalid login");

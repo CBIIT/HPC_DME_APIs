@@ -907,7 +907,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectRegistrationRequest.setSource(dataObjectRegistrationItem.getSource());
       dataObjectRegistrationRequest
           .getMetadataEntries()
-          .addAll(dataObjectRegistrationItem.getMetadataEntries());
+          .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
       dataObjectRegistrationRequest
           .getParentCollectionMetadataEntries()
           .addAll(dataObjectRegistrationItem.getParentCollectionMetadataEntries());
@@ -2060,7 +2060,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
         new HpcDataObjectRegistrationItemDTO();
     dataObjectRegistration.setPath(basePath + scanItem.getFilePath());
-    dataObjectRegistration.getMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
+    dataObjectRegistration.getDataObjectMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
     dataObjectRegistration.setCreateParentCollections(true);
     dataObjectRegistration
         .getParentCollectionMetadataEntries()
@@ -2226,10 +2226,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       } else {
         item.getTask().setPercentComplete(null);
         taskDTO.getFailedItems().add(item.getTask());
+        taskDTO.getFailedItemsRequest().add(dataObjectRegistrationRequestToDTO(item.getRequest(), item.getTask().getPath()));
       }
     }
   }
 
+  private HpcDataObjectRegistrationItemDTO dataObjectRegistrationRequestToDTO(HpcDataObjectRegistrationRequest request, String path)
+  {
+    HpcDataObjectRegistrationItemDTO dto = new HpcDataObjectRegistrationItemDTO();
+    dto.setCallerObjectId(request.getCallerObjectId());
+    dto.setCreateParentCollections(request.getCreateParentCollections());
+    dto.setPath(path);
+    dto.setSource(request.getSource());
+    dto.getDataObjectMetadataEntries().addAll(request.getMetadataEntries());
+    dto.getParentCollectionMetadataEntries().addAll(request.getParentCollectionMetadataEntries());
+    return dto;
+  }
+  
   private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
       throws HpcException {
     // Input validation.

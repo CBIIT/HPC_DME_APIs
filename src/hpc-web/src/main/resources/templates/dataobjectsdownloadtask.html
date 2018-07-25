@@ -88,7 +88,7 @@
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
 									<a class="close" data-dismiss="alert">×</a> <label
-										for="${error}" th:text="${error}"></label>
+										for="${error}" th:utext="${error}"></label>
 								</div>
 							</div>
 							<!--panel-body start-->
@@ -211,7 +211,9 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6">
 								<h2>
-									<strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-refresh" title="Retry Failed" aria-hidden="true"></i></a></strong>
+								<!-- 
+								<strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								 -->
 								</h2>
 								</div>
 							</div>
@@ -294,6 +296,7 @@
 
 function retryDownload(task, taskType)
 {
+	$('#downloadfailed').addClass('disabled');
 	document.getElementById("taskId").value = task;
 	document.getElementById("taskType").value = taskType;
 	$("#downloadForm").submit();
@@ -303,7 +306,7 @@ function retryDownload(task, taskType)
 
 var pollPercentComplete = setInterval(
 		function getPercentComplete() {
-			
+
 			var regComplete = document.getElementById("regComplete").innerHTML;
 			if(regComplete == "true") {
 				clearInterval(pollPercentComplete);
@@ -317,7 +320,7 @@ var pollPercentComplete = setInterval(
 				url : "/downloadtask",
 				data : {taskId: taskId, type: taskType},
 				success : function(msg) {
-					console.log('SUCCESS: ', msg);
+					console.log('SUCCESS: ', "Refreshing the page");
 					//location.reload();
 					var status = $("#statusWrapper", msg);
 					$("#statusWrapper").html(status);
