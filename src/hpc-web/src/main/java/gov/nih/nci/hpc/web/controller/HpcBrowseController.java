@@ -26,6 +26,8 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
@@ -68,8 +71,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @RequestMapping("/browse")
 public class HpcBrowseController extends AbstractHpcController {
 
-  @Value("${gov.nih.nci.hpc.server.bookmark}")
-  private String bookmarkServiceURL;
+	@Value("${gov.nih.nci.hpc.server.bookmark}")
+	private String bookmarkServiceURL;
 
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionURL;
@@ -78,7 +81,10 @@ public class HpcBrowseController extends AbstractHpcController {
 	private String hpcModelURL;
 
 	@Value("${gov.nih.nci.hpc.server.pathreftype}")
-  private String hpcPathRefTypeURL;
+	private String hpcPathRefTypeURL;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 
 	/**
@@ -115,9 +121,7 @@ public class HpcBrowseController extends AbstractHpcController {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
 
 				// Detect if path refers to data file, and if so, redirect to data
-				// file view
-				
-				//Do this check only if we are clicking on Browse button
+				// file view.Do this check only if we are clicking on Browse button
 				//after selecting the path. If we are here because we 
 				//clicked on a folder this check is not required 
 				if(hpcBrowserEntry.isPartial()) {
@@ -129,8 +133,6 @@ public class HpcBrowseController extends AbstractHpcController {
 					}
 				}
 
-				// session.setAttribute("selectedBrowsePath",
-				// hpcBrowserEntry.getSelectedNodePath());
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
 						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
@@ -148,14 +150,79 @@ public class HpcBrowseController extends AbstractHpcController {
 				session.setAttribute("browserEntry", browserEntry);
 			}
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to browse: " + e.getMessage());
+			String errMsg = "Failed to browse: " + e.getMessage();
+			redirectAttributes.addFlashAttribute("error", errMsg);
 			model.addAttribute("error", e.getMessage());
+			logger.error(errMsg, e);
 		} finally {
 		}
 		return "browse";
 	}
 
 
+	
+	/**
+	 * POST Action. When a tree node is expanded, this AJAX action fetches its child
+	 * nodes
+	 * 
+	 * @param hpcBrowserEntry
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @param response
+	 * @param redirectAttributes
+	 * @return
+	 */
+	@RequestMapping(value = "/collection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody List<HpcBrowserEntry> browseCollection(@ModelAttribute("hpcBrowse") HpcBrowserEntry hpcBrowserEntry,
+			Model model,
+			BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+			HttpServletResponse response,
+			final RedirectAttributes redirectAttributes, final String refreshNode) {
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
+		List<HpcBrowserEntry> entries = new ArrayList<HpcBrowserEntry>();
+		boolean getChildren = false;
+		boolean refresh = false;
+
+		if (!StringUtils.isBlank(refreshNode)) {
+			refresh = true;
+			getChildren = true;
+		}
+
+		try {
+			if (hpcBrowserEntry.getSelectedNodePath() != null) {
+
+				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
+						authToken,
+						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
+				if (hpcBrowserEntry.isPartial()) {
+					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
+				}
+
+				browserEntry = trimPath(browserEntry, browserEntry.getName());
+				entries.add(browserEntry);
+				model.addAttribute("userBookmarks", fetchCurrentUserBookmarks(session));
+				model.addAttribute("browserEntryList", entries);
+				model.addAttribute("browserEntry", browserEntry);
+				model.addAttribute("scrollLoc", hpcBrowserEntry.getScrollLoc());
+				session.setAttribute("browserEntry", browserEntry);
+			}
+		} catch (Exception e) {
+			String errMsg = "Failed to browse: " + e.getMessage();
+			redirectAttributes.addFlashAttribute("error", errMsg);
+			model.addAttribute("error", e.getMessage());
+			logger.error(errMsg, e);
+		} 
+		
+		return entries;
+	}
+
+	
+	
+	
+	
   /**
    * GET operation on Browse. Builds initial tree
    *
@@ -217,9 +284,9 @@ public class HpcBrowseController extends AbstractHpcController {
         session.setAttribute("selectedBrowsePath", path);
 
         // Detect if path refers to data file, and if so, redirect to data file view
-				if (isPathForDataFile(path, authToken)) {
-          return genRedirectNavForDataFileView(path);
-        }
+				//if (isPathForDataFile(path, authToken)) {
+         // return genRedirectNavForDataFileView(path);
+       // }
 
         HpcBrowserEntry browserEntry = (HpcBrowserEntry) session.getAttribute("browserEntry");
         if (browserEntry == null) {
@@ -247,12 +314,62 @@ public class HpcBrowseController extends AbstractHpcController {
       model.addAttribute("userBookmarks", fetchCurrentUserBookmarks(session));
       return "browse";
     } catch (Exception e) {
-      model.addAttribute("message", "Failed to get tree. Reason: " + e.getMessage());
-      e.printStackTrace();
-      return "browse";
+    	String errMsg = "Failed to get tree. Reason: " + e.getMessage();
+        model.addAttribute("message", errMsg);
+        logger.error(errMsg, e);
+        return "browse";
     }
   }
 
+  
+  
+  /**
+	 * GET operation on bookmarks
+	 * 
+	 * @param q
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/bookmarks", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody List<HpcBookmark> getBookmarks(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request) {
+		List<HpcBookmark> bookmarks = null;
+		try {
+			// Verify User session
+			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			if (user == null || authToken == null) {
+				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+				bindingResult.addError(error);
+				HpcLogin hpcLogin = new HpcLogin();
+				model.addAttribute("hpcLogin", hpcLogin);
+				return bookmarks;
+			}
+
+			bookmarks = (List<HpcBookmark>) session.getAttribute("bookmarks");
+			if (bookmarks == null) {
+				HpcBookmarkListDTO dto = HpcClientUtil.getBookmarks(authToken, bookmarkServiceURL, sslCertPath,
+						sslCertPassword);
+				bookmarks = dto.getBookmarks();
+				bookmarks.sort(Comparator.comparing(HpcBookmark::getName));
+				session.setAttribute("bookmarks", bookmarks);
+				
+			}
+			model.addAttribute("userBookmarks", bookmarks);
+
+		} catch (Exception e) {
+			String errMsg = "Failed to retrieve bookmarks. Reason: " + e.getMessage();
+			model.addAttribute("message", errMsg);
+			logger.error(errMsg, e);
+			return bookmarks;
+		}
+		return bookmarks;
+	}
+	
+	
 
   private HpcBrowserEntry addPathEntries(String path, HpcBrowserEntry browserEntry) {
     if (path.indexOf("/") != -1) {
@@ -298,6 +415,7 @@ public class HpcBrowseController extends AbstractHpcController {
         retBookmarkList = dto.getBookmarks();
         retBookmarkList.sort(Comparator.comparing(HpcBookmark::getName));
       }
+      session.setAttribute("bookmarks", retBookmarkList);
     }
     return retBookmarkList;
   }
@@ -390,10 +508,12 @@ public class HpcBrowseController extends AbstractHpcController {
 				selectedEntry.setFullPath(collection.getAbsolutePath());
 				selectedEntry.setId(collection.getAbsolutePath());
 				selectedEntry.setName(collection.getCollectionName());
-				if (getChildren)
-					selectedEntry.setPopulated(true);
-				else
-					selectedEntry.setPopulated(false);
+				
+				//this will ensure that the next time we access this path
+				//we dont read again from DB, unless an explicit refresh 
+				//request has been made
+				selectedEntry.setPopulated(true);
+				
 				selectedEntry.setCollection(true);
 				for (HpcCollectionListingEntry listEntry : collection.getSubCollections()) {
 					HpcBrowserEntry listChildEntry = new HpcBrowserEntry();
