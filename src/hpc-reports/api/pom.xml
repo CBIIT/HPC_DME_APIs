@@ -53,6 +53,7 @@
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -60,10 +61,9 @@
                         </goals>
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/cleversafe-reports-oas.json</inputSpec>
-                            <language>spring</language>
+                            <generatorName>spring</generatorName>
                             <modelPackage>gov.nih.nci.hpc.reports.model</modelPackage>
                             <apiPackage>gov.nih.nci.hpc.reports.ws.rest</apiPackage>
-                            <invokerPackage>gov.nih.nci.hpc.reports.client</invokerPackage>
                             <generateApis>true</generateApis>
                             <generateModels>true</generateModels>
                             <generateSupportingFiles>false</generateSupportingFiles>
