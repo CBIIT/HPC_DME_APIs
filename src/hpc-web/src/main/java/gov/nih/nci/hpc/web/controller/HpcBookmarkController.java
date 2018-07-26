@@ -9,11 +9,16 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.Comparator;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -27,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
-
+import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -52,6 +57,9 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcBookmarkController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	/**
 	 * Prepare create bookmark page.
@@ -114,14 +122,19 @@ public class HpcBookmarkController extends AbstractHpcController {
 				dto.setPath(hpcBookmark.getPath().trim());
 				boolean created = HpcClientUtil.createBookmark(authToken, bookmarkServiceURL, dto,
 						hpcBookmark.getName(), sslCertPath, sslCertPassword);
-				if (created)
+				if (created) {
 					result.setMessage("Bookmark saved!");
+					HpcBookmarkListDTO bookmarksDTO = HpcClientUtil.getBookmarks(authToken, bookmarkServiceURL,
+						sslCertPath, sslCertPassword);
+					List<gov.nih.nci.hpc.domain.databrowse.HpcBookmark> bookmarks = bookmarksDTO.getBookmarks();
+					bookmarks.sort(Comparator.comparing(gov.nih.nci.hpc.domain.databrowse.HpcBookmark::getName));
+					session.setAttribute("bookmarks", bookmarks);
+				}
 			}
 		} catch (Exception e) {
 			result.setMessage(e.getMessage());
-		} finally {
-			model.addAttribute("hpcBookmark", hpcBookmark);
-		}
+			logger.error(e.getMessage(), e);
+		} 
 		return result;
 	}
 }

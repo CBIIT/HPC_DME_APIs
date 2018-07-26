@@ -42,6 +42,9 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
@@ -100,6 +103,9 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	private String modelServiceURL;
 	@Value("${gov.nih.nci.hpc.server.metadataattributes}")
 	private String hpcMetadataAttrsURL;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	/**
 	 * GET action to display criteria page. Populate levels, metadata attributes
@@ -131,6 +137,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			return "redirect:/login?returnPath=criteria";
 		}
 		HpcSearchUtil.clearCachedSelectedRows(session);
+		logger.info("Getting search criteria for user: " + user.getFirstName() + " " + user.getLastName());
 		populateHierarchy(session, model, authToken, user);
 		populateMetadata(model, authToken, user, "collection", session);
 		populateOperators(model);
@@ -476,9 +483,9 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		List<String> dataobjectLevels = new ArrayList<String>();
 
 		List<String> attrs = new ArrayList<String>();
-
 		HpcMetadataAttributesListDTO dto = HpcClientUtil.getMetadataAttrNames(authToken, hpcMetadataAttrsURL,
 				sslCertPath, sslCertPassword);
+		
 		if (dto != null && dto.getCollectionMetadataAttributes() != null) {
 			for (HpcMetadataLevelAttributes levelAttrs : dto.getCollectionMetadataAttributes()) {
 				String label = levelAttrs.getLevelLabel();
@@ -526,7 +533,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		Map<String, String> hierarchiesMap = new HashMap<String, String>();
 		try {
 			HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-			if (modelDTO == null) {
+			if (modelDTO == null) {	
 				modelDTO = HpcClientUtil.getDOCModel(authToken, modelServiceURL, sslCertPath, sslCertPassword);
 				session.setAttribute("userDOCModel", modelDTO);
 			}

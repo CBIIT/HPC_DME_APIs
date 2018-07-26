@@ -88,7 +88,7 @@
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
 									<a class="close" data-dismiss="alert">×</a> <label
-										for="${error}" th:text="${error}"></label>
+										for="${error}" th:utext="${error}"></label>
 								</div>
 							</div>
 							<!--panel-body start-->
@@ -146,13 +146,13 @@
 								</div>
 
 							</div>
-							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() > 0}">
+							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
 								</h2>
 							</div>
 							<div class="panel-body"
-								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() > 0}">
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
 								<div class="panel panel-default"
 									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems()}" style="margin-top:5px" >
 									<div class="col-md-12 form-group">
@@ -176,13 +176,22 @@
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() > 0}">
+							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() &gt; 0}">
+								<div class="col-md-3">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>Failed</strong>
+									</h2>
+								</div>
+								<div class="col-md-3 col-md-offset-6">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Failed</strong>
+								<!-- 
+									<strong> <a id="uploadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryUpload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}" ><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
+								-->
 								</h2>
+								</div>
 							</div>
 							<div class="panel-body"
-								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() > 0}">
+								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() &gt; 0}">
 								<div class="panel panel-default"
 									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems()}"  style="margin-top:5px">
 									<div class="col-md-12 form-group">
@@ -264,6 +273,15 @@
 	
 <script th:inline="javascript">	
 
+function retryUpload(task, taskType)
+{
+	$('#uploadfailed').addClass('disabled');
+	document.getElementById("taskId").value = task;
+	document.getElementById("taskType").value = taskType;
+	$("#uploadForm").submit();
+	
+}
+
 var pollPercentComplete = setInterval(
 function getPercentComplete() {
 	
@@ -280,7 +298,7 @@ function getPercentComplete() {
 		url : "/uploadtask",
 		data : {taskId: taskId, type: taskType},
 		success : function(msg) {
-			console.log('SUCCESS: ', msg);
+			console.log('SUCCESS: ', "Refreshing the page");
 			//location.reload();
 			var status = $("#statusWrapper", msg);
 			$("#statusWrapper").html(status);
