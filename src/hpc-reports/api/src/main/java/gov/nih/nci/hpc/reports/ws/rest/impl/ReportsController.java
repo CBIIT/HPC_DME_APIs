@@ -41,7 +41,7 @@ class ReportsController implements ReportsApi {
     // ReportsApi  Interface Implementation
     // ---------------------------------------------------------------------//
 
-    @RequestMapping("/vaultsummary")
+    @RequestMapping("/reports/vaultsummary")
     public VaultSummary[] getVaultSummary() throws Exception {
         return reportsService.getVaultSummary();
     }
