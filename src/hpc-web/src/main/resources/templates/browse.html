@@ -61,6 +61,7 @@
     var basePathName = [[${basePath}]];
     var scrollLoc = [[${scrollLoc}]];
     var userBookmarks = [[${userBookmarks}]];
+    var refresh = null;
 /*]]>*/
 </script>
 	
@@ -253,6 +254,8 @@ $(function() {
             }
         }
     });
+    
+   
 });
 
 
@@ -264,20 +267,13 @@ $('#tree1').on('click', '.refresh', function(e) {
 });
 
 function refreshNode(node) {    
-    var node_id = node.id;
 
 	console.log('parent: ' + node.parent.id);
-	document.getElementById("refreshNode").value = node_id;
-
-	document.getElementById("selectedNodePath").value = node.fullPath;
-	document.getElementById("processingIcon"+node.id).style.visibility = "visible";
-	document.getElementById("selectedNodeId").value = node.id;
-	document.getElementById("scrollLoc").value = scrollLoc;
-
-	$("#browseForm").submit();
+	refresh = node.id;
+	browseNode(node);
 	$('#tree1').tree('openNode', node);
 	$('#tree1').tree('selectNode', node);
-}//);
+}
 
 //bind 'tree.click' event
 $('#tree1').bind(
@@ -318,21 +314,70 @@ function scrollWindow()
 	}*/
 }
 
-$('#tree1').bind('tree.open', function (e,data) {  
-	document.getElementById("selectedNodePath").value = e.node.fullPath;
+
+
+ $('#tree1').bind('tree.open', function (e,data) {  
+	//document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
-    document.getElementById("processingIcon"+node.id).style.visibility = "visible";
-	document.getElementById("selectedNodeId").value = node.id;
-	document.getElementById("scrollLoc").value = scrollLoc;
-	$("#browseForm").submit();
+	//document.getElementById("scrollLoc").value = scrollLoc;
+	//$("#browseForm").submit();
+	if(!refresh) {
+		browseNode(node);
+	} else {
+		refresh = null;
+	}
 	$('#tree1').tree('selectNode', node);
 }
 );
 
 
+function browseNode(node) {
+	  
+	  document.getElementById("selectedNodeId").value = node.id;
+	  document.getElementById("processingIcon"+ node.id).style.visibility = "visible";
+	  
+      $.ajax({
+          type : "POST",
+          data: {selectedNodePath: node.fullPath, refreshNode: refresh, scrollLoc: scrollLoc},
+          dataType: "json",
+          url : "/browse/collection",
+          success : function(msg) {
+       
+          	data = msg;
+          	$('#tree1').tree('loadData', data);
+       
+          },
+    	  error : function(e) {
+    		 console.log('ERROR: ', e);
+    	  }
+      });
+};
+
+
+
 $('#tree1').bind('tree.init', function() {
-  var postTreeInit = function() {
-    $("#bookmarksDiv").empty();
+	if ($('#bookmarksDiv:visible').length > 0) {
+    	refreshBookmarks(userBookmarks)
+	}
+	var tree = $('#tree1').tree('getTree');
+	if(tree.children != null && tree.children.length > 0) {
+	    var topNode = tree.children[0];
+	    if(topNode.children != null) {
+	      for (var i=0; i < topNode.children.length; i++) {
+	 	      var child = topNode.children[i];
+              if (child.collection) {
+	            $('#tree1').tree('closeNode', child, false);
+              }
+           }
+	    }
+	 }
+	
+});
+
+
+function refreshBookmarks(userBookmarks) {
+	
+	$("#bookmarksDiv").empty();
     var aBookmarkLink;
     for (i = 0; i < userBookmarks.length; i++) {
       var linkHref = '/browse?refresh&path=' + percentEncodePath(userBookmarks[i].path);
@@ -341,9 +386,9 @@ $('#tree1').bind('tree.init', function() {
       $("#bookmarksDiv").append(aBookmarkLink);
       $("#bookmarksDiv").append("<br/>");
     }
-  };
-  setTimeout(postTreeInit, 500);
-});
+	
+}
+
 
 $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "viewDetails": function (node) {
@@ -365,15 +410,30 @@ $('#tree1').jqTreeContextMenu($('#myMenu'), {
 }); 
 
   $('#toggleBookmarksElem').bind('click', function() {
-    $('#bookmarksDiv').toggle();
+    
 
-    if ($('#bookmarksDiv:visible').length == 0) {
+    if ($('#bookmarksDiv:visible').length > 0) {
       $('#toggleBookmarksElem > i').removeClass('glyphicon-folder-open');
       $('#toggleBookmarksElem > i').addClass('glyphicon-folder-close');
     } else {
-      $('#toggleBookmarksElem > i').removeClass('glyphicon-folder-close');
-      $('#toggleBookmarksElem > i').addClass('glyphicon-folder-open');
+      $.ajax({
+          type : "GET",
+          dataType: "json",
+          url : "/browse/bookmarks",
+          success : function(data) {
+       
+          	var bookmarks = data;
+          	refreshBookmarks(bookmarks)
+          	$('#toggleBookmarksElem > i').removeClass('glyphicon-folder-close');
+            $('#toggleBookmarksElem > i').addClass('glyphicon-folder-open');
+          
+          },
+    	  error : function(e) {
+    		 console.log('ERROR: ', e);
+    	  }
+      });
     }
+    $('#bookmarksDiv').toggle();
   });
 
 /*]]>*/
