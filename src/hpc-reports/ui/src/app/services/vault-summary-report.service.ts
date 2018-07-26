@@ -8,7 +8,7 @@ import { MessageService} from "./message.service";
   providedIn: 'root'
 })
 export class VaultSummaryReportService {
-  private vaultSummaryReportUrl = 'https://fr-s-hpcdm-gp-d.ncifcrf.gov:7738/reports/vaultsummary';
+  private vaultSummaryReportUrl = 'https://fr-s-hpcdm-gp-d.ncifcrf.gov:7748/v1/reports/vaultsummary';
 
   constructor(private httpClient: HttpClient, private messageService: MessageService) { }
 
