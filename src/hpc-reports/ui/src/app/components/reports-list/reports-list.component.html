@@ -1,0 +1,14 @@
+<!-- Temporarily removed until we have multiple reports to pick from
+<div class="row">
+  <div class="col-lg-12">
+    <select id="soflow" [(ngModel)]="selectedReport">
+      <option [value]="none" disabled>--- Select Report ---</option>
+      <option *ngFor="let report of reports" [value]="report.type">{{report.name}}</option>
+    </select>
+  </div>
+</div>
+-->
+
+<app-vault-summary-report *ngIf="selectedReport == vaultSummaryReport"></app-vault-summary-report>
+
+
