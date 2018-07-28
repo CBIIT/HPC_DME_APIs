@@ -2,22 +2,45 @@ import logging
 import sys
 import os
 import json
-import time
-import re
-import subprocess
+
 
 from metadata.sf_object import SFObject
 from metadata.sf_collection import SFCollection
 from metadata.sf_helper import SFHelper
 from common.sf_utils import SFUtils
-
+from common.sf_audit import SFAudit
 
 def main(args):
 
-    #Get the file containing the tarlist
+    if (len(sys.argv) < 5):
+        print("\n Usage: python app.py tarfile_list tarfile_dir extract_path audit_dir dryrun initial_bytes initial_file_count")
+        return
+
+    #The file containing the tarlist
     tarfile_list = args[1]
+
+    #The directory containing the tarfiles
     tarfile_dir = args[2]
+
+    #path containing the extracted file
     extract_path = args[3]
+
+    #sub-directory to hold the log and audit files
+    audit_dir = args[4]
+
+    # If this is a dryrun or not
+    dryrun = args[5]
+
+    bytes_stored = 0
+    files_registered = 0
+
+    if(args[6] is not None):
+        bytes_stored = args[6]
+        if(args[7] is not None):
+            file_registered = args[7]
+
+    sf_audit = SFAudit(audit_dir, bytes_stored, files_registered)
+    sf_audit.prep_for_audit()
 
     for line_filepath in open(tarfile_list).readlines():
 
@@ -32,8 +55,23 @@ def main(args):
         # This is a valid tarball, so process
         logging.info("Processing file: " + tarfile_path)
 
+        if (tarfile_name.endswith("supplement.tar") or 'singlecell' in tarfile_name):
+            # Register PI collection
+            register_collection(tarfile_path, "PI_Lab", tarfile_name, False, dryrun)
+
+            # Register Flowcell collection with Project type parent
+            register_collection(tarfile_path, "Flowcell", tarfile_name, True, dryrun)
+
+            # create Object metadata with Flowcell type parent and register object
+            register_object(tarfile_path, "Flowcell", tarfile_name, False, tarfile_path, sf_audit, dryrun)
+
+            logging.info('Done processing file: ' + tarfile_path)
+
+            continue;
+
         # Extract all files and store in extract_path directory
-        #SFUtils.extract_files_from_tar(tarfile_path, extract_path)
+        if (dryrun == False):
+            SFUtils.extract_files_from_tar(tarfile_path, extract_path)
 
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
@@ -43,8 +81,13 @@ def main(args):
                 #This is a directory, nothing to do
                 continue
 
-            if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
+            # if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
+            exclusion_list = ['10X', 'Phix', 'PhiX', 'demux', 'demultiplex']
+            if any(ext in line.rstrip() for ext in exclusion_list):
+                sf_audit.record_exclusion(tarfile_name, line.rstrip(),
+                    'Path contains substring from exclusion list')
                 continue
+
 
             filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
 
@@ -54,13 +97,13 @@ def main(args):
                 path = SFUtils.get_meta_path(filepath)
 
                 # Register PI collection
-                register_collection(path, "PI_Lab", tarfile_name, False)
+                register_collection(path, "PI_Lab", tarfile_name, False, sf_audit, dryrun)
 
                 #Register Flowcell collection with Project type parent
-                register_collection(path, "Flowcell", tarfile_name, True)
+                register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun)
 
                 #create Object metadata with Sample type parent and register object
-                register_object(path, "Sample", tarfile_name, True, filepath)
+                register_object(path, "Sample", tarfile_name, True, filepath, sf_audit, dryrun)
 
             elif filepath.endswith('laneBarcode.html') and '/all/' in filepath and not 'Control_Sample' in filepath:
 
@@ -82,13 +125,13 @@ def main(args):
                         logging.info('metadata base: ' + path)
 
                         # Register PI collection
-                        register_collection(path, "PI_Lab", tarfile_name, False)
+                        register_collection(path, "PI_Lab", tarfile_name, False, sf_audit, dryrun)
 
                         # Register Flowcell collection with Project type parent
-                        register_collection(path, "Flowcell", tarfile_name, True)
+                        register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun)
 
                         # create Object metadata with Flowcell type parent and register object
-                        register_object(path, "Flowcell", tarfile_name, False, filepath)
+                        register_object(path, "Flowcell", tarfile_name, False, filepath, sf_audit, dryrun)
 
                     else:
                         # ignore this html
@@ -108,11 +151,18 @@ def main(args):
         #delete the extracted tar file
         os.system("rm -rf " + extract_path + "*")
 
+    sf_audit.audit_summary()
 
 
-def register_collection(filepath, type, tarfile_name, has_parent):
+
+def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryrun):
 
     logging.info("Registering " + type + " collection for " + filepath)
+    json_path = sf_audit.audit_path + '/jsons_dryrun'
+
+    # create the audit directory if it does not exist
+    if not os.path.exists(json_path):
+        os.mkdir(json_path)
 
     #Build metadata for the collection
     collection = SFCollection(filepath, type, tarfile_name, has_parent)
@@ -121,83 +171,111 @@ def register_collection(filepath, type, tarfile_name, has_parent):
     #Create the metadata json file
     file_name = filepath.split("/")[-1]
     json_file_name = type + "_" + file_name + ".json"
-    with open('jsons_dryrun/' + json_file_name, "w") as fp:
+    with open(json_path + "/" + json_file_name, "w") as fp:
         json.dump(collection_metadata, fp)
 
-    #Register the collection
+    #Prepare the command
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
+    command = "dm_register_collection" + json_path + "/" + json_file_name + " " + archive_path
 
-    #response_header = "collection-registration-response-header.tmp"
-    #os.system("rm - f " + response_header + " 2>/dev/null")
-
-    command = "dm_register_collection jsons_dryrun/" + json_file_name + " " + archive_path
+    #Audit the command
     logging.info(command)
-    #os.system(command)
 
-    #with open(response_header) as f:
-        #for line in f:
-        #   logging.info(line)
+    #Run the command
+    response_header = "collection-registration-response-header.tmp"
+    if (dryrun == False):
+        os.system("rm - f " + response_header + " 2>/dev/null")
+        os.system(command)
+
+        #Audit the result
+        with open(response_header) as f:
+            for line in f:
+                logging.info(line)
 
 
 
-def register_object(filepath, type, tarfile_name, has_parent, fullpath):
+def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit, dryrun):
 
     global files_registered, bytes_stored
     #Build metadata for the object
     object_to_register = SFObject(filepath, tarfile_name, has_parent, type)
     object_metadata = object_to_register.get_metadata()
+    json_path = sf_audit.audit_path + '/jsons_dryrun'
 
     # create the metadata json file
     file_name = filepath.split("/")[-1]
-    json_file_name = file_name + ".json"
-    with open('jsons_dryrun/' + json_file_name, "w") as fp:
+    json_file_name = json_path + '/' + file_name + ".json"
+    with open(json_file_name, "w") as fp:
         json.dump(object_metadata, fp)
 
-    #register the object
+    #Prepare the command
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
     archive_path = archive_path + '/' + file_name
+    command = "dm_register_dataobject" + json_path + "/" + json_file_name + " " + archive_path + " " + fullpath
 
-    #response_header = "dataObject-registration-response-header.tmp"
-    #os.system("rm - f " + response_header + " 2>/dev/null")
+    #Record the command
+    sf_audit.audit_command(command)
 
-    command = "dm_register_dataobject jsons_dryrun/" + json_file_name + " " + archive_path + " " + fullpath
-    logging.info(command)
-    includes = open("registered_files", "a")
-    includes.write(command)
-    #os.system(command)
+    # Run the command
+    if(dryrun):
+        response_header = "dataObject-registration-response-header.tmp"
+        os.system("rm - f " + response_header + " 2>/dev/null")
+        os.system(command)
 
-    #Compute total number of files registered so far, and total bytes
-    files_registered = files_registered + 1
-    bytes_stored = 0 #+= bytes_stored + filesize
-
-    includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(files_registered, bytes_stored))
-    includes.close()
-
-    SFUtils.record_to_csv(tarfile_name, filepath, fullpath, archive_path)
+    #Audit the result - No run performed
+    sf_audit.audit_upload(tarfile_name, filepath, fullpath, archive_path, dryrun)
 
 
+def get_tarball_contents(tarfile_name, tarfile_dir, sf_audit):
 
-files_registered = 0
-bytes_stored = 0L
+    logging.info("Getting contents for: " + tarfile_name)
+    tarfile_name = tarfile_name.rstrip()
 
-includes_csv = open("sf_included.csv", "a")
-includes_csv.write("Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name, Sequencing_Platform\n")
-includes_csv.close()
+    if '10x' in tarfile_name or 'lane123456' in tarfile_name:
+        excludes_str = ': Invalid tar file -  10x or lane123456'
+        sf_audit.record_exclusion(tarfile_name, "All files", excludes_str)
+        return
 
-excludes_csv = open("sf_excluded.csv", "a")
-excludes_csv.write("Tarfile, Extracted File, Reason\n")
-excludes_csv.close()
 
-ts = time.gmtime()
-formatted_time = time.strftime("%Y-%m-%d_%H-%M-%S", ts)
-# 2018-05-14_07:56:07
-logging.basicConfig(filename='ccr-sf_transfer' + formatted_time + '.log', format='%(levelname)s: %(asctime)s %(message)s', level=logging.DEBUG)
-logging.info("Begin processing....")
+    if not tarfile_name.endswith('tar.gz') and not tarfile_name.endswith('tar'):
+
+        # If this is not a .list, _archive.list, or .md5 file also, then record exclusion. Else
+        # just ignore, do not record because we may find the associated tar later
+        if (not tarfile_name.endswith('.list') and
+            not tarfile_name.endswith('list.txt') and
+            not tarfile_name.endswith('.md5')):
+            excludes_str = ': Invalid file format - not tar.gz or tar.gz.md5 or acceptable content list format'
+            sf_audit.record_exclusion(tarfile_name, "All files", excludes_str)
+        else:
+            logging.info(tarfile_name + ': No contents to extract')
+        return
+
+
+    tarfile_path = tarfile_dir + '/' + tarfile_name
+    contentFiles = [tarfile_path + '.list', tarfile_name + '.list', tarfile_path + '_archive.list',
+        tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '.list',
+        tarfile_path.split('.tar')[0] + '_archive.list', tarfile_path.split('.tar')[0] + '.archive.list',
+        tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.tar')[0] + '.list.txt',
+        tarfile_path.split('.gz')[0] + '_list.txt', tarfile_path.split('.tar')[0] + '_list.txt',
+        tarfile_path.split('.tar')[0] + '_file_list.txt']
+
+    tarfile_contents = None
+
+    for filename in contentFiles:
+        if os.path.exists(filename):
+            tarfile_contents = open(filename)
+            break
+
+    if tarfile_contents is None:
+        command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
+        # os.system(command)
+        subprocess.call(command, shell=True)
+        logging.info("Created contents file: " + command)
+        tarfile_contents = open(tarfile_name + '.list')
+
+    logging.info("Obtained contents for: " + tarfile_name)
+    return tarfile_contents
+
+
 
 main(sys.argv)
-
-includes = open("registered_files", "a")
-includes.write("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))
-includes.close()
-
-logging.info("Number of files uploaded = {0}, total bytes so far = {1}".format(files_registered, bytes_stored))

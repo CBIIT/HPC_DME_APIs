@@ -24,7 +24,7 @@ class SFHelper(object):
             logging.info("Getting pi_name from path: " + path)
 
 
-        if 'Undetermined' in path:
+        if 'Undetermined' in path or path.endswith('supplement.tar'):
             pi_name = 'SF_Archive_Flowcell_Info'
 
         elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path:
@@ -122,7 +122,7 @@ class SFHelper(object):
     @staticmethod
     def get_project_name(path, tarfile):
 
-        if 'Undetermined' in path or len(path.split("/")) == 1:
+        if 'Undetermined' in path or tarfile.endswith('supplement.tar') or len(path.split("/")) == 1:
             project_name =  SFHelper.get_run_name(tarfile)
 
         else:
