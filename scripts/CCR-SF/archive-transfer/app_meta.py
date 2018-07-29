@@ -37,7 +37,7 @@ def main(args):
     if(args[6] is not None):
         bytes_stored = args[6]
         if(args[7] is not None):
-            file_registered = args[7]
+            files_registered = args[7]
 
     sf_audit = SFAudit(audit_dir, bytes_stored, files_registered)
     sf_audit.prep_for_audit()
