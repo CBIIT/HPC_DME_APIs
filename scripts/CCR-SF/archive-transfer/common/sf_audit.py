@@ -84,7 +84,7 @@ class SFAudit(object):
         archived = False
         includes = open(self.includes_path, "a")
 
-        if (not dryrun):
+        if not dryrun:
 
             # Get size of file in bytes
             if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
