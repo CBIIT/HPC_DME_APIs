@@ -29,7 +29,7 @@ def main(args):
     audit_dir = args[4]
 
     # If this is a dryrun or not
-    dryrun = args[5]
+    dryrun = args[5].lower() == 'true'
 
     bytes_stored = 0
     files_registered = 0
@@ -52,7 +52,7 @@ def main(args):
         logging.info("Processing file: " + tarfile_path)
 
         # Extract all files and store in extract_path directory
-        if (dryrun == False):
+        if not dryrun:
             SFUtils.extract_files_from_tar(tarfile_path, extract_path)
 
         if (tarfile_name.endswith("supplement.tar") or 'singlecell' in tarfile_name):
@@ -186,7 +186,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
 
     #Run the command
     response_header = "collection-registration-response-header.tmp"
-    if (dryrun == False):
+    if not dryrun:
         os.system("rm - f " + response_header + " 2>/dev/null")
         os.system(command)
 
@@ -220,7 +220,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
     sf_audit.audit_command(command)
 
     # Run the command
-    if(dryrun):
+    if not dryrun:
         response_header = "dataObject-registration-response-header.tmp"
         os.system("rm - f " + response_header + " 2>/dev/null")
         os.system(command)
