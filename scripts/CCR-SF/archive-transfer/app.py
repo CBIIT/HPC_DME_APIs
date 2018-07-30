@@ -46,10 +46,6 @@ def main(args):
 
         tarfile_name = line_filepath.rstrip()
 
-        tarfile_contents = get_tarball_contents(tarfile_name, tarfile_dir, sf_audit)
-        if tarfile_contents is None:
-            continue
-
         tarfile_path = tarfile_dir + '/' + tarfile_name.rstrip()
 
         # This is a valid tarball, so process
@@ -68,6 +64,10 @@ def main(args):
             logging.info('Done processing file: ' + tarfile_path)
 
             continue;
+
+        tarfile_contents = get_tarball_contents(tarfile_name, tarfile_dir, sf_audit)
+        if tarfile_contents is None:
+            continue
 
         #Extract all files and store in extract_path directory
         if(dryrun == False):
