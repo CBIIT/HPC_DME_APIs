@@ -39,7 +39,7 @@ def main(args):
         if(args[7] is not None):
             files_registered = args[7]
 
-    sf_audit = SFAudit(audit_dir, bytes_stored, files_registered)
+    sf_audit = SFAudit(audit_dir, extract_path, bytes_stored, files_registered)
     sf_audit.prep_for_audit()
 
     for line_filepath in open(tarfile_list).readlines():
@@ -51,7 +51,12 @@ def main(args):
         # This is a valid tarball, so process
         logging.info("Processing file: " + tarfile_path)
 
+        # Extract all files and store in extract_path directory
+        if (dryrun == False):
+            SFUtils.extract_files_from_tar(tarfile_path, extract_path)
+
         if (tarfile_name.endswith("supplement.tar") or 'singlecell' in tarfile_name):
+
             # Register PI collection
             register_collection(tarfile_path, "PI_Lab", tarfile_name, False, dryrun)
 
@@ -63,15 +68,14 @@ def main(args):
 
             logging.info('Done processing file: ' + tarfile_path)
 
+            # delete the extracted tar file
+            os.system("rm -rf " + extract_path + "*")
+
             continue;
 
         tarfile_contents = SFUtils.get_tarball_contents(tarfile_name, tarfile_dir)
         if tarfile_contents is None:
             continue
-            
-        # Extract all files and store in extract_path directory
-        if (dryrun == False):
-            SFUtils.extract_files_from_tar(tarfile_path, extract_path)
 
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
@@ -87,7 +91,6 @@ def main(args):
                 sf_audit.record_exclusion(tarfile_name, line.rstrip(),
                     'Path contains substring from exclusion list')
                 continue
-
 
             filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
 

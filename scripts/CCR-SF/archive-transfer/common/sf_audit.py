@@ -8,12 +8,13 @@ from common.sf_utils import SFUtils
 class SFAudit(object):
 
 
-    def __init__(self, audit_path, byte_count = 0, file_count = 0):
+    def __init__(self, audit_path, extract_path, byte_count = 0, file_count = 0):
         self.audit_path = audit_path
+        self.extract_path = extract_path
         self.byte_count = byte_count
         self.file_count = file_count
         self.includes_csv_path = audit_path + "/sf_included.csv"
-        self.excludes_csv_path = audit_path + "/sf_excluded_csv"
+        self.excludes_csv_path = audit_path + "/sf_excluded.csv"
         self.includes_path = audit_path + "/registered_files"
         self.excludes_path = audit_path + "/excluded_files"
         self.logging_path = audit_path + "/ccr-sf_transfer"
@@ -86,7 +87,10 @@ class SFAudit(object):
         if (not dryrun):
 
             # Get size of file in bytes
-            filesize = os.path.getsize(fullpath)
+            if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
+                filesize = os.system('du -u ' + self.extract_path)
+            else:
+                filesize = os.path.getsize(fullpath)
             logging.info("\nFile size = {0}\n".format(filesize))
 
             # Record the result
