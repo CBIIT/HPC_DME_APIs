@@ -173,13 +173,13 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
 
     #Create the metadata json file
     file_name = filepath.split("/")[-1]
-    json_file_name = type + "_" + file_name + ".json"
-    with open(json_path + "/" + json_file_name, "w") as fp:
+    json_file_name = json_path + '/' + type + "_" + file_name + ".json"
+    with open(json_file_name, "w") as fp:
         json.dump(collection_metadata, fp)
 
     #Prepare the command
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
-    command = "dm_register_collection " + json_path + "/" + json_file_name + " " + archive_path
+    command = "dm_register_collection " + json_file_name + " " + archive_path
 
     #Audit the command
     logging.info(command)
@@ -214,7 +214,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
     #Prepare the command
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
     archive_path = archive_path + '/' + file_name
-    command = "dm_register_dataobject " + json_path + "/" + json_file_name + " " + archive_path + " " + fullpath
+    command = "dm_register_dataobject " + json_file_name + " " + archive_path + " " + fullpath
 
     #Record the command
     sf_audit.audit_command(command)
