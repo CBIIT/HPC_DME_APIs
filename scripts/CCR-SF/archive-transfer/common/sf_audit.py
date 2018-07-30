@@ -88,7 +88,7 @@ class SFAudit(object):
 
             # Get size of file in bytes
             if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
-                filesize = os.system('du -u ' + self.extract_path)
+                filesize = os.system('du -b ' + self.extract_path)
             else:
                 filesize = os.path.getsize(fullpath)
             logging.info("\nFile size = {0}\n".format(filesize))
