@@ -1,6 +1,7 @@
 import logging
 import time
 import os
+import commands
 
 from metadata.sf_helper import SFHelper
 from common.sf_utils import SFUtils
@@ -88,7 +89,8 @@ class SFAudit(object):
 
             # Get size of file in bytes
             if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
-                filesize = os.system('du -sb ' + self.extract_path).rsplit()[0]
+                status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
+                filesize = int(output.split()[0])
             else:
                 filesize = os.path.getsize(fullpath)
             logging.info("\nFile size = {0}\n".format(filesize))
