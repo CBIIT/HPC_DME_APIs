@@ -179,7 +179,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
 
     #Prepare the command
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
-    command = "dm_register_collection" + json_path + "/" + json_file_name + " " + archive_path
+    command = "dm_register_collection " + json_path + "/" + json_file_name + " " + archive_path
 
     #Audit the command
     logging.info(command)
