@@ -391,15 +391,15 @@ public interface HpcDataManagementBusService {
   public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
 
   /**
-   * Rename a path of either a data object or a collection.
+   * Move a path of either a data object or a collection.
    *
    * @param path The path to rename.
    * @param pathType If true, the path is a of a collection, otherwise the path is of a data
    *     object.
-   * @param name The new path name.
+   * @param toPath The path to move to.
    * @throws HpcException on service failure.
    */
-  public void renamePath(String path, boolean pathType, String name) throws HpcException;
+  public void movePath(String path, boolean pathType, String toPath) throws HpcException;
 
   /**
    * Rename a list of data objects and/or collections.

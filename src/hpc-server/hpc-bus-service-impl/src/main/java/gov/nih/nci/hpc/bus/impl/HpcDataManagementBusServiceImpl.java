@@ -1395,15 +1395,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   @Override
-  public void renamePath(String path, boolean pathType, String name) throws HpcException {
+  public void movePath(String path, boolean pathType, String toPath) throws HpcException {
     // Input validation.
-    if (StringUtils.isEmpty(path) || StringUtils.isEmpty(name)) {
+    if (StringUtils.isEmpty(path) || StringUtils.isEmpty(toPath)) {
       throw new HpcException(
-          "Undefined path or name in rename request: [path: " + path + "] [Name: " + name + "]",
+          "Undefined path or toPath in move request: [path: " + path + "] [toPath: " + toPath + "]",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
     
-    dataManagementService.rename(path, name, Optional.of(pathType));
+    // Move the path.
+    dataManagementService.move(path, toPath, Optional.of(pathType));
   }
 
   @Override
@@ -1447,7 +1448,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               renameResponse.setRequest(renameRequest);
 
               try {
-                dataManagementService.rename(
+                dataManagementService.move(
                     renameRequest.getPath(), renameRequest.getName(), Optional.ofNullable(null));
 
                 // Rename request is successful.

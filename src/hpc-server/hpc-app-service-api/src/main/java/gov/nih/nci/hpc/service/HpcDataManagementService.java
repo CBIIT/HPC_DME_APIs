@@ -68,7 +68,7 @@ public interface HpcDataManagementService {
   public boolean createFile(String path) throws HpcException;
 
   /**
-   * Delete a path (data object or directory).
+   * Delete a path (data object or collection).
    *
    * @param path The path to delete.
    * @param quiet If set to true, no exception is thrown in case of a failure.
@@ -77,15 +77,15 @@ public interface HpcDataManagementService {
   public void delete(String path, boolean quiet) throws HpcException;
 
   /**
-   * Rename a path (data object or directory).
+   * Move a path (data object or collection).
    *
    * @param path The data object or collection path to rename.
-   * @param name The new name.
+   * @param toPath The path to move to.
    * @param pathTypeValidation (Optional) True to validate if the path is a collection, False to validate if
-   *     it is a data object. If null - no validation is performed (other than the path exists)
+   *     it is a data object. If null - no path type validation is performed.
    * @throws HpcException on service failure.
    */
-  public void rename(String path, String name, Optional<Boolean> pathTypeValidation) throws HpcException;
+  public void move(String path, String toPath, Optional<Boolean> pathTypeValidation) throws HpcException;
 
   /**
    * Add an audit record in the DB Note: Currently, there is no 'audit trail' functionality

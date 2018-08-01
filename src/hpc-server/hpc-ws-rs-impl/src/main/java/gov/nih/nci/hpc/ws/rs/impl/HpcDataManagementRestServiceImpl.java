@@ -210,9 +210,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response renameCollection(String path, String name) {
+  public Response moveCollection(String path, String toPath) {
     try {
-      dataManagementBusService.renamePath(toNormalizedPath(path), true, name);
+      dataManagementBusService.movePath(toNormalizedPath(path), true, toNormalizedPath(toPath));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -437,9 +437,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
   
   @Override
-  public Response renameDataObject(String path, String name) {
+  public Response moveDataObject(String path, String toPath) {
     try {
-      dataManagementBusService.renamePath(toNormalizedPath(path), false, name);
+      dataManagementBusService.movePath(toNormalizedPath(path), false, toNormalizedPath(toPath));
 
     } catch (HpcException e) {
       return errorResponse(e);
