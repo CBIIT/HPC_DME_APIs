@@ -126,15 +126,15 @@ public interface HpcDataManagementRestService {
       @PathParam("path") String path, @QueryParam("recursive") Boolean recursive);
 
   /**
-   * Rename a collection.
+   * Move a collection.
    *
    * @param path The collection path.
-   * @param name The new collection name.
+   * @param toPath The path to move to.
    * @return The REST service response.
    */
   @POST
-  @Path("/collection/{path:.*}/rename/{name}")
-  public Response renameCollection(@PathParam("path") String path, @PathParam("name") String name);
+  @Path("/collection/{path:.*}/move/{toPath}")
+  public Response moveCollection(@PathParam("path") String path, @PathParam("toPath") String toPath);
 
   /**
    * Set a collection's permissions.
@@ -310,15 +310,15 @@ public interface HpcDataManagementRestService {
   public Response deleteDataObject(@PathParam("path") String path);
 
   /**
-   * Rename a data object.
+   * Move a data object.
    *
    * @param path The data object path.
-   * @param name The new data object name.
+   * @param toPath The path to move to.
    * @return The REST service response.
    */
   @POST
-  @Path("/dataObject/{path:.*}/rename/{name}")
-  public Response renameDataObject(@PathParam("path") String path, @PathParam("name") String name);
+  @Path("/dataObject/{path:.*}/move/{toPath}")
+  public Response moveDataObject(@PathParam("path") String path, @PathParam("toPath") String toPath);
 
   /**
    * Set a data object's permissions.

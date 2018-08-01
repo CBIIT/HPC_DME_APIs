@@ -285,7 +285,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   }
 
   @Override
-  public void rename(String path, String name, Optional<Boolean> pathTypeValidation)
+  public void move(String path, String toPath, Optional<Boolean> pathTypeValidation)
       throws HpcException {
     Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 
@@ -307,14 +307,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       }
     }
 
-    // Validate the new name.
-    if (name.indexOf('/') >= 0) {
-      throw new HpcException("Invalid name", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    // Build path of the renamed data object or collection.
-    String toPath = path.substring(0, path.lastIndexOf('/') + 1) + name;
-
     // Validate the renamed path doesn't exist already.
     HpcPathAttributes toPathAttributes =
         dataManagementProxy.getPathAttributes(authenticatedToken, toPath);
@@ -325,6 +317,23 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     // Perform the rename request.
     dataManagementProxy.move(authenticatedToken, path, toPath);
+
+    // Validate the hierarchy.
+    try {
+      // Calculate the validation path. It's the collection containing the data object if we move a data object, 
+      // or the collection itself if we move a collection.
+      String validationPath =
+          pathAttributes.getIsFile() ? toPath.substring(0, toPath.lastIndexOf('/')) : toPath;
+      validateHierarchy(
+          validationPath,
+          this.findDataManagementConfigurationId(toPath),
+          pathAttributes.getIsFile());
+
+    } catch (HpcException e) {
+      // Hierarchy is invalid. Revert and rethrow the exception.
+      dataManagementProxy.move(authenticatedToken, toPath, path);
+      throw (e);
+    }
   }
 
   @Override
