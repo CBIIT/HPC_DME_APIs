@@ -47,7 +47,6 @@
 					<sec:excludeProtocol>SSLv2</sec:excludeProtocol>
 					<sec:excludeProtocol>SSLv3</sec:excludeProtocol>
 					<sec:excludeProtocol>TLSv1</sec:excludeProtocol>
-					<sec:excludeProtocol>TLSv1.1</sec:excludeProtocol>
 				</sec:excludeProtocols>
 			</httpj:tlsServerParameters>
 		</httpj:identifiedTLSServerParameters>
