@@ -70,8 +70,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDT
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -92,12 +92,12 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcRenameRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcRenameResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
@@ -1395,76 +1395,77 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   @Override
-  public void movePath(String path, boolean pathType, String toPath) throws HpcException {
+  public void movePath(String path, boolean pathType, String destinationPath) throws HpcException {
     // Input validation.
-    if (StringUtils.isEmpty(path) || StringUtils.isEmpty(toPath)) {
+    if (StringUtils.isEmpty(path) || StringUtils.isEmpty(destinationPath)) {
       throw new HpcException(
-          "Undefined path or toPath in move request: [path: " + path + "] [toPath: " + toPath + "]",
+          "Empty path or destinationPath in move request: [path: " + path + "] [destinationPath: " + destinationPath + "]",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    
+
     // Move the path.
-    dataManagementService.move(path, toPath, Optional.of(pathType));
+    dataManagementService.move(path, destinationPath, Optional.of(pathType));
   }
 
   @Override
-  public HpcBulkRenameResponseDTO renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest)
+  public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest)
       throws HpcException {
     // Input validation.
-    if (bulkRenameRequest == null) {
-      throw new HpcException("Null rename request", HpcErrorType.INVALID_REQUEST_INPUT);
+    if (bulkMoveRequest == null) {
+      throw new HpcException("Null move request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    if (bulkRenameRequest.getRenameRequests().isEmpty()) {
+    if (bulkMoveRequest.getMoveRequests().isEmpty()) {
       throw new HpcException(
-          "No rename request items in bulk request", HpcErrorType.INVALID_REQUEST_INPUT);
+          "No move request items in bulk request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Validate rename requests.
-    for (HpcRenameRequestDTO renameRequest : bulkRenameRequest.getRenameRequests()) {
-      if (StringUtils.isEmpty(renameRequest.getPath())
-          || StringUtils.isEmpty(renameRequest.getName())) {
+    // Validate the move requests.
+    for (HpcMoveRequestDTO moveRequest : bulkMoveRequest.getMoveRequests()) {
+      if (StringUtils.isEmpty(moveRequest.getSourcePath())
+          || StringUtils.isEmpty(moveRequest.getDestinationPath())) {
         throw new HpcException(
-            "Undefined path or name in rename request: [path: "
-                + renameRequest.getPath()
+            "Empty source/destination path in move request: [path: "
+                + moveRequest.getSourcePath()
                 + "] [Name: "
-                + renameRequest.getName()
+                + moveRequest.getDestinationPath()
                 + "]",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
-    // Perform the rename requests.
-    HpcBulkRenameResponseDTO bulkRenameResponse = new HpcBulkRenameResponseDTO();
-    bulkRenameRequest
-        .getRenameRequests()
+    // Perform the move requests.
+    HpcBulkMoveResponseDTO bulkMoveResponse = new HpcBulkMoveResponseDTO();
+    bulkMoveRequest
+        .getMoveRequests()
         .forEach(
-            renameRequest -> {
-              // Normalize the path.
-              renameRequest.setPath(toNormalizedPath(renameRequest.getPath()));
+            moveRequest -> {
+              // Normalize the paths.
+              moveRequest.setSourcePath(toNormalizedPath(moveRequest.getSourcePath()));
+              moveRequest.setDestinationPath(toNormalizedPath(moveRequest.getDestinationPath()));
 
-              // Create a response for this rename request.
-              HpcRenameResponseDTO renameResponse = new HpcRenameResponseDTO();
-              renameResponse.setRequest(renameRequest);
+              // Create a response for this move request.
+              HpcMoveResponseDTO moveResponse = new HpcMoveResponseDTO();
+              moveResponse.setRequest(moveRequest);
 
               try {
                 dataManagementService.move(
-                    renameRequest.getPath(), renameRequest.getName(), Optional.ofNullable(null));
+                    moveRequest.getSourcePath(), moveRequest.getDestinationPath(), Optional.ofNullable(null));
 
-                // Rename request is successful.
-                renameResponse.setResult(true);
+                // Move request is successful.
+                moveResponse.setResult(true);
 
               } catch (HpcException e) {
-                // Rename request failed.
-                renameResponse.setResult(false);
-                renameResponse.setMessage(e.getMessage());
+                // Move request failed.
+                moveResponse.setResult(false);
+                moveResponse.setMessage(e.getMessage());
               }
 
               // Add this response to the bulk response.
-              bulkRenameResponse.getRenameResponses().add(renameResponse);
+              bulkMoveResponse.getMoveResponses().add(moveResponse);
             });
 
-    return bulkRenameResponse;
+    return bulkMoveResponse;
   }
 
   // ---------------------------------------------------------------------//
@@ -2101,7 +2102,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
         new HpcDataObjectRegistrationItemDTO();
     dataObjectRegistration.setPath(basePath + scanItem.getFilePath());
-    dataObjectRegistration.getDataObjectMetadataEntries().addAll(metadataEntries.getSelfMetadataEntries());
+    dataObjectRegistration
+        .getDataObjectMetadataEntries()
+        .addAll(metadataEntries.getSelfMetadataEntries());
     dataObjectRegistration.setCreateParentCollections(true);
     dataObjectRegistration
         .getParentCollectionMetadataEntries()
@@ -2267,13 +2270,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       } else {
         item.getTask().setPercentComplete(null);
         taskDTO.getFailedItems().add(item.getTask());
-        taskDTO.getFailedItemsRequest().add(dataObjectRegistrationRequestToDTO(item.getRequest(), item.getTask().getPath()));
+        taskDTO
+            .getFailedItemsRequest()
+            .add(dataObjectRegistrationRequestToDTO(item.getRequest(), item.getTask().getPath()));
       }
     }
   }
 
-  private HpcDataObjectRegistrationItemDTO dataObjectRegistrationRequestToDTO(HpcDataObjectRegistrationRequest request, String path)
-  {
+  private HpcDataObjectRegistrationItemDTO dataObjectRegistrationRequestToDTO(
+      HpcDataObjectRegistrationRequest request, String path) {
     HpcDataObjectRegistrationItemDTO dto = new HpcDataObjectRegistrationItemDTO();
     dto.setCallerObjectId(request.getCallerObjectId());
     dto.setCreateParentCollections(request.getCreateParentCollections());
@@ -2283,7 +2288,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dto.getParentCollectionMetadataEntries().addAll(request.getParentCollectionMetadataEntries());
     return dto;
   }
-  
+
   private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
       throws HpcException {
     // Input validation.

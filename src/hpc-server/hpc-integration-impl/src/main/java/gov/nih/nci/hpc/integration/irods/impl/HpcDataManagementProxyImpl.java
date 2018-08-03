@@ -180,17 +180,17 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   }
 
   @Override
-  public boolean move(Object authenticatedToken, String fromPath, String toPath)
+  public boolean move(Object authenticatedToken, String sourcePath, String destinationPath)
       throws HpcException {
-    IRODSFile irodsFromPath = null;
-    IRODSFile irodsToPath = null;
+    IRODSFile irodsSourcePath = null;
+    IRODSFile irodsDestinationPath = null;
 
     try {
       IRODSFileFactory irodsFileFactory = irodsConnection.getIRODSFileFactory(authenticatedToken);
-      irodsFromPath = irodsFileFactory.instanceIRODSFile(getAbsolutePath(fromPath));
-      irodsToPath = irodsFileFactory.instanceIRODSFile(getAbsolutePath(toPath));
+      irodsSourcePath = irodsFileFactory.instanceIRODSFile(getAbsolutePath(sourcePath));
+      irodsDestinationPath = irodsFileFactory.instanceIRODSFile(getAbsolutePath(destinationPath));
 
-      return irodsFromPath.renameTo(irodsToPath);
+      return irodsSourcePath.renameTo(irodsDestinationPath);
 
     } catch (Exception e) {
       throw new HpcException(
@@ -200,8 +200,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           e);
 
     } finally {
-      closeIRODSFile(irodsFromPath);
-      closeIRODSFile(irodsToPath);
+      closeIRODSFile(irodsSourcePath);
+      closeIRODSFile(irodsDestinationPath);
     }
   }
 

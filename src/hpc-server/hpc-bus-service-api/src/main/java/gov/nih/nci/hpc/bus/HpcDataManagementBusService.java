@@ -14,8 +14,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -393,21 +393,20 @@ public interface HpcDataManagementBusService {
   /**
    * Move a path of either a data object or a collection.
    *
-   * @param path The path to rename.
-   * @param pathType If true, the path is a of a collection, otherwise the path is of a data
-   *     object.
-   * @param toPath The path to move to.
+   * @param path The path to move.
+   * @param pathType If true, the path is a of a collection, otherwise the path is of a data object.
+   * @param destinationPath The destination path to move to.
    * @throws HpcException on service failure.
    */
-  public void movePath(String path, boolean pathType, String toPath) throws HpcException;
+  public void movePath(String path, boolean pathType, String destinationPath) throws HpcException;
 
   /**
-   * Rename a list of data objects and/or collections.
+   * Move a list of data objects and/or collections.
    *
-   * @param bulkRenameRequest The bulk data objects / collections rename request.
-   * @return A response DTO containing result of each rename request on the list.
+   * @param bulkMoveRequest The bulk data objects / collections move request.
+   * @return A response DTO containing result of each move request on the list.
    * @throws HpcException on service failure.
    */
-  public HpcBulkRenameResponseDTO renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest)
+  public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest)
       throws HpcException;
 }

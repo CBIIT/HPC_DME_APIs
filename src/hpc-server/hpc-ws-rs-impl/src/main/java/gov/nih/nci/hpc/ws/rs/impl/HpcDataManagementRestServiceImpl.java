@@ -30,8 +30,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -210,9 +210,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response moveCollection(String path, String toPath) {
+  public Response moveCollection(String path, String destinationPath) {
     try {
-      dataManagementBusService.movePath(toNormalizedPath(path), true, toNormalizedPath(toPath));
+      dataManagementBusService.movePath(toNormalizedPath(path), true, toNormalizedPath(destinationPath));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -437,9 +437,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
   
   @Override
-  public Response moveDataObject(String path, String toPath) {
+  public Response moveDataObject(String path, String destinationPath) {
     try {
-      dataManagementBusService.movePath(toNormalizedPath(path), false, toNormalizedPath(toPath));
+      dataManagementBusService.movePath(toNormalizedPath(path), false, toNormalizedPath(destinationPath));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -550,16 +550,16 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest) {
-    HpcBulkRenameResponseDTO bulkRenameResponse = null;
+  public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) {
+    HpcBulkMoveResponseDTO bulkMoveResponse = null;
     try {
-      bulkRenameResponse = dataManagementBusService.renamePaths(bulkRenameRequest);
+      bulkMoveResponse = dataManagementBusService.movePaths(bulkMoveRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
     }
 
-    return okResponse(bulkRenameResponse, true);
+    return okResponse(bulkMoveResponse, true);
   }
 
   //---------------------------------------------------------------------//

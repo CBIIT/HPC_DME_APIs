@@ -285,53 +285,61 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   }
 
   @Override
-  public void move(String path, String toPath, Optional<Boolean> pathTypeValidation)
+  public void move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
       throws HpcException {
     Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
 
-    // Validate the renamed path exists.
-    HpcPathAttributes pathAttributes =
-        dataManagementProxy.getPathAttributes(authenticatedToken, path);
-    if (!pathAttributes.getExists()) {
-      throw new HpcException("Path doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
+    // Validate the source path exists.
+    HpcPathAttributes sourcePathAttributes =
+        dataManagementProxy.getPathAttributes(authenticatedToken, sourcePath);
+    if (!sourcePathAttributes.getExists()) {
+      throw new HpcException("Source path doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Optionally perform path type validation.
     if (pathTypeValidation.isPresent()) {
       if (pathTypeValidation.get()) {
-        if (!pathAttributes.getIsDirectory()) {
-          throw new HpcException("Path is not of a collection", HpcErrorType.INVALID_REQUEST_INPUT);
+        if (!sourcePathAttributes.getIsDirectory()) {
+          throw new HpcException("Source path is not of a collection", HpcErrorType.INVALID_REQUEST_INPUT);
         }
-      } else if (!pathAttributes.getIsFile()) {
-        throw new HpcException("Path is not a of data object", HpcErrorType.INVALID_REQUEST_INPUT);
+      } else if (!sourcePathAttributes.getIsFile()) {
+        throw new HpcException("Source path is not of a data object", HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
-    // Validate the renamed path doesn't exist already.
-    HpcPathAttributes toPathAttributes =
-        dataManagementProxy.getPathAttributes(authenticatedToken, toPath);
-    if (toPathAttributes.getExists()) {
-      throw new HpcException(
-          "Rename destination already exists", HpcErrorType.INVALID_REQUEST_INPUT);
+    // Validate the destination path doesn't exist already.
+    HpcPathAttributes destinationPathAttributes =
+        dataManagementProxy.getPathAttributes(authenticatedToken, destinationPath);
+    if (destinationPathAttributes.getExists()) {
+      throw new HpcException("Destination path already exists", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Perform the rename request.
-    dataManagementProxy.move(authenticatedToken, path, toPath);
+    // Validate the destination parent path exists. i.e. we enforce the move is to an existing collection.
+    String destinationParentPath = destinationPath.substring(0, destinationPath.lastIndexOf('/'));
+    HpcPathAttributes destinationParentPathAttributes =
+        dataManagementProxy.getPathAttributes(authenticatedToken, destinationParentPath);
+    if (!destinationParentPathAttributes.getExists()) {
+      throw new HpcException(
+          "Destination parent path doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Perform the move request.
+    dataManagementProxy.move(authenticatedToken, sourcePath, destinationPath);
 
     // Validate the hierarchy.
     try {
-      // Calculate the validation path. It's the collection containing the data object if we move a data object, 
+      // Calculate the validation path. It's the collection containing the data object if we move a data object,
       // or the collection itself if we move a collection.
-      String validationPath =
-          pathAttributes.getIsFile() ? toPath.substring(0, toPath.lastIndexOf('/')) : toPath;
+      String hierachyValidationPath =
+          sourcePathAttributes.getIsFile() ? destinationParentPath : destinationPath;
       validateHierarchy(
-          validationPath,
-          this.findDataManagementConfigurationId(toPath),
-          pathAttributes.getIsFile());
+          hierachyValidationPath,
+          this.findDataManagementConfigurationId(destinationPath),
+          sourcePathAttributes.getIsFile());
 
     } catch (HpcException e) {
       // Hierarchy is invalid. Revert and rethrow the exception.
-      dataManagementProxy.move(authenticatedToken, toPath, path);
+      dataManagementProxy.move(authenticatedToken, destinationPath, sourcePath);
       throw (e);
     }
   }
