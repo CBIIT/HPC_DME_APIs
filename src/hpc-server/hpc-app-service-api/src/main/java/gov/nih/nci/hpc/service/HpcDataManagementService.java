@@ -79,13 +79,14 @@ public interface HpcDataManagementService {
   /**
    * Move a path (data object or collection).
    *
-   * @param path The data object or collection path to rename.
-   * @param toPath The path to move to.
-   * @param pathTypeValidation (Optional) True to validate if the path is a collection, False to validate if
-   *     it is a data object. If null - no path type validation is performed.
+   * @param sourcePath The data object or collection path to move.
+   * @param destinationPath The destination path to move to.
+   * @param pathTypeValidation (Optional) True to validate if the path is a collection, False to
+   *     validate if it is a data object. If null - no path type validation is performed.
    * @throws HpcException on service failure.
    */
-  public void move(String path, String toPath, Optional<Boolean> pathTypeValidation) throws HpcException;
+  public void move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
+      throws HpcException;
 
   /**
    * Add an audit record in the DB Note: Currently, there is no 'audit trail' functionality

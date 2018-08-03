@@ -82,12 +82,12 @@ public interface HpcDataManagementProxy {
    * Move a path (data object or directory).
    *
    * @param authenticatedToken An authenticated token.
-   * @param fromPath The move source.
-   * @param toPath The move destination.
+   * @param sourcePath The move source path.
+   * @param destinationPath The move destination path.
    * @return true if the data object object or directory was successfully moved.
    * @throws HpcException on data management system failure.
    */
-  public boolean move(Object authenticatedToken, String fromPath, String toPath)
+  public boolean move(Object authenticatedToken, String sourcePath, String destinationPath)
       throws HpcException;
 
   /**

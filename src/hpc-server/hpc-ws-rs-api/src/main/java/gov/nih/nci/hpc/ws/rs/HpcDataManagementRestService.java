@@ -24,7 +24,7 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkRenameRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -129,12 +129,12 @@ public interface HpcDataManagementRestService {
    * Move a collection.
    *
    * @param path The collection path.
-   * @param toPath The path to move to.
+   * @param destinationPath The destination path to move to.
    * @return The REST service response.
    */
   @POST
-  @Path("/collection/{path:.*}/move/{toPath}")
-  public Response moveCollection(@PathParam("path") String path, @PathParam("toPath") String toPath);
+  @Path("/collection/{path:.*}/move/{destinationPath}")
+  public Response moveCollection(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath);
 
   /**
    * Set a collection's permissions.
@@ -313,12 +313,12 @@ public interface HpcDataManagementRestService {
    * Move a data object.
    *
    * @param path The data object path.
-   * @param toPath The path to move to.
+   * @param destinationPath The destination path to move to.
    * @return The REST service response.
    */
   @POST
-  @Path("/dataObject/{path:.*}/move/{toPath}")
-  public Response moveDataObject(@PathParam("path") String path, @PathParam("toPath") String toPath);
+  @Path("/dataObject/{path:.*}/move/{desatinationPath}")
+  public Response moveDataObject(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath);
 
   /**
    * Set a data object's permissions.
@@ -406,14 +406,14 @@ public interface HpcDataManagementRestService {
   public Response getDataManagementModel();
 
   /**
-   * Rename a list of data objects and/or collections.
+   * Move a list of data objects and/or collections.
    *
-   * @param bulkRenameRequest The bulk data objects / collections rename request.
-   * @return The REST service response w/ HpcBulkRenameResponseDTO entity.
+   * @param bulkMoveRequest The bulk data objects / collections move request.
+   * @return The REST service response w/ HpcBulkMoveResponseDTO entity.
    */
   @POST
-  @Path("/rename")
+  @Path("/move")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-  public Response renamePaths(HpcBulkRenameRequestDTO bulkRenameRequest);
+  public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
 }
