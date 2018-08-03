@@ -317,7 +317,7 @@ public interface HpcDataManagementRestService {
    * @return The REST service response.
    */
   @POST
-  @Path("/dataObject/{path:.*}/move/{desatinationPath}")
+  @Path("/dataObject/{path:.*}/move/{destinationPath}")
   public Response moveDataObject(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath);
 
   /**
