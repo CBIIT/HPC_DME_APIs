@@ -1526,8 +1526,7 @@ public class HpcClientUtil {
         taskId = downloadDTO.getTaskId();
 
       result.setMessage(
-          "<strong>Asynchronous download request is submitted successfully! <br>TaskId: " + taskId
-              + "<strong>");
+              "Asynchronous download request is submitted successfully! Task Id: <a href='downloadtask?type=DATA_OBJECT&taskId=" + taskId +"'>"+taskId+"</a>");
       return result;
     } else {
       ObjectMapper mapper = new ObjectMapper();
