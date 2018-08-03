@@ -147,9 +147,17 @@
 
 							</div>
 							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
+								<div class="col-md-3">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
+									<input type="hidden" id="inProgressItems" name="inProgressItems" value="true"/>
 								</h2>
+								</div>
+								<div class="col-md-3 col-md-offset-6">
+								<h2>
+									Refreshing in <strong id="refreshtimer">&nbsp;</strong> secs
+								</h2>
+								</div>
 							</div>
 							<div class="panel-body"
 								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
@@ -184,9 +192,7 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6">
 								<h2>
-								<!-- 
 									<strong> <a id="uploadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryUpload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}" ><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
-								-->
 								</h2>
 								</div>
 							</div>
@@ -282,11 +288,23 @@ function retryUpload(task, taskType)
 	
 }
 
+var counter = 11;
+var x = setInterval(function() {
+	var inProgressItems = document.getElementById("inProgressItems");
+	if(inProgressItems == null || inProgressItems.value != "true") {
+		clearInterval(pollPercentComplete);
+		return;
+	}
+
+	counter--;
+	document.getElementById("refreshtimer").innerHTML = " "+counter;	
+}, 1000);
+
 var pollPercentComplete = setInterval(
 function getPercentComplete() {
 	
-	var regComplete = document.getElementById("regComplete").innerHTML;
-	if(regComplete == "true") {
+	var inProgressItems = document.getElementById("inProgressItems");
+	if(inProgressItems == null || inProgressItems.value != "true") {
 		clearInterval(pollPercentComplete);
 		return;
 	}
@@ -302,6 +320,7 @@ function getPercentComplete() {
 			//location.reload();
 			var status = $("#statusWrapper", msg);
 			$("#statusWrapper").html(status);
+			counter = 11;
 		},
 		error : function(e) {
 			console.log('ERROR: ', e);
