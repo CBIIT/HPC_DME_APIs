@@ -104,13 +104,14 @@ class SFAudit(object):
                         archived = True
 
         else:
-            archived = True
             filesize = 0
+            archived = True
 
         # Compute total number of files registered so far, and total bytes
         if archived:
             self.inc_file()
             self.inc_bytes(filesize)
+            includes.write("\nFile size = {0} \n".format(filesize))
             includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(self.file_count, self.byte_count))
             self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize)
         else:
