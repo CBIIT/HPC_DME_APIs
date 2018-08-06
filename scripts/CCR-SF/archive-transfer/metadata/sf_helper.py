@@ -188,6 +188,8 @@ class SFHelper(object):
     def get_run_name(tarfile):
         #Rule: String before the '.tar' in the tar filename
         run_name = tarfile.split(".")[0]
+        # Remove '_supplement' from the project_name if present
+        run_name = run_name.split("_supplement")[0]
         # Remove '_lane' from the project_name if present
         run_name = run_name.split("_lane")[0]
         return run_name
