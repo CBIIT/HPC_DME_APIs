@@ -33,9 +33,10 @@ class SFUtils(object):
         logging.info(command)
         if (os.system(command) == 0):
             logging.info("Extracted tarball " + tarfile_path)
+            return True
         else:
             logging.fatal("ERROR: Unable to untar tarfile_path")
-            return "error"
+            return False
 
 
 
