@@ -100,7 +100,7 @@ class SFAudit(object):
             with open(response_header) as f:
                 for line in f:
                     logging.info(line)
-                    if ('200' in line or '201' in line):
+                    if ('200 OK' in line or '201 Created' in line):
                         archived = True
 
         else:
