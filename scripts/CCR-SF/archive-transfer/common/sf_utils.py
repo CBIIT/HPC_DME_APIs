@@ -31,8 +31,11 @@ class SFUtils(object):
         # extract files from the archive
         command = "tar -xf " + tarfile_path + " -C " + extract_path
         logging.info(command)
-        os.system(command)
-        logging.info("Extracted tarball " + tarfile_path)
+        if (os.system(command) == 0):
+            logging.info("Extracted tarball " + tarfile_path)
+        else:
+            logging.fatal("ERROR: Unable to untar tarfile_path")
+            return "error"
 
 
 
