@@ -53,8 +53,7 @@ def main(args):
 
         # Extract all files and store in extract_path directory
         if not dryrun:
-            result = SFUtils.extract_files_from_tar(tarfile_path, extract_path)
-            if 'error' in result:
+            if not (SFUtils.extract_files_from_tar(tarfile_path, extract_path)):
                 # Something wrong with this file path, go to
                 # next one and check logs later
                 continue;
