@@ -88,11 +88,11 @@ class SFAudit(object):
         if not dryrun:
 
             # Get size of file in bytes
-            if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
-                status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
-                filesize = int(output.split()[0])
-            else:
-                filesize = os.path.getsize(fullpath)
+            #if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
+            #    status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
+            #    filesize = int(output.split()[0])
+            #else:
+            filesize = os.path.getsize(fullpath)
             logging.info("\nFile size = {0}\n".format(filesize))
 
             # Record the result
