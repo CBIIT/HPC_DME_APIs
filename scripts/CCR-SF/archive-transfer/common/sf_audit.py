@@ -111,11 +111,11 @@ class SFAudit(object):
         if archived:
             self.inc_file()
             self.inc_bytes(filesize)
-            includes.write("\nFile size = {0} \n".format(filesize))
-            includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(self.file_count, self.byte_count))
+            includes.write("\nFile size = {0}".format(filesize))
+            includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n\n".format(self.file_count, self.byte_count))
             self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize)
         else:
-            includes.write("Error registering file \n")
+            includes.write("\nError registering file \n\n")
 
         includes.close()
 
