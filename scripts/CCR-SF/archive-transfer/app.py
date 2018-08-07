@@ -51,13 +51,6 @@ def main(args):
         # This is a valid tarball, so process
         logging.info("Processing file: " + tarfile_path)
 
-        # Extract all files and store in extract_path directory
-        if not dryrun:
-            if not (SFUtils.extract_files_from_tar(tarfile_path, extract_path)):
-                # Something wrong with this file path, go to
-                # next one and check logs later
-                continue;
-
         if (tarfile_name.endswith("supplement.tar") or 'singlecell' in tarfile_name):
 
             # Register PI collection
@@ -71,14 +64,18 @@ def main(args):
 
             logging.info('Done processing file: ' + tarfile_path)
 
-            # delete the extracted file
-            os.system("rm -rf " + extract_path + "*")
-
             continue;
 
         tarfile_contents = get_tarball_contents(tarfile_name, tarfile_dir, sf_audit)
         if tarfile_contents is None:
             continue
+
+        # Extract all files and store in extract_path directory
+        if not dryrun:
+            if not (SFUtils.extract_files_from_tar(tarfile_path, extract_path)):
+                # Something wrong with this file path, go to
+                # next one and check logs later
+                continue;
 
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
