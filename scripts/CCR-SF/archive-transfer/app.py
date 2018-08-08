@@ -51,7 +51,7 @@ def main(args):
         # This is a valid tarball, so process
         logging.info("Processing file: " + tarfile_path)
 
-        if (tarfile_name.endswith("supplement.tar") or 'singlecell' in tarfile_name):
+        if (tarfile_name.endswith("supplement.tar") or 'singlecell' in tarfile_name or '10x' in tarfile_name):
 
             # Register PI collection
             register_collection(tarfile_path, "PI_Lab", tarfile_name, False, sf_audit, dryrun)
@@ -66,7 +66,7 @@ def main(args):
 
             continue;
 
-        tarfile_contents = get_tarball_contents(tarfile_name, tarfile_dir, sf_audit)
+        tarfile_contents = SFUtils.get_tarball_contents(tarfile_name, tarfile_dir, sf_audit)
         if tarfile_contents is None:
             continue
 
@@ -227,58 +227,6 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
 
     #Audit the result
     sf_audit.audit_upload(tarfile_name, filepath, fullpath, archive_path, dryrun)
-
-
-
-def get_tarball_contents(tarfile_name, tarfile_dir, sf_audit):
-
-    logging.info("Getting contents for: " + tarfile_name)
-    tarfile_name = tarfile_name.rstrip()
-
-    if '10x' in tarfile_name or 'lane123456' in tarfile_name:
-        excludes_str = ': Invalid tar file -  10x or lane123456'
-        sf_audit.record_exclusion(tarfile_name, "All files", excludes_str)
-        return
-
-
-    if not tarfile_name.endswith('tar.gz') and not tarfile_name.endswith('tar'):
-
-        # If this is not a .list, _archive.list, or .md5 file also, then record exclusion. Else
-        # just ignore, do not record because we may find the associated tar later
-        if (not tarfile_name.endswith('.list') and
-            not tarfile_name.endswith('list.txt') and
-            not tarfile_name.endswith('.md5')):
-            excludes_str = ': Invalid file format - not tar.gz or tar.gz.md5 or acceptable content list format'
-            sf_audit.record_exclusion(tarfile_name, "All files", excludes_str)
-        else:
-            logging.info(tarfile_name + ': No contents to extract')
-        return
-
-
-    tarfile_path = tarfile_dir + '/' + tarfile_name
-    contentFiles = [tarfile_path + '.list', tarfile_name + '.list', tarfile_path + '_archive.list',
-        tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '.list',
-        tarfile_path.split('.tar')[0] + '_archive.list', tarfile_path.split('.tar')[0] + '.archive.list',
-        tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.tar')[0] + '.list.txt',
-        tarfile_path.split('.gz')[0] + '_list.txt', tarfile_path.split('.tar')[0] + '_list.txt',
-        tarfile_path.split('.tar')[0] + '_file_list.txt']
-
-    tarfile_contents = None
-
-    for filename in contentFiles:
-        if os.path.exists(filename):
-            tarfile_contents = open(filename)
-            break
-
-    if tarfile_contents is None:
-        command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
-        # os.system(command)
-        subprocess.call(command, shell=True)
-        logging.info("Created contents file: " + command)
-        tarfile_contents = open(tarfile_name + '.list')
-
-    logging.info("Obtained contents for: " + tarfile_name)
-    return tarfile_contents
 
 
 
