@@ -96,12 +96,6 @@
 									<strong> <a id="downloadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryDownload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}"><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
 								</h2>
 								</div>
-								<div class="col-md-3 col-md-offset-6" th:if="${hpcDataObjectDownloadStatusDTO.getInProgress() != null and hpcDataObjectDownloadStatusDTO.getInProgress() == true}">
-								<input type="hidden" id="inProgressItems" name="inProgressItems" value="true"/>
-								<h2>
-									Refreshing in <strong id="refreshtimer">&nbsp;</strong> secs
-								</h2>
-								</div>
 							</div>
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
@@ -229,20 +223,6 @@ function retryDownload(task, taskType)
 	
 }
 
-var counter = 11;
-var x = setInterval(function() {
-	var inProgressItems = document.getElementById("inProgressItems");
-	if(inProgressItems == null || inProgressItems.value != "true") {
-		clearInterval(pollPercentComplete);
-		return;
-	}
-
-	counter--;
-	if(counter < 0 )
-		counter = 0;
-	document.getElementById("refreshtimer").innerHTML = " "+counter;	
-}, 1000);
-
 var pollPercentComplete = setInterval(
 		function getPercentComplete() {
 			
@@ -260,7 +240,6 @@ var pollPercentComplete = setInterval(
 				data : {taskId: taskId, type: taskType},
 				success : function(msg) {
 					console.log('SUCCESS: ', "Refreshing the page");
-					counter = 11;
 					//location.reload();
 					var status = $("#statusWrapper", msg);
 					$("#statusWrapper").html(status);
