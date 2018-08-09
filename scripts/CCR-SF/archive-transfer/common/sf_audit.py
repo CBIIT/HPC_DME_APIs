@@ -108,6 +108,7 @@ class SFAudit(object):
         else:
             filesize = 0
             archived = True
+            result = 'Pass'
 
         # Compute total number of files registered so far, and total bytes
         if archived:
