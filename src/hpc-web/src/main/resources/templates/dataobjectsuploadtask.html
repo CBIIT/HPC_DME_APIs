@@ -147,15 +147,10 @@
 
 							</div>
 							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
-								<div class="col-md-3">
+								<div class="col-md-3 col-md-offset-9">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>In Progress</strong>
 									<input type="hidden" id="inProgressItems" name="inProgressItems" value="true"/>
-								</h2>
-								</div>
-								<div class="col-md-3 col-md-offset-6">
-								<h2>
-									Refreshing in <strong id="refreshtimer">&nbsp;</strong> secs
 								</h2>
 								</div>
 							</div>
@@ -288,18 +283,6 @@ function retryUpload(task, taskType)
 	
 }
 
-var counter = 11;
-var x = setInterval(function() {
-	var inProgressItems = document.getElementById("inProgressItems");
-	if(inProgressItems == null || inProgressItems.value != "true") {
-		clearInterval(pollPercentComplete);
-		return;
-	}
-
-	counter--;
-	document.getElementById("refreshtimer").innerHTML = " "+counter;	
-}, 1000);
-
 var pollPercentComplete = setInterval(
 function getPercentComplete() {
 	
@@ -320,7 +303,6 @@ function getPercentComplete() {
 			//location.reload();
 			var status = $("#statusWrapper", msg);
 			$("#statusWrapper").html(status);
-			counter = 11;
 		},
 		error : function(e) {
 			console.log('ERROR: ', e);
