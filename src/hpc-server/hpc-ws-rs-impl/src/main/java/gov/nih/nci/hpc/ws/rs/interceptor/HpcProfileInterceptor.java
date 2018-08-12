@@ -9,16 +9,17 @@
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import javax.servlet.http.HttpServletRequest;
-
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.exception.HpcException;
-
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import gov.nih.nci.hpc.bus.HpcSecurityBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * HPC Profile Interceptor.
@@ -33,8 +34,8 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
   // The attribue name to save the service invoke time.
   private static String SERVICE_INVOKE_TIME_MC_ATTRIBUTE =
       "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceInvokeTime";
-  private static String SERVICE_NAME_MC_ATTRIBUTE =
-      "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceName";
+  private static String SERVICE_URI_MC_ATTRIBUTE =
+      "gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor.serviceURI";
 
   //---------------------------------------------------------------------//
   // Instance members
@@ -42,6 +43,9 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
 
   // The interceptor phase
   private String phase = null;
+
+  // The Security Business Service instance.
+  @Autowired private HpcSecurityBusService securityBusService = null;
 
   // The Logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -97,23 +101,49 @@ public class HpcProfileInterceptor extends AbstractPhaseInterceptor<Message> {
     if (phase.equals(Phase.RECEIVE)) {
       HttpServletRequest request =
           (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
-      String serviceName =
+
+      // Construct a string w/ the service URI.
+      String serviceURI =
           request.getMethod()
               + " "
               + request.getRequestURI()
               + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
-      logger.info("RS called: {}", serviceName);
+
+      logger.info("RS called: {}", serviceURI);
       message.getExchange().put(SERVICE_INVOKE_TIME_MC_ATTRIBUTE, System.currentTimeMillis());
-      message.getExchange().put(SERVICE_NAME_MC_ATTRIBUTE, serviceName);
+      message.getExchange().put(SERVICE_URI_MC_ATTRIBUTE, serviceURI);
+
     } else if (phase.equals(Phase.SEND_ENDING)) {
+      // Log the service completion time
       Long startTime = (Long) message.getExchange().get(SERVICE_INVOKE_TIME_MC_ATTRIBUTE);
-      String serviceName = (String) message.getExchange().get(SERVICE_NAME_MC_ATTRIBUTE);
-      if (startTime != null && serviceName != null) {
+      String serviceURI = (String) message.getExchange().get(SERVICE_URI_MC_ATTRIBUTE);
+      if (startTime != null && serviceURI != null) {
         logger.info(
             "RS completed: {} - Service execution time: {} milliseconds.",
-            serviceName,
+            serviceURI,
             System.currentTimeMillis() - startTime);
       }
+
+      // Log the service invoker
+      HpcAuthenticationResponseDTO authenticationResponse = null;
+      try {
+        authenticationResponse = securityBusService.getAuthenticationResponse(false);
+
+      } catch (HpcException e) {
+        // Ignore this exception.
+        logger.error("Failed to get authentication response", e);
+      }
+      
+      String serviceInvoker =
+          authenticationResponse != null
+              ? authenticationResponse.getUserId()
+                  + "["
+                  + authenticationResponse.getUserRole()
+                  + " authenticated via "
+                  + authenticationResponse.getAuthenticationType().toString()
+                  + "]"
+              : "Unknown';";
+      logger.info("RS invoker: {}", serviceInvoker);
     }
   }
 }

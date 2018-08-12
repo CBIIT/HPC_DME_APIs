@@ -10,11 +10,9 @@ package gov.nih.nci.hpc.bus.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +41,6 @@ import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcDataBrowseService;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
@@ -74,7 +71,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
   // The data management (iRODS) service.
   @Autowired private HpcDataManagementService dataManagementService = null;
-  
+
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
   private Boolean ldapAuthentication = null;
@@ -159,9 +156,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     try {
       // Add the user to the system.
       securityService.addUser(nciAccount);
-      
+
       registrationCompleted = true;
-      
+
     } finally {
       if (!registrationCompleted) {
         // Registration failed. Remove the data management account.
@@ -371,26 +368,30 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   }
 
   @Override
-  public HpcAuthenticationResponseDTO getAuthenticationResponse() throws HpcException {
+  public HpcAuthenticationResponseDTO getAuthenticationResponse(boolean generateToken)
+      throws HpcException {
     // At the time this service is called, the user is already authenticated and the request
     // invoker is set with the authenticated user data.
     HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
-    if (requestInvoker == null) {
+    if (requestInvoker == null || requestInvoker.getNciAccount() == null) {
       throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
     }
 
     // Construct and return an authentication response DTO.
     HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
     authenticationResponse.setAuthenticationType(requestInvoker.getAuthenticationType());
+    authenticationResponse.setUserId(requestInvoker.getNciAccount().getUserId());
     authenticationResponse.setUserRole(requestInvoker.getUserRole());
 
     // Generate an authentication token. The user can use this token in subsequent calls
     // until the token expires.
-    HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
-    authenticationTokenClaims.setUserId(requestInvoker.getNciAccount().getUserId());
-    authenticationTokenClaims.setDataManagementAccount(requestInvoker.getDataManagementAccount());
-    authenticationResponse.setToken(
-        securityService.createAuthenticationToken(authenticationTokenClaims));
+    if (generateToken) {
+      HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
+      authenticationTokenClaims.setUserId(requestInvoker.getNciAccount().getUserId());
+      authenticationTokenClaims.setDataManagementAccount(requestInvoker.getDataManagementAccount());
+      authenticationResponse.setToken(
+          securityService.createAuthenticationToken(authenticationTokenClaims));
+    }
 
     return authenticationResponse;
   }

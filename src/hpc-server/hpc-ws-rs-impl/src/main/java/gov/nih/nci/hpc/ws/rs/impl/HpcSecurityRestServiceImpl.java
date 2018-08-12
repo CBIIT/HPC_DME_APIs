@@ -1,13 +1,11 @@
 /**
  * HpcSecurityRestServiceImpl.java
  *
- * Copyright SVG, Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ *
+ * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
-
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import java.net.URLDecoder;
@@ -30,229 +28,216 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcSecurityRestService;
 
 /**
- * <p>
  * HPC Security REST Service Implementation.
- * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-
 public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
-             implements HpcSecurityRestService
-{   
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
+    implements HpcSecurityRestService {
+  //---------------------------------------------------------------------//
+  // Instance members
+  //---------------------------------------------------------------------//
 
-    // The Security Business Service instance.
-	@Autowired
-    private HpcSecurityBusService securityBusService = null;
-    
-    //---------------------------------------------------------------------//
-    // constructors
-    //---------------------------------------------------------------------//
-     
-    /**
-     * Constructor for Spring Dependency Injection.
-     * 
-     * @throws HpcException Constructor is disabled.
-     */
-    private HpcSecurityRestServiceImpl() throws HpcException
-    {
-    }  
-    
-    //---------------------------------------------------------------------//
-    // Methods
-    //---------------------------------------------------------------------//
-    
-    //---------------------------------------------------------------------//
-    // HpcSecurityRestService Interface Implementation
-    //---------------------------------------------------------------------//  
-	
-    @Override
-    public Response registerUser(String nciUserId, 
-    		                     HpcUserRequestDTO userRegistrationRequest)
-    {	
-		try {
-			 securityBusService.registerUser(nciUserId, userRegistrationRequest);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return createdResponse(null);
-	}
-    
-    @Override
-    public Response updateUser(String nciUserId, HpcUserRequestDTO userUpdateRequest)
-    {	
-		try {
-			 securityBusService.updateUser(nciUserId, userUpdateRequest);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(null, false);
-	}   
-    
-    @Override
-    public Response getUser(String nciUserId)
-    {
-		HpcUserDTO user = null;
-		try {
-			 user = securityBusService.getUser(nciUserId);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(user, true);
-	}
-    
-    @Override
-    public Response getInvoker()
-    {
-		HpcUserDTO user = null;
-		try {
-			 user = securityBusService.getUser(null);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(user, true);
-	}
-    
-    @Override
-    public Response getActiveUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
-    		                       String doc, String defaultBasePath)
-    {
-		HpcUserListDTO users = null;
-		try {
-			 users = securityBusService.getUsers(nciUserId, firstNamePattern, lastNamePattern, 
-					                             doc, defaultBasePath, true);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(!users.getUsers().isEmpty() ? users : null, true);
-    }
-    
-    @Override
-    public Response getAllUsers(String nciUserId, String firstNamePattern, String lastNamePattern, 
-                                String doc, String defaultBasePath)
-    {
-		HpcUserListDTO users = null;
-		try {
-			 users = securityBusService.getUsers(nciUserId, firstNamePattern, lastNamePattern, 
-					                             doc, defaultBasePath, false);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(!users.getUsers().isEmpty() ? users : null, true);
-    }
-    
-    @Override
-    public Response authenticate()
-    {
-		HpcAuthenticationResponseDTO authenticationResponse = null;
-		try {
-			 authenticationResponse = securityBusService.getAuthenticationResponse();
+  // The Security Business Service instance.
+  @Autowired private HpcSecurityBusService securityBusService = null;
 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(authenticationResponse, false);
-	}    
+  //---------------------------------------------------------------------//
+  // constructors
+  //---------------------------------------------------------------------//
 
-    @Override
-	public Response registerGroup(String groupName,
-			                      HpcGroupMembersRequestDTO groupMembersRequest)
-	{
-    	HpcGroupMembersResponseDTO groupMembersResponse = null;
-		try {
-			 groupMembersResponse = securityBusService.registerGroup(URLDecoder.decode(groupName), groupMembersRequest);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return createdResponse(null, groupMembersResponse);
-	}
-	
-    @Override
-	public Response updateGroup(String groupName,
-			                    HpcGroupMembersRequestDTO groupMembersRequest)
-    {
-    	HpcGroupMembersResponseDTO groupMembersResponse = null;
-		try {
-			 groupMembersResponse = securityBusService.updateGroup(URLDecoder.decode(groupName), groupMembersRequest);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(groupMembersResponse, false);
+  /**
+   * Constructor for Spring Dependency Injection.
+   *
+   * @throws HpcException Constructor is disabled.
+   */
+  private HpcSecurityRestServiceImpl() throws HpcException {}
+
+  //---------------------------------------------------------------------//
+  // Methods
+  //---------------------------------------------------------------------//
+
+  //---------------------------------------------------------------------//
+  // HpcSecurityRestService Interface Implementation
+  //---------------------------------------------------------------------//
+
+  @Override
+  public Response registerUser(String nciUserId, HpcUserRequestDTO userRegistrationRequest) {
+    try {
+      securityBusService.registerUser(nciUserId, userRegistrationRequest);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
     }
-	
-    @Override
-    public Response getGroup(String groupName)
-    {
-    	HpcGroupMembersDTO groupMembers = null;
-		try {
-			 groupMembers = securityBusService.getGroup(URLDecoder.decode(groupName));
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(groupMembers, true);
+
+    return createdResponse(null);
+  }
+
+  @Override
+  public Response updateUser(String nciUserId, HpcUserRequestDTO userUpdateRequest) {
+    try {
+      securityBusService.updateUser(nciUserId, userUpdateRequest);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
     }
-    
-    @Override
-    public Response getGroups(String groupPattern)
-    {
-    	HpcGroupListDTO groups = null;
-		try {
-			 groups = securityBusService.getGroups(groupPattern);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(groups, true);
+
+    return okResponse(null, false);
+  }
+
+  @Override
+  public Response getUser(String nciUserId) {
+    HpcUserDTO user = null;
+    try {
+      user = securityBusService.getUser(nciUserId);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
     }
-    
-    @Override
-    public Response deleteGroup(String groupName)
-    {
-		try {
-			 securityBusService.deleteGroup(URLDecoder.decode(groupName));
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return okResponse(null, false);
+
+    return okResponse(user, true);
+  }
+
+  @Override
+  public Response getInvoker() {
+    HpcUserDTO user = null;
+    try {
+      user = securityBusService.getUser(null);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
     }
-    
-    @Override
-    public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration)
-    {
-		try {
-			 securityBusService.registerSystemAccount(systemAccountRegistration);
-			 
-		} catch(HpcException e) {
-			    return errorResponse(e);
-		}
-		
-		return createdResponse(systemAccountRegistration.getAccount().getIntegratedSystem().value());    	
+
+    return okResponse(user, true);
+  }
+
+  @Override
+  public Response getActiveUsers(
+      String nciUserId,
+      String firstNamePattern,
+      String lastNamePattern,
+      String doc,
+      String defaultBasePath) {
+    HpcUserListDTO users = null;
+    try {
+      users =
+          securityBusService.getUsers(
+              nciUserId, firstNamePattern, lastNamePattern, doc, defaultBasePath, true);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
     }
+
+    return okResponse(!users.getUsers().isEmpty() ? users : null, true);
+  }
+
+  @Override
+  public Response getAllUsers(
+      String nciUserId,
+      String firstNamePattern,
+      String lastNamePattern,
+      String doc,
+      String defaultBasePath) {
+    HpcUserListDTO users = null;
+    try {
+      users =
+          securityBusService.getUsers(
+              nciUserId, firstNamePattern, lastNamePattern, doc, defaultBasePath, false);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(!users.getUsers().isEmpty() ? users : null, true);
+  }
+
+  @Override
+  public Response authenticate() {
+    HpcAuthenticationResponseDTO authenticationResponse = null;
+    try {
+      authenticationResponse = securityBusService.getAuthenticationResponse(true);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(authenticationResponse, false);
+  }
+
+  @Override
+  public Response registerGroup(String groupName, HpcGroupMembersRequestDTO groupMembersRequest) {
+    HpcGroupMembersResponseDTO groupMembersResponse = null;
+    try {
+      groupMembersResponse =
+          securityBusService.registerGroup(URLDecoder.decode(groupName), groupMembersRequest);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return createdResponse(null, groupMembersResponse);
+  }
+
+  @Override
+  public Response updateGroup(String groupName, HpcGroupMembersRequestDTO groupMembersRequest) {
+    HpcGroupMembersResponseDTO groupMembersResponse = null;
+    try {
+      groupMembersResponse =
+          securityBusService.updateGroup(URLDecoder.decode(groupName), groupMembersRequest);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(groupMembersResponse, false);
+  }
+
+  @Override
+  public Response getGroup(String groupName) {
+    HpcGroupMembersDTO groupMembers = null;
+    try {
+      groupMembers = securityBusService.getGroup(URLDecoder.decode(groupName));
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(groupMembers, true);
+  }
+
+  @Override
+  public Response getGroups(String groupPattern) {
+    HpcGroupListDTO groups = null;
+    try {
+      groups = securityBusService.getGroups(groupPattern);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(groups, true);
+  }
+
+  @Override
+  public Response deleteGroup(String groupName) {
+    try {
+      securityBusService.deleteGroup(URLDecoder.decode(groupName));
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+  }
+
+  @Override
+  public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration) {
+    try {
+      securityBusService.registerSystemAccount(systemAccountRegistration);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return createdResponse(systemAccountRegistration.getAccount().getIntegratedSystem().value());
+  }
 }
-
- 
