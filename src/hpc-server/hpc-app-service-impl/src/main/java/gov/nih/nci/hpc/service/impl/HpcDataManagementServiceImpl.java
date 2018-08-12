@@ -277,7 +277,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     } catch (HpcException e) {
       if (quiet) {
-        logger.error("Failed to delete a file", e);
+        logger.error("Failed to delete a file: {}", path, e);
       } else {
         throw (e);
       }

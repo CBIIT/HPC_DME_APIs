@@ -98,10 +98,13 @@ public interface HpcSecurityBusService {
   /**
    * Get the authentication response for the current request invoker.
    *
+   * @param generateToken If set to true, an authentication token will get generated and included in
+   *     response DTO.
    * @return HpcAuthenticationResponseDTO.
    * @throws HpcException on service failure.
    */
-  public HpcAuthenticationResponseDTO getAuthenticationResponse() throws HpcException;
+  public HpcAuthenticationResponseDTO getAuthenticationResponse(boolean generateToken)
+      throws HpcException;
 
   /**
    * Register a group
