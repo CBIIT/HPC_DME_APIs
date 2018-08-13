@@ -152,7 +152,7 @@ class SFAudit(object):
             result = 'Update'
 
 
-        self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize, result)
+        self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, 0, result)
 
 
 
