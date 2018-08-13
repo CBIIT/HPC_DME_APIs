@@ -77,7 +77,7 @@ class SFParent(object):
 
     def set_flowcell_attributes(self):
         self.set_attribute("flowcell_id", SFHelper.get_flowcell_id(self.tarfile))
-        self.set_attribute("run_date", SFHelper.get_run_date(self.tarfile))
+        self.set_attribute("run_date", SFHelper.get_run_name(self.tarfile))
         self.set_attribute("run_name", SFHelper.get_run_date(self.tarfile))
         self.set_attribute("sequencing_platform", SFHelper.get_sequencing_platform(self.tarfile))
 
