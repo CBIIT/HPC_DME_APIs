@@ -140,11 +140,11 @@ class SFAudit(object):
                     logging.info(line)
                     if ('200 OK' in line):
                         archive = True
-                        result = 'New'
+                        result = 'Update'
 
                     elif ('201 Created' in line):
                         archived = True
-                        result = 'Update'
+                        result = 'New'
 
         else:
             filesize = 0
