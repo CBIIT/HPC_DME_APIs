@@ -47,7 +47,7 @@ def main(args):
         if (tarfile_name.endswith("supplement.tar") or 'singlecell' in tarfile_name or '10x' in tarfile_name):
 
             # Register Flowcell collection with Project type parent
-            register_collection(tarfile_path, "Flowcell", tarfile_name, True, sf_audit, dryrun)
+            register_collection(tarfile_path, "Flowcell", tarfile_name, False, sf_audit, dryrun)
 
             logging.info('Done processing file: ' + tarfile_path)
 
@@ -57,42 +57,11 @@ def main(args):
         if tarfile_contents is None:
             continue
 
+        #Register Flowcell collection with Project type parent
+        register_collection("", "Flowcell", tarfile_name, False, sf_audit, dryrun)
 
-        #loop through each line in the contents file of this tarball
-        #We need to do an upload for each fatq.gz or BAM file
-        for line in tarfile_contents.readlines():
-
-            if(line.rstrip().endswith("/")):
-                #This is a directory, nothing to do
-                continue
-
-            #if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
-            exclusion_list = ['10X', 'Phix', 'PhiX', 'demux', 'demultiplex']
-            if any(ext in line.rstrip() for ext in exclusion_list):
-                sf_audit.record_exclusion(tarfile_name, line.rstrip(),
-                'Path contains substring from exclusion list')
-                continue
-
-            filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
-
-            if filepath.endswith('fastq.gz') or filepath.endswith('fastq.gz.md5'):
-
-                # Extract the info for PI metadata
-                path = SFUtils.get_meta_path(filepath)
-
-                #Register Flowcell collection with Project type parent
-                register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun)
-
-
-            else:
-                #For now, we ignore files that are not fastq.gz
-                sf_audit.record_exclusion(tarfile_name , line.rstrip(), 'Not fastq.gz or valid html file')
 
         logging.info('Done processing file: ' + tarfile_path)
-        # delete the extracted file
-        os.system("rm -rf " + extract_path + "*")
-
-    sf_audit.audit_summary()
 
 
 
@@ -107,6 +76,8 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
 
     #Build metadata for the collection
     collection = SFCollection(filepath, type, tarfile_name, has_parent)
+    collection.set_attribute("run_name", SFHelper.get_run_name(tarfile_name))
+    collection.set_metadataEntries()
     collection_metadata = collection.get_metadata()
 
     #Create the metadata json file

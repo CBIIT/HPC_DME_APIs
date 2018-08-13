@@ -16,6 +16,10 @@ class SFCollection(SFParent):
         self.parent_types = {"Sample": "Flowcell", "Flowcell" : "Project", "Project" : "PI_Lab"}
 
 
+    def set_metadataEntries(self):
+        self.metadata["metadataEntries"] = self.get_metadata_items()
+        logging.info(self.metadata)
+
 
     def build_metadata(self):
         self.build_metadata_items()
