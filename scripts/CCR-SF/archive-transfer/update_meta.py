@@ -99,11 +99,8 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
         os.system("rm - f " + response_header + " 2>/dev/null")
         os.system(command)
 
-        #Audit the result
-        with open(response_header) as f:
-            for line in f:
-                logging.info(line)
-
+    #Audit the result
+    sf_audit.audit_collection_update(tarfile_name, filepath, "", archive_path, dryrun)
 
 
 

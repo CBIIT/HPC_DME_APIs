@@ -116,11 +116,43 @@ class SFAudit(object):
             self.inc_bytes(filesize)
             includes.write("\nFile size = {0}".format(filesize))
             includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n\n".format(self.file_count, self.byte_count))
-            self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize, result)
+
         else:
             includes.write("\nError registering file \n\n")
 
         includes.close()
+        self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize, result)
+
+
+
+    # Record the collection metadata update
+    def audit_collection_update(self, tarfile_name, filepath, fullpath, archive_path, dryrun):
+
+        archived = False
+        result = 'Fail'
+
+        if not dryrun:
+
+            # Record the result
+            response_header = "collection-registration-response-header.tmp"
+            with open(response_header) as f:
+                for line in f:
+                    logging.info(line)
+                    if ('200 OK' in line):
+                        archive = True
+                        result = 'New'
+
+                    elif ('201 Created' in line):
+                        archived = True
+                        result = 'Update'
+
+        else:
+            filesize = 0
+            archived = True
+            result = 'Update'
+
+
+        self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize, result)
 
 
 
