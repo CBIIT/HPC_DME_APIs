@@ -83,4 +83,23 @@ public class HpcDataManagementAuthenticator {
     HpcRequestContext.setRequestInvoker(invoker);
     return token;
   }
+
+  /**
+   * Check if current request context is authenticated w/ Data Management.
+   *
+   * @return True if the request context is authenticated w/ Data Management, or False otherwise
+   */
+  public boolean isAuthenticated() {
+    HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    return invoker != null && invoker.getDataManagementAuthenticatedToken() != null;
+  }
+
+  /** Delete the authentication token. */
+  public void clearToken() {
+    HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    if (invoker != null) {
+      invoker.setDataManagementAuthenticatedToken(null);
+      HpcRequestContext.setRequestInvoker(invoker);
+    }
+  }
 }

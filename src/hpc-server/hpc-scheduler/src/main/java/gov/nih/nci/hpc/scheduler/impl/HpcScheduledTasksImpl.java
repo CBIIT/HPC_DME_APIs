@@ -172,7 +172,6 @@ public class HpcScheduledTasksImpl {
       logger.error("Scheduled task failed: " + name, e);
 
     } finally {
-      systemBusService.closeConnection();
       long executionTime = System.currentTimeMillis() - start;
       logger.info(
           "Scheduled task completed: {} - Task execution time: {} milliseconds",
