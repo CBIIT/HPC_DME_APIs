@@ -60,9 +60,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
-import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -242,27 +240,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         metadataService.addSystemGeneratedMetadataToCollection(
             path, userId, userName, configurationId);
 
-        HpcRequestInvoker invoker = null;
-
-        //Set the request invoker to the system account since that has the privileges to
-        //perform hierarchy validation, specifically to get the collectionType metadata.
-        if (!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(
-            securityService.getRequestInvoker().getAuthenticationType())) {
-          invoker = securityService.getRequestInvoker();
-          securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
-        }
-
         // Validate the collection hierarchy.
-        dataManagementService.validateHierarchy(path, configurationId, false);
-
-        //Validation is over, hence restore invoker to original
-        if (invoker != null) {
-          securityService.setRequestInvoker(
-              invoker.getNciAccount(),
-              invoker.getLdapAuthentication(),
-              invoker.getAuthenticationType(),
-              invoker.getDataManagementAccount());
-        }
+        securityService.executeAsSystemAccount(
+            Optional.empty(),
+            () -> dataManagementService.validateHierarchy(path, configurationId, false));
 
         // Add collection update event.
         addCollectionUpdatedEvent(path, true, false, userId);
@@ -745,31 +726,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if (responseDTO.getRegistered()) {
       boolean registrationCompleted = false;
       try {
-
-        HpcRequestInvoker invoker = null;
-
-        //Set the request invoker to the system account since that has the privileges to
-        //perform hierarchy validation, specifically to get the collectionType metadata.
-        if (!HpcAuthenticationType.SYSTEM_ACCOUNT.equals(
-            securityService.getRequestInvoker().getAuthenticationType())) {
-          invoker = securityService.getRequestInvoker();
-          securityService.setSystemRequestInvoker(invoker.getLdapAuthentication());
-        }
-
-        // Validate the new data object complies with the hierarchy definition.
-        dataManagementService.validateHierarchy(collectionPath, configurationId, true);
-
-        //Validation is over, hence restore invoker to original
-        if (invoker != null) {
-          securityService.setRequestInvoker(
-              invoker.getNciAccount(),
-              invoker.getLdapAuthentication(),
-              invoker.getAuthenticationType(),
-              invoker.getDataManagementAccount());
-        }
-
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
+
+        // Validate the new data object complies with the hierarchy definition.
+        securityService.executeAsSystemAccount(
+            Optional.empty(),
+            () -> dataManagementService.validateHierarchy(collectionPath, configurationId, true));
 
         // Attach the user provided metadata.
         metadataService.addMetadataToDataObject(
@@ -1399,7 +1362,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Input validation.
     if (StringUtils.isEmpty(path) || StringUtils.isEmpty(destinationPath)) {
       throw new HpcException(
-          "Empty path or destinationPath in move request: [path: " + path + "] [destinationPath: " + destinationPath + "]",
+          "Empty path or destinationPath in move request: [path: "
+              + path
+              + "] [destinationPath: "
+              + destinationPath
+              + "]",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
@@ -1450,7 +1417,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
               try {
                 dataManagementService.move(
-                    moveRequest.getSourcePath(), moveRequest.getDestinationPath(), Optional.ofNullable(null));
+                    moveRequest.getSourcePath(),
+                    moveRequest.getDestinationPath(),
+                    Optional.ofNullable(null));
 
                 // Move request is successful.
                 moveResponse.setResult(true);

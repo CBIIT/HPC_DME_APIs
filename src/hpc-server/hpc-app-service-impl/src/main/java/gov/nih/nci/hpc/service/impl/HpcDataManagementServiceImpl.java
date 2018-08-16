@@ -300,10 +300,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     if (pathTypeValidation.isPresent()) {
       if (pathTypeValidation.get()) {
         if (!sourcePathAttributes.getIsDirectory()) {
-          throw new HpcException("Source path is not of a collection", HpcErrorType.INVALID_REQUEST_INPUT);
+          throw new HpcException(
+              "Source path is not of a collection", HpcErrorType.INVALID_REQUEST_INPUT);
         }
       } else if (!sourcePathAttributes.getIsFile()) {
-        throw new HpcException("Source path is not of a data object", HpcErrorType.INVALID_REQUEST_INPUT);
+        throw new HpcException(
+            "Source path is not of a data object", HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
@@ -572,7 +574,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public void closeConnection() {
     try {
-      dataManagementProxy.disconnect(dataManagementAuthenticator.getAuthenticatedToken());
+      if (dataManagementAuthenticator.isAuthenticated()) {
+        // Close the connection to iRODS.
+        dataManagementProxy.disconnect(dataManagementAuthenticator.getAuthenticatedToken());
+        
+        // Clear the token.
+        dataManagementAuthenticator.clearToken();
+      }
 
     } catch (HpcException e) {
       // Ignore.

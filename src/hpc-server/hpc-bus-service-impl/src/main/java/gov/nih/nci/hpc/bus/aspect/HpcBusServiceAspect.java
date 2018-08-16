@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.bus.aspect;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -25,6 +26,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
  * HPC Bus Services Aspect - implement cross cutting concerns: 1. Basic business service profiler -
@@ -47,6 +49,13 @@ public class HpcBusServiceAspect {
   // The system administrator NCI user ID.
   @Value("${hpc.bus.aspect.systemAdministratorUserId}")
   private String systemAdministratorUserId = null;
+
+  // The security service instance.
+  @Autowired private HpcSecurityService securityService = null;
+
+  // LDAP authentication on/off switch.
+  @Value("${hpc.bus.ldapAuthentication}")
+  private Boolean ldapAuthentication = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -150,21 +159,24 @@ public class HpcBusServiceAspect {
   }
 
   /**
-   * Advice that set up the system account as the request invoker
+   * Advice that execute a business service using system account.
    *
    * @param joinPoint The join point.
    * @return The advised object return.
    * @throws Throwable The advised object exception.
    */
-  @Around("busServices() && @annotation(gov.nih.nci.hpc.bus.aspect.SystemBusServiceImpl)")
-  public Object setSystemRequestInvoker(ProceedingJoinPoint joinPoint) throws Throwable {
-    logger.info("ERAN: set system request invoker");
-
-    try {
-      return joinPoint.proceed();
-
-    } finally {
-      logger.info("ERAN: unset system request invoker");
-    }
+  @Around("busServices() && @annotation(gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount)")
+  public Object executeAsSystemAccount(ProceedingJoinPoint joinPoint) throws Throwable {
+    return securityService.executeAsSystemAccount(
+        Optional.of(ldapAuthentication),
+        () -> {
+          try {
+            return joinPoint.proceed();
+          } catch (HpcException e) {
+            throw e;
+          } catch (Throwable t) {
+            throw new HpcException("Failed to execute as system account", t);
+          }
+        });
   }
 }

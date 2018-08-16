@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * HPC User Application Service Interface.
@@ -121,12 +122,27 @@ public interface HpcSecurityService {
       throws HpcException;
 
   /**
-   * Set the service call invoker in the request context using system account.
+   * Perform a function using system account.
    *
-   * @param ldapAuthentication Indicator whether LDAP authentication is turned on/off.
-   * @throws HpcException on service failure.
+   * @param (Optional) ldapAuthentication If true - authenticate the system account via LDAP.
+   * @param systemAccountFunction The function to perform as system account.
+   * @return The functional interface return type
+   * @throws HpcException thrown by the function.
    */
-  public void setSystemRequestInvoker(boolean ldapAuthentication) throws HpcException;
+  public <T> T executeAsSystemAccount(
+      Optional<Boolean> ldapAuthentication, HpcSystemAccountFunction<T> systemAccountFunction)
+      throws HpcException;
+  
+  /**
+   * Perform a function using system account, but no return (generic) type.
+   *
+   * @param (Optional) ldapAuthentication If true - authenticate the system account via LDAP.
+   * @param systemAccountFunction The function to perform as system account.
+   * @throws HpcException thrown by the function.
+   */
+  public void executeAsSystemAccount(
+      Optional<Boolean> ldapAuthentication, HpcSystemAccountFunctionNoReturn systemAccountFunction)
+      throws HpcException;
 
   /**
    * Authenticate a user (via LDAP).
