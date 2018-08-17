@@ -79,7 +79,7 @@ class SFUtils(object):
             return
 
         tarfile_path = tarfile_dir + '/' + tarfile_name
-        contentFiles = [tarfile_path + '.list', tarfile_name + '.list', tarfile_path + '_archive.list',
+        contentFiles = [tarfile_name + '.list', tarfile_path + '.list', tarfile_path + '_archive.list',
                         tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '.list',
                         tarfile_path.split('.tar')[0] + '_archive.list',
                         tarfile_path.split('.tar')[0] + '.archive.list',
