@@ -8,8 +8,8 @@ from metadata.sf_helper import SFHelper
 class SFCollection(SFParent):
 
 
-    def __init__(self, path, type, tarfile, addParent):
-        SFParent.__init__(self, path, type, tarfile)
+    def __init__(self, path, type, tarfile, addParent, ext = None):
+        SFParent.__init__(self, path, type, tarfile, ext)
         self.metadata = OrderedDict()
         self.metadata["metadataEntries"] = []
         self.addParent = addParent

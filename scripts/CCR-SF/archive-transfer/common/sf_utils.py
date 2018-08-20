@@ -25,6 +25,27 @@ class SFUtils(object):
         return path
 
 
+    @staticmethod
+    def get_unaligned_ext(filepath, self):
+
+        #Get the characters after 'Uanligned_' or 'Unalignd_'
+        # and before '/'. This will be appended to project_name
+        #for Undetermined files to make their path unique
+
+        if 'Unaligned_' in filepath:
+            ext = filepath.split('Uanligned_')[-1]
+            ext = ext.split('/')[0]
+
+        elif 'Unalignd_' in filepath:
+            ext = filepath.split('Uanligned_')[-1]
+            ext = ext.split('/')[0]
+
+        else:
+            ext = None
+
+        return ext
+
+
 
     @staticmethod
     def extract_files_from_tar(tarfile_path, extract_path):
