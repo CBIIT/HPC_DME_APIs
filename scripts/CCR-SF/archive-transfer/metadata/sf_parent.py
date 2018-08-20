@@ -6,7 +6,7 @@ from metadata.sf_helper import SFHelper
 class SFParent(object):
 
 
-    def __init__(self, path, type, tarfile):
+    def __init__(self, path, type, tarfile, ext = None):
 
         self.metadata_items  = []
         self.type = type
@@ -14,6 +14,7 @@ class SFParent(object):
         self.tarfile = tarfile
         self.archive_path = None
         self.base_path = "/FNL_SF_Archive/"
+        self.ext = ext
 
 
 
@@ -91,7 +92,7 @@ class SFParent(object):
         contact_name = SFHelper.get_contact_name(self.path)
         if contact_name is not None:
             self.set_attribute("contact_name", contact_name)
-        self.set_attribute("project_name", SFHelper.get_project_name(self.path, self.tarfile))
+        self.set_attribute("project_name", SFHelper.get_project_name(self.path, self.tarfile, self.ext))
         self.set_attribute("project_id_CSAS_NAS", SFHelper.get_project_id(self.path))
 
 

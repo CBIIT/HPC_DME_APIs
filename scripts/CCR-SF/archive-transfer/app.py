@@ -98,12 +98,13 @@ def main(args):
 
                 # Extract the info for PI metadata
                 path = SFUtils.get_meta_path(filepath)
+                ext = SFUtils.get_unaligned_ext(filepath)
 
                 # Register PI collection
                 register_collection(path, "PI_Lab", tarfile_name, False, sf_audit, dryrun)
 
                 #Register Flowcell collection with Project type parent
-                register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun)
+                register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun, ext)
 
                 #create Object metadata with Sample type parent and register object
                 register_object(path, "Sample", tarfile_name, True, filepath, sf_audit, dryrun)
@@ -158,7 +159,7 @@ def main(args):
 
 
 
-def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryrun):
+def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryrun, ext = None):
 
     logging.info("Registering " + type + " collection for " + filepath)
     json_path = sf_audit.audit_path + '/jsons'
@@ -168,7 +169,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
         os.mkdir(json_path)
 
     #Build metadata for the collection
-    collection = SFCollection(filepath, type, tarfile_name, has_parent)
+    collection = SFCollection(filepath, type, tarfile_name, has_parent, ext)
     collection_metadata = collection.get_metadata()
 
     #Create the metadata json file
