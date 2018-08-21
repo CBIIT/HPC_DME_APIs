@@ -8,13 +8,17 @@ from metadata.sf_helper import SFHelper
 class SFCollection(SFParent):
 
 
-    def __init__(self, path, type, tarfile, addParent):
-        SFParent.__init__(self, path, type, tarfile)
+    def __init__(self, path, type, tarfile, addParent, ext = None):
+        SFParent.__init__(self, path, type, tarfile, ext)
         self.metadata = OrderedDict()
         self.metadata["metadataEntries"] = []
         self.addParent = addParent
         self.parent_types = {"Sample": "Flowcell", "Flowcell" : "Project", "Project" : "PI_Lab"}
 
+
+    def set_metadataEntries(self):
+        self.metadata["metadataEntries"] = self.get_metadata_items()
+        logging.info(self.metadata)
 
 
     def build_metadata(self):
