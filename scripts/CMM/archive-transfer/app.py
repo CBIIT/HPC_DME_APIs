@@ -69,7 +69,7 @@ def main(args):
 
 
         parent_collection = project_collection
-        for dirName, subdirList, fileList in os.walk(project_dir):
+        for dirName, subdirList, fileList in os.walk(projects_path + project_dir):
             print dirName, subdirList, fileList
 
             if(project_dir == dirName):
@@ -103,7 +103,7 @@ def main(args):
             for fname in fileList:
                 #upload the individual files
                 print('\t%s' % fname)
-                full_path = projects_path + dirName + '/' + fname
+                full_path = dirName + '/' + fname
                 register_object(project_collection, project_dir, full_path, sf_audit, dryrun)
 
 
