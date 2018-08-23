@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
- * hpc-ws-rs-beans-configuration.xml
- *
- * Copyright SVG,  Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- -->
+<!-- * hpc-ws-rs-beans-configuration.xml * * Copyright SVG, Inc. * Copyright 
+	Leidos Biomedical Research, Inc * * Distributed under the OSI-approved BSD 
+	3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt for details. 
+	* * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:util="http://www.springframework.org/schema/util" xmlns:cxf="http://cxf.apache.org/core"
@@ -45,6 +38,16 @@
 				</sec:trustManagers>
 				<sec:clientAuthentication want="${hpc.ws.rs.ssl.wantClientAuth}"
 					required="${hpc.ws.rs.ssl.needClientAuth}" />
+				<sec:cipherSuitesFilter>
+					<sec:include>.*_WITH_AES_.*</sec:include>
+					<sec:exclude>EDH-DSS-DES-CBC3-SHA</sec:exclude>
+					<sec:exclude>.*_DH_anon_.*</sec:exclude>
+				</sec:cipherSuitesFilter>
+				<sec:excludeProtocols>
+					<sec:excludeProtocol>SSLv2</sec:excludeProtocol>
+					<sec:excludeProtocol>SSLv3</sec:excludeProtocol>
+					<sec:excludeProtocol>TLSv1</sec:excludeProtocol>
+				</sec:excludeProtocols>
 			</httpj:tlsServerParameters>
 		</httpj:identifiedTLSServerParameters>
 

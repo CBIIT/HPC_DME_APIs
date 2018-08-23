@@ -40,7 +40,7 @@ class SFAudit(object):
         #Write out the header for the csv file containing list of included files
         includes_csv = open(self.includes_csv_path, "a")
         includes_csv.write(
-            "Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name, Sequencing_Platform, Filesize\n")
+            "Tarfile, Extracted File, ArchivePath in HPCDME, Flowcell_Id, PI_Name, Project_Id, Project_Name, Sample_Name, Run_Name, Sequencing_Platform, Filesize, Result\n")
         includes_csv.close()
 
         #Write out the header for the csv file containing list of excluded files
@@ -83,16 +83,17 @@ class SFAudit(object):
     def audit_upload(self, tarfile_name, filepath, fullpath, archive_path, dryrun):
 
         archived = False
+        result = 'Fail'
         includes = open(self.includes_path, "a")
 
         if not dryrun:
 
             # Get size of file in bytes
-            if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
-                status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
-                filesize = int(output.split()[0])
-            else:
-                filesize = os.path.getsize(fullpath)
+            #if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
+            #    status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
+            #    filesize = int(output.split()[0])
+            #else:
+            filesize = os.path.getsize(fullpath)
             logging.info("\nFile size = {0}\n".format(filesize))
 
             # Record the result
@@ -100,23 +101,58 @@ class SFAudit(object):
             with open(response_header) as f:
                 for line in f:
                     logging.info(line)
-                    if ('200' in line or '201' in line):
+                    if ('200 OK' in line or '201 Created' in line):
                         archived = True
+                        result = 'Pass'
 
         else:
-            archived = True
             filesize = 0
+            archived = True
+            result = 'Pass'
 
         # Compute total number of files registered so far, and total bytes
         if archived:
             self.inc_file()
             self.inc_bytes(filesize)
-            includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(self.file_count, self.byte_count))
-            self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize)
+            includes.write("\nFile size = {0}".format(filesize))
+            includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n\n".format(self.file_count, self.byte_count))
+
         else:
-            includes.write("Error registering file \n")
+            includes.write("\nError registering file \n\n")
 
         includes.close()
+        self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize, result)
+
+
+
+    # Record the collection metadata update
+    def audit_collection_update(self, tarfile_name, filepath, fullpath, archive_path, dryrun):
+
+        archived = False
+        result = 'Fail'
+
+        if not dryrun:
+
+            # Record the result
+            response_header = "collection-registration-response-header.tmp"
+            with open(response_header) as f:
+                for line in f:
+                    logging.info(line)
+                    if ('200 OK' in line):
+                        archive = True
+                        result = 'Update'
+
+                    elif ('201 Created' in line):
+                        archived = True
+                        result = 'New'
+
+        else:
+            filesize = 0
+            archived = True
+            result = 'Update'
+
+
+        self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, 0, result)
 
 
 
@@ -132,7 +168,7 @@ class SFAudit(object):
 
 
     # Record to csv file: tarfile name, file path, archive path
-    def record_to_csv(self, tarfile_name, filepath, fullpath, archive_path, filesize):
+    def record_to_csv(self, tarfile_name, filepath, fullpath, archive_path, filesize, result):
 
         flowcell_id = SFHelper.get_flowcell_id(tarfile_name)
         normalized_filepath = fullpath.split("uploads/")[-1]
@@ -147,5 +183,5 @@ class SFAudit(object):
             ", " + flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " + SFHelper.get_project_id(path) +
             ", " + SFHelper.get_project_name(path, tarfile_name) + ", " + SFHelper.get_sample_name(path) +
             ", " + SFHelper.get_run_name(tarfile_name) + ", " + SFHelper.get_sequencing_platform(tarfile_name) +
-            "," + str(filesize) + "\n")
+            "," + str(filesize) + "," + result + "\n")
         includes_csv.close()
