@@ -27,7 +27,8 @@ from common.sf_audit import SFAudit
 def main(args):
 
     pi_mapping = {'0001': '0001', '0002': '0002'}
-    hierarchy_dict  = {'sample-data': ['sample-data/Latitude_runs', 'sample-data/screening_images']}
+    hierarchy_dict  = {'0001': ['0001/Latitude_runs', '0001/screening_images']}
+    hierarchy_list = ['Latitude_runs', 'screening_images']
     match_dict = {'Latitude_runs' : '\d{8}_\d{4}'}
     base_path = '/CMM_Archive'
 
@@ -72,14 +73,27 @@ def main(args):
         for dirName, subdirList, fileList in os.walk(projects_path + project_dir):
             print dirName, subdirList, fileList
 
+            #We dont need to create the project collection, it is already created above
             if(project_dir == dirName):
                 continue
 
 
             parent = os.path.abspath(os.path.join(dirName, os.pardir)).split(os.sep)[-1]
-            if parent in hierarchy_dict.keys():
-                if dirName not in hierarchy_dict.get(parent):
-                    continue
+            #print 'parent is ' + parent
+            #if parent in hierarchy_dict.keys():
+            #    if dirName not in hierarchy_dict.get(parent):
+            #        continue
+            #Either this dirName or it's ancestor should be in dict_list which is the
+            #approved list of directories or their children
+            match_found = False;
+            for value in hierarchy_list:
+                if value in dirName:
+                    match_found = True
+                    break
+
+            if not match_found:
+                continue
+
 
             #Check if there is a format specified for this directory name
             #in the match dict
