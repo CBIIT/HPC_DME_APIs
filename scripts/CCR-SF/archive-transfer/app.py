@@ -228,7 +228,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
         os.system(command)
 
     #Audit the result
-    sf_audit.audit_upload(tarfile_name, filepath, fullpath, archive_path, dryrun)
+    sf_audit.audit_upload(tarfile_name, filepath, fullpath, archive_path, dryrun, ext)
 
 
 
