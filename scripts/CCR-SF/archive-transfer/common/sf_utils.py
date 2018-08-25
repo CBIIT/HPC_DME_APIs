@@ -26,7 +26,7 @@ class SFUtils(object):
 
 
     @staticmethod
-    def get_unaligned_ext(filepath, self):
+    def get_unaligned_ext(filepath):
 
         #Get the characters after 'Uanligned_' or 'Unalignd_'
         # and before '/'. This will be appended to project_name
@@ -100,7 +100,8 @@ class SFUtils(object):
             return
 
         tarfile_path = tarfile_dir + '/' + tarfile_name
-        contentFiles = [tarfile_name + '.list', tarfile_path + '.list', tarfile_path + '_archive.list',
+        contentFiles = ['tar_contents/' + tarfile_name + '.list.txt', 'tar_contents/' + tarfile_name + '.list',
+                        tarfile_path + '.list', tarfile_path + '_archive.list',
                         tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '.list',
                         tarfile_path.split('.tar')[0] + '_archive.list',
                         tarfile_path.split('.tar')[0] + '.archive.list',
