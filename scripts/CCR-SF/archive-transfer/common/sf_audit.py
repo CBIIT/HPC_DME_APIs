@@ -114,6 +114,7 @@ class SFAudit(object):
         if archived:
             self.inc_file()
             self.inc_bytes(filesize)
+            includes.write("\ntarfile: " + tarfile_name)
             includes.write("\nFile size = {0}".format(filesize))
             includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n\n".format(self.file_count, self.byte_count))
 
