@@ -44,9 +44,9 @@ class SFUtils(object):
             ext = None
 
         if ext is not None:
-            logging.info('Unaligned ext: ' + ext)
+            logging.info('Unaligned ext for filepath + ' + filepath + ' : ' + ext)
         else:
-            logging.info('No ext. for Unaligned')
+            logging.info('No ext. for Unaligned filepath + ' + filepath)
 
         return ext
 
