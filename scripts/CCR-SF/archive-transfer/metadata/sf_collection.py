@@ -45,7 +45,7 @@ class SFCollection(SFParent):
         return self.metadata
 
     @staticmethod
-    def get_archive_path(tarfile_name, path, type, ext):
+    def get_archive_path(tarfile_name, path, type, ext = None):
 
         logging.info("Getting collection archive path for type: " + type + " and path " + path)
 

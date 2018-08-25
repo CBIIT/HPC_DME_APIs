@@ -120,7 +120,7 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_project_name(path, tarfile, ext):
+    def get_project_name(path, tarfile, ext = None):
 
         if 'Undetermined' in path or tarfile.endswith('supplement.tar') or 'singlecell' in tarfile or len(path.split("/")) == 1:
             project_name =  SFHelper.get_run_name(tarfile)
