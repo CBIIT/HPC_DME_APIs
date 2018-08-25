@@ -33,11 +33,11 @@ class SFUtils(object):
         #for Undetermined files to make their path unique
 
         if 'Unaligned_' in filepath:
-            ext = filepath.split('Uanligned_')[-1]
+            ext = filepath.split('Unaligned_')[-1]
             ext = ext.split('/')[0]
 
         elif 'Unalignd_' in filepath:
-            ext = filepath.split('Uanligned_')[-1]
+            ext = filepath.split('Unalignd_')[-1]
             ext = ext.split('/')[0]
 
         else:
