@@ -139,7 +139,10 @@ class SFHelper(object):
                 if(project_name == 'Sample_SPECS_2070'):
                     project_name = 'Staudt_Roland_49mRNA_11_2_15'
 
-        logging.info("project_name from " + path + " and ext " + ext + " is " + project_name)
+        if(ext is not None):
+            logging.info("project_name from " + path + " and ext " + ext + " is " + project_name)
+        else:
+            logging.info("project_name from " + path + " is " + project_name)
 
         return project_name
 
