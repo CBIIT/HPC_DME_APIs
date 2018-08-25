@@ -179,7 +179,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
         json.dump(collection_metadata, fp)
 
     #Prepare the command
-    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
+    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type, ext)
     command = "dm_register_collection " + json_file_name + " " + archive_path
 
     #Audit the command
@@ -198,7 +198,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
 
 
 
-def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit, dryrun):
+def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit, dryrun, ext = None):
 
     global files_registered, bytes_stored
     #Build metadata for the object
@@ -213,7 +213,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
         json.dump(object_metadata, fp)
 
     #Prepare the command
-    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
+    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type, ext)
     archive_path = archive_path + '/' + file_name
     command = "dm_register_dataobject " + json_file_name + " " + archive_path + " " + fullpath
 
