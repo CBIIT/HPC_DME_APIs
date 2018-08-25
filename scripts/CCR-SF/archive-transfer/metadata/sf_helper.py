@@ -124,8 +124,8 @@ class SFHelper(object):
 
         if 'Undetermined' in path or tarfile.endswith('supplement.tar') or 'singlecell' in tarfile or len(path.split("/")) == 1:
             project_name =  SFHelper.get_run_name(tarfile)
-            if 'Undetermined' in path and ext is not None:
-                project_name = project_name + '_' + ext
+            #if 'Undetermined' in path and ext is not None:
+                #project_name = project_name + '_' + ext
 
 
 
@@ -139,7 +139,9 @@ class SFHelper(object):
                 if(project_name == 'Sample_SPECS_2070'):
                     project_name = 'Staudt_Roland_49mRNA_11_2_15'
 
-        if(ext is not None):
+
+        if ext is not None:
+            project_name = project_name + '_' + ext
             logging.info("project_name from " + path + " and ext " + ext + " is " + project_name)
         else:
             logging.info("project_name from " + path + " is " + project_name)
