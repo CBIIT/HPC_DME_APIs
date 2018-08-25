@@ -107,7 +107,7 @@ def main(args):
                 register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun, ext)
 
                 #create Object metadata with Sample type parent and register object
-                register_object(path, "Sample", tarfile_name, True, filepath, sf_audit, dryrun)
+                register_object(path, "Sample", tarfile_name, True, filepath, sf_audit, dryrun, ext)
 
             elif line.rstrip().endswith('laneBarcode.html') and '/all/' in line and not 'Control_Sample' in line:
 
@@ -198,7 +198,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
 
 
 
-def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit, dryrun):
+def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit, dryrun, ext = None):
 
     global files_registered, bytes_stored
     #Build metadata for the object
@@ -213,7 +213,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
         json.dump(object_metadata, fp)
 
     #Prepare the command
-    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
+    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type, ext)
     archive_path = archive_path + '/' + file_name
     command = "dm_register_dataobject " + json_file_name + " " + archive_path + " " + fullpath
 
