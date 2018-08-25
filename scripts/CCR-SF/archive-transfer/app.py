@@ -119,6 +119,7 @@ def main(args):
                 if flowcell_id in head:
 
                     path = head.split(flowcell_id + '/')[-1]
+                    ext = SFUtils.get_unaligned_ext(filepath)
 
                     #Ensure that metadata path does not have the Sample sub-directory and that it is valid
                     if path.count('/') == 1 and '_' in path:
@@ -132,10 +133,10 @@ def main(args):
                         register_collection(path, "PI_Lab", tarfile_name, False, sf_audit, dryrun)
 
                         # Register Flowcell collection with Project type parent
-                        register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun)
+                        register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun, ext)
 
                         # create Object metadata with Flowcell type parent and register object
-                        register_object(path, "Flowcell", tarfile_name, False, filepath, sf_audit, dryrun)
+                        register_object(path, "Flowcell", tarfile_name, False, filepath, sf_audit, dryrun, ext)
 
                     else:
                         # ignore this html
