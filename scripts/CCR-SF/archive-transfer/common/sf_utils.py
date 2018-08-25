@@ -43,6 +43,11 @@ class SFUtils(object):
         else:
             ext = None
 
+        if ext is not None:
+            logging.info('Unaligned ext: ' + ext)
+        else:
+            logging.info('No ext. for Unaligned')
+
         return ext
 
 
