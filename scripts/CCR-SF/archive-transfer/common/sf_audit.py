@@ -80,7 +80,7 @@ class SFAudit(object):
 
 
     #Record the upload
-    def audit_upload(self, tarfile_name, filepath, fullpath, archive_path, dryrun):
+    def audit_upload(self, tarfile_name, filepath, fullpath, archive_path, dryrun, ext = None):
 
         archived = False
         result = 'Fail'
@@ -122,7 +122,7 @@ class SFAudit(object):
             includes.write("\nError registering file \n\n")
 
         includes.close()
-        self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize, result)
+        self.record_to_csv(tarfile_name, filepath, fullpath, archive_path, filesize, result, ext)
 
 
 
@@ -169,7 +169,7 @@ class SFAudit(object):
 
 
     # Record to csv file: tarfile name, file path, archive path
-    def record_to_csv(self, tarfile_name, filepath, fullpath, archive_path, filesize, result):
+    def record_to_csv(self, tarfile_name, filepath, fullpath, archive_path, filesize, result, ext = None):
 
         flowcell_id = SFHelper.get_flowcell_id(tarfile_name)
         normalized_filepath = fullpath.split("uploads/")[-1]
@@ -182,7 +182,7 @@ class SFAudit(object):
         includes_csv = open(self.includes_csv_path, "a")
         includes_csv.write(tarfile_name + ", " + normalized_filepath + ", " + archive_path +
             ", " + flowcell_id + ", " + SFHelper.get_pi_name(path) + ", " + SFHelper.get_project_id(path) +
-            ", " + SFHelper.get_project_name(path, tarfile_name) + ", " + SFHelper.get_sample_name(path) +
+            ", " + SFHelper.get_project_name(path, tarfile_name, ext) + ", " + SFHelper.get_sample_name(path) +
             ", " + SFHelper.get_run_name(tarfile_name) + ", " + SFHelper.get_sequencing_platform(tarfile_name) +
             "," + str(filesize) + "," + result + "\n")
         includes_csv.close()
