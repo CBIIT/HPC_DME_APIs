@@ -44,7 +44,7 @@ public class HpcBannerProvider extends DefaultBannerProvider {
 	}
 
 	public String getVersion() {
-		return "1.7.3";
+		return "1.8.0";
 	}
 
 	public String getWelcomeMessage() {
