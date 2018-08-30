@@ -19,10 +19,11 @@ class MetaHelper(object):
 
     @staticmethod
     def add_metadata(metadata_items, key, value):
-        item = {}
-        item['attribute'] = key;
-        item['value'] = value;
-        metadata_items.append(item)
+        if value:
+            item = {}
+            item['attribute'] = key;
+            item['value'] = value;
+            metadata_items.append(item)
         return metadata_items
 
 
