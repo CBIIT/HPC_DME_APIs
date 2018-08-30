@@ -2,7 +2,7 @@ import logging
 import json
 
 from collections import OrderedDict
-from metadata.sf_helper import SFHelper
+from metadata.meta_helper import MetaHelper
 
 class SFCollection(object):
 
@@ -19,82 +19,38 @@ class SFCollection(object):
 
         self.metadata = OrderedDict()
         self.metadata["metadataEntries"] = []
-        #self.parent_types = {"Sample": "Flowcell", "Flowcell" : "Project", "Project" : "PI_Lab"}
+        self.metadata_attributes = {'PI_Lab' : ['pi_name'],
+                                    'Project': ['affiliation', 'project_name', 'start_date', 'project_title', 'description', 'method', 'collaborator', 'publications']}
 
 
-    def build_metadata_items(self):
 
+
+
+    def build_metadata(self, proj_meta):
+
+        metadata_items = []
         if self.type is not None:
-            self.set_attribute("collection_type", self.type)
+            metadata_items = MetaHelper.add_metadata(metadata_items, "collection_type", self.type)
         else:
-            self.set_attribute("collection_type", 'Folder')
+            metadata_items = MetaHelper.add_metadata(metadata_items, "collection_type", 'Folder')
 
-        if(self.type == "PI_Lab"):
-            self.set_pi_lab_attributes()
+        if self.type in self.metadata_attributes.keys():
+            attribute_list = self.metadata_attributes[self.type]
+            #print attribute_list
+            metadata_items = MetaHelper.add_metadata_list(metadata_items, proj_meta, attribute_list)
 
-
-        elif(self.type == "Project"):
-            self.set_project_attributes()
-
-        #else:
-         #   raise Exception("Incorrect collection type in parent: " + self.type)
-
-        return self.metadata_items
-
-
-    def set_attribute(self, key, value):
-        item = {}
-        item["attribute"] = key;
-        item["value"] = value;
-        self.metadata_items.append(item)
-
-
-    def get_attribute(self, key, meta_list = None):
-
-        if(meta_list is None):
-            meta_list = self.metadata_items
-
-        for item in meta_list:
-            if item['attribute'] == key:
-                item_val = item['value']
-                break
-        else:
-            item_val = None
-
-        return item_val
-
-
-    def set_pi_lab_attributes(self):
-        self.set_attribute("pi_name", SFHelper.get_pi_name(self.name))
-
-
-    def set_project_attributes(self):
-        self.set_attribute("project_name", SFHelper.get_project_name(self.name))
-
-
-
-    def get_metadata_items(self):
-        return self.metadata_items
-
-
-
-    def set_metadataEntries(self):
-        self.metadata["metadataEntries"] = self.get_metadata_items()
+        self.metadata["metadataEntries"] = metadata_items
         logging.info(self.metadata)
-
-
-    def build_metadata(self):
-
-        self.metadata["metadataEntries"] = self.build_metadata_items()
-
-        logging.info(self.metadata)
+        #print self.metadata
+        return self.metadata
 
 
 
     def get_metadata(self):
-        if(not any(self.metadata["metadataEntries"])):
-            self.build_metadata()
+        #if(not any(self.metadata["metadataEntries"])):
+            #self.build_metadata()
         return self.metadata
+
 
 
 
