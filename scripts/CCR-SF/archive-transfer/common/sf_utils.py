@@ -40,6 +40,10 @@ class SFUtils(object):
             ext = filepath.split('Unalignd_')[-1]
             ext = ext.split('/')[0]
 
+        elif 'Unaligned' in filepath:
+            ext = filepath.split('Unaligned')[-1]
+            ext = '_Unaligned' + ext.split('/')[0]
+
         else:
             ext = None
 
