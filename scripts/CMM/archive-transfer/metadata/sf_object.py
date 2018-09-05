@@ -29,13 +29,13 @@ class SFObject(object):
         match_found = False;
         for ext, type in self.extensions.items():
             if self.file_path.endswith(ext):
-                MetaHelper.add_metadata(self.metadata["metadataEntries"], "file_type", type)
+                MetaHelper.add_metadata(self.metadata["metadataEntries"], "file_format", type)
                 match_found = True
                 break
 
         if not match_found:
             extension = self.file_path.split('.')[-1]
-            MetaHelper.add_metadata(self.metadata["metadataEntries"], "file_type", extension)
+            MetaHelper.add_metadata(self.metadata["metadataEntries"], "file_format", extension)
 
         logging.info(self.metadata)
         #print self.metadata

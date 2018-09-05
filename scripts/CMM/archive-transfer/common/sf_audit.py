@@ -70,11 +70,12 @@ class SFAudit(object):
 
             # Record the result
             response_header = "dataObject-registration-response-header.tmp"
-            with open(response_header) as f:
-                for line in f:
-                    logging.info(line)
-                    if ('200 OK' in line or '201 Created' in line):
-                        archived = True
+            if os.path.isfile(response_header):
+                with open(response_header) as f:
+                    for line in f:
+                        logging.info(line)
+                        if ('200 OK' in line or '201 Created' in line):
+                            archived = True
 
         else:
             archived = True
