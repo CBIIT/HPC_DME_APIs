@@ -20,23 +20,48 @@ from common.sf_audit import SFAudit
 #following:
 #- create a PI_Lab_<PI folder> directory
 #- create a Project_<PI_folder> directory
-#- Walk the folder, checking to see if that directory path is as element of a value array
-#in the hierarchy_dict dictionary. If so, it will upload that folder to HPCDME
+#Recursively walk through all the sub-folders
+#For each file in the sub-folder
+#Create the collection hierarchy and upload the file
+
+
+#Additional notes on inputs:
+#A csv file with rows representing metadata for each folder is provided.
+# If a specific mandatory metadata is missing, then it is generated if the appropriate rule is coded. Else HPCDME throws an error during validation.
+#If all the metadata is missing, then the mandatory metadata is generated if the appropriate rules are provided. Else HPCDME throws an error.
+
+
+#Example command:
+#python app.py /Users/menons2/development/data/CMM/project-list /Users/menons2/development/data/CMM/ /Users/menons2/development/data/CMM/test-run4 True /Users/menons2/development/data/CMM/CMM_Project_Metadata_For_Parsing.csv 0 0
+#where
+#arg[1]:  list of projects to be archived
+#arg[2]: Location of the projects on the local machine
+#arg[3]: Path to the audit directory that will be created
+#[arg[4]: Boolean indicating whether this is a dryrun or not
+#arg[5]: The csv metadata input file.
+#arg[6]: Number of files already loaded. Used to provide continuity for audit purposes in case of interruptions.
+#arg[7]: Number of bytes already stored. Used to provide continutity for audit purposes in case of interruptions.
 
 ############################################
 
 
 def main(args):
 
-    #pi_mapping = {'0001': '0001', '0002': '0002', '0003': 'Yawen_Bai', '0004': '0004', '0005': '0005',
-     #             '0006': '0006', '0007': 'Kylie_Walters', '0008': '0008', '0009': '0009', '0010': '0010',
-      #            '0011': '0011', '0012': '0012', '0013': '0013', '0014': '0014', '0015': '0015',
-       #           '0016': '0016'}
 
     #hierarchy_dict  = {'0001': ['0001/Latitude_runs', '0001/screening_images']}
+
+    #Only children of these directories will be archived
     hierarchy_list = ['Latitude_runs', 'screening_images']
-    match_dict = {'Latitude_runs' : '\d{8}_\d{4}'}
-    base_path = '/CMM_Archive'
+
+    #Children of directories with the names as the keys listed below should have format as indicated in the values.
+    #E.g. all child directories of Latitude_runs and screening_images should start with 'YYYYMMDD_'
+    # match_dict = {'Latitude_runs' : '\d{8}_\d{4}'}
+    match_dict = {'Latitude_runs': '^\d{8}_', 'screening_images': '^\d{8}_'}
+
+
+    #Indicates what type the child should be set to. Should be aligned with the data hierarchy defined in the HPCDME DB
+    child_types = {'Latitude_runs': 'Run', 'screening_images': 'Run'}
+
 
     if len(sys.argv) < 4:
         print("\n Usage: python app.py project_list project_dir audit_dir dryrun metadata_file initial_bytes initial_file_count")
@@ -127,7 +152,7 @@ def main(args):
                 #print('File to register \t%s' % fname)
                 logging.info('File to register: %s', fname)
                 full_path = dirName + '/' + fname
-                register_object(project_collection, project_dir, full_path, sf_audit, dryrun, project_metadata)
+                register_object(project_collection, project_dir, full_path, sf_audit, dryrun, metadata_reader, child_types)
 
 
 
@@ -172,16 +197,33 @@ def register_collection(name, type, parent, sf_audit, dryrun, proj_metadata):
 
 
 
-def register_object(parent, project_dir, full_path, sf_audit, dryrun, proj_metadata):
-
+def register_object(parent, project_dir, full_path, sf_audit, dryrun, metadata_reader, child_types):
 
     parent_path = full_path.split(project_dir + '/')[-1]
+    print 'parent path: ' + parent_path
     parent_path = parent_path.rsplit('/', 1)[0]
 
-    collection_names = parent_path.split('/')
+
+
+    #collection_names = parent_path.split('/')
     #Create collection with each collection name
-    for name in collection_names:
-        parent = register_collection(name, None, parent, sf_audit, dryrun, proj_metadata)
+    #for name in collection_names:
+        #parent = register_collection(name, None, parent, sf_audit, dryrun, proj_metadata)
+
+    path_names = parent_path.split('/')
+    path = project_dir
+
+
+    for name in path_names:
+        path = path + '/' + name
+        print 'path: ' + path
+        collection_metadata = metadata_reader.find_metadata_row('project_dir', path)
+        if(parent.get_name() in child_types.keys()):
+            type = child_types[parent.get_name()]
+        else:
+            type = None
+        parent = register_collection(path, type, parent, sf_audit, dryrun, collection_metadata)
+
 
     #Build metadata for the object
     object_to_register = SFObject(full_path, parent)
@@ -204,7 +246,11 @@ def register_object(parent, project_dir, full_path, sf_audit, dryrun, proj_metad
     if not dryrun:
         response_header = "dataObject-registration-response-header.tmp"
         os.system("rm - f " + response_header + " 2>/dev/null")
-        os.system(command)
+
+        try:
+            os.system(command)
+        except:
+            logging.error('Error executing: ' + command)
 
     #Audit the result
     sf_audit.audit_upload(full_path, archive_path, dryrun)

@@ -8,11 +8,12 @@ class MetaHelper(object):
 
 
     @staticmethod
-    def get_metadata_for_attributes(row, attr_list):
+    def get_metadata_for_attributes(row):
         metadata_items = []
 
-        for key in attr_list:
-            metadata_items = MetaHelper.add_metadata(metadata_items, key, row[key])
+        if row:
+            for key in row.keys():
+                metadata_items = MetaHelper.add_metadata(metadata_items, key, row[key])
 
         return metadata_items
 
@@ -29,8 +30,8 @@ class MetaHelper(object):
 
 
     @staticmethod
-    def add_metadata_list(metadata_items, proj_meta, attrib_list):
-        metadata_items.extend(MetaHelper.get_metadata_for_attributes(proj_meta, attrib_list))
+    def add_metadata_list(metadata_items, proj_meta):
+        metadata_items.extend(MetaHelper.get_metadata_for_attributes(proj_meta))
         return metadata_items
 
 
