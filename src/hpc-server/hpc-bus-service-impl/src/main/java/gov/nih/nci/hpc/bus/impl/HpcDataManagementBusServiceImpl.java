@@ -895,8 +895,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             "Null / Empty path in registration request", HpcErrorType.INVALID_REQUEST_INPUT);
       }
 
-      //validateDmeArchivePathHasNoForbiddenChars(path);
-
       // Validate no multiple registration requests for the same path.
       if (dataObjectRegistrationRequests.put(path, dataObjectRegistrationRequest) != null) {
         throw new HpcException(
@@ -1597,7 +1595,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   /**
-   * Construct a download response DTO object.
+   * Create parent collections.
    *
    * @param path The data object's path.
    * @param createParentCollections The indicator whether to create parent collections.
