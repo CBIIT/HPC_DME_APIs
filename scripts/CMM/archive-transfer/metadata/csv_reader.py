@@ -13,12 +13,10 @@ class CSVMetadataReader(object):
 
     def find_metadata_row(self, attribute_name, attribute_value):
 
-
         logging.info('project_dir value for metadata search: ' + attribute_value)
 
         input_file = open(self.input_filepath, 'r')
         reader = csv.DictReader(input_file)
-        title = reader.fieldnames
         for row in reader:
             if row[attribute_name] == attribute_value:
                 #print row
