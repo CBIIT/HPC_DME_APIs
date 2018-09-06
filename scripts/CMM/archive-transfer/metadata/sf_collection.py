@@ -81,7 +81,7 @@ class SFCollection(object):
                     break
 
             if not match_found:
-                self.name = self.path.split('/')[-1]
+                self.name = self.path.split('/')[-1].strip()
 
             return self.name
 
@@ -116,7 +116,7 @@ class SFCollection(object):
         else:
             self.archive_path = parent_archive_path + '/'  + self.get_name()
 
-        logging.info("Collection archive path for " + self.path + "is: " + self.archive_path)
+        logging.info("Collection archive path for " + self.path + " is: " + self.archive_path)
 
 
 
