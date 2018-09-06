@@ -8,7 +8,7 @@ import re
 from metadata.sf_collection import SFCollection
 from metadata.sf_object import SFObject
 from metadata.csv_reader import CSVMetadataReader
-from metadata.sf_helper import SFHelper
+from metadata.meta_helper import MetaHelper
 
 
 
@@ -94,20 +94,20 @@ def main(args):
 
     for line in open(project_list).readlines():
 
-        project_dir = line.split(':')[0]
-        name = line.split(':')[-1].rstrip()
+        project_dir = line.strip() #line.split(':')[0]
+        #name = line.split(':')[-1].rstrip()
 
         metadata_reader = CSVMetadataReader(input_filepath)
-        project_metadata = metadata_reader.find_metadata_row('project_dir', project_dir.split('/')[-1].strip('0'))
 
-        #Create a PI_Lab collection with appropriate json
-        pi_collection = register_collection(name, 'PI_Lab', None, sf_audit, dryrun, project_metadata)
+        # Create a PI_Lab collection with appropriate metadata
+        pi_metadata = metadata_reader.find_metadata_row('path_id', project_dir.strip('0'))
+        pi_collection = register_collection(project_dir, 'PI_Lab', None, sf_audit, dryrun, pi_metadata)
 
-        #Create a Project collection with appropriate json
-        project_collection = register_collection(name, 'Project', pi_collection, sf_audit, dryrun, project_metadata)
+        #Create a Project collection with appropriate metadata
+        project_metadata = metadata_reader.find_metadata_row('path_id', project_dir.strip('0') + '/Project')
+        project_collection = register_collection(project_dir, 'Project', pi_collection, sf_audit, dryrun, project_metadata)
 
 
-        parent_collection = project_collection
         for dirName, subdirList, fileList in os.walk(projects_path + project_dir):
             #print dirName, subdirList, fileList
             logging.info(str(dirName) + ', ' + str(subdirList) + ', ' + str(fileList))
@@ -135,7 +135,6 @@ def main(args):
             if parent in match_dict.keys():
                 #format is specified
                 dirBaseName = os.path.basename(dirName)
-                #print'dirBaseName: ' + dirBaseName + ', pattern: ' + match_dict.get(parent)
                 logging.info('dirBaseName: ' + dirBaseName + ', pattern: ' + match_dict.get(parent))
                 if not re.match(match_dict.get(parent), dirBaseName):
                     print 'No match found'
@@ -167,12 +166,13 @@ def register_collection(name, type, parent, sf_audit, dryrun, proj_metadata):
     collection = SFCollection(name, type, parent)
     collection_metadata = collection.build_metadata(proj_metadata)
 
+    archive_path = collection.get_archive_path()
+
     #Create the metadata json file
     json_path = sf_audit.audit_path + '/jsons'
-    json_file_name = SFHelper.create_json_file(collection_metadata, name, json_path)
+    json_file_name = MetaHelper.create_json_file(collection_metadata, name, json_path)
 
     #Prepare the command
-    archive_path = collection.get_archive_path()
     command = "dm_register_collection " + json_file_name + " " + archive_path
 
     #Audit the command
@@ -200,10 +200,7 @@ def register_collection(name, type, parent, sf_audit, dryrun, proj_metadata):
 def register_object(parent, project_dir, full_path, sf_audit, dryrun, metadata_reader, child_types):
 
     parent_path = full_path.split(project_dir + '/')[-1]
-    print 'parent path: ' + parent_path
     parent_path = parent_path.rsplit('/', 1)[0]
-
-
 
     #collection_names = parent_path.split('/')
     #Create collection with each collection name
@@ -216,8 +213,7 @@ def register_object(parent, project_dir, full_path, sf_audit, dryrun, metadata_r
 
     for name in path_names:
         path = path + '/' + name
-        print 'path: ' + path
-        collection_metadata = metadata_reader.find_metadata_row('project_dir', path)
+        collection_metadata = metadata_reader.find_metadata_row('path_id', path)
         if(parent.get_name() in child_types.keys()):
             type = child_types[parent.get_name()]
         else:
@@ -229,24 +225,23 @@ def register_object(parent, project_dir, full_path, sf_audit, dryrun, metadata_r
     object_to_register = SFObject(full_path, parent)
     object_metadata = object_to_register.build_metadata()
 
+    archive_path = object_to_register.get_archive_path()
+
     # create the metadata json file
     json_path = sf_audit.audit_path + '/jsons'
-    json_file_name = SFHelper.create_json_file(object_metadata, full_path, json_path)
+    json_file_name = MetaHelper.create_json_file(object_metadata, full_path, json_path)
 
     #Prepare the command
-    archive_path = object_to_register.get_archive_path()
     command = "dm_register_dataobject " + json_file_name + " " + archive_path + " " + full_path
 
     #Audit the command
     sf_audit.audit_command(command)
-    #print command
 
 
     #Run the command
     if not dryrun:
         response_header = "dataObject-registration-response-header.tmp"
         os.system("rm - f " + response_header + " 2>/dev/null")
-
         try:
             os.system(command)
         except:
