@@ -5,7 +5,7 @@ import os
 
 class MetaHelper(object):
 
-
+    exclusion_list = ['collection_name']
 
     @staticmethod
     def get_metadata_for_attributes(row):
@@ -42,6 +42,11 @@ class MetaHelper(object):
 
         if not os.path.exists(json_path):
             os.mkdir(json_path)
+
+        for key in MetaHelper.exclusion_list:
+            for element in metadata["metadataEntries"]:
+                if element['attribute'] == key:
+                    metadata["metadataEntries"].remove(element)
 
         # create the metadata json file
         #name = full_path.rsplit('/', 1)[-1]
