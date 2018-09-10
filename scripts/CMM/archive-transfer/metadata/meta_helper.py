@@ -50,7 +50,8 @@ class MetaHelper(object):
 
         # create the metadata json file
         #name = full_path.rsplit('/', 1)[-1]
-        name = full_path.replace('/', '_')
+        print 'full_path ' + full_path
+        name = full_path[1:].replace('/', '_')
         json_file_name = json_path + '/' + name + ".json"
         with open(json_file_name, "w") as fp:
             json.dump(metadata, fp)

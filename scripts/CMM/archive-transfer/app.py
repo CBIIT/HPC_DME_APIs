@@ -55,12 +55,13 @@ def main(args):
 
     #Children of directories with the names as the keys listed below should have format as indicated in the values.
     #E.g. all child directories of Latitude_runs and screening_images should start with 'YYYYMMDD_'
-    # match_dict = {'Latitude_runs' : '\d{8}_\d{4}'}
-    match_dict = {'Latitude_runs': '^\d{8}_', 'screening_images': '^\d{8}_'}
-
+    #match_dict = {'Latitude_runs': '^\d{8}_', 'screening_images': '^\d{8}_'}
+    type_match_dict = {'Run': '^\d{8}_', 'Images': 'Images', 'Grid': '^Grid'}
+    #type_match_dict = {'^\d{8}_': 'Run', 'Images': 'Images', '^Grid': 'Grid'}
 
     #Indicates what type the child should be set to. Should be aligned with the data hierarchy defined in the HPCDME DB
-    child_types = {'Latitude_runs': 'Run', 'screening_images': 'Run'}
+    #child_types = {'Latitude_runs': 'Run', 'screening_images': 'Run'}
+    hierarchy_types = {'Folder': ['Run', 'Folder'], 'Run': ['Images', 'Grid'], 'Grid': ['Images']}
 
 
     if len(sys.argv) < 4:
@@ -118,7 +119,7 @@ def main(args):
 
 
             parent = os.path.abspath(os.path.join(dirName, os.pardir)).split(os.sep)[-1]
-            #Either this dirName or it's ancestor should be in dict_list which is the
+            #Either this dirName or it's ancestor should be in hierarchy_list which is the
             #approved list of directories or their children
             match_found = False;
             for value in hierarchy_list:
@@ -132,14 +133,14 @@ def main(args):
 
             #Check if there is a format specified for this directory name
             #in the match dict
-            if parent in match_dict.keys():
-                #format is specified
-                dirBaseName = os.path.basename(dirName)
-                logging.info('dirBaseName: ' + dirBaseName + ', pattern: ' + match_dict.get(parent))
-                if not re.match(match_dict.get(parent), dirBaseName):
-                    print 'No match found'
-                    del subdirList[:]
-                    continue
+            #if parent in match_dict.keys():
+            #    #format is specified
+            #    dirBaseName = os.path.basename(dirName)
+            #    logging.info('dirBaseName: ' + dirBaseName + ', pattern: ' + match_dict.get(parent))
+            #    if not re.match(match_dict.get(parent), dirBaseName):
+            #        print 'No match found'
+            #        del subdirList[:]
+            #        continue
 
 
             #Print subdirectory
@@ -151,7 +152,7 @@ def main(args):
                 #print('File to register \t%s' % fname)
                 logging.info('File to register: %s', fname)
                 full_path = dirName + '/' + fname
-                register_object(project_collection, project_dir, full_path, sf_audit, dryrun, metadata_reader, child_types)
+                register_object(project_collection, project_dir, full_path, sf_audit, dryrun, metadata_reader, hierarchy_types, type_match_dict)
 
 
 
@@ -170,7 +171,7 @@ def register_collection(name, type, parent, sf_audit, dryrun, proj_metadata):
 
     #Create the metadata json file
     json_path = sf_audit.audit_path + '/jsons'
-    json_file_name = MetaHelper.create_json_file(collection_metadata, name, json_path)
+    json_file_name = MetaHelper.create_json_file(collection_metadata, archive_path, json_path)
 
     #Prepare the command
     command = "dm_register_collection " + json_file_name + " " + archive_path
@@ -197,7 +198,7 @@ def register_collection(name, type, parent, sf_audit, dryrun, proj_metadata):
 
 
 
-def register_object(parent, project_dir, full_path, sf_audit, dryrun, metadata_reader, child_types):
+def register_object(parent, project_dir, full_path, sf_audit, dryrun, metadata_reader, hierarchy_types, type_match_dict):
 
     parent_path = full_path.split(project_dir + '/')[-1]
     parent_path = parent_path.rsplit('/', 1)[0]
@@ -214,11 +215,24 @@ def register_object(parent, project_dir, full_path, sf_audit, dryrun, metadata_r
     for name in path_names:
         path = path + '/' + name
         collection_metadata = metadata_reader.find_metadata_row('path_id', path)
-        if(parent.get_name() in child_types.keys()):
-            type = child_types[parent.get_name()]
-        else:
-            type = None
-        parent = register_collection(path, type, parent, sf_audit, dryrun, collection_metadata)
+
+        #if(parent.get_name() in child_types.keys()):
+        #    type = child_types[parent.get_name()]
+        #else:
+        #    type = None
+
+
+        collection_type = 'Folder'
+        types = hierarchy_types.get(parent.type)
+        if types:
+            for cmm_type in types:
+                if(cmm_type != 'Folder'):
+                    if re.search(type_match_dict.get(cmm_type), name):
+                        collection_type = cmm_type
+                        break
+
+
+        parent = register_collection(path, collection_type, parent, sf_audit, dryrun, collection_metadata)
 
 
     #Build metadata for the object
@@ -229,7 +243,7 @@ def register_object(parent, project_dir, full_path, sf_audit, dryrun, metadata_r
 
     # create the metadata json file
     json_path = sf_audit.audit_path + '/jsons'
-    json_file_name = MetaHelper.create_json_file(object_metadata, full_path, json_path)
+    json_file_name = MetaHelper.create_json_file(object_metadata, archive_path, json_path)
 
     #Prepare the command
     command = "dm_register_dataobject " + json_file_name + " " + archive_path + " " + full_path
