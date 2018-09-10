@@ -111,7 +111,7 @@ class SFCollection(object):
         else:
             parent_archive_path = self.parent.archive_path
 
-        if self.type is not None:
+        if self.type is not None and self.type is not 'Folder':
             self.archive_path = parent_archive_path + '/' + self.type + '_' + self.get_name()
         else:
             self.archive_path = parent_archive_path + '/'  + self.get_name()
