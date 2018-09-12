@@ -140,7 +140,7 @@ public class HpcScheduledTasksImpl {
   }
 
   /** Refresh the metadata materialized Views. */
-  @Scheduled(cron = "${hpc.scheduler.cron.refreshMaterializedViews.delay}")
+  @Scheduled(cron = "${hpc.scheduler.cron.refreshMetadataViews.delay}")
   private void refreshMetadataViewsTask() {
     executeTask("refreshMetadataViewsTask()", systemBusService::refreshMetadataViews);
   }
