@@ -133,9 +133,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
           + "public.\"r_user_group\" user_group join public.\"r_user_main\" account using (user_id) where "
           + "account.user_name = ?))";
 
-  private static final String USER_ACCESS_ARRAY_SQL =
-      "select array_agg(object_id) from " + USER_ACCESS_SQL + " as t";
-
   private static final String LIMIT_OFFSET_SQL = " order by object_path limit ? offset ?";
 
   private static final String GET_COLLECTION_PATHS_SQL =
@@ -158,7 +155,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
       "select meta_attr_name, meta_attr_value, meta_attr_unit, level, level_label "
           + "from public.\"r_data_hierarchy_meta_main\" where object_path = ? and level >= ? order by level";
 
-  private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
+  private static final String REFRESH_VIEW_SQL = "refresh materialized view";
 
   private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL =
       "select collection.level_label, collection.meta_attr_name "
