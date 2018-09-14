@@ -20,7 +20,6 @@ import gov.nih.nci.hpc.exception.HpcException;
  * HPC Data Search Business Service Interface.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 public interface HpcDataSearchBusService {
   /**
