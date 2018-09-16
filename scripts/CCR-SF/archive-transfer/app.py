@@ -86,7 +86,7 @@ def main(args):
                 continue
 
             #if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
-            exclusion_list = ['10X', 'Phix', 'PhiX', 'demux', 'demultiplex']
+            exclusion_list = ['10X', 'demux', 'demultiplex']
             if any(ext in line.rstrip() for ext in exclusion_list):
                 sf_audit.record_exclusion(tarfile_name, line.rstrip(),
                 'Path contains substring from exclusion list')
