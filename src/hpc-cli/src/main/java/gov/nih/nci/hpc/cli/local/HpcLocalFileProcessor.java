@@ -105,7 +105,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
         logger.debug("parentMetadataEntries " + parentMetadataEntries);
         parentCollectionMetadataEntries.addAll(parentMetadataEntries);
       }
-      dataObject.getParentCollectionMetadataEntries().addAll(parentCollectionMetadataEntries);
+      dataObject.getParentCollectionsBulkMetadataEntries().getDefaultMetadataEntries().addAll(parentCollectionMetadataEntries);
     }
     HpcFileLocation fileLocation = new HpcFileLocation();
     fileLocation.setFileId(entity.getAbsolutePath());

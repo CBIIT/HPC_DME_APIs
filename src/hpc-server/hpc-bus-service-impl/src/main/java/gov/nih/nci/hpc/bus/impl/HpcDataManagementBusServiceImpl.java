@@ -52,6 +52,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
@@ -217,7 +219,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     createParentCollections(
         path,
         collectionRegistration.getCreateParentCollections(),
-        collectionRegistration.getParentCollectionMetadataEntries(),
+        collectionRegistration.getParentCollectionsBulkMetadataEntries(),
         userId,
         userName,
         configurationId);
@@ -698,7 +700,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     createParentCollections(
         path,
         dataObjectRegistration.getCreateParentCollections(),
-        dataObjectRegistration.getParentCollectionMetadataEntries(),
+        dataObjectRegistration.getParentCollectionsBulkMetadataEntries(),
         userId,
         userName,
         configurationId);
@@ -1599,7 +1601,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    *
    * @param path The data object's path.
    * @param createParentCollections The indicator whether to create parent collections.
-   * @param parentCollectionMetadataEntries The parent collection metadata entries.
+   * @param parentCollectionsBulkMetadataEntries The parent collections bulk metadata entries.
    * @param userId The registrar user-id.
    * @param userName The registrar name.
    * @param configurationId The data management configuration ID.
@@ -1608,7 +1610,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   private void createParentCollections(
       String path,
       Boolean createParentCollections,
-      List<HpcMetadataEntry> parentCollectionMetadataEntries,
+      HpcBulkMetadataEntries parentCollectionsBulkMetadataEntries,
       String userId,
       String userName,
       String configurationId)
@@ -1617,23 +1619,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if (createParentCollections != null
         && createParentCollections
         && !dataManagementService.isPathParentDirectory(path)) {
-      // Validate parent collection metadata provided w/ the request.
-      if (parentCollectionMetadataEntries == null || parentCollectionMetadataEntries.isEmpty()) {
-        throw new HpcException(
-            "Null or empty parent metadata entries", HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-
-      // Create a collection registration request DTO.
+      // Create a parent collection registration request DTO.
+      String parentCollectionPath = path.substring(0, path.lastIndexOf('/'));
       HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
-      collectionRegistration.getMetadataEntries().addAll(parentCollectionMetadataEntries);
-      collectionRegistration
-          .getParentCollectionMetadataEntries()
-          .addAll(parentCollectionMetadataEntries);
+      collectionRegistration.getMetadataEntries().addAll(getParentCollectionMetadataEntries(parentCollectionPath, parentCollectionsBulkMetadataEntries));
+      collectionRegistration.setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
       collectionRegistration.setCreateParentCollections(true);
 
       // Register the parent collection.
       registerCollection(
-          path.substring(0, path.lastIndexOf('/')),
+          parentCollectionPath,
           collectionRegistration,
           userId,
           userName,
@@ -2305,7 +2300,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   /**
    * Calculate the overall % complete of a bulk data object registration task.
    *
-   * @param downloadTask The collection download task. return The % complete.
+   * @param downloadTask The bulk download task. 
+   * @return The % complete.
    */
   private int calculateDataObjectBulkRegistrationPercentComplete(
       HpcBulkDataObjectRegistrationTask task) {
@@ -2327,6 +2323,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     return 0;
+  }
+  
+  /**
+   * Get metadata entries for a parent collection registration. The metadata entries are searched in the following manner:
+   * 1. Metadata entries found for the specific path in the bulk metadata entries.
+   * 2. The default metadata entries if provided in the bulk metadata entries.
+   * 3. 'System' default metadata entries.
+   *
+   * @param parentCollectionPath The parent collection path to provide metadata entries for.
+   * @param bulkMetadataEntries Bulk metadata entries to search in.
+   * @return Metadata entries for the parent collection path
+   */
+  private List<HpcMetadataEntry> getParentCollectionMetadataEntries(String parentCollectionPath, HpcBulkMetadataEntries bulkMetadataEntries) {
+    if(bulkMetadataEntries != null) {
+      // Search for the parent collection metadata entries by path.
+      for(HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathMetadataEntries()) {
+        if(parentCollectionPath.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
+          return bulkMetadataEntry.getMetadataEntries();
+        }
+      }
+      
+      // Not found by path. Return default if provided.
+      if(!bulkMetadataEntries.getDefaultMetadataEntries().isEmpty()) {
+        return bulkMetadataEntries.getDefaultMetadataEntries();
+      }
+    }
+    
+    // Return 'system' default.
+    return metadataService.getDefaultCollectionMetadataEntries();
   }
 
   private String produceForbiddenCharsDisplayString() {
