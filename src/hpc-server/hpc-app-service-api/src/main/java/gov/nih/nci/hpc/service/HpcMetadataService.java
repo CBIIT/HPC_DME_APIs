@@ -113,6 +113,13 @@ public interface HpcMetadataService {
   public HpcMetadataEntries toMetadataEntries(HpcDirectoryScanItem scanItem);
 
   /**
+   * Get 'system' default metadata entries for collections.
+   *
+   * @return The system default collection metadata entries.
+   */
+  public List<HpcMetadataEntry> getDefaultCollectionMetadataEntries();
+
+  /**
    * Add metadata to a data object.
    *
    * @param path The data object path.

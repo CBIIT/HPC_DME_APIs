@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- * HpcDataTransferTypes.xsd * * Copyright SVG, Inc. * Copyright Leidos 
-	Biomedical Research, Inc * * Distributed under the OSI-approved BSD 3-Clause 
-	License. * See http://ncip.github.com/HPC/LICENSE.txt for details. * * @author 
-	<a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> -->
+<!--  
+ * HpcDataManagement.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ * @version $Id$
+ -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
@@ -28,8 +36,8 @@
 					maxOccurs="unbounded" />
 				<xsd:element name="createParentCollections" type="xsd:boolean"
 					minOccurs="0" />
-				<xsd:element name="parentCollectionMetadataEntries"
-					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
+				<xsd:element name="parentCollectionsBulkMetadataEntries"
+					type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -73,8 +81,8 @@
 					maxOccurs="unbounded" />
 				<xsd:element name="createParentCollections" type="xsd:boolean"
 					minOccurs="0" />
-				<xsd:element name="parentCollectionMetadataEntries"
-					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
+				<xsd:element name="parentCollectionsBulkMetadataEntries"
+					type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 				<xsd:element name="checksum" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
