@@ -140,7 +140,7 @@ class SFHelper(object):
                     project_name = 'Staudt_Roland_49mRNA_11_2_15'
 
 
-        if ext is not None:
+        if ext is not None and ext != 'Unaligned':
             project_name = project_name + '_' + ext
             logging.info("project_name from " + path + " and ext " + ext + " is " + project_name)
         else:
