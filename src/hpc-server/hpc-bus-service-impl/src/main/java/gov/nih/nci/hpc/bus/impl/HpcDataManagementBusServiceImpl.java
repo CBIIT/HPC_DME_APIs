@@ -887,9 +887,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectRegistrationRequest
           .getMetadataEntries()
           .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
-      dataObjectRegistrationRequest
-          .getParentCollectionMetadataEntries()
-          .addAll(dataObjectRegistrationItem.getParentCollectionMetadataEntries());
+      dataObjectRegistrationRequest.setParentCollectionsBulkMetadataEntries(
+          dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
 
       String path = dataObjectRegistrationItem.getPath();
       if (StringUtils.isEmpty(path)) {
@@ -1622,17 +1621,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       // Create a parent collection registration request DTO.
       String parentCollectionPath = path.substring(0, path.lastIndexOf('/'));
       HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
-      collectionRegistration.getMetadataEntries().addAll(getParentCollectionMetadataEntries(parentCollectionPath, parentCollectionsBulkMetadataEntries));
-      collectionRegistration.setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
+      collectionRegistration
+          .getMetadataEntries()
+          .addAll(
+              getParentCollectionMetadataEntries(
+                  parentCollectionPath, parentCollectionsBulkMetadataEntries));
+      collectionRegistration.setParentCollectionsBulkMetadataEntries(
+          parentCollectionsBulkMetadataEntries);
       collectionRegistration.setCreateParentCollections(true);
 
       // Register the parent collection.
       registerCollection(
-          parentCollectionPath,
-          collectionRegistration,
-          userId,
-          userName,
-          configurationId);
+          parentCollectionPath, collectionRegistration, userId, userName, configurationId);
     }
   }
 
@@ -2068,9 +2068,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         .getDataObjectMetadataEntries()
         .addAll(metadataEntries.getSelfMetadataEntries());
     dataObjectRegistration.setCreateParentCollections(true);
-    dataObjectRegistration
-        .getParentCollectionMetadataEntries()
-        .addAll(metadataEntries.getParentMetadataEntries());
+    
+    // TODO - fix this for bulk registration from Globus scan.
+    HpcBulkMetadataEntries parentCollectionsBulkMetadataEntries = new HpcBulkMetadataEntries();
+    parentCollectionsBulkMetadataEntries.getDefaultMetadataEntries().addAll(metadataEntries.getParentMetadataEntries());
+    dataObjectRegistration.setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
+
     HpcFileLocation source = new HpcFileLocation();
     source.setFileContainerId(sourceFileContainerId);
     source.setFileId(scanItem.getFilePath());
@@ -2247,7 +2250,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dto.setPath(path);
     dto.setSource(request.getSource());
     dto.getDataObjectMetadataEntries().addAll(request.getMetadataEntries());
-    dto.getParentCollectionMetadataEntries().addAll(request.getParentCollectionMetadataEntries());
+    dto.setParentCollectionsBulkMetadataEntries(request.getParentCollectionsBulkMetadataEntries());
     return dto;
   }
 
@@ -2300,7 +2303,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   /**
    * Calculate the overall % complete of a bulk data object registration task.
    *
-   * @param downloadTask The bulk download task. 
+   * @param downloadTask The bulk download task.
    * @return The % complete.
    */
   private int calculateDataObjectBulkRegistrationPercentComplete(
@@ -2324,32 +2327,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     return 0;
   }
-  
+
   /**
-   * Get metadata entries for a parent collection registration. The metadata entries are searched in the following manner:
-   * 1. Metadata entries found for the specific path in the bulk metadata entries.
-   * 2. The default metadata entries if provided in the bulk metadata entries.
-   * 3. 'System' default metadata entries.
+   * Get metadata entries for a parent collection registration. The metadata entries are searched in
+   * the following manner: 1. Metadata entries found for the specific path in the bulk metadata
+   * entries. 2. The default metadata entries if provided in the bulk metadata entries. 3. 'System'
+   * default metadata entries.
    *
    * @param parentCollectionPath The parent collection path to provide metadata entries for.
    * @param bulkMetadataEntries Bulk metadata entries to search in.
    * @return Metadata entries for the parent collection path
    */
-  private List<HpcMetadataEntry> getParentCollectionMetadataEntries(String parentCollectionPath, HpcBulkMetadataEntries bulkMetadataEntries) {
-    if(bulkMetadataEntries != null) {
+  private List<HpcMetadataEntry> getParentCollectionMetadataEntries(
+      String parentCollectionPath, HpcBulkMetadataEntries bulkMetadataEntries) {
+    if (bulkMetadataEntries != null) {
       // Search for the parent collection metadata entries by path.
-      for(HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathMetadataEntries()) {
-        if(parentCollectionPath.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
+      for (HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathMetadataEntries()) {
+        if (parentCollectionPath.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
           return bulkMetadataEntry.getMetadataEntries();
         }
       }
-      
+
       // Not found by path. Return default if provided.
-      if(!bulkMetadataEntries.getDefaultMetadataEntries().isEmpty()) {
+      if (!bulkMetadataEntries.getDefaultMetadataEntries().isEmpty()) {
         return bulkMetadataEntries.getDefaultMetadataEntries();
       }
     }
-    
+
     // Return 'system' default.
     return metadataService.getDefaultCollectionMetadataEntries();
   }
