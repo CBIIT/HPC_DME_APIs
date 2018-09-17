@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -108,8 +107,8 @@
 				maxOccurs="unbounded" />
 			<xsd:element name="createParentCollections" type="xsd:boolean"
 				minOccurs="0" />
-			<xsd:element name="parentCollectionMetadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
-				maxOccurs="unbounded" />
+			<xsd:element name="parentCollectionsBulkMetadataEntries"
+				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -125,6 +124,8 @@
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="patternType"
 				type="hpc-domain-datatransfer:HpcDirectoryScanPatternType" />
+			<xsd:element name="bulkMetadataEntries"
+				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -170,11 +171,13 @@
 				type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="failedItemsRequest"
-					type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO"
-					minOccurs="0" maxOccurs="unbounded" />
+				type="hpc-dto-datamanagement:HpcDataObjectRegistrationItemDTO"
+				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="message" type="xsd:string" />
-			<xsd:element name="effectiveTransferSpeed" type="xsd:int" minOccurs="0" />
-			<xsd:element name="percentComplete" type="xsd:int" minOccurs="0" />
+			<xsd:element name="effectiveTransferSpeed" type="xsd:int"
+				minOccurs="0" />
+			<xsd:element name="percentComplete" type="xsd:int"
+				minOccurs="0" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
 		</xsd:sequence>
@@ -212,7 +215,8 @@
 				type="hpc-domain-datamanagement:HpcDataObject" />
 			<xsd:element name="metadataEntries"
 				type="hpc-domain-metadata:HpcMetadataEntries" />
-			<xsd:element name="percentComplete" type="xsd:int" minOccurs="0" />
+			<xsd:element name="percentComplete" type="xsd:int"
+				minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -368,8 +372,10 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="message" type="xsd:string" />
-				<xsd:element name="effectiveTrasnsferSpeed" type="xsd:int" minOccurs="0" />
-				<xsd:element name="percentComplete" type="xsd:int" minOccurs="0" />
+				<xsd:element name="effectiveTrasnsferSpeed" type="xsd:int"
+					minOccurs="0" />
+				<xsd:element name="percentComplete" type="xsd:int"
+					minOccurs="0" />
 				<xsd:element name="created" type="xsd:dateTime" />
 				<xsd:element name="completed" type="xsd:dateTime" />
 			</xsd:sequence>
@@ -408,8 +414,10 @@
 					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="message" type="xsd:string" />
-				<xsd:element name="effectiveTrasnsferSpeed" type="xsd:int" minOccurs="0" />
-				<xsd:element name="percentComplete" type="xsd:int" minOccurs="0" />
+				<xsd:element name="effectiveTrasnsferSpeed" type="xsd:int"
+					minOccurs="0" />
+				<xsd:element name="percentComplete" type="xsd:int"
+					minOccurs="0" />
 				<xsd:element name="created" type="xsd:dateTime" />
 				<xsd:element name="completed" type="xsd:dateTime" />
 			</xsd:sequence>
@@ -519,8 +527,8 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
-	<!--  Data Object / Collection Move DTO-->
+
+	<!-- Data Object / Collection Move DTO -->
 	<xsd:complexType name="HpcMoveRequestDTO">
 		<xsd:sequence>
 			<xsd:element name="sourcePath" type="xsd:string" />
@@ -530,28 +538,29 @@
 
 	<xsd:complexType name="HpcMoveResponseDTO">
 		<xsd:sequence>
-			<xsd:element name="request" type="hpc-dto-datamanagement:HpcMoveRequestDTO" />
+			<xsd:element name="request"
+				type="hpc-dto-datamanagement:HpcMoveRequestDTO" />
 			<xsd:element name="result" type="xsd:boolean" />
 			<xsd:element name="message" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:element name="HpcBulkMoveRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="moveRequests"
-					type="hpc-dto-datamanagement:HpcMoveRequestDTO"
-					minOccurs="0" maxOccurs="unbounded" />
+					type="hpc-dto-datamanagement:HpcMoveRequestDTO" minOccurs="0"
+					maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="HpcBulkMoveResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="moveResponses"
-					type="hpc-dto-datamanagement:HpcMoveResponseDTO"
-					minOccurs="0" maxOccurs="unbounded" />
+					type="hpc-dto-datamanagement:HpcMoveResponseDTO" minOccurs="0"
+					maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

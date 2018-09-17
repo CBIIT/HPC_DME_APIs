@@ -1315,11 +1315,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
     registrationDTO.setSource(registrationRequest.getSource());
     registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
-    
-    // TODO - Fix after done testing single data object registration w/ parent collection metadata.
-    registrationDTO
-        .getParentCollectionsBulkMetadataEntries().getDefaultMetadataEntries()
-        .addAll(registrationRequest.getParentCollectionMetadataEntries());
+    registrationDTO.setParentCollectionsBulkMetadataEntries(registrationRequest.getParentCollectionsBulkMetadataEntries());
 
     try {
       // Determine the data management configuration to use based on the path.
