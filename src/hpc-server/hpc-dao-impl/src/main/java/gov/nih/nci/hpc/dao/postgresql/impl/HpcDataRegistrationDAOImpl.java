@@ -385,9 +385,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       jsonRequest.put("sourceFileContainerId", request.getSource().getFileContainerId());
       jsonRequest.put("sourceFileId", request.getSource().getFileId());
       jsonRequest.put("metadataEntries", toJSONArray(request.getMetadataEntries()));
+      if (request.getParentCollectionsBulkMetadataEntries() != null) {
       jsonRequest.put(
           "parentCollectionsBulkMetadataEntries",
           toJSON(request.getParentCollectionsBulkMetadataEntries()));
+      }
 
       JSONObject jsonRegistrationItem = new JSONObject();
       jsonRegistrationItem.put("task", jsonTask);
@@ -486,7 +488,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
     return metadataEntries;
   }
-  
+
   /**
    * Convert a JSON array to a list of metadata entries.
    *
@@ -496,16 +498,22 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   @SuppressWarnings("unchecked")
   private HpcBulkMetadataEntries fromJSON(JSONObject jsonBulkMetadataEntries) {
     HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
-    ((JSONArray) jsonBulkMetadataEntries.get("pathMetadataEntries")).forEach(entry -> {
-      JSONObject jsonBulkMetadataEntry = (JSONObject) entry;
-      HpcBulkMetadataEntry bulkMetadataEntry = new HpcBulkMetadataEntry();
-      bulkMetadataEntry.setPath(jsonBulkMetadataEntry.get("path").toString());
-      bulkMetadataEntry.getMetadataEntries().addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntry.get("metadataEntries")));
-      
-      bulkMetadataEntries.getPathMetadataEntries().add(bulkMetadataEntry);
-    });
-    
-    bulkMetadataEntries.getDefaultMetadataEntries().addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntries.get("defaultMetadataEntries")));
+    ((JSONArray) jsonBulkMetadataEntries.get("pathMetadataEntries"))
+        .forEach(
+            entry -> {
+              JSONObject jsonBulkMetadataEntry = (JSONObject) entry;
+              HpcBulkMetadataEntry bulkMetadataEntry = new HpcBulkMetadataEntry();
+              bulkMetadataEntry.setPath(jsonBulkMetadataEntry.get("path").toString());
+              bulkMetadataEntry
+                  .getMetadataEntries()
+                  .addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntry.get("metadataEntries")));
+
+              bulkMetadataEntries.getPathMetadataEntries().add(bulkMetadataEntry);
+            });
+
+    bulkMetadataEntries
+        .getDefaultMetadataEntries()
+        .addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntries.get("defaultMetadataEntries")));
     return bulkMetadataEntries;
   }
 
@@ -632,9 +640,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       request.getMetadataEntries().addAll(fromJSONArray((JSONArray) metadataEntries));
     }
 
-    Object parentCollectionsBulkMetadataEntries = jsonRequest.get("parentCollectionsBulkMetadataEntries");
+    Object parentCollectionsBulkMetadataEntries =
+        jsonRequest.get("parentCollectionsBulkMetadataEntries");
     if (parentCollectionsBulkMetadataEntries != null) {
-      request.setParentCollectionsBulkMetadataEntries(fromJSON((JSONObject) parentCollectionsBulkMetadataEntries));
+      request.setParentCollectionsBulkMetadataEntries(
+          fromJSON((JSONObject) parentCollectionsBulkMetadataEntries));
     }
 
     return request;
