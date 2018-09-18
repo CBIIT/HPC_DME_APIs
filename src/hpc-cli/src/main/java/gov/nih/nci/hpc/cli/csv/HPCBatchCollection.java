@@ -187,7 +187,7 @@ public class HPCBatchCollection extends HPCBatchClient {
 		dto.getMetadataEntries().addAll(metadataList);
 		dto.setCreateParentCollections(this.currentRecCreateParentCollctn);
 		if (!parentMetadataAttributes.isEmpty())
-			dto.getParentCollectionsBulkMetadataEntries().getDefaultMetadataEntries().addAll(parentMetadataAttributes);
+			dto.getParentCollectionsBulkMetadataEntries().getDefaultCollectionMetadataEntries().addAll(parentMetadataAttributes);
 
 		return dto;
 	}

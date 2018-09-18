@@ -153,7 +153,7 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
       this.metadataAttributes);
     hpcDataObjectRegistrationDTO.setCreateParentCollections(createParentFlag);
     if (!this.parentMetadataAttributes.isEmpty()) {
-      hpcDataObjectRegistrationDTO.getParentCollectionsBulkMetadataEntries().getDefaultMetadataEntries()
+      hpcDataObjectRegistrationDTO.getParentCollectionsBulkMetadataEntries().getDefaultCollectionMetadataEntries()
                                   .addAll(this.parentMetadataAttributes);
     }
 
