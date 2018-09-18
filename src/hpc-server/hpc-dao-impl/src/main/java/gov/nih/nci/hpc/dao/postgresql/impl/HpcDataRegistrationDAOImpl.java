@@ -443,7 +443,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     JSONObject jsonBulkMetadataEntries = new JSONObject();
     jsonBulkMetadataEntries.put("pathMetadataEntries", jsonPathMetadataEntries);
     jsonBulkMetadataEntries.put(
-        "defaultMetadataEntries", toJSONArray(bulkMetadataEntries.getDefaultMetadataEntries()));
+        "defaultCollectionMetadataEntries", toJSONArray(bulkMetadataEntries.getDefaultCollectionMetadataEntries()));
 
     return jsonBulkMetadataEntries;
   }
@@ -512,8 +512,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
             });
 
     bulkMetadataEntries
-        .getDefaultMetadataEntries()
-        .addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntries.get("defaultMetadataEntries")));
+        .getDefaultCollectionMetadataEntries()
+        .addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntries.get("defaultCollectionMetadataEntries")));
     return bulkMetadataEntries;
   }
 

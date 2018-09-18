@@ -2037,7 +2037,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                           directoryScanRegistrationItem
                               .getScanDirectoryLocation()
                               .getFileContainerId(),
-                          directoryScanRegistrationItem.getCallerObjectId())));
+                          directoryScanRegistrationItem.getCallerObjectId(),
+                          directoryScanRegistrationItem.getBulkMetadataEntries())));
     }
 
     return dataObjectRegistrationItems;
@@ -2050,30 +2051,42 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param basePath The base path to register the scan item with.
    * @param sourceFileContainerId The container ID containing the scan item.
    * @param callerObjectId The caller's object ID.
+   * @param bulkMetadataEntries metadata entries for this data object registration and parent collections.
    * @return data object registration DTO.
    */
   private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(
       HpcDirectoryScanItem scanItem,
       String basePath,
       String sourceFileContainerId,
-      String callerObjectId) {
-    // Generate default metadata entries.
-    HpcMetadataEntries metadataEntries = metadataService.toMetadataEntries(scanItem);
-
+      String callerObjectId,
+      HpcBulkMetadataEntries bulkMetadataEntries) {
+    // Calculate the data object path to register,
+    String path = toNormalizedPath(basePath + scanItem.getFilePath());
+    
     // Construct the registration DTO.
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
         new HpcDataObjectRegistrationItemDTO();
-    dataObjectRegistration.setPath(basePath + scanItem.getFilePath());
-    dataObjectRegistration
-        .getMetadataEntries()
-        .addAll(metadataEntries.getSelfMetadataEntries());
+    dataObjectRegistration.setPath(path);
     dataObjectRegistration.setCreateParentCollections(true);
     
-    // TODO - fix this for bulk registration from Globus scan.
-    HpcBulkMetadataEntries parentCollectionsBulkMetadataEntries = new HpcBulkMetadataEntries();
-    parentCollectionsBulkMetadataEntries.getDefaultMetadataEntries().addAll(metadataEntries.getParentMetadataEntries());
-    dataObjectRegistration.setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
+    // Set data object metadata entries.
+    if(bulkMetadataEntries != null) {
+      for(HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathMetadataEntries()) {
+        if(path.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
+          dataObjectRegistration.getMetadataEntries().addAll(bulkMetadataEntry.getMetadataEntries());
+          break;
+        }
+      }
+    }
+    if(dataObjectRegistration.getMetadataEntries().isEmpty()) {
+      // Could not find user provided data object metadata. Use default.
+      dataObjectRegistration.getMetadataEntries().addAll(metadataService.getDefaultDataObjectMetadataEntries(scanItem));
+    }
+    
+    // Set the metadata to create the parent collections.
+    dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
 
+    // Set the data object source to upload from.
     HpcFileLocation source = new HpcFileLocation();
     source.setFileContainerId(sourceFileContainerId);
     source.setFileId(scanItem.getFilePath());
@@ -2349,8 +2362,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
 
       // Not found by path. Return default if provided.
-      if (!bulkMetadataEntries.getDefaultMetadataEntries().isEmpty()) {
-        return bulkMetadataEntries.getDefaultMetadataEntries();
+      if (!bulkMetadataEntries.getDefaultCollectionMetadataEntries().isEmpty()) {
+        return bulkMetadataEntries.getDefaultCollectionMetadataEntries();
       }
     }
 

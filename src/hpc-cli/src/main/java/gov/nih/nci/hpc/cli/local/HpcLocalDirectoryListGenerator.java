@@ -148,7 +148,7 @@ public class HpcLocalDirectoryListGenerator {
 										metadataOnly);
 								if (parentMetadataEntries != null)
 									parentCollectionMetadataEntries.addAll(parentMetadataEntries);
-								dataObject.getParentCollectionsBulkMetadataEntries().getDefaultMetadataEntries().addAll(parentCollectionMetadataEntries);
+								dataObject.getParentCollectionsBulkMetadataEntries().getDefaultCollectionMetadataEntries().addAll(parentCollectionMetadataEntries);
 							}
 							HpcFileLocation fileLocation = new HpcFileLocation();
 							fileLocation.setFileId(file.getAbsolutePath());
@@ -531,7 +531,7 @@ public class HpcLocalDirectoryListGenerator {
 		collectionDTO.getMetadataEntries().addAll(metadataList);
 		List<HpcMetadataEntry> parentMetadataList = getParentCollectionMetadata(file, false);
 		collectionDTO.setCreateParentCollections(true);
-		collectionDTO.getParentCollectionsBulkMetadataEntries().getDefaultMetadataEntries().addAll(parentMetadataList);
+		collectionDTO.getParentCollectionsBulkMetadataEntries().getDefaultCollectionMetadataEntries().addAll(parentMetadataList);
 
 		System.out.println("Registering Collection " + collectionPath);
 
