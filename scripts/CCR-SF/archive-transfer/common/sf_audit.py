@@ -45,7 +45,7 @@ class SFAudit(object):
 
         #Write out the header for the csv file containing list of excluded files
         excludes_csv = open(self.excludes_csv_path, "a")
-        excludes_csv.write("Tarfile, Extracted File, Reason\n")
+        excludes_csv.write("Tarfile, Extracted File, Filesize, Reason\n")
         excludes_csv.close()
 
         #Configure the logging
@@ -58,13 +58,15 @@ class SFAudit(object):
 
 
     #Record the excluded file
-    def record_exclusion(self, tarfile_name, file_name, str):
+    def record_exclusion(self, tarfile_name, file_name, full_path, str):
+        filesize = os.path.getsize(full_path)
+
         excludes = open(self.excludes_path, "a")
         excludes.writelines(tarfile_name + ": " + file_name + " - " + str + '\n')
         excludes.close()
 
         excludes_csv = open(self.excludes_csv_path, "a")
-        excludes_csv.write(tarfile_name + ", " + file_name + ", " + str + "\n")
+        excludes_csv.write(tarfile_name + ", " + file_name + ", " + filesize + ", " + str + "\n")
         excludes_csv.close()
 
         logging.warning('Ignoring file ' + str)
