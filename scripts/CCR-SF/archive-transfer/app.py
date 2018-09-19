@@ -85,14 +85,14 @@ def main(args):
                 #This is a directory, nothing to do
                 continue
 
+            filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
+
             #if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
             exclusion_list = ['10X', 'demux', 'demultiplex']
             if any(ext in line.rstrip() for ext in exclusion_list):
-                sf_audit.record_exclusion(tarfile_name, line.rstrip(),
+                sf_audit.record_exclusion(tarfile_name, line.rstrip(), filepath,
                 'Path contains substring from exclusion list')
                 continue
-
-            filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
 
             if filepath.endswith('fastq.gz') or filepath.endswith('fastq.gz.md5'):
 
@@ -140,17 +140,17 @@ def main(args):
 
                     else:
                         # ignore this html
-                        sf_audit.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid - may have other sub-directory')
+                        sf_audit.record_exclusion(tarfile_name, line.rstrip(), filepath, 'html path not valid - may have other sub-directory')
                         continue
 
                 else:
                     #ignore this html
-                    sf_audit.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid - could not extract flowcell_id')
+                    sf_audit.record_exclusion(tarfile_name, line.rstrip(), filepath, 'html path not valid - could not extract flowcell_id')
                     continue
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                sf_audit.record_exclusion(tarfile_name , line.rstrip(), 'Not fastq.gz or valid html file')
+                sf_audit.record_exclusion(tarfile_name , line.rstrip(), filepath, 'Not fastq.gz or valid html file')
 
         logging.info('Done processing file: ' + tarfile_path)
         # delete the extracted file
