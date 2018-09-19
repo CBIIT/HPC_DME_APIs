@@ -97,7 +97,7 @@ class SFAudit(object):
             logging.info("\nFile size = {0}\n".format(filesize))
 
             # Record the result
-            response_header = "dataObject-registration-response-header.tmp"
+            response_header = "presignedURL-registration-response-header.tmp"
             with open(response_header) as f:
                 for line in f:
                     logging.info(line)
