@@ -216,7 +216,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
     #Prepare the command
     archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type, ext)
     archive_path = archive_path + '/' + file_name
-    command = "dm_register_dataobject " + json_file_name + " " + archive_path + " " + fullpath
+    command = "dm_register_dataobject_presigned " + json_file_name + " " + archive_path + " " + fullpath
 
     #Audit the command
     sf_audit.audit_command(command)
