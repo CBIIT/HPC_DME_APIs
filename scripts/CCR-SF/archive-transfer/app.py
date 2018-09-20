@@ -12,7 +12,7 @@ from common.sf_audit import SFAudit
 
 def main(args):
 
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         print("\n Usage: python app.py tarfile_list tarfile_dir extract_path audit_dir dryrun initial_bytes initial_file_count")
         return
 
@@ -33,7 +33,7 @@ def main(args):
 
     #If filesize has to be recorded or not - applicable only for dry run
     if dryrun:
-        if len(sys.argv) > 5:
+        if len(sys.argv) > 6:
             record_file_size = args[6]
         record_file_size = False
     else:
