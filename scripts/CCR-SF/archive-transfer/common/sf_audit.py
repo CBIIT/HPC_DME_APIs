@@ -58,18 +58,18 @@ class SFAudit(object):
 
 
     #Record the excluded file
-    def record_exclusion(self, tarfile_name, file_name, full_path, str):
+    def record_exclusion(self, tarfile_name, file_name, full_path, reason):
         filesize = os.path.getsize(full_path)
 
         excludes = open(self.excludes_path, "a")
-        excludes.writelines(tarfile_name + ": " + file_name + " - " + str + '\n')
+        excludes.writelines(tarfile_name + ": " + file_name + " - " + reason + '\n')
         excludes.close()
 
         excludes_csv = open(self.excludes_csv_path, "a")
-        excludes_csv.write(tarfile_name + ", " + file_name + ", " + str(filesize) + ", " + str + "\n")
+        excludes_csv.write(tarfile_name + ", " + file_name + ", " + str(filesize) + ", " + reason + "\n")
         excludes_csv.close()
 
-        logging.warning('Ignoring file ' + str)
+        logging.warning('Ignoring file ' + reason)
 
 
     #Record the command
