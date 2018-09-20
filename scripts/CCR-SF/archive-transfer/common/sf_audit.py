@@ -66,7 +66,7 @@ class SFAudit(object):
         excludes.close()
 
         excludes_csv = open(self.excludes_csv_path, "a")
-        excludes_csv.write(tarfile_name + ", " + file_name + ", " + filesize + ", " + str + "\n")
+        excludes_csv.write(tarfile_name + ", " + file_name + ", " + str(filesize) + ", " + str + "\n")
         excludes_csv.close()
 
         logging.warning('Ignoring file ' + str)
