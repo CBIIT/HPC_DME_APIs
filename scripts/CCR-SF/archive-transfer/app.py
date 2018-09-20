@@ -71,11 +71,11 @@ def main(args):
             continue
 
         # Extract all files and store in extract_path directory
-        if not dryrun:
-            if not (SFUtils.extract_files_from_tar(tarfile_path, extract_path)):
-                # Something wrong with this file path, go to
-                # next one and check logs later
-                continue;
+        #if not dryrun:
+        if not (SFUtils.extract_files_from_tar(tarfile_path, extract_path)):
+            # Something wrong with this file path, go to
+            # next one and check logs later
+            continue;
 
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file

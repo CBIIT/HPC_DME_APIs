@@ -88,15 +88,15 @@ class SFAudit(object):
         result = 'Fail'
         includes = open(self.includes_path, "a")
 
-        if not dryrun:
+        # Get size of file in bytes
+        # if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
+        #    status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
+        #    filesize = int(output.split()[0])
+        # else:
+        filesize = os.path.getsize(fullpath)
+        logging.info("\nFile size = {0}\n".format(filesize))
 
-            # Get size of file in bytes
-            #if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
-            #    status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
-            #    filesize = int(output.split()[0])
-            #else:
-            filesize = os.path.getsize(fullpath)
-            logging.info("\nFile size = {0}\n".format(filesize))
+        if not dryrun:
 
             # Record the result
             response_header = "presignedURL-registration-response-header.tmp"
