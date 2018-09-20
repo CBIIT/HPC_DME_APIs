@@ -33,7 +33,7 @@ def main(args):
 
     #If filesize has to be recorded or not - applicable only for dry run
     if dryrun:
-        if (args[6] is not None):
+        if len(sys.argv) > 5:
             record_file_size = args[6]
         record_file_size = False
     else:
