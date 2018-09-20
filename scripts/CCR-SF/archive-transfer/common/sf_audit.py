@@ -59,7 +59,9 @@ class SFAudit(object):
 
     #Record the excluded file
     def record_exclusion(self, tarfile_name, file_name, full_path, reason):
-        filesize = os.path.getsize(full_path)
+        filesize = 0
+        if os.path.exists(full_path):
+            filesize = os.path.getsize(full_path)
 
         excludes = open(self.excludes_path, "a")
         excludes.writelines(tarfile_name + ": " + file_name + " - " + reason + '\n')
@@ -93,7 +95,10 @@ class SFAudit(object):
         #    status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
         #    filesize = int(output.split()[0])
         # else:
-        filesize = os.path.getsize(fullpath)
+        filesize = 0
+        if os.path.exists(fullpath):
+            filesize = os.path.getsize(fullpath)
+
         logging.info("\nFile size = {0}\n".format(filesize))
 
         if not dryrun:

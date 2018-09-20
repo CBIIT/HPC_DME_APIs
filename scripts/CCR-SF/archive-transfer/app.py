@@ -31,13 +31,21 @@ def main(args):
     #If this is a dryrun or not
     dryrun = args[5].lower() == 'true'
 
+    #If filesize has to be recorded or not - applicable only for dry run
+    if dryrun:
+        if (args[6] is not None):
+            record_file_size = args[6]
+        record_file_size = False
+    else:
+        record_file_size = True
+
     bytes_stored = 0
     files_registered = 0
 
-    if (args[6] is not None):
-        bytes_stored = args[6]
-        if (args[7] is not None):
-            files_registered = args[7]
+    #if (args[6] is not None):
+    #    bytes_stored = args[6]
+    #    if (args[7] is not None):
+    #        files_registered = args[7]
 
     sf_audit = SFAudit(audit_dir, extract_path, bytes_stored, files_registered)
     sf_audit.prep_for_audit()
@@ -71,11 +79,11 @@ def main(args):
             continue
 
         # Extract all files and store in extract_path directory
-        #if not dryrun:
-        if not (SFUtils.extract_files_from_tar(tarfile_path, extract_path)):
-            # Something wrong with this file path, go to
-            # next one and check logs later
-            continue;
+        if record_file_size:
+            if not (SFUtils.extract_files_from_tar(tarfile_path, extract_path)):
+                # Something wrong with this file path, go to
+                # next one and check logs later
+                continue;
 
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fatq.gz or BAM file
