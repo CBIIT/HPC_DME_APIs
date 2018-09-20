@@ -161,8 +161,10 @@ def main(args):
                 sf_audit.record_exclusion(tarfile_name , line.rstrip(), filepath, 'Not fastq.gz or valid html file')
 
         logging.info('Done processing file: ' + tarfile_path)
+
         # delete the extracted file
-        os.system("rm -rf " + extract_path + "*")
+        if record_file_size:
+            os.system("rm -rf " + extract_path + "*")
 
     sf_audit.audit_summary()
 
