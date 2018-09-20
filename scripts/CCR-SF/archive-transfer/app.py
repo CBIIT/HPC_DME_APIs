@@ -35,7 +35,8 @@ def main(args):
     if dryrun:
         if len(sys.argv) > 6:
             record_file_size = args[6]
-        record_file_size = False
+        else:
+            record_file_size = False
     else:
         record_file_size = True
 
