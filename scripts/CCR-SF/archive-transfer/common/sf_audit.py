@@ -108,7 +108,7 @@ class SFAudit(object):
                         result = 'Pass'
 
         else:
-            filesize = 0
+            #filesize = 0
             archived = True
             result = 'Pass'
 
