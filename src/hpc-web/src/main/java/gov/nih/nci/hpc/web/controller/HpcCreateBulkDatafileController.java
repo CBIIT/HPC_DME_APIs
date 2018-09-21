@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import java.util.Map;
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -30,8 +32,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
@@ -39,11 +44,13 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcExcelUtil;
 
 /**
  * <p>
@@ -223,8 +230,9 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public String createDatafile(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDataModel, Model model,
-			BindingResult bindingResult, HttpSession session, HttpServletRequest request, HttpServletResponse response,
+	public String createDatafile(@Valid @ModelAttribute("hpcDataModel") HpcDatafileModel hpcDataModel, Model model,
+			BindingResult bindingResult, HttpSession session, @RequestParam(value = "hpcMetaDatafile", required = false) MultipartFile hpcMetaDatafile,
+			HttpServletRequest request, HttpServletResponse response,
 			final RedirectAttributes redirectAttributes) {
 		
 		String authToken = (String) session.getAttribute("hpcUserToken");
@@ -286,6 +294,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			hpcDataModel.setPath(hpcDataModel.getPath().trim());
 			HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructBulkRequest(request, session,
 					hpcDataModel.getPath().trim());
+			
+			HpcBulkMetadataEntries hpcBulkMetadataEntries = HpcExcelUtil.parseBulkMatadataEntries(hpcMetaDatafile);
+			
+			for(HpcDirectoryScanRegistrationItemDTO itemDTO : registrationDTO.getDirectoryScanRegistrationItems())
+				itemDTO.setBulkMetadataEntries(hpcBulkMetadataEntries);
 			
 			if(registrationDTO.getDataObjectRegistrationItems().size() == 0 && registrationDTO.getDirectoryScanRegistrationItems().size() == 0)
 				throw new HpcWebException("No input file(s) / folder(s) are selected");
