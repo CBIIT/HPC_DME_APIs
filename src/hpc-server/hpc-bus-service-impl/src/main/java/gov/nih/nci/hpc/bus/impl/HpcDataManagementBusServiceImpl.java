@@ -886,7 +886,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectRegistrationRequest.setSource(dataObjectRegistrationItem.getSource());
       dataObjectRegistrationRequest
           .getMetadataEntries()
-          .addAll(dataObjectRegistrationItem.getMetadataEntries());
+          .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
       dataObjectRegistrationRequest.setParentCollectionsBulkMetadataEntries(
           dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
 
@@ -2073,14 +2073,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if(bulkMetadataEntries != null) {
       for(HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathMetadataEntries()) {
         if(path.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
-          dataObjectRegistration.getMetadataEntries().addAll(bulkMetadataEntry.getMetadataEntries());
+          dataObjectRegistration.getDataObjectMetadataEntries().addAll(bulkMetadataEntry.getMetadataEntries());
           break;
         }
       }
     }
-    if(dataObjectRegistration.getMetadataEntries().isEmpty()) {
+    if(dataObjectRegistration.getDataObjectMetadataEntries().isEmpty()) {
       // Could not find user provided data object metadata. Use default.
-      dataObjectRegistration.getMetadataEntries().addAll(metadataService.getDefaultDataObjectMetadataEntries(scanItem));
+      dataObjectRegistration.getDataObjectMetadataEntries().addAll(metadataService.getDefaultDataObjectMetadataEntries(scanItem));
     }
     
     // Set the metadata to create the parent collections.
@@ -2262,7 +2262,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dto.setCreateParentCollections(request.getCreateParentCollections());
     dto.setPath(path);
     dto.setSource(request.getSource());
-    dto.getMetadataEntries().addAll(request.getMetadataEntries());
+    dto.getDataObjectMetadataEntries().addAll(request.getMetadataEntries());
     dto.setParentCollectionsBulkMetadataEntries(request.getParentCollectionsBulkMetadataEntries());
     return dto;
   }
