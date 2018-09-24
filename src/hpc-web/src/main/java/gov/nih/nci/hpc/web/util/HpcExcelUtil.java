@@ -55,7 +55,7 @@ public class HpcExcelUtil {
 			Map<String, String> metadata = metadataMap.get(path);
 			path = replaceTokens(path, tokens);
 			metadataEntry.setPath(path);
-			if (metadata != null && metadata.isEmpty())
+			if (metadata != null && !metadata.isEmpty())
 				metadataEntry.getMetadataEntries().addAll(buildMetadataEntries(metadata));
 			pathMetadataEntries.add(metadataEntry);
 		}
@@ -130,11 +130,15 @@ public class HpcExcelUtil {
 			int headerIndex = 0;
 			while (attrIterator.hasNext()) {
 				String attrKey = attrIterator.next();
-				String attrValue = rowData.get(headerIndex);
+				String attrValue = "";
+				if(headerIndex >= rowData.size())
+					break;
+				attrValue = rowData.get(headerIndex);
 				if (attrKey.equalsIgnoreCase("path"))
-					path = rowData.get(headerIndex);
+					path = attrValue;
 				else
 					rowMetadata.put(attrKey, attrValue);
+				headerIndex++;
 			}
 			metdataSheetMap.put(path, rowMetadata);
 		}
