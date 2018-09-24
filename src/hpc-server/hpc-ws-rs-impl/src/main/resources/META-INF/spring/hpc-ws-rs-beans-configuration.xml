@@ -123,6 +123,7 @@
 		<value>parentCollectionMetadataEntries</value>
 		<value>permissionsForCollections</value>
 		<value>failedItemsRequest</value>
+		<value>metadataEntries</value>
 	</util:list>
 
 	<!-- JSON Provider -->
