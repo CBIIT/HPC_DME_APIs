@@ -10,6 +10,9 @@ from metadata.sf_helper import SFHelper
 from common.sf_utils import SFUtils
 from common.sf_audit import SFAudit
 
+#Usage:
+#python app.py tarfiles /is2/projects/CCR-SF/archive/illumina/2015_new /mnt/IRODsScratch/bulk-uploads/CCR-SF/2015_new/uploads/ 2015_new_dryrun_with_size True True
+
 def main(args):
 
     if len(sys.argv) < 6:
@@ -103,7 +106,7 @@ def main(args):
                 'Path contains substring from exclusion list')
                 continue
 
-            if filepath.endswith('fastq.gz') or filepath.endswith('fastq.gz.md5'):
+            if filepath.endswith('fastq') or filepath.endswith('fastq.gz') or filepath.endswith('fastq.gz.md5'):
 
                 # Extract the info for PI metadata
                 path = SFUtils.get_meta_path(filepath)
