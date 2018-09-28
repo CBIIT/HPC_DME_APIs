@@ -237,7 +237,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
 
     #Run the command
     if not dryrun:
-        response_header = "dataObject-registration-response-header.tmp"
+        response_header = "presignedURL-registration-response-header.tmp"
         os.system("rm - f " + response_header + " 2>/dev/null")
         os.system(command)
 
