@@ -23,6 +23,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringTokenizer;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
@@ -74,6 +75,22 @@ import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 
 public class HpcClientUtil {
+
+  private static final String FORBIDDEN_CHARACTERS_FOR_DME_ARCHIVE_PATHS = "?;\\";
+
+  private static final String FORBIDDEN_CHARS_DISPLAY_STRING;
+  static {
+    StringBuilder sb = new StringBuilder();
+    char[] fcArr = FORBIDDEN_CHARACTERS_FOR_DME_ARCHIVE_PATHS.toCharArray();
+    String itemsSeparator = " ";
+    for (char c : fcArr) {
+      if (sb.length() > 0) {
+        sb.append(itemsSeparator);
+      }
+      sb.append(c);
+    }
+    FORBIDDEN_CHARS_DISPLAY_STRING = sb.toString();
+  }
 
   // public static WebClient getWebClient(String url, String hpcCertPath, String hpcCertPassword) {
   // return getWebClient(url, null, null, hpcCertPath, hpcCertPassword);
@@ -529,6 +546,18 @@ public class HpcClientUtil {
     }
 
     return result;
+  }
+
+
+  public static void validateDmeArchivePath(String path) {
+    char[] fcArr = FORBIDDEN_CHARACTERS_FOR_DME_ARCHIVE_PATHS.toCharArray();
+    for (char fc : fcArr) {
+      if (path.contains(String.valueOf(fc))) {
+        throw new HpcCmdException("Specified DME archive path '" + path +
+          "' contains invalid character(s), which are: {" +
+          FORBIDDEN_CHARS_DISPLAY_STRING + "}.");
+      }
+    }
   }
 
 }

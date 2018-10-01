@@ -9,7 +9,7 @@ class SFHelper(object):
     @staticmethod
     def get_pi_name(path, log = True):
 
-        pi_names = {"Staudt": "Louis_Staudt", "Soppet": "Daniel_Soppet", "Schrump": "David_Schrump", "Shrump": "David_Schrump",
+        pi_names = {"staudt": "Louis_Staudt", "Staudt": "Louis_Staudt", "Soppet": "Daniel_Soppet", "Schrump": "David_Schrump", "Shrump": "David_Schrump",
                     "Electron": "Electron_Kabebew", "Hager": "Gordon_Hager", "Hunter": "Kent_Hunter", "KentHuter": "Kent_Hunter",
                     "Jonathan_Keller_Sun": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
                     "Philipp_Oberdoerffer_Kim": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Pommier": "Yves_Pommier", "Vinson": "Chuck_Vinson",
@@ -120,12 +120,12 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_project_name(path, tarfile, ext):
+    def get_project_name(path, tarfile, ext = None):
 
         if 'Undetermined' in path or tarfile.endswith('supplement.tar') or 'singlecell' in tarfile or len(path.split("/")) == 1:
             project_name =  SFHelper.get_run_name(tarfile)
-            if 'Undetermined' in path and ext is not None:
-                project_name = project_name + '_' + ext
+            #if 'Undetermined' in path and ext is not None:
+                #project_name = project_name + '_' + ext
 
 
 
@@ -138,6 +138,13 @@ class SFHelper(object):
                 #Hardcoded exclusion
                 if(project_name == 'Sample_SPECS_2070'):
                     project_name = 'Staudt_Roland_49mRNA_11_2_15'
+
+
+        if ext is not None and ext != 'Unaligned':
+            project_name = project_name + '_' + ext
+            logging.info("project_name from " + path + " and ext " + ext + " is " + project_name)
+        else:
+            logging.info("project_name from " + path + " is " + project_name)
 
         return project_name
 

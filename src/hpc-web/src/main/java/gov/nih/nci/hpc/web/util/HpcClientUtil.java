@@ -71,6 +71,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -88,6 +89,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.transform.Source;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
+import org.apache.cxf.jaxrs.client.ClientConfiguration;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
@@ -111,14 +113,11 @@ import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class HpcClientUtil {
-
-  private static final String ELEM_TYPE__DATA_FILE = "data file";
 
   private static final String ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE =
     "Failed to determine type of DME entity at path, %s." +
@@ -127,28 +126,38 @@ public class HpcClientUtil {
   private static final String JSON_RESPONSE_ATTRIB__ELEMENT_TYPE =
       "elementType";
 
-  private static final String REGEX_SINGLE_FORWARD_SLASH = "\\/";
 
+  public static WebClient getWebClient(String url, String hpcCertPath,
+    String hpcCertPassword) {
 
-  public static WebClient getWebClient(String url, String hpcCertPath, String hpcCertPassword) {
-    WebClient client = WebClient.create(url, Collections.singletonList(new JacksonJsonProvider()));
-    WebClient.getConfig(client).getRequestContext().put("support.type.as.multipart", "true");
-    WebClient.getConfig(client).getHttpConduit().getClient().setReceiveTimeout(60000000);
-    WebClient.getConfig(client).getHttpConduit().getClient().setConnectionTimeout(60000000);
-    HTTPConduit conduit = WebClient.getConfig(client).getHttpConduit();
+    WebClient client = WebClient.create(url, Collections.singletonList(
+      new JacksonJsonProvider()));
 
-    TLSClientParameters params = conduit.getTlsClientParameters();
-    if (params == null) {
-      params = new TLSClientParameters();
-      conduit.setTlsClientParameters(params);
-    }
+    ClientConfiguration clientConfig = WebClient.getConfig(client);
+    clientConfig.getRequestContext().put("support.type.as.multipart", "true");
+    configureWebClientConduit(clientConfig);
 
-    params.setTrustManagers(new TrustManager[] {new TrustAllX509TrustManager()});
-    conduit.setTlsClientParameters(params);
-
-    params.setDisableCNCheck(true);
     return client;
   }
+
+
+  private static void configureWebClientConduit(
+    ClientConfiguration clientConfig) {
+    HTTPConduit conduit = clientConfig.getHttpConduit();
+
+    TLSClientParameters tlsParams = conduit.getTlsClientParameters();
+    if (null == tlsParams) {
+      conduit.setTlsClientParameters(new TLSClientParameters());
+      tlsParams = conduit.getTlsClientParameters();
+    }
+    tlsParams.setDisableCNCheck(true);
+    tlsParams.setTrustManagers(new TrustManager[] { new
+      TrustAllX509TrustManager() });
+
+    conduit.getClient().setReceiveTimeout(60000000);
+    conduit.getClient().setConnectionTimeout(60000000);
+  }
+
 
   public static String getBasePath(String authToken, String serviceURL, String parent,
       String sslCertPath, String sslCertPassword, HpcDataManagementModelDTO modelDTO) {
@@ -1026,7 +1035,6 @@ public class HpcClientUtil {
       String hpcDatafileURL, HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
       String hpcCertPath, String hpcCertPassword) {
     try {
-
       WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
 
@@ -1518,8 +1526,7 @@ public class HpcClientUtil {
         taskId = downloadDTO.getTaskId();
 
       result.setMessage(
-          "<strong>Asynchronous download request is submitted successfully! <br>TaskId: " + taskId
-              + "<strong>");
+              "Asynchronous download request is submitted successfully! Task Id: <a href='downloadtask?type=DATA_OBJECT&taskId=" + taskId +"'>"+taskId+"</a>");
       return result;
     } else {
       ObjectMapper mapper = new ObjectMapper();
@@ -1898,5 +1905,38 @@ public class HpcClientUtil {
     return (null == argInputStr || argInputStr.isEmpty()) ? "/" :
       argInputStr.startsWith("/") ? argInputStr : "/".concat(argInputStr);
   }
+
+
+  private static Properties appProperties;
+
+
+  private static void initApplicationProperties() {
+    if (null == appProperties) {
+      loadApplicationProperties();
+    }
+  }
+
+
+  private static void loadApplicationProperties() {
+    Properties theProperties = new Properties();
+    try {
+      theProperties.load(HpcClientUtil.class.getResourceAsStream(
+        "/application.properties"));
+      if (null == appProperties) {
+        appProperties = theProperties;
+      } else {
+        appProperties.clear();
+        appProperties.putAll(theProperties);
+      }
+    } catch (IOException e) {
+      throw new HpcWebException("Unable to load application properties!", e);
+    }
+  }
+
+
+
+
+
+
 
 }

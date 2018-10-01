@@ -232,6 +232,12 @@
 					value="${hpc.ws.rs.auth.data-management.get-data-objects-download-status}" />
 				<entry key="getDataManagementModel"
 					value="${hpc.ws.rs.auth.data-management.get-data-management-model}" />
+				<entry key="movePaths"
+					value="${hpc.ws.rs.auth.data-management.move-paths}" />
+				<entry key="moveCollection"
+					value="${hpc.ws.rs.auth.data-management.move-collection}" />
+				<entry key="moveDataObject"
+					value="${hpc.ws.rs.auth.data-management.move-data-object}" />
 
 				<!-- Data Search Service Authorizations -->
 				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />

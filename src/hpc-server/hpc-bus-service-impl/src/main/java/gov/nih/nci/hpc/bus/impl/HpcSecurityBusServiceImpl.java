@@ -10,11 +10,10 @@ package gov.nih.nci.hpc.bus.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,10 +42,11 @@ import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.service.HpcDataBrowseService;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
+import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
 
 /**
  * HPC Security Business Service Implementation.
@@ -74,7 +74,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
   // The data management (iRODS) service.
   @Autowired private HpcDataManagementService dataManagementService = null;
-  
+
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
   private Boolean ldapAuthentication = null;
@@ -152,16 +152,17 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       }
 
       // Create the data management (IRODS) account.
-      createDataManagementAccount(nciAccount, role);
+      executeGroupAdminAsSystemAccount(
+          () -> dataManagementSecurityService.addUser(nciAccount, role));
     }
 
     boolean registrationCompleted = false;
     try {
       // Add the user to the system.
       securityService.addUser(nciAccount);
-      
+
       registrationCompleted = true;
-      
+
     } finally {
       if (!registrationCompleted) {
         // Registration failed. Remove the data management account.
@@ -371,7 +372,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   }
 
   @Override
-  public HpcAuthenticationResponseDTO getAuthenticationResponse() throws HpcException {
+  public HpcAuthenticationResponseDTO getAuthenticationResponse(boolean generateToken)
+      throws HpcException {
     // At the time this service is called, the user is already authenticated and the request
     // invoker is set with the authenticated user data.
     HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
@@ -382,15 +384,20 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // Construct and return an authentication response DTO.
     HpcAuthenticationResponseDTO authenticationResponse = new HpcAuthenticationResponseDTO();
     authenticationResponse.setAuthenticationType(requestInvoker.getAuthenticationType());
+    if (requestInvoker.getNciAccount() != null) {
+      authenticationResponse.setUserId(requestInvoker.getNciAccount().getUserId());
+    }
     authenticationResponse.setUserRole(requestInvoker.getUserRole());
 
     // Generate an authentication token. The user can use this token in subsequent calls
     // until the token expires.
-    HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
-    authenticationTokenClaims.setUserId(requestInvoker.getNciAccount().getUserId());
-    authenticationTokenClaims.setDataManagementAccount(requestInvoker.getDataManagementAccount());
-    authenticationResponse.setToken(
-        securityService.createAuthenticationToken(authenticationTokenClaims));
+    if (generateToken) {
+      HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
+      authenticationTokenClaims.setUserId(requestInvoker.getNciAccount().getUserId());
+      authenticationTokenClaims.setDataManagementAccount(requestInvoker.getDataManagementAccount());
+      authenticationResponse.setToken(
+          securityService.createAuthenticationToken(authenticationTokenClaims));
+    }
 
     return authenticationResponse;
   }
@@ -422,13 +429,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
           "Delete users is invalid in group registration request",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    updateRequestInvokerForGroupAdmin();
 
-    // Add the group.
-    dataManagementSecurityService.addGroup(groupName);
+    return executeGroupAdminAsSystemAccount(
+        () -> {
+          // Add the group.
+          dataManagementSecurityService.addGroup(groupName);
 
-    // Optionally add members.
-    return updateGroupMembers(groupName, groupMembersRequest);
+          // Optionally add members.
+          return updateGroupMembers(groupName, groupMembersRequest);
+        });
   }
 
   public HpcGroupMembersResponseDTO updateGroup(
@@ -448,9 +457,11 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
           "Null or empty requests to add/delete members to group",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    updateRequestInvokerForGroupAdmin();
-    // Add/Delete group members.
-    return updateGroupMembers(groupName, groupMembersRequest);
+
+    return executeGroupAdminAsSystemAccount(
+        () ->
+            // Add/Delete group members.
+            updateGroupMembers(groupName, groupMembersRequest));
   }
 
   @Override
@@ -505,23 +516,55 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     if (groupName == null) {
       throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    updateRequestInvokerForGroupAdmin();
+
     // Delete the group.
-    dataManagementSecurityService.deleteGroup(groupName);
+    executeGroupAdminAsSystemAccount(() -> dataManagementSecurityService.deleteGroup(groupName));
   }
 
   //---------------------------------------------------------------------//
   // Helper Methods
   //---------------------------------------------------------------------//
 
-  private void updateRequestInvokerForGroupAdmin() throws HpcException {
+  /**
+   * When using the command line, a group-admin user can execute account security actions. It is not
+   * supported by the Jargon API. As a workaround, if the invoker is a group-admin then we use the
+   * HPC-DM system account. This workaround should be removed once the Jargon API allows group-admin
+   * to create accounts. If the invoker is not a group-admin, then its own credentials are used.
+   *
+   * @param systemAccountFunction The functional interface to execute as system account (no return
+   *     value)
+   * @throws HpcException If the enum value is invalid.
+   */
+  private void executeGroupAdminAsSystemAccount(
+      HpcSystemAccountFunctionNoReturn systemAccountFunction) throws HpcException {
+    executeGroupAdminAsSystemAccount(
+        () -> {
+          systemAccountFunction.execute();
+          return null;
+        });
+  }
+
+  /**
+   * When using the command line, a group-admin user can execute account security actions. It is not
+   * supported by the Jargon API. As a workaround, if the invoker is a group-admin then we use the
+   * HPC-DM system account. This workaround should be removed once the Jargon API allows group-admin
+   * to create accounts. If the invoker is not a group-admin, then its own credentials are used.
+   *
+   * @param systemAccountFunction The functional interface to execute as system account with return
+   *     value.
+   * @throws HpcException If the enum value is invalid.
+   */
+  private <T> T executeGroupAdminAsSystemAccount(HpcSystemAccountFunction<T> systemAccountFunction)
+      throws HpcException {
     HpcRequestInvoker invoker = securityService.getRequestInvoker();
     if (invoker == null) {
       throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
     }
 
     if (invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-      securityService.setSystemRequestInvoker(ldapAuthentication);
+      return securityService.executeAsSystemAccount(Optional.empty(), systemAccountFunction);
+    } else {
+      return systemAccountFunction.execute();
     }
   }
 
@@ -724,30 +767,5 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     dataManagementAccount.setPassword(dataManagementPassword);
 
     return dataManagementAccount;
-  }
-
-  /**
-   * Create a data management account (i.e. add a user account to iRODS).
-   *
-   * @param nciAccount The NCI account to create the account for.
-   * @param role The user role to assign to the new account.
-   * @throws HpcException on service failure.
-   */
-  private void createDataManagementAccount(HpcNciAccount nciAccount, HpcUserRole role)
-      throws HpcException {
-    // When using the command line, a group-admin user can create a user account. It is not supported
-    // by the Jargon API. As a workaround, if the invoker is a group-admin then we create the account using
-    // an HPC-DM system account. This workaround should be removed once the Jargon API allows greoup-admin to create
-    // accounts.
-    HpcRequestInvoker invoker = securityService.getRequestInvoker();
-    if (invoker == null) {
-      throw new HpcException("Null request invoker", HpcErrorType.UNEXPECTED_ERROR);
-    }
-    if (invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-      securityService.setSystemRequestInvoker(ldapAuthentication);
-    }
-
-    // Create the data management (IRODS) account.
-    dataManagementSecurityService.addUser(nciAccount, role);
   }
 }

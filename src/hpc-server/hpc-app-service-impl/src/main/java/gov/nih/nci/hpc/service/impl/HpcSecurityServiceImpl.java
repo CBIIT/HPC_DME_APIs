@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -44,6 +44,8 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
+import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -301,22 +303,43 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   }
 
   @Override
-  public void setSystemRequestInvoker(boolean ldapAuthentication) throws HpcException {
-    HpcIntegratedSystemAccount dataManagementAccount =
-        systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
-    if (dataManagementAccount == null) {
-      throw new HpcException(
-          "System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR);
+  public <T> T executeAsSystemAccount(
+      Optional<Boolean> ldapAuthentication, HpcSystemAccountFunction<T> systemAccountFunction)
+      throws HpcException {
+    // Get the current request invoker, and authentication type.
+    HpcRequestInvoker currentRequestInvoker = getRequestInvoker();
+
+    // Switch to system account if needed.
+    boolean switchToSystemAccount =
+        !HpcAuthenticationType.SYSTEM_ACCOUNT.equals(currentRequestInvoker.getAuthenticationType());
+    if (switchToSystemAccount) {
+      setSystemRequestInvoker(
+          ldapAuthentication.orElse(currentRequestInvoker.getLdapAuthentication()));
     }
 
-    HpcRequestInvoker invoker = new HpcRequestInvoker();
-    invoker.setNciAccount(null);
-    invoker.setDataManagementAccount(dataManagementAccount);
-    invoker.setDataManagementAuthenticatedToken(null);
-    invoker.setLdapAuthentication(ldapAuthentication);
-    invoker.setAuthenticationType(HpcAuthenticationType.SYSTEM_ACCOUNT);
+    // Execute the function as system account.
+    try {
+      return systemAccountFunction.execute();
 
-    HpcRequestContext.setRequestInvoker(invoker);
+    } finally {
+      // If we switched to system account. May need to close the connection to data management.
+      if (switchToSystemAccount) {
+        if (getRequestInvoker().getDataManagementAuthenticatedToken() != null) {
+          // Data management system account was used, so need to close this connection.
+          dataManagementProxy.disconnect(getRequestInvoker().getDataManagementAuthenticatedToken());
+        }
+
+        // Switch back to the original request invoker.
+        HpcRequestContext.setRequestInvoker(currentRequestInvoker);
+      }
+    }
+  }
+
+  @Override
+  public void executeAsSystemAccount(
+      Optional<Boolean> ldapAuthentication, HpcSystemAccountFunctionNoReturn systemAccountFunction)
+      throws HpcException {
+    executeAsSystemAccount(ldapAuthentication, () -> { systemAccountFunction.execute(); return null; });
   }
 
   @Override
@@ -362,7 +385,8 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     // Calculate the data management account expiration date.
     Calendar dataManagementAccountExpiration = Calendar.getInstance();
     dataManagementAccountExpiration.add(Calendar.MINUTE, dataManagementExpirationPeriod);
-    claims.put(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, dataManagementAccountExpiration.getTime());
+    claims.put(
+        DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, dataManagementAccountExpiration.getTime());
 
     // Calculate the expiration date.
     Calendar tokenExpiration = Calendar.getInstance();
@@ -390,14 +414,15 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
       tokenClaims.setUserId(jwsClaims.getBody().get(USER_ID_TOKEN_CLAIM, String.class));
       tokenClaims.setDataManagementAccount(
           fromJSON(jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, String.class)));
-      
+
       // Check if the data management account expired.
-      Date dataManagementAccountExpiration = jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, Date.class);
-      if(dataManagementAccountExpiration.before(new Date())) {
-         // Data management account expired. Remove its properties.
-         tokenClaims.getDataManagementAccount().getProperties().clear();
+      Date dataManagementAccountExpiration =
+          jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, Date.class);
+      if (dataManagementAccountExpiration.before(new Date())) {
+        // Data management account expired. Remove its properties.
+        tokenClaims.getDataManagementAccount().getProperties().clear();
       }
-      
+
       return tokenClaims;
 
     } catch (SignatureException se) {
@@ -495,5 +520,29 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     }
 
     return integratedSystemAccount;
+  }
+
+  /**
+   * Set the service call invoker in the request context using system account.
+   *
+   * @param ldapAuthentication Indicator whether LDAP authentication is turned on/off.
+   * @throws HpcException on service failure.
+   */
+  private void setSystemRequestInvoker(boolean ldapAuthentication) throws HpcException {
+    HpcIntegratedSystemAccount dataManagementAccount =
+        systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
+    if (dataManagementAccount == null) {
+      throw new HpcException(
+          "System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR);
+    }
+
+    HpcRequestInvoker invoker = new HpcRequestInvoker();
+    invoker.setNciAccount(null);
+    invoker.setDataManagementAccount(dataManagementAccount);
+    invoker.setDataManagementAuthenticatedToken(null);
+    invoker.setLdapAuthentication(ldapAuthentication);
+    invoker.setAuthenticationType(HpcAuthenticationType.SYSTEM_ACCOUNT);
+
+    HpcRequestContext.setRequestInvoker(invoker);
   }
 }

@@ -80,7 +80,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
       // Set a security context with the user's role.
       HpcSecurityContext sc =
           new HpcSecurityContext(
-              securityBusService.getAuthenticationResponse().getUserRole().value());
+              securityBusService.getAuthenticationResponse(false).getUserRole().value());
       message.put(SecurityContext.class, sc);
 
     } catch (HpcException e) {

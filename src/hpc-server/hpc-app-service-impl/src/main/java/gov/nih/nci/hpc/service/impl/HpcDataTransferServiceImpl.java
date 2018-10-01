@@ -346,8 +346,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Add metadata is done by copying the object to itself w/ attached metadata.
     // Check that the data transfer system can accept transfer requests.
     boolean globusSyncUpload =
-        dataTransferType.equals(HpcDataTransferType.GLOBUS)
-            && fileLocation != null;
+        dataTransferType.equals(HpcDataTransferType.GLOBUS) && fileLocation != null;
 
     return dataTransferProxies
         .get(dataTransferType)
@@ -603,17 +602,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           dataManagementConfigurationLocator.getDataTransferConfiguration(
               downloadRequest.getConfigurationId(), downloadRequest.getDataTransferType());
 
-      // Update the download task with the Globus request ID.
-      downloadTask.setDataTransferRequestId(
-          dataTransferProxies
-              .get(downloadRequest.getDataTransferType())
-              .downloadDataObject(
-                  getAuthenticatedToken(
-                      downloadRequest.getDataTransferType(), downloadRequest.getConfigurationId()),
-                  downloadRequest,
-                  dataTransferConfiguration.getBaseArchiveDestination(),
-                  dataTransferConfiguration.getUploadRequestURLExpiration(),
-                  null));
+      // Submit a transfer request to Globus and update the download task with the Globus request ID.
+      try {
+        downloadTask.setDataTransferRequestId(
+            dataTransferProxies
+                .get(downloadRequest.getDataTransferType())
+                .downloadDataObject(
+                    getAuthenticatedToken(
+                        downloadRequest.getDataTransferType(),
+                        downloadRequest.getConfigurationId()),
+                    downloadRequest,
+                    dataTransferConfiguration.getBaseArchiveDestination(),
+                    dataTransferConfiguration.getUploadRequestURLExpiration(),
+                    null));
+
+      } catch (HpcException e) {
+        // Failed to submit a transfer request to Globus. Cleanup the download task.
+        completeDataObjectDownloadTask(
+            downloadTask, false, e.getMessage(), Calendar.getInstance(), 0);
+        return;
+      }
 
       // Persist the download task.
       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
@@ -757,7 +765,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
     for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-      if (item.getResult() != null && item.getResult() && item.getEffectiveTransferSpeed() != null) {
+      if (item.getResult() != null
+          && item.getResult()
+          && item.getEffectiveTransferSpeed() != null) {
         effectiveTransferSpeed += item.getEffectiveTransferSpeed();
         completedItems++;
       }

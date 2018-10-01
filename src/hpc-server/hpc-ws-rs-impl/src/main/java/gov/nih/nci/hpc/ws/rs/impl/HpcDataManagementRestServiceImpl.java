@@ -9,17 +9,29 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
+import org.apache.cxf.common.util.StringUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -37,7 +49,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcFileSizeUpdateDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -45,24 +56,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import org.apache.commons.io.FileUtils;
-import org.apache.cxf.common.util.StringUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 
 /**
  * HPC Data Management REST Service Implementation.
@@ -108,20 +101,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response interrogatePathRef(String path) {
     try {
       final String pathElemType =
-        dataManagementBusService.interrogatePathRef(path) ?
-        "collection" : "data file";
+          dataManagementBusService.interrogatePathRef(path) ? "collection" : "data file";
       final Map<String, String> responseMap = new HashMap<>();
       responseMap.put("path", path);
       responseMap.put("elementType", pathElemType);
       try {
-        final String jsonResponseStr =
-            new ObjectMapper().writeValueAsString(responseMap);
+        final String jsonResponseStr = new ObjectMapper().writeValueAsString(responseMap);
         return okResponse(jsonResponseStr, true);
       } catch (JsonProcessingException jpe) {
         // (String message, HpcErrorType errorType, Throwable cause)
         final String errMsg =
-          String.format("Failure during conversion of Map to JSON: %s",
-                        responseMap.toString());
+            String.format("Failure during conversion of Map to JSON: %s", responseMap.toString());
         throw new HpcException(errMsg, HpcErrorType.UNEXPECTED_ERROR, jpe);
       }
     } catch (HpcException e) {
@@ -129,14 +119,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
   }
 
-
   @Override
   public Response registerCollection(
       String path, HpcCollectionRegistrationDTO collectionRegistration) {
     boolean collectionCreated = true;
     try {
       collectionCreated =
-          dataManagementBusService.registerCollection(toNormalizedPath(path), collectionRegistration);
+          dataManagementBusService.registerCollection(
+              toNormalizedPath(path), collectionRegistration);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -209,8 +199,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response deleteCollection(String path, Boolean recursive) {
     try {
-    	
-      recursive = recursive != null ? recursive : false;    
+      recursive = recursive != null ? recursive : false;
       dataManagementBusService.deleteCollection(toNormalizedPath(path), recursive);
 
     } catch (HpcException e) {
@@ -219,7 +208,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(null, false);
   }
-  
+
+  @Override
+  public Response moveCollection(String path, String destinationPath) {
+    try {
+      dataManagementBusService.movePath(toNormalizedPath(path), true, toNormalizedPath(destinationPath));
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+  }
 
   @Override
   public Response setCollectionPermissions(
@@ -435,6 +435,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(dataObjectDeleteResponse, false);
   }
+  
+  @Override
+  public Response moveDataObject(String path, String destinationPath) {
+    try {
+      dataManagementBusService.movePath(toNormalizedPath(path), false, toNormalizedPath(destinationPath));
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+  }
 
   @Override
   public Response setDataObjectPermissions(
@@ -537,26 +549,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(docModel, true);
   }
 
-  //TODO - Remove this service after file size was corrected.
-  @POST
-  @Path("/fileSize")
-  @Consumes(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-  @Produces(MediaType.APPLICATION_JSON + "," + MediaType.APPLICATION_XML)
-  public Response updateFileSize(HpcFileSizeUpdateDTO request) {
-    HpcFileSizeUpdateDTO response = null;
+  @Override
+  public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) {
+    HpcBulkMoveResponseDTO bulkMoveResponse = null;
     try {
-      response = dataManagementBusService.updateFileSize(request);
+      bulkMoveResponse = dataManagementBusService.movePaths(bulkMoveRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
     }
 
-    return okResponse(response, false);
+    return okResponse(bulkMoveResponse, true);
   }
 
-  
-  
-  
+  //---------------------------------------------------------------------//
+  // Helper Methods
+  //---------------------------------------------------------------------//
+
   /**
    * Copy input stream to File and close the input stream.
    *
@@ -590,7 +599,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @return an OK response.
    */
   private Response downloadResponse(
-      HpcDataObjectDownloadResponseDTO downloadResponse, MessageContext messageContext, Map<String, String> header) {
+      HpcDataObjectDownloadResponseDTO downloadResponse,
+      MessageContext messageContext,
+      Map<String, String> header) {
     if (downloadResponse == null) {
       return okResponse(null, false, header);
     }
@@ -600,8 +611,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       // delete it after the file was received by the caller.
       messageContext.put(
           DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE, downloadResponse.getDestinationFile());
-      response = okResponse(
-          downloadResponse.getDestinationFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE, header);
+      response =
+          okResponse(
+              downloadResponse.getDestinationFile(),
+              MediaType.APPLICATION_OCTET_STREAM_TYPE,
+              header);
     } else {
       response = okResponse(downloadResponse, false, header);
     }

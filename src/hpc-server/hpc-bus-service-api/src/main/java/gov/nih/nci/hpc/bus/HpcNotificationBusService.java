@@ -12,6 +12,7 @@ import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationDeliveryReceiptListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionListDTO;
 import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsRequestDTO;
+import gov.nih.nci.hpc.dto.notification.HpcNotificationSubscriptionsResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -25,9 +26,11 @@ public interface HpcNotificationBusService {
    * Subscribe to notifications.
    *
    * @param notificationSubscriptions The notification subscriptions request.
+   * @return HpcNotificationSubscriptionsResponseDTO representing outcomes of
+   *          actions on notification subscriptions
    * @throws HpcException on service failure.
    */
-  public void subscribeNotifications(
+  public HpcNotificationSubscriptionsResponseDTO subscribeNotifications(
       HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) throws HpcException;
 
   /**

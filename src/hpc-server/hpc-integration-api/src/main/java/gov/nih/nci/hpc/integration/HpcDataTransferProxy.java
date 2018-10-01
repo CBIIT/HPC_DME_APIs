@@ -48,13 +48,13 @@ public interface HpcDataTransferProxy {
    * Check if upload/download requests are accepted at the moment.
    *
    * @param authenticatedToken An authenticated token.
-   * @return HpcTransferAcceptanceResponse for which:
-   *         1. the method canAcceptTransfer() returns true if upload/download requests are accepted
-   *            or false if the data-transfer system is too busy.
-   *         2. the method getQueueSize() returns int that is size of data transfer queue.
+   * @return HpcTransferAcceptanceResponse for which: 1. the method canAcceptTransfer() returns true
+   *     if upload/download requests are accepted or false if the data-transfer system is too busy.
+   *     2. the method getQueueSize() returns int that is size of data transfer queue.
    * @throws HpcException on data transfer system failure.
    */
-  public default HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken) throws HpcException {
+  public default HpcTransferAcceptanceResponse acceptsTransferRequests(Object authenticatedToken)
+      throws HpcException {
     return new HpcTransferAcceptanceResponse() {};
   }
 
@@ -87,8 +87,8 @@ public interface HpcDataTransferProxy {
    * @param baseArchiveDestination The archive's base destination location.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
-   * @param downloadRequestURLExpiration The expiration period (in days) to set when generating download
-   *     URL.
+   * @param downloadRequestURLExpiration The expiration period (in days) to set when generating
+   *     download URL.
    * @return A data transfer request Id.
    * @throws HpcException on data transfer system failure.
    */
@@ -205,20 +205,23 @@ public interface HpcDataTransferProxy {
    * @param path The data object (logical) path.
    * @param callerObjectId The caller's objectId.
    * @param archiveType The type of the archive.
+   * @param unique If true, the a UUID will be appended to the end of the destination path ensuring
+   *     it is unique. Otherwise, no UUID is appended
    * @return The calculated data transfer deposit destination.
    */
   public static HpcFileLocation getArchiveDestinationLocation(
       HpcFileLocation baseArchiveDestination,
       String path,
       String callerObjectId,
-      HpcArchiveType archiveType) {
+      HpcArchiveType archiveType,
+      boolean unique) {
     // Calculate the data transfer destination absolute path as the following:
     StringBuilder destinationPath = new StringBuilder();
     destinationPath.append(baseArchiveDestination.getFileId());
 
     if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
       // For Archive destination, destination path is:
-      // 'base path' / 'caller's object-id / 'logical path'
+      // 'base path' / 'caller's object-id / 'logical path'_'generated UUID' (note: generated UUID is optional)
       if (callerObjectId != null && !callerObjectId.isEmpty()) {
         if (callerObjectId.charAt(0) != '/') {
           destinationPath.append('/');
@@ -234,10 +237,13 @@ public interface HpcDataTransferProxy {
       } else {
         destinationPath.append(path);
       }
+      if (unique) {
+        destinationPath.append('_' + UUID.randomUUID().toString());
+      }
 
     } else {
       // For Temporary Archive, destination path is:
-      // 'base path' / generated UUID
+      // 'base path' / generated UUID.
       destinationPath.append('/' + UUID.randomUUID().toString());
     }
 

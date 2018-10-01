@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -235,7 +236,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public boolean interrogatePathRef(String path) throws HpcException {
     return dataManagementProxy.interrogatePathRef(
-            dataManagementAuthenticator.getAuthenticatedToken(), path);
+        dataManagementAuthenticator.getAuthenticatedToken(), path);
   }
 
   @Override
@@ -276,10 +277,72 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     } catch (HpcException e) {
       if (quiet) {
-        logger.error("Failed to delete a file", e);
+        logger.error("Failed to delete a file: {}", path, e);
       } else {
         throw (e);
       }
+    }
+  }
+
+  @Override
+  public void move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
+      throws HpcException {
+    Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
+
+    // Validate the source path exists.
+    HpcPathAttributes sourcePathAttributes =
+        dataManagementProxy.getPathAttributes(authenticatedToken, sourcePath);
+    if (!sourcePathAttributes.getExists()) {
+      throw new HpcException("Source path doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Optionally perform path type validation.
+    if (pathTypeValidation.isPresent()) {
+      if (pathTypeValidation.get()) {
+        if (!sourcePathAttributes.getIsDirectory()) {
+          throw new HpcException(
+              "Source path is not of a collection", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+      } else if (!sourcePathAttributes.getIsFile()) {
+        throw new HpcException(
+            "Source path is not of a data object", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
+    // Validate the destination path doesn't exist already.
+    HpcPathAttributes destinationPathAttributes =
+        dataManagementProxy.getPathAttributes(authenticatedToken, destinationPath);
+    if (destinationPathAttributes.getExists()) {
+      throw new HpcException("Destination path already exists", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the destination parent path exists. i.e. we enforce the move is to an existing collection.
+    String destinationParentPath = destinationPath.substring(0, destinationPath.lastIndexOf('/'));
+    HpcPathAttributes destinationParentPathAttributes =
+        dataManagementProxy.getPathAttributes(authenticatedToken, destinationParentPath);
+    if (!destinationParentPathAttributes.getExists()) {
+      throw new HpcException(
+          "Destination parent path doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Perform the move request.
+    dataManagementProxy.move(authenticatedToken, sourcePath, destinationPath);
+
+    // Validate the hierarchy.
+    try {
+      // Calculate the validation path. It's the collection containing the data object if we move a data object,
+      // or the collection itself if we move a collection.
+      String hierachyValidationPath =
+          sourcePathAttributes.getIsFile() ? destinationParentPath : destinationPath;
+      validateHierarchy(
+          hierachyValidationPath,
+          this.findDataManagementConfigurationId(destinationPath),
+          sourcePathAttributes.getIsFile());
+
+    } catch (HpcException e) {
+      // Hierarchy is invalid. Revert and rethrow the exception.
+      dataManagementProxy.move(authenticatedToken, destinationPath, sourcePath);
+      throw (e);
     }
   }
 
@@ -422,7 +485,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
       throws HpcException {
-	  
+
     // Calculate the collection path to validate.
     String validationCollectionPath = dataManagementProxy.getRelativePath(path);
     validationCollectionPath =
@@ -511,7 +574,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public void closeConnection() {
     try {
-      dataManagementProxy.disconnect(dataManagementAuthenticator.getAuthenticatedToken());
+      if (dataManagementAuthenticator.isAuthenticated()) {
+        // Close the connection to iRODS.
+        dataManagementProxy.disconnect(dataManagementAuthenticator.getAuthenticatedToken());
+        
+        // Clear the token.
+        dataManagementAuthenticator.clearToken();
+      }
 
     } catch (HpcException e) {
       // Ignore.
@@ -521,7 +590,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   @Override
   public String registerDataObjects(
-      String userId, String uiURL, Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
+      String userId,
+      String uiURL,
+      Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
       throws HpcException {
     // Input validation
     if (StringUtils.isEmpty(userId)) {
@@ -607,7 +678,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     registrationResult.setCreated(registrationTask.getCreated());
     registrationResult.setCompleted(completed);
     registrationResult.getItems().addAll(registrationTask.getItems());
-    
+
     // Calculate the effective transfer speed (Bytes per second). This is done by averaging the effective transfer speed
     // of all successful registration items.
     int effectiveTransferSpeed = 0;
@@ -618,8 +689,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         completedItems++;
       }
     }
-    registrationResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
-    
+    registrationResult.setEffectiveTransferSpeed(
+        completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
+
     // Persist to DB.
     dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
   }

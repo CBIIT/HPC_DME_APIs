@@ -14,6 +14,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
@@ -29,7 +31,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcFileSizeUpdateDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -47,8 +48,8 @@ public interface HpcDataManagementBusService {
    * Determine if path refers to collection or data file.
    *
    * @param path The path.
-   * @return A boolean result that is true if path refers to collection
-   *         or false if it refers to data file.
+   * @return A boolean result that is true if path refers to collection or false if it refers to
+   *     data file.
    * @throws HpcException on service failure.
    */
   public boolean interrogatePathRef(String path) throws HpcException;
@@ -388,7 +389,24 @@ public interface HpcDataManagementBusService {
    * @throws HpcException on service failure.
    */
   public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
-  
-  // TODO - Remove after file size was updated in prod
-  public HpcFileSizeUpdateDTO updateFileSize(HpcFileSizeUpdateDTO fileSizeUpdate) throws HpcException;
+
+  /**
+   * Move a path of either a data object or a collection.
+   *
+   * @param path The path to move.
+   * @param pathType If true, the path is a of a collection, otherwise the path is of a data object.
+   * @param destinationPath The destination path to move to.
+   * @throws HpcException on service failure.
+   */
+  public void movePath(String path, boolean pathType, String destinationPath) throws HpcException;
+
+  /**
+   * Move a list of data objects and/or collections.
+   *
+   * @param bulkMoveRequest The bulk data objects / collections move request.
+   * @return A response DTO containing result of each move request on the list.
+   * @throws HpcException on service failure.
+   */
+  public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest)
+      throws HpcException;
 }

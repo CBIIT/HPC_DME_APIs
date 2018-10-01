@@ -16,6 +16,7 @@ class SFObject(object):
         self.tarfile = tarfile
         self.addParent = addParent
         self.metadata = OrderedDict()
+        self.metadata["generateUploadRequestURL"] = True
         self.metadata["metadataEntries"] = []
         self.extensions = {"md5": "MD5SUM", "bai" : "INDEX", "bam" : "BAM", "fastq.gz" : "FASTQ", "html" : "HTML"}
         self.archive_path = None
