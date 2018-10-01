@@ -26,22 +26,31 @@ class SFUtils(object):
 
 
     @staticmethod
-    def get_unaligned_ext(filepath, self):
+    def get_unaligned_ext(filepath):
 
         #Get the characters after 'Uanligned_' or 'Unalignd_'
         # and before '/'. This will be appended to project_name
         #for Undetermined files to make their path unique
 
         if 'Unaligned_' in filepath:
-            ext = filepath.split('Uanligned_')[-1]
+            ext = filepath.split('Unaligned_')[-1]
             ext = ext.split('/')[0]
 
         elif 'Unalignd_' in filepath:
-            ext = filepath.split('Uanligned_')[-1]
+            ext = filepath.split('Unalignd_')[-1]
             ext = ext.split('/')[0]
+
+        elif 'Unaligned' in filepath:
+            ext = filepath.split('Unaligned')[-1]
+            ext = 'Unaligned' + ext.split('/')[0]
 
         else:
             ext = None
+
+        if ext is not None:
+            logging.info('Unaligned ext for filepath + ' + filepath + ' : ' + ext)
+        else:
+            logging.info('No ext. for Unaligned filepath + ' + filepath)
 
         return ext
 
@@ -80,11 +89,8 @@ class SFUtils(object):
 
         logging.info("Getting contents for: " + tarfile_name)
         tarfile_name = tarfile_name.rstrip()
+        tarfile_path = tarfile_dir + '/' + tarfile_name
 
-        if 'lane123456' in tarfile_name:
-            excludes_str = ': Invalid tar file -  lane123456'
-            sf_audit.record_exclusion(tarfile_name, "All files", excludes_str)
-            return
 
         if not tarfile_name.endswith('tar.gz') and not tarfile_name.endswith('tar'):
 
@@ -94,13 +100,14 @@ class SFUtils(object):
                     not tarfile_name.endswith('list.txt') and
                     not tarfile_name.endswith('.md5')):
                 excludes_str = ': Invalid file format - not tar.gz or tar.gz.md5 or acceptable content list format'
-                sf_audit.record_exclusion(tarfile_name, "All files", excludes_str)
+                sf_audit.record_exclusion(tarfile_name, "All files", tarfile_path, excludes_str)
             else:
                 logging.info(tarfile_name + ': No contents to extract')
             return
 
-        tarfile_path = tarfile_dir + '/' + tarfile_name
-        contentFiles = [tarfile_name + '.list', tarfile_path + '.list', tarfile_path + '_archive.list',
+
+        contentFiles = ['tar_contents/' + tarfile_name + '.list.txt', 'tar_contents/' + tarfile_name + '.list',
+                        tarfile_path + '.list', tarfile_path + '_archive.list',
                         tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '.list',
                         tarfile_path.split('.tar')[0] + '_archive.list',
                         tarfile_path.split('.tar')[0] + '.archive.list',

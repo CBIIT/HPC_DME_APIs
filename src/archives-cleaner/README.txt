@@ -67,3 +67,4 @@ Running as Executable JAR (alternative to running with Maven)
    
    For "java -jar ..." line above, {version #} is placeholder for whichever version specifier is 
    applicable.
+>>>>>>> origin/master

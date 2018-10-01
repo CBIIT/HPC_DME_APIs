@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,6 +57,8 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
+	@Value("${dme.archive.naming.forbidden.chararacters}")
+  private String forbiddenCharacters;
 
 	/**
 	 * Get selected collection details from its path
@@ -125,6 +128,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		}
 
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
+		model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
 		return "addcollection";
 	}
 
@@ -151,6 +155,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		populateFormAttributes(request, session, model, basePath,
 				collectionType, refresh, false);
 		model.addAttribute("create", true);
+    model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
 		return "addcollection";
 	}
 
@@ -218,7 +223,6 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		HpcCollectionRegistrationDTO registrationDTO = null;
 
 		try {
-      //MiscUtil.validateDmePathForForbiddenChars(hpcCollection.getPath());
 			registrationDTO = constructRequest(request, session, hpcCollection.getPath(), hpcCollection);
 		} catch (HpcWebException e) {
 			model.addAttribute("hpcCollection", hpcCollection);
@@ -270,6 +274,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			}
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to create collection: " + e.getMessage());
+      model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
 			return "addcollection";
 		} finally {
 			if (originPath == null)

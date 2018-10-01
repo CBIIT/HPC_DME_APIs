@@ -52,7 +52,7 @@ class SFAudit(object):
     def audit_command(self, command):
         logging.info(command)
         includes = open(self.includes_path, "a")
-        includes.write(command)
+        includes.write("\n{0}".format(command))
         includes.close()
 
 
@@ -63,18 +63,18 @@ class SFAudit(object):
         archived = False
         includes = open(self.includes_path, "a")
 
+        filesize = os.path.getsize(filepath)
+        logging.info("\nFile size = {0}\n".format(filesize))
+
         if not dryrun:
-
-            filesize = os.path.getsize(filepath)
-            logging.info("\nFile size = {0}\n".format(filesize))
-
             # Record the result
             response_header = "dataObject-registration-response-header.tmp"
-            with open(response_header) as f:
-                for line in f:
-                    logging.info(line)
-                    if ('200 OK' in line or '201 Created' in line):
-                        archived = True
+            if os.path.isfile(response_header):
+                with open(response_header) as f:
+                    for line in f:
+                        logging.info(line)
+                        if ('200 OK' in line or '201 Created' in line):
+                            archived = True
 
         else:
             archived = True
@@ -85,11 +85,11 @@ class SFAudit(object):
             self.inc_file()
             self.inc_bytes(filesize)
             includes.write("\nFile size = {0} \n".format(filesize))
-            includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(self.file_count, self.byte_count))
+            includes.write("Files registered = {0}, Bytes_stored = {1} \n".format(self.file_count, self.byte_count))
             self.record_to_csv(filepath, archive_path, filesize)
 
         else:
-            includes.write("Error registering file \n")
+            includes.write("\nError registering file \n")
 
         includes.close()
 

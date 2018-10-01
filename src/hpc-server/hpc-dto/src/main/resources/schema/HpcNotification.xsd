@@ -16,26 +16,27 @@
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-notification="http://hpc.nci.nih.gov/domain/notification"
 	xmlns:hpc-dto-notification="http://hpc.nci.nih.gov/dto/notification"
-	targetNamespace="http://hpc.nci.nih.gov/dto/notification" 
+	targetNamespace="http://hpc.nci.nih.gov/dto/notification"
 	elementFormDefault="unqualified">
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/notification"
 		        schemaLocation="HpcNotificationTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/dto/error" schemaLocation="HpcException.xsd" />
 
 	<!-- Notification Subscriptions DTO -->
 	<xsd:element name="HpcNotificationSubscriptionsRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="addUpdateSubscriptions" 
-				             type="hpc-domain-notification:HpcNotificationSubscription" 
+				<xsd:element name="addUpdateSubscriptions"
+				             type="hpc-domain-notification:HpcNotificationSubscription"
 				             minOccurs="0" maxOccurs="unbounded"/>
 				<xsd:element name="deleteSubscriptions"
-					         type="hpc-domain-notification:HpcEventType" 
+					         type="hpc-domain-notification:HpcEventType"
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="HpcNotificationSubscriptionListDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -44,14 +45,14 @@
 					         minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
+	</xsd:element>
+
 	<xsd:complexType name="HpcNotificationDeliveryReceiptDTO">
 		<xsd:sequence>
 		    <xsd:element name="eventId" type="xsd:int" />
 			<xsd:element name="eventType" type="hpc-domain-notification:HpcEventType" />
-			<xsd:element name="eventPayloadEntries" 
-		    	         type="hpc-domain-notification:HpcEventPayloadEntry" 
+			<xsd:element name="eventPayloadEntries"
+		    	         type="hpc-domain-notification:HpcEventPayloadEntry"
 		             	 minOccurs="0" maxOccurs="unbounded" />
 		    <xsd:element name="eventCreated" type="xsd:dateTime" />
 			<xsd:element name="notificationDeliveryMethod" type="hpc-domain-notification:HpcNotificationDeliveryMethod" />
@@ -71,7 +72,54 @@
 				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
-	</xsd:element>	
-	
-	
+	</xsd:element>
+
+	<xsd:complexType name="HpcAddOrUpdateNotificationSubscriptionProblem">
+		<xsd:sequence>
+			<xsd:element name="subscription"
+							type="hpc-domain-notification:HpcNotificationSubscription"
+							minOccurs="1"
+							maxOccurs="1" />
+			<xsd:element name="problem"
+							type="xsd:string"
+							minOccurs="1"
+							maxOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="HpcRemoveNotificationSubscriptionProblem">
+		<xsd:sequence>
+			<xsd:element name="removeSubscriptionEvent"
+						type="hpc-domain-notification:HpcEventType"
+						minOccurs="1"
+						maxOccurs="1" />
+			<xsd:element name="problem"
+						type="xsd:string"
+						minOccurs="1"
+						maxOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="HpcNotificationSubscriptionsResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="addedOrUpdatedSubscriptions"
+					type="hpc-domain-notification:HpcNotificationSubscription"
+					minOccurs="0" maxOccurs="unbounded" />
+
+				<xsd:element name="subscriptionsCouldNotBeAddedOrUpdated"
+					type="hpc-dto-notification:HpcAddOrUpdateNotificationSubscriptionProblem"
+					minOccurs="0" maxOccurs="unbounded" />
+
+				<xsd:element name="removedSubscriptions"
+					type="hpc-domain-notification:HpcEventType"
+					minOccurs="0" maxOccurs="unbounded" />
+
+				<xsd:element name="subscriptionsCouldNotBeRemoved"
+					type="hpc-dto-notification:HpcRemoveNotificationSubscriptionProblem"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
 </xsd:schema>

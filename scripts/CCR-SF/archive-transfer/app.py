@@ -10,9 +10,12 @@ from metadata.sf_helper import SFHelper
 from common.sf_utils import SFUtils
 from common.sf_audit import SFAudit
 
+#Usage:
+#python app.py tarfiles /is2/projects/CCR-SF/archive/illumina/2015_new /mnt/IRODsScratch/bulk-uploads/CCR-SF/2015_new/uploads/ 2015_new_dryrun_with_size True True
+
 def main(args):
 
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         print("\n Usage: python app.py tarfile_list tarfile_dir extract_path audit_dir dryrun initial_bytes initial_file_count")
         return
 
@@ -31,13 +34,22 @@ def main(args):
     #If this is a dryrun or not
     dryrun = args[5].lower() == 'true'
 
+    #If filesize has to be recorded or not - applicable only for dry run
+    if dryrun:
+        if len(sys.argv) > 6:
+            record_file_size = args[6]
+        else:
+            record_file_size = False
+    else:
+        record_file_size = True
+
     bytes_stored = 0
     files_registered = 0
 
-    if (args[6] is not None):
-        bytes_stored = args[6]
-        if (args[7] is not None):
-            files_registered = args[7]
+    #if (args[6] is not None):
+    #    bytes_stored = args[6]
+    #    if (args[7] is not None):
+    #        files_registered = args[7]
 
     sf_audit = SFAudit(audit_dir, extract_path, bytes_stored, files_registered)
     sf_audit.prep_for_audit()
@@ -71,7 +83,7 @@ def main(args):
             continue
 
         # Extract all files and store in extract_path directory
-        if not dryrun:
+        if record_file_size:
             if not (SFUtils.extract_files_from_tar(tarfile_path, extract_path)):
                 # Something wrong with this file path, go to
                 # next one and check logs later
@@ -85,16 +97,16 @@ def main(args):
                 #This is a directory, nothing to do
                 continue
 
+            filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
+
             #if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
-            exclusion_list = ['10X', 'Phix', 'PhiX', 'demux', 'demultiplex']
+            exclusion_list = ['10X', 'demux', 'demultiplex']
             if any(ext in line.rstrip() for ext in exclusion_list):
-                sf_audit.record_exclusion(tarfile_name, line.rstrip(),
+                sf_audit.record_exclusion(tarfile_name, line.rstrip(), filepath,
                 'Path contains substring from exclusion list')
                 continue
 
-            filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
-
-            if filepath.endswith('fastq.gz') or filepath.endswith('fastq.gz.md5'):
+            if filepath.endswith('fastq') or filepath.endswith('fastq.gz') or filepath.endswith('fastq.gz.md5'):
 
                 # Extract the info for PI metadata
                 path = SFUtils.get_meta_path(filepath)
@@ -107,7 +119,7 @@ def main(args):
                 register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun, ext)
 
                 #create Object metadata with Sample type parent and register object
-                register_object(path, "Sample", tarfile_name, True, filepath, sf_audit, dryrun)
+                register_object(path, "Sample", tarfile_name, True, filepath, sf_audit, dryrun, ext)
 
             elif line.rstrip().endswith('laneBarcode.html') and '/all/' in line and not 'Control_Sample' in line:
 
@@ -119,6 +131,7 @@ def main(args):
                 if flowcell_id in head:
 
                     path = head.split(flowcell_id + '/')[-1]
+                    ext = SFUtils.get_unaligned_ext(filepath)
 
                     #Ensure that metadata path does not have the Sample sub-directory and that it is valid
                     if path.count('/') == 1 and '_' in path:
@@ -132,28 +145,30 @@ def main(args):
                         register_collection(path, "PI_Lab", tarfile_name, False, sf_audit, dryrun)
 
                         # Register Flowcell collection with Project type parent
-                        register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun)
+                        register_collection(path, "Flowcell", tarfile_name, True, sf_audit, dryrun, ext)
 
                         # create Object metadata with Flowcell type parent and register object
-                        register_object(path, "Flowcell", tarfile_name, False, filepath, sf_audit, dryrun)
+                        register_object(path, "Flowcell", tarfile_name, False, filepath, sf_audit, dryrun, ext)
 
                     else:
                         # ignore this html
-                        sf_audit.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid - may have other sub-directory')
+                        sf_audit.record_exclusion(tarfile_name, line.rstrip(), filepath, 'html path not valid - may have other sub-directory')
                         continue
 
                 else:
                     #ignore this html
-                    sf_audit.record_exclusion(tarfile_name, line.rstrip(), 'html path not valid - could not extract flowcell_id')
+                    sf_audit.record_exclusion(tarfile_name, line.rstrip(), filepath, 'html path not valid - could not extract flowcell_id')
                     continue
 
             else:
                 #For now, we ignore files that are not fastq.gz or html
-                sf_audit.record_exclusion(tarfile_name , line.rstrip(), 'Not fastq.gz or valid html file')
+                sf_audit.record_exclusion(tarfile_name , line.rstrip(), filepath, 'Not fastq.gz or valid html file')
 
         logging.info('Done processing file: ' + tarfile_path)
+
         # delete the extracted file
-        os.system("rm -rf " + extract_path + "*")
+        if record_file_size:
+            os.system("rm -rf " + extract_path + "*")
 
     sf_audit.audit_summary()
 
@@ -179,7 +194,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
         json.dump(collection_metadata, fp)
 
     #Prepare the command
-    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
+    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type, ext)
     command = "dm_register_collection " + json_file_name + " " + archive_path
 
     #Audit the command
@@ -198,7 +213,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
 
 
 
-def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit, dryrun):
+def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit, dryrun, ext = None):
 
     global files_registered, bytes_stored
     #Build metadata for the object
@@ -213,21 +228,21 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
         json.dump(object_metadata, fp)
 
     #Prepare the command
-    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type)
+    archive_path = SFCollection.get_archive_path(tarfile_name, filepath, type, ext)
     archive_path = archive_path + '/' + file_name
-    command = "dm_register_dataobject " + json_file_name + " " + archive_path + " " + fullpath
+    command = "dm_register_dataobject_presigned " + json_file_name + " " + archive_path + " " + fullpath
 
     #Audit the command
     sf_audit.audit_command(command)
 
     #Run the command
     if not dryrun:
-        response_header = "dataObject-registration-response-header.tmp"
+        response_header = "presignedURL-registration-response-header.tmp"
         os.system("rm - f " + response_header + " 2>/dev/null")
         os.system(command)
 
     #Audit the result
-    sf_audit.audit_upload(tarfile_name, filepath, fullpath, archive_path, dryrun)
+    sf_audit.audit_upload(tarfile_name, filepath, fullpath, archive_path, dryrun, ext)
 
 
 

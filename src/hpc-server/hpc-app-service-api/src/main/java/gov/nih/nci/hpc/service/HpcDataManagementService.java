@@ -9,7 +9,7 @@ package gov.nih.nci.hpc.service;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
@@ -48,17 +48,15 @@ public interface HpcDataManagementService {
    */
   public boolean isPathParentDirectory(String path) throws HpcException;
 
-
   /**
    * Determine if path refers to collection or data file.
    *
    * @param path The path.
-   * @return Boolean to convey whether path refers to collection or data file;
-   *          true for collection and false for data file.
+   * @return Boolean to convey whether path refers to collection or data file; true for collection
+   *     and false for data file.
    * @throws HpcException on data management system failure
    */
   public boolean interrogatePathRef(String path) throws HpcException;
-
 
   /**
    * Create a data object's file.
@@ -70,13 +68,25 @@ public interface HpcDataManagementService {
   public boolean createFile(String path) throws HpcException;
 
   /**
-   * Delete a path (data object or directory).
+   * Delete a path (data object or collection).
    *
    * @param path The path to delete.
    * @param quiet If set to true, no exception is thrown in case of a failure.
    * @throws HpcException on service failure (unless 'quiet' is set to 'true').
    */
   public void delete(String path, boolean quiet) throws HpcException;
+
+  /**
+   * Move a path (data object or collection).
+   *
+   * @param sourcePath The data object or collection path to move.
+   * @param destinationPath The destination path to move to.
+   * @param pathTypeValidation (Optional) True to validate if the path is a collection, False to
+   *     validate if it is a data object. If null - no path type validation is performed.
+   * @throws HpcException on service failure.
+   */
+  public void move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
+      throws HpcException;
 
   /**
    * Add an audit record in the DB Note: Currently, there is no 'audit trail' functionality
@@ -217,7 +227,7 @@ public interface HpcDataManagementService {
    */
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
       throws HpcException;
-  
+
   /**
    * Get collection by its path.
    *

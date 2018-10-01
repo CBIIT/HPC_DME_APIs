@@ -140,7 +140,7 @@ public class HpcScheduledTasksImpl {
   }
 
   /** Refresh the metadata materialized Views. */
-  @Scheduled(cron = "${hpc.scheduler.cron.refreshMaterializedViews.delay}")
+  @Scheduled(cron = "${hpc.scheduler.cron.refreshMetadataViews.delay}")
   private void refreshMetadataViewsTask() {
     executeTask("refreshMetadataViewsTask()", systemBusService::refreshMetadataViews);
   }
@@ -172,7 +172,6 @@ public class HpcScheduledTasksImpl {
       logger.error("Scheduled task failed: " + name, e);
 
     } finally {
-      systemBusService.closeConnection();
       long executionTime = System.currentTimeMillis() - start;
       logger.info(
           "Scheduled task completed: {} - Task execution time: {} milliseconds",

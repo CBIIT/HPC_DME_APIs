@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </p>
  *
  * @author <a href="mailto:prasad.konka@nih.gov">Prasad Konka</a>
- * @version $Id$
  */
 
 public class HpcReportRestServiceImpl extends HpcRestServiceImpl implements HpcReportRestService {

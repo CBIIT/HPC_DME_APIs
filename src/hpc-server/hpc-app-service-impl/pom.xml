@@ -1,16 +1,8 @@
-<!--  
- * pom.xml
- *
- * Copyright SVG,  Inc.
- * Copyright Leidos Biomedical Research, Inc
- * 
- * Distributed under the OSI-approved BSD 3-Clause License.
- * See http://ncip.github.com/HPC/LICENSE.txt for details.
- *
- * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
- -->
- 
+<!-- * pom.xml * * Copyright SVG, Inc. * Copyright Leidos Biomedical Research, 
+	Inc * * Distributed under the OSI-approved BSD 3-Clause License. * See http://ncip.github.com/HPC/LICENSE.txt 
+	for details. * * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a> 
+	* @version $Id$ -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -19,7 +11,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>1.7.3</version>
+		<version>1.8.0</version>
 	</parent>
 	<artifactId>hpc-app-service-impl</artifactId>
 	<packaging>bundle</packaging>
@@ -33,12 +25,12 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package/>
+						<Export-Package />
 						<Private-Package>
 							gov.nih.nci.hpc.service.impl
 						</Private-Package>
 						<Import-Package>
-							<!--  Spring Security LDAP Implicit Import Packages -->
+							<!-- Spring Security LDAP Implicit Import Packages -->
 							javax.net.ssl,
 							*
 						</Import-Package>
@@ -88,14 +80,14 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>org.mockito</groupId>
-    		<artifactId>mockito-core</artifactId>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -106,20 +98,20 @@
 			<artifactId>json-simple</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>commons-io</groupId>
-    		<artifactId>commons-io</artifactId>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>io.jsonwebtoken</groupId>
-    		<artifactId>jjwt</artifactId>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-context-support</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
 		</dependency>
 		<dependency>
-    		<groupId>javax.mail</groupId>
-    		<artifactId>javax.mail-api</artifactId>
+			<groupId>javax.mail</groupId>
+			<artifactId>javax.mail-api</artifactId>
 		</dependency>
 	</dependencies>
 </project>
