@@ -45,7 +45,7 @@ class SFAudit(object):
 
         #Write out the header for the csv file containing list of excluded files
         excludes_csv = open(self.excludes_csv_path, "a")
-        excludes_csv.write("Tarfile, Extracted File, Reason\n")
+        excludes_csv.write("Tarfile, Extracted File, Filesize, Reason\n")
         excludes_csv.close()
 
         #Configure the logging
@@ -58,16 +58,20 @@ class SFAudit(object):
 
 
     #Record the excluded file
-    def record_exclusion(self, tarfile_name, file_name, str):
+    def record_exclusion(self, tarfile_name, file_name, full_path, reason):
+        filesize = 0
+        if os.path.exists(full_path):
+            filesize = os.path.getsize(full_path)
+
         excludes = open(self.excludes_path, "a")
-        excludes.writelines(tarfile_name + ": " + file_name + " - " + str + '\n')
+        excludes.writelines(tarfile_name + ": " + file_name + " - " + reason + '\n')
         excludes.close()
 
         excludes_csv = open(self.excludes_csv_path, "a")
-        excludes_csv.write(tarfile_name + ", " + file_name + ", " + str + "\n")
+        excludes_csv.write(tarfile_name + ", " + file_name + ", " + str(filesize) + ", " + reason + "\n")
         excludes_csv.close()
 
-        logging.warning('Ignoring file ' + str)
+        logging.warning('Ignoring file ' + reason)
 
 
     #Record the command
@@ -86,18 +90,21 @@ class SFAudit(object):
         result = 'Fail'
         includes = open(self.includes_path, "a")
 
+        # Get size of file in bytes
+        # if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
+        #    status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
+        #    filesize = int(output.split()[0])
+        # else:
+        filesize = 0
+        if os.path.exists(fullpath):
+            filesize = os.path.getsize(fullpath)
+
+        logging.info("\nFile size = {0}\n".format(filesize))
+
         if not dryrun:
 
-            # Get size of file in bytes
-            #if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
-            #    status, output = commands.getstatusoutput('du -sb ' + self.extract_path)
-            #    filesize = int(output.split()[0])
-            #else:
-            filesize = os.path.getsize(fullpath)
-            logging.info("\nFile size = {0}\n".format(filesize))
-
             # Record the result
-            response_header = "dataObject-registration-response-header.tmp"
+            response_header = "presignedURL-registration-response-header.tmp"
             with open(response_header) as f:
                 for line in f:
                     logging.info(line)
@@ -106,7 +113,7 @@ class SFAudit(object):
                         result = 'Pass'
 
         else:
-            filesize = 0
+            #filesize = 0
             archived = True
             result = 'Pass'
 
