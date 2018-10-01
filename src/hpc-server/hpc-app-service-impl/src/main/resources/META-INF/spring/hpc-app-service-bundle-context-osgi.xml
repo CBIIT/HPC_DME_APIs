@@ -34,7 +34,7 @@
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultCollectionLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
-		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.operator">EQUAL</prop>
+		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
 		<prop key="hpc.service.dataManagement.systemAdminSubjects">rods rodsadmin</prop>
 		<prop key="hpc.service.dataManagement.downloadResultsPageSize">100</prop>
 		<prop key="hpc.service.dataManagement.registrationResultsPageSize">100</prop>
