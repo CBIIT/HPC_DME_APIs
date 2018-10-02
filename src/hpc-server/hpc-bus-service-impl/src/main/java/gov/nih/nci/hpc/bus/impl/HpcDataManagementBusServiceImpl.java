@@ -85,6 +85,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanPathMapDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -1980,6 +1981,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
 
+      // Validate folder map.
+      HpcDirectoryScanPathMapDTO pathMap = directoryScanRegistrationItem.getPathMap();
+      if (pathMap != null) {
+        if (StringUtils.isEmpty(pathMap.getFromPath())
+            || StringUtils.isEmpty(pathMap.getToPath())) {
+          throw new HpcException(
+              "Null / Empty from/to folder in directory scan folder map",
+              HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+        pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
+        pathMap.setToPath(toNormalizedPath(pathMap.getToPath()));
+      }
+
       // Get the configuration ID.
       String configurationId = dataManagementService.findDataManagementConfigurationId(basePath);
       if (StringUtils.isEmpty(configurationId)) {
@@ -2038,7 +2052,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                               .getScanDirectoryLocation()
                               .getFileContainerId(),
                           directoryScanRegistrationItem.getCallerObjectId(),
-                          directoryScanRegistrationItem.getBulkMetadataEntries())));
+                          directoryScanRegistrationItem.getBulkMetadataEntries(),
+                          pathMap)));
     }
 
     return dataObjectRegistrationItems;
@@ -2051,7 +2066,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param basePath The base path to register the scan item with.
    * @param sourceFileContainerId The container ID containing the scan item.
    * @param callerObjectId The caller's object ID.
-   * @param bulkMetadataEntries metadata entries for this data object registration and parent collections.
+   * @param bulkMetadataEntries metadata entries for this data object registration and parent
+   *     collections.
+   * @param pathMap Replace 'fromPath' (found in scanned directory) with 'toPath'.
    * @return data object registration DTO.
    */
   private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(
@@ -2059,30 +2076,41 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       String basePath,
       String sourceFileContainerId,
       String callerObjectId,
-      HpcBulkMetadataEntries bulkMetadataEntries) {
-    // Calculate the data object path to register,
+      HpcBulkMetadataEntries bulkMetadataEntries,
+      HpcDirectoryScanPathMapDTO pathMap) {
+    // If pathMap provided - use the map to replace scanned path with user provided path (or part of path).
+    if (pathMap != null) {
+      scanItem.setFilePath(
+          scanItem.getFilePath().replace(pathMap.getFromPath(), pathMap.getToPath()));
+    }
+
+    // Calculate the data object path to register.
     String path = toNormalizedPath(basePath + scanItem.getFilePath());
-    
+
     // Construct the registration DTO.
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
         new HpcDataObjectRegistrationItemDTO();
     dataObjectRegistration.setPath(path);
     dataObjectRegistration.setCreateParentCollections(true);
-    
+
     // Set data object metadata entries.
-    if(bulkMetadataEntries != null) {
-      for(HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathMetadataEntries()) {
-        if(path.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
-          dataObjectRegistration.getDataObjectMetadataEntries().addAll(bulkMetadataEntry.getMetadataEntries());
+    if (bulkMetadataEntries != null) {
+      for (HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathMetadataEntries()) {
+        if (path.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
+          dataObjectRegistration
+              .getDataObjectMetadataEntries()
+              .addAll(bulkMetadataEntry.getMetadataEntries());
           break;
         }
       }
     }
-    if(dataObjectRegistration.getDataObjectMetadataEntries().isEmpty()) {
+    if (dataObjectRegistration.getDataObjectMetadataEntries().isEmpty()) {
       // Could not find user provided data object metadata. Use default.
-      dataObjectRegistration.getDataObjectMetadataEntries().addAll(metadataService.getDefaultDataObjectMetadataEntries(scanItem));
+      dataObjectRegistration
+          .getDataObjectMetadataEntries()
+          .addAll(metadataService.getDefaultDataObjectMetadataEntries(scanItem));
     }
-    
+
     // Set the metadata to create the parent collections.
     dataObjectRegistration.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
 
