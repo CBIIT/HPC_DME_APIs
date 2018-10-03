@@ -25,8 +25,11 @@ public class HpcExcelUtil {
 	public static final String METADATA_SHEET = "Metadata";
 	public static final String TOKENS_SHEET = "Tokens";
 
-	public static HpcBulkMetadataEntries parseBulkMatadataEntries(MultipartFile metadataFile) {
+	public static HpcBulkMetadataEntries parseBulkMatadataEntries(MultipartFile metadataFile) throws HpcWebException{
 		HpcBulkMetadataEntries entries = null;
+		if(metadataFile == null || metadataFile.getName().isEmpty() || metadataFile.getOriginalFilename().isEmpty())
+			return null;
+		
 		try {
 			Sheet tokenSheet = getWorkbookSheet(metadataFile, TOKENS_SHEET);
 			Map<String, String> tokens = getTokensMap(tokenSheet);
@@ -34,8 +37,7 @@ public class HpcExcelUtil {
 			Map<String, Map<String, String>> metadataMap = getMetadataMap(metadataSheet);
 			entries = buildHpcBulkMetadataEntries(metadataMap, tokens);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new HpcWebException(e);
 		}
 
 		return entries;
