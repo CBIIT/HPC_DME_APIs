@@ -281,6 +281,7 @@ public class HpcIRODSConnection {
         irodsAccount = toAuthenticatedIrodsAccount(dataManagementAccount, authenticationScheme);
 
       } else {
+    	logger.info("username:" + dataManagementAccount.getUsername());
         // Authenticate the data management account.
         AuthResponse authResponse =
             irodsFileSystem
