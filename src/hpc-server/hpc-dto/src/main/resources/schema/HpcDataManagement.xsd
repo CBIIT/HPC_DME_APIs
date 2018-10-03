@@ -112,6 +112,13 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
+	<xsd:complexType name="HpcDirectoryScanPathMapDTO">
+		<xsd:sequence>
+			<xsd:element name="fromPath" type="xsd:string" />
+			<xsd:element name="toPath" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+		
 	<xsd:complexType name="HpcDirectoryScanRegistrationItemDTO">
 		<xsd:sequence>
 			<xsd:element name="basePath" type="xsd:string" />
@@ -126,6 +133,8 @@
 				type="hpc-domain-datatransfer:HpcDirectoryScanPatternType" />
 			<xsd:element name="bulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
+			<xsd:element name="pathMap"
+				type="hpc-dto-datamanagement:HpcDirectoryScanPathMapDTO" />
 		</xsd:sequence>
 	</xsd:complexType>
 
