@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.web.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -9,7 +10,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.ss.format.CellDateFormatter;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CellValue;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -108,7 +113,6 @@ public class HpcExcelUtil {
 
 		// Read 1st row which is header row with attribute names
 		List<String> attrNames = getHeader(metadataSheet);
-		int headerSize = attrNames.size();
 		// Read all rows (skip 1st) and construct metadata map
 		// Skip cells exceeding header size
 		while (iterator.hasNext()) {
@@ -119,29 +123,39 @@ public class HpcExcelUtil {
 			// Skip header row
 			int counter = 0;
 			Map<String, String> rowMetadata = new HashMap<String, String>();
-			List<String> rowData = new ArrayList<String>();
-			Iterator<Cell> cellIterator = currentRow.iterator();
-			while (cellIterator.hasNext()) {
-				Cell currentCell = cellIterator.next();
-				rowData.add(currentCell.getStringCellValue());
+			
+			for(String attrName : attrNames)
+			{
+				Cell currentCell = currentRow.getCell(counter);
 				counter++;
-				if (counter > attrNames.size())
-					break;
-			}
-			Iterator<String> attrIterator = attrNames.iterator();
-			int headerIndex = 0;
-			while (attrIterator.hasNext()) {
-				String attrKey = attrIterator.next();
-				String attrValue = "";
-				if(headerIndex >= rowData.size())
-					break;
-				attrValue = rowData.get(headerIndex);
-				if (attrKey.equalsIgnoreCase("path"))
-					path = attrValue;
+				if(currentCell == null)
+					continue;
+				if (attrName.equalsIgnoreCase("path"))
+				{
+					path = currentCell.getStringCellValue();
+					continue;
+				}
+				if(currentCell.getCellType().equals(CellType.NUMERIC))
+				{
+					double dv = currentCell.getNumericCellValue();
+					if (HSSFDateUtil.isCellDateFormatted(currentCell)) {
+					    Date date = HSSFDateUtil.getJavaDate(dv);
+					    String df = currentCell.getCellStyle().getDataFormatString();
+					    String strValue = new CellDateFormatter(df).format(date);
+					    rowMetadata.put(attrName, strValue);
+					}else {
+						rowMetadata.put(attrName, (new Double(dv).toString()));	
+					}
+					
+				}
 				else
-					rowMetadata.put(attrKey, attrValue);
-				headerIndex++;
+				{
+					if(currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty())
+						rowMetadata.put(attrName, currentCell.getStringCellValue());
+				}
+				
 			}
+			
 			metdataSheetMap.put(path, rowMetadata);
 		}
 
