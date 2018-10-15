@@ -297,8 +297,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			
 			HpcBulkMetadataEntries hpcBulkMetadataEntries = HpcExcelUtil.parseBulkMatadataEntries(hpcMetaDatafile);
 			
-			for(HpcDirectoryScanRegistrationItemDTO itemDTO : registrationDTO.getDirectoryScanRegistrationItems())
-				itemDTO.setBulkMetadataEntries(hpcBulkMetadataEntries);
+			if(hpcBulkMetadataEntries != null)
+			{
+				for(HpcDirectoryScanRegistrationItemDTO itemDTO : registrationDTO.getDirectoryScanRegistrationItems())
+					itemDTO.setBulkMetadataEntries(hpcBulkMetadataEntries);
+			}
 			
 			if(registrationDTO.getDataObjectRegistrationItems().size() == 0 && registrationDTO.getDirectoryScanRegistrationItems().size() == 0)
 				throw new HpcWebException("No input file(s) / folder(s) are selected");
