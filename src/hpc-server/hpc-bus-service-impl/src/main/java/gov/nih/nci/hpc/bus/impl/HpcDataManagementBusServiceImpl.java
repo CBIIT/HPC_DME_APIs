@@ -2079,13 +2079,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcBulkMetadataEntries bulkMetadataEntries,
       HpcDirectoryScanPathMapDTO pathMap) {
     // If pathMap provided - use the map to replace scanned path with user provided path (or part of path).
+    String scanItemFilePath = scanItem.getFilePath();
     if (pathMap != null) {
-      scanItem.setFilePath(
-          scanItem.getFilePath().replace(pathMap.getFromPath(), pathMap.getToPath()));
+      scanItemFilePath = scanItemFilePath.replace(pathMap.getFromPath(), pathMap.getToPath());
     }
 
     // Calculate the data object path to register.
-    String path = toNormalizedPath(basePath + scanItem.getFilePath());
+    String path = toNormalizedPath(basePath + scanItemFilePath);
 
     // Construct the registration DTO.
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
