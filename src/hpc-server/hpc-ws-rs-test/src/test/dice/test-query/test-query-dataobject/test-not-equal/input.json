@@ -5,7 +5,11 @@
             {
                 "attribute":"library_id",
                 "value":"file-Library ID",
-                "operator":"NOT_EQUAL"
+                "operator":"NOT_EQUAL",
+                 "levelFilter":{
+                    "level":1,
+                    "operator": "EQUAL"
+                }
             }
         ]
     },
