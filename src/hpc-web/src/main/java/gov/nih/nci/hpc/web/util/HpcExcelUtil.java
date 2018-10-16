@@ -30,7 +30,7 @@ public class HpcExcelUtil {
 	public static final String METADATA_SHEET = "Metadata";
 	public static final String TOKENS_SHEET = "Tokens";
 
-	public static HpcBulkMetadataEntries parseBulkMatadataEntries(MultipartFile metadataFile) throws HpcWebException{
+	public static HpcBulkMetadataEntries parseBulkMatadataEntries(MultipartFile metadataFile, String collectionPath) throws HpcWebException{
 		HpcBulkMetadataEntries entries = null;
 		if(metadataFile == null || metadataFile.getName().isEmpty() || metadataFile.getOriginalFilename().isEmpty())
 			return null;
@@ -40,7 +40,7 @@ public class HpcExcelUtil {
 			Map<String, String> tokens = getTokensMap(tokenSheet);
 			Sheet metadataSheet = getWorkbookSheet(metadataFile, METADATA_SHEET);
 			Map<String, Map<String, String>> metadataMap = getMetadataMap(metadataSheet);
-			entries = buildHpcBulkMetadataEntries(metadataMap, tokens);
+			entries = buildHpcBulkMetadataEntries(metadataMap, tokens, collectionPath);
 		} catch (IOException e) {
 			throw new HpcWebException(e);
 		}
@@ -49,7 +49,7 @@ public class HpcExcelUtil {
 	}
 
 	private static HpcBulkMetadataEntries buildHpcBulkMetadataEntries(Map<String, Map<String, String>> metadataMap,
-			Map<String, String> tokens) {
+			Map<String, String> tokens, String collectionPath) {
 		HpcBulkMetadataEntries entries = new HpcBulkMetadataEntries();
 		List<HpcBulkMetadataEntry> pathMetadataEntries = new ArrayList<HpcBulkMetadataEntry>();
 		if (metadataMap == null || metadataMap.isEmpty())
@@ -61,7 +61,7 @@ public class HpcExcelUtil {
 			String path = iterator.next();
 			Map<String, String> metadata = metadataMap.get(path);
 			path = replaceTokens(path, tokens);
-			metadataEntry.setPath(path);
+			metadataEntry.setPath(collectionPath + "/" + path);
 			if (metadata != null && !metadata.isEmpty())
 				metadataEntry.getMetadataEntries().addAll(buildMetadataEntries(metadata));
 			pathMetadataEntries.add(metadataEntry);
@@ -170,7 +170,9 @@ public class HpcExcelUtil {
 	 */
 	private static Map<String, String> getTokensMap(Sheet tokenSheet) {
 		Map<String, String> tokens = new HashMap<String, String>();
-
+		if(tokenSheet == null)
+			return tokens;
+		
 		Iterator<Row> iterator = tokenSheet.iterator();
 
 		while (iterator.hasNext()) {

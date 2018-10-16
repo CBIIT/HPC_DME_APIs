@@ -37,6 +37,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanPathMapDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -253,10 +254,18 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				HpcDirectoryScanRegistrationItemDTO folder = new HpcDirectoryScanRegistrationItemDTO();
 				HpcFileLocation source = new HpcFileLocation();
 				source.setFileContainerId(globusEndpoint);
-				source.setFileId(globusEndpointPath.endsWith("/") ?  globusEndpointPath + folderName : globusEndpointPath + "/" + folderName);
+				String fromPath = globusEndpointPath.endsWith("/") ?  globusEndpointPath + folderName : globusEndpointPath + "/" + folderName;
+				String toPath = "/" + folderName;
+				source.setFileId(fromPath);
 				folder.setBasePath(datafilePath);
 				folder.setScanDirectoryLocation(source);
 				folders.add(folder);
+				if(!fromPath.equals(toPath)) {
+					HpcDirectoryScanPathMapDTO pathDTO = new HpcDirectoryScanPathMapDTO();
+					pathDTO.setFromPath(fromPath);
+					pathDTO.setToPath(toPath);
+					folder.setPathMap(pathDTO);
+				}
 				if(criteriaType != null && criteriaType.equals("Simple"))
 					folder.setPatternType(HpcDirectoryScanPatternType.SIMPLE);
 				else

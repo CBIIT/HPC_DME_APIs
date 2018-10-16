@@ -295,7 +295,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructBulkRequest(request, session,
 					hpcDataModel.getPath().trim());
 			
-			HpcBulkMetadataEntries hpcBulkMetadataEntries = HpcExcelUtil.parseBulkMatadataEntries(hpcMetaDatafile);
+			HpcBulkMetadataEntries hpcBulkMetadataEntries = HpcExcelUtil.parseBulkMatadataEntries(hpcMetaDatafile, hpcDataModel.getPath().trim());
 			
 			if(hpcBulkMetadataEntries != null)
 			{
