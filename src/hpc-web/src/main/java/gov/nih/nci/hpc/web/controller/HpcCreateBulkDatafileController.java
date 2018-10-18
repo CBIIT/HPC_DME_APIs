@@ -17,6 +17,7 @@ import java.util.List;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -305,7 +306,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			
 			if(registrationDTO.getDataObjectRegistrationItems().size() == 0 && registrationDTO.getDirectoryScanRegistrationItems().size() == 0)
 				throw new HpcWebException("No input file(s) / folder(s) are selected");
-			if (!registrationDTO.getDryRun()) {
+			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
+			if (!registrationDTO.getDryRun() && !basePaths.contains(hpcDataModel.getPath().trim())) {
 				HpcCollectionRegistrationDTO collectionRegistrationDTO = constructRequest(request, session,
 						hpcDataModel.getPath().trim(), null);
 
