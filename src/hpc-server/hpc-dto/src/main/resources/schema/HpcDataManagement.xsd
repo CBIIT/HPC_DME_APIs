@@ -567,6 +567,7 @@
 	<xsd:element name="HpcBulkMoveResponseDTO">
 		<xsd:complexType>
 			<xsd:sequence>
+				<xsd:element name="result" type="xsd:boolean" />
 				<xsd:element name="moveResponses"
 					type="hpc-dto-datamanagement:HpcMoveResponseDTO" minOccurs="0"
 					maxOccurs="unbounded" />
