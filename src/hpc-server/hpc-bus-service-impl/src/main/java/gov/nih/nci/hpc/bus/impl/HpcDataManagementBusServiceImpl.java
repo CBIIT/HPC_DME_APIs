@@ -1403,6 +1403,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     // Perform the move requests.
     HpcBulkMoveResponseDTO bulkMoveResponse = new HpcBulkMoveResponseDTO();
+    bulkMoveResponse.setResult(true);
+    
     bulkMoveRequest
         .getMoveRequests()
         .forEach(
@@ -1427,6 +1429,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               } catch (HpcException e) {
                 // Move request failed.
                 moveResponse.setResult(false);
+                
+                // If at least one request failed, we consider the entire bulk request to be failed
+                bulkMoveResponse.setResult(false);
+                
                 moveResponse.setMessage(e.getMessage());
               }
 
