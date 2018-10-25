@@ -183,6 +183,17 @@ public abstract class HpcRestServiceImpl {
     }
 
     /**
+     * Return an error REST response instance. The status code is set to SERVER_ERROR 500.
+     *
+     * @param entity The entity to attach to the server error response.
+     * @return The REST response object.
+     */
+    protected Response errorResponse(Object entity)
+    {
+        return Response.serverError().entity(entity).build();
+    }
+    
+    /**
      * Return an error REST response instance. 
      * Map HpcException to the appropriate HTTP code.
      *
