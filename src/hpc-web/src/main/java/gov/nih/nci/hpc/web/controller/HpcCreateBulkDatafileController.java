@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
@@ -302,6 +303,21 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			{
 				for(HpcDirectoryScanRegistrationItemDTO itemDTO : registrationDTO.getDirectoryScanRegistrationItems())
 					itemDTO.setBulkMetadataEntries(hpcBulkMetadataEntries);
+			}
+
+			if(!registrationDTO.getDataObjectRegistrationItems().isEmpty())
+			{
+				for(HpcDataObjectRegistrationItemDTO dto : registrationDTO.getDataObjectRegistrationItems())
+				{
+					if(!hpcBulkMetadataEntries.getPathMetadataEntries().isEmpty())
+					{
+						for(HpcBulkMetadataEntry bulkMeta : hpcBulkMetadataEntries.getPathMetadataEntries())
+						{
+							if(dto.getPath().equals(bulkMeta.getPath()))
+								dto.getDataObjectMetadataEntries().addAll(bulkMeta.getMetadataEntries());
+						}
+					}
+				}
 			}
 			
 			if(registrationDTO.getDataObjectRegistrationItems().size() == 0 && registrationDTO.getDirectoryScanRegistrationItems().size() == 0)
