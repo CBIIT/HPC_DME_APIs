@@ -24,7 +24,7 @@ register_globus_directory $globus_dir $new_folder_path
 echo "bulk registration response: $(get_http_code $RESPONSE_HEADER)"
 
 #wait for registration to take place 
-sleep 100 
+sleep 240 
 
 #Get the new objects
 object1=dataObject/$new_folder_path/$globus_dir/test.txt
