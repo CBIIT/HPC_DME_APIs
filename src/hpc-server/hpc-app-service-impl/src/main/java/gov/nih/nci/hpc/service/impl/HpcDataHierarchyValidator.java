@@ -96,7 +96,7 @@ public class HpcDataHierarchyValidator {
         throw new HpcException(
             "Invalid collection hierarchy for: "
                 + dataManagementConfiguration.getBasePath()
-                + ". Registered hirarchy: "
+                + ". Registered hierarchy: "
                 + toString(collectionPathTypes)
                 + ". Valid Hierarchies: "
                 + validDataHierarchyPaths.toString(),
