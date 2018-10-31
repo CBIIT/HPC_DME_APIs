@@ -15,7 +15,7 @@
 
 Register a dataObject with valid inputs. 
 The parent collection of the dataObject is not registered and should be automatically registerd by the API.
-However the parent colleciton minimum attribute "collection_type" is not passed.
+However the parent colleciton minimum attribute "collection_type" is not passed, hence the default of 'Folder' is used, which causes an invalid collection hierarchy error.
 
 This is done by setting the attribute "createParentCollections" to "true".
 

@@ -86,8 +86,9 @@
     }
 ],
     "createParentCollections": true,
-    "parentCollectionMetadataEntries": [
+     "parentCollectionsBulkMetadataEntries": {
+       "defaultCollectionMetadataEntries": [
      ]
-
+    }
 
 }
