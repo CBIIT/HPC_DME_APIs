@@ -46,6 +46,8 @@ then
   exit 1
 fi
 
+sleep 100
+
 FOLDER_PATH=$(get_json_value input.json.tmp fileId)
 FILE_ID=$(basename $(cat registered-dataobject-path.tmp))
 
