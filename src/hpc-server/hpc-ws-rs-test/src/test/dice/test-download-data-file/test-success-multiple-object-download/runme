@@ -47,5 +47,7 @@ then
   exit 1
 fi
 
+sleep 100
+
 #Verify the files are in globus
 verify_globus_download "$taskId" "$destination_path/dice_object_1 $destination_path/dice_object_2" ""
