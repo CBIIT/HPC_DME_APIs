@@ -50,11 +50,10 @@ class SFCollection(SFParent):
         logging.info("Getting collection archive path for type: " + type + " and path " + path)
 
         archive_path = "/FNL_SF_Archive" #super(SFCollection, self).get_archive_path()
-
-        pi_coll_path = "/Auto_PI_Lab_" + SFHelper.get_pi_name(path, False)
-        project_path = "/Project_" + SFHelper.get_project_name(path, tarfile_name, ext).replace(' ', '_')
+        
+        pi_coll_path = "/PI_Lab_" + SFHelper.get_pi_name(path, False) 
+        project_path = "/Auto_Project_" + SFHelper.get_project_name(path, tarfile_name, ext).replace(' ', '_')
         flowcell_path = "/Flowcell_" + SFHelper.get_flowcell_id(tarfile_name, False)
-
 
         if(type == "PI_Lab"):
             archive_path =  archive_path + pi_coll_path
