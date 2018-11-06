@@ -217,7 +217,7 @@ function dm_register_dataobject_presigned {
     presigned_url=`get_json_value $response_msg uploadRequestURL`
     if [ -z "$presigned_url" ]
     then
-      echo "ERROR: Can not retrieve the presigned url from $response_msg" >&2
+      echo "ERROR: Can not retrieve the presigned url from $response_msg for $destination_path" >&2
       return 1
     fi
 
@@ -227,7 +227,7 @@ function dm_register_dataobject_presigned {
     curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${source_file}" "${presigned_url}" -D $response_header -o $response_msg -s
     if [ "$?" -ne 0 ]
     then
-      echo "ERROR during presigned URL registration" >&2
+      echo "ERROR during presigned URL registration for $destination_path" >&2
       echo "Check the files $response_header and $response_msg" >&2
       return 1
     fi
