@@ -109,7 +109,14 @@ public class HpcDiceTestRunner {
           runTest("Delete", "test-delete", testScriptBaseDir),
           Charset.defaultCharset(),
           true);
-
+      
+      logger.info("Running rename/move test...");
+      FileUtils.writeStringToFile(
+          reportFile,
+          runTest("Move", "test-move", testScriptBaseDir),
+          Charset.defaultCharset(),
+          true);
+      
       logger.info("Running disable-authentication test...");
       FileUtils.writeStringToFile(
           reportFile,

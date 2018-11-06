@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: George Zaki 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+
+# Script to clean the resutls of this test
+# Usage: cleanme [no arguments]
+
+../../utils/cleantest
+rm input.json 2> /dev/null
+rm *.tmp 2> /dev/null
+rm curl-status 2> /dev/null
+
