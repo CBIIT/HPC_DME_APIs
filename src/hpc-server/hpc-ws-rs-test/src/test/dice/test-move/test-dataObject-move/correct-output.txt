@@ -1,2 +1,2 @@
 move-request 200
-get_status_code 200
+get-status-code 200
