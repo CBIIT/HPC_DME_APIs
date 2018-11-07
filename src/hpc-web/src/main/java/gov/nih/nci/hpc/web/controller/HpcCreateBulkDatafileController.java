@@ -305,11 +305,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 					itemDTO.setBulkMetadataEntries(hpcBulkMetadataEntries);
 			}
 
-			if(!registrationDTO.getDataObjectRegistrationItems().isEmpty())
+			if(registrationDTO.getDataObjectRegistrationItems() != null && !registrationDTO.getDataObjectRegistrationItems().isEmpty())
 			{
 				for(HpcDataObjectRegistrationItemDTO dto : registrationDTO.getDataObjectRegistrationItems())
 				{
-					if(!hpcBulkMetadataEntries.getPathMetadataEntries().isEmpty())
+					if(hpcBulkMetadataEntries != null && !hpcBulkMetadataEntries.getPathMetadataEntries().isEmpty())
 					{
 						for(HpcBulkMetadataEntry bulkMeta : hpcBulkMetadataEntries.getPathMetadataEntries())
 						{
