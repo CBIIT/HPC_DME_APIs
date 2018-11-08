@@ -2105,7 +2105,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         if (path.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
           dataObjectRegistration
               .getDataObjectMetadataEntries()
-              .addAll(bulkMetadataEntry.getMetadataEntries());
+              .addAll(bulkMetadataEntry.getBulkMetadataEntries());
           break;
         }
       }
@@ -2391,7 +2391,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       // Search for the parent collection metadata entries by path.
       for (HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathMetadataEntries()) {
         if (parentCollectionPath.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
-          return bulkMetadataEntry.getMetadataEntries();
+          return bulkMetadataEntry.getBulkMetadataEntries();
         }
       }
 

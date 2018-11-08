@@ -314,7 +314,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 						for(HpcBulkMetadataEntry bulkMeta : hpcBulkMetadataEntries.getPathMetadataEntries())
 						{
 							if(dto.getPath().equals(bulkMeta.getPath()))
-								dto.getDataObjectMetadataEntries().addAll(bulkMeta.getMetadataEntries());
+								dto.getDataObjectMetadataEntries().addAll(bulkMeta.getBulkMetadataEntries());
 						}
 					}
 				}
@@ -358,6 +358,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 
 			// clearSessionAttrs(session);
 		} catch (Exception e) {
+			e.printStackTrace();
 		  String msg = e.getMessage().replace("\n", "<br/>");
 		  model.addAttribute("error", "Failed to create data file: <br/><br/>" +
         msg);
