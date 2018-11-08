@@ -41,7 +41,7 @@
 	<xsd:complexType name="HpcBulkMetadataEntry">
 		<xsd:sequence>
 				<xsd:element name="path" type="xsd:string" />
-				<xsd:element name="metadataEntries" 
+				<xsd:element name="bulkMetadataEntries" 
 			                 type="hpc-domain-metadata:HpcMetadataEntry" 
 				             maxOccurs="unbounded" />
 		</xsd:sequence>
