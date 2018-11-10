@@ -151,7 +151,6 @@
 		<value>subscriptionsCouldNotBeRemoved</value>
 		<value>addUserIds</value>
 		<value>deleteUserIds</value>
-		<value>parentCollectionsBulkMetadataEntries</value>
 	</util:list>
 
 	<!-- JSON Provider -->
