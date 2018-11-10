@@ -501,6 +501,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   @SuppressWarnings("unchecked")
   private HpcBulkMetadataEntries fromJSON(JSONObject jsonBulkMetadataEntries) {
     HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
+    
+    // In case there are no path metadata entries, create an empty array. 
+    // This is needed to work around issue with UI not able to de-serialize null array.
+    bulkMetadataEntries.getPathMetadataEntries();
+    
     ((JSONArray) jsonBulkMetadataEntries.get("pathMetadataEntries"))
         .forEach(
             entry -> {
