@@ -42,7 +42,9 @@ public class HpcExcelUtil {
 			Map<String, Map<String, String>> metadataMap = getMetadataMap(metadataSheet);
 			entries = buildHpcBulkMetadataEntries(metadataMap, tokens, collectionPath);
 		} catch (IOException e) {
-			throw new HpcWebException(e);
+			throw new HpcWebException("Failed to read metadata Excel file: ", e);
+		} catch (Exception e) {
+			throw new HpcWebException("Failed to read metadata Excel file: " + e.getMessage(), e);
 		}
 
 		return entries;
@@ -63,7 +65,7 @@ public class HpcExcelUtil {
 			path = replaceTokens(path, tokens);
 			metadataEntry.setPath(collectionPath + "/" + path);
 			if (metadata != null && !metadata.isEmpty())
-				metadataEntry.getMetadataEntries().addAll(buildMetadataEntries(metadata));
+				metadataEntry.getBulkMetadataEntries().addAll(buildMetadataEntries(metadata));
 			pathMetadataEntries.add(metadataEntry);
 		}
 		entries.getPathMetadataEntries().addAll(pathMetadataEntries);
@@ -86,7 +88,7 @@ public class HpcExcelUtil {
 
 	private static Sheet getWorkbookSheet(MultipartFile metadataFile, String sheetName) throws IOException {
 		Workbook workbook = new XSSFWorkbook(metadataFile.getInputStream());
-		Sheet dataSheet = workbook.getSheet(sheetName);
+		Sheet dataSheet = workbook.getSheetAt(0);
 		return dataSheet;
 	}
 

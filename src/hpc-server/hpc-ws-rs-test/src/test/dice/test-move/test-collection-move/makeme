@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# maketest
+# @author: Sunita Menon
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+#Register a project and a dataObject to be moved
+
+
+#Clean previous results
+../utils/cleantest
+
+
+#Register a collection, a folder, then a dataObject
+
+source $HPC_DM_TEST/utils/functions
+../../utils/maketest
+
+#Register the source move project
+PROJECT_PATH="/$(get_basefolder)/project-move-src"
+register_collection_from_template "$PROJECT_PATH"
+verify_registration $RESPONSE_HEADER
+
+#Register a source folder collection
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+FOLDER_PATH=$PROJECT_PATH/collection-${NAME}
+echo $FOLDER_PATH > registered-folder-path.tmp
+curl_register $HPC_DM_TEST/utils/templates/register-folder-template.json "$FOLDER_PATH" collection
+verify_registration $RESPONSE_HEADER
+
+#Register a dataObject inside the source folder colleciton
+DATAOBJECT_PATH=${FOLDER_PATH}/dataobject-${NAME}.txt
+DATAOBJECT=dataObject-file.tmp
+echo "dxtest-string" > $DATAOBJECT
+curl_register $HPC_DM_TEST/utils/templates/upload-input-template.json "$DATAOBJECT_PATH" dataObject "$DATAOBJECT"
+verify_registration $RESPONSE_HEADER
+
+#Register the destination move project
+DEST_PROJECT_PATH="$(get_basefolder)/project-move-dest"
+echo $DEST_PROJECT_PATH > registered-dest-project-path.tmp
+register_collection_from_template "$DEST_PROJECT_PATH"
+verify_registration $RESPONSE_HEADER
+
