@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# maketest
+# @author: Sunita Menon 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+
+#Register a project and a dataObject to be downloaded
+
+
+#Clean previous results
+../utils/cleantest
+
+
+#Register a collection, a folder, then a dataObject
+
+source $HPC_DM_TEST/utils/functions
+../../utils/maketest
+
+#Register the source move project
+PROJECT_PATH="/$(get_basefolder)/project-move-src"
+register_collection_from_template "$PROJECT_PATH"
+verify_registration $RESPONSE_HEADER
+
+#Register a source folder collection
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+FOLDER_PATH=$PROJECT_PATH/collection-${NAME}
+curl_register $HPC_DM_TEST/utils/templates/register-folder-template.json "$FOLDER_PATH" collection
+verify_registration $RESPONSE_HEADER
+
+#Register a dataObject inside the folder colleciton
+DATAOBJECT_PATH=${FOLDER_PATH}/dataobject-${NAME}.txt
+echo $DATAOBJECT_PATH > registered-dataobject-path.tmp
+
+DATAOBJECT=dataObject-file.tmp
+echo "dxtest-string" > $DATAOBJECT
+curl_register $HPC_DM_TEST/utils/templates/upload-input-template.json "$DATAOBJECT_PATH" dataObject "$DATAOBJECT"
+verify_registration $RESPONSE_HEADER
+
+
+#Register the destination move project
+DEST_PROJECT_PATH="$(get_basefolder)/project-move-dest"
+register_collection_from_template "$DEST_PROJECT_PATH"
+verify_registration $RESPONSE_HEADER
+
+#Register a destination folder collection
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+DEST_FOLDER_PATH=$DEST_PROJECT_PATH/collection-dest-${NAME}
+echo $DEST_FOLDER_PATH > registered-dest-folder-path.tmp
+curl_register $HPC_DM_TEST/utils/templates/register-folder-template.json "$DEST_FOLDER_PATH" collection
+verify_registration $RESPONSE_HEADER
+
+#Register a dataObject inside the destination folder colleciton
+DEST_DATAOBJECT_PATH=${DEST_FOLDER_PATH}/dataobject-${NAME}.txt
+echo $DEST_DATAOBJECT_PATH > registered-dest-dataobject-path.tmp
+
+DATAOBJECT=dataObject-file.tmp
+echo "dxtest-string" > $DATAOBJECT
+curl_register $HPC_DM_TEST/utils/templates/upload-input-template.json "$DEST_DATAOBJECT_PATH" dataObject "$DATAOBJECT"
+verify_registration $RESPONSE_HEADER
+
