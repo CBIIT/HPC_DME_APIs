@@ -350,6 +350,7 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="generateDownloadRequestURL" type="xsd:boolean"
 					minOccurs="0" />
+				<xsd:element name="destinationURL" type="xsd:string" />
 				<xsd:element name="destinationOverwrite" type="xsd:boolean"
 					minOccurs="0" />
 			</xsd:sequence>

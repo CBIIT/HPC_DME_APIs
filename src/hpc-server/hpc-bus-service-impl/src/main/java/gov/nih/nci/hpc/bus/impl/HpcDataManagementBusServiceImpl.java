@@ -1049,23 +1049,30 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           "Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    String configurationId = dataManagementService.findDataManagementConfigurationId(path);
-    HpcDataManagementConfiguration configuration =
-        dataManagementService.getDataManagementConfiguration(configurationId);
-    //  If not S3 Archive (POSIX Archive), throw exception to flag that POSIX
-    //  archive not supported for presigned URL
-    if (Boolean.TRUE.equals(downloadRequest.getGenerateDownloadRequestURL())
-        && false == hasS3StorageConfig(configuration)) {
+    // Get the System generated metadata.
+    HpcSystemGeneratedMetadata metadata =
+        metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+    // Validate archive type matches request
+    // 1. Only S3 archive can support presigned download URL request.
+    // 2. Only S3 archive can support download to destination URL (User's AWS S3 presigned upload URL).
+    if (Boolean.TRUE.equals(
+        downloadRequest.getGenerateDownloadRequestURL()
+            && !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
       throw new HpcException(
           "Presigned URL for download is supported on S3 based destination archive"
               + " only.  Requested path is archived on a POSIX based file system: "
               + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-
-    // Get the System generated metadata.
-    HpcSystemGeneratedMetadata metadata =
-        metadataService.getDataObjectSystemGeneratedMetadata(path);
+    if (downloadRequest.getDestinationURL() != null
+        && !metadata.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+      throw new HpcException(
+          "Download to destination URL (User provided S3 presigned URL) is supported on S3 based destination archive"
+              + " only.  Requested path is archived on a POSIX based file system: "
+              + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
     // Validate the file is archived.
     HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
@@ -1087,6 +1094,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             path,
             metadata.getArchiveLocation(),
             downloadRequest.getDestination(),
+            downloadRequest.getDestinationURL(),
             downloadRequest.getGenerateDownloadRequestURL() == null
                 ? false
                 : downloadRequest.getGenerateDownloadRequestURL(),
@@ -1404,7 +1412,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Perform the move requests.
     HpcBulkMoveResponseDTO bulkMoveResponse = new HpcBulkMoveResponseDTO();
     bulkMoveResponse.setResult(true);
-    
+
     bulkMoveRequest
         .getMoveRequests()
         .forEach(
@@ -1429,10 +1437,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               } catch (HpcException e) {
                 // Move request failed.
                 moveResponse.setResult(false);
-                
+
                 // If at least one request failed, we consider the entire bulk request to be failed
                 bulkMoveResponse.setResult(false);
-                
+
                 moveResponse.setMessage(e.getMessage());
               }
 
@@ -2491,15 +2499,5 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     return retMsg;
-  }
-
-  private boolean hasS3StorageConfig(HpcDataManagementConfiguration dmConfig) {
-    boolean retSignal = false;
-    if (null != dmConfig
-        && null != dmConfig.getS3Configuration()
-        && null != dmConfig.getS3Configuration().getUrl()) {
-      retSignal = true;
-    }
-    return retSignal;
   }
 }
