@@ -125,6 +125,32 @@
 		<value>failedItemsRequest</value>
 		<value>dataObjectMetadataEntries</value>
 		<value>bulkMetadataEntries</value>
+		<value>metadataEntries</value>
+		<value>dataTransferAuthenticatedTokens</value>
+		<value>collectionPermissions</value>
+		<value>userPermissionsOnCollections</value>
+		<value>files</value>
+		<value>defaultCollectionMetadataEntries</value>
+		<value>pathMetadataEntries</value>
+		<value>subjectArguments</value>
+		<value>textArguments</value>
+		<value>properties</value>
+		<value>includePatterns</value>
+		<value>excludePatterns</value>
+		<value>directoryScanRegistrationItems</value>
+		<value>permissionsXCollections</value>
+		<value>collectionSystemGeneratedMetadataAttributeNames</value>
+		<value>dataObjectSystemGeneratedMetadataAttributeNames</value>
+		<value>moveRequests</value>
+		<value>moveResponses</value>
+		<value>addUpdateSubscriptions</value>
+		<value>deleteSubscriptions</value>
+		<value>addedOrUpdatedSubscriptions</value>
+		<value>subscriptionsCouldNotBeAddedOrUpdated</value>
+		<value>removedSubscriptions</value>
+		<value>subscriptionsCouldNotBeRemoved</value>
+		<value>addUserIds</value>
+		<value>deleteUserIds</value>
 	</util:list>
 
 	<!-- JSON Provider -->
