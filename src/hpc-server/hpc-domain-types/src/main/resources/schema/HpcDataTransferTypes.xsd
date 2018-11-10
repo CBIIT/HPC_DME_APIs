@@ -145,6 +145,7 @@
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationURL" type="xsd:string" />
 			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="destinationOverwrite" type="xsd:boolean" />
 			<xsd:element name="configurationId" type="xsd:string" />

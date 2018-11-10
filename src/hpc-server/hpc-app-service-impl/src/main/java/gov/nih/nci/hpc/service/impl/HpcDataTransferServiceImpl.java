@@ -203,6 +203,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       String path,
       HpcFileLocation archiveLocation,
       HpcFileLocation destinationLocation,
+      String destinationURL,
       boolean generateDownloadRequestURL,
       boolean destinationOverwrite,
       HpcDataTransferType dataTransferType,
@@ -222,11 +223,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    if (destinationURL != null && destinationLocation != null) {
+      throw new HpcException(
+          "Both data transfer destination and destination URL request provided",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    if (destinationURL != null && generateDownloadRequestURL) {
+      throw new HpcException(
+          "Both destination URL and Presigned URL request provided",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
     // Create a download request.
     HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
     downloadRequest.setDataTransferType(dataTransferType);
     downloadRequest.setArchiveLocation(archiveLocation);
     downloadRequest.setDestinationLocation(destinationLocation);
+    downloadRequest.setDestinationURL(destinationURL);
     downloadRequest.setDestinationOverwrite(destinationOverwrite);
     downloadRequest.setPath(path);
     downloadRequest.setConfigurationId(configurationId);
@@ -248,10 +262,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         dataManagementConfigurationLocator.getDataTransferConfiguration(
             configurationId, dataTransferType);
 
+    // There are 4 methods of downloading data object:
+    // 1. Synchronous download via REST API.
+    // 2. (Synchronous) Generating a pre-signed download URL. This URL is returned to the caller which then uses it to download directly.
+    // 3. Asynchronous download using Globus.
+    // 4.  Asynchronous download via streaming data object from Cleversafe to user provided destination URL.
     if (destinationLocation == null) {
-      // This is a synchronous download request. Create a destination file on the local file system.
-      downloadRequest.setDestinationFile(createDownloadFile());
-      response.setDestinationFile(downloadRequest.getDestinationFile());
+      // This is a synchronous download request. (Methods 1 or 2 above).
+      
+      if (!generateDownloadRequestURL) {
+         // Create a destination file on the local file system for the synchronous download.
+         downloadRequest.setDestinationFile(createDownloadFile());
+         response.setDestinationFile(downloadRequest.getDestinationFile());
+      }
 
       // Perform the synchronous download.
       String presignedURL =
@@ -263,11 +286,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
                   baseArchiveDestination,
                   dataTransferConfiguration.getUploadRequestURLExpiration(),
                   null);
+      
       if (generateDownloadRequestURL) {
-        response.setDestinationFile(null);
         response.setDownloadRequestURL(presignedURL);
-        return response;
       }
+      
     } else if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
       // This is an asynchronous download request from a file system archive.
 
