@@ -459,7 +459,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     JSONObject jsonBulkMetadataEntry = new JSONObject();
     jsonBulkMetadataEntry.put("path", bulkMetadataEntry.getPath());
     jsonBulkMetadataEntry.put(
-        "metadataEntries", toJSONArray(bulkMetadataEntry.getMetadataEntries()));
+        "bulkMetadataEntries", toJSONArray(bulkMetadataEntry.getBulkMetadataEntries()));
 
     return jsonBulkMetadataEntry;
   }
@@ -473,6 +473,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   @SuppressWarnings("unchecked")
   private List<HpcMetadataEntry> fromJSONArray(JSONArray jsonMetadataEntries) {
     List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+    if(jsonMetadataEntries == null)
+    	return metadataEntries;
+    
     jsonMetadataEntries.forEach(
         (entry -> {
           JSONObject jsonMetadataEntry = (JSONObject) entry;
@@ -498,6 +501,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   @SuppressWarnings("unchecked")
   private HpcBulkMetadataEntries fromJSON(JSONObject jsonBulkMetadataEntries) {
     HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
+    
+    // In case there are no path metadata entries, create an empty array. 
+    // This is needed to work around issue with UI not able to de-serialize null array.
+    bulkMetadataEntries.getPathMetadataEntries();
+    
     ((JSONArray) jsonBulkMetadataEntries.get("pathMetadataEntries"))
         .forEach(
             entry -> {
@@ -505,8 +513,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
               HpcBulkMetadataEntry bulkMetadataEntry = new HpcBulkMetadataEntry();
               bulkMetadataEntry.setPath(jsonBulkMetadataEntry.get("path").toString());
               bulkMetadataEntry
-                  .getMetadataEntries()
-                  .addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntry.get("metadataEntries")));
+                  .getBulkMetadataEntries()
+                  .addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntry.get("bulkMetadataEntries")));
 
               bulkMetadataEntries.getPathMetadataEntries().add(bulkMetadataEntry);
             });
