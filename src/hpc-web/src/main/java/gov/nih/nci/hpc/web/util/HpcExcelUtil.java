@@ -65,10 +65,10 @@ public class HpcExcelUtil {
 			path = replaceTokens(path, tokens);
 			metadataEntry.setPath(collectionPath + "/" + path);
 			if (metadata != null && !metadata.isEmpty())
-				metadataEntry.getBulkMetadataEntries().addAll(buildMetadataEntries(metadata));
+				metadataEntry.getPathMetadataEntries().addAll(buildMetadataEntries(metadata));
 			pathMetadataEntries.add(metadataEntry);
 		}
-		entries.getPathMetadataEntries().addAll(pathMetadataEntries);
+		entries.getPathsMetadataEntries().addAll(pathMetadataEntries);
 		return entries;
 	}
 
