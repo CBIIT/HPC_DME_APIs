@@ -1053,7 +1053,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcSystemGeneratedMetadata metadata =
         metadataService.getDataObjectSystemGeneratedMetadata(path);
 
-    // Validate archive type matches request
+    // Validate archive type matches the request.
     // 1. Only S3 archive can support presigned download URL request.
     // 2. Only S3 archive can support download to destination URL (User's AWS S3 presigned upload URL).
     if (Boolean.TRUE.equals(
