@@ -217,19 +217,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    boolean isDestinationUrlEmpty = StringUtils.isEmpty(destinationURL);
     if (generateDownloadRequestURL && destinationLocation != null) {
       throw new HpcException(
           "Both data transfer destination and Presigned URL request provided",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    if (destinationURL != null && destinationLocation != null) {
+    if (!isDestinationUrlEmpty && destinationLocation != null) {
       throw new HpcException(
           "Both data transfer destination and destination URL request provided",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    if (destinationURL != null && generateDownloadRequestURL) {
+    if (!isDestinationUrlEmpty && generateDownloadRequestURL) {
       throw new HpcException(
           "Both destination URL and Presigned URL request provided",
           HpcErrorType.INVALID_REQUEST_INPUT);
@@ -263,96 +264,35 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             configurationId, dataTransferType);
 
     // There are 4 methods of downloading data object:
-    // 1. Synchronous download via REST API.
-    // 2. (Synchronous) Generating a pre-signed download URL. This URL is returned to the caller which then uses it to download directly.
-    // 3. Asynchronous download using Globus.
-    // 4.  Asynchronous download via streaming data object from Cleversafe to user provided destination URL.
-    if (destinationLocation == null) {
+    // 1. Synchronous download via REST API. Supported by Cleversafe & POSIX archives.
+    // 2. (Synchronous) Generating a pre-signed download URL. This URL is returned to the caller which then uses it to download directly. Cleversafe archive only.
+    // 3. Asynchronous download using Globus. Supported by Cleversafe & POSIX archives.
+    // 4. Asynchronous download via streaming data object from Cleversafe to user provided destination URL. Cleversafe archive only
+    if (destinationLocation == null && isDestinationUrlEmpty) {
       // This is a synchronous download request. (Methods 1 or 2 above).
-      
-      if (!generateDownloadRequestURL) {
-         // Create a destination file on the local file system for the synchronous download.
-         downloadRequest.setDestinationFile(createDownloadFile());
-         response.setDestinationFile(downloadRequest.getDestinationFile());
-      }
+      performSynchronousDownload(
+          downloadRequest,
+          dataTransferType,
+          response,
+          baseArchiveDestination,
+          dataTransferConfiguration);
 
-      // Perform the synchronous download.
-      String presignedURL =
-          dataTransferProxies
-              .get(dataTransferType)
-              .downloadDataObject(
-                  getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
-                  downloadRequest,
-                  baseArchiveDestination,
-                  dataTransferConfiguration.getUploadRequestURLExpiration(),
-                  null);
-      
-      if (generateDownloadRequestURL) {
-        response.setDownloadRequestURL(presignedURL);
-      }
-      
-    } else if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
-      // This is an asynchronous download request from a file system archive.
+    } else if (dataTransferType.equals(HpcDataTransferType.GLOBUS) && destinationLocation != null) {
+      // This is an asynchronous download request from a file system archive (method 3 above), or perform the 2nd hop (in a 2-hop download process) to
+      // download data from temporary archive to user's Globus endpoint.
+      performGlobusAsynchronousDownload(downloadRequest, response);
 
-      // Create a download task.
-      HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
-      downloadTask.setArchiveLocation(archiveLocation);
-      downloadTask.setCompletionEvent(completionEvent);
-      downloadTask.setConfigurationId(configurationId);
-      downloadTask.setCreated(Calendar.getInstance());
-      downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
-      downloadTask.setDataTransferType(dataTransferType);
-      downloadTask.setPercentComplete(0);
-      downloadTask.setSize(size);
-      downloadTask.setDestinationLocation(
-          calculateDownloadDestinationFileLocation(
-              destinationLocation,
-              destinationOverwrite,
-              dataTransferType,
-              archiveLocation.getFileId(),
-              configurationId));
-      downloadTask.setPath(path);
-      downloadTask.setUserId(userId);
+    } else if (dataTransferType.equals(HpcDataTransferType.S_3) && isDestinationUrlEmpty) {
+      // This is an asynchronous download request from a Cleversafe archive (method 3 above).
+      perform2HopDownload(
+          downloadRequest, response, baseArchiveDestination, dataTransferConfiguration);
 
-      // Persist the download task. The download will be performed by a scheduled task picking up
-      // this task in its next scheduled run.
-      dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
-      response.setDownloadTaskId(downloadTask.getId());
-      response.setDestinationLocation(downloadTask.getDestinationLocation());
+    } else if (dataTransferType.equals(HpcDataTransferType.S_3) && !isDestinationUrlEmpty) {
+      // This is an asynchronous download request to stream data to user provided pre-signed S3 URL. (method 4 above).
+      performDestinationUrlDownload(downloadRequest, response, dataTransferConfiguration);
 
-    } else if (dataTransferType.equals(HpcDataTransferType.S_3)) {
-      // This is an asynchronous download request from a Cleversafe archive to Globus destination.
-      // We need to perform a 2 hop download. i.e. store the data to a local GLOBUS endpoint,
-      // and submit a transfer request to the caller's GLOBUS destination.
-      // Both first and second hop downloads are performed asynchronously.
-      HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest);
-
-      // Set the first hop file destination to be the source file of the second hop.
-      downloadRequest.setDestinationFile(secondHopDownload.getSourceFile());
-
-      // Perform the first hop download (From Cleversafe to local file system).
-      try {
-        dataTransferProxies
-            .get(dataTransferType)
-            .downloadDataObject(
-                getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
-                downloadRequest,
-                baseArchiveDestination,
-                dataTransferConfiguration.getUploadRequestURLExpiration(),
-                secondHopDownload);
-
-        // Populate the response object.
-        response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
-        response.setDestinationLocation(
-            secondHopDownload.getDownloadTask().getDestinationLocation());
-
-      } catch (HpcException e) {
-        // Cleanup the download task and rethrow.
-        completeDataObjectDownloadTask(
-            secondHopDownload.getDownloadTask(), false, e.getMessage(), Calendar.getInstance(), 0);
-
-        throw (e);
-      }
+    } else {
+      throw new HpcException("Invalid download request", HpcErrorType.UNEXPECTED_ERROR);
     }
 
     return response;
@@ -1391,6 +1331,150 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     } else {
       return destinationLocation;
+    }
+  }
+
+  /**
+   * Perform a synchronous download from either a Cleversafe or POSIX archive, or generate a
+   * pre-signed URL from Cleversafe archive.
+   *
+   * @param downloadRequest The data object download request.
+   * @param dataTransferType The data transfer type to use.
+   * @param response The download response object. This method sets download task id and destination
+   *     location on the response. it exists.
+   * @param baseArchiveDestination The base archive destination of the requested data object.
+   * @param dataTransferConfiguration The configuration data transfer configuration.
+   * @throws HpcException on service failure.
+   */
+  private void performSynchronousDownload(
+      HpcDataObjectDownloadRequest downloadRequest,
+      HpcDataTransferType dataTransferType,
+      HpcDataObjectDownloadResponse response,
+      HpcArchive baseArchiveDestination,
+      HpcDataTransferConfiguration dataTransferConfiguration)
+      throws HpcException {
+    // This is a synchronous download request. (Methods 1 or 2 above).
+
+    if (!downloadRequest.getGenerateDownloadRequestURL()) {
+      // Create a destination file on the local file system for the synchronous download.
+      downloadRequest.setDestinationFile(createDownloadFile());
+      response.setDestinationFile(downloadRequest.getDestinationFile());
+    }
+
+    // Perform the synchronous download.
+    String presignedURL =
+        dataTransferProxies
+            .get(dataTransferType)
+            .downloadDataObject(
+                getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()),
+                downloadRequest,
+                baseArchiveDestination,
+                dataTransferConfiguration.getUploadRequestURLExpiration(),
+                null);
+
+    if (downloadRequest.getGenerateDownloadRequestURL()) {
+      response.setDownloadRequestURL(presignedURL);
+    }
+  }
+
+  /**
+   * Perform a globus asynchronous download. This method submits a download task.
+   *
+   * @param downloadRequest The data object download request.
+   * @param response The download response object. This method sets download task id and destination
+   *     location on the response. it exists.
+   * @throws HpcException on service failure.
+   */
+  private void performGlobusAsynchronousDownload(
+      HpcDataObjectDownloadRequest downloadRequest, HpcDataObjectDownloadResponse response)
+      throws HpcException {
+    // Create a download task.
+    HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
+    downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
+    downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
+    downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
+    downloadTask.setCreated(Calendar.getInstance());
+    downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+    downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
+    downloadTask.setPercentComplete(0);
+    downloadTask.setSize(downloadRequest.getSize());
+    downloadTask.setDestinationLocation(
+        calculateDownloadDestinationFileLocation(
+            downloadRequest.getDestinationLocation(),
+            downloadRequest.getDestinationOverwrite(),
+            HpcDataTransferType.GLOBUS,
+            downloadRequest.getArchiveLocation().getFileId(),
+            downloadRequest.getConfigurationId()));
+    downloadTask.setPath(downloadRequest.getPath());
+    downloadTask.setUserId(downloadRequest.getUserId());
+
+    // Persist the download task. The download will be performed by a scheduled task picking up
+    // this task in its next scheduled run.
+    dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+    response.setDownloadTaskId(downloadTask.getId());
+    response.setDestinationLocation(downloadTask.getDestinationLocation());
+  }
+
+  /**
+   * Perform a download request to user's provided S3 upload URL from Cleversafe archive.
+   *
+   * @param downloadRequest The data object download request.
+   * @param response The download response object. This method sets download task id and destination
+   *     location on the response. it exists.
+   * @param dataTransferConfiguration The configuration data transfer configuration.
+   * @throws HpcException on service failure.
+   */
+  private void performDestinationUrlDownload(
+      HpcDataObjectDownloadRequest downloadRequest,
+      HpcDataObjectDownloadResponse response,
+      HpcDataTransferConfiguration dataTransferConfiguration)
+      throws HpcException {}
+
+  /**
+   * Perform a 2 hop download. i.e. store the data to a local GLOBUS endpoint, and submit a transfer
+   * request to the caller's GLOBUS destination. Both first and second hop downloads are performed
+   * asynchronously.
+   *
+   * @param downloadRequest The data object download request.
+   * @param response The download response object. This method sets download task id and destination
+   *     location on the response. it exists.
+   * @param baseArchiveDestination The base archive destination of the requested data object.
+   * @param dataTransferConfiguration The configuration data transfer configuration.
+   * @throws HpcException on service failure.
+   */
+  private void perform2HopDownload(
+      HpcDataObjectDownloadRequest downloadRequest,
+      HpcDataObjectDownloadResponse response,
+      HpcArchive baseArchiveDestination,
+      HpcDataTransferConfiguration dataTransferConfiguration)
+      throws HpcException {
+
+    HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadRequest);
+
+    // Set the first hop file destination to be the source file of the second hop.
+    downloadRequest.setDestinationFile(secondHopDownload.getSourceFile());
+
+    // Perform the first hop download (From Cleversafe to local file system).
+    try {
+      dataTransferProxies
+          .get(HpcDataTransferType.S_3)
+          .downloadDataObject(
+              getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId()),
+              downloadRequest,
+              baseArchiveDestination,
+              dataTransferConfiguration.getUploadRequestURLExpiration(),
+              secondHopDownload);
+
+      // Populate the response object.
+      response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
+      response.setDestinationLocation(secondHopDownload.getDownloadTask().getDestinationLocation());
+
+    } catch (HpcException e) {
+      // Cleanup the download task and rethrow.
+      completeDataObjectDownloadTask(
+          secondHopDownload.getDownloadTask(), false, e.getMessage(), Calendar.getInstance(), 0);
+
+      throw (e);
     }
   }
 
