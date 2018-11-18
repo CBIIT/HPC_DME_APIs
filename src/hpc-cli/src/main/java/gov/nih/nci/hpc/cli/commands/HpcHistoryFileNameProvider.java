@@ -33,7 +33,9 @@ import org.springframework.stereotype.Component;
 public class HpcHistoryFileNameProvider extends DefaultHistoryFileNameProvider {
 
 	public String getHistoryFileName() {
-		return "hpc.log";
+		//Return empty string to not generate the history file.
+		return "";
+		//return "hpc.log"
 	}
 
 	@Override
