@@ -386,9 +386,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       jsonRequest.put("sourceFileId", request.getSource().getFileId());
       jsonRequest.put("metadataEntries", toJSONArray(request.getMetadataEntries()));
       if (request.getParentCollectionsBulkMetadataEntries() != null) {
-      jsonRequest.put(
-          "parentCollectionsBulkMetadataEntries",
-          toJSON(request.getParentCollectionsBulkMetadataEntries()));
+        jsonRequest.put(
+            "parentCollectionsBulkMetadataEntries",
+            toJSON(request.getParentCollectionsBulkMetadataEntries()));
       }
 
       JSONObject jsonRegistrationItem = new JSONObject();
@@ -443,7 +443,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     JSONObject jsonBulkMetadataEntries = new JSONObject();
     jsonBulkMetadataEntries.put("pathsMetadataEntries", jsonPathsMetadataEntries);
     jsonBulkMetadataEntries.put(
-        "defaultCollectionMetadataEntries", toJSONArray(bulkMetadataEntries.getDefaultCollectionMetadataEntries()));
+        "defaultCollectionMetadataEntries",
+        toJSONArray(bulkMetadataEntries.getDefaultCollectionMetadataEntries()));
 
     return jsonBulkMetadataEntries;
   }
@@ -473,9 +474,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   @SuppressWarnings("unchecked")
   private List<HpcMetadataEntry> fromJSONArray(JSONArray jsonMetadataEntries) {
     List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
-    if(jsonMetadataEntries == null)
-    	return metadataEntries;
-    
+    if (jsonMetadataEntries == null) return metadataEntries;
+
     jsonMetadataEntries.forEach(
         (entry -> {
           JSONObject jsonMetadataEntry = (JSONObject) entry;
@@ -501,27 +501,33 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   @SuppressWarnings("unchecked")
   private HpcBulkMetadataEntries fromJSON(JSONObject jsonBulkMetadataEntries) {
     HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
-    
-    // In case there are no path metadata entries, create an empty array. 
+
+    // In case there are no path metadata entries, create an empty array.
     // This is needed to work around issue with UI not able to de-serialize null array.
     bulkMetadataEntries.getPathsMetadataEntries();
-    
-    ((JSONArray) jsonBulkMetadataEntries.get("pathsMetadataEntries"))
-        .forEach(
-            entry -> {
-              JSONObject jsonBulkMetadataEntry = (JSONObject) entry;
-              HpcBulkMetadataEntry bulkMetadataEntry = new HpcBulkMetadataEntry();
-              bulkMetadataEntry.setPath(jsonBulkMetadataEntry.get("path").toString());
-              bulkMetadataEntry
-                  .getPathMetadataEntries()
-                  .addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntry.get("pathMetadataEntries")));
 
-              bulkMetadataEntries.getPathsMetadataEntries().add(bulkMetadataEntry);
-            });
+    JSONArray jsonPathsMetadataEntries =
+        (JSONArray) jsonBulkMetadataEntries.get("pathsMetadataEntries");
+    if (jsonPathsMetadataEntries != null) {
+      jsonPathsMetadataEntries.forEach(
+          entry -> {
+            JSONObject jsonBulkMetadataEntry = (JSONObject) entry;
+            HpcBulkMetadataEntry bulkMetadataEntry = new HpcBulkMetadataEntry();
+            bulkMetadataEntry.setPath(jsonBulkMetadataEntry.get("path").toString());
+            bulkMetadataEntry
+                .getPathMetadataEntries()
+                .addAll(
+                    fromJSONArray((JSONArray) jsonBulkMetadataEntry.get("pathMetadataEntries")));
+
+            bulkMetadataEntries.getPathsMetadataEntries().add(bulkMetadataEntry);
+          });
+    }
 
     bulkMetadataEntries
         .getDefaultCollectionMetadataEntries()
-        .addAll(fromJSONArray((JSONArray) jsonBulkMetadataEntries.get("defaultCollectionMetadataEntries")));
+        .addAll(
+            fromJSONArray(
+                (JSONArray) jsonBulkMetadataEntries.get("defaultCollectionMetadataEntries")));
     return bulkMetadataEntries;
   }
 
