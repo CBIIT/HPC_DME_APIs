@@ -1454,7 +1454,7 @@ function dm_get_download_status {
 #Inputs:  <description.json>: The metadata json file
 function dm_rename() {
 
-    local USAGE="USAGE: dm_rename <description.json>"
+    local USAGE="USAGE: dm_rename <description.json> [rename-status-file] [REST-response]"
 
     if [ -z "$1" ]
     then
@@ -1465,26 +1465,45 @@ function dm_rename() {
 
     local DESCRIPTION="$1"
 
-    SERVER=$(get_server) || exit 1
-    CONFIG=$(get_config) || exit 1
-
     if [ ! -e "$DESCRIPTION" ]
     then
       echo "ERROR: Can not access the \"$DESCRIPTION\" file" >&2
       exit 1
     fi
-   
-    local RESPONSE_MSG=rename-response-message.json.tmp
-    local RESPONSE_HEADER=rename-response-header.tmp
 
-    rm -f  $RESPONSE_MSG 2>/dev/null
-    rm -f $RESPONSE_HEADER 2>/dev/null
+    local RESPONSE_MSG=${2-rename-response-message.json.tmp}
+    local RESPONSE_HEADER=${3-rename-response-header.tmp}
+
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
 
     local CURL_FLAGS="-X POST ${SERVER}/move  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
     curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS  2>$HPC_DM_UTILS/temp/curl-status
 
     check_connection $RESPONSE_HEADER
+    local response_code=$(get_http_code $RESPONSE_HEADER)
+    if [ "$response_code" -ne 200 ] && [ "$response_code" -ne 201 ]
+    then
+      echo "ERROR performing rename operation " >&2
+      print_error_message "$RESPONSE_MSG" "$response_code"
+      exit 1
+    else
+
+      #Check if the user needs the response header file
+      if [ -z "$3" ]
+      then
+        rm -f "$RESPONSE_HEADER" 2> /dev/null
+      fi
+      
+      if [ -z "$2" ]
+      then
+        print_json_message "$RESPONSE_MSG"
+        rm -f $RESPONSE_MSG 2> /dev/null
+      fi
+    
+    fi 
+
 
 }
 

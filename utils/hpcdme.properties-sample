@@ -25,7 +25,7 @@ hpc.default.globus.endpoint=
 hpc.collection.service=collection
 hpc.dataobject.service=dataObject
 #Log files directory
-hpc.error-log.dir=.
+hpc.error-log.dir=/tmp
 #Number of thread to run data file import from a CSV file
 hpc.job.thread.count=1
 #HPC DME Login token file location
@@ -36,6 +36,6 @@ upload.buffer.size=10000000
 ###HPC CLI Logging START####
 #ERROR, WARN, INFO, DEBUG
 hpc.log.level=ERROR
-hpc.log.file=hpc-cli.log
+hpc.log.file=/tmp/hpc-cli.log
 ###HPC CLI Logging END####
-hpc.jar.version=hpc-cli-1.8.0.jar
+hpc.jar.version=hpc-cli-1.9.0.jar
