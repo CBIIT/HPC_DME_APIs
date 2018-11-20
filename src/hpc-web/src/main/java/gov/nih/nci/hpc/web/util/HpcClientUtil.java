@@ -1458,6 +1458,8 @@ public class HpcClientUtil {
       mapper.setAnnotationIntrospector(intr);
       mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
       false);
+      mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+      //mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
       MappingJsonFactory factory = new MappingJsonFactory(mapper);
       JsonParser parser = factory.createParser((InputStream) restResponse
         .getEntity());
