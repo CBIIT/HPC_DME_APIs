@@ -3,11 +3,11 @@
         {
             "attribute": "collection_type",
             "value": "Folder"
-        },
-
+        }
     ],
     "createParentCollections": true,
-    "parentCollectionMetadataEntries": [
+     "parentCollectionsBulkMetadataEntries": {
+       "defaultCollectionMetadataEntries": [
         {
          "attribute": "name",
          "value": "dxtest-project-name"
@@ -41,5 +41,6 @@
          "value": "10/25/2006"
         }
      ]
+   }
 
 }

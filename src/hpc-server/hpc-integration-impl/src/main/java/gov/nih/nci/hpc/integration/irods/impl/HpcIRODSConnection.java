@@ -293,6 +293,12 @@ public class HpcIRODSConnection {
 
           // Update the HPC data management account with iRODS accounts properties
           dataManagementAccount.getProperties().addAll(getIrodsAccountProperties(irodsAccount));
+
+          logger.info(
+              "IRODS account authenticated: {} [Scheme requested: {}, Scheme used: {} ]",
+              irodsAccount.getUserName(),
+              authenticationScheme,
+              irodsAccount.getAuthenticationScheme());
         }
       }
 
@@ -300,10 +306,13 @@ public class HpcIRODSConnection {
 
     } catch (AuthenticationException ae) {
       throw new HpcException(
-    		  "iRODS authentication failed: " + dataManagementAccount.getUsername() + ", " + ae.getMessage(),
-    		  HpcErrorType.DATA_MANAGEMENT_ERROR,
-              HpcIntegratedSystem.IRODS,
-              ae);
+          "iRODS authentication failed: "
+              + dataManagementAccount.getUsername()
+              + ", "
+              + ae.getMessage(),
+          HpcErrorType.DATA_MANAGEMENT_ERROR,
+          HpcIntegratedSystem.IRODS,
+          ae);
 
     } catch (JargonException e) {
       throw new HpcException(
@@ -391,7 +400,8 @@ public class HpcIRODSConnection {
    * @return An iRODS account.
    * @throws JargonException on iRODS failure.
    */
-  private IRODSAccount toAuthenticatedIrodsAccount(HpcIntegratedSystemAccount dataManagementAccount, AuthScheme authScheme)
+  private IRODSAccount toAuthenticatedIrodsAccount(
+      HpcIntegratedSystemAccount dataManagementAccount, AuthScheme authScheme)
       throws JargonException {
     Map<String, String> properties = new Hashtable<>();
     for (HpcIntegratedSystemAccountProperty property : dataManagementAccount.getProperties()) {

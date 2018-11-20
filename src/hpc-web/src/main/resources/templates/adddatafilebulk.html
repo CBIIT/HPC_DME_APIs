@@ -106,7 +106,7 @@
 								</div>
 							</div>
 							<form class="form-horizontal" id="dataFileForm"
-								th:action="@{/addbulk}" th:object="${hpcDatafile}" method="POST">
+								th:action="@{/addbulk}" th:object="${hpcDatafile}" method="POST" enctype="multipart/form-data">
 								<input type="hidden" name="actionType" id="actionType" /> <input
 									type="hidden" name="parent" id="parent" th:value="${parent}" />
 								<input type="hidden" name="source" id="source"
@@ -174,6 +174,11 @@
 																</td>
 															</tr>
 															<tr><td colspan="2">&nbsp;</td></tr>
+															<tr>
+															<td><label>Bulk metadata file: </label></td>
+																	<td><input type="file" name="hpcMetaDatafile"
+																		id="hpcMetaDatafile" /></td>
+															</tr>
 															<tr><td colspan="2">&nbsp;</td></tr>
 															<tr th:if="${endpoint_id != null}"><td colspan="2"><strong>Selected files/folders:</strong>
 															</td>

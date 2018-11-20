@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Readme.txt
+# @author: Sunita Menon 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Script to run this test
+# Usage: runme [no arguments]
+
+#import common functions
+source $HPC_DM_TEST/utils/functions
+#../../utils/runtest
+
+
+verify_registration  collection-registration-response-header.tmp
+verify_registration  dataObject-registration-response-header.tmp
+
+
+SRC_FILE_PATH=$(cat registered-dataobject-path.tmp)
+NAME=`date +"%b-%d-%G-%H-%M-%S"`
+DEST_FILE_PATH=$(cat registered-dest-dataobject-path.tmp)
+
+
+DATA="{
+   \"moveRequests\": [{
+     \"sourcePath\": \"$SRC_FILE_PATH\", 
+     \"destinationPath\": \"$DEST_FILE_PATH\"
+   }]}"
+
+echo $DATA > input.JSON
+RESPONSE_HEADER=move-response-header.tmp 
+RESPONSE_MSG=move-response-message.json.tmp
+move "input.JSON" $RESPONSE_HEADER $RESPONSE_MSG
+
+get_http_code $RESPONSE_HEADER >&2
+get_json_value $RESPONSE_MSG message >&2
