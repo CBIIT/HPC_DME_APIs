@@ -124,9 +124,7 @@
 		<value>permissionsForCollections</value>
 		<value>failedItemsRequest</value>
 		<value>dataObjectMetadataEntries</value>
-		<value>bulkMetadataEntries</value>
 		<value>pathMetadataEntries</value>
-		<value>pathsMetadataEntries</value>
 	</util:list>
 
 	<!-- JSON Provider -->
