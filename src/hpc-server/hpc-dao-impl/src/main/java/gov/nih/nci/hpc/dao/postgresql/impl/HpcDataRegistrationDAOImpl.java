@@ -506,9 +506,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     // This is needed to work around issue with UI not able to de-serialize null array.
     bulkMetadataEntries.getPathsMetadataEntries();
 
-    JSONArray jsonPathsMetadataEntries =
-        (JSONArray) jsonBulkMetadataEntries.get("pathsMetadataEntries");
-    if (jsonPathsMetadataEntries != null) {
+   if(jsonBulkMetadataEntries.get("pathsMetadataEntries") != null) {
+      JSONArray jsonPathsMetadataEntries =
+    	        (JSONArray) jsonBulkMetadataEntries.get("pathsMetadataEntries");
       jsonPathsMetadataEntries.forEach(
           entry -> {
             JSONObject jsonBulkMetadataEntry = (JSONObject) entry;
