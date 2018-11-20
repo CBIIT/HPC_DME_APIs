@@ -559,7 +559,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       return errorResponse(e);
     }
 
-    return okResponse(bulkMoveResponse, true);
+    return bulkMoveResponse.getResult() ? okResponse(bulkMoveResponse, true) : errorResponse(bulkMoveResponse);
   }
 
   //---------------------------------------------------------------------//

@@ -90,6 +90,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
   // transfer start/completion time).
   private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
+  // Default collection metadata.
+  private List<HpcMetadataEntry> defaultCollectionMetadataEntries = new ArrayList<>();
+
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -102,7 +105,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
    *
    * @throws HpcException Constructor is disabled.
    */
-  private HpcMetadataServiceImpl() throws HpcException {}
+  private HpcMetadataServiceImpl() {
+    // Set the default collection metadata.
+    defaultCollectionMetadataEntries.add(toMetadataEntry("collection_type", "Folder"));
+  }
 
   // ---------------------------------------------------------------------//
   // Methods
@@ -313,15 +319,16 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
   }
 
   @Override
-  public HpcMetadataEntries toMetadataEntries(HpcDirectoryScanItem scanItem) {
-    HpcMetadataEntries metadataEntries = new HpcMetadataEntries();
-    metadataEntries.getSelfMetadataEntries().add(toMetadataEntry("name", scanItem.getFileName()));
-    metadataEntries
-        .getSelfMetadataEntries()
-        .add(toMetadataEntry("modified_date", scanItem.getLastModified()));
-    metadataEntries.getParentMetadataEntries().add(toMetadataEntry("collection_type", "Folder"));
+  public List<HpcMetadataEntry> getDefaultDataObjectMetadataEntries(HpcDirectoryScanItem scanItem) {
+    List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+    metadataEntries.add(toMetadataEntry("name", scanItem != null ? scanItem.getFileName() : "N/A"));
 
     return metadataEntries;
+  }
+  
+  @Override
+  public List<HpcMetadataEntry> getDefaultCollectionMetadataEntries() {
+    return defaultCollectionMetadataEntries;
   }
 
   @Override

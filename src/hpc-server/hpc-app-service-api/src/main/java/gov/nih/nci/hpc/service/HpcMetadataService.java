@@ -108,9 +108,16 @@ public interface HpcMetadataService {
    * Create (default) metadata entries for a file found in a directory scan.
    *
    * @param scanItem The directory scan item to generate the default metadata for.
-   * @return The generated metadata.
+   * @return The generated metadata entries
    */
-  public HpcMetadataEntries toMetadataEntries(HpcDirectoryScanItem scanItem);
+  public List<HpcMetadataEntry> getDefaultDataObjectMetadataEntries(HpcDirectoryScanItem scanItem);
+
+  /**
+   * Get 'system' default metadata entries for collections.
+   *
+   * @return The system default collection metadata entries.
+   */
+  public List<HpcMetadataEntry> getDefaultCollectionMetadataEntries();
 
   /**
    * Add metadata to a data object.

@@ -69,7 +69,7 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
     collectionDTO.getMetadataEntries().addAll(metadataList);
     List<HpcMetadataEntry> parentMetadataList = getParentCollectionMetadata(file, false);
     collectionDTO.setCreateParentCollections(true);
-    collectionDTO.getParentCollectionMetadataEntries().addAll(parentMetadataList);
+    collectionDTO.getParentCollectionsBulkMetadataEntries().getDefaultCollectionMetadataEntries().addAll(parentMetadataList);
 
     System.out.println("Registering Collection " + collectionPath);
 

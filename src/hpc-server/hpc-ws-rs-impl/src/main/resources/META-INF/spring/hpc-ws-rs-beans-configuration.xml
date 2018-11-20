@@ -120,9 +120,12 @@
 		<value>rules</value>
 		<value>docRules</value>
 		<value>dataObjectRegistrationItems</value>
-		<value>parentCollectionMetadataEntries</value>
 		<value>permissionsForCollections</value>
 		<value>failedItemsRequest</value>
+		<value>dataObjectMetadataEntries</value>
+		<value>pathsMetadataEntries</value>
+		<value>defaultCollectionMetadataEntries</value>
+		<value>pathMetadataEntries</value>
 	</util:list>
 
 	<!-- JSON Provider -->
