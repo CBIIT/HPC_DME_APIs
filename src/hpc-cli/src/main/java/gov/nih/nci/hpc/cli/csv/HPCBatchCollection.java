@@ -47,6 +47,7 @@ import gov.nih.nci.hpc.cli.HPCBatchClient;
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -184,6 +185,8 @@ public class HPCBatchCollection extends HPCBatchClient {
     List<HpcMetadataEntry> metadataList,
     List<HpcMetadataEntry> parentMetadataAttributes) {
 		HpcCollectionRegistrationDTO dto = new HpcCollectionRegistrationDTO();
+		HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
+	    dto.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
 		dto.getMetadataEntries().addAll(metadataList);
 		dto.setCreateParentCollections(this.currentRecCreateParentCollctn);
 		if (!parentMetadataAttributes.isEmpty())

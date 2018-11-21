@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
@@ -24,6 +25,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.List;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -66,6 +69,8 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
     }
 
     HpcCollectionRegistrationDTO collectionDTO = new HpcCollectionRegistrationDTO();
+    HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
+    collectionDTO.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
     collectionDTO.getMetadataEntries().addAll(metadataList);
     List<HpcMetadataEntry> parentMetadataList = getParentCollectionMetadata(file, false);
     collectionDTO.setCreateParentCollections(true);
