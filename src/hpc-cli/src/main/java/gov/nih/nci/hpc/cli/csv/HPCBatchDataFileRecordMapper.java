@@ -11,6 +11,7 @@ import gov.nih.nci.hpc.cli.domain.HPCDataObject;
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import java.util.ArrayList;
@@ -146,6 +147,8 @@ public class HPCBatchDataFileRecordMapper extends ApacheCommonCsvRecordMapper {
     boolean createParentFlag) {
     HpcDataObjectRegistrationRequestDTO hpcDataObjectRegistrationDTO = new
       HpcDataObjectRegistrationRequestDTO();
+    HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
+    hpcDataObjectRegistrationDTO.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
     hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(true);
     hpcDataObjectRegistrationDTO.setCallerObjectId("/");
     hpcDataObjectRegistrationDTO.setSource(this.origFileSource);
