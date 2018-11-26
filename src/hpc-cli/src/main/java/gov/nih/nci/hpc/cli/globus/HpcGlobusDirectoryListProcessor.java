@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDT
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanPathMapDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
@@ -153,7 +154,12 @@ public class HpcGlobusDirectoryListProcessor {
 		source.setFileId(globusEndpointPath);
 		folder.setBasePath(destinationBasePath);
 		folder.setScanDirectoryLocation(source);
+		HpcDirectoryScanPathMapDTO pathDTO = new HpcDirectoryScanPathMapDTO();
+		pathDTO.setFromPath(globusEndpointPath);
+		pathDTO.setToPath(globusEndpointPath);
+		folder.setPathMap(pathDTO);
 		folders.add(folder);
+		
 		if (criteriaType != null && criteriaType.equals("Simple"))
 			folder.setPatternType(HpcDirectoryScanPatternType.SIMPLE);
 		else
