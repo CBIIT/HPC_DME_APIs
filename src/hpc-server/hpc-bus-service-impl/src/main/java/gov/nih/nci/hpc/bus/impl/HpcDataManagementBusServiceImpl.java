@@ -35,6 +35,8 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
@@ -50,6 +52,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -88,15 +91,13 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanPathMapDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionForCollection;
-import gov.nih.nci.hpc.dto.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
@@ -350,11 +351,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   public HpcCollectionDownloadResponseDTO downloadCollection(
       String path, HpcDownloadRequestDTO downloadRequest) throws HpcException {
     // Input validation.
-    if (path == null || downloadRequest == null) {
+    if (path == null
+        || downloadRequest == null
+        || downloadRequest.getGlobusDownloadDestination() == null) {
       throw new HpcException("Null path or download request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    if (downloadRequest.getDestination() == null) {
+    HpcGlobusDownloadDestination globusDownloadDestination =
+        downloadRequest.getGlobusDownloadDestination();
+    if (globusDownloadDestination.getDestination() == null) {
       throw new HpcException(
           "Null destination in download request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
@@ -373,9 +378,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcCollectionDownloadTask collectionDownloadTask =
         dataTransferService.downloadCollection(
             path,
-            downloadRequest.getDestination(),
-            downloadRequest.getDestinationOverwrite() != null
-                ? downloadRequest.getDestinationOverwrite()
+            globusDownloadDestination.getDestination(),
+            globusDownloadDestination.getDestinationOverwrite() != null
+                ? globusDownloadDestination.getDestinationOverwrite()
                 : false,
             securityService.getRequestInvoker().getNciAccount().getUserId(),
             metadata.getConfigurationId());
@@ -1039,68 +1044,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       String path, HpcDownloadRequestDTO downloadRequest, String userId, boolean completionEvent)
       throws HpcException {
     // Input validation.
-    if (path == null || downloadRequest == null) {
-      throw new HpcException("Null path or download request", HpcErrorType.INVALID_REQUEST_INPUT);
+    if (downloadRequest == null) {
+      throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Validate the data object exists.
-    if (dataManagementService.getDataObject(path) == null) {
-      throw new HpcException(
-          "Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    // Get the System generated metadata.
+    // Validate the following:
+    // 1. Path is not empty.
+    // 2. Data Object exists.
+    // 3. Download to S3 destination is supported only from Cleversafe archive (i.e. not POSIX).
+    // 4. Data Object is archived (i.e. registration completed).
     HpcSystemGeneratedMetadata metadata =
-        metadataService.getDataObjectSystemGeneratedMetadata(path);
-
-    // Validate archive type matches the request.
-    // 1. Only S3 archive can support presigned download URL request.
-    // 2. Only S3 archive can support download to destination URL (User's AWS S3 presigned upload URL).
-    if (Boolean.TRUE.equals(
-        downloadRequest.getGenerateDownloadRequestURL()
-            && !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
-      throw new HpcException(
-          "Presigned URL for download is supported on S3 based destination archive"
-              + " only.  Requested path is archived on a POSIX based file system: "
-              + path,
-          HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    if (downloadRequest.getDestinationURL() != null
-        && !metadata.getDataTransferType().equals(HpcDataTransferType.S_3)) {
-      throw new HpcException(
-          "Download to destination URL (User provided S3 presigned URL) is supported on S3 based destination archive"
-              + " only.  Requested path is archived on a POSIX based file system: "
-              + path,
-          HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    // Validate the file is archived.
-    HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
-    if (dataTransferStatus == null) {
-      throw new HpcException(
-          "Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
-    }
-    if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-      throw new HpcException(
-          "Object is not in archived state yet. It is in "
-              + metadata.getDataTransferStatus().value()
-              + " state",
-          HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-    }
+        validateDataObjectDownloadRequest(path, downloadRequest.getS3DownloadDestination() != null);
 
     // Download the data object.
     HpcDataObjectDownloadResponse downloadResponse =
         dataTransferService.downloadDataObject(
             path,
             metadata.getArchiveLocation(),
-            downloadRequest.getDestination(),
-            downloadRequest.getDestinationURL(),
-            downloadRequest.getGenerateDownloadRequestURL() == null
-                ? false
-                : downloadRequest.getGenerateDownloadRequestURL(),
-            downloadRequest.getDestinationOverwrite() != null
-                ? downloadRequest.getDestinationOverwrite()
-                : false,
+            downloadRequest.getGlobusDownloadDestination(),
+            downloadRequest.getS3DownloadDestination(),
             metadata.getDataTransferType(),
             metadata.getConfigurationId(),
             userId,
@@ -1165,6 +1127,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     return downloadStatus;
+  }
+
+  @Override
+  public HpcDataObjectDownloadResponseDTO generateDownloadRequestURL(String path)
+      throws HpcException {
+    // Validate the following:
+    // 1. Path is not empty.
+    // 2. Data Object exists.
+    // 3. Download to S3 destination is supported only from Cleversafe archive (i.e. not POSIX).
+    // 4. Data Object is archived (i.e. registration completed).
+    HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true);
+
+    // Generate a download URL for the data object, and return it in a DTO.
+    return toDownloadResponseDTO(
+        null,
+        null,
+        null,
+        dataTransferService.generateDownloadRequestURL(
+            path,
+            metadata.getArchiveLocation(),
+            metadata.getDataTransferType(),
+            metadata.getConfigurationId()),
+        metadata.getDataTransferType().value());
   }
 
   @Override
@@ -2295,6 +2280,56 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             .add(dataObjectRegistrationRequestToDTO(item.getRequest(), item.getTask().getPath()));
       }
     }
+  }
+
+  /**
+   * Validate a download request.
+   *
+   * @param path The data object path.
+   * @param s3DownloadDestination True if the download destination is S3.
+   * @return The system generated metadata
+   * @throws HpcException If the request is invalid.
+   */
+  private HpcSystemGeneratedMetadata validateDataObjectDownloadRequest(
+      String path, boolean s3DownloadDestination) throws HpcException {
+
+    // Input validation.
+    if (StringUtils.isEmpty(path)) {
+      throw new HpcException("Null / Empty path for download", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the data object exists.
+    if (dataManagementService.getDataObject(path) == null) {
+      throw new HpcException(
+          "Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Get the System generated metadata.
+    HpcSystemGeneratedMetadata metadata =
+        metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+    // Download to S3 destination is supported only from S3 archive.
+    if (s3DownloadDestination && !metadata.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+      throw new HpcException(
+          "S3 download request is not supported for POSIX based file system archive " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the file is archived.
+    HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
+    if (dataTransferStatus == null) {
+      throw new HpcException(
+          "Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
+    }
+    if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+      throw new HpcException(
+          "Object is not in archived state yet. It is in "
+              + metadata.getDataTransferStatus().value()
+              + " state",
+          HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+    }
+
+    return metadata;
   }
 
   private HpcDataObjectRegistrationItemDTO dataObjectRegistrationRequestToDTO(

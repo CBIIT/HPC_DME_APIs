@@ -96,12 +96,28 @@ public interface HpcDataManagementRestService {
    * @param downloadRequest The download request.
    * @return The REST service response w/ HpcCollectionDownloadResponseDTO entity.
    */
+  @Deprecated
   @POST
   @Path("/collection/{path:.*}/download")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response downloadCollection(
       @PathParam("path") String path, HpcDownloadRequestDTO downloadRequest);
+
+  /**
+   * Download a collection.
+   *
+   * @param path The collection path.
+   * @param downloadRequest The download request.
+   * @return The REST service response w/ HpcCollectionDownloadResponseDTO entity.
+   */
+  @POST
+  @Path("/v2/collection/{path:.*}/download")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response downloadCollection(
+      @PathParam("path") String path,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest);
 
   /**
    * Get collection download task status.
@@ -134,7 +150,8 @@ public interface HpcDataManagementRestService {
    */
   @POST
   @Path("/collection/{path:.*}/move/{destinationPath}")
-  public Response moveCollection(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath);
+  public Response moveCollection(
+      @PathParam("path") String path, @PathParam("destinationPath") String destinationPath);
 
   /**
    * Set a collection's permissions.
@@ -276,8 +293,10 @@ public interface HpcDataManagementRestService {
    * @param path The data object path.
    * @param downloadRequest The download request.
    * @param mc The message context.
-   * @return The REST service response w/ either a file attached or HpcDownloadResponseDTO entity.
+   * @return The REST service response w/ either a file attached or HpcDataObjectDownloadResponseDTO
+   *     entity.
    */
+  @Deprecated
   @POST
   @Path("/dataObject/{path:.*}/download")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
@@ -286,6 +305,36 @@ public interface HpcDataManagementRestService {
   public Response downloadDataObject(
       @PathParam("path") String path,
       HpcDownloadRequestDTO downloadRequest,
+      @Context MessageContext mc);
+
+  /**
+   * Generate a download request URL.
+   *
+   * @param path The data object path to generate the download URL for.
+   * @return The REST service response w/ HpcDataObjectDownloadResponseDTO entity.
+   */
+  @POST
+  @Path("/dataObject/{path:.*}/generateDownloadRequestURL")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response generateDownloadRequestURL(@PathParam("path") String path);
+
+  /**
+   * Download a data object.
+   *
+   * @param path The data object path.
+   * @param downloadRequest The download request.
+   * @param mc The message context.
+   * @return The REST service response w/ either a file attached or HpcDataObjectDownloadResponseDTO
+   *     entity.
+   */
+  @POST
+  @Path("/v2/dataObject/{path:.*}/download")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces(
+      "application/json; charset=UTF-8, application/xml; charset=UTF-8, application/octet-stream")
+  public Response downloadDataObject(
+      @PathParam("path") String path,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest,
       @Context MessageContext mc);
 
   /**
@@ -318,7 +367,8 @@ public interface HpcDataManagementRestService {
    */
   @POST
   @Path("/dataObject/{path:.*}/move/{destinationPath}")
-  public Response moveDataObject(@PathParam("path") String path, @PathParam("destinationPath") String destinationPath);
+  public Response moveDataObject(
+      @PathParam("path") String path, @PathParam("destinationPath") String destinationPath);
 
   /**
    * Set a data object's permissions.

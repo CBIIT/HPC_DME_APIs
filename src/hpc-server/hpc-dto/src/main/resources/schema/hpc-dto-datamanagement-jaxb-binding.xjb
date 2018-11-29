@@ -60,7 +60,23 @@
       <jxb:bindings node="//xsd:simpleType[@name='HpcAuditRequestType']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcPermissionForCollection']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcPermissionsForCollection']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcSubjectPermissionOnCollection']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermissionOnCollection" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcUserPermOnOneCollection']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermOnOneCollection" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcUserPermsOnManyCollections']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermsOnManyCollections" />
+      </jxb:bindings>
    </jxb:bindings>
+   
    <jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
       <jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" />
@@ -76,6 +92,15 @@
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadResponse']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusDownloadDestination']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcS3DownloadAccount']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcS3DownloadDestination']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadRequest']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest" />
@@ -131,7 +156,11 @@
       <jxb:bindings node="//xsd:simpleType[@name='HpcDirectoryScanPatternType']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDownloadRequestType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadRequestType" />
+      </jxb:bindings>
    </jxb:bindings>
+   
    <jxb:bindings schemaLocation="HpcMetadataTypes.xsd">
       <jxb:bindings node="//xsd:complexType[@name='HpcMetadataEntry']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry" />
@@ -176,4 +205,5 @@
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes" />
       </jxb:bindings>
    </jxb:bindings>
+   
 </jxb:bindings>

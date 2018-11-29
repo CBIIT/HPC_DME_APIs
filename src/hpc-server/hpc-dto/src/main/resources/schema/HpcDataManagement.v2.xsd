@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcDataManagement.v2.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
+	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
+	xmlns:hpc-dto-datamanagement="http://hpc.nci.nih.gov/dto/datamanagement/v2"
+	targetNamespace="http://hpc.nci.nih.gov/dto/datamanagement/v2"
+	elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datamanagement"
+		schemaLocation="HpcDataManagementTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+		schemaLocation="HpcDataTransferTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
+		schemaLocation="HpcMetadataTypes.xsd" />
+
+	<!-- Download DTO -->
+	<xsd:element name="HpcDownloadRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="globusDownloadDestination"
+					type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
+				<xsd:element name="s3DownloadDestination"
+					type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+</xsd:schema>

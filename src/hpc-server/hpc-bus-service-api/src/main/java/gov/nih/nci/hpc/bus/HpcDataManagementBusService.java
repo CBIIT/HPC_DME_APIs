@@ -27,7 +27,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
@@ -340,6 +340,16 @@ public interface HpcDataManagementBusService {
    * @return A data object download status DTO. Null if the task could not be found.
    */
   public HpcDataObjectDownloadStatusDTO getDataObjectDownloadStatus(String taskId)
+      throws HpcException;
+
+  /**
+   * Generate (pre-signed) download URL for a Data Object.
+   *
+   * @param path The data object path.
+   * @return HpcDataObjectDownloadResponseDTO
+   * @throws HpcException on service failure.
+   */
+  public HpcDataObjectDownloadResponseDTO generateDownloadRequestURL(String path)
       throws HpcException;
 
   /**

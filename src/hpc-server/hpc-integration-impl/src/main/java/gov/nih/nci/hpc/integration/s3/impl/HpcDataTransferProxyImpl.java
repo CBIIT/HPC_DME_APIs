@@ -140,14 +140,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             downloadRequest.getArchiveLocation().getFileContainerId(),
             downloadRequest.getArchiveLocation().getFileId());
     
-    if (downloadRequest.getGenerateDownloadRequestURL()) {
-      // Generate an upload request URL for the caller to use to upload directly.
-      return generateDownloadRequestURL(
-          authenticatedToken,
-          downloadRequest.getArchiveLocation(),
-          uploadRequestURLExpiration);
-    }
-    
     // Download the file via S3.
     Download s3Download = null;
     try {
@@ -176,7 +168,35 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     return String.valueOf(s3Download.hashCode());
   }
+  
+  @Override
+  public String generateDownloadRequestURL(
+      Object authenticatedToken,
+      HpcFileLocation archiveSourceLocation,
+      Integer downloadRequestURLExpiration)
+      throws HpcException {
 
+    // Calculate the URL expiration date.
+    Date expiration = new Date();
+    expiration.setTime(expiration.getTime() + 1000 * 60 * 60 * downloadRequestURLExpiration);
+
+    // Create a URL generation request.
+    GeneratePresignedUrlRequest generatePresignedUrlRequest =
+        new GeneratePresignedUrlRequest(
+            archiveSourceLocation.getFileContainerId(),
+            archiveSourceLocation.getFileId())
+            .withMethod(HttpMethod.GET)
+            .withExpiration(expiration);
+
+    // Generate the pre-signed URL.
+    URL url =
+        s3Connection
+            .getTransferManager(authenticatedToken)
+            .getAmazonS3Client()
+            .generatePresignedUrl(generatePresignedUrlRequest);
+
+    return url.toString();
+  }
   
   @Override
   public String copyDataObject(
@@ -426,43 +446,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
 
     return uploadResponse;
-  }
-
-  /**
-   * Generate download request URL.
-   *
-   * @param authenticatedToken An authenticated token.
-   * @param archiveSourceLocation The archive source location.
-   * @param downloadRequestURLExpiration The URL expiration (in hours).
-   * @return A data object download response containing the download request URL.
-   * @throws HpcException on data transfer system failure.
-   */
-  private String generateDownloadRequestURL(
-      Object authenticatedToken,
-      HpcFileLocation archiveSourceLocation,
-      Integer downloadRequestURLExpiration)
-      throws HpcException {
-
-    // Calculate the URL expiration date.
-    Date expiration = new Date();
-    expiration.setTime(expiration.getTime() + 1000 * 60 * 60 * downloadRequestURLExpiration);
-
-    // Create a URL generation request.
-    GeneratePresignedUrlRequest generatePresignedUrlRequest =
-        new GeneratePresignedUrlRequest(
-            archiveSourceLocation.getFileContainerId(),
-            archiveSourceLocation.getFileId())
-            .withMethod(HttpMethod.GET)
-            .withExpiration(expiration);
-
-    // Generate the pre-signed URL.
-    URL url =
-        s3Connection
-            .getTransferManager(authenticatedToken)
-            .getAmazonS3Client()
-            .generatePresignedUrl(generatePresignedUrlRequest);
-
-    return url.toString();
   }
 
   /**

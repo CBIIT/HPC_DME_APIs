@@ -8,7 +8,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
  
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -145,6 +144,15 @@
 									</extensionArgs>
 								</xsdOption>
 								<xsdOption>
+									<xsd>${basedir}/xjc-build/schema/HpcDataManagement.v2.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.datamanagement.v2</packagename>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-datamanagement-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:simple</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
+								<xsdOption>
 									<xsd>${basedir}/xjc-build/schema/HpcDataSearch.xsd</xsd>
 									<packagename>gov.nih.nci.hpc.dto.datasearch</packagename>
 									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-datasearch-jaxb-binding.xjb</bindingFile>
@@ -196,6 +204,7 @@
 							gov.nih.nci.hpc.dto.error,
 							gov.nih.nci.hpc.dto.security,
 							gov.nih.nci.hpc.dto.datamanagement,
+							gov.nih.nci.hpc.dto.datamanagement.v2,
 							gov.nih.nci.hpc.dto.datasearch,
 							gov.nih.nci.hpc.dto.databrowse,
 							gov.nih.nci.hpc.dto.notification,

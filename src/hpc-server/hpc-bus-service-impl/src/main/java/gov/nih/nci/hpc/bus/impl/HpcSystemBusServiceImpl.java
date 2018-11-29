@@ -40,6 +40,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
@@ -55,7 +56,7 @@ import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -1079,9 +1080,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       boolean destinationOverwrite,
       String userId) {
     HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
-    dataObjectDownloadRequest.setDestination(
+    HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
+    globusDownloadDestination.setDestination(
         calculateDownloadDestinationFileLocation(destinationLocation, path));
-    dataObjectDownloadRequest.setDestinationOverwrite(destinationOverwrite);
+    globusDownloadDestination.setDestinationOverwrite(destinationOverwrite);
+    dataObjectDownloadRequest.setGlobusDownloadDestination(globusDownloadDestination);
 
     // Instantiate a download item for this data object.
     HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
@@ -1101,7 +1104,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       logger.error("Failed to download data object in a collection", e);
 
       downloadItem.setResult(false);
-      downloadItem.setDestinationLocation(dataObjectDownloadRequest.getDestination());
+      downloadItem.setDestinationLocation(globusDownloadDestination.getDestination());
       downloadItem.setMessage(e.getMessage());
     }
 
