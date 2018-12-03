@@ -359,7 +359,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     HpcGlobusDownloadDestination globusDownloadDestination =
         downloadRequest.getGlobusDownloadDestination();
-    if (globusDownloadDestination.getDestination() == null) {
+    if (globusDownloadDestination.getDestinationLocation() == null) {
       throw new HpcException(
           "Null destination in download request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
@@ -378,7 +378,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcCollectionDownloadTask collectionDownloadTask =
         dataTransferService.downloadCollection(
             path,
-            globusDownloadDestination.getDestination(),
+            globusDownloadDestination.getDestinationLocation(),
             globusDownloadDestination.getDestinationOverwrite() != null
                 ? globusDownloadDestination.getDestinationOverwrite()
                 : false,
@@ -436,7 +436,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 : false,
             securityService.getRequestInvoker().getNciAccount().getUserId());
 
-    // Create and return a DAO with the request receipt.
+    // Create and return a DTO with the request receipt.
     HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
     responseDTO.setTaskId(collectionDownloadTask.getId());
     responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());

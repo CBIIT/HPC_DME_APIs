@@ -25,7 +25,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -693,16 +692,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO();
     if (downloadRequest.getDestination() != null) {
       HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
-      globusDownloadDestination.setDestination(downloadRequest.getDestination());
+      globusDownloadDestination.setDestinationLocation(downloadRequest.getDestination());
       globusDownloadDestination.setDestinationOverwrite(downloadRequest.getDestinationOverwrite());
       v2DownloadRequest.setGlobusDownloadDestination(globusDownloadDestination);
-    }
-
-    if (downloadRequest.getGenerateDownloadRequestURL() != null) {
-      HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
-      s3DownloadDestination.setGenerateDownloadRequestURL(
-          downloadRequest.getGenerateDownloadRequestURL());
-      v2DownloadRequest.setS3DownloadDestination(s3DownloadDestination);
     }
 
     return v2DownloadRequest;
