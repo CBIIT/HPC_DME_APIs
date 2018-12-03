@@ -1081,7 +1081,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       String userId) {
     HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
     HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
-    globusDownloadDestination.setDestination(
+    globusDownloadDestination.setDestinationLocation(
         calculateDownloadDestinationFileLocation(destinationLocation, path));
     globusDownloadDestination.setDestinationOverwrite(destinationOverwrite);
     dataObjectDownloadRequest.setGlobusDownloadDestination(globusDownloadDestination);
@@ -1104,7 +1104,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       logger.error("Failed to download data object in a collection", e);
 
       downloadItem.setResult(false);
-      downloadItem.setDestinationLocation(globusDownloadDestination.getDestination());
+      downloadItem.setDestinationLocation(globusDownloadDestination.getDestinationLocation());
       downloadItem.setMessage(e.getMessage());
     }
 

@@ -2,12 +2,29 @@ package gov.nih.nci.hpc.integration.s3.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
@@ -27,9 +44,12 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -45,11 +65,25 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
  */
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // ---------------------------------------------------------------------//
+  // Constants
+  // ---------------------------------------------------------------------//
+
+  // The expiration of streaming data request from Cleversafe to AWS S3.
+  private static int S3_STREAM_EXPIRATION = 96;
+
+  // AWS Error XML XPATH
+  private static String ERROR_CODE_XPATH = "/Error/Code";
+  private static String ERROR_MESSAGE_XPATH = "/Error/Message";
+  
+  // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
 
   // The S3 connection instance.
   @Autowired private HpcS3Connection s3Connection = null;
+
+  //The logger instance.
+  private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
   // ---------------------------------------------------------------------//
   // Constructors
@@ -95,9 +129,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             uploadRequest.getCallerObjectId(),
             baseArchiveDestination.getType(),
             false);
-    
+
     // If the archive destination file exists, generate a new archive destination w/ unique path.
-    if(getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
+    if (getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
       archiveDestinationLocation =
           getArchiveDestinationLocation(
               baseArchiveDestination.getFileLocation(),
@@ -131,44 +165,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcArchive baseArchiveDestination,
-      Integer uploadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
-    // Create a S3 download request.
-    GetObjectRequest request =
-        new GetObjectRequest(
-            downloadRequest.getArchiveLocation().getFileContainerId(),
-            downloadRequest.getArchiveLocation().getFileId());
-    
-    // Download the file via S3.
-    Download s3Download = null;
-    try {
-      s3Download =
-          s3Connection
-              .getTransferManager(authenticatedToken)
-              .download(request, downloadRequest.getDestinationFile());
-      if (progressListener == null) {
-        // Download synchronously.
-        s3Download.waitForCompletion();
-      } else {
-        // Download asynchronously.
-        s3Download.addProgressListener(new HpcS3ProgressListener(progressListener));
-      }
-
-    } catch (AmazonClientException ace) {
-      throw new HpcException(
-          "[S3] Failed to download file: [" + ace.getMessage() + "]",
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
-          ace);
-
-    } catch (InterruptedException ie) {
-      Thread.currentThread().interrupt();
+    if (downloadRequest.getFileDestination() != null) {
+      // This is a download request to a local file.
+      return downloadDataObject(
+          authenticatedToken,
+          downloadRequest.getArchiveLocation(),
+          downloadRequest.getFileDestination(),
+          progressListener);
+    } else {
+      return downloadDataObject(
+          authenticatedToken,
+          downloadRequest.getArchiveLocation(),
+          downloadRequest.getS3Destination(),
+          progressListener);
     }
-
-    return String.valueOf(s3Download.hashCode());
   }
-  
+
   @Override
   public String generateDownloadRequestURL(
       Object authenticatedToken,
@@ -183,8 +197,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     // Create a URL generation request.
     GeneratePresignedUrlRequest generatePresignedUrlRequest =
         new GeneratePresignedUrlRequest(
-            archiveSourceLocation.getFileContainerId(),
-            archiveSourceLocation.getFileId())
+                archiveSourceLocation.getFileContainerId(), archiveSourceLocation.getFileId())
             .withMethod(HttpMethod.GET)
             .withExpiration(expiration);
 
@@ -197,7 +210,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     return url.toString();
   }
-  
+
   @Override
   public String copyDataObject(
       Object authenticatedToken,
@@ -463,5 +476,192 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     return objectMetadata;
+  }
+
+  /**
+   * Download a data object to a local file.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveLocation The data object archive location.
+   * @param destinationLocation The local file destination.
+   * @param progressListener (Optional) a progress listener for async notification on transfer
+   *     completion.
+   * @return A data transfer request Id.
+   * @throws HpcException on data transfer system failure.
+   */
+  private String downloadDataObject(
+      Object authenticatedToken,
+      HpcFileLocation archiveLocation,
+      File destinationLocation,
+      HpcDataTransferProgressListener progressListener)
+      throws HpcException {
+    // Create a S3 download request.
+    GetObjectRequest request =
+        new GetObjectRequest(archiveLocation.getFileContainerId(), archiveLocation.getFileId());
+
+    // Download the file via S3.
+    Download s3Download = null;
+    try {
+      s3Download =
+          s3Connection
+              .getTransferManager(authenticatedToken)
+              .download(request, destinationLocation);
+      if (progressListener == null) {
+        // Download synchronously.
+        s3Download.waitForCompletion();
+      } else {
+        // Download asynchronously.
+        s3Download.addProgressListener(new HpcS3ProgressListener(progressListener));
+      }
+
+    } catch (AmazonClientException ace) {
+      throw new HpcException(
+          "[S3] Failed to download file: [" + ace.getMessage() + "]",
+          HpcErrorType.DATA_TRANSFER_ERROR,
+          HpcIntegratedSystem.CLEVERSAFE,
+          ace);
+
+    } catch (InterruptedException ie) {
+      Thread.currentThread().interrupt();
+    }
+
+    return String.valueOf(s3Download.hashCode());
+  }
+
+  /**
+   * Download a data object to AWS S3 destination. We stream data from Cleversafe to AWS.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveLocation The data object archive location.
+   * @param s3Destination The S3 destination.
+   * @param progressListener (Optional) a progress listener for async notification on transfer
+   *     completion.
+   * @return A data transfer request Id.
+   * @throws HpcException on data transfer system failure.
+   */
+  private String downloadDataObject(
+      Object authenticatedToken,
+      HpcFileLocation archiveLocation,
+      HpcS3DownloadDestination s3Destination,
+      HpcDataTransferProgressListener progressListener)
+      throws HpcException {
+
+    // If a destination URL was not provided, generate it using the account.
+    if (StringUtils.isEmpty(s3Destination.getDestinationURL())) {
+      s3Destination.setDestinationURL(
+          generateUploadRequestURL(
+                  s3Connection.authenticate(s3Destination.getAccount()),
+                  s3Destination.getDestinationLocation(),
+                  S3_STREAM_EXPIRATION,
+                  null)
+              .getUploadRequestURL());
+    }
+
+    // Generate a download pre-signed URL for the requested data file in archive.
+    String archiveFileDownloadURL =
+        generateDownloadRequestURL(authenticatedToken, archiveLocation, S3_STREAM_EXPIRATION);
+
+    // Stream the data object from Cleversafe to AWS. The Future will return an error message on failure, or empty string if successful.
+    CompletableFuture<HpcDataTransferDownloadReport> s3DataStreamingFuture =
+        CompletableFuture.supplyAsync(
+            () -> {
+              HpcDataTransferDownloadReport downloadReport = new HpcDataTransferDownloadReport();
+              downloadReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
+              
+              try {
+                // Generate an source/destination URLs.
+                URL destinationURL = new URL(s3Destination.getDestinationURL());
+                URL sourceURL = new URL(archiveFileDownloadURL);
+
+                // Open source/destination URL connections.
+                HttpURLConnection destinationConnection =
+                    (HttpURLConnection) destinationURL.openConnection();
+                destinationConnection.setDoOutput(true);
+                destinationConnection.setRequestMethod("PUT");
+                HttpURLConnection sourceConnection = (HttpURLConnection) sourceURL.openConnection();
+
+                // Copy data from source to destination.
+                downloadReport.setBytesTransferred( 
+                    IOUtils.copyLarge(
+                        sourceConnection.getInputStream(), destinationConnection.getOutputStream()));
+
+                // Confirm the upload to destination URL is successful.
+                sourceConnection.getResponseCode();
+                int destinationResponseCode = destinationConnection.getResponseCode();
+                if (destinationResponseCode != 200) {
+                  downloadReport.setMessage(toErrorMessage(destinationConnection.getErrorStream()));
+                }
+
+                // Close the URL connections.
+                sourceConnection.disconnect();
+                destinationConnection.disconnect();
+
+              } catch (IOException e) {
+                downloadReport.setMessage(e.getMessage());
+              }
+              
+              downloadReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
+              return downloadReport;
+            });
+
+    try {
+      if (progressListener == null) {
+        // Download synchronously.
+        HpcDataTransferDownloadReport downloadReport = s3DataStreamingFuture.get();
+        if (downloadReport.getStatus().equals(HpcDataTransferDownloadStatus.FAILED)) {
+          throw new HpcException(
+              "[S3] Failed to stream data to destination URL: " + downloadReport.getMessage(),
+              HpcErrorType.DATA_TRANSFER_ERROR);
+        }
+      } else {
+        // Download Asynchronously.
+        s3DataStreamingFuture.thenAccept(downloadReport -> {
+          if (downloadReport.getStatus().equals(HpcDataTransferDownloadStatus.FAILED)) {
+            progressListener.transferFailed(downloadReport.getMessage());
+          } else {
+            progressListener.transferCompleted(downloadReport.getBytesTransferred());
+          }
+        });
+      }
+
+    } catch (InterruptedException | ExecutionException e) {
+      throw new HpcException(
+          "[S3] Failed to stream data to destination URL: " + e.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR);
+    }
+
+    return String.valueOf(s3DataStreamingFuture.hashCode());
+  }
+
+  /**
+   * Parse error from AWS S3 and generate a message
+   *
+   * @param errorStream The stream to parse.
+   * @return An error message
+   */
+  private String toErrorMessage(InputStream errorStream) {
+    if (errorStream == null) {
+      return "";
+    }
+
+    try {
+      DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder builder = builderFactory.newDocumentBuilder();
+      Document xmlDocument = builder.parse(errorStream);
+      XPath xPath = XPathFactory.newInstance().newXPath();
+      String code =
+          (String) xPath.compile(ERROR_CODE_XPATH).evaluate(xmlDocument, XPathConstants.STRING);
+      String message =
+          (String) xPath.compile(ERROR_MESSAGE_XPATH).evaluate(xmlDocument, XPathConstants.STRING);
+      return "[" + code + "] " + message;
+
+    } catch (ParserConfigurationException
+        | SAXException
+        | XPathExpressionException
+        | IOException e) {
+      logger.error("Failed to parse XML from AWS S3");
+    }
+
+    return "";
   }
 }

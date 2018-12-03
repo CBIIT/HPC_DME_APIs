@@ -87,8 +87,6 @@ public interface HpcDataTransferProxy {
    * @param baseArchiveDestination The archive's base destination location.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
-   * @param downloadRequestURLExpiration The expiration period (in days) to set when generating
-   *     download URL.
    * @return A data transfer request Id.
    * @throws HpcException on data transfer system failure.
    */
@@ -96,7 +94,6 @@ public interface HpcDataTransferProxy {
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcArchive baseArchiveDestination,
-      Integer downloadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException;
 

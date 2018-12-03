@@ -59,7 +59,7 @@
 			<xsd:element name="bytesTransferred" type="xsd:long" />
 		</xsd:sequence>
 	</xsd:complexType>
-
+	
 	<xsd:simpleType name="HpcDataTransferType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
@@ -138,7 +138,7 @@
 	
 	<xsd:complexType name="HpcGlobusDownloadDestination">
 		<xsd:sequence>
-			<xsd:element name="destination"
+			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationOverwrite" type="xsd:boolean"
 				minOccurs="0" />
@@ -149,14 +149,13 @@
 		<xsd:sequence>
 			<xsd:element name="accessKey" type="xsd:string" />
 			<xsd:element name="secretKey" type="xsd:string" />
+			<xsd:element name="region" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:complexType name="HpcS3DownloadDestination">
 		<xsd:sequence>
-			<xsd:element name="generateDownloadRequestURL" type="xsd:boolean"
-				minOccurs="0" />
-			<xsd:element name="destination"
+			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="account"
 				type="hpc-domain-datatransfer:HpcS3DownloadAccount" />
@@ -179,10 +178,11 @@
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="archiveLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="destinationLocation"
-				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="destinationFile" type="hpc-domain-datatransfer:HpcFile" />
-			<xsd:element name="destinationOverwrite" type="xsd:boolean" />
+			<xsd:element name="globusDestination"
+				type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />	
+			<xsd:element name="s3Destination"
+				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />	
+			<xsd:element name="fileDestination" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
