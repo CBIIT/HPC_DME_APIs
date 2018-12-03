@@ -227,10 +227,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Validate the Globus destination.
-    if (globusDownloadDestination != null
-        && !isValidFileLocation(globusDownloadDestination.getDestinationLocation())) {
+    if (globusDownloadDestination != null) {
+        if(!isValidFileLocation(globusDownloadDestination.getDestinationLocation())) {
       throw new HpcException(
           "Invalid Globus download destination", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+        if(globusDownloadDestination.getDestinationOverwrite() == null) {
+          // Default destination overwrite is false.
+          globusDownloadDestination.setDestinationOverwrite(false);
+        }
     }
 
     // Validate the S3 destination.
