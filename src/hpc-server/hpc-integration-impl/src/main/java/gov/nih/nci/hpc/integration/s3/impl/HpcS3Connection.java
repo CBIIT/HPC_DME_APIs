@@ -74,24 +74,27 @@ public class HpcS3Connection {
    */
   public Object authenticate(HpcS3DownloadAccount s3Account) throws HpcException {
     try {
-      // Create the credential provider based on the configured credentials.
-      BasicAWSCredentials cleversafeCredentials =
+      // Create the credential provider based on provided S3 account.
+      BasicAWSCredentials awsCredentials =
           new BasicAWSCredentials(s3Account.getAccessKey(), s3Account.getSecretKey());
-      AWSStaticCredentialsProvider cleversafeCredentialsProvider =
-          new AWSStaticCredentialsProvider(cleversafeCredentials);
+      AWSStaticCredentialsProvider awsCredentialsProvider =
+          new AWSStaticCredentialsProvider(awsCredentials);
 
       // Create and return the transfer manager.
       return TransferManagerBuilder.standard()
           .withS3Client(
               AmazonS3ClientBuilder.standard()
-                  .withCredentials(cleversafeCredentialsProvider)
                   .withRegion(s3Account.getRegion())
+                  .withCredentials(awsCredentialsProvider)
                   .build())
           .build();
 
     } catch (SdkClientException e) {
       throw new HpcException(
-          "Failed to authenticate S3 account: " + e.getMessage(),
+          "Failed to authenticate S3 account in region ["
+              + s3Account.getRegion()
+              + "] - "
+              + e.getMessage(),
           HpcErrorType.INVALID_REQUEST_INPUT,
           e);
     }

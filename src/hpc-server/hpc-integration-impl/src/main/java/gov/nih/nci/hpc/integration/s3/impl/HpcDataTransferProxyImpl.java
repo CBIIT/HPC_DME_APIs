@@ -74,7 +74,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // AWS Error XML XPATH
   private static String ERROR_CODE_XPATH = "/Error/Code";
   private static String ERROR_MESSAGE_XPATH = "/Error/Message";
-  
+
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
@@ -548,13 +548,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     // If a destination URL was not provided, generate it using the account.
     if (StringUtils.isEmpty(s3Destination.getDestinationURL())) {
-      s3Destination.setDestinationURL(
-          generateUploadRequestURL(
-                  s3Connection.authenticate(s3Destination.getAccount()),
-                  s3Destination.getDestinationLocation(),
-                  S3_STREAM_EXPIRATION,
-                  null)
-              .getUploadRequestURL());
+      // Authenticate the
+      s3Destination.setDestinationURL(generateDownloadDestinationURL(s3Destination));
     }
 
     // Generate a download pre-signed URL for the requested data file in archive.
@@ -566,8 +561,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         CompletableFuture.supplyAsync(
             () -> {
               HpcDataTransferDownloadReport downloadReport = new HpcDataTransferDownloadReport();
-              downloadReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
-              
+              downloadReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
+
               try {
                 // Generate an source/destination URLs.
                 URL destinationURL = new URL(s3Destination.getDestinationURL());
@@ -581,15 +576,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 HttpURLConnection sourceConnection = (HttpURLConnection) sourceURL.openConnection();
 
                 // Copy data from source to destination.
-                downloadReport.setBytesTransferred( 
+                downloadReport.setBytesTransferred(
                     IOUtils.copyLarge(
-                        sourceConnection.getInputStream(), destinationConnection.getOutputStream()));
+                        sourceConnection.getInputStream(),
+                        destinationConnection.getOutputStream()));
 
                 // Confirm the upload to destination URL is successful.
                 sourceConnection.getResponseCode();
                 int destinationResponseCode = destinationConnection.getResponseCode();
                 if (destinationResponseCode != 200) {
                   downloadReport.setMessage(toErrorMessage(destinationConnection.getErrorStream()));
+                  downloadReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
                 }
 
                 // Close the URL connections.
@@ -598,9 +595,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
               } catch (IOException e) {
                 downloadReport.setMessage(e.getMessage());
+                downloadReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
               }
-              
-              downloadReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
+
               return downloadReport;
             });
 
@@ -615,13 +612,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         }
       } else {
         // Download Asynchronously.
-        s3DataStreamingFuture.thenAccept(downloadReport -> {
-          if (downloadReport.getStatus().equals(HpcDataTransferDownloadStatus.FAILED)) {
-            progressListener.transferFailed(downloadReport.getMessage());
-          } else {
-            progressListener.transferCompleted(downloadReport.getBytesTransferred());
-          }
-        });
+        s3DataStreamingFuture.thenAccept(
+            downloadReport -> {
+              if (downloadReport.getStatus().equals(HpcDataTransferDownloadStatus.FAILED)) {
+                progressListener.transferFailed(downloadReport.getMessage());
+              } else {
+                progressListener.transferCompleted(downloadReport.getBytesTransferred());
+              }
+            });
       }
 
     } catch (InterruptedException | ExecutionException e) {
@@ -663,5 +661,33 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     return "";
+  }
+
+  /**
+   * Generate a download destination URL for a user provided AWS S3 account and bucket info.
+   *
+   * @param s3Destination The S3 download destination (containing account and bucket data)
+   * @return The generated pre-signed download URL
+   * @throws HpcException If it failed to generate a URL or bad S3 credentials
+   */
+  private String generateDownloadDestinationURL(HpcS3DownloadDestination s3Destination)
+      throws HpcException {
+
+    // Authenticate the S3 account.
+    Object authenticatedToken = s3Connection.authenticate(s3Destination.getAccount());
+
+    // Confirm the S3 bucket is accessible.
+    try {
+      getPathAttributes(authenticatedToken, s3Destination.getDestinationLocation(), false);
+    } catch (HpcException e) {
+      throw new HpcException(
+          "Failed to access S3 bucket: " + s3Destination.getDestinationLocation(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Generate the URL.
+    return generateUploadRequestURL(
+            authenticatedToken, s3Destination.getDestinationLocation(), S3_STREAM_EXPIRATION, null)
+        .getUploadRequestURL();
   }
 }
