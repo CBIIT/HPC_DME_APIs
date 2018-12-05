@@ -1,2 +1,2 @@
 400
-Presigned URL for download is supported on S3 based destination archive only.
+S3 download request is not supported for POSIX based file system archive
