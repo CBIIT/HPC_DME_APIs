@@ -55,11 +55,11 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_LOCATION_FI
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_OVERWRITE" IS 
                   'An indicator whether files at the download destination will be overwritten if they exist';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_ACCESS_KEY" IS 
-                  'The S3 destination's account access key';  
+                  'The S3 destination account access key';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_SECRET_KEY" IS 
-                  'The S3 destination's account secret key';  
+                  'The S3 destination account secret key';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_REGION" IS 
-                  'The S3 destination's account region';  
+                  'The S3 destination account region';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."STATUS" IS 
                   'The download task status';   
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."ITEMS" IS 

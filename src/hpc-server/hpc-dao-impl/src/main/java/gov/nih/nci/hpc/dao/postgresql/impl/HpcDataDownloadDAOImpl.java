@@ -118,9 +118,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   public static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL =
       "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( "
           + "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
-          + "\"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_OVERWRITE\", \"ITEMS\", \"STATUS\", \"TYPE\", "
+          + "\"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_OVERWRITE\", \"S3_ACCOUNT_ACCESS_KEY\", "
+          + "\"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", \"ITEMS\", \"STATUS\", \"TYPE\", "
           + "\"DATA_OBJECT_PATHS\", \"CREATED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
