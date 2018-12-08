@@ -67,7 +67,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
@@ -378,17 +378,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcCollectionDownloadTask collectionDownloadTask =
         dataTransferService.downloadCollection(
             path,
-            globusDownloadDestination.getDestinationLocation(),
-            globusDownloadDestination.getDestinationOverwrite() != null
-                ? globusDownloadDestination.getDestinationOverwrite()
-                : false,
+            downloadRequest.getGlobusDownloadDestination(),
+            downloadRequest.getS3DownloadDestination(),
             securityService.getRequestInvoker().getNciAccount().getUserId(),
             metadata.getConfigurationId());
 
     // Create and return a DTO with the request receipt.
     HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
     responseDTO.setTaskId(collectionDownloadTask.getId());
-    responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
+    responseDTO.setDestinationLocation(
+        collectionDownloadTask.getS3DownloadDestination() != null
+            ? collectionDownloadTask.getS3DownloadDestination().getDestinationLocation()
+            : collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation());
 
     return responseDTO;
   }
@@ -403,11 +404,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     if (downloadRequest.getDataObjectPaths().isEmpty()) {
       throw new HpcException("No data object paths", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    if (downloadRequest.getDestination() == null) {
-      throw new HpcException(
-          "Null destination in download request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Validate all data object paths requested exist.
@@ -430,16 +426,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcCollectionDownloadTask collectionDownloadTask =
         dataTransferService.downloadDataObjects(
             dataObjectPathsMap,
-            downloadRequest.getDestination(),
-            downloadRequest.getDestinationOverwrite() != null
-                ? downloadRequest.getDestinationOverwrite()
-                : false,
+            downloadRequest.getGlobusDownloadDestination(),
+            downloadRequest.getS3DownloadDestination(),
             securityService.getRequestInvoker().getNciAccount().getUserId());
 
     // Create and return a DTO with the request receipt.
     HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
     responseDTO.setTaskId(collectionDownloadTask.getId());
-    responseDTO.setDestinationLocation(collectionDownloadTask.getDestinationLocation());
+    responseDTO.setDestinationLocation(
+        collectionDownloadTask.getS3DownloadDestination() != null
+            ? collectionDownloadTask.getS3DownloadDestination().getDestinationLocation()
+            : collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation());
 
     return responseDTO;
   }
@@ -1838,7 +1835,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
       downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
       downloadStatus.setDestinationLocation(
-          taskStatus.getCollectionDownloadTask().getDestinationLocation());
+          taskStatus.getCollectionDownloadTask().getS3DownloadDestination() != null
+              ? taskStatus
+                  .getCollectionDownloadTask()
+                  .getS3DownloadDestination()
+                  .getDestinationLocation()
+              : taskStatus
+                  .getCollectionDownloadTask()
+                  .getGlobusDownloadDestination()
+                  .getDestinationLocation());
       populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
 
     } else {

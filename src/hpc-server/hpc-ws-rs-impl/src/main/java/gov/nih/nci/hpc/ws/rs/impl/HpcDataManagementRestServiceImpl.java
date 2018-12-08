@@ -410,7 +410,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       String path, HpcDownloadRequestDTO downloadRequest, MessageContext messageContext) {
     // This API is deprecated and replaced by a new download API (which supports additional S3 download destination) and
     // a dedicated API to generate download URL. This API should be removed in the future.
-    if (downloadRequest != null && downloadRequest.getGenerateDownloadRequestURL() != null && downloadRequest.getGenerateDownloadRequestURL()) {
+    if (downloadRequest != null
+        && downloadRequest.getGenerateDownloadRequestURL() != null
+        && downloadRequest.getGenerateDownloadRequestURL()) {
       if (downloadRequest.getDestination() != null
           || downloadRequest.getDestinationOverwrite() != null) {
         return errorResponse(
@@ -418,9 +420,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                 "Invalid download request. Request must have a destination or generateDownloadRequestURL",
                 HpcErrorType.INVALID_REQUEST_INPUT));
       }
-        return generateDownloadRequestURL(path);
+      return generateDownloadRequestURL(path);
     }
-      return downloadDataObject(path, toV2(downloadRequest), messageContext);
+    return downloadDataObject(path, toV2(downloadRequest), messageContext);
   }
 
   @Override
@@ -538,8 +540,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(hpcUserPermissionDTO, true);
   }
 
+  @Deprecated
   @Override
   public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
+    return downloadDataObjects(toV2(downloadRequest));
+  }
+
+  @Override
+  public Response downloadDataObjects(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
     HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
     try {
       downloadResponse = dataManagementBusService.downloadDataObjects(downloadRequest);
@@ -672,7 +681,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   /**
-   * Convert v1 of HpcDownloadRequest to v2 of the API
+   * Convert v1 of HpcDownloadRequest to v2 of the API.
    *
    * @param downloadRequest download request (v1).
    * @return The download request in v2 form.
@@ -685,6 +694,32 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO v2DownloadRequest =
         new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO();
+    if (downloadRequest.getDestination() != null) {
+      HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
+      globusDownloadDestination.setDestinationLocation(downloadRequest.getDestination());
+      globusDownloadDestination.setDestinationOverwrite(downloadRequest.getDestinationOverwrite());
+      v2DownloadRequest.setGlobusDownloadDestination(globusDownloadDestination);
+    }
+
+    return v2DownloadRequest;
+  }
+
+  /**
+   * Convert v1 of HpcBulkDataObjectDownloadRequestDTO to v2 of the API.
+   *
+   * @param downloadRequest download request (v1).
+   * @return The download request in v2 form.
+   */
+  private gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO toV2(
+      HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
+    if (downloadRequest == null) {
+      return null;
+    }
+
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO v2DownloadRequest =
+        new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO();
+    v2DownloadRequest.setPath(downloadRequest.getPath());
+    v2DownloadRequest.getDataObjectPaths().addAll(downloadRequest.getDataObjectPaths());
     if (downloadRequest.getDestination() != null) {
       HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
       globusDownloadDestination.setDestinationLocation(downloadRequest.getDestination());
