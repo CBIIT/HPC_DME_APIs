@@ -38,6 +38,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -124,6 +127,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", "
           + "\"DESTINATION_OVERWRITE\"=excluded.\"DESTINATION_OVERWRITE\", "
+          + "\"S3_ACCOUNT_ACCESS_KEY\"=excluded.\"S3_ACCOUNT_ACCESS_KEY\", "
+          + "\"S3_ACCOUNT_SECRET_KEY\"=excluded.\"S3_ACCOUNT_SECRET_KEY\", "
+          + "\"S3_ACCOUNT_REGION\"=excluded.\"S3_ACCOUNT_REGION\", "
           + "\"ITEMS\"=excluded.\"ITEMS\", "
           + "\"STATUS\"=excluded.\"STATUS\", "
           + "\"TYPE\"=excluded.\"TYPE\", "
@@ -164,6 +170,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
   // The Spring JDBC Template instance.
   @Autowired private JdbcTemplate jdbcTemplate = null;
+
+  // Encryptor.
+  @Autowired HpcEncryptor encryptor = null;
 
   // HpcDataObjectDownloadTask table to object mapper.
   private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper =
@@ -261,13 +270,37 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         String destinationLocationFileContainerId =
             rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
         String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
+
+        HpcFileLocation destinationLocation = null;
         if (destinationLocationFileContainerId != null && destinationLocationFileId != null) {
-          HpcFileLocation destinationLocation = new HpcFileLocation();
+          destinationLocation = new HpcFileLocation();
           destinationLocation.setFileContainerId(destinationLocationFileContainerId);
           destinationLocation.setFileId(destinationLocationFileId);
-          collectionDownloadTask.setDestinationLocation(destinationLocation);
         }
-        collectionDownloadTask.setDestinationOverwrite(rs.getBoolean("DESTINATION_OVERWRITE"));
+
+        HpcS3DownloadAccount s3Account = null;
+        byte[] s3AccountAccessKey = rs.getBytes("S3_ACCOUNT_ACCESS_KEY");
+        byte[] s3AccountSecretKey = rs.getBytes("S3_ACCOUNT_SECRET_KEY");
+        if (s3AccountAccessKey != null && s3AccountSecretKey != null) {
+          s3Account = new HpcS3DownloadAccount();
+          s3Account.setAccessKey(this.encryptor.decrypt(s3AccountAccessKey));
+          s3Account.setSecretKey(this.encryptor.decrypt(s3AccountSecretKey));
+          s3Account.setRegion(rs.getString("S3_ACCOUNT_REGION"));
+        }
+
+        if (s3Account != null) {
+          HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
+          s3DownloadDestination.setDestinationLocation(destinationLocation);
+          s3DownloadDestination.setAccount(s3Account);
+          collectionDownloadTask.setS3DownloadDestination(s3DownloadDestination);
+        } else {
+          HpcGlobusDownloadDestination globusDownloadDestination =
+              new HpcGlobusDownloadDestination();
+          globusDownloadDestination.setDestinationLocation(destinationLocation);
+          globusDownloadDestination.setDestinationOverwrite(rs.getBoolean("DESTINATION_OVERWRITE"));
+          collectionDownloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+        }
+
         collectionDownloadTask.getItems().addAll(fromJSON(rs.getString("ITEMS")));
 
         Calendar created = Calendar.getInstance();
@@ -483,15 +516,38 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         }
       }
 
+      HpcFileLocation destinationLocation = null;
+      Boolean destinationOverwrite = null;
+      byte[] s3AccountAccessKey = null;
+      byte[] s3AccountSecretKey = null;
+      String s3AccountRegion = null;
+      if (collectionDownloadTask.getGlobusDownloadDestination() != null) {
+        destinationLocation =
+            collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
+        destinationOverwrite =
+            collectionDownloadTask.getGlobusDownloadDestination().getDestinationOverwrite();
+      } else {
+        destinationLocation =
+            collectionDownloadTask.getS3DownloadDestination().getDestinationLocation();
+        HpcS3DownloadAccount s3Account =
+            collectionDownloadTask.getS3DownloadDestination().getAccount();
+        s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
+        s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
+        s3AccountRegion = s3Account.getRegion();
+      }
+
       jdbcTemplate.update(
           UPSERT_COLLECTION_DOWNLOAD_TASK_SQL,
           collectionDownloadTask.getId(),
           collectionDownloadTask.getUserId(),
           collectionDownloadTask.getPath(),
           collectionDownloadTask.getConfigurationId(),
-          collectionDownloadTask.getDestinationLocation().getFileContainerId(),
-          collectionDownloadTask.getDestinationLocation().getFileId(),
-          collectionDownloadTask.getDestinationOverwrite(),
+          destinationLocation.getFileContainerId(),
+          destinationLocation.getFileId(),
+          destinationOverwrite,
+          s3AccountAccessKey,
+          s3AccountSecretKey,
+          s3AccountRegion,
           toJSON(collectionDownloadTask.getItems()),
           collectionDownloadTask.getStatus().value(),
           collectionDownloadTask.getType().value(),
@@ -729,17 +785,15 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           downloadItem.setEffectiveTransferSpeed(
               Integer.valueOf(effectiveTransferSpeed.toString()));
         }
-        
+
         Object size = jsonDownloadItem.get("size");
         if (size != null) {
-          downloadItem.setSize(
-              Long.valueOf(size.toString()));
+          downloadItem.setSize(Long.valueOf(size.toString()));
         }
-        
+
         Object percentComplete = jsonDownloadItem.get("percentComplete");
         if (percentComplete != null) {
-          downloadItem.setPercentComplete(
-              Integer.valueOf(percentComplete.toString()));
+          downloadItem.setPercentComplete(Integer.valueOf(percentComplete.toString()));
         }
 
         downloadItems.add(downloadItem);

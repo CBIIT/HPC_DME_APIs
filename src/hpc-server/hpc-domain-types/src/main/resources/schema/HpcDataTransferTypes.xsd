@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--  
  * HpcDataTransferTypes.xsd
  *
@@ -59,7 +58,7 @@
 			<xsd:element name="bytesTransferred" type="xsd:long" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="HpcDataTransferType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
@@ -135,7 +134,7 @@
 			<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcGlobusDownloadDestination">
 		<xsd:sequence>
 			<xsd:element name="destinationLocation"
@@ -152,7 +151,7 @@
 			<xsd:element name="region" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="HpcS3DownloadDestination">
 		<xsd:sequence>
 			<xsd:element name="destinationLocation"
@@ -162,7 +161,7 @@
 			<xsd:element name="destinationURL" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="HpcDownloadRequestType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="SYNCHRONOUS" />
@@ -179,9 +178,9 @@
 			<xsd:element name="archiveLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="globusDestination"
-				type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />	
+				type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
 			<xsd:element name="s3Destination"
-				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />	
+				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
 			<xsd:element name="fileDestination" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
@@ -244,7 +243,8 @@
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="completed" type="xsd:dateTime" />
-			<xsd:element name="effectiveTransferSpeed" type="xsd:int" minOccurs="0" />
+			<xsd:element name="effectiveTransferSpeed" type="xsd:int"
+				minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -258,9 +258,10 @@
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="type"
 				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
-			<xsd:element name="destinationLocation"
-				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="destinationOverwrite" type="xsd:boolean" />
+			<xsd:element name="globusDownloadDestination"
+				type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
+			<xsd:element name="s3DownloadDestination"
+				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
 			<xsd:element name="status"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
 			<xsd:element name="message" type="xsd:string" />
@@ -280,8 +281,10 @@
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="result" type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="message" type="xsd:string" />
-			<xsd:element name="effectiveTransferSpeed" type="xsd:int" minOccurs="0" />
-			<xsd:element name="percentComplete" type="xsd:int" minOccurs="0" />
+			<xsd:element name="effectiveTransferSpeed" type="xsd:int"
+				minOccurs="0" />
+			<xsd:element name="percentComplete" type="xsd:int"
+				minOccurs="0" />
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>

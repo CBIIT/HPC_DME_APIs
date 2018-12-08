@@ -219,45 +219,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Validate the destination is either Globus or S3.
-    if (globusDownloadDestination != null && s3DownloadDestination != null) {
-      throw new HpcException(
-          "Multiple download destinations provided (Globus & S3)",
-          HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    // Validate the Globus destination.
-    if (globusDownloadDestination != null) {
-        if(!isValidFileLocation(globusDownloadDestination.getDestinationLocation())) {
-      throw new HpcException(
-          "Invalid Globus download destination", HpcErrorType.INVALID_REQUEST_INPUT);
-        }
-        if(globusDownloadDestination.getDestinationOverwrite() == null) {
-          // Default destination overwrite is false.
-          globusDownloadDestination.setDestinationOverwrite(false);
-        }
-    }
-
-    // Validate the S3 destination.
-    if (s3DownloadDestination != null) {
-      if (!isValidFileLocation(s3DownloadDestination.getDestinationLocation())) {
-        throw new HpcException(
-            "Invalid S3 download destination location", HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-      // For S3 download, either S3 account or (pre-signed) destination upload URL must be provided.
-      HpcS3DownloadAccount s3Account = s3DownloadDestination.getAccount();
-      if (s3Account != null) {
-        if (s3DownloadDestination.getDestinationURL() != null) {
-          throw new HpcException(
-              "Both S3 account and destination URL provided", HpcErrorType.INVALID_REQUEST_INPUT);
-        }
-        if (!isValidS3DownloadAccount(s3Account)) {
-          throw new HpcException("Invalid S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
-        }
-      } else if (StringUtils.isEmpty(s3DownloadDestination.getDestinationURL())) {
-        throw new HpcException("Invalid S3 destination URL", HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-    }
+    // Validate the destination.
+    validateDownloadDestination(
+        globusDownloadDestination, s3DownloadDestination, configurationId, false);
 
     // Create a download request.
     HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -667,20 +631,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcCollectionDownloadTask downloadCollection(
       String path,
-      HpcFileLocation destinationLocation,
-      boolean destinationOverwrite,
+      HpcGlobusDownloadDestination globusDownloadDestination,
+      HpcS3DownloadDestination s3DownloadDestination,
       String userId,
       String configurationId)
       throws HpcException {
-    // Validate the requested destination location.
-    validateDownloadDestinationFileLocation(
-        HpcDataTransferType.GLOBUS, destinationLocation, false, true, configurationId);
+    // Validate the download destination.
+    validateDownloadDestination(
+        globusDownloadDestination, s3DownloadDestination, configurationId, true);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
     downloadTask.setCreated(Calendar.getInstance());
-    downloadTask.setDestinationLocation(destinationLocation);
-    downloadTask.setDestinationOverwrite(destinationOverwrite);
+    downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+    downloadTask.setS3DownloadDestination(s3DownloadDestination);
     downloadTask.setPath(path);
     downloadTask.setUserId(userId);
     downloadTask.setType(HpcDownloadTaskType.COLLECTION);
@@ -696,8 +660,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcCollectionDownloadTask downloadDataObjects(
       Map<String, String> dataObjectPathsMap,
-      HpcFileLocation destinationLocation,
-      boolean destinationOverwrite,
+      HpcGlobusDownloadDestination globusDownloadDestination,
+      HpcS3DownloadDestination s3DownloadDestination,
       String userId)
       throws HpcException {
     // Validate the requested destination location. Note: we use the configuration
@@ -705,14 +669,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // first data object path. At this time, there is no need to validate for all
     // configuration IDs.
     String configurationId = dataObjectPathsMap.values().iterator().next();
-    validateDownloadDestinationFileLocation(
-        HpcDataTransferType.GLOBUS, destinationLocation, false, true, configurationId);
+    validateDownloadDestination(
+        globusDownloadDestination, s3DownloadDestination, configurationId, true);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
     downloadTask.setCreated(Calendar.getInstance());
-    downloadTask.setDestinationLocation(destinationLocation);
-    downloadTask.setDestinationOverwrite(destinationOverwrite);
+    downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+    downloadTask.setS3DownloadDestination(s3DownloadDestination);
     downloadTask.getDataObjectPaths().addAll(dataObjectPathsMap.keySet());
     downloadTask.setUserId(userId);
     downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
@@ -755,7 +719,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setId(downloadTask.getId());
     taskResult.setUserId(downloadTask.getUserId());
     taskResult.setPath(downloadTask.getPath());
-    taskResult.setDestinationLocation(downloadTask.getDestinationLocation());
+    taskResult.setDestinationLocation(
+        downloadTask.getS3DownloadDestination() != null
+            ? downloadTask.getS3DownloadDestination().getDestinationLocation()
+            : downloadTask.getGlobusDownloadDestination().getDestinationLocation());
     taskResult.setResult(result);
     taskResult.setType(downloadTask.getType());
     taskResult.setMessage(message);
@@ -1128,7 +1095,83 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   /**
-   * Validate download destination file location.
+   * Validate download destination.
+   *
+   * @param globusDownloadDestination The user requested Glopbus download destination.
+   * @param s3DownloadDestination The user requested S3 download destination.
+   * @param configurationId The configuration ID.
+   * @param bulkDownload True if this is a request to download a list of files or a collection, or
+   *     false if this is a request to download a single data object.
+   * @throws HpcException if the download destination is invalid
+   */
+  private void validateDownloadDestination(
+      HpcGlobusDownloadDestination globusDownloadDestination,
+      HpcS3DownloadDestination s3DownloadDestination,
+      String configurationId,
+      boolean bulkDownload)
+      throws HpcException {
+    // Validate the destination (if provided) is either Globus or S3.
+    if (globusDownloadDestination != null && s3DownloadDestination != null) {
+      throw new HpcException(
+          "Multiple download destinations provided (Globus & S3)",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the Globus destination.
+    if (globusDownloadDestination != null) {
+      if (!isValidFileLocation(globusDownloadDestination.getDestinationLocation())) {
+        throw new HpcException(
+            "Invalid Globus download destination", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+
+      // Default overwrite to false if not provided.
+      if (globusDownloadDestination.getDestinationOverwrite() == null) {
+        // Default destination overwrite is false.
+        globusDownloadDestination.setDestinationOverwrite(false);
+      }
+
+      // For bulk download - verify the globus file location.
+      if (bulkDownload) {
+        validateGlobusDownloadDestinationFileLocation(
+            HpcDataTransferType.GLOBUS,
+            globusDownloadDestination.getDestinationLocation(),
+            false,
+            true,
+            configurationId);
+      }
+    }
+
+    // Validate the S3 destination.
+    if (s3DownloadDestination != null) {
+      if (!isValidFileLocation(s3DownloadDestination.getDestinationLocation())) {
+        throw new HpcException(
+            "Invalid S3 download destination location", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      // For S3 download of a single data object, either S3 account or (pre-signed) destination upload URL must be provided.
+      // For S3 download of list-of-files or collection, a S3 account must be provided.
+      HpcS3DownloadAccount s3Account = s3DownloadDestination.getAccount();
+      if (s3Account != null) {
+        if (s3DownloadDestination.getDestinationURL() != null) {
+          throw new HpcException(
+              "Both S3 account and destination URL provided", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+        if (!isValidS3DownloadAccount(s3Account)) {
+          throw new HpcException("Invalid S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+      } else {
+        if (bulkDownload) {
+          throw new HpcException(
+              "No S3 account provided in collection/bulk download request",
+              HpcErrorType.INVALID_REQUEST_INPUT);
+        } else if (StringUtils.isEmpty(s3DownloadDestination.getDestinationURL())) {
+          throw new HpcException("Invalid S3 destination URL", HpcErrorType.INVALID_REQUEST_INPUT);
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate Globus download destination file location.
    *
    * @param dataTransferType The data transfer type.
    * @param destinationLocation The file location to validate.
@@ -1140,7 +1183,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * @return The path attributes.
    * @throws HpcException if the destination location not accessible or exist as a file.
    */
-  private HpcPathAttributes validateDownloadDestinationFileLocation(
+  private HpcPathAttributes validateGlobusDownloadDestinationFileLocation(
       HpcDataTransferType dataTransferType,
       HpcFileLocation destinationLocation,
       boolean validateExistsAsDirectory,
@@ -1331,7 +1374,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   /**
-   * Calculate and validate download destination location.
+   * Calculate and validate a Globus download destination location.
    *
    * @param destinationLocation The destination location requested by the caller.
    * @param destinationOverwrite If true, the requested destination location will be overwritten if
@@ -1344,7 +1387,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *     provided a directory destination.
    * @throws HpcException on service failure.
    */
-  private HpcFileLocation calculateDownloadDestinationFileLocation(
+  private HpcFileLocation calculateGlobusDownloadDestinationFileLocation(
       HpcFileLocation destinationLocation,
       boolean destinationOverwrite,
       HpcDataTransferType dataTransferType,
@@ -1353,7 +1396,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throws HpcException {
     // Validate the download destination location.
     HpcPathAttributes pathAttributes =
-        validateDownloadDestinationFileLocation(
+        validateGlobusDownloadDestinationFileLocation(
             dataTransferType, destinationLocation, false, !destinationOverwrite, configurationId);
 
     // Calculate the destination.
@@ -1365,7 +1408,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           destinationLocation.getFileId() + sourcePath.substring(sourcePath.lastIndexOf('/')));
 
       // Validate the calculated download destination.
-      validateDownloadDestinationFileLocation(
+      validateGlobusDownloadDestinationFileLocation(
           dataTransferType, calcDestination, true, !destinationOverwrite, configurationId);
 
       return calcDestination;
@@ -1427,7 +1470,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadTask.setPercentComplete(0);
     downloadTask.setSize(downloadRequest.getSize());
     downloadTask.setDestinationLocation(
-        calculateDownloadDestinationFileLocation(
+        calculateGlobusDownloadDestinationFileLocation(
             downloadRequest.getGlobusDestination().getDestinationLocation(),
             downloadRequest.getGlobusDestination().getDestinationOverwrite(),
             HpcDataTransferType.GLOBUS,
@@ -1658,7 +1701,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // Create the 2nd hop download request.
       secondHopDownloadRequest =
           toSecondHopDownloadRequest(
-              calculateDownloadDestinationFileLocation(
+              calculateGlobusDownloadDestinationFileLocation(
                   firstHopDownloadRequest.getGlobusDestination().getDestinationLocation(),
                   firstHopDownloadRequest.getGlobusDestination().getDestinationOverwrite(),
                   HpcDataTransferType.GLOBUS,

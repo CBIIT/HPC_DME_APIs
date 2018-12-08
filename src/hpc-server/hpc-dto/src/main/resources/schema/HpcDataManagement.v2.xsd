@@ -39,4 +39,18 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:element name="HpcBulkDataObjectDownloadRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="path" type="xsd:string" />
+				<xsd:element name="dataObjectPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="globusDownloadDestination"
+					type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
+				<xsd:element name="s3DownloadDestination"
+					type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 </xsd:schema>

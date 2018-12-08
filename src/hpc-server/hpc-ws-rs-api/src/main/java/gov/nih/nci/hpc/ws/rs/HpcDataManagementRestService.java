@@ -414,11 +414,24 @@ public interface HpcDataManagementRestService {
    * @param downloadRequest The download request.
    * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO entity.
    */
+  @Deprecated
   @POST
   @Path("/download")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest);
+  
+  /**
+   * Download a list of data objects.
+   *
+   * @param downloadRequest The download request.
+   * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO entity.
+   */
+  @POST
+  @Path("/v2/download")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response downloadDataObjects(gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest);
 
   /**
    * Get data objects download task status.

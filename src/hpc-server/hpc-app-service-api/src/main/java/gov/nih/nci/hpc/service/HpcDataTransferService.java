@@ -94,7 +94,7 @@ public interface HpcDataTransferService {
       boolean completionEvent,
       long size)
       throws HpcException;
-  
+
   /**
    * Generate a (pre-signed) download URL for a data object file.
    *
@@ -294,9 +294,8 @@ public interface HpcDataTransferService {
    * Submit a request to download a collection.
    *
    * @param path The collection path.
-   * @param destinationLocation The user requested destination.
-   * @param destinationOverwrite If true, the requested destination location will be overwritten if
-   *     it exists.
+   * @param globusDownloadDestination The user requested Glopbus download destination.
+   * @param s3DownloadDestination The user requested S3 download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
@@ -305,8 +304,8 @@ public interface HpcDataTransferService {
    */
   public HpcCollectionDownloadTask downloadCollection(
       String path,
-      HpcFileLocation destinationLocation,
-      boolean destinationOverwrite,
+      HpcGlobusDownloadDestination globusDownloadDestination,
+      HpcS3DownloadDestination s3DownloadDestination,
       String userId,
       String configurationId)
       throws HpcException;
@@ -315,17 +314,16 @@ public interface HpcDataTransferService {
    * Submit a request to download data objects.
    *
    * @param dataObjectPathsMap A map of data-object-path to its configuration ID.
-   * @param destinationLocation The user requested destination.
-   * @param destinationOverwrite If true, the requested destination location will be overwritten if
-   *     it exists.
+   * @param globusDownloadDestination The user requested Glopbus download destination.
+   * @param s3DownloadDestination The user requested S3 download destination.
    * @param userId The user ID submitting the download request.
    * @return The submitted request download task.
    * @throws HpcException on service failure.
    */
   public HpcCollectionDownloadTask downloadDataObjects(
       Map<String, String> dataObjectPathsMap,
-      HpcFileLocation destinationLocation,
-      boolean destinationOverwrite,
+      HpcGlobusDownloadDestination globusDownloadDestination,
+      HpcS3DownloadDestination s3DownloadDestination,
       String userId)
       throws HpcException;
 
