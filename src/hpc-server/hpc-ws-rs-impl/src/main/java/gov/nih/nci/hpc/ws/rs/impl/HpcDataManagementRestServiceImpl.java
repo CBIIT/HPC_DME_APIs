@@ -410,7 +410,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       String path, HpcDownloadRequestDTO downloadRequest, MessageContext messageContext) {
     // This API is deprecated and replaced by a new download API (which supports additional S3 download destination) and
     // a dedicated API to generate download URL. This API should be removed in the future.
-    if (downloadRequest != null && downloadRequest.getGenerateDownloadRequestURL() != null) {
+    if (downloadRequest != null && downloadRequest.getGenerateDownloadRequestURL() != null && downloadRequest.getGenerateDownloadRequestURL()) {
       if (downloadRequest.getDestination() != null
           || downloadRequest.getDestinationOverwrite() != null) {
         return errorResponse(
@@ -418,14 +418,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
                 "Invalid download request. Request must have a destination or generateDownloadRequestURL",
                 HpcErrorType.INVALID_REQUEST_INPUT));
       }
-      if (downloadRequest.getGenerateDownloadRequestURL()) {
         return generateDownloadRequestURL(path);
-      } else {
-        return okResponse(null, false);
-      }
-    } else {
-      return downloadDataObject(path, toV2(downloadRequest), messageContext);
     }
+      return downloadDataObject(path, toV2(downloadRequest), messageContext);
   }
 
   @Override
