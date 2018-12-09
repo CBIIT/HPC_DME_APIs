@@ -45,6 +45,8 @@
 							gov.nih.nci.hpc.integration.irods.impl
 						</Private-Package>
 						<Import-Package>
+							org.springframework.scheduling.config,
+							org.springframework.scheduling.concurrent,
 							*
 						</Import-Package>
 					</instructions>

@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -82,7 +83,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // The S3 connection instance.
   @Autowired private HpcS3Connection s3Connection = null;
 
-  //The logger instance.
+  // The S3 download executor.
+  @Autowired Executor s3Executor = null;
+
+  // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
   // ---------------------------------------------------------------------//
@@ -599,7 +603,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
               }
 
               return downloadReport;
-            });
+            },
+            s3Executor);
 
     try {
       if (progressListener == null) {
