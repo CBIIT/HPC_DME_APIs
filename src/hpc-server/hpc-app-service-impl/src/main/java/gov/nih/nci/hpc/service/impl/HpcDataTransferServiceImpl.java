@@ -1113,8 +1113,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Validate the destination (if provided) is either Globus or S3.
     if (globusDownloadDestination != null && s3DownloadDestination != null) {
       throw new HpcException(
-          "Multiple download destinations provided (Globus & S3)",
+          "Multiple download destinations provided (Globus and S3)",
           HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the destination for collection/bulk download is provided.
+    if (bulkDownload && globusDownloadDestination == null && s3DownloadDestination == null) {
+      throw new HpcException(
+          "No download destinations provided (Globus or S3)", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Validate the Globus destination.
