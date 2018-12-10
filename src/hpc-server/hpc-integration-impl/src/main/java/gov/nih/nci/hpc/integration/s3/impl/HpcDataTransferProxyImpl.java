@@ -337,6 +337,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     return pathAttributes;
   }
 
+  @Override
+  public String getFileContainerName(Object authenticatedToken, String fileContainerId)
+      throws HpcException {
+    return fileContainerId;
+  }
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -606,31 +612,30 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             },
             s3Executor);
 
-    try {
-      if (progressListener == null) {
-        // Download synchronously.
+    if (progressListener == null) {
+      // Download synchronously.
+      try {
         HpcDataTransferDownloadReport downloadReport = s3DataStreamingFuture.get();
         if (downloadReport.getStatus().equals(HpcDataTransferDownloadStatus.FAILED)) {
           throw new HpcException(
               "[S3] Failed to stream data to destination URL: " + downloadReport.getMessage(),
               HpcErrorType.DATA_TRANSFER_ERROR);
         }
-      } else {
-        // Download Asynchronously.
-        s3DataStreamingFuture.thenAccept(
-            downloadReport -> {
-              if (downloadReport.getStatus().equals(HpcDataTransferDownloadStatus.FAILED)) {
-                progressListener.transferFailed(downloadReport.getMessage());
-              } else {
-                progressListener.transferCompleted(downloadReport.getBytesTransferred());
-              }
-            });
+      } catch (InterruptedException | ExecutionException e) {
+        throw new HpcException(
+            "[S3] Failed to stream data to destination URL: " + e.getMessage(),
+            HpcErrorType.DATA_TRANSFER_ERROR);
       }
-
-    } catch (InterruptedException | ExecutionException e) {
-      throw new HpcException(
-          "[S3] Failed to stream data to destination URL: " + e.getMessage(),
-          HpcErrorType.DATA_TRANSFER_ERROR);
+    } else {
+      // Download Asynchronously.
+      s3DataStreamingFuture.thenAccept(
+          downloadReport -> {
+            if (downloadReport.getStatus().equals(HpcDataTransferDownloadStatus.FAILED)) {
+              progressListener.transferFailed(downloadReport.getMessage());
+            } else {
+              progressListener.transferCompleted(downloadReport.getBytesTransferred());
+            }
+          });
     }
 
     return String.valueOf(s3DataStreamingFuture.hashCode());
