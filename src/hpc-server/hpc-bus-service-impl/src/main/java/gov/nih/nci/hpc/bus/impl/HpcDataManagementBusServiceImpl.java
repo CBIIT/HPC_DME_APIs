@@ -2371,7 +2371,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
         totalDownloadSize += item.getSize() != null ? item.getSize() : 0;
         totalBytesTransferred +=
-            item.getPercentComplete() != null
+            item.getPercentComplete() != null && item.getSize() != null
                 ? ((double) item.getPercentComplete() / 100) * item.getSize()
                 : 0;
       }
