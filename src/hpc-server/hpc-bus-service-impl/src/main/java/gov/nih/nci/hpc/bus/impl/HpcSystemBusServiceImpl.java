@@ -1283,7 +1283,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               dataTransferType, configurationId, fileLocation.getFileContainerId()));
 
     } catch (HpcException e) {
-      logger.error("Failed to get file container name: " + fileLocation.getFileContainerId());
+      logger.error("Failed to get file container name: " + fileLocation.getFileContainerId(), e);
     }
   }
 

@@ -209,10 +209,8 @@ public interface HpcDataTransferProxy {
    * @param fileContainerId The file container ID.
    * @throws HpcException on data transfer system failure.
    */
-  public default String getFileContainerName(Object authenticatedToken, String fileContainerId)
-      throws HpcException {
-    throw new HpcException("getFileContainerName() not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
+  public String getFileContainerName(Object authenticatedToken, String fileContainerId)
+      throws HpcException;
 
   /**
    * Calculate data transfer destination to deposit a data object.
