@@ -213,19 +213,22 @@ public class HpcDiceTestRunner {
       logger.error("Failed to run automated test" + e.getMessage());
     }
 
-    // Notify admin if the test failed.
-    if (testFailed) {
-      String report = "";
-      try {
+    // Notify admin of test results
+    String report = "";
+    String resultStr = "Failed";
+    if(!testFailed) {
+    	resultStr = "Passed";
+    }
+    try {
         report = FileUtils.readFileToString(reportFile, Charset.defaultCharset());
 
-      } catch (Exception e) {
+    } catch (Exception e) {
         logger.error("Failed to read report file" + e);
-      }
+   }
 
-      mailSender.sendTestReport(reportFile.getName(), report, reportEmailAddress);
-    }
+    mailSender.sendTestReport(resultStr, reportFile.getName(), report, reportEmailAddress);
   }
+  
 
   private static String runTest(String testName, String testScript, String testScriptBaseDir)
       throws IOException, InterruptedException {

@@ -62,14 +62,15 @@ public class HpcTestReportEmailSender
     // Methods
     //---------------------------------------------------------------------//  
     
-    public void sendTestReport(String testTitle, String testReport, String reportEmailAddress)
+    public void sendTestReport(String testResult, String testTitle, String testReport, String reportEmailAddress)
     {
+    	
         try {
              mailSender.send((mimeMessage) ->  
             	             {
             	            	 mimeMessage.setRecipient(Message.RecipientType.TO,
             	                                          new InternetAddress(reportEmailAddress));
-            	                 mimeMessage.setSubject("HPC-DM Automated Test Failed (" + testTitle + ")");
+            	                 mimeMessage.setSubject("HPC-DM Automated Test " + testResult + " (" + testTitle + ")");
             	                 mimeMessage.setText(testReport, Charset.defaultCharset().name(), "html");
             	             });
              
