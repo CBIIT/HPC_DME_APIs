@@ -207,13 +207,6 @@ public class HpcDiceTestRunner {
           runTest("User Groups", "test-user-groups", testScriptBaseDir),
           Charset.defaultCharset(),
           true);
-      
-      logger.info("Running move test...");
-      FileUtils.writeStringToFile(
-          reportFile,
-          runTest("Move", "test-move", testScriptBaseDir),
-          Charset.defaultCharset(),
-          true);
 
     } catch (Exception e) {
       testFailed = true;
