@@ -20,7 +20,7 @@ class SFCollection(SFParent):
         self.metadata["metadataEntries"] = self.get_metadata_items()
         logging.info(self.metadata)
 
-0
+
     def build_metadata(self):
         self.build_metadata_items()
         self.metadata["metadataEntries"] = self.get_metadata_items()
