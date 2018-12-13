@@ -8,12 +8,11 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import com.amazonaws.event.ProgressEvent;
+import com.amazonaws.event.ProgressListener;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
-
-import com.amazonaws.event.ProgressEvent;
-import com.amazonaws.event.ProgressListener;
 
 /**
  * HPC S3 Progress Listener.
@@ -64,12 +63,13 @@ public class HpcS3ProgressListener implements ProgressListener {
   public void progressChanged(ProgressEvent event) {
     switch (event.getEventType()) {
       case TRANSFER_COMPLETED_EVENT:
-        progressListener.transferCompleted(null);
+        progressListener.transferCompleted(event.getBytesTransferred());
         break;
 
       case TRANSFER_FAILED_EVENT:
       case TRANSFER_CANCELED_EVENT:
-        progressListener.transferFailed("S3 event - " + event.toString());
+        progressListener.transferFailed(
+            "S3 event - " + event.toString() + "Bytes transferred: " + event.getBytesTransferred());
         break;
 
       default:
