@@ -20,7 +20,7 @@ class SFCollection(SFParent):
         self.metadata["metadataEntries"] = self.get_metadata_items()
         logging.info(self.metadata)
 
-
+0
     def build_metadata(self):
         self.build_metadata_items()
         self.metadata["metadataEntries"] = self.get_metadata_items()
@@ -35,7 +35,16 @@ class SFCollection(SFParent):
 
         parent_metadata = SFParent(self.path, self.parent_types[self.type], self.tarfile).build_metadata_items()
         self.metadata["createParentCollections"] = True
-        self.metadata["parentCollectionMetadataEntries"] = parent_metadata
+
+        pathsMetadataEntry = OrderedDict()
+        pathsMetadataEntry["path"] = self.get_archive_path(self.tarfile, self.path, self.type)
+        pathsMetadataEntry["pathMetadataEntries"] = parent_metadata
+        parentCollectionBulkMetadataEntries = OrderedDict()
+        parentCollectionBulkMetadataEntries["pathsMetadataEntries"] = []
+        parentCollectionBulkMetadataEntries["pathsMetadataEntries"].append(pathsMetadataEntry)
+        self.metadata["parentCollectionBulkMetadataEntries"] = parentCollectionBulkMetadataEntries
+
+        #self.metadata["parentCollectionMetadataEntries"] = parent_metadata
 
 
 
