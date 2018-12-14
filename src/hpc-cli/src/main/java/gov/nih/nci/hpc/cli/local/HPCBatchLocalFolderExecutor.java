@@ -249,7 +249,8 @@ public class HPCBatchLocalFolderExecutor {
       long secs = (stop - start) / 1000;
       if (filesSize > 0) {
         System.out.println("Total bytes attempted: " + filesSize);
-        System.out.println("Average processing speed: " + (filesSize / secs) + " (bytes/sec)");
+        if(secs > 0)
+        	System.out.println("Average processing speed: " + (filesSize / secs) + " (bytes/sec)");
       }
     } catch (ExecutionException e) {
       logger.error(e.getMessage(), e);

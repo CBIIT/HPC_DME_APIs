@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 import gov.nih.nci.hpc.cli.util.Paths;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
@@ -120,8 +121,9 @@ public class HpcLocalDirectoryListGenerator {
 						File fileAbsolutePath = new File(file.getAbsolutePath());
 //						File fileAbsolutePath = new File(Paths.generateFileSystemResourceUri(file.getAbsolutePath()));
 						if (!fileAbsolutePath.isDirectory()) {
-							HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
-
+							HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();						
+							HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
+						    dataObject.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
 							List<HpcMetadataEntry> metadataEntries = null;
 							try {
 								metadataEntries = getMetadata(file, metadataOnly);
@@ -528,6 +530,8 @@ public class HpcLocalDirectoryListGenerator {
 		}
 
 		HpcCollectionRegistrationDTO collectionDTO = new HpcCollectionRegistrationDTO();
+		HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
+	    collectionDTO.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
 		collectionDTO.getMetadataEntries().addAll(metadataList);
 		List<HpcMetadataEntry> parentMetadataList = getParentCollectionMetadata(file, false);
 		collectionDTO.setCreateParentCollections(true);

@@ -14,6 +14,7 @@ import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
 import gov.nih.nci.hpc.cli.util.Paths;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
@@ -74,6 +75,9 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("checksum " + checksum);
     
     HpcDataObjectRegistrationRequestDTO dataObject = new HpcDataObjectRegistrationRequestDTO();
+    HpcBulkMetadataEntries bulkMetadataEntries = new HpcBulkMetadataEntries();
+    dataObject.setParentCollectionsBulkMetadataEntries(bulkMetadataEntries);
+    
     this.logFile = logFile;
     this.recordFile = recordFile;
 
