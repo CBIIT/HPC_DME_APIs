@@ -86,7 +86,13 @@ public class HpcS3ProgressListener implements ProgressListener {
   public void progressChanged(ProgressEvent event) {
     if (event.getBytesTransferred() > 0) {
       bytesTransferred += event.getBytesTransferred();
-      if (bytesTransferred - bytesTransferredLogged >= TRANSFER_LOGGING_RATE) {
+      if (bytesTransferredLogged == 0) {
+        bytesTransferredLogged = bytesTransferred;
+        logger.info(
+            "S3 transfer [{}] started. {} bytes transferred so far",
+            transferSourceDestination,
+            bytesTransferredLogged);
+      } else if (bytesTransferred - bytesTransferredLogged >= TRANSFER_LOGGING_RATE) {
         bytesTransferredLogged = bytesTransferred;
         logger.info(
             "S3 transfer [{}] in progress. {}MB transferred so far",
@@ -97,11 +103,15 @@ public class HpcS3ProgressListener implements ProgressListener {
 
     switch (event.getEventType()) {
       case TRANSFER_COMPLETED_EVENT:
+        logger.info(
+            "S3 transfer [{}] completed. {}MB transferred", event.getBytesTransferred() / MB);
         progressListener.transferCompleted(event.getBytesTransferred());
         break;
 
       case TRANSFER_FAILED_EVENT:
       case TRANSFER_CANCELED_EVENT:
+        logger.info(
+            "S3 transfer [{}] failed. {}MB transferred", bytesTransferred / MB);
         progressListener.transferFailed("S3 event - " + event.toString());
         break;
 
