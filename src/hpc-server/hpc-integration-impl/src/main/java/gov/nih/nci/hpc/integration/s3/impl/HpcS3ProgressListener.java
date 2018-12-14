@@ -104,14 +104,19 @@ public class HpcS3ProgressListener implements ProgressListener {
     switch (event.getEventType()) {
       case TRANSFER_COMPLETED_EVENT:
         logger.info(
-            "S3 transfer [{}] completed. {}MB transferred", event.getBytesTransferred() / MB);
-        progressListener.transferCompleted(event.getBytesTransferred());
+            "S3 transfer [{}] completed. {}MB transferred",
+            transferSourceDestination,
+            bytesTransferred / MB);
+        progressListener.transferCompleted(bytesTransferred);
+        event.getBytes();
         break;
 
       case TRANSFER_FAILED_EVENT:
       case TRANSFER_CANCELED_EVENT:
         logger.info(
-            "S3 transfer [{}] failed. {}MB transferred", bytesTransferred / MB);
+            "S3 transfer [{}] failed. {}MB transferred",
+            transferSourceDestination,
+            bytesTransferred / MB);
         progressListener.transferFailed("S3 event - " + event.toString());
         break;
 
