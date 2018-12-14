@@ -37,7 +37,7 @@ class SFCollection(SFParent):
         self.metadata["createParentCollections"] = True
 
         pathsMetadataEntry = OrderedDict()
-        pathsMetadataEntry["path"] = self.get_archive_path(self.tarfile, self.path, self.type)
+        pathsMetadataEntry["path"] = self.get_archive_path(self.tarfile, self.path, self.parent_types[self.type])
         pathsMetadataEntry["pathMetadataEntries"] = parent_metadata
         parentCollectionBulkMetadataEntries = OrderedDict()
         parentCollectionBulkMetadataEntries["pathsMetadataEntries"] = []
