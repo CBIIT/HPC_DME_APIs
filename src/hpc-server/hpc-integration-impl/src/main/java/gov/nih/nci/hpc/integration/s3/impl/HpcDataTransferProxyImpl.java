@@ -385,7 +385,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         dataTransferCompleted = Calendar.getInstance();
       } else {
         // Upload asynchronously.
-        s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener));
+        s3Upload.addProgressListener(
+            new HpcS3ProgressListener(
+                progressListener,
+                "upload to"
+                    + archiveDestinationLocation.getFileContainerId()
+                    + ":"
+                    + archiveDestinationLocation.getFileId()));
       }
 
     } catch (AmazonClientException ace) {
@@ -521,7 +527,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         s3Download.waitForCompletion();
       } else {
         // Download asynchronously.
-        s3Download.addProgressListener(new HpcS3ProgressListener(progressListener));
+        s3Download.addProgressListener(
+            new HpcS3ProgressListener(
+                progressListener,
+                "download from "
+                    + archiveLocation.getFileContainerId()
+                    + ":"
+                    + archiveLocation.getFileId()));
       }
 
     } catch (AmazonClientException ace) {
@@ -539,7 +551,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   /**
-   * Download a data object to AWS S3 destination. 
+   * Download a data object to AWS S3 destination.
    *
    * @param authenticatedToken An authenticated token.
    * @param archiveLocation The data object archive location.
@@ -629,8 +641,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             sourceInputStream,
             metadata);
 
+    // Set the read limit on the request to avoid reset exceptions.
+    try {
+      request.getRequestClientOptions().setReadLimit(Math.toIntExact(fileSize + 1));
+    } catch (ArithmeticException e) {
+      request.getRequestClientOptions().setReadLimit(Integer.MAX_VALUE);
+    }
+
     // Upload the data.
     Upload s3Upload = null;
+
     try {
       s3Upload = s3Connection.getTransferManager(s3AccountAuthenticatedToken).upload(request);
       if (progressListener == null) {
@@ -638,7 +658,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         s3Upload.waitForUploadResult();
       } else {
         // Upload asynchronously.
-        s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener));
+        String sourceDestinationLogMessage =
+            "download to "
+                + destinationLocation.getFileContainerId()
+                + ":"
+                + destinationLocation.getFileId();
+
+        s3Upload.addProgressListener(
+            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
+        logger.info(
+            "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
+            sourceDestinationLogMessage,
+            fileSize, request.getRequestClientOptions().getReadLimit());
       }
 
     } catch (AmazonClientException ace) {
@@ -650,7 +681,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     } catch (InterruptedException ie) {
       Thread.currentThread().interrupt();
     }
-    
+
     return String.valueOf(s3Upload.hashCode());
   }
 
