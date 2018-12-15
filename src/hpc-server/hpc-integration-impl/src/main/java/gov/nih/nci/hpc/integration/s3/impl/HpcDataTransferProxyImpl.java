@@ -581,18 +581,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     // Generate a download pre-signed URL for the requested data file from the Cleversafe archive, and then open
     // a URL connection to it.
-    InputStream sourceInputStream = null;
+    HttpURLConnection sourceConnection = null;
     try {
       URL sourceURL =
           new URL(
               generateDownloadRequestURL(
                   authenticatedToken, archiveLocation, S3_STREAM_EXPIRATION));
-      HttpURLConnection sourceConnection = (HttpURLConnection) sourceURL.openConnection();
-      sourceInputStream = sourceConnection.getInputStream();
+      sourceConnection = (HttpURLConnection) sourceURL.openConnection();
 
     } catch (IOException e) {
       throw new HpcException(
-          "Failed to create download URL from archive: " + e.getMessage(),
+          "Failed to create download URL connection archive: " + e.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR,
           e);
     }
@@ -601,14 +600,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     if (s3Destination.getAccount() != null) {
       return downloadDataObject(
           s3AccountAuthenticatedToken,
-          sourceInputStream,
+          sourceConnection,
           s3Destination.getDestinationLocation(),
           getPathAttributes(authenticatedToken, archiveLocation, true).getSize(),
           progressListener);
 
     } else {
       return downloadDataObject(
-          sourceInputStream, s3Destination.getDestinationURL(), progressListener);
+          sourceConnection, s3Destination.getDestinationURL(), progressListener);
     }
   }
 
@@ -616,7 +615,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * Download a data object to a user's AWS S3 by using AWS transfer Manager.
    *
    * @param s3AccountAuthenticatedToken An authenticated token to the user's AWS S3 account.
-   * @param sourceInputStream The source input stream.
+   * @param sourceConnection The source URL connection.
    * @param destinationLocation The destination location.
    * @param fileSize The size of the file to download.
    * @param progressListener (Optional) a progress listener for async notification on transfer
@@ -626,12 +625,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    */
   private String downloadDataObject(
       Object s3AccountAuthenticatedToken,
-      InputStream sourceInputStream,
+      HttpURLConnection sourceConnection,
       HpcFileLocation destinationLocation,
       long fileSize,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Create a S3 upload request.
+    InputStream sourceInputStream = null;
+    try {
+      sourceInputStream = sourceConnection.getInputStream();
+    } catch (IOException e) {
+      throw new HpcException(
+          "[S3] Failed to open URL input stream to download object",
+          HpcErrorType.DATA_TRANSFER_ERROR,
+          e);
+    }
+
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(fileSize);
     PutObjectRequest request =
@@ -664,12 +673,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 + ":"
                 + destinationLocation.getFileId();
 
-        s3Upload.addProgressListener(
-            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
+        // Attach a progress listener.
+        HpcS3ProgressListener s3ProgressListener = new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage);
+        s3ProgressListener.setSourceConnection(sourceConnection);
+        s3Upload.addProgressListener(s3ProgressListener);
+
         logger.info(
             "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
             sourceDestinationLogMessage,
-            fileSize, request.getRequestClientOptions().getReadLimit());
+            fileSize,
+            request.getRequestClientOptions().getReadLimit());
       }
 
     } catch (AmazonClientException ace) {
@@ -688,7 +701,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   /**
    * Download a data object by streaming from Cleversafe URL to user AWS S3 URL.
    *
-   * @param sourceInputStream The source input stream.
+   * @param sourceConnection The source URL connection.
    * @param destinationURL The destination URL (string).
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
@@ -696,7 +709,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @throws HpcException on data transfer failure.
    */
   private String downloadDataObject(
-      InputStream sourceInputStream,
+      HttpURLConnection sourceConnection,
       String destinationURL,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
@@ -718,7 +731,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
                 // Copy data from source to destination.
                 downloadReport.setBytesTransferred(
-                    IOUtils.copyLarge(sourceInputStream, destinationConnection.getOutputStream()));
+                    IOUtils.copyLarge(sourceConnection.getInputStream(), destinationConnection.getOutputStream()));
 
                 // Confirm the upload to destination URL is successful.
                 int destinationResponseCode = destinationConnection.getResponseCode();
