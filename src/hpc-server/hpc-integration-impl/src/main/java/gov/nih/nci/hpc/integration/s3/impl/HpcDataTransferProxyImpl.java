@@ -641,6 +641,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             sourceInputStream,
             metadata);
 
+    // Set the read limit on the request to avoid reset exceptions.
+    try {
+      request.getRequestClientOptions().setReadLimit(Math.toIntExact(fileSize + 1));
+    } catch (ArithmeticException e) {
+      request.getRequestClientOptions().setReadLimit(Integer.MAX_VALUE);
+    }
+
     // Upload the data.
     Upload s3Upload = null;
 
@@ -651,13 +658,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         s3Upload.waitForUploadResult();
       } else {
         // Upload asynchronously.
+        String sourceDestinationLogMessage =
+            "download to "
+                + destinationLocation.getFileContainerId()
+                + ":"
+                + destinationLocation.getFileId();
+
         s3Upload.addProgressListener(
-            new HpcS3ProgressListener(
-                progressListener,
-                "download to "
-                    + destinationLocation.getFileContainerId()
-                    + ":"
-                    + destinationLocation.getFileId()));
+            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
+        logger.info(
+            "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
+            sourceDestinationLogMessage,
+            fileSize, request.getRequestClientOptions().getReadLimit());
       }
 
     } catch (AmazonClientException ace) {
