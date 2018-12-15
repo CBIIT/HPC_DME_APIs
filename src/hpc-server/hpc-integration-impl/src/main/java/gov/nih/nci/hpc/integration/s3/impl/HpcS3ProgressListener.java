@@ -8,6 +8,8 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.amazonaws.event.ProgressEvent;
@@ -38,11 +40,14 @@ public class HpcS3ProgressListener implements ProgressListener {
   HpcDataTransferProgressListener progressListener = null;
 
   // Bytes transferred and logged.
-  long bytesTransferred = 0;
+  AtomicLong bytesTransferred = new AtomicLong(0);
   long bytesTransferredLogged = 0;
 
   // Transfer source and/or destination (for logging purposed)
   String transferSourceDestination = null;
+
+  // Keep track if we reported a failure.
+  AtomicBoolean transferFailedReported = new AtomicBoolean(false);
 
   // Logger
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -85,15 +90,15 @@ public class HpcS3ProgressListener implements ProgressListener {
   @Override
   public void progressChanged(ProgressEvent event) {
     if (event.getBytesTransferred() > 0) {
-      bytesTransferred += event.getBytesTransferred();
+      bytesTransferred.getAndAdd(event.getBytesTransferred());
       if (bytesTransferredLogged == 0) {
-        bytesTransferredLogged = bytesTransferred;
+        bytesTransferredLogged = bytesTransferred.get();
         logger.info(
             "S3 transfer [{}] started. {} bytes transferred so far",
             transferSourceDestination,
             bytesTransferredLogged);
-      } else if (bytesTransferred - bytesTransferredLogged >= TRANSFER_LOGGING_RATE) {
-        bytesTransferredLogged = bytesTransferred;
+      } else if (bytesTransferred.get() - bytesTransferredLogged >= TRANSFER_LOGGING_RATE) {
+        bytesTransferredLogged = bytesTransferred.get();
         logger.info(
             "S3 transfer [{}] in progress. {}MB transferred so far",
             transferSourceDestination,
@@ -104,20 +109,23 @@ public class HpcS3ProgressListener implements ProgressListener {
     switch (event.getEventType()) {
       case TRANSFER_COMPLETED_EVENT:
         logger.info(
-            "S3 transfer [{}] completed. {}MB transferred",
+            "S3 transfer [{}] completed. {} bytes transferred",
             transferSourceDestination,
-            bytesTransferred / MB);
-        progressListener.transferCompleted(bytesTransferred);
-        event.getBytes();
+            bytesTransferred);
+        progressListener.transferCompleted(bytesTransferred.get());
         break;
 
       case TRANSFER_FAILED_EVENT:
       case TRANSFER_CANCELED_EVENT:
+        boolean invokeTransferFailed = transferFailedReported.getAndSet(true);
         logger.info(
-            "S3 transfer [{}] failed. {}MB transferred",
+            "S3 transfer [{}] failed. {}MB transferred. progress event = {}",
             transferSourceDestination,
-            bytesTransferred / MB);
-        progressListener.transferFailed("S3 event - " + event.toString());
+            bytesTransferred.get() / MB,
+            event.getEventType());
+        if (invokeTransferFailed) {
+          progressListener.transferFailed("S3 event - " + event.toString());
+        }
         break;
 
       default:
