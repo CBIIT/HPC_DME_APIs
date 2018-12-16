@@ -70,11 +70,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // ---------------------------------------------------------------------//
 
   // The expiration of streaming data request from Cleversafe to AWS S3.
-  private static int S3_STREAM_EXPIRATION = 96;
+  private static final int S3_STREAM_EXPIRATION = 96;
 
   // AWS Error XML XPATH
-  private static String ERROR_CODE_XPATH = "/Error/Code";
-  private static String ERROR_MESSAGE_XPATH = "/Error/Message";
+  private static final String ERROR_CODE_XPATH = "/Error/Code";
+  private static final String ERROR_MESSAGE_XPATH = "/Error/Message";
 
   // ---------------------------------------------------------------------//
   // Instance members

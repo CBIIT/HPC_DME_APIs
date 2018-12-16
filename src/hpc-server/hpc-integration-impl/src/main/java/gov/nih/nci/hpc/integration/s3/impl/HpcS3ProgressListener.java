@@ -28,9 +28,9 @@ public class HpcS3ProgressListener implements ProgressListener {
   // Constants
   //---------------------------------------------------------------------//
 
-  // The transfer progress logging rate (in bytes). Log transfer progress every 10MB.
-  private static long TRANSFER_LOGGING_RATE = 1024 * 1024 * 10;
-  private static long MB = 1024 * 1024;
+  // The transfer progress logging rate (in bytes). Log transfer progress every 100MB.
+  private static final long TRANSFER_LOGGING_RATE = 1024L * 1024 * 100;
+  private static final long MB = 1024L * 1024;
 
   //---------------------------------------------------------------------//
   // Instance members
