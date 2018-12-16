@@ -616,7 +616,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       long fileSize,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
-    // Create a S3 upload request.
+    // Create source URL and open a connection to it.
     InputStream sourceInputStream = null;
     URL srcURL = null;
     try {
@@ -630,6 +630,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           e);
     }
 
+    // Create a S3 upload request.
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(fileSize);
     PutObjectRequest request =
@@ -665,7 +666,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         // Attach a progress listener.
         HpcS3ProgressListener s3ProgressListener =
             new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage);
-        s3ProgressListener.setSourceConnection(srcURL);
+        s3ProgressListener.setSourceConnection(sourceInputStream);
         s3Upload.addProgressListener(s3ProgressListener);
 
         logger.info(

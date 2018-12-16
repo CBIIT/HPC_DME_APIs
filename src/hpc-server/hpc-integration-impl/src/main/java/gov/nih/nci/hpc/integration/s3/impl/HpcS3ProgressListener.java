@@ -8,7 +8,7 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
-import java.net.URL;
+import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
@@ -50,8 +50,8 @@ public class HpcS3ProgressListener implements ProgressListener {
   // Keep track if we reported a failure.
   AtomicBoolean transferFailedReported = new AtomicBoolean(false);
 
-  // The source URL connection (when we transfer from URL).
-  URL sourceURL = null;
+  // The source input stream (when we transfer from URL).
+  InputStream sourceInputStream = null;
 
   // Logger
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -143,7 +143,7 @@ public class HpcS3ProgressListener implements ProgressListener {
    *
    * @param sourceConnection The source URL connection.
    */
-  public void setSourceConnection(URL sourceURL) {
-    this.sourceURL = sourceURL;
+  public void setSourceConnection(InputStream sourceInputStream) {
+    this.sourceInputStream = sourceInputStream;
   }
 }
