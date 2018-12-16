@@ -648,10 +648,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     // Upload the data.
-    Upload s3Upload = null;
+    String taskId = null;
 
     try {
-      s3Upload = s3Connection.getTransferManager(s3AccountAuthenticatedToken).upload(request);
+      final Upload s3Upload =
+          s3Connection.getTransferManager(s3AccountAuthenticatedToken).upload(request);
+      taskId = String.valueOf(s3Upload.hashCode());
+
       if (progressListener == null) {
         // Upload synchronously.
         s3Upload.waitForUploadResult();
@@ -664,16 +667,33 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 + destinationLocation.getFileId();
 
         // Attach a progress listener.
-        HpcS3ProgressListener s3ProgressListener =
-            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage);
-        s3ProgressListener.setSourceConnection(sourceInputStream);
-        s3Upload.addProgressListener(s3ProgressListener);
+        s3Upload.addProgressListener(
+            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
         logger.info(
             "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
             sourceDestinationLogMessage,
             fileSize,
             request.getRequestClientOptions().getReadLimit());
+
+        final InputStream sourceInputStreamRef = sourceInputStream;
+        CompletableFuture.runAsync(
+                () -> {
+                  try {
+                    s3Upload.waitForUploadResult();
+                  } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                  }
+                },
+                s3Executor)
+            .thenAccept(
+                s -> {
+                  try {
+                    sourceInputStreamRef.close();
+                  } catch (IOException ioe) {
+                    logger.error("Failed to close input stream of URL: {}", sourceURL);
+                  }
+                });
       }
 
     } catch (AmazonClientException ace) {
@@ -686,7 +706,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Thread.currentThread().interrupt();
     }
 
-    return String.valueOf(s3Upload.hashCode());
+    return taskId;
   }
 
   /**
