@@ -117,15 +117,15 @@ public class HpcS3ProgressListener implements ProgressListener {
 
       case TRANSFER_FAILED_EVENT:
       case TRANSFER_CANCELED_EVENT:
-        boolean invokeTransferFailed = transferFailedReported.getAndSet(true);
+        if (!transferFailedReported.getAndSet(true)) {
+          progressListener.transferFailed("S3 event - " + event.toString());
+        }
+
         logger.info(
             "S3 transfer [{}] failed. {}MB transferred. progress event = {}",
             transferSourceDestination,
             bytesTransferred.get() / MB,
             event.getEventType());
-        if (invokeTransferFailed) {
-          progressListener.transferFailed("S3 event - " + event.toString());
-        }
         break;
 
       default:

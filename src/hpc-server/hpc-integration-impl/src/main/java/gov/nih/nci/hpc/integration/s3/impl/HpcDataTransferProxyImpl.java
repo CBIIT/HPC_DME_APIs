@@ -179,6 +179,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           downloadRequest.getFileDestination(),
           progressListener);
     } else {
+      // This is a download to AWS S3 destination.
       return downloadDataObject(
           authenticatedToken,
           downloadRequest.getArchiveLocation(),
@@ -604,8 +605,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param sourceURL The download source URL.
    * @param destinationLocation The destination location.
    * @param fileSize The size of the file to download.
-   * @param progressListener (Optional) a progress listener for async notification on transfer
-   *     completion.
+   * @param progressListener A progress listener for async notification on transfer completion.
    * @return A data transfer request Id.
    * @throws HpcException on data transfer failure.
    */
@@ -616,97 +616,68 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       long fileSize,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
-    // Create source URL and open a connection to it.
-    InputStream sourceInputStream = null;
-    URL srcURL = null;
-    try {
-      srcURL = new URL(sourceURL);
-      sourceInputStream = srcURL.openStream();
-
-    } catch (IOException e) {
+    if (progressListener == null) {
       throw new HpcException(
-          "[S3] Failed to open URL input stream to download object",
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          e);
+          "[S3] No progress listener provided for a download to AWS S3 destination",
+          HpcErrorType.UNAUTHORIZED_REQUEST);
     }
 
-    // Create a S3 upload request.
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(fileSize);
-    PutObjectRequest request =
-        new PutObjectRequest(
-            destinationLocation.getFileContainerId(),
-            destinationLocation.getFileId(),
-            sourceInputStream,
-            metadata);
-
-    // Set the read limit on the request to avoid reset exceptions.
-    try {
-      request.getRequestClientOptions().setReadLimit(Math.toIntExact(fileSize + 1));
-    } catch (ArithmeticException e) {
-      request.getRequestClientOptions().setReadLimit(Integer.MAX_VALUE);
-    }
-
-    // Upload the data.
-    String taskId = null;
-
-    try {
-      final Upload s3Upload =
-          s3Connection.getTransferManager(s3AccountAuthenticatedToken).upload(request);
-      taskId = String.valueOf(s3Upload.hashCode());
-
-      if (progressListener == null) {
-        // Upload synchronously.
-        s3Upload.waitForUploadResult();
-      } else {
-        // Upload asynchronously.
-        String sourceDestinationLogMessage =
-            "download to "
-                + destinationLocation.getFileContainerId()
-                + ":"
-                + destinationLocation.getFileId();
-
-        // Attach a progress listener.
-        s3Upload.addProgressListener(
-            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
-
-        logger.info(
-            "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
-            sourceDestinationLogMessage,
-            fileSize,
-            request.getRequestClientOptions().getReadLimit());
-
-        final InputStream sourceInputStreamRef = sourceInputStream;
+    CompletableFuture<Void> s3TransferManagerDownloadFuture =
         CompletableFuture.runAsync(
-                () -> {
-                  try {
-                    s3Upload.waitForUploadResult();
-                  } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                  }
-                },
-                s3Executor)
-            .thenAccept(
-                s -> {
-                  try {
-                    sourceInputStreamRef.close();
-                  } catch (IOException ioe) {
-                    logger.error("Failed to close input stream of URL: {}", sourceURL);
-                  }
-                });
-      }
+            () -> {
+              try {
+                // Create source URL and open a connection to it.
+                InputStream sourceInputStream = new URL(sourceURL).openStream();
 
-    } catch (AmazonClientException ace) {
-      throw new HpcException(
-          "[S3] Failed to download file to user's AWS S3 bucket.",
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          ace);
+                // Create a S3 upload request.
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(fileSize);
+                PutObjectRequest request =
+                    new PutObjectRequest(
+                        destinationLocation.getFileContainerId(),
+                        destinationLocation.getFileId(),
+                        sourceInputStream,
+                        metadata);
 
-    } catch (InterruptedException ie) {
-      Thread.currentThread().interrupt();
-    }
+                // Set the read limit on the request to avoid AWSreset exceptions.
+                request.getRequestClientOptions().setReadLimit(getReadLimit(fileSize));
 
-    return taskId;
+                // Upload asynchronously. AWS transfer manager will perform the upload in its own managed thread.
+                Upload s3Upload =
+                    s3Connection.getTransferManager(s3AccountAuthenticatedToken).upload(request);
+
+                // Attach a progress listener.
+                String sourceDestinationLogMessage =
+                    "download to "
+                        + destinationLocation.getFileContainerId()
+                        + ":"
+                        + destinationLocation.getFileId();
+                s3Upload.addProgressListener(
+                    new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
+
+                logger.info(
+                    "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
+                    sourceDestinationLogMessage,
+                    fileSize,
+                    request.getRequestClientOptions().getReadLimit());
+                
+                // Wait for the result. This ensures the input stream to the URL remains opened and connected until the download is complete.
+                // Note that this wait for AWS transfer manager completion is done in a separate thread (from s3Executor pool), so callers to 
+                // the API don't wait.
+                s3Upload.waitForUploadResult();
+
+              } catch (AmazonClientException | HpcException | IOException e) {
+                logger.error(
+                    "[S3] Failed to downloadload to AWS S3 destination: " + e.getMessage(), e);
+                progressListener.transferFailed(e.getMessage());
+
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+              }
+            },
+            s3Executor);
+
+    return String.valueOf(s3TransferManagerDownloadFuture.hashCode());
   }
 
   /**
@@ -826,5 +797,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     return "";
+  }
+
+  /**
+   * Get buffer read limit for a given file size
+   *
+   * @param fileSize The file size.
+   * @return read limit
+   */
+  private int getReadLimit(long fileSize) {
+    try {
+      return Math.toIntExact(fileSize + 1);
+
+    } catch (ArithmeticException e) {
+      return Integer.MAX_VALUE;
+    }
   }
 }
