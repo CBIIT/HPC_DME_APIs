@@ -8,7 +8,7 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
-import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
@@ -49,9 +49,9 @@ public class HpcS3ProgressListener implements ProgressListener {
 
   // Keep track if we reported a failure.
   AtomicBoolean transferFailedReported = new AtomicBoolean(false);
-  
+
   // The source URL connection (when we transfer from URL).
-  HttpURLConnection sourceConnection = null;
+  URL sourceURL = null;
 
   // Logger
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -117,11 +117,6 @@ public class HpcS3ProgressListener implements ProgressListener {
             transferSourceDestination,
             bytesTransferred);
         progressListener.transferCompleted(bytesTransferred.get());
-        
-        // If we transfer from a URL. Disconnect the connection.
-        if(sourceConnection != null) {
-          sourceConnection.disconnect();
-        }
         break;
 
       case TRANSFER_FAILED_EVENT:
@@ -134,11 +129,6 @@ public class HpcS3ProgressListener implements ProgressListener {
             event.getEventType());
         if (invokeTransferFailed) {
           progressListener.transferFailed("S3 event - " + event.toString());
-          
-          // If we transfer from a URL. Disconnect the connection.
-          if(sourceConnection != null) {
-            sourceConnection.disconnect();
-          }
         }
         break;
 
@@ -146,14 +136,14 @@ public class HpcS3ProgressListener implements ProgressListener {
         break;
     }
   }
-  
+
   /**
-   * Set the source URL connection. The sole purpose of this method is to ensure the URL connection 
+   * Set the source URL connection. The sole purpose of this method is to ensure the URL connection
    * stays open for the duration of the download. Once it's done, we'll close that connection
    *
    * @param sourceConnection The source URL connection.
    */
-  public void setSourceConnection(HttpURLConnection sourceConnection) {
-    this.sourceConnection = sourceConnection;
+  public void setSourceConnection(URL sourceURL) {
+    this.sourceURL = sourceURL;
   }
 }
