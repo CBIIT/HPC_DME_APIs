@@ -579,35 +579,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Generate a download pre-signed URL for the requested data file from the Cleversafe archive, and then open
-    // a URL connection to it.
-    HttpURLConnection sourceConnection = null;
-    try {
-      URL sourceURL =
-          new URL(
-              generateDownloadRequestURL(
-                  authenticatedToken, archiveLocation, S3_STREAM_EXPIRATION));
-      sourceConnection = (HttpURLConnection) sourceURL.openConnection();
-
-    } catch (IOException e) {
-      throw new HpcException(
-          "Failed to create download URL connection archive: " + e.getMessage(),
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          e);
-    }
+    // Generate a download pre-signed URL for the requested data file from the Cleversafe archive.
+    String sourceURL =
+        generateDownloadRequestURL(authenticatedToken, archiveLocation, S3_STREAM_EXPIRATION);
 
     // If S3 account is provided, we use AWS transfer manager to download the file, otherwise we stream to destination URL.
     if (s3Destination.getAccount() != null) {
       return downloadDataObject(
           s3AccountAuthenticatedToken,
-          sourceConnection,
+          sourceURL,
           s3Destination.getDestinationLocation(),
           getPathAttributes(authenticatedToken, archiveLocation, true).getSize(),
           progressListener);
 
     } else {
-      return downloadDataObject(
-          sourceConnection, s3Destination.getDestinationURL(), progressListener);
+      return downloadDataObject(sourceURL, s3Destination.getDestinationURL(), progressListener);
     }
   }
 
@@ -615,7 +601,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * Download a data object to a user's AWS S3 by using AWS transfer Manager.
    *
    * @param s3AccountAuthenticatedToken An authenticated token to the user's AWS S3 account.
-   * @param sourceConnection The source URL connection.
+   * @param sourceURL The download source URL.
    * @param destinationLocation The destination location.
    * @param fileSize The size of the file to download.
    * @param progressListener (Optional) a progress listener for async notification on transfer
@@ -625,15 +611,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    */
   private String downloadDataObject(
       Object s3AccountAuthenticatedToken,
-      HttpURLConnection sourceConnection,
+      String sourceURL,
       HpcFileLocation destinationLocation,
       long fileSize,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Create a S3 upload request.
     InputStream sourceInputStream = null;
+    URL srcURL = null;
     try {
-      sourceInputStream = sourceConnection.getInputStream();
+      srcURL = new URL(sourceURL);
+      sourceInputStream = srcURL.openStream();
+
     } catch (IOException e) {
       throw new HpcException(
           "[S3] Failed to open URL input stream to download object",
@@ -674,8 +663,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 + destinationLocation.getFileId();
 
         // Attach a progress listener.
-        HpcS3ProgressListener s3ProgressListener = new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage);
-        s3ProgressListener.setSourceConnection(sourceConnection);
+        HpcS3ProgressListener s3ProgressListener =
+            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage);
+        s3ProgressListener.setSourceConnection(srcURL);
         s3Upload.addProgressListener(s3ProgressListener);
 
         logger.info(
@@ -701,17 +691,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   /**
    * Download a data object by streaming from Cleversafe URL to user AWS S3 URL.
    *
-   * @param sourceConnection The source URL connection.
-   * @param destinationURL The destination URL (string).
+   * @param sourceURL The source URL.
+   * @param destinationURL The destination URL.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
    * @return A data transfer request Id.
    * @throws HpcException on data transfer failure.
    */
   private String downloadDataObject(
-      HttpURLConnection sourceConnection,
-      String destinationURL,
-      HpcDataTransferProgressListener progressListener)
+      String sourceURL, String destinationURL, HpcDataTransferProgressListener progressListener)
       throws HpcException {
     CompletableFuture<HpcDataTransferDownloadReport> s3DataStreamingFuture =
         CompletableFuture.supplyAsync(
@@ -720,10 +708,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
               downloadReport.setStatus(HpcDataTransferDownloadStatus.COMPLETED);
 
               try {
-                // Generate an source/destination URLs.
+                // Create source/destination URLs.
+                URL srcURL = new URL(sourceURL);
                 URL destURL = new URL(destinationURL);
 
                 // Open source/destination URL connections.
+                HttpURLConnection sourceConnection = (HttpURLConnection) srcURL.openConnection();
                 HttpURLConnection destinationConnection =
                     (HttpURLConnection) destURL.openConnection();
                 destinationConnection.setDoOutput(true);
@@ -731,7 +721,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
                 // Copy data from source to destination.
                 downloadReport.setBytesTransferred(
-                    IOUtils.copyLarge(sourceConnection.getInputStream(), destinationConnection.getOutputStream()));
+                    IOUtils.copyLarge(
+                        sourceConnection.getInputStream(),
+                        destinationConnection.getOutputStream()));
 
                 // Confirm the upload to destination URL is successful.
                 int destinationResponseCode = destinationConnection.getResponseCode();
@@ -741,6 +733,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 }
 
                 // Close the URL connections.
+                sourceConnection.disconnect();
                 destinationConnection.disconnect();
 
               } catch (IOException e) {
