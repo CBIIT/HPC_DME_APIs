@@ -8,7 +8,6 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
-import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
@@ -49,9 +48,6 @@ public class HpcS3ProgressListener implements ProgressListener {
 
   // Keep track if we reported a failure.
   AtomicBoolean transferFailedReported = new AtomicBoolean(false);
-
-  // The source input stream (when we transfer from URL).
-  InputStream sourceInputStream = null;
 
   // Logger
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -135,15 +131,5 @@ public class HpcS3ProgressListener implements ProgressListener {
       default:
         break;
     }
-  }
-
-  /**
-   * Set the source URL connection. The sole purpose of this method is to ensure the URL connection
-   * stays open for the duration of the download. Once it's done, we'll close that connection
-   *
-   * @param sourceConnection The source URL connection.
-   */
-  public void setSourceConnection(InputStream sourceInputStream) {
-    this.sourceInputStream = sourceInputStream;
   }
 }
