@@ -284,7 +284,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			
 			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
 					this.webServerName + "/addbulk");
-			return "redirect:https://www.globus.org/file-manager?method=GET&" +
+			return "redirect:https://app.globus.org/file-manager?method=GET&" +
 	        "action=" + percentEncodedReturnURL;
 			
 		}
