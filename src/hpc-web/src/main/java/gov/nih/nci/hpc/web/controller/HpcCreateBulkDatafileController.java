@@ -281,11 +281,12 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			setCriteria(model, request, session);
 			populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
 					false);
-			final Map<String, String> qParams = new HashMap<>();
-			qParams.put("method", "GET");
-			qParams.put("action", this.webServerName.concat("/addbulk"));
-			return "redirect:https://www.globus.org/file-manager?".concat(
-        MiscUtil.generateEncodedQueryString(qParams));
+			
+			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
+					this.webServerName + "/addbulk");
+			return "redirect:https://www.globus.org/file-manager?method=GET&" +
+	        "action=" + percentEncodedReturnURL;
+			
 		}
 
 		try {
