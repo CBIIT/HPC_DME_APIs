@@ -233,7 +233,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			
 		   final String percentEncodedRequestUrl = MiscUtil.performUrlEncoding(
 		    request.getRequestURL().toString());
-		    	return "redirect:https://www.globus.org/file-manager?method=GET&" +
+		    	return "redirect:https://app.globus.org/file-manager?method=GET&" +
 		    "action=" + percentEncodedRequestUrl;
 		}
 		String uploadType = request.getParameter("uploadType");
