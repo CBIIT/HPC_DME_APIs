@@ -284,7 +284,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			final Map<String, String> qParams = new HashMap<>();
 			qParams.put("method", "GET");
 			qParams.put("action", this.webServerName.concat("/addbulk"));
-			return "redirect:https://www.globus.org/app/browse-endpoint?".concat(
+			return "redirect:https://www.globus.org/file-manager?".concat(
         MiscUtil.generateEncodedQueryString(qParams));
 		}
 
