@@ -1,0 +1,13 @@
+{
+  "s3DownloadDestination": {
+    "destinationLocation": {
+      "fileContainerId": "ccbr-sbg-1",
+      "fileId": "some_folder_name"
+    },
+    "account": {
+      "accessKey": "****",
+      "secretKey": "****",
+      "region": "us-east-2"
+    }
+  }
+}

@@ -1386,6 +1386,72 @@ function dm_download_async {
 }
 
 
+#Download to s3 bucke/description.json
+#Inputs: <archive-path> path on archive
+#        <description.json> JSON file containing dextination S3 bucket information
+function dm_download_s3 {
+
+
+    local USAGE="USAGE:dm_download_s3 <archive-path> <description.json>"
+
+    if [ "$#" -lt 2 ]
+    then
+        echo "ERROR: using dm_download_s3" >&2
+        echo "recieved $@"
+        echo "$USAGE" >&2
+        exit 1
+    fi
+
+    local SOURCE_PATH="$1"
+    local DESCRIPTION="$2"
+
+
+    item_type=$(get_type $SOURCE_PATH) || exit 1
+    if [ "$item_type" == "" ]
+    then
+        echo "ERROR: Can not find the item $SOURCE_PATH in the archive" >&2
+        exit 1
+    fi
+
+    echo "Sending request to download the $item_type $SOURCE_PATH to S3..."
+    local response_hdr=download-$item_type-response-header.tmp
+    local response_msg=download-$item_type-response-message.json.tmp
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+    curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    check_connection $response_hdr || exit 1
+
+
+    local code=$(get_http_code "$response_hdr")
+
+    if [ "$code" -ne 200 ]
+    then
+      #In this case the destination path file will contain the error code
+      print_error_message "$response_msg" "$code"  || exit 1
+    else
+      rm -f $response_hdr 2> /dev/null
+    fi
+
+    #Parse the download receipt:
+
+    message=$(get_json_value $response_msg message)
+    if [ ! -z "$message" ]
+    then
+        echo "ERROR downloading $src_path:"  >&2
+        echo "$message" >&2
+        exit 1
+    else
+        echo "Download request sent to S3."
+        task_id=$(get_json_value $response_msg taskId)
+        echo "taskID:$task_id"
+        echo "Check the full download receipt at $response_msg"
+    fi
+}
+
+
+
 
 #Get the status of asynchronousl download request 
 #Input: <taskId>  a numerical id for the download receipt
