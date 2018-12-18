@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -169,8 +170,16 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(!collections.getCollections().isEmpty() ? collections : null, true);
   }
 
+  @Deprecated
   @Override
   public Response downloadCollection(String path, HpcDownloadRequestDTO downloadRequest) {
+    // This API is deprecated and replaced by a new download API (which supports additional S3 download destination). This API should be removed in the future.
+    return downloadCollection(path, toV2(downloadRequest));
+  }
+
+  @Override
+  public Response downloadCollection(
+      String path, gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest) {
     HpcCollectionDownloadResponseDTO downloadResponse = null;
     try {
       downloadResponse =
@@ -212,7 +221,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response moveCollection(String path, String destinationPath) {
     try {
-      dataManagementBusService.movePath(toNormalizedPath(path), true, toNormalizedPath(destinationPath));
+      dataManagementBusService.movePath(
+          toNormalizedPath(path), true, toNormalizedPath(destinationPath));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -394,9 +404,46 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
   }
 
+  @Deprecated
   @Override
   public Response downloadDataObject(
       String path, HpcDownloadRequestDTO downloadRequest, MessageContext messageContext) {
+    // This API is deprecated and replaced by a new download API (which supports additional S3 download destination) and
+    // a dedicated API to generate download URL. This API should be removed in the future.
+    if (downloadRequest != null
+        && downloadRequest.getGenerateDownloadRequestURL() != null
+        && downloadRequest.getGenerateDownloadRequestURL()) {
+      if (downloadRequest.getDestination() != null
+          || downloadRequest.getDestinationOverwrite() != null) {
+        return errorResponse(
+            new HpcException(
+                "Invalid download request. Request must have a destination or generateDownloadRequestURL",
+                HpcErrorType.INVALID_REQUEST_INPUT));
+      }
+      return generateDownloadRequestURL(path);
+    }
+    return downloadDataObject(path, toV2(downloadRequest), messageContext);
+  }
+
+  @Override
+  public Response generateDownloadRequestURL(String path) {
+    HpcDataObjectDownloadResponseDTO downloadResponse = null;
+    try {
+      downloadResponse =
+          dataManagementBusService.generateDownloadRequestURL(toNormalizedPath(path));
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(downloadResponse, false);
+  }
+
+  @Override
+  public Response downloadDataObject(
+      String path,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest,
+      MessageContext messageContext) {
     HpcDataObjectDownloadResponseDTO downloadResponse = null;
     try {
       downloadResponse =
@@ -405,7 +452,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     } catch (HpcException e) {
       return errorResponse(e);
     }
-    Map<String, String> header = new HashMap<String, String>();
+
+    Map<String, String> header = new HashMap<>();
     header.put("DATA_TRANSFER_TYPE", downloadResponse.getDataTransferType());
     return downloadResponse(downloadResponse, messageContext, header);
   }
@@ -435,11 +483,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(dataObjectDeleteResponse, false);
   }
-  
+
   @Override
   public Response moveDataObject(String path, String destinationPath) {
     try {
-      dataManagementBusService.movePath(toNormalizedPath(path), false, toNormalizedPath(destinationPath));
+      dataManagementBusService.movePath(
+          toNormalizedPath(path), false, toNormalizedPath(destinationPath));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -491,8 +540,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(hpcUserPermissionDTO, true);
   }
 
+  @Deprecated
   @Override
   public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
+    return downloadDataObjects(toV2(downloadRequest));
+  }
+
+  @Override
+  public Response downloadDataObjects(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
     HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
     try {
       downloadResponse = dataManagementBusService.downloadDataObjects(downloadRequest);
@@ -559,7 +615,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       return errorResponse(e);
     }
 
-    return bulkMoveResponse.getResult() ? okResponse(bulkMoveResponse, true) : errorResponse(bulkMoveResponse);
+    return bulkMoveResponse.getResult()
+        ? okResponse(bulkMoveResponse, true)
+        : errorResponse(bulkMoveResponse);
   }
 
   //---------------------------------------------------------------------//
@@ -620,5 +678,55 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       response = okResponse(downloadResponse, false, header);
     }
     return response;
+  }
+
+  /**
+   * Convert v1 of HpcDownloadRequest to v2 of the API.
+   *
+   * @param downloadRequest download request (v1).
+   * @return The download request in v2 form.
+   */
+  private gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO toV2(
+      HpcDownloadRequestDTO downloadRequest) {
+    if (downloadRequest == null) {
+      return null;
+    }
+
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO v2DownloadRequest =
+        new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO();
+    if (downloadRequest.getDestination() != null) {
+      HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
+      globusDownloadDestination.setDestinationLocation(downloadRequest.getDestination());
+      globusDownloadDestination.setDestinationOverwrite(downloadRequest.getDestinationOverwrite());
+      v2DownloadRequest.setGlobusDownloadDestination(globusDownloadDestination);
+    }
+
+    return v2DownloadRequest;
+  }
+
+  /**
+   * Convert v1 of HpcBulkDataObjectDownloadRequestDTO to v2 of the API.
+   *
+   * @param downloadRequest download request (v1).
+   * @return The download request in v2 form.
+   */
+  private gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO toV2(
+      HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
+    if (downloadRequest == null) {
+      return null;
+    }
+
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO v2DownloadRequest =
+        new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO();
+    v2DownloadRequest.setPath(downloadRequest.getPath());
+    v2DownloadRequest.getDataObjectPaths().addAll(downloadRequest.getDataObjectPaths());
+    if (downloadRequest.getDestination() != null) {
+      HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
+      globusDownloadDestination.setDestinationLocation(downloadRequest.getDestination());
+      globusDownloadDestination.setDestinationOverwrite(downloadRequest.getDestinationOverwrite());
+      v2DownloadRequest.setGlobusDownloadDestination(globusDownloadDestination);
+    }
+
+    return v2DownloadRequest;
   }
 }

@@ -244,7 +244,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcArchive baseArchiveDestination,
-      Integer downloadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Progress listener not supported.
@@ -253,7 +252,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           "Globus data transfer doesn't support progress listener", HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    if (downloadRequest.getDestinationFile() != null) {
+    if (downloadRequest.getFileDestination() != null) {
       // This is a synchronous download request.
       String archiveFilePath =
           downloadRequest
@@ -264,7 +263,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                   baseArchiveDestination.getDirectory());
       try {
         // Copy the file to the dowmload stage area.
-        FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getDestinationFile());
+        FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getFileDestination());
       } catch (IOException e) {
         throw new HpcException(
             "Failed to stage file from file system archive: " + archiveFilePath,
@@ -272,14 +271,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             e);
       }
 
-      return String.valueOf(downloadRequest.getDestinationFile().hashCode());
+      return String.valueOf(downloadRequest.getFileDestination().hashCode());
 
     } else {
       // This is an asynchrnous download request. Submit a request to Globus to transfer the data.
       return transferData(
           globusConnection.getTransferClient(authenticatedToken),
           downloadRequest.getArchiveLocation(),
-          downloadRequest.getDestinationLocation());
+          downloadRequest.getGlobusDestination().getDestinationLocation());
     }
   }
 

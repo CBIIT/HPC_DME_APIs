@@ -230,11 +230,11 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 		else if (action != null && action.length > 0 && action[0].equals("Globus")) {
 			session.setAttribute("datafilePath", hpcDataModel.getPath());
 			session.setAttribute("basePathSelected", basePath);
-			final Map<String, String> qParams = new HashMap<>();
-			qParams.put("method", "GET");
-			qParams.put("action", request.getRequestURL().toString());
-			return "redirect:https://www.globus.org/app/browse-endpoint?".concat(
-        MiscUtil.generateEncodedQueryString(qParams));
+			
+		   final String percentEncodedRequestUrl = MiscUtil.performUrlEncoding(
+		    request.getRequestURL().toString());
+		    	return "redirect:https://app.globus.org/file-manager?method=GET&" +
+		    "action=" + percentEncodedRequestUrl;
 		}
 		String uploadType = request.getParameter("uploadType");
 

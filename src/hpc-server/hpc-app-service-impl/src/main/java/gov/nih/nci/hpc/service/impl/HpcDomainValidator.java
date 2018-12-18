@@ -8,8 +8,15 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
@@ -24,14 +31,6 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Helper class to validate domain objects.
@@ -126,8 +125,26 @@ public class HpcDomainValidator {
    * @return true if valid, false otherwise.
    */
   public static boolean isValidFileLocation(HpcFileLocation location) {
-    if (location == null || location.getFileContainerId() == null || location.getFileId() == null) {
+    if (location == null
+        || StringUtils.isEmpty(location.getFileContainerId())
+        || StringUtils.isEmpty(location.getFileId())) {
       logger.info("Invalid File Location: " + location);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Validate a file location object.
+   *
+   * @param location the object to be validated.
+   * @return true if valid, false otherwise.
+   */
+  public static boolean isValidS3DownloadAccount(HpcS3DownloadAccount s3Account) {
+    if (s3Account == null
+        || StringUtils.isEmpty(s3Account.getAccessKey())
+        || StringUtils.isEmpty(s3Account.getSecretKey())
+        || StringUtils.isEmpty(s3Account.getRegion())) {
       return false;
     }
     return true;
@@ -148,7 +165,8 @@ public class HpcDomainValidator {
       return false;
     }
     for (HpcMetadataEntry metadataEntry : metadataEntries) {
-      if (isEmpty(metadataEntry.getAttribute()) || isEmpty(metadataEntry.getValue())) {
+      if (StringUtils.isEmpty(metadataEntry.getAttribute())
+          || StringUtils.isEmpty(metadataEntry.getValue())) {
         return false;
       }
     }
@@ -304,16 +322,6 @@ public class HpcDomainValidator {
   //---------------------------------------------------------------------//
 
   /**
-   * Check if a string is empty.
-   *
-   * @param value The string to check
-   * @return true null or empty, false otherwise.
-   */
-  private static boolean isEmpty(String value) {
-    return value == null ? true : value.isEmpty();
-  }
-
-  /**
    * Check if a collection is empty.
    *
    * @param collection The collection to check.
@@ -404,19 +412,19 @@ public class HpcDomainValidator {
 
     HpcMetadataQueryAttributeMatch attribueMatch = metadataQuery.getAttributeMatch();
     if ((attribueMatch == null || attribueMatch.equals(HpcMetadataQueryAttributeMatch.EXACT))
-        && isEmpty(metadataQuery.getAttribute())) {
+        && StringUtils.isEmpty(metadataQuery.getAttribute())) {
       validationResult.setMessage("Null metadata attribute in query [" + metadataQuery + "]");
       return validationResult;
     }
     if ((attribueMatch != null && attribueMatch.equals(HpcMetadataQueryAttributeMatch.ANY))
-        && !isEmpty(metadataQuery.getAttribute())) {
+        && !StringUtils.isEmpty(metadataQuery.getAttribute())) {
       validationResult.setMessage(
           "Metadata attribute in not empty w/ match any attribute in query ["
               + metadataQuery
               + "]");
       return validationResult;
     }
-    if (isEmpty(metadataQuery.getValue())) {
+    if (StringUtils.isEmpty(metadataQuery.getValue())) {
       validationResult.setMessage("Null metadata value in query [" + metadataQuery + "]");
       return validationResult;
     }
