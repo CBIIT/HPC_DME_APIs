@@ -261,7 +261,7 @@ public class HpcMetadataValidator {
     for (String metadataAttribue : systemGeneratedMetadataAttributes) {
       if (addUpdateMetadataEntriesMap.containsKey(metadataAttribue)) {
         throw new HpcException(
-            "System generated metadata can't be set/changed: " + metadataAttribue,
+            "System generated metadata cannot be set/changed: " + metadataAttribue,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
@@ -292,7 +292,7 @@ public class HpcMetadataValidator {
           && !metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())) {
         // Metadata entry is missing, but no default is defined.
         throw new HpcException(
-            "Missing mandataory metadata: " + metadataValidationRule.getAttribute(),
+            "Missing mandatory metadata: " + metadataValidationRule.getAttribute(),
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
 

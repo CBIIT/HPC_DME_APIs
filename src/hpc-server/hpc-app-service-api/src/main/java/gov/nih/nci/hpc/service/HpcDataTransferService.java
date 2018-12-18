@@ -27,6 +27,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -70,10 +72,8 @@ public interface HpcDataTransferService {
    *
    * @param path The data object path.
    * @param archiveLocation The archive file location.
-   * @param destinationLocation The user requested file destination.
-   * @param generateDownloadRequestURL If true, S3 presigned URL will be generated to download.
-   * @param destinationOverwrite If true, the requested destination location will be overwritten if
-   *     it exists.
+   * @param globusDownloadDestination The user requested Glopbus download destination.
+   * @param s3DownloadDestination The user requested S3 download destination.
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
@@ -86,14 +86,31 @@ public interface HpcDataTransferService {
   public HpcDataObjectDownloadResponse downloadDataObject(
       String path,
       HpcFileLocation archiveLocation,
-      HpcFileLocation destinationLocation,
-      boolean generateDownloadRequestURL,
-      boolean destinationOverwrite,
+      HpcGlobusDownloadDestination globusDownloadDestination,
+      HpcS3DownloadDestination s3DownloadDestination,
       HpcDataTransferType dataTransferType,
       String configurationId,
       String userId,
       boolean completionEvent,
       long size)
+      throws HpcException;
+
+  /**
+   * Generate a (pre-signed) download URL for a data object file.
+   *
+   * @param path The data object path.
+   * @param archiveLocation The archive file location.
+   * @param dataTransferType The data transfer type.
+   * @param configurationId The configuration ID (needed to determine the archive connection
+   *     config).
+   * @return The download URT.
+   * @throws HpcException on service failure.
+   */
+  public String generateDownloadRequestURL(
+      String path,
+      HpcFileLocation archiveLocation,
+      HpcDataTransferType dataTransferType,
+      String configurationId)
       throws HpcException;
 
   /**
@@ -277,9 +294,8 @@ public interface HpcDataTransferService {
    * Submit a request to download a collection.
    *
    * @param path The collection path.
-   * @param destinationLocation The user requested destination.
-   * @param destinationOverwrite If true, the requested destination location will be overwritten if
-   *     it exists.
+   * @param globusDownloadDestination The user requested Glopbus download destination.
+   * @param s3DownloadDestination The user requested S3 download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
@@ -288,8 +304,8 @@ public interface HpcDataTransferService {
    */
   public HpcCollectionDownloadTask downloadCollection(
       String path,
-      HpcFileLocation destinationLocation,
-      boolean destinationOverwrite,
+      HpcGlobusDownloadDestination globusDownloadDestination,
+      HpcS3DownloadDestination s3DownloadDestination,
       String userId,
       String configurationId)
       throws HpcException;
@@ -298,17 +314,16 @@ public interface HpcDataTransferService {
    * Submit a request to download data objects.
    *
    * @param dataObjectPathsMap A map of data-object-path to its configuration ID.
-   * @param destinationLocation The user requested destination.
-   * @param destinationOverwrite If true, the requested destination location will be overwritten if
-   *     it exists.
+   * @param globusDownloadDestination The user requested Glopbus download destination.
+   * @param s3DownloadDestination The user requested S3 download destination.
    * @param userId The user ID submitting the download request.
    * @return The submitted request download task.
    * @throws HpcException on service failure.
    */
   public HpcCollectionDownloadTask downloadDataObjects(
       Map<String, String> dataObjectPathsMap,
-      HpcFileLocation destinationLocation,
-      boolean destinationOverwrite,
+      HpcGlobusDownloadDestination globusDownloadDestination,
+      HpcS3DownloadDestination s3DownloadDestination,
       String userId)
       throws HpcException;
 

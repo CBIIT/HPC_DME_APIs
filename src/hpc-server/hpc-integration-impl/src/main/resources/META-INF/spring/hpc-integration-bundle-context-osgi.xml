@@ -30,13 +30,14 @@
 	      <prop key="hpc.integration.irods.basePath">/tempZone/home</prop>
 	      
 	      <prop key="hpc.integration.globus.globusAuthScope">urn:globus:auth:scope:transfer.api.globus.org:all</prop>
+	      <prop key="hpc.integration.globus.queueSize">90</prop>
 	      
 		  <prop key="hpc.integration.globus.retry.maxAttempts">4</prop>
 		  <prop key="hpc.integration.globus.retry.initialInterval">1000</prop>
 		  <prop key="hpc.integration.globus.retry.intervalMultiplier">2.0</prop>
 		  <prop key="hpc.integration.globus.retry.maxInterval">10000</prop>
 		  
-		  <prop key="hpc.integration.globus.queueSize">90</prop>
+		  <prop key="hpc.integration.s3.downloadExecutorThreadPoolSize">100</prop>
 		  
 	      <prop key="hpc.integration.ldap.URL">ldaps://nihdcadhub2.nih.gov</prop>
 	      <prop key="hpc.integration.ldap.username">Configure Me</prop>

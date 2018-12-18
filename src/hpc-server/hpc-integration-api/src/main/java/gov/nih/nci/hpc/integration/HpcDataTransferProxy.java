@@ -87,8 +87,6 @@ public interface HpcDataTransferProxy {
    * @param baseArchiveDestination The archive's base destination location.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
-   * @param downloadRequestURLExpiration The expiration period (in days) to set when generating
-   *     download URL.
    * @return A data transfer request Id.
    * @throws HpcException on data transfer system failure.
    */
@@ -96,9 +94,27 @@ public interface HpcDataTransferProxy {
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
       HpcArchive baseArchiveDestination,
-      Integer downloadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException;
+
+  /**
+   * Generate a (pre-signed) download URL for a data object file.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param baseArchiveDestination The archive's base destination location.
+   * @param downloadRequestURLExpiration The expiration period (in days) to set when generating
+   *     download URL.
+   * @return The download URL
+   * @throws HpcException on data transfer system failure.
+   */
+  public default String generateDownloadRequestURL(
+      Object authenticatedToken,
+      HpcFileLocation archiveLocation,
+      Integer downloadRequestURLExpiration)
+      throws HpcException {
+    throw new HpcException(
+        "Generating download URL is not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
 
   /**
    * Copy a data object file.
@@ -193,10 +209,8 @@ public interface HpcDataTransferProxy {
    * @param fileContainerId The file container ID.
    * @throws HpcException on data transfer system failure.
    */
-  public default String getFileContainerName(Object authenticatedToken, String fileContainerId)
-      throws HpcException {
-    throw new HpcException("getFileContainerName() not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
+  public String getFileContainerName(Object authenticatedToken, String fileContainerId)
+      throws HpcException;
 
   /**
    * Calculate data transfer destination to deposit a data object.
