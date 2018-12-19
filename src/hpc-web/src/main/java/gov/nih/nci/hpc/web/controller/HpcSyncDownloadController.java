@@ -109,20 +109,26 @@ public class HpcSyncDownloadController extends AbstractHpcController {
       client.header("Authorization", "Bearer " + authToken);
 
       Response restResponse = client.invoke("POST", dto);
-      MultivaluedMap<String, Object> respHeaders = restResponse.getMetadata();
-      List dataTransferTypes = (List)respHeaders.get("DATA_TRANSFER_TYPE");
+      
+      
+      // TODO: The API is no longer returning DATA_TRANSFER_TYPE as header parameter.
+      // Regardless the implementation of sync download from POSIX archive is broken
+      // Need to implement sync download from POSIX archive.
+      
+      //MultivaluedMap<String, Object> respHeaders = restResponse.getMetadata();
+      //List dataTransferTypes = (List)respHeaders.get("DATA_TRANSFER_TYPE");
       
       if (restResponse.getStatus() == 200) {
-          if (null != dataTransferTypes &&
-              "S_3".equals(dataTransferTypes.get(0))) {
+          //if (null != dataTransferTypes &&
+            //  "S_3".equals(dataTransferTypes.get(0))) {
             HpcDataObjectDownloadResponseDTO downloadDTO =
               (HpcDataObjectDownloadResponseDTO) HpcClientUtil.getObject(
               restResponse, HpcDataObjectDownloadResponseDTO.class);
             downloadToUrl(downloadDTO.getDownloadRequestURL(), 1000000,
               downloadFile.getDownloadFileName(), response);
-          } else {
-            handleStreamingDownloadData(downloadFile, response, restResponse);
-          }
+          //} else {
+            //handleStreamingDownloadData(downloadFile, response, restResponse);
+          //}
           model.addAttribute("message", "Download completed successfully!");
       } else if (restResponse.getStatus() == 400) {
         // Bad request so assume that request can be retried without any state
