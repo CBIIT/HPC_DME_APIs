@@ -103,7 +103,7 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
-   * @return The download URT.
+   * @return The download URL.
    * @throws HpcException on service failure.
    */
   public String generateDownloadRequestURL(

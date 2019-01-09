@@ -31,7 +31,6 @@ import org.junit.Test;
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 public class HpcRegisterCollectionTest extends HpcRestServiceTest

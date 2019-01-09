@@ -192,7 +192,6 @@
 	<xsd:complexType name="HpcDataObjectDownloadResponse">
 		<xsd:sequence>
 			<xsd:element name="downloadTaskId" type="xsd:string" />
-			<xsd:element name="downloadRequestURL" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId" type="xsd:string" />
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />

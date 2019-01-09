@@ -453,9 +453,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       return errorResponse(e);
     }
 
-    Map<String, String> header = new HashMap<>();
-    header.put("DATA_TRANSFER_TYPE", downloadResponse.getDataTransferType());
-    return downloadResponse(downloadResponse, messageContext, header);
+    return downloadResponse(downloadResponse, messageContext);
   }
 
   @Override
@@ -657,11 +655,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @return an OK response.
    */
   private Response downloadResponse(
-      HpcDataObjectDownloadResponseDTO downloadResponse,
-      MessageContext messageContext,
-      Map<String, String> header) {
+      HpcDataObjectDownloadResponseDTO downloadResponse, MessageContext messageContext) {
     if (downloadResponse == null) {
-      return okResponse(null, false, header);
+      return okResponse(null, false);
     }
     Response response = null;
     if (downloadResponse.getDestinationFile() != null) {
@@ -671,11 +667,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
           DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE, downloadResponse.getDestinationFile());
       response =
           okResponse(
-              downloadResponse.getDestinationFile(),
-              MediaType.APPLICATION_OCTET_STREAM_TYPE,
-              header);
+              downloadResponse.getDestinationFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE);
     } else {
-      response = okResponse(downloadResponse, false, header);
+      response = okResponse(downloadResponse, false);
     }
     return response;
   }

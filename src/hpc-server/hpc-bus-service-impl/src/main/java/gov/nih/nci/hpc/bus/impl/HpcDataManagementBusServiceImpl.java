@@ -1061,7 +1061,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         downloadResponse.getDestinationLocation(),
         downloadResponse.getDestinationFile(),
         downloadResponse.getDownloadTaskId(),
-        downloadResponse.getDownloadRequestURL(),
+        null,
         metadata.getDataTransferType().value());
   }
 
