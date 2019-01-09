@@ -39,9 +39,24 @@
 				<sec:clientAuthentication want="${hpc.ws.rs.ssl.wantClientAuth}"
 					required="${hpc.ws.rs.ssl.needClientAuth}" />
 				<sec:cipherSuitesFilter>
-					<sec:include>.*_WITH_AES_.*</sec:include>
-					<sec:exclude>EDH-DSS-DES-CBC3-SHA</sec:exclude>
-					<sec:exclude>.*_DH_anon_.*</sec:exclude>
+					<sec:include>ECDHE-RSA-AES256-GCM-SHA384</sec:include> 
+					<sec:include>ECDHE-RSA-AES256-SHA384</sec:include>
+					<sec:include>ECDHE-RSA-AES256-SHA</sec:include>
+					<sec:include>DHE-RSA-AES256-GCM-SHA384</sec:include>
+					<sec:include>DHE-RSA-AES256-SHA256</sec:include>
+					<sec:include>DHE-RSA-AES256-SHA</sec:include> 
+					<sec:include>AES256-GCM-SHA384</sec:include>
+					<sec:include>AES256-SHA256</sec:include>
+					<sec:include>AES256-SHA</sec:include>
+					<sec:include>ECDHE-RSA-AES128-GCM-SHA256</sec:include> 
+					<sec:include>ECDHE-RSA-AES128-SHA256</sec:include>
+					<sec:include>ECDHE-RSA-AES128-SHA</sec:include>
+					<sec:include>DHE-RSA-AES128-GCM-SHA256</sec:include>
+					<sec:include>DHE-RSA-AES128-SHA256</sec:include>
+					<sec:include>DHE-RSA-AES128-SHA</sec:include>
+					<sec:include>AES128-GCM-SHA256</sec:include>
+					<sec:include>AES128-SHA256</sec:include>
+					<sec:include>AES128-SHA</sec:include>
 				</sec:cipherSuitesFilter>
 				<sec:excludeProtocols>
 					<sec:excludeProtocol>SSLv2</sec:excludeProtocol>
