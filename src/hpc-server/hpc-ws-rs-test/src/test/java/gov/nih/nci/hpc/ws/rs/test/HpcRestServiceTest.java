@@ -55,7 +55,6 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)

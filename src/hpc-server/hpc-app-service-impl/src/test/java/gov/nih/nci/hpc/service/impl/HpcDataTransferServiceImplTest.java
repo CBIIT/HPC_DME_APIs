@@ -1,127 +1,207 @@
+/**
+ * HpcDataTransferServiceImplTest.java
+ *
+ * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ *
+ * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * http://ncip.github.com/HPC/LICENSE.txt for details.
+ */
 package gov.nih.nci.hpc.service.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.when;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Resource;
-
-import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.test.context.ActiveProfiles;
-//import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-//import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-import org.springframework.test.context.support.DirtiesContextTestExecutionListener;
-import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
-import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
-import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
+import org.mockito.runners.MockitoJUnitRunner;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
-import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
-import gov.nih.nci.hpc.service.HpcEventService;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/hpc-test-app-service-beans-configuration.xml"})
-//@ContextConfiguration(loader=AnnotationConfigContextLoader.class)
+/**
+ * HPC Data Transfer Service Implementation.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ */
+@RunWith(MockitoJUnitRunner.class)
 public class HpcDataTransferServiceImplTest {
-	
-	@Autowired
-	@Qualifier("test")
-	private HpcDataTransferService dataTransferService;
-	
-    @Autowired
-	private HpcDataTransferProxy hpcGlobusDataTransferProxy;
-    
-    @Autowired
-    private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator;
-	
-	@Before
-	public void setup() throws HpcException {
-		HpcDataTransferUploadReport uploadReport = new HpcDataTransferUploadReport();
-		uploadReport.setBytesTransferred(2000);
-		
-		HpcDataTransferAuthenticatedToken token = new HpcDataTransferAuthenticatedToken();
-		token.setDataTransferType(HpcDataTransferType.GLOBUS);
-		token.setConfigurationId("configId");
-		HpcRequestInvoker invoker = new HpcRequestInvoker();
-		List<HpcDataTransferAuthenticatedToken> tokens = invoker.getDataTransferAuthenticatedTokens();
-		tokens.add(token);
-		HpcRequestContext.setRequestInvoker(invoker);
-		
-		Mockito.doReturn(uploadReport).when(hpcGlobusDataTransferProxy).getDataTransferUploadStatus(Mockito.anyObject(), Mockito.anyObject(), Mockito.anyObject());
-		
-		HpcDataTransferConfiguration dataTransferConfiguration = new HpcDataTransferConfiguration();
-		Mockito.doReturn(dataTransferConfiguration).when(dataManagementConfigurationLocator).getDataTransferConfiguration(Mockito.anyObject(), Mockito.anyObject());		    
-	}
-     
-	@Test
-	public void calculateDataObjectUploadPercentCompleteTest() {
-		
-		//Test input
-		HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
-		metadata.setDataTransferRequestId("requestId");
-	    metadata.setConfigurationId("configId");
-	    metadata.setSourceSize(5000L);
-	   
-		//Null if either of data transfer type or status is null
-		
-		metadata.setDataTransferStatus(HpcDataTransferUploadStatus.RECEIVED);
-		metadata.setDataTransferType(null);
-		Integer result = dataTransferService.calculateDataObjectUploadPercentComplete(metadata);
-		Assert.assertEquals(null, result);
-	
-		metadata.setDataTransferStatus(null);
-		metadata.setDataTransferType(HpcDataTransferType.S_3);
-		result = dataTransferService.calculateDataObjectUploadPercentComplete(metadata);
-		Assert.assertEquals(null, result);
-		
-		//50% if in temporary archive
-		metadata.setDataTransferType(HpcDataTransferType.S_3);
-		metadata.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
-		result = dataTransferService.calculateDataObjectUploadPercentComplete(metadata);
-		Assert.assertEquals(new Integer(50), result);
-		
-		//50% if in transfer in progress and S3 type
-		metadata.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
-		result = dataTransferService.calculateDataObjectUploadPercentComplete(metadata);
-		Assert.assertEquals(new Integer(50), result);
-		
-		metadata.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
-		result = dataTransferService.calculateDataObjectUploadPercentComplete(metadata);
-		Assert.assertEquals(new Integer(50), result);
-		
-		//Computed value
-		metadata.setDataTransferType(HpcDataTransferType.GLOBUS);
-		result = dataTransferService.calculateDataObjectUploadPercentComplete(metadata);
-		Assert.assertEquals(new Integer(40), result);
-		
-		
-	}
+
+  // ---------------------------------------------------------------------//
+  // Instance members
+  // ---------------------------------------------------------------------//
+
+  // The app service under test.
+  //@InjectMocks
+  private HpcDataTransferService dataTransferService = null;
+
+  // Expected exception rule.
+  @Rule public ExpectedException expectedException = ExpectedException.none();
+
+  // Mocks.
+  @Mock private HpcDataTransferProxy dataTransferProxyMock = null;
+  @Mock private HpcDataManagementConfigurationLocator dataManagementConfigurationLocatorMock = null;
+  @Mock private HpcSystemAccountLocator systemAccountLocatorMock = null;
+
+  //---------------------------------------------------------------------//
+  // Unit Tests
+  //---------------------------------------------------------------------//
+
+  /**
+   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation,
+   * gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+   */
+  /* Test scenario: null dataTransferType
+   * Expected: HpcException - "Invalid generate download URL request"
+   */
+  @Test
+  public void testGenerateDownloadRequestURLNullDataTransferType() throws HpcException {
+    expectedException.expect(HpcException.class);
+    expectedException.expectMessage("Invalid generate download URL request");
+
+    dataTransferService.generateDownloadRequestURL("", new HpcFileLocation(), null, "");
+  }
+
+  /**
+   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation,
+   * gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+   */
+  /* Test scenario: Invalid archiveLocation
+   * Expected: HpcException - "Invalid generate download URL request"
+   */
+  @Test
+  public void testGenerateDownloadRequestURLInvalidArchiveLocation() throws HpcException {
+    expectedException.expect(HpcException.class);
+    expectedException.expectMessage("Invalid generate download URL request");
+
+    dataTransferService.generateDownloadRequestURL(
+        "", new HpcFileLocation(), HpcDataTransferType.S_3, "");
+  }
+
+  /**
+   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation,
+   * gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+   */
+  /* Test scenario: Successful
+   * Expected: A download URL - "https://downloadURL"
+   */
+  @Test
+  public void testGenerateDownloadRequestURL() throws HpcException {
+    // Mock setup.
+    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(
+            anyObject(), anyObject()))
+        .thenReturn(new HpcDataTransferConfiguration());
+    when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+        .thenReturn(new HpcIntegratedSystemAccount());
+    when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+    when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject()))
+        .thenReturn("https://downloadURL");
+
+    HpcFileLocation archiveLocation = new HpcFileLocation();
+    archiveLocation.setFileContainerId("test");
+    archiveLocation.setFileId("test");
+
+    String downloadURL =
+        dataTransferService.generateDownloadRequestURL(
+            "", archiveLocation, HpcDataTransferType.S_3, "");
+
+    // Assert expected result.
+    assertEquals(downloadURL, "https://downloadURL");
+  }
+
+  /**
+   * {@link HpcDataTransferService#downloadDataObject(String, HpcFileLocation,
+   * gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination,
+   * gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination, HpcDataTransferType, String,
+   * String, boolean, long)}
+   */
+  /* Test scenario: null dataTransferType
+   * Expected: HpcException - "Invalid data transfer request"
+   */
+  @Test
+  public void testDownloadDataObjectNullDataTransferType() throws HpcException {
+    expectedException.expect(HpcException.class);
+    expectedException.expectMessage("Invalid data transfer request");
+
+    dataTransferService.downloadDataObject("", null, null, null, null, "", "", false, 0L);
+  }
+
+  /**
+   * {@link HpcDataTransferService#downloadDataObject(String, HpcFileLocation,
+   * gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination,
+   * gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination, HpcDataTransferType, String,
+   * String, boolean, long)}
+   */
+  /* Test scenario: Invalid archiveLocation
+   * Expected: HpcException - "Invalid data transfer request"
+   */
+  @Test
+  public void testDownloadDataObjectInvalidArchiveLocation() throws HpcException {
+    expectedException.expect(HpcException.class);
+    expectedException.expectMessage("Invalid data transfer request");
+
+    dataTransferService.downloadDataObject(
+        "", new HpcFileLocation(), null, null, HpcDataTransferType.S_3, "", "", false, 0L);
+  }
+  
+  /**
+   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation,
+   * gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+   */
+  /* Test scenario: Successful
+   * Expected: HpcDataObjectDownloadResponse object w/ download task ID
+   */
+  @Test
+  public void testDownloadDataObject() throws HpcException {
+    // Mock setup.
+    /*
+    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(
+            anyObject(), anyObject()))
+        .thenReturn(new HpcDataTransferConfiguration());
+    when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+        .thenReturn(new HpcIntegratedSystemAccount());
+    when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+    when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject()))
+        .thenReturn("https://downloadURL");
+
+    HpcFileLocation archiveLocation = new HpcFileLocation();
+    archiveLocation.setFileContainerId("test");
+    archiveLocation.setFileId("test");
+
+    HpcDataObjectDownloadResponse downloadResponse =
+        dataTransferService.downloadDataObject(
+            "", new HpcFileLocation(), null, null, HpcDataTransferType.S_3, "", "", false, 0L);
+
+    // Assert expected result.
+    assertEquals(downloadResponse.getDownloadTaskId(), "test-task-id");*/
+  }
+
+  //---------------------------------------------------------------------//
+  // Helper Methods
+  //---------------------------------------------------------------------//
+
+  @Before
+  public void init() throws HpcException {
+    Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new HashMap<>();
+    dataTransferProxies.put(HpcDataTransferType.GLOBUS, dataTransferProxyMock);
+    dataTransferProxies.put(HpcDataTransferType.S_3, dataTransferProxyMock);
+
+    HpcDataTransferServiceImpl dataTransferServiceImpl =
+        new HpcDataTransferServiceImpl(dataTransferProxies, "/test/download/directory");
+    dataTransferServiceImpl.setDataManagementConfigurationLocator(
+        dataManagementConfigurationLocatorMock);
+    dataTransferServiceImpl.setSystemAccountLocator(systemAccountLocatorMock);
+
+    dataTransferService = dataTransferServiceImpl;
+  }
 }

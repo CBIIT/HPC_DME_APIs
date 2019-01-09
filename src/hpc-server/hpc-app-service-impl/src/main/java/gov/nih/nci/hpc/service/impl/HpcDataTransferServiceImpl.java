@@ -131,8 +131,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throws HpcException {
     if (dataTransferProxies == null
         || dataTransferProxies.isEmpty()
-        || downloadDirectory == null
-        || downloadDirectory.isEmpty()) {
+        || StringUtils.isEmpty(downloadDirectory)) {
       throw new HpcException(
           "Null or empty map of data transfer proxies, or download directory",
           HpcErrorType.SPRING_CONFIGURATION_ERROR);
@@ -1360,7 +1359,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       return HpcDataTransferType.GLOBUS;
     }
     if (uploadRequest.getSourceFile() != null) {
-      // It's a synchrnous upload request - use the configured archive (S3/Cleversafe or Globus/Isilon).
+      // It's a synchrnous upload request - use the configured archive (S3/Cleversafe or Globus/POSIX).
       return archiveDataTransferType;
 
     } else if (uploadRequest.getGenerateUploadRequestURL()) {
@@ -1650,10 +1649,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     if (pToken instanceof HpcDataTransferAuthenticatedToken) {
       HpcDataTransferAuthenticatedToken dtaToken = (HpcDataTransferAuthenticatedToken) pToken;
       StringBuilder sb = new StringBuilder();
-      //			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
-      //			<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
-      //			<xsd:element name="configurationId" type="xsd:string" />
-      //      <xsd:element name="systemAccountId" type="xsd:string" />
       sb.append("[ dataTransferType = ").append(dtaToken.getDataTransferType().toString());
       sb.append(", dataTransferAuthenticatedToken = ")
           .append(dtaToken.getDataTransferAuthenticatedToken().toString());
@@ -1664,6 +1659,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       retStrRep = pToken.toString();
     }
     return retStrRep;
+  }
+
+  // ---------------------------------------------------------------------//
+  // Setter Methods to support JUnit Testing (for injecting Mocks)
+  // ---------------------------------------------------------------------//
+
+  void setDataManagementConfigurationLocator(
+      HpcDataManagementConfigurationLocator dataManagementConfigurationLocator) {
+    this.dataManagementConfigurationLocator = dataManagementConfigurationLocator;
+  }
+
+  void setSystemAccountLocator(HpcSystemAccountLocator systemAccountLocator) {
+    this.systemAccountLocator = systemAccountLocator;
   }
 
   // Second hop download.
