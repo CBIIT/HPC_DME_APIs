@@ -32,7 +32,7 @@ class SFHelper(object):
                          "Pinto": "Ligia_Pinto", "Fountaine": "Thomas_Fountaine", "Shern": "JackShern", "Rudloff": "Udo_Rudloff",
                          "Sowalsky": "Adam_Sowalsky", "Hongliang": "Hongliang_Zhang", "Franchini": "Genoveffa_Franchini",
                          "Myong-HeeSungKyuSeonOh": "Myong-Hee_Sung", "YinlingHu": "Yinling_Hu", "Agdashian": "David_Agdashian",
-                         "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang"}
+                         "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Raffeld": "Mark_Raffeld"}
 
         pi_name = 'CCRSF'
 

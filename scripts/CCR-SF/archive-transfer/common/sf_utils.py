@@ -15,6 +15,7 @@ class SFUtils(object):
         path = filepath.replace("uploads/", "")
         path = re.sub(r'.*Unaligned[^/]*/', '', path)
         path = re.sub(r'.*Unalignd[^/]*/', '', path)
+        path = re.sub(r'.*Unlianged[^/]*/', '', path)
 
         # strip 'Project_' if it exists
         path = path.replace("Project_", "")
