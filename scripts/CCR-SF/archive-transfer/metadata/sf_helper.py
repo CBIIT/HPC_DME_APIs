@@ -19,7 +19,7 @@ class SFHelper(object):
                     "Thiele": "Carol_Thiele", "Bosselut": "Remy_Bosselut", "Frederick_Barr": "Frederick_Barr", "Trinchieri": "Giorgio_Trinchieri",
                     "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer", "Sample_SPECS_2070": "Louis_Staudt",
                     "Merlino": "Glenn_Merlino", "Udayan": "Udayan_Guha", "LiYang": "Li_Yang", "Bhandoola":"Avinash_Bhandoola",
-                    "Levens": "David_Levens", "SteveHughes": "Steve_Hughes", "Shalini": "Shalini_Oberdoerffer",
+                    "Levens": "David_Levens", "SteveHughes": "Stephen_Hughes", "StephenHuges": "Stephen_Hughes", "Shalini": "Shalini_Oberdoerffer",
                     "Strathern": "Jeff_Strathern", "HonpingZheng": "Honping_Zheng", "Wakefield": "Lalage_Wakefield",
                     "LiWang": "Li_Wang", "Guerrerio": "Pamela_Guerrerio", "KathyKelly": "Kathy_Kelly",
                     "MarkGilbert": "Mark_Gilbert", "Yamini": "Yamini_Dalal", "AartiGautam": "Aarti_Gautam",
@@ -31,7 +31,9 @@ class SFHelper(object):
                     "Pinto": "Ligia_Pinto", "Fountaine": "Thomas_Fountaine", "Shern": "JackShern", "Rudloff": "Udo_Rudloff",
                     "Sowalsky": "Adam_Sowalsky", "Hongliang": "Hongliang_Zhang", "Franchini": "Genoveffa_Franchini",
                     "Myong-Hee": "Myong-Hee_Sung", "YinlingHu": "Yinling_Hu", "Agdashian": "David_Agdashian",
-                    "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Gottesman": "Michael_Gottesman"}
+                    "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Gottesman": "Michael_Gottesman",
+                    "Yuspa": "Stuart_Yuspa", "Roberts": "David_Roberts", "Mistelli": "Tom_Misteli", "Misteli": "Tom_Misteli",
+                    "Tomozumi": "Tomozumi_Imamichi", "Raffit": "Raffit_Hassan", "Bartolome": "Ramiro_Iglesias-Bartolome"}
 
         pi_name = 'CCRSF'
 
@@ -42,7 +44,8 @@ class SFHelper(object):
         if 'Undetermined' in path or path.endswith('supplement.tar') or 'singlecell' in path:
             pi_name = 'SF_Archive_Flowcell_Info'
 
-        elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path and 'testing' not in path:
+        elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path \
+                and 'testing' not in path and 'SEER' not in path:
             for element in (pi_names):
                 if element in path:
                     #Perform mapping using pi_names if match is found
