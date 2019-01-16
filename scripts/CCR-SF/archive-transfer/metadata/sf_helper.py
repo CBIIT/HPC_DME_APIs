@@ -14,25 +14,24 @@ class SFHelper(object):
                     "Jonathan_Keller_Sun": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
                     "Philipp_Oberdoerffer_Kim": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Pommier": "Yves_Pommier", "Vinson": "Chuck_Vinson",
                     "Batchelor": "Eric_Batchelor", "Brownell": "Issac_Brownell", "Ji_Luo": "Ji_Luo", "ShivGrewal": "Shiv_Grewal",
-                    "Mark_Raffeld_Brenda": "Mark_Raffeld", "Javed": "Javed_Khan", "_tumor": "Tomas_Villmas", "_pancreas": "Tomas_Villmas",
+                    "Raffeld": "Mark_Raffeld", "Javed": "Javed_Khan", "_tumor": "Tomas_Villmas", "_pancreas": "Tomas_Villmas",
                     "JingHuang": "Jing_Huang", "Aladjem": "Mirit_Aladjem", "Muegge": "Kathrin_Muegge", "Li_Yang": "Li_Yang", "Pastan": "Ira_Pastan",
                     "Thiele": "Carol_Thiele", "Bosselut": "Remy_Bosselut", "Frederick_Barr": "Frederick_Barr", "Trinchieri": "Giorgio_Trinchieri",
-                    "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer", "Sample_SPECS_2070": "Louis_Staudt"}
-
-        pi_names_2017 = {"Merlino": "Glenn_Merlino", "Udayan": "Udayan_Guha", "LiYang": "Li_Yang", "Bhandoola":"Avinash_Bhandoola",
-                         "DavidLevens": "David_Levens", "SteveHughes": "Steve_Hughes", "Shalini": "Shalini_Oberdoerffer",
-                         "Strathern": "Jeff_Strathern", "HonpingZheng": "Honping_Zheng", "Wakefield": "Lalage_Wakefield",
-                         "LiWang": "Li_Wang", "Guerrerio": "Pamela_Guerrerio", "KathyKelly": "Kathy_Kelly",
-                         "MarkGilbert": "Mark_Gilbert", "Yamini": "Yamini_Dalal", "AartiGautam": "Aarti_Gautam",
-                         "DinahSinger": "Dinah_Singer", "Ried": "Thomas_Ried", "JingHuang": "Jing_Huang",
-                         "Nickerson": "Mike_Nickerson", "Lipkowitz": "Stan_Lipkowitz", "Brownell": "Issac_Brownell",
-                         "PhilippOberdoerffer": "Philipp_Oberdoerffer", "StefanAmbs": "Stefan_Ambs",
-                         "Doroshow": "James_Doroshow", "Alewine": "Christine_Alewine", "JonathanKeller": "Jonathan_Keller",
-                         "Tofilon": "PhilipTofilon", "HowardYoung": "Howard_Young", "Klinman": "Dennis_Klinman", "Dean": "Micheal_Dean",
-                         "Pinto": "Ligia_Pinto", "Fountaine": "Thomas_Fountaine", "Shern": "JackShern", "Rudloff": "Udo_Rudloff",
-                         "Sowalsky": "Adam_Sowalsky", "Hongliang": "Hongliang_Zhang", "Franchini": "Genoveffa_Franchini",
-                         "Myong-HeeSungKyuSeonOh": "Myong-Hee_Sung", "YinlingHu": "Yinling_Hu", "Agdashian": "David_Agdashian",
-                         "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Raffeld": "Mark_Raffeld"}
+                    "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer", "Sample_SPECS_2070": "Louis_Staudt",
+                    "Merlino": "Glenn_Merlino", "Udayan": "Udayan_Guha", "LiYang": "Li_Yang", "Bhandoola":"Avinash_Bhandoola",
+                    "Levens": "David_Levens", "SteveHughes": "Steve_Hughes", "Shalini": "Shalini_Oberdoerffer",
+                    "Strathern": "Jeff_Strathern", "HonpingZheng": "Honping_Zheng", "Wakefield": "Lalage_Wakefield",
+                    "LiWang": "Li_Wang", "Guerrerio": "Pamela_Guerrerio", "KathyKelly": "Kathy_Kelly",
+                    "MarkGilbert": "Mark_Gilbert", "Yamini": "Yamini_Dalal", "AartiGautam": "Aarti_Gautam",
+                    "DinahSinger": "Dinah_Singer", "Ried": "Thomas_Ried", "JingHuang": "Jing_Huang",
+                    "Nickerson": "Mike_Nickerson", "Lipkowitz": "Stan_Lipkowitz", "Brownell": "Issac_Brownell",
+                    "PhilippOberdoerffer": "Philipp_Oberdoerffer", "Ambs": "Stefan_Ambs",
+                    "Doroshow": "James_Doroshow", "Alewine": "Christine_Alewine", "JonathanKeller": "Jonathan_Keller",
+                    "Tofilon": "PhilipTofilon", "HowardYoung": "Howard_Young", "Klinman": "Dennis_Klinman", "Dean": "Micheal_Dean",
+                    "Pinto": "Ligia_Pinto", "Fountaine": "Thomas_Fountaine", "Shern": "JackShern", "Rudloff": "Udo_Rudloff",
+                    "Sowalsky": "Adam_Sowalsky", "Hongliang": "Hongliang_Zhang", "Franchini": "Genoveffa_Franchini",
+                    "Myong-Hee": "Myong-Hee_Sung", "YinlingHu": "Yinling_Hu", "Agdashian": "David_Agdashian",
+                    "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Gottesman": "Michael_Gottesman"}
 
         pi_name = 'CCRSF'
 
@@ -43,8 +42,8 @@ class SFHelper(object):
         if 'Undetermined' in path or path.endswith('supplement.tar') or 'singlecell' in path:
             pi_name = 'SF_Archive_Flowcell_Info'
 
-        elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path:
-            for element in (pi_names or pi_names_2017):
+        elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path and 'testing' not in path:
+            for element in (pi_names):
                 if element in path:
                     #Perform mapping using pi_names if match is found
                     pi_name = pi_names[element]
