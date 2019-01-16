@@ -11,6 +11,7 @@ package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -51,6 +52,7 @@ import gov.nih.nci.hpc.dto.report.HpcReportRequestDTO;
 import gov.nih.nci.hpc.dto.report.HpcReportsDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcReportRequest;
@@ -117,6 +119,9 @@ public class HpcReportsController extends AbstractHpcController {
     HpcUserListDTO users = HpcClientUtil.getUsers(authToken, activeUsersServiceURL, null, null,
         null, user.getUserRole().equals("SYSTEM_ADMIN") ? null : user.getDoc(), sslCertPath,
         sslCertPassword);
+    Comparator<HpcUserListEntry> firstLastComparator = Comparator.comparing(HpcUserListEntry::getFirstName, String.CASE_INSENSITIVE_ORDER)
+        .thenComparing(HpcUserListEntry::getLastName, String.CASE_INSENSITIVE_ORDER);
+    users.getUsers().sort(firstLastComparator);
     model.addAttribute("docUsers", users.getUsers());
     List<String> docs = new ArrayList<String>();
     if (user.getUserRole().equals("GROUP_ADMIN") || user.getUserRole().equals("USER"))
@@ -125,6 +130,7 @@ public class HpcReportsController extends AbstractHpcController {
       docs.addAll(
           HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session));
     }
+    docs.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("docs", docs);
     HpcDataManagementModelDTO modelDTO =
         (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
@@ -137,6 +143,7 @@ public class HpcReportsController extends AbstractHpcController {
       for (HpcDataManagementRulesDTO rule : docRule.getRules())
         basepaths.add(rule.getBasePath());
     }
+    basepaths.sort(String.CASE_INSENSITIVE_ORDER);
     model.addAttribute("basepaths", basepaths);
     return "reports";
   }
