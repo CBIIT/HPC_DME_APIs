@@ -21,19 +21,20 @@ class SFHelper(object):
                     "Merlino": "Glenn_Merlino", "Udayan": "Udayan_Guha", "LiYang": "Li_Yang", "Bhandoola":"Avinash_Bhandoola",
                     "Levens": "David_Levens", "SteveHughes": "Stephen_Hughes", "StephenHuges": "Stephen_Hughes", "Shalini": "Shalini_Oberdoerffer",
                     "Strathern": "Jeff_Strathern", "HonpingZheng": "Honping_Zheng", "Wakefield": "Lalage_Wakefield",
-                    "LiWang": "Li_Wang", "Guerrerio": "Pamela_Guerrerio", "KathyKelly": "Kathy_Kelly",
-                    "MarkGilbert": "Mark_Gilbert", "Yamini": "Yamini_Dalal", "AartiGautam": "Aarti_Gautam",
-                    "DinahSinger": "Dinah_Singer", "Ried": "Thomas_Ried", "JingHuang": "Jing_Huang",
-                    "Nickerson": "Mike_Nickerson", "Lipkowitz": "Stan_Lipkowitz", "Brownell": "Issac_Brownell",
-                    "PhilippOberdoerffer": "Philipp_Oberdoerffer", "Ambs": "Stefan_Ambs",
+                    "LiWang": "Li_Wang", "Guerrerio": "Pamela_Guerrerio", "KathyKelly": "Kathy_Kelly", "ShuoGu": "Shuo_Gu",
+                    "MarkGilbert": "Mark_Gilbert", "Yamini": "Yamini_Dalal", "AartiGautam": "Aarti_Gautam", "Hernandez": "Jonathan_Hernandez",
+                    "DinahSinger": "Dinah_Singer", "Reid": "Thomas_Reid", "JingHuang": "Jing_Huang", "YingZhang": "Ying_Zhang",
+                    "Nickerson": "Mike_Nickerson", "Lipkowitz": "Stan_Lipkowitz", "Brownell": "Issac_Brownell", "Jung-Min": "Jung-Min_Lee",
+                    "PhilippOberdoerffer": "Philipp_Oberdoerffer", "Ambs": "Stefan_Ambs", "Shern": "Jack_Shern",
                     "Doroshow": "James_Doroshow", "Alewine": "Christine_Alewine", "JonathanKeller": "Jonathan_Keller",
                     "Tofilon": "PhilipTofilon", "HowardYoung": "Howard_Young", "Klinman": "Dennis_Klinman", "Dean": "Micheal_Dean",
-                    "Pinto": "Ligia_Pinto", "Fountaine": "Thomas_Fountaine", "Shern": "JackShern", "Rudloff": "Udo_Rudloff",
+                    "Pinto": "Ligia_Pinto", "Fountaine": "Thomas_Fountaine", "Rudloff": "Udo_Rudloff",
                     "Sowalsky": "Adam_Sowalsky", "Hongliang": "Hongliang_Zhang", "Franchini": "Genoveffa_Franchini",
                     "Myong-Hee": "Myong-Hee_Sung", "YinlingHu": "Yinling_Hu", "Agdashian": "David_Agdashian",
                     "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Gottesman": "Michael_Gottesman",
                     "Yuspa": "Stuart_Yuspa", "Roberts": "David_Roberts", "Mistelli": "Tom_Misteli", "Misteli": "Tom_Misteli",
-                    "Tomozumi": "Tomozumi_Imamichi", "Raffit": "Raffit_Hassan", "Bartolome": "Ramiro_Iglesias-Bartolome"}
+                    "Tomozumi": "Tomozumi_Imamichi", "Raffit": "Raffit_Hassan", "Bartolome": "Ramiro_Iglesias-Bartolome",
+                    "RobertWest": "Robert_West", "Citrin": "Deborah_Citrin", "XinWang": "Xin_Wang"}
 
         pi_name = 'CCRSF'
 
