@@ -16,7 +16,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,7 +26,6 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
-
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -39,7 +37,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -279,11 +277,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           destinationLocation.setFileId(destinationLocationFileId);
         }
 
-        HpcS3DownloadAccount s3Account = null;
+        HpcS3Account s3Account = null;
         byte[] s3AccountAccessKey = rs.getBytes("S3_ACCOUNT_ACCESS_KEY");
         byte[] s3AccountSecretKey = rs.getBytes("S3_ACCOUNT_SECRET_KEY");
         if (s3AccountAccessKey != null && s3AccountSecretKey != null) {
-          s3Account = new HpcS3DownloadAccount();
+          s3Account = new HpcS3Account();
           s3Account.setAccessKey(this.encryptor.decrypt(s3AccountAccessKey));
           s3Account.setSecretKey(this.encryptor.decrypt(s3AccountSecretKey));
           s3Account.setRegion(rs.getString("S3_ACCOUNT_REGION"));
@@ -530,7 +528,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       } else {
         destinationLocation =
             collectionDownloadTask.getS3DownloadDestination().getDestinationLocation();
-        HpcS3DownloadAccount s3Account =
+        HpcS3Account s3Account =
             collectionDownloadTask.getS3DownloadDestination().getAccount();
         s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
         s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());

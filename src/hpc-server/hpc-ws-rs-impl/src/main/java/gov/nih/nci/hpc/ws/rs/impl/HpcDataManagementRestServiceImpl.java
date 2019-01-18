@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -57,7 +58,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
-
 /**
  * HPC Data Management REST Service Implementation.
  *
@@ -299,10 +299,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(resultDto, true);
   }
 
+  @Deprecated
   @Override
   public Response registerDataObject(
       String path,
       HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+      InputStream dataObjectInputStream) {
+    return registerDataObject(path, toV2(dataObjectRegistration), dataObjectInputStream);
+  }
+
+  @Override
+  public Response registerDataObject(
+      String path,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
+          dataObjectRegistration,
       InputStream dataObjectInputStream) {
     File dataObjectFile = null;
     HpcDataObjectRegistrationResponseDTO responseDTO = null;
@@ -722,5 +732,41 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
 
     return v2DownloadRequest;
+  }
+
+  /**
+   * Convert v1 of HpcDataObjectRegistrationRequestDTO to v2 of the API.
+   *
+   * @param downloadRequest download request (v1).
+   * @return The download request in v2 form.
+   */
+  private gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO toV2(
+      HpcDataObjectRegistrationRequestDTO dataObjectRegistration) {
+    if (dataObjectRegistration == null) {
+      return null;
+    }
+
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
+        v2DataObjectRegistration =
+            new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO();
+    v2DataObjectRegistration.setCallerObjectId(dataObjectRegistration.getCallerObjectId());
+    v2DataObjectRegistration.setChecksum(dataObjectRegistration.getChecksum());
+    v2DataObjectRegistration.setCreateParentCollections(
+        dataObjectRegistration.getCreateParentCollections());
+    v2DataObjectRegistration.setParentCollectionsBulkMetadataEntries(
+        dataObjectRegistration.getParentCollectionsBulkMetadataEntries());
+    v2DataObjectRegistration.setGenerateUploadRequestURL(
+        dataObjectRegistration.getGenerateUploadRequestURL());
+    v2DataObjectRegistration
+        .getMetadataEntries()
+        .addAll(dataObjectRegistration.getMetadataEntries());
+
+    if (dataObjectRegistration.getSource() != null) {
+      HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+      globusUploadSource.setSourceLocation(dataObjectRegistration.getSource());
+      v2DataObjectRegistration.setGlobusUploadSource(globusUploadSource);
+    }
+
+    return v2DataObjectRegistration;
   }
 }

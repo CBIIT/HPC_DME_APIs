@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
@@ -135,12 +135,12 @@ public class HpcDomainValidator {
   }
 
   /**
-   * Validate a file location object.
+   * Validate a S3 account.
    *
-   * @param location the object to be validated.
+   * @param s3Account The object to be validated.
    * @return true if valid, false otherwise.
    */
-  public static boolean isValidS3DownloadAccount(HpcS3DownloadAccount s3Account) {
+  public static boolean isValidS3Account(HpcS3Account s3Account) {
     if (s3Account == null
         || StringUtils.isEmpty(s3Account.getAccessKey())
         || StringUtils.isEmpty(s3Account.getSecretKey())

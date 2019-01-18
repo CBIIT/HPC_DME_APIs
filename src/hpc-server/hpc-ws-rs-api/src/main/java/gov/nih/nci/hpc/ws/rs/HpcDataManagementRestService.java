@@ -227,6 +227,7 @@ public interface HpcDataManagementRestService {
    * @param dataObjectInputStream The data object input stream.
    * @return The REST service response.
    */
+  @Deprecated
   @PUT
   @Path("/dataObject/{path:.*}")
   @Consumes("multipart/form-data")
@@ -235,6 +236,25 @@ public interface HpcDataManagementRestService {
       @PathParam("path") String path,
       @Multipart(value = "dataObjectRegistration", type = "application/json")
           HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+      @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
+          InputStream dataObjectInputStream);
+  
+  /**
+   * Data object registration.
+   *
+   * @param path The data object path.
+   * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
+   * @param dataObjectInputStream The data object input stream.
+   * @return The REST service response.
+   */
+  @PUT
+  @Path("/v2/dataObject/{path:.*}")
+  @Consumes("multipart/form-data")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response registerDataObject(
+      @PathParam("path") String path,
+      @Multipart(value = "dataObjectRegistration", type = "application/json")
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
       @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
           InputStream dataObjectInputStream);
 

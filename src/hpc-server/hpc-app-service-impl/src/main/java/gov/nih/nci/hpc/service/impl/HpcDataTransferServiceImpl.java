@@ -9,7 +9,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3DownloadAccount;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -1154,13 +1154,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       }
       // For S3 download of a single data object, either S3 account or (pre-signed) destination upload URL must be provided.
       // For S3 download of list-of-files or collection, a S3 account must be provided.
-      HpcS3DownloadAccount s3Account = s3DownloadDestination.getAccount();
+      HpcS3Account s3Account = s3DownloadDestination.getAccount();
       if (s3Account != null) {
         if (s3DownloadDestination.getDestinationURL() != null) {
           throw new HpcException(
               "Both S3 account and destination URL provided", HpcErrorType.INVALID_REQUEST_INPUT);
         }
-        if (!isValidS3DownloadAccount(s3Account)) {
+        if (!isValidS3Account(s3Account)) {
           throw new HpcException("Invalid S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
         }
       } else {
