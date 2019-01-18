@@ -96,11 +96,17 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcGlobusDownloadDestination']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination" />
       </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcS3DownloadAccount']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount" />
+      <jxb:bindings node="//xsd:complexType[@name='HpcS3Account']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3Account" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcS3DownloadDestination']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusUploadSource']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcS3UploadSource']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadRequest']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest" />

@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
@@ -56,7 +57,7 @@ import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -1355,7 +1356,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     HpcDataObjectRegistrationRequestDTO registrationDTO = new HpcDataObjectRegistrationRequestDTO();
     registrationDTO.setCallerObjectId(registrationRequest.getCallerObjectId());
     registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
-    registrationDTO.setSource(registrationRequest.getSource());
+    HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+    globusUploadSource.setSourceLocation(registrationRequest.getSource());
+    registrationDTO.setGlobusUploadSource(globusUploadSource);
     registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
     registrationDTO.setParentCollectionsBulkMetadataEntries(
         registrationRequest.getParentCollectionsBulkMetadataEntries());

@@ -27,6 +27,28 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
 		schemaLocation="HpcMetadataTypes.xsd" />
 
+	<!-- Data Object Registration DTO -->
+	<xsd:element name="HpcDataObjectRegistrationRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="globusUploadSource"
+					type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
+				<xsd:element name="s3UploadSource"
+					type="hpc-domain-datatransfer:HpcS3UploadSource" />
+				<xsd:element name="generateUploadRequestURL" type="xsd:boolean"
+					minOccurs="0" />
+				<xsd:element name="callerObjectId" type="xsd:string" />
+				<xsd:element name="metadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
+					maxOccurs="unbounded" />
+				<xsd:element name="createParentCollections" type="xsd:boolean"
+					minOccurs="0" />
+				<xsd:element name="parentCollectionsBulkMetadataEntries"
+					type="hpc-domain-metadata:HpcBulkMetadataEntries" />
+				<xsd:element name="checksum" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
 	<!-- Download DTO -->
 	<xsd:element name="HpcDownloadRequestDTO">
 		<xsd:complexType>
@@ -38,7 +60,7 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="HpcBulkDataObjectDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -52,5 +74,5 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 </xsd:schema>

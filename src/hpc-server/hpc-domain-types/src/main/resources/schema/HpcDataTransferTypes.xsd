@@ -108,6 +108,29 @@
 
 	<xsd:complexType name="HpcFile" />
 
+	<xsd:complexType name="HpcGlobusUploadSource">
+		<xsd:sequence>
+			<xsd:element name="sourceLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="HpcS3Account">
+		<xsd:sequence>
+			<xsd:element name="accessKey" type="xsd:string" />
+			<xsd:element name="secretKey" type="xsd:string" />
+			<xsd:element name="region" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="HpcS3UploadSource">
+		<xsd:sequence>
+			<xsd:element name="sourceLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="account" type="hpc-domain-datatransfer:HpcS3Account" />
+		</xsd:sequence>
+	</xsd:complexType>
+
 	<xsd:complexType name="HpcDataObjectUploadRequest">
 		<xsd:sequence>
 			<xsd:element name="path" type="xsd:string" />
@@ -144,20 +167,11 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcS3DownloadAccount">
-		<xsd:sequence>
-			<xsd:element name="accessKey" type="xsd:string" />
-			<xsd:element name="secretKey" type="xsd:string" />
-			<xsd:element name="region" type="xsd:string" />
-		</xsd:sequence>
-	</xsd:complexType>
-
 	<xsd:complexType name="HpcS3DownloadDestination">
 		<xsd:sequence>
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="account"
-				type="hpc-domain-datatransfer:HpcS3DownloadAccount" />
+			<xsd:element name="account" type="hpc-domain-datatransfer:HpcS3Account" />
 			<xsd:element name="destinationURL" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
