@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -188,7 +189,21 @@ public interface HpcDataTransferProxy {
    */
   public HpcPathAttributes getPathAttributes(
       Object authenticatedToken, HpcFileLocation fileLocation, boolean getSize) throws HpcException;
-
+  
+  /**
+   * Get attributes of a S3 file using provided S3 account
+   *
+   * @param fileLocation The endpoint/path to check.
+   * @param s3Account S3 account.
+   * @param getSize If set to true, the file/directory size will be returned.
+   * @return The path attributes.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default HpcPathAttributes getPathAttributes(
+      HpcFileLocation fileLocation, HpcS3Account s3Account, boolean getSize) throws HpcException {
+    throw new HpcException("getPathAttributes(fileLocation, s3Account, getSize) not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+  
   /**
    * Scan a directory (recursively) and return a list of all its files.
    *

@@ -52,7 +52,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -110,7 +109,6 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
-import gov.nih.nci.hpc.util.HpcUtil;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -123,14 +121,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   // Constants
   //---------------------------------------------------------------------//
 
-  private static final String MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS =
-      "Path PLACEHOLDER-PATH contains forbidden character(s).  Following"
-          + " characters are forbidden: PLACEHOLDER-CHARSET.";
-
-  private static final String MSG_TEMPLATE__MULTI_INVALID_PATHS =
-      "The following destination paths for DME archive are invalid:\n"
-          + "PLACEHOLDER-PATHS \n\nEach invalid path contains forbidden character(s)"
-          + " from following set: PLACEHOLDER-CHARSET.";
+  // A list of invalid characters in a path (not acceptable by IRODS).
+  private static final List<String> INVALID_PATH_CHARACTERS = Arrays.asList("\\", ";", "?");
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -205,17 +197,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       String configurationId)
       throws HpcException {
     // Input validation.
-    if (path == null
-        || path.isEmpty()
-        || collectionRegistration == null
-        || collectionRegistration.getMetadataEntries().isEmpty()) {
-      throw new HpcException("Null path or metadata entries", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+    validatePath(path);
 
-    if (StringUtils.containsWhitespace(path)) {
-      throw new HpcException("Path contains white space", HpcErrorType.INVALID_REQUEST_INPUT);
+    if (collectionRegistration == null || collectionRegistration.getMetadataEntries().isEmpty()) {
+      throw new HpcException("Null or empty metadata entries", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    validateDmeArchivePathHasNoForbiddenChars(path);
 
     // Create parent collections if requested to.
     createParentCollections(
@@ -453,11 +439,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     // Validate the collection is empty if recursive flag is not set.
-    if (!recursive) {
-      if (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty()) {
-        throw new HpcException(
-            "Collection is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-      }
+    if (!recursive
+        && (!collection.getSubCollections().isEmpty() || !collection.getDataObjects().isEmpty())) {
+      throw new HpcException(
+          "Collection is not empty: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Validate the invoker is the owner of the data object.
@@ -680,12 +665,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       String configurationId,
       boolean registrationCompletionEvent)
       throws HpcException {
+
     // Input validation.
-    if (StringUtils.isEmpty(path) || dataObjectRegistration == null) {
-      throw new HpcException(
-          "Null path or dataObjectRegistrationDTO", HpcErrorType.INVALID_REQUEST_INPUT);
+    validatePath(path);
+
+    if (dataObjectRegistration == null) {
+      throw new HpcException("Null dataObjectRegistrationDTO", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    validateDmeArchivePathHasNoForbiddenChars(path);
 
     // Checksum validation (if requested by caller).
     validateChecksum(dataObjectFile, dataObjectRegistration.getChecksum());
@@ -709,19 +695,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     // Generate upload URL is defaulted to false.
     boolean generateUploadRequestURL =
-        dataObjectRegistration.getGenerateUploadRequestURL() != null
-            ? dataObjectRegistration.getGenerateUploadRequestURL()
-            : false;
-
-    // Extract the source location.
-    HpcFileLocation source =
-        Optional.ofNullable(dataObjectRegistration)
-            .map(HpcDataObjectRegistrationRequestDTO::getGlobusUploadSource)
-            .map(HpcGlobusUploadSource::getSourceLocation)
-            .orElse(new HpcFileLocation());
-    if (source.getFileContainerId() == null && source.getFileId() == null) {
-      source = null;
-    }
+        Optional.ofNullable(dataObjectRegistration.getGenerateUploadRequestURL()).orElse(false);
 
     if (responseDTO.getRegistered()) {
       boolean registrationCompleted = false;
@@ -741,7 +715,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // Transfer the data file.
         HpcDataObjectUploadResponse uploadResponse =
             dataTransferService.uploadDataObject(
-                source,
+                dataObjectRegistration.getGlobusUploadSource(),
+                dataObjectRegistration.getS3UploadSource(),
                 dataObjectFile,
                 generateUploadRequestURL,
                 generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null,
@@ -759,14 +734,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             metadataService.addSystemGeneratedMetadataToDataObject(
                 path,
                 uploadResponse.getArchiveLocation(),
-                source,
+                uploadResponse.getUploadSource(),
                 uploadResponse.getDataTransferRequestId(),
                 uploadResponse.getDataTransferStatus(),
                 uploadResponse.getDataTransferType(),
                 uploadResponse.getDataTransferStarted(),
                 uploadResponse.getDataTransferCompleted(),
                 getSourceSize(
-                    source, uploadResponse.getDataTransferType(), dataObjectFile, configurationId),
+                    uploadResponse.getUploadSource(),
+                    uploadResponse.getDataTransferType(),
+                    dataObjectFile,
+                    configurationId),
                 dataObjectRegistration.getCallerObjectId(),
                 userId,
                 userName,
@@ -805,7 +783,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     } else {
       // The data object is already registered. Validate that data or data endpoint
       // is not attached to the request.
-      if (dataObjectFile != null || source != null) {
+      if (dataObjectFile != null
+          || dataObjectRegistration.getGlobusUploadSource() != null
+          || dataObjectRegistration.getS3UploadSource() != null) {
         throw new HpcException(
             "Data object cannot be updated. Only updating metadata is allowed.",
             HpcErrorType.REQUEST_REJECTED);
@@ -2191,6 +2171,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           dataTransferService.uploadDataObject(
               null,
               null,
+              null,
               true,
               checksum,
               path,
@@ -2332,38 +2313,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return metadata;
   }
 
-  private HpcDataObjectRegistrationItemDTO dataObjectRegistrationRequestToDTO(
-      HpcDataObjectRegistrationRequest request, String path) {
-    HpcDataObjectRegistrationItemDTO dto = new HpcDataObjectRegistrationItemDTO();
-    dto.setCallerObjectId(request.getCallerObjectId());
-    dto.setCreateParentCollections(request.getCreateParentCollections());
-    dto.setPath(path);
-    dto.setSource(request.getSource());
-    dto.getDataObjectMetadataEntries().addAll(request.getMetadataEntries());
-    dto.setParentCollectionsBulkMetadataEntries(request.getParentCollectionsBulkMetadataEntries());
-    return dto;
-  }
-
-  private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
-      throws HpcException {
-    // Input validation.
-    if (path == null) {
-      throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    if (userId == null) {
-      throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    // Validate the collection exists.
-    if (dataManagementService.getCollection(path, false) == null) {
-      return null;
-    }
-    HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
-    HpcPermissionForCollection resultHpcPermForColl = new HpcPermissionForCollection();
-    resultHpcPermForColl.setCollectionPath(path);
-    resultHpcPermForColl.setPermission(hsPerm.getPermission());
-    return resultHpcPermForColl;
-  }
-
   /**
    * Calculate the overall % complete of a collection download task
    *
@@ -2448,91 +2397,73 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return metadataService.getDefaultCollectionMetadataEntries();
   }
 
-  private String produceForbiddenCharsDisplayString() {
-    final String retString =
-        HpcUtil.generateForbiddenCharsFormatted(
-            Optional.empty(), Optional.empty(),
-            Optional.of("{"), Optional.of("}"));
-    return retString;
-  }
+  /**
+   * Validate a path. 1. Not null or empty string. 2. Contains no white space. 3. Contains no
+   * characters that are invalid (i.e. not acceptable by IRODS).
+   *
+   * @param path The path to validate.
+   * @throws HpcException if the path is invalid.
+   */
+  private void validatePath(String path) throws HpcException {
+    if (StringUtils.isEmpty(path)) {
+      throw new HpcException("Null or empty path", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
-  private void validateDmeArchivePathHasNoForbiddenChars(String path) throws HpcException {
-    if (HpcUtil.doesPathContainForbiddenChars(path)) {
-      final String exceptionMsg =
-          MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS
-              .replace("PLACEHOLDER-PATH", path)
-              .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
-      throw new HpcException(exceptionMsg, HpcErrorType.INVALID_REQUEST_INPUT);
+    if (StringUtils.containsWhitespace(path)) {
+      throw new HpcException("Path contains white space", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    for (String invalidCharacter : INVALID_PATH_CHARACTERS) {
+      if (path.contains(invalidCharacter)) {
+        throw new HpcException(
+            "Invalid character [" + invalidCharacter + "] in path [" + path + "]",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
     }
   }
 
+  /**
+   * Validate all paths in bulk registration request
+   *
+   * @param dataObjRegistrationItems The registration items
+   * @throws HpcException if the any path is invalid.
+   */
   private void validateDataObjectRegistrationDestinationPaths(
-      List<HpcDataObjectRegistrationItemDTO> dataObjRegItems) throws HpcException {
-    List<String> invalidPaths = new ArrayList<>();
-    List<String> otherErrors = new ArrayList<>();
-    for (HpcDataObjectRegistrationItemDTO regItem : dataObjRegItems) {
-      try {
-        validateDmeArchivePathHasNoForbiddenChars(regItem.getPath());
-      } catch (HpcException e) {
-        String exceptionMsg = e.getMessage();
-        String badPathForbidCharsMsg =
-            MSG_TEMPLATE__PATH_HAS_FORBIDDEN_CHARS
-                .replace("PLACEHOLDER-PATH", regItem.getPath())
-                .replace("PLACEHOLDER-CHARSET", produceForbiddenCharsDisplayString());
-        if (badPathForbidCharsMsg.equals(exceptionMsg)) {
-          invalidPaths.add(regItem.getPath());
-        } else {
-          otherErrors.add(exceptionMsg);
-        }
-      }
-    }
-    StringBuilder sb = new StringBuilder();
-    sb.append(constructMultiInvalidPathsErrMsg(invalidPaths));
-    if (sb.length() > 0) {
-      sb.append("\n\n\n");
-    }
-    sb.append(constructOtherErrorsMsg(otherErrors));
-    if (sb.length() > 0) {
-      String accumulatedErrorsMsg = sb.toString();
-      throw new HpcException(accumulatedErrorsMsg, HpcErrorType.INVALID_REQUEST_INPUT);
+      List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems) throws HpcException {
+    for (HpcDataObjectRegistrationItemDTO registrationItem : dataObjectRegistrationItems) {
+      validatePath(registrationItem.getPath());
     }
   }
 
-  private String constructMultiInvalidPathsErrMsg(List<String> invalidPaths) {
-    String retMsg = "";
-    if (null != invalidPaths && !invalidPaths.isEmpty()) {
-      StringBuilder sb = new StringBuilder();
-      String indent = "     ";
-      for (int i = 0; i < invalidPaths.size(); i++) {
-        sb.append("\n").append(indent).append(i).append(". ").append(invalidPaths.get(i));
-      }
-      final String thePaths4Display = sb.toString();
-
-      final String forbiddenChars4Display =
-          HpcUtil.generateForbiddenCharsFormatted(
-              Optional.empty(), Optional.empty(),
-              Optional.of("{"), Optional.of("}"));
-
-      retMsg =
-          MSG_TEMPLATE__MULTI_INVALID_PATHS
-              .replace("PLACEHOLDER-PATHS", thePaths4Display)
-              .replace("PLACEHOLDER-CHARSET", forbiddenChars4Display);
-    }
-
-    return retMsg;
+  private HpcDataObjectRegistrationItemDTO dataObjectRegistrationRequestToDTO(
+      HpcDataObjectRegistrationRequest request, String path) {
+    HpcDataObjectRegistrationItemDTO dto = new HpcDataObjectRegistrationItemDTO();
+    dto.setCallerObjectId(request.getCallerObjectId());
+    dto.setCreateParentCollections(request.getCreateParentCollections());
+    dto.setPath(path);
+    dto.setSource(request.getSource());
+    dto.getDataObjectMetadataEntries().addAll(request.getMetadataEntries());
+    dto.setParentCollectionsBulkMetadataEntries(request.getParentCollectionsBulkMetadataEntries());
+    return dto;
   }
 
-  private String constructOtherErrorsMsg(List<String> otherErrors) {
-    String retMsg = "";
-    if (null != otherErrors && !otherErrors.isEmpty()) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("Other errors: ");
-      for (int j = 0; j < otherErrors.size(); j++) {
-        sb.append("\n[[ ").append(otherErrors.get(j)).append(" ]]");
-      }
-      retMsg = sb.toString();
+  private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
+      throws HpcException {
+    // Input validation.
+    if (path == null) {
+      throw new HpcException("Null path", HpcErrorType.INVALID_REQUEST_INPUT);
     }
-
-    return retMsg;
+    if (userId == null) {
+      throw new HpcException("Null userId", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    // Validate the collection exists.
+    if (dataManagementService.getCollection(path, false) == null) {
+      return null;
+    }
+    HpcSubjectPermission hsPerm = dataManagementService.acquireCollectionPermission(path, userId);
+    HpcPermissionForCollection resultHpcPermForColl = new HpcPermissionForCollection();
+    resultHpcPermForColl.setCollectionPath(path);
+    resultHpcPermForColl.setPermission(hsPerm.getPermission());
+    return resultHpcPermForColl;
   }
 }
