@@ -183,12 +183,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           "Globus data transfer doesn't support progress listener", HpcErrorType.UNEXPECTED_ERROR);
     }
 
+    if(uploadRequest.getS3UploadSource() != null) {
+      throw new HpcException(
+          "Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
+    }
+    
     // Generating upload URL or direct file upload not supported.
     if (uploadRequest.getGenerateUploadRequestURL()) {
       throw new HpcException(
           "Globus data transfer doesn't support upload URL", HpcErrorType.UNEXPECTED_ERROR);
     }
-
+    
     // Calculate the archive destination.
     HpcFileLocation archiveDestinationLocation =
         getArchiveDestinationLocation(
@@ -220,7 +225,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     String requestId =
         transferData(
             globusConnection.getTransferClient(authenticatedToken),
-            uploadRequest.getSourceLocation(),
+            uploadRequest.getGlobusUploadSource().getSourceLocation(),
             archiveDestinationLocation);
 
     // Package and return the response.
@@ -230,6 +235,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
     uploadResponse.setDataTransferStarted(Calendar.getInstance());
     uploadResponse.setDataTransferCompleted(null);
+    uploadResponse.setUploadSource(uploadRequest.getGlobusUploadSource().getSourceLocation());
     if (baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
       uploadResponse.setDataTransferStatus(
           HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);

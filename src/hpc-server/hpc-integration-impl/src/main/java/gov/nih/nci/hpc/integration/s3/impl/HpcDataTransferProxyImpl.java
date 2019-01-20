@@ -118,11 +118,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Integer uploadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
-    // Upload from remote endpoint not supported.
-    if (uploadRequest.getSourceLocation() != null) {
+    if(uploadRequest.getGlobusUploadSource() != null) {
       throw new HpcException(
-          "S3 data transfer doesn't support upload from remote endpoint",
-          HpcErrorType.UNEXPECTED_ERROR);
+          "Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
     }
 
     // Calculate the archive destination.

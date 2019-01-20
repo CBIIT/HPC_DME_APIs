@@ -50,8 +50,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -82,6 +84,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   // archive)
   private static final String OBJECT_ID_ATTRIBUTE = "uuid";
   private static final String REGISTRAR_ID_ATTRIBUTE = "user_id";
+
+  // Multiple upload source error message.
+  private static final String MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE =
+      "Multiple upload source and/or generate upload request provided";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -161,7 +167,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(
-      HpcFileLocation sourceLocation,
+      HpcGlobusUploadSource globusUploadSource,
+      HpcS3UploadSource s3UploadSource,
       File sourceFile,
       boolean generateUploadRequestURL,
       String uploadRequestURLChecksum,
@@ -170,29 +177,61 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       String callerObjectId,
       String configurationId)
       throws HpcException {
-    // Validate one and only one data source is provided, or request for an upload
-    // URL.
-    if (sourceLocation == null && sourceFile == null && !generateUploadRequestURL) {
+    // Input Validation. One and only one of the first 4 parameters is expected to be provided.
+
+    // Validate an upload source was provided.
+    if (globusUploadSource == null
+        && s3UploadSource == null
+        && sourceFile == null
+        && !generateUploadRequestURL) {
       throw new HpcException(
           "No data transfer source or data attachment provided or upload URL requested",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    if (sourceLocation != null && sourceFile != null) {
-      throw new HpcException(
-          "Both data transfer source and data attachment provided",
-          HpcErrorType.INVALID_REQUEST_INPUT);
+
+    // Validate Globus upload source.
+    if (globusUploadSource != null) {
+      if (s3UploadSource != null || sourceFile != null || generateUploadRequestURL) {
+        throw new HpcException(
+            MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (!isValidFileLocation(globusUploadSource.getSourceLocation())) {
+        throw new HpcException("Invalid Globus upload source", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
     }
-    if (generateUploadRequestURL && (sourceLocation != null || sourceFile != null)) {
+
+    // Validate S3 upload source.
+    if (s3UploadSource != null) {
+      if (globusUploadSource != null || sourceFile != null || generateUploadRequestURL) {
+        throw new HpcException(
+            MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (!isValidFileLocation(s3UploadSource.getSourceLocation())
+          || !isValidS3Account(s3UploadSource.getAccount())) {
+        throw new HpcException("Invalid S3 upload source", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
+    // Validate source file.
+    if (sourceFile != null
+        && (globusUploadSource != null || s3UploadSource != null || generateUploadRequestURL)) {
       throw new HpcException(
-          "Both data transfer source/file and URL upload request provided",
-          HpcErrorType.INVALID_REQUEST_INPUT);
+          MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate generate upload request URL.
+    if (generateUploadRequestURL
+        && (globusUploadSource != null || s3UploadSource != null || sourceFile != null)) {
+      throw new HpcException(
+          MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Create an upload request.
     HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
     uploadRequest.setPath(path);
     uploadRequest.setCallerObjectId(callerObjectId);
-    uploadRequest.setSourceLocation(sourceLocation);
+    uploadRequest.setGlobusUploadSource(globusUploadSource);
+    uploadRequest.setS3UploadSource(s3UploadSource);
     uploadRequest.setSourceFile(sourceFile);
     uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
     uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
@@ -398,6 +437,21 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             getAuthenticatedToken(dataTransferType, configurationId), fileLocation, getSize);
   }
 
+  @Override
+  public HpcPathAttributes getPathAttributes(
+      HpcFileLocation fileLocation, HpcS3Account s3Account, boolean getSize) throws HpcException {
+    // Input validation.
+    if (!isValidFileLocation(fileLocation) || !isValidS3Account(s3Account)) {
+      throw new HpcException(
+          "Invalid file location or S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    return dataTransferProxies
+        .get(HpcDataTransferType.S_3)
+        .getPathAttributes(fileLocation, s3Account, getSize);
+  }
+
+  @Override
   public List<HpcDirectoryScanItem> scanDirectory(
       HpcDataTransferType dataTransferType,
       HpcFileLocation directoryLocation,
@@ -1006,7 +1060,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Validate source location exists and accessible.
     validateUploadSourceFileLocation(
-        dataTransferType, uploadRequest.getSourceLocation(), configurationId);
+        dataTransferType,
+        uploadRequest.getGlobusUploadSource(),
+        uploadRequest.getS3UploadSource(),
+        configurationId);
 
     // Check that the data transfer system can accept transfer requests.
     boolean globusSyncUpload =
@@ -1043,7 +1100,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * Validate upload source file location.
    *
    * @param dataTransferType The data transfer type.
-   * @param sourceFileLocation The file location to validate. If null, no validation is performed.
+   * @param globusUploadSource The Globus source to validate.
+   * @param s3UploadSource The S3 source to validate.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
    * @throws HpcException if the upload source location doesn't exist, or not accessible, or it's a
@@ -1051,16 +1109,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    */
   private void validateUploadSourceFileLocation(
       HpcDataTransferType dataTransferType,
-      HpcFileLocation sourceFileLocation,
+      HpcGlobusUploadSource globusUploadSource,
+      HpcS3UploadSource s3UploadSource,
       String configurationId)
       throws HpcException {
 
-    if (sourceFileLocation == null) {
+    HpcPathAttributes pathAttributes = null;
+    HpcFileLocation sourceFileLocation = null;
+    if (globusUploadSource != null) {
+      sourceFileLocation = globusUploadSource.getSourceLocation();
+      pathAttributes =
+          getPathAttributes(dataTransferType, sourceFileLocation, false, configurationId);
+    } else if (s3UploadSource != null) {
+      sourceFileLocation = s3UploadSource.getSourceLocation();
+      pathAttributes = getPathAttributes(sourceFileLocation, s3UploadSource.getAccount(), false);
+    } else {
+      // No source to validate.
       return;
     }
-
-    HpcPathAttributes pathAttributes =
-        getPathAttributes(dataTransferType, sourceFileLocation, false, configurationId);
 
     // Validate source file accessible
     if (!pathAttributes.getIsAccessible()) {
@@ -1354,19 +1420,30 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Determine the data transfer type to use in this upload request (i.e. Globus or S3).
     HpcDataTransferType archiveDataTransferType =
         dataManagementConfigurationLocator.getArchiveDataTransferType(configurationId);
-    if (uploadRequest.getSourceLocation() != null) {
-      // It's an asynchronous upload request - always performed with Globus.
+
+    if (uploadRequest.getGlobusUploadSource() != null) {
+      // It's an asynchronous upload request w/ Globus. This is supported by both Cleversafe and POSIX archives.
       return HpcDataTransferType.GLOBUS;
     }
+
+    if (uploadRequest.getS3UploadSource() != null) {
+      // It's an asynchronous upload request w/ S3. This is only supported Cleversafe archive.
+      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+        throw new HpcException(
+            "S3 upload source not supported by POSIX archive", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      return HpcDataTransferType.S_3;
+    }
+
     if (uploadRequest.getSourceFile() != null) {
       // It's a synchrnous upload request - use the configured archive (S3/Cleversafe or Globus/POSIX).
       return archiveDataTransferType;
-
-    } else if (uploadRequest.getGenerateUploadRequestURL()) {
-      // It's a request to generate upload URL - Only supported by S3.
+    }
+    if (uploadRequest.getGenerateUploadRequestURL()) {
+      // It's a request to generate upload URL. This is only supported Cleversafe archive.
       if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
         throw new HpcException(
-            "Generate upload URL not supported by " + HpcDataTransferType.GLOBUS.value(),
+            "Generate upload URL not supported by POSIX archive",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
       return HpcDataTransferType.S_3;

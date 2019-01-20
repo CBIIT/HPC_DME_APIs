@@ -136,7 +136,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Transfer the data file.
         HpcDataObjectUploadResponse uploadResponse =
             dataTransferService.uploadDataObject(
-                systemGeneratedMetadata.getSourceLocation(),
+                toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()),
+                null,
                 null,
                 false,
                 null,
@@ -386,6 +387,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Transfer the data file from the temporary archive into the archive.
         HpcDataObjectUploadResponse uploadResponse =
             dataTransferService.uploadDataObject(
+                null,
                 null,
                 file,
                 false,
@@ -1498,5 +1500,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
     // Return true if the current time is passed the expiration time.
     return expiration.before(new Date());
+  }
+
+  /**
+   * Package a source location into a Globus upload source object.
+   *
+   * @param sourceLocation The source location to package.
+   * @return The packaged Globus upload source.
+   */
+  private HpcGlobusUploadSource toGlobusUploadSource(HpcFileLocation sourceLocation) {
+    HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+    globusUploadSource.setSourceLocation(sourceLocation);
+    return globusUploadSource;
   }
 }

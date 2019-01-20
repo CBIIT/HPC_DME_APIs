@@ -128,7 +128,7 @@ public class HpcDomainValidator {
     if (location == null
         || StringUtils.isEmpty(location.getFileContainerId())
         || StringUtils.isEmpty(location.getFileId())) {
-      logger.info("Invalid File Location: " + location);
+      logger.info("Invalid File Location: {}", location);
       return false;
     }
     return true;
