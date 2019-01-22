@@ -236,6 +236,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferStarted(Calendar.getInstance());
     uploadResponse.setDataTransferCompleted(null);
     uploadResponse.setUploadSource(uploadRequest.getGlobusUploadSource().getSourceLocation());
+    uploadResponse.setSourceSize(uploadRequest.getSourceSize());
     if (baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
       uploadResponse.setDataTransferStatus(
           HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
@@ -869,6 +870,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
     uploadResponse.setDataTransferStarted(transferStarted);
     uploadResponse.setDataTransferCompleted(Calendar.getInstance());
+    uploadResponse.setSourceSize(sourceFile.length());
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
 
     return uploadResponse;

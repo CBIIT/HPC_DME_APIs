@@ -73,6 +73,18 @@ public class HpcScheduledTasksImpl {
         "processDataTranferUploadInProgressWithGeneratedURLTask()",
         systemBusService::processDataTranferUploadInProgressWithGeneratedURL);
   }
+  
+  /**
+   * Update the data transfer upload status of all data objects that are streamed from AWS S3.
+   */
+  @Scheduled(
+    cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingInProgress.delay}"
+  )
+  private void processDataTranferUploadStreamingInProgress() {
+    executeTask(
+        "processDataTranferUploadStreamingInProgress()",
+        systemBusService::processDataTranferUploadStreamingInProgress);
+  }
 
   /**
    * Process data objects in temporary archive task. This tasks transfers data from the temporary

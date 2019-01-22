@@ -50,7 +50,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -111,6 +113,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
+  public Object authenticate(HpcS3Account s3Account) throws HpcException {
+    return s3Connection.authenticate(s3Account);
+  }
+
+  @Override
   public HpcDataObjectUploadResponse uploadDataObject(
       Object authenticatedToken,
       HpcDataObjectUploadRequest uploadRequest,
@@ -118,9 +125,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       Integer uploadRequestURLExpiration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException {
-    if(uploadRequest.getGlobusUploadSource() != null) {
-      throw new HpcException(
-          "Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
+    if (uploadRequest.getGlobusUploadSource() != null) {
+      throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
     }
 
     // Calculate the archive destination.
@@ -151,7 +157,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           uploadRequestURLExpiration,
           uploadRequest.getUploadRequestURLChecksum());
 
-    } else {
+    } else if (uploadRequest.getSourceFile() != null) {
       // Upload a file
       return uploadDataObject(
           authenticatedToken,
@@ -159,6 +165,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           archiveDestinationLocation,
           progressListener,
           baseArchiveDestination.getType());
+    } else {
+      // Upload from AWS S3 source.
+      return uploadDataObject(
+          authenticatedToken,
+          uploadRequest.getS3UploadSource(),
+          archiveDestinationLocation,
+          uploadRequest.getSourceSize(),
+          progressListener);
     }
   }
 
@@ -320,14 +334,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     } catch (AmazonServiceException ase) {
       throw new HpcException(
-          "[S3] Failed to get metadata: " + request,
+          "[S3] Failed to get object or metadata: " + ase.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR,
           HpcIntegratedSystem.CLEVERSAFE,
           ase);
 
     } catch (AmazonClientException ace) {
       throw new HpcException(
-          "[S3] Failed to get metadata: " + request,
+          "[S3] Failed to get object or metadata: " + ace.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR,
           HpcIntegratedSystem.CLEVERSAFE,
           ace);
@@ -411,11 +425,117 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferStarted(dataTransferStarted);
     uploadResponse.setDataTransferCompleted(dataTransferCompleted);
     uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
+    uploadResponse.setSourceSize(sourceFile.length());
     if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
       uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
     } else {
       uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
     }
+
+    return uploadResponse;
+  }
+
+  /**
+   * Upload a data object file from AWS S3 source.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param sourceFile The file to upload.
+   * @param archiveDestinationLocation The archive destination location.
+   * @param size the size of the file to upload.
+   * @param progressListener (Optional) a progress listener for async notification on transfer
+   *     completion.
+   * @return A data object upload response.
+   * @throws HpcException on data transfer system failure.
+   */
+  private HpcDataObjectUploadResponse uploadDataObject(
+      Object authenticatedToken,
+      HpcS3UploadSource s3UploadSource,
+      HpcFileLocation archiveDestinationLocation,
+      Long size,
+      HpcDataTransferProgressListener progressListener)
+      throws HpcException {
+    if (progressListener == null) {
+      throw new HpcException(
+          "[S3] No progress listener provided for a upload from AWS S3 destination",
+          HpcErrorType.UNEXPECTED_ERROR);
+    }
+    if (size == null) {
+      throw new HpcException(
+          "[S3] File size not provided for an upload from AWS S3", HpcErrorType.UNEXPECTED_ERROR);
+    }
+
+    // Authenticate the S3 account.
+    Object s3AccountAuthenticatedToken = s3Connection.authenticate(s3UploadSource.getAccount());
+
+    // Generate a download pre-signed URL for the requested data file from AWS.
+    String sourceURL =
+        generateDownloadRequestURL(
+            s3AccountAuthenticatedToken, s3UploadSource.getSourceLocation(), S3_STREAM_EXPIRATION);
+
+    Calendar dataTransferStarted = Calendar.getInstance();
+    CompletableFuture<Void> s3TransferManagerUploadFuture =
+        CompletableFuture.runAsync(
+            () -> {
+              try {
+                // Create source URL and open a connection to it.
+                InputStream sourceInputStream = new URL(sourceURL).openStream();
+
+                // Create a S3 upload request.
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(size);
+                PutObjectRequest request =
+                    new PutObjectRequest(
+                        archiveDestinationLocation.getFileContainerId(),
+                        archiveDestinationLocation.getFileId(),
+                        sourceInputStream,
+                        metadata);
+
+                // Set the read limit on the request to avoid AWSreset exceptions.
+                request.getRequestClientOptions().setReadLimit(getReadLimit(size));
+
+                // Upload asynchronously. AWS transfer manager will perform the upload in its own managed thread.
+                Upload s3Upload =
+                    s3Connection.getTransferManager(authenticatedToken).upload(request);
+
+                // Attach a progress listener.
+                String sourceDestinationLogMessage =
+                    "upload from "
+                        + s3UploadSource.getSourceLocation().getFileContainerId()
+                        + ":"
+                        + s3UploadSource.getSourceLocation().getFileId();
+                s3Upload.addProgressListener(
+                    new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
+
+                logger.info(
+                    "S3 upload AWS->Cleversafe [{}] started. Source size - {} bytes. Read limit - {}",
+                    sourceDestinationLogMessage,
+                    size,
+                    request.getRequestClientOptions().getReadLimit());
+
+                // Wait for the result. This ensures the input stream to the URL remains opened and connected until the download is complete.
+                // Note that this wait for AWS transfer manager completion is done in a separate thread (from s3Executor pool), so callers to
+                // the API don't wait.
+                s3Upload.waitForUploadResult();
+
+              } catch (AmazonClientException | HpcException | IOException e) {
+                logger.error("[S3] Failed to upload from AWS S3 destination: " + e.getMessage(), e);
+                progressListener.transferFailed(e.getMessage());
+
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+              }
+            },
+            s3Executor);
+
+    // Create and populate the response object.
+    HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+    uploadResponse.setArchiveLocation(archiveDestinationLocation);
+    uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
+    uploadResponse.setDataTransferStarted(dataTransferStarted);
+    uploadResponse.setUploadSource(s3UploadSource.getSourceLocation());
+    uploadResponse.setDataTransferRequestId(
+        String.valueOf(s3TransferManagerUploadFuture.hashCode()));
+    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS);
 
     return uploadResponse;
   }
@@ -574,8 +694,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       getPathAttributes(s3AccountAuthenticatedToken, s3Destination.getDestinationLocation(), false);
     } catch (HpcException e) {
       throw new HpcException(
-          "Failed to access S3 bucket: " + s3Destination.getDestinationLocation(),
-          HpcErrorType.INVALID_REQUEST_INPUT);
+          "Failed to access AWS S3 bucket: ["
+              + e.getMessage()
+              + "] "
+              + s3Destination.getDestinationLocation(),
+          HpcErrorType.INVALID_REQUEST_INPUT,
+          e);
     }
 
     // Generate a download pre-signed URL for the requested data file from the Cleversafe archive.
@@ -617,7 +741,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     if (progressListener == null) {
       throw new HpcException(
           "[S3] No progress listener provided for a download to AWS S3 destination",
-          HpcErrorType.UNAUTHORIZED_REQUEST);
+          HpcErrorType.UNEXPECTED_ERROR);
     }
 
     CompletableFuture<Void> s3TransferManagerDownloadFuture =
@@ -658,9 +782,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                     sourceDestinationLogMessage,
                     fileSize,
                     request.getRequestClientOptions().getReadLimit());
-                
+
                 // Wait for the result. This ensures the input stream to the URL remains opened and connected until the download is complete.
-                // Note that this wait for AWS transfer manager completion is done in a separate thread (from s3Executor pool), so callers to 
+                // Note that this wait for AWS transfer manager completion is done in a separate thread (from s3Executor pool), so callers to
                 // the API don't wait.
                 s3Upload.waitForUploadResult();
 

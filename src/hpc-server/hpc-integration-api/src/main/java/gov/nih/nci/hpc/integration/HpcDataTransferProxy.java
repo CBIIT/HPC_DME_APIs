@@ -46,6 +46,17 @@ public interface HpcDataTransferProxy {
       throws HpcException;
 
   /**
+   * Authenticate a AWS S3 account.
+   *
+   * @param s3Account S3 account.
+   * @return An authenticated token, to be used in subsequent calls to data transfer.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default Object authenticate(HpcS3Account s3Account) throws HpcException {
+    throw new HpcException("authenticate(s3Account) not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
    * Check if upload/download requests are accepted at the moment.
    *
    * @param authenticatedToken An authenticated token.
@@ -189,21 +200,7 @@ public interface HpcDataTransferProxy {
    */
   public HpcPathAttributes getPathAttributes(
       Object authenticatedToken, HpcFileLocation fileLocation, boolean getSize) throws HpcException;
-  
-  /**
-   * Get attributes of a S3 file using provided S3 account
-   *
-   * @param fileLocation The endpoint/path to check.
-   * @param s3Account S3 account.
-   * @param getSize If set to true, the file/directory size will be returned.
-   * @return The path attributes.
-   * @throws HpcException on data transfer system failure.
-   */
-  public default HpcPathAttributes getPathAttributes(
-      HpcFileLocation fileLocation, HpcS3Account s3Account, boolean getSize) throws HpcException {
-    throw new HpcException("getPathAttributes(fileLocation, s3Account, getSize) not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
-  
+
   /**
    * Scan a directory (recursively) and return a list of all its files.
    *

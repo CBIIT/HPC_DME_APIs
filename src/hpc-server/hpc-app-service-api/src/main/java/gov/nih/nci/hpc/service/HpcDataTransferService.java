@@ -12,7 +12,6 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -29,7 +28,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -197,18 +195,6 @@ public interface HpcDataTransferService {
       boolean getSize,
       String configurationId)
       throws HpcException;
-
-  /**
-   * Get path attributes for a given file in AWS S3 (using provided user credentials).
-   *
-   * @param fileLocation The endpoint/path to get attributes for.
-   * @param s3Account The AWS S3 account to use.
-   * @param getSize If set to true, the file/directory size will be returned.
-   * @return The path attributes.
-   * @throws HpcException on service failure.
-   */
-  public HpcPathAttributes getPathAttributes(
-      HpcFileLocation fileLocation, HpcS3Account s3Account, boolean getSize) throws HpcException;
 
   /**
    * Scan a directory (recursively) and return a list of all its files.
