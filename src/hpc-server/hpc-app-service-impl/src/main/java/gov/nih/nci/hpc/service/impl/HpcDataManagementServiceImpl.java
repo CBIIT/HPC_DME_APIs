@@ -102,6 +102,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // Prepared query to get data objects that have their data transfer upload by
   // users via generated URL.
   private List<HpcMetadataQuery> dataTransferInProgressWithGeneratedURLQuery = new ArrayList<>();
+  
+  // Prepared query to get data objects that have their data transfer upload in progress via streaming.
+  private List<HpcMetadataQuery> dataTransferStreamingInProgressQuery = new ArrayList<>();
 
   // Prepared query to get data objects that have their data in temporary archive.
   private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
@@ -154,6 +157,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
             DATA_TRANSFER_STATUS_ATTRIBUTE,
             HpcMetadataQueryOperator.EQUAL,
             HpcDataTransferUploadStatus.URL_GENERATED.value()));
+    
+    // Prepared query to get data objects that have their data transfer upload by
+    // users via generated URL.
+    dataTransferStreamingInProgressQuery.add(
+        toMetadataQuery(
+            DATA_TRANSFER_STATUS_ATTRIBUTE,
+            HpcMetadataQueryOperator.EQUAL,
+            HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS.value()));
 
     // Prepare the query to get data objects in temporary archive.
     dataTransferInTemporaryArchiveQuery.add(
@@ -564,7 +575,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         dataManagementAuthenticator.getAuthenticatedToken(),
         dataTransferInProgressWithGeneratedURLQuery);
   }
-
+  
+  @Override
+  public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException {
+    return dataManagementProxy.getDataObjects(
+        dataManagementAuthenticator.getAuthenticatedToken(),
+        dataTransferStreamingInProgressQuery);
+  }
+  
   @Override
   public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException {
     return dataManagementProxy.getDataObjects(

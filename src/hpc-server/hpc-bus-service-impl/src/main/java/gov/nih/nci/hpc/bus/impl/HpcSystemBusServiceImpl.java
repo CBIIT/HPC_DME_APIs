@@ -269,89 +269,66 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     for (HpcDataObject dataObject : dataObjectsInProgress) {
       String path = dataObject.getAbsolutePath();
       logger.info("Processing data object uploaded via URL: {}", path);
+
+      // Get the system metadata.
+      HpcSystemGeneratedMetadata systemGeneratedMetadata =
+          metadataService.getDataObjectSystemGeneratedMetadata(path);
+
       try {
-        // Get the system metadata.
-        HpcSystemGeneratedMetadata systemGeneratedMetadata =
-            metadataService.getDataObjectSystemGeneratedMetadata(path);
-
-        // Lookup the archive for this data object.
-        HpcPathAttributes archivePathAttributes =
-            dataTransferService.getPathAttributes(
-                systemGeneratedMetadata.getDataTransferType(),
-                systemGeneratedMetadata.getArchiveLocation(),
-                true,
-                systemGeneratedMetadata.getConfigurationId());
-        if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
-          // The data object is found in archive. i.e. user completed the upload.
-
-          // Update the archive (Cleversafe) data object's system-metadata.
-          String checksum =
-              dataTransferService.addSystemGeneratedMetadataToDataObject(
-                  systemGeneratedMetadata.getArchiveLocation(),
-                  systemGeneratedMetadata.getDataTransferType(),
-                  systemGeneratedMetadata.getConfigurationId(),
-                  systemGeneratedMetadata.getObjectId(),
-                  systemGeneratedMetadata.getRegistrarId());
-
-          // Update the data management (iRODS) data object's system-metadata.
-          Calendar dataTransferCompleted = Calendar.getInstance();
+        if (!updateS3UploadStatus(path, systemGeneratedMetadata)
+            && generatedURLExpired(
+                systemGeneratedMetadata.getDataTransferStarted(),
+                systemGeneratedMetadata.getConfigurationId())) {
+          // The data object was not found in archive. i.e. user did not complete the
+          // upload and the upload URL has expired.
           metadataService.updateDataObjectSystemGeneratedMetadata(
               path,
               null,
               null,
-              checksum,
-              HpcDataTransferUploadStatus.ARCHIVED,
+              null,
+              HpcDataTransferUploadStatus.URL_EXPIRED,
               null,
               null,
-              dataTransferCompleted,
-              archivePathAttributes.getSize());
+              null,
+              null);
 
-          // Add an event if needed.
-          if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
-            addDataTransferUploadEvent(
-                systemGeneratedMetadata.getRegistrarId(),
-                path,
-                HpcDataTransferUploadStatus.ARCHIVED,
-                systemGeneratedMetadata.getSourceLocation(),
-                dataTransferCompleted,
-                systemGeneratedMetadata.getDataTransferType(),
-                systemGeneratedMetadata.getConfigurationId());
-          }
-
-        } else {
-          // The data object was not found in archive. i.e. user did not complete the
-          // upload.
-
-          // Check if the URL has expired.
-          if (generatedURLExpired(
-              systemGeneratedMetadata.getDataTransferStarted(),
-              systemGeneratedMetadata.getConfigurationId())) {
-            // The generated upload URL expired. Update the data transfer status and
-            // add an event.
-            metadataService.updateDataObjectSystemGeneratedMetadata(
-                path,
-                null,
-                null,
-                null,
-                HpcDataTransferUploadStatus.URL_EXPIRED,
-                null,
-                null,
-                null,
-                null);
-
-            addDataTransferUploadEvent(
-                systemGeneratedMetadata.getRegistrarId(),
-                path,
-                HpcDataTransferUploadStatus.URL_EXPIRED,
-                null,
-                null,
-                systemGeneratedMetadata.getDataTransferType(),
-                systemGeneratedMetadata.getConfigurationId());
-          }
+          addDataTransferUploadEvent(
+              systemGeneratedMetadata.getRegistrarId(),
+              path,
+              HpcDataTransferUploadStatus.URL_EXPIRED,
+              null,
+              null,
+              systemGeneratedMetadata.getDataTransferType(),
+              systemGeneratedMetadata.getConfigurationId());
         }
 
       } catch (HpcException e) {
         logger.error("Failed to process data transfer upload in progress with URL:" + path, e);
+
+        // Delete the data object.
+        deleteDataObject(path);
+      }
+    }
+  }
+
+  @Override
+  @HpcExecuteAsSystemAccount
+  public void processDataTranferUploadStreamingInProgress() throws HpcException {
+    // Iterate through the data objects that their data transfer is in-progress.
+    List<HpcDataObject> dataObjectsInProgress =
+        dataManagementService.getDataTranferUploadStreamingInProgress();
+    for (HpcDataObject dataObject : dataObjectsInProgress) {
+      String path = dataObject.getAbsolutePath();
+      logger.info("Processing data object uploaded via Streaming: {}", path);
+      try {
+        // Get the system metadata.
+        HpcSystemGeneratedMetadata systemGeneratedMetadata =
+            metadataService.getDataObjectSystemGeneratedMetadata(path);
+        
+        updateS3UploadStatus(path, systemGeneratedMetadata);
+
+      } catch (HpcException e) {
+        logger.error("Failed to process data transfer upload streaming in progress:" + path, e);
 
         // Delete the data object.
         deleteDataObject(path);
@@ -1512,5 +1489,65 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
     globusUploadSource.setSourceLocation(sourceLocation);
     return globusUploadSource;
+  }
+
+  /**
+   * Check if an upload from S3 (either via URL upload or streaming) has completed.
+   *
+   * @param The path of the data object to check if an upload from S3 completed.
+   * @param systemGeneratedMetadata The system generated metadata for the data object.
+   * @return true if the uploaded completed, or false otherwise.
+   * @throws HpcException If failed to check/update upload status.
+   */
+  private boolean updateS3UploadStatus(
+      String path, HpcSystemGeneratedMetadata systemGeneratedMetadata) throws HpcException {
+    // Lookup the archive for this data object.
+    HpcPathAttributes archivePathAttributes =
+        dataTransferService.getPathAttributes(
+            systemGeneratedMetadata.getDataTransferType(),
+            systemGeneratedMetadata.getArchiveLocation(),
+            true,
+            systemGeneratedMetadata.getConfigurationId());
+    if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
+      // The data object is found in archive. i.e. upload was completed successfully.
+
+      // Update the archive (Cleversafe) data object's system-metadata.
+      String checksum =
+          dataTransferService.addSystemGeneratedMetadataToDataObject(
+              systemGeneratedMetadata.getArchiveLocation(),
+              systemGeneratedMetadata.getDataTransferType(),
+              systemGeneratedMetadata.getConfigurationId(),
+              systemGeneratedMetadata.getObjectId(),
+              systemGeneratedMetadata.getRegistrarId());
+
+      // Update the data management (iRODS) data object's system-metadata.
+      Calendar dataTransferCompleted = Calendar.getInstance();
+      metadataService.updateDataObjectSystemGeneratedMetadata(
+          path,
+          null,
+          null,
+          checksum,
+          HpcDataTransferUploadStatus.ARCHIVED,
+          null,
+          null,
+          dataTransferCompleted,
+          archivePathAttributes.getSize());
+
+      // Add an event if needed.
+      if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+        addDataTransferUploadEvent(
+            systemGeneratedMetadata.getRegistrarId(),
+            path,
+            HpcDataTransferUploadStatus.ARCHIVED,
+            systemGeneratedMetadata.getSourceLocation(),
+            dataTransferCompleted,
+            systemGeneratedMetadata.getDataTransferType(),
+            systemGeneratedMetadata.getConfigurationId());
+      }
+
+      return true;
+    }
+
+    return false;
   }
 }

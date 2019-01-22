@@ -226,15 +226,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    // Validate source location exists and accessible.
+    Long sourceSize =
+        validateUploadSourceFileLocation(
+            globusUploadSource, s3UploadSource, sourceFile, configurationId);
+
     // Create an upload request.
     HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
     uploadRequest.setPath(path);
+    uploadRequest.setUserId(userId);
     uploadRequest.setCallerObjectId(callerObjectId);
     uploadRequest.setGlobusUploadSource(globusUploadSource);
     uploadRequest.setS3UploadSource(s3UploadSource);
     uploadRequest.setSourceFile(sourceFile);
     uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
     uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
+    uploadRequest.setSourceSize(sourceSize);
 
     // Upload the data object file.
     return uploadDataObject(uploadRequest, configurationId);
@@ -435,20 +442,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         .get(dataTransferType)
         .getPathAttributes(
             getAuthenticatedToken(dataTransferType, configurationId), fileLocation, getSize);
-  }
-
-  @Override
-  public HpcPathAttributes getPathAttributes(
-      HpcFileLocation fileLocation, HpcS3Account s3Account, boolean getSize) throws HpcException {
-    // Input validation.
-    if (!isValidFileLocation(fileLocation) || !isValidS3Account(s3Account)) {
-      throw new HpcException(
-          "Invalid file location or S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    return dataTransferProxies
-        .get(HpcDataTransferType.S_3)
-        .getPathAttributes(fileLocation, s3Account, getSize);
   }
 
   @Override
@@ -1040,7 +1033,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   /**
-   * Upload a data object file.
+   * Upload a data object.
    *
    * @param uploadRequest The data upload request.
    * @param configurationId The data management configuration ID.
@@ -1049,32 +1042,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    */
   private HpcDataObjectUploadResponse uploadDataObject(
       HpcDataObjectUploadRequest uploadRequest, String configurationId) throws HpcException {
-    // Input validation.
-    if (StringUtils.isEmpty(uploadRequest.getPath())) {
-      throw new HpcException("Null/Empty data object path", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
     // Determine the data transfer type to use in this upload request (i.e. Globus or S3).
     HpcDataTransferType dataTransferType =
         getUploadDataTransferType(uploadRequest, configurationId);
 
-    // Validate source location exists and accessible.
-    validateUploadSourceFileLocation(
-        dataTransferType,
-        uploadRequest.getGlobusUploadSource(),
-        uploadRequest.getS3UploadSource(),
-        configurationId);
-
-    // Check that the data transfer system can accept transfer requests.
-    boolean globusSyncUpload =
-        dataTransferType.equals(HpcDataTransferType.GLOBUS)
-            && uploadRequest.getSourceFile() != null;
-    if (!globusSyncUpload && !acceptsTransferRequests(dataTransferType, configurationId)) {
-      // The data transfer system is busy. Queue the request (upload status set to
-      // 'RECEIVED'),
+    // Confirm that Globus can accept the upload request at this time.
+    if (uploadRequest.getGlobusUploadSource() != null
+        && !acceptsTransferRequests(dataTransferType, configurationId)) {
+      // Globus is busy. Queue the request (upload status set to 'RECEIVED'),
       // and the upload will be performed later by a scheduled task.
       HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
       uploadResponse.setDataTransferType(dataTransferType);
+      uploadResponse.setSourceSize(uploadRequest.getSourceSize());
+      uploadResponse.setUploadSource(uploadRequest.getGlobusUploadSource().getSourceLocation());
       uploadResponse.setDataTransferStarted(Calendar.getInstance());
       uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.RECEIVED);
       return uploadResponse;
@@ -1085,6 +1065,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         dataManagementConfigurationLocator.getDataTransferConfiguration(
             configurationId, dataTransferType);
 
+    // In the case of sync upload using a Globus data transfer proxy, there is no need to login to Globus
+    // since the file is simply stored to the file system. This is to support the scenario of POSIX archive with no
+    // Globus use (just sync upload/download capability).
+    boolean globusSyncUpload =
+        dataTransferType.equals(HpcDataTransferType.GLOBUS)
+            && uploadRequest.getSourceFile() != null;
+
+    // Instantiate a progress listener for upload from AWS S3.
+    HpcDataTransferProgressListener progressListener =
+        uploadRequest.getS3UploadSource() != null ? new HpcS3Upload(uploadRequest.getPath(), uploadRequest.getUserId(), uploadRequest.getS3UploadSource().getSourceLocation()) : null;
+
     // Upload the data object using the appropriate data transfer system proxy.
     return dataTransferProxies
         .get(dataTransferType)
@@ -1093,39 +1084,57 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             uploadRequest,
             dataTransferConfiguration.getBaseArchiveDestination(),
             dataTransferConfiguration.getUploadRequestURLExpiration(),
-            null);
+            progressListener);
   }
 
   /**
    * Validate upload source file location.
    *
-   * @param dataTransferType The data transfer type.
    * @param globusUploadSource The Globus source to validate.
    * @param s3UploadSource The S3 source to validate.
+   * @param sourceFile The source file to validate.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
+   * @return the upload source file size.
    * @throws HpcException if the upload source location doesn't exist, or not accessible, or it's a
    *     directory.
    */
-  private void validateUploadSourceFileLocation(
-      HpcDataTransferType dataTransferType,
+  private Long validateUploadSourceFileLocation(
       HpcGlobusUploadSource globusUploadSource,
       HpcS3UploadSource s3UploadSource,
+      File sourceFile,
       String configurationId)
       throws HpcException {
+    if (sourceFile != null) {
+      return sourceFile.length();
+    }
 
     HpcPathAttributes pathAttributes = null;
     HpcFileLocation sourceFileLocation = null;
     if (globusUploadSource != null) {
       sourceFileLocation = globusUploadSource.getSourceLocation();
       pathAttributes =
-          getPathAttributes(dataTransferType, sourceFileLocation, false, configurationId);
+          getPathAttributes(HpcDataTransferType.GLOBUS, sourceFileLocation, true, configurationId);
     } else if (s3UploadSource != null) {
       sourceFileLocation = s3UploadSource.getSourceLocation();
-      pathAttributes = getPathAttributes(sourceFileLocation, s3UploadSource.getAccount(), false);
+      HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
+      try {
+        pathAttributes =
+            dataTransferProxy.getPathAttributes(
+                dataTransferProxy.authenticate(s3UploadSource.getAccount()),
+                sourceFileLocation,
+                true);
+
+      } catch (HpcException e) {
+        throw new HpcException(
+            "Failed to access AWS S3 bucket: [" + e.getMessage() + "] " + sourceFileLocation,
+            HpcErrorType.INVALID_REQUEST_INPUT,
+            e);
+      }
+
     } else {
-      // No source to validate.
-      return;
+      // No source to validate. It's a request to generate an upload URL.
+      return null;
     }
 
     // Validate source file accessible
@@ -1157,6 +1166,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
               + sourceFileLocation.getFileId(),
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
+
+    return pathAttributes.getSize();
   }
 
   /**
@@ -1758,17 +1769,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // ---------------------------------------------------------------------//
 
     // The second hop download request.
-    HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
+    private HpcDataObjectDownloadRequest secondHopDownloadRequest = null;
 
     // A download data object task (keeps track of the async 2-hop download
     // end-to-end.
-    HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
+    private HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 
     // The second hop download's source file.
-    File sourceFile = null;
+    private File sourceFile = null;
 
     // The data object path.
-    String path = null;
+    private String path = null;
 
     // ---------------------------------------------------------------------//
     // Constructors
@@ -2006,11 +2017,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // ---------------------------------------------------------------------//
 
     // The download request.
-    HpcDataObjectDownloadRequest downloadRequest = null;
+    private HpcDataObjectDownloadRequest downloadRequest = null;
 
     // A download data object task (keeps track of the async S3 download
     // end-to-end.
-    HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
+    private HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 
     // ---------------------------------------------------------------------//
     // Constructors
@@ -2121,6 +2132,60 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       } catch (HpcException e) {
         logger.error("Failed to complete S3 download task", e);
+      }
+    }
+  }
+
+  // AWS S3 upload.
+  private class HpcS3Upload implements HpcDataTransferProgressListener {
+    // ---------------------------------------------------------------------//
+    // Instance members
+    // ---------------------------------------------------------------------//
+
+    // The data object path that is being uploaded.
+    private String path = null;
+    
+    // The user id registering the data object.
+    private String userId = null;
+    
+    // The upload source location.
+    private HpcFileLocation sourceLocation = null;
+
+    // ---------------------------------------------------------------------//
+    // Constructors
+    // ---------------------------------------------------------------------//
+
+    /**
+     * Constructs a S3 upload object (to keep track of async processing)
+     *
+     * @param path The data object path that is being uploaded.
+     */
+    public HpcS3Upload(String path, String userId, HpcFileLocation sourceLocation) {
+      this.path = path;
+      this.userId = userId;
+      this.sourceLocation = sourceLocation;
+    }
+
+    // ---------------------------------------------------------------------//
+    // Methods
+    // ---------------------------------------------------------------------//
+
+    // ---------------------------------------------------------------------//
+    // HpcDataTransferProgressListener Interface Implementation
+    // ---------------------------------------------------------------------//
+
+    @Override
+    public void transferCompleted(Long bytesTransferred) {
+      logger.info("AWS S3 upload completed for: {}", path);
+    }
+
+    @Override
+    public void transferFailed(String message) {
+      logger.error("AWS S3 upload failed for: {} - {}", path, message);
+      try {
+           eventService.addDataTransferUploadFailedEvent(userId, path, sourceLocation, Calendar.getInstance(), message);
+      } catch(HpcException e) {
+        logger.error("Failed to send upload failed event for AWS S3 streaming", e);
       }
     }
   }

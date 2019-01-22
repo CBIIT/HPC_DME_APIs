@@ -29,6 +29,7 @@
 			<xsd:enumeration value="DELETE_FAILED" />
 			<xsd:enumeration value="URL_GENERATED" />
 			<xsd:enumeration value="URL_EXPIRED" />
+			<xsd:enumeration value="STREAMING_IN_PROGRESS" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -135,6 +136,7 @@
 		<xsd:sequence>
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
+			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="globusUploadSource"
 				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
 			<xsd:element name="s3UploadSource"
@@ -142,6 +144,7 @@
 			<xsd:element name="sourceFile" type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="generateUploadRequestURL" type="xsd:boolean" />
 			<xsd:element name="uploadRequestURLChecksum" type="xsd:string" />
+			<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -159,6 +162,7 @@
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="dataTransferStarted" type="xsd:dateTime" />
 			<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
+			<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 

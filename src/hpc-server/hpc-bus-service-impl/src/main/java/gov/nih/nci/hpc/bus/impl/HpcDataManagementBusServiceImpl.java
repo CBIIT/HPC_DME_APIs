@@ -740,11 +740,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 uploadResponse.getDataTransferType(),
                 uploadResponse.getDataTransferStarted(),
                 uploadResponse.getDataTransferCompleted(),
-                getSourceSize(
-                    uploadResponse.getUploadSource(),
-                    uploadResponse.getDataTransferType(),
-                    dataObjectFile,
-                    configurationId),
+                uploadResponse.getSourceSize(),
                 dataObjectRegistration.getCallerObjectId(),
                 userId,
                 userName,
@@ -1411,35 +1407,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
-
-  /**
-   * Get the data object source size. (Either source or dataObjectFile are not null)
-   *
-   * @param source A data transfer source.
-   * @param dataTransferType The data transfer type.
-   * @param dataObjectFile The attached data file.
-   * @param configurationId The data management configuration ID.
-   * @return The source size in bytes.
-   * @throws HpcException on service failure.
-   */
-  private Long getSourceSize(
-      HpcFileLocation source,
-      HpcDataTransferType dataTransferType,
-      File dataObjectFile,
-      String configurationId)
-      throws HpcException {
-    if (source != null) {
-      return dataTransferService
-          .getPathAttributes(dataTransferType, source, true, configurationId)
-          .getSize();
-    }
-
-    if (dataObjectFile != null) {
-      return dataObjectFile.length();
-    }
-
-    return null;
-  }
 
   /**
    * Validate permissions request.
