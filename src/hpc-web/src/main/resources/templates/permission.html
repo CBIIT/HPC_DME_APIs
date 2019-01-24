@@ -148,8 +148,8 @@
 																<th class="text-center">Name</th>
 																<th class="text-center">Type</th>
 																<th class="text-center">Own</th>
-																<th class="text-center">Read</th>
 																<th class="text-center">Write</th>
+																<th class="text-center">Read</th>
 																<th class="text-center">None</th>
 															</tr>
 														</thead>
@@ -186,20 +186,6 @@
 																	</div>
 																</td>
 																<td style="white-space: nowrap" align="center">
-																	<div th:if="${permission.isRead()} == false">
-																		<input type="radio"
-																			th:id="'permission_read'+${iterationStatus.count}"
-																			th:name="'permission'+${iterationStatus.count}"
-																			value="read" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
-																	</div>
-																	<div th:if="${permission.isRead()} == true">
-																		<input type="radio" checked="checked"
-																			th:id="'permission_read'+${iterationStatus.count}"
-																			th:name="'permission'+${iterationStatus.count}"
-																			value="read" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
-																	</div>
-																</td>
-																<td style="white-space: nowrap" align="center">
 																	<div th:if="${permission.isWrite()} == false">
 																		<input type="radio"
 																			th:id="'permission_write'+${iterationStatus.count}"
@@ -211,6 +197,20 @@
 																			th:id="'permission_write'+${iterationStatus.count}"
 																			th:name="'permission'+${iterationStatus.count}"
 																			value="write" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																	</div>
+																</td>
+																<td style="white-space: nowrap" align="center">
+																	<div th:if="${permission.isRead()} == false">
+																		<input type="radio"
+																			th:id="'permission_read'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="read" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
+																	</div>
+																	<div th:if="${permission.isRead()} == true">
+																		<input type="radio" checked="checked"
+																			th:id="'permission_read'+${iterationStatus.count}"
+																			th:name="'permission'+${iterationStatus.count}"
+																			value="read" onClick="enableSave()" th:disabled="${ownpermission == true} ?'false' : 'disabled'"/>
 																	</div>
 																</td>
 																<td style="white-space: nowrap" align="center">
@@ -302,11 +302,11 @@
 																for="Share With">Permissions:</label></td>
 															<td style="white-space: nowrap" align="left"><input
 																type="radio" name="addpermission" id="addpermission_own"
-																value="addown" />&nbsp;Own&nbsp;&nbsp;&nbsp; <input
-																type="radio" name="addpermission" id="addpermission_read"
-																value="addread" />&nbsp;Read&nbsp;&nbsp;&nbsp; <input
+																value="addown" />&nbsp;Own&nbsp;&nbsp;&nbsp;  <input
 																type="radio" name="addpermission" id="addpermission_write"
-																value="addwrite" />&nbsp;Write&nbsp;&nbsp;&nbsp;</td>
+																value="addwrite" />&nbsp;Write&nbsp;&nbsp;&nbsp;<input
+																type="radio" name="addpermission" id="addpermission_read"
+																value="addread" />&nbsp;Read&nbsp;&nbsp;&nbsp;</td>
 														</tr>
 														<tr id='entryTableRow4' align="center">
 															<td style="white-space: nowrap" align="right" colspan="2">
@@ -471,34 +471,34 @@
 				{
 					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
 							+ '" name="permission' + (rows) + '" value="own" checked="checked" />';
-					cell3.innerHTML = '<input type="radio" id="permission_read'
+					cell3.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell4.innerHTML = '<input type="radio" id="permission_read'
 						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
-					cell4.innerHTML = '<input type="radio" id="permission_write'
-						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
-					cell5.innerHTML = '<input type="radio" id="permission_none'
-						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-				}
-				else if (addpermissionRead.checked == true)
-				{
-					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
-					+ '" name="permission' + (rows) + '" value="own" />';
-					cell3.innerHTML = '<input type="radio" id="permission_read'
-						+ (rows) + '" name="permission' + (rows)
-						+ '" value="read" checked="checked" />';
-					cell4.innerHTML = '<input type="radio" id="permission_write'
-						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
 				}
 				else if (addpermissionWrite.checked == true)
 				{
 					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
-						+ '" name="permission' + (rows) + '" value="own" />';
-					cell3.innerHTML = '<input type="radio" id="permission_read'
-						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
-					cell4.innerHTML = '<input type="radio" id="permission_write'
+					+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_write'
 						+ (rows) + '" name="permission' + (rows)
 						+ '" value="write" checked="checked" />';
+					cell4.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionRead.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+						+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell4.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="read" checked="checked" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
 				}
@@ -542,34 +542,34 @@
 				{
 					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
 							+ '" name="permission' + (rows) + '" value="own" checked="checked" />';
-					cell3.innerHTML = '<input type="radio" id="permission_read'
+					cell3.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell4.innerHTML = '<input type="radio" id="permission_read'
 						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
-					cell4.innerHTML = '<input type="radio" id="permission_write'
-						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
-					cell5.innerHTML = '<input type="radio" id="permission_none'
-						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
-				}
-				else if (addpermissionRead.checked == true)
-				{
-					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
-					+ '" name="permission' + (rows) + '" value="own" />';
-					cell3.innerHTML = '<input type="radio" id="permission_read'
-						+ (rows) + '" name="permission' + (rows)
-						+ '" value="read" checked="checked" />';
-					cell4.innerHTML = '<input type="radio" id="permission_write'
-						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
 				}
 				else if (addpermissionWrite.checked == true)
 				{
 					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
-						+ '" name="permission' + (rows) + '" value="own" />';
-					cell3.innerHTML = '<input type="radio" id="permission_read'
-						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
-					cell4.innerHTML = '<input type="radio" id="permission_write'
+					+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_write'
 						+ (rows) + '" name="permission' + (rows)
 						+ '" value="write" checked="checked" />';
+					cell4.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows) + '" value="read" />';
+					cell5.innerHTML = '<input type="radio" id="permission_none'
+						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
+				}
+				else if (addpermissionRead.checked == true)
+				{
+					cell2.innerHTML = '<input type="radio" id="permission_own' + (rows)
+						+ '" name="permission' + (rows) + '" value="own" />';
+					cell3.innerHTML = '<input type="radio" id="permission_write'
+						+ (rows) + '" name="permission' + (rows) + '" value="write" />';
+					cell4.innerHTML = '<input type="radio" id="permission_read'
+						+ (rows) + '" name="permission' + (rows)
+						+ '" value="read" checked="checked" />';
 					cell5.innerHTML = '<input type="radio" id="permission_none'
 						+ (rows) + '" name="permission' + (rows) + '" value="none" />';
 				}
