@@ -761,7 +761,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         .getMetadataEntries()
         .addAll(dataObjectRegistration.getMetadataEntries());
 
-    if (dataObjectRegistration.getSource() != null) {
+    if (dataObjectRegistration.getSource() != null
+        && !StringUtils.isEmpty(dataObjectRegistration.getSource().getFileContainerId())
+        && !StringUtils.isEmpty(dataObjectRegistration.getSource().getFileId())) {
       HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
       globusUploadSource.setSourceLocation(dataObjectRegistration.getSource());
       v2DataObjectRegistration.setGlobusUploadSource(globusUploadSource);
