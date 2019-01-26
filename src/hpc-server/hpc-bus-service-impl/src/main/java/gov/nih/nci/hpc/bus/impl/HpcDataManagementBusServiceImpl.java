@@ -32,6 +32,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskSt
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
@@ -85,7 +86,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanPathMapDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
@@ -1928,7 +1928,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
 
       // Validate folder map.
-      HpcDirectoryScanPathMapDTO pathMap = directoryScanRegistrationItem.getPathMap();
+      HpcDirectoryScanPathMap pathMap = directoryScanRegistrationItem.getPathMap();
       if (pathMap != null) {
         if (StringUtils.isEmpty(pathMap.getFromPath())
             || StringUtils.isEmpty(pathMap.getToPath())) {
@@ -2023,7 +2023,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       String sourceFileContainerId,
       String callerObjectId,
       HpcBulkMetadataEntries bulkMetadataEntries,
-      HpcDirectoryScanPathMapDTO pathMap) {
+      HpcDirectoryScanPathMap pathMap) {
     // If pathMap provided - use the map to replace scanned path with user provided path (or part of path).
     String scanItemFilePath = scanItem.getFilePath();
     if (pathMap != null) {
