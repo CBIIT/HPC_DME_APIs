@@ -15,17 +15,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -37,7 +35,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanPathMapDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
@@ -261,7 +258,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				folder.setScanDirectoryLocation(source);
 				folders.add(folder);
 				if(!fromPath.equals(toPath)) {
-					HpcDirectoryScanPathMapDTO pathDTO = new HpcDirectoryScanPathMapDTO();
+					HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
 					pathDTO.setFromPath(fromPath);
 					pathDTO.setToPath(toPath);
 					folder.setPathMap(pathDTO);
