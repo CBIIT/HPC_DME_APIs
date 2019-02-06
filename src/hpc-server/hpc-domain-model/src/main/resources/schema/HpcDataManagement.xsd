@@ -63,8 +63,10 @@
 
 	<xsd:complexType name="HpcDataObjectRegistrationRequest">
 		<xsd:sequence>
-			<xsd:element name="source"
-				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="globusUploadSource"
+					type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
+			<xsd:element name="s3UploadSource"
+					type="hpc-domain-datatransfer:HpcS3UploadSource" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="metadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
 				maxOccurs="unbounded" />

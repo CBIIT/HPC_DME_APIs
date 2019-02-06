@@ -98,6 +98,12 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcS3UploadSource']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusScanDirectory']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcS3ScanDirectory']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadResponse']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse" />
       </jxb:bindings>

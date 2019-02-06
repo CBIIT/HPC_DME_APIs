@@ -445,8 +445,31 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
+  public HpcPathAttributes getPathAttributes(
+      HpcS3Account s3Account, HpcFileLocation fileLocation, boolean getSize) throws HpcException {
+    // Input validation.
+    if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
+      throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // This is S3 only functionality.
+    HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
+    try {
+      return dataTransferProxy.getPathAttributes(
+          dataTransferProxy.authenticate(s3Account), fileLocation, true);
+
+    } catch (HpcException e) {
+      throw new HpcException(
+          "Failed to access AWS S3 bucket: [" + e.getMessage() + "] " + fileLocation,
+          HpcErrorType.INVALID_REQUEST_INPUT,
+          e);
+    }
+  }
+
+  @Override
   public List<HpcDirectoryScanItem> scanDirectory(
       HpcDataTransferType dataTransferType,
+      HpcS3Account s3Account,
       HpcFileLocation directoryLocation,
       String configurationId,
       List<String> includePatterns,
@@ -457,13 +480,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     if (!HpcDomainValidator.isValidFileLocation(directoryLocation)) {
       throw new HpcException("Invalid directory location", HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    if (!dataTransferType.equals(HpcDataTransferType.S_3) && s3Account != null) {
+      throw new HpcException(
+          "S3 account provided for Non S3 data transfer", HpcErrorType.UNEXPECTED_ERROR);
+    }
+
+    // If an S3 account was provided, then we use it to get authenticated token, otherwise, we use a system account token.
+    Object authenticatedToken =
+        s3Account != null
+            ? dataTransferProxies.get(dataTransferType).authenticate(s3Account)
+            : getAuthenticatedToken(dataTransferType, configurationId);
 
     // Scan the directory to get a list of all files.
     List<HpcDirectoryScanItem> scanItems =
         dataTransferProxies
             .get(dataTransferType)
-            .scanDirectory(
-                getAuthenticatedToken(dataTransferType, configurationId), directoryLocation);
+            .scanDirectory(authenticatedToken, directoryLocation);
 
     // Filter the list based on provided patterns.
     filterScanItems(scanItems, includePatterns, excludePatterns, patternType);
@@ -1074,7 +1106,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Instantiate a progress listener for upload from AWS S3.
     HpcDataTransferProgressListener progressListener =
-        uploadRequest.getS3UploadSource() != null ? new HpcS3Upload(uploadRequest.getPath(), uploadRequest.getUserId(), uploadRequest.getS3UploadSource().getSourceLocation()) : null;
+        uploadRequest.getS3UploadSource() != null
+            ? new HpcS3Upload(
+                uploadRequest.getPath(),
+                uploadRequest.getUserId(),
+                uploadRequest.getS3UploadSource().getSourceLocation())
+            : null;
 
     // Upload the data object using the appropriate data transfer system proxy.
     return dataTransferProxies
@@ -1116,21 +1153,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       pathAttributes =
           getPathAttributes(HpcDataTransferType.GLOBUS, sourceFileLocation, true, configurationId);
     } else if (s3UploadSource != null) {
-      sourceFileLocation = s3UploadSource.getSourceLocation();
-      HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
-      try {
-        pathAttributes =
-            dataTransferProxy.getPathAttributes(
-                dataTransferProxy.authenticate(s3UploadSource.getAccount()),
-                sourceFileLocation,
-                true);
-
-      } catch (HpcException e) {
-        throw new HpcException(
-            "Failed to access AWS S3 bucket: [" + e.getMessage() + "] " + sourceFileLocation,
-            HpcErrorType.INVALID_REQUEST_INPUT,
-            e);
-      }
+      pathAttributes =
+          getPathAttributes(s3UploadSource.getAccount(), s3UploadSource.getSourceLocation(), true);
 
     } else {
       // No source to validate. It's a request to generate an upload URL.
@@ -2144,10 +2168,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // The data object path that is being uploaded.
     private String path = null;
-    
+
     // The user id registering the data object.
     private String userId = null;
-    
+
     // The upload source location.
     private HpcFileLocation sourceLocation = null;
 
@@ -2183,8 +2207,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     public void transferFailed(String message) {
       logger.error("AWS S3 upload failed for: {} - {}", path, message);
       try {
-           eventService.addDataTransferUploadFailedEvent(userId, path, sourceLocation, Calendar.getInstance(), message);
-      } catch(HpcException e) {
+        eventService.addDataTransferUploadFailedEvent(
+            userId, path, sourceLocation, Calendar.getInstance(), message);
+      } catch (HpcException e) {
         logger.error("Failed to send upload failed event for AWS S3 streaming", e);
       }
     }

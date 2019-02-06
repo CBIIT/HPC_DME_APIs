@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -197,9 +198,23 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
+   * Get path attributes for a given file in AWS S3 (using user provided S3 account).
+   *
+   * @param s3Account The user provided S3 account.
+   * @param fileLocation The bucket/object-id to get attributes for.
+   * @param getSize If set to true, the file/directory size will be returned.
+   * @return The path attributes.
+   * @throws HpcException on service failure.
+   */
+  public HpcPathAttributes getPathAttributes(
+      HpcS3Account s3Account, HpcFileLocation fileLocation, boolean getSize)
+      throws HpcException;
+
+  /**
    * Scan a directory (recursively) and return a list of all its files.
    *
    * @param dataTransferType The data transfer type.
+   * @param (Optional) S3 account to use. If null, then system account for the data transfer type is used.
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
@@ -211,6 +226,7 @@ public interface HpcDataTransferService {
    */
   public List<HpcDirectoryScanItem> scanDirectory(
       HpcDataTransferType dataTransferType,
+      HpcS3Account s3Account,
       HpcFileLocation directoryLocation,
       String configurationId,
       List<String> includePatterns,
