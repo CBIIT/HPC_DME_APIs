@@ -324,7 +324,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Get the system metadata.
         HpcSystemGeneratedMetadata systemGeneratedMetadata =
             metadataService.getDataObjectSystemGeneratedMetadata(path);
-        
+
         updateS3UploadStatus(path, systemGeneratedMetadata);
 
       } catch (HpcException e) {
@@ -906,7 +906,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                       dataManagementService.findDataManagementConfigurationId(
                           item.getTask().getPath());
                   setFileContainerName(
-                      HpcDataTransferType.GLOBUS, configurationId, item.getRequest().getSource());
+                      HpcDataTransferType.GLOBUS,
+                      configurationId,
+                      item.getRequest().getGlobusUploadSource() != null
+                          ? item.getRequest().getGlobusUploadSource().getSourceLocation()
+                          : item.getRequest().getS3UploadSource().getSourceLocation());
                 });
 
         eventService.addBulkDataObjectRegistrationCompletedEvent(
@@ -1335,9 +1339,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     HpcDataObjectRegistrationRequestDTO registrationDTO = new HpcDataObjectRegistrationRequestDTO();
     registrationDTO.setCallerObjectId(registrationRequest.getCallerObjectId());
     registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
-    HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
-    globusUploadSource.setSourceLocation(registrationRequest.getSource());
-    registrationDTO.setGlobusUploadSource(globusUploadSource);
+    registrationDTO.setGlobusUploadSource(registrationRequest.getGlobusUploadSource());
+    registrationDTO.setS3UploadSource(registrationRequest.getS3UploadSource());
     registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
     registrationDTO.setParentCollectionsBulkMetadataEntries(
         registrationRequest.getParentCollectionsBulkMetadataEntries());

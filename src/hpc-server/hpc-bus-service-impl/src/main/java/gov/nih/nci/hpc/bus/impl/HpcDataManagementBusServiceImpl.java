@@ -53,6 +53,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -68,10 +71,6 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -84,9 +83,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -95,13 +92,19 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcGroupPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcPermsForCollectionsDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -857,7 +860,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           dataObjectRegistrationItem.getCallerObjectId());
       dataObjectRegistrationRequest.setCreateParentCollections(
           dataObjectRegistrationItem.getCreateParentCollections());
-      dataObjectRegistrationRequest.setSource(dataObjectRegistrationItem.getSource());
+      dataObjectRegistrationRequest.setGlobusUploadSource(
+          dataObjectRegistrationItem.getGlobusUploadSource());
+      dataObjectRegistrationRequest.setS3UploadSource(
+          dataObjectRegistrationItem.getS3UploadSource());
       dataObjectRegistrationRequest
           .getMetadataEntries()
           .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
@@ -1949,28 +1955,38 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
 
       // Validate the directory to scan exists and accessible.
-      HpcPathAttributes pathAttributes =
-          dataTransferService.getPathAttributes(
-              HpcDataTransferType.GLOBUS,
-              directoryScanRegistrationItem.getScanDirectoryLocation(),
-              false,
-              configurationId);
+      HpcPathAttributes pathAttributes = null;
+      HpcFileLocation scanDirectoryLocation = null;
+      HpcDataTransferType dataTransferType = null;
+      HpcS3Account s3Account = null;
+      if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
+        dataTransferType = HpcDataTransferType.GLOBUS;
+        scanDirectoryLocation =
+            directoryScanRegistrationItem.getGlobusScanDirectory().getDirectoryLocation();
+        pathAttributes =
+            dataTransferService.getPathAttributes(
+                HpcDataTransferType.GLOBUS, scanDirectoryLocation, false, configurationId);
+      } else { // It is a request to scan an S3 directory.
+        dataTransferType = HpcDataTransferType.S_3;
+        s3Account = directoryScanRegistrationItem.getS3ScanDirectory().getAccount();
+        scanDirectoryLocation =
+            directoryScanRegistrationItem.getS3ScanDirectory().getDirectoryLocation();
+        dataTransferService.getPathAttributes(s3Account, scanDirectoryLocation, false);
+      }
+
       if (!pathAttributes.getExists()) {
         throw new HpcException(
-            "Endpoint or path doesn't exist: "
-                + directoryScanRegistrationItem.getScanDirectoryLocation(),
+            "Endpoint or path doesn't exist: " + scanDirectoryLocation,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
       if (!pathAttributes.getIsAccessible()) {
         throw new HpcException(
-            "Endpoint is not accessible: "
-                + directoryScanRegistrationItem.getScanDirectoryLocation(),
+            "Endpoint is not accessible: " + scanDirectoryLocation,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
       if (!pathAttributes.getIsDirectory()) {
         throw new HpcException(
-            "Endpoint is not a directory: "
-                + directoryScanRegistrationItem.getScanDirectoryLocation(),
+            "Endpoint is not a directory: " + scanDirectoryLocation,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
 
@@ -1980,10 +1996,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         patternType = HpcDirectoryScanPatternType.SIMPLE;
       }
 
+      final String fileContainerId = scanDirectoryLocation.getFileContainerId();
+      final HpcS3Account fs3Account = s3Account; 
       dataTransferService
           .scanDirectory(
-              HpcDataTransferType.GLOBUS,
-              directoryScanRegistrationItem.getScanDirectoryLocation(),
+              dataTransferType,
+              s3Account,
+              scanDirectoryLocation,
               configurationId,
               directoryScanRegistrationItem.getIncludePatterns(),
               directoryScanRegistrationItem.getExcludePatterns(),
@@ -1994,12 +2013,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                       toDataObjectRegistrationItem(
                           scanItem,
                           basePath,
-                          directoryScanRegistrationItem
-                              .getScanDirectoryLocation()
-                              .getFileContainerId(),
+                          fileContainerId,
                           directoryScanRegistrationItem.getCallerObjectId(),
                           directoryScanRegistrationItem.getBulkMetadataEntries(),
-                          pathMap)));
+                          pathMap, fs3Account)));
     }
 
     return dataObjectRegistrationItems;
@@ -2015,6 +2032,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param bulkMetadataEntries metadata entries for this data object registration and parent
    *     collections.
    * @param pathMap Replace 'fromPath' (found in scanned directory) with 'toPath'.
+   * @param s3Account (Optional) Provided if this is a registration item from S3 source, otherwise
+   *     null.
    * @return data object registration DTO.
    */
   private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(
@@ -2023,7 +2042,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       String sourceFileContainerId,
       String callerObjectId,
       HpcBulkMetadataEntries bulkMetadataEntries,
-      HpcDirectoryScanPathMap pathMap) {
+      HpcDirectoryScanPathMap pathMap,
+      HpcS3Account s3Account) {
     // If pathMap provided - use the map to replace scanned path with user provided path (or part of path).
     String scanItemFilePath = scanItem.getFilePath();
     if (pathMap != null) {
@@ -2064,7 +2084,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcFileLocation source = new HpcFileLocation();
     source.setFileContainerId(sourceFileContainerId);
     source.setFileId(scanItem.getFilePath());
-    dataObjectRegistration.setSource(source);
+    if (s3Account != null) {
+      HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+      s3UploadSource.setSourceLocation(source);
+      s3UploadSource.setAccount(s3Account);
+      dataObjectRegistration.setS3UploadSource(s3UploadSource);
+    } else {
+      HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+      globusUploadSource.setSourceLocation(source);
+      dataObjectRegistration.setGlobusUploadSource(globusUploadSource);
+    }
+
     dataObjectRegistration.setCallerObjectId(callerObjectId);
 
     return dataObjectRegistration;
@@ -2402,13 +2432,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
   }
 
+  /**
+   * Convert HpcDataObjectRegistrationRequest to HpcDataObjectRegistrationItemDTO.
+   *
+   * @param request The registration request.
+   * @param path The registered path
+   * @return a HpcDataObjectRegistrationItemDTO object
+   */
   private HpcDataObjectRegistrationItemDTO dataObjectRegistrationRequestToDTO(
       HpcDataObjectRegistrationRequest request, String path) {
     HpcDataObjectRegistrationItemDTO dto = new HpcDataObjectRegistrationItemDTO();
     dto.setCallerObjectId(request.getCallerObjectId());
     dto.setCreateParentCollections(request.getCreateParentCollections());
     dto.setPath(path);
-    dto.setSource(request.getSource());
+    dto.setGlobusUploadSource(request.getGlobusUploadSource());
+    dto.setS3UploadSource(request.getS3UploadSource());
     dto.getDataObjectMetadataEntries().addAll(request.getMetadataEntries());
     dto.setParentCollectionsBulkMetadataEntries(request.getParentCollectionsBulkMetadataEntries());
     return dto;

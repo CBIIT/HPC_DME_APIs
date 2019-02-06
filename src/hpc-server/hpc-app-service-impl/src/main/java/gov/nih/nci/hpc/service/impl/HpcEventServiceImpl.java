@@ -102,11 +102,8 @@ public class HpcEventServiceImpl implements HpcEventService {
   // Constructors
   //---------------------------------------------------------------------//
 
-  /**
-   * Constructor for Spring Dependency Injection.
-   */
-  private HpcEventServiceImpl() {
-  }
+  /** Constructor for Spring Dependency Injection. */
+  private HpcEventServiceImpl() {}
 
   //---------------------------------------------------------------------//
   // Methods
@@ -689,12 +686,14 @@ public class HpcEventServiceImpl implements HpcEventService {
   private String toString(List<HpcBulkDataObjectRegistrationItem> registrationItems) {
     StringBuilder registrationItemsStr = new StringBuilder();
     registrationItems.forEach(
-        registrationItem ->
-            registrationItemsStr.append(
-                "\n\t"
-                    + toString(registrationItem.getRequest().getSource())
-                    + " -> "
-                    + registrationItem.getTask().getPath()));
+        registrationItem -> {
+          HpcFileLocation sourceLocation =
+              registrationItem.getRequest().getGlobusUploadSource() != null
+                  ? registrationItem.getRequest().getGlobusUploadSource().getSourceLocation()
+                  : registrationItem.getRequest().getS3UploadSource().getSourceLocation();
+          registrationItemsStr.append(
+              "\n\t" + toString(sourceLocation) + " -> " + registrationItem.getTask().getPath());
+        });
 
     return registrationItemsStr.toString();
   }

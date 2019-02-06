@@ -8,6 +8,8 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,7 +104,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // Prepared query to get data objects that have their data transfer upload by
   // users via generated URL.
   private List<HpcMetadataQuery> dataTransferInProgressWithGeneratedURLQuery = new ArrayList<>();
-  
+
   // Prepared query to get data objects that have their data transfer upload in progress via streaming.
   private List<HpcMetadataQuery> dataTransferStreamingInProgressQuery = new ArrayList<>();
 
@@ -157,7 +159,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
             DATA_TRANSFER_STATUS_ATTRIBUTE,
             HpcMetadataQueryOperator.EQUAL,
             HpcDataTransferUploadStatus.URL_GENERATED.value()));
-    
+
     // Prepared query to get data objects that have their data transfer upload by
     // users via generated URL.
     dataTransferStreamingInProgressQuery.add(
@@ -575,14 +577,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         dataManagementAuthenticator.getAuthenticatedToken(),
         dataTransferInProgressWithGeneratedURLQuery);
   }
-  
+
   @Override
   public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException {
     return dataManagementProxy.getDataObjects(
-        dataManagementAuthenticator.getAuthenticatedToken(),
-        dataTransferStreamingInProgressQuery);
+        dataManagementAuthenticator.getAuthenticatedToken(), dataTransferStreamingInProgressQuery);
   }
-  
+
   @Override
   public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException {
     return dataManagementProxy.getDataObjects(
@@ -595,7 +596,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       if (dataManagementAuthenticator.isAuthenticated()) {
         // Close the connection to iRODS.
         dataManagementProxy.disconnect(dataManagementAuthenticator.getAuthenticatedToken());
-        
+
         // Clear the token.
         dataManagementAuthenticator.clearToken();
       }
@@ -637,11 +638,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       HpcDataObjectRegistrationRequest registrationRequest =
           dataObjectRegistrationRequests.get(path);
       // Validate registration request.
-      if (!HpcDomainValidator.isValidFileLocation(registrationRequest.getSource())) {
-        throw new HpcException(
-            "Invalid source in registration request for: " + path,
-            HpcErrorType.INVALID_REQUEST_INPUT);
-      }
+      validateDataObjectRegistrationRequest(registrationRequest, path);
 
       // Create a data object registration item.
       HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
@@ -856,6 +853,49 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       throw new HpcException(
           "Changing permission of admin account/group is not allowed: " + subject,
           HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+  }
+
+  /**
+   * Validate a data object registration request (that is part of bulk registration)
+   *
+   * @param registrationRequest The registration request.
+   * @param path The registration path.
+   * @throws HpcException If the request is invalid.
+   */
+  private void validateDataObjectRegistrationRequest(
+      HpcDataObjectRegistrationRequest registrationRequest, String path) throws HpcException {
+    if (registrationRequest.getGlobusUploadSource() != null
+        && registrationRequest.getS3UploadSource() != null) {
+      throw new HpcException(
+          "Both Globus and S3 upload source provided for: " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    if (registrationRequest.getGlobusUploadSource() == null
+        && registrationRequest.getS3UploadSource() == null) {
+      throw new HpcException(
+          "No Globus/S3 upload source provided for: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    if (registrationRequest.getGlobusUploadSource() != null
+        && !isValidFileLocation(registrationRequest.getGlobusUploadSource().getSourceLocation())) {
+      throw new HpcException(
+          "Invalid Globus upload source in registration request for: " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    if (registrationRequest.getS3UploadSource() != null) {
+      if (!isValidFileLocation(registrationRequest.getS3UploadSource().getSourceLocation())) {
+        throw new HpcException(
+            "Invalid S3 upload source in registration request for: " + path,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (!isValidS3Account(registrationRequest.getS3UploadSource().getAccount())) {
+        throw new HpcException(
+            "Invalid S3 account in registration request for: " + path,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
     }
   }
 }

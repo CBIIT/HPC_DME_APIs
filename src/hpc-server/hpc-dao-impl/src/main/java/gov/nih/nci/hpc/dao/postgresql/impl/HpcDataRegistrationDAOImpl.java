@@ -13,7 +13,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -24,11 +23,13 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
-
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
@@ -100,6 +101,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
+
+  //Encryptor.
+  @Autowired HpcEncryptor encryptor = null;
 
   // The Spring JDBC Template instance.
   @Autowired private JdbcTemplate jdbcTemplate = null;
@@ -381,9 +385,31 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       if (request.getCallerObjectId() != null) {
         jsonRequest.put("callerObjectId", request.getCallerObjectId());
       }
+      if (request.getGlobusUploadSource() != null) {
+        JSONObject jsonGlobusUploadSource = new JSONObject();
+        HpcGlobusUploadSource globusUploadSource = request.getGlobusUploadSource();
+        jsonGlobusUploadSource.put(
+            "sourceFileContainerId", globusUploadSource.getSourceLocation().getFileContainerId());
+        jsonGlobusUploadSource.put(
+            "sourceFileId", globusUploadSource.getSourceLocation().getFileId());
+        jsonRequest.put("globusUploadSource", jsonGlobusUploadSource);
+      }
+      if (request.getS3UploadSource() != null) {
+        JSONObject jsonS3UploadSource = new JSONObject();
+        HpcS3UploadSource s3UploadSource = request.getS3UploadSource();
+        jsonS3UploadSource.put(
+            "sourceFileContainerId", s3UploadSource.getSourceLocation().getFileContainerId());
+        jsonS3UploadSource.put("sourceFileId", s3UploadSource.getSourceLocation().getFileId());
+        if (s3UploadSource.getAccount() != null) {
+          HpcS3Account s3Account = s3UploadSource.getAccount();
+          jsonS3UploadSource.put(
+              "accountAccessKey", new String(encryptor.encrypt(s3Account.getAccessKey())));
+          jsonS3UploadSource.put(
+              "accountSecretKey", new String(encryptor.encrypt(s3Account.getSecretKey())));
+        }
+        jsonRequest.put("s3UploadSource", jsonS3UploadSource);
+      }
 
-      jsonRequest.put("sourceFileContainerId", request.getSource().getFileContainerId());
-      jsonRequest.put("sourceFileId", request.getSource().getFileId());
       jsonRequest.put("metadataEntries", toJSONArray(request.getMetadataEntries()));
       if (request.getParentCollectionsBulkMetadataEntries() != null) {
         jsonRequest.put(
@@ -506,9 +532,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     // This is needed to work around issue with UI not able to de-serialize null array.
     bulkMetadataEntries.getPathsMetadataEntries();
 
-   if(jsonBulkMetadataEntries.get("pathsMetadataEntries") != null) {
+    if (jsonBulkMetadataEntries.get("pathsMetadataEntries") != null) {
       JSONArray jsonPathsMetadataEntries =
-    	        (JSONArray) jsonBulkMetadataEntries.get("pathsMetadataEntries");
+          (JSONArray) jsonBulkMetadataEntries.get("pathsMetadataEntries");
       jsonPathsMetadataEntries.forEach(
           entry -> {
             JSONObject jsonBulkMetadataEntry = (JSONObject) entry;
@@ -644,10 +670,47 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       request.setCreateParentCollections(Boolean.valueOf(createParentCollection.toString()));
     }
 
-    HpcFileLocation source = new HpcFileLocation();
-    source.setFileContainerId(jsonRequest.get("sourceFileContainerId").toString());
-    source.setFileId(jsonRequest.get("sourceFileId").toString());
-    request.setSource(source);
+    // HpcDataObjectRegistrationRequest data structure has changed to support upload from AWS S3
+    // This code ensures we are backwards compatible with the old structure, as we have data in the DB
+    // with the old structure.
+    if (jsonRequest.get("sourceFileContainerId") != null
+        && jsonRequest.get("sourceFileId") != null) {
+      HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+      HpcFileLocation source = new HpcFileLocation();
+      source.setFileContainerId(jsonRequest.get("sourceFileContainerId").toString());
+      source.setFileId(jsonRequest.get("sourceFileId").toString());
+      globusUploadSource.setSourceLocation(source);
+      request.setGlobusUploadSource(globusUploadSource);
+    }
+
+    if (jsonRequest.get("globusUploadSource") != null) {
+      JSONObject jsonGlobusUploadSource = (JSONObject) jsonRequest.get("globusUploadSource");
+      HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+      HpcFileLocation source = new HpcFileLocation();
+      source.setFileContainerId(jsonGlobusUploadSource.get("sourceFileContainerId").toString());
+      source.setFileId(jsonGlobusUploadSource.get("sourceFileId").toString());
+      globusUploadSource.setSourceLocation(source);
+      request.setGlobusUploadSource(globusUploadSource);
+    }
+
+    if (jsonRequest.get("s3UploadSource") != null) {
+      JSONObject jsonS3UploadSource = (JSONObject) jsonRequest.get("s3UploadSource");
+      HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+      HpcFileLocation source = new HpcFileLocation();
+      source.setFileContainerId(jsonS3UploadSource.get("sourceFileContainerId").toString());
+      source.setFileId(jsonS3UploadSource.get("sourceFileId").toString());
+      s3UploadSource.setSourceLocation(source);
+      if (jsonS3UploadSource.get("accountAccessKey") != null
+          && jsonS3UploadSource.get("accountSecretKey") != null) {
+        HpcS3Account s3Account = new HpcS3Account();
+        s3Account.setAccessKey(
+            encryptor.decrypt(jsonS3UploadSource.get("accountAccessKey").toString().getBytes()));
+        s3Account.setSecretKey(
+            encryptor.decrypt(jsonS3UploadSource.get("accountSecretKey").toString().getBytes()));
+        s3UploadSource.setAccount(s3Account);
+      }
+      request.setS3UploadSource(s3UploadSource);
+    }
 
     Object metadataEntries = jsonRequest.get("metadataEntries");
     if (metadataEntries != null) {
