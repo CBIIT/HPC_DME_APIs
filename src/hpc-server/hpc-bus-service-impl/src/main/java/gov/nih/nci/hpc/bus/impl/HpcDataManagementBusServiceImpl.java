@@ -1926,11 +1926,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     List<HpcDataObjectRegistrationItemDTO> dataObjectRegistrationItems = new ArrayList<>();
     for (HpcDirectoryScanRegistrationItemDTO directoryScanRegistrationItem :
         directoryScanRegistrationItems) {
+      // Validate and normalize the registration items base path.
       String basePath = toNormalizedPath(directoryScanRegistrationItem.getBasePath());
       if (StringUtils.isEmpty(basePath)) {
         throw new HpcException(
             "Null / Empty base path in directory scan registration request",
             HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+
+      // Validate a scan directory was provided.
+      if (directoryScanRegistrationItem.getGlobusScanDirectory() == null
+          && directoryScanRegistrationItem.getS3ScanDirectory() == null) {
+        throw new HpcException("No scan directory provided", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (directoryScanRegistrationItem.getGlobusScanDirectory() != null
+          && directoryScanRegistrationItem.getS3ScanDirectory() != null) {
+        throw new HpcException(
+            "Both Globus and S3 directory provided", HpcErrorType.INVALID_REQUEST_INPUT);
       }
 
       // Validate folder map.
@@ -1966,7 +1978,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         pathAttributes =
             dataTransferService.getPathAttributes(
                 HpcDataTransferType.GLOBUS, scanDirectoryLocation, false, configurationId);
-      } else if (directoryScanRegistrationItem.getS3ScanDirectory() != null) {
+      } else {
         // It is a request to scan an S3 directory.
         dataTransferType = HpcDataTransferType.S_3;
         s3Account = directoryScanRegistrationItem.getS3ScanDirectory().getAccount();
