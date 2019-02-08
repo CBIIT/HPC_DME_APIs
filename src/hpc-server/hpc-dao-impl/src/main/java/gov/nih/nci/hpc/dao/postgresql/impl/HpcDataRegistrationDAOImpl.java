@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -403,9 +404,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         if (s3UploadSource.getAccount() != null) {
           HpcS3Account s3Account = s3UploadSource.getAccount();
           jsonS3UploadSource.put(
-              "accountAccessKey", new String(encryptor.encrypt(s3Account.getAccessKey())));
+              "accountAccessKey", Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getAccessKey())));
           jsonS3UploadSource.put(
-              "accountSecretKey", new String(encryptor.encrypt(s3Account.getSecretKey())));
+              "accountSecretKey", Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getSecretKey())));
         }
         jsonRequest.put("s3UploadSource", jsonS3UploadSource);
       }
@@ -704,7 +705,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
           && jsonS3UploadSource.get("accountSecretKey") != null) {
         HpcS3Account s3Account = new HpcS3Account();
         s3Account.setAccessKey(
-            encryptor.decrypt(jsonS3UploadSource.get("accountAccessKey").toString().getBytes()));
+            encryptor.decrypt(Base64.getDecoder().decode(jsonS3UploadSource.get("accountAccessKey").toString())));
         s3Account.setSecretKey(
             encryptor.decrypt(jsonS3UploadSource.get("accountSecretKey").toString().getBytes()));
         s3UploadSource.setAccount(s3Account);
