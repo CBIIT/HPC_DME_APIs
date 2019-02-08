@@ -18,6 +18,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -102,7 +104,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
-
+  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
   //Encryptor.
   @Autowired HpcEncryptor encryptor = null;
 
@@ -403,10 +405,12 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         jsonS3UploadSource.put("sourceFileId", s3UploadSource.getSourceLocation().getFileId());
         if (s3UploadSource.getAccount() != null) {
           HpcS3Account s3Account = s3UploadSource.getAccount();
+          logger.error("ERAN enc" + s3Account);
           jsonS3UploadSource.put(
               "accountAccessKey", Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getAccessKey())));
           jsonS3UploadSource.put(
               "accountSecretKey", Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getSecretKey())));
+          jsonS3UploadSource.put("region", s3Account.getRegion());
         }
         jsonRequest.put("s3UploadSource", jsonS3UploadSource);
       }
@@ -707,8 +711,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         s3Account.setAccessKey(
             encryptor.decrypt(Base64.getDecoder().decode(jsonS3UploadSource.get("accountAccessKey").toString())));
         s3Account.setSecretKey(
-            encryptor.decrypt(jsonS3UploadSource.get("accountSecretKey").toString().getBytes()));
+            encryptor.decrypt(Base64.getDecoder().decode(jsonS3UploadSource.get("accountSecretKey").toString())));
+        s3Account.setRegion(jsonS3UploadSource.get("region").toString());
         s3UploadSource.setAccount(s3Account);
+        logger.error("ERAN dec " + s3Account);
       }
       request.setS3UploadSource(s3UploadSource);
     }
