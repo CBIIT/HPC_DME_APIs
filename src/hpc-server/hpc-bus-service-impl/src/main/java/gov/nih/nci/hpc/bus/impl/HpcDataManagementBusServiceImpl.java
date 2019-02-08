@@ -1966,12 +1966,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         pathAttributes =
             dataTransferService.getPathAttributes(
                 HpcDataTransferType.GLOBUS, scanDirectoryLocation, false, configurationId);
-      } else { // It is a request to scan an S3 directory.
+      } else if (directoryScanRegistrationItem.getS3ScanDirectory() != null) {
+        // It is a request to scan an S3 directory.
         dataTransferType = HpcDataTransferType.S_3;
         s3Account = directoryScanRegistrationItem.getS3ScanDirectory().getAccount();
         scanDirectoryLocation =
             directoryScanRegistrationItem.getS3ScanDirectory().getDirectoryLocation();
-        dataTransferService.getPathAttributes(s3Account, scanDirectoryLocation, false);
+        pathAttributes =
+            dataTransferService.getPathAttributes(s3Account, scanDirectoryLocation, false);
       }
 
       if (!pathAttributes.getExists()) {
@@ -1997,7 +1999,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
 
       final String fileContainerId = scanDirectoryLocation.getFileContainerId();
-      final HpcS3Account fs3Account = s3Account; 
+      final HpcS3Account fs3Account = s3Account;
       dataTransferService
           .scanDirectory(
               dataTransferType,
@@ -2016,7 +2018,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                           fileContainerId,
                           directoryScanRegistrationItem.getCallerObjectId(),
                           directoryScanRegistrationItem.getBulkMetadataEntries(),
-                          pathMap, fs3Account)));
+                          pathMap,
+                          fs3Account)));
     }
 
     return dataObjectRegistrationItems;

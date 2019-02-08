@@ -448,11 +448,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   public HpcPathAttributes getPathAttributes(
       HpcS3Account s3Account, HpcFileLocation fileLocation, boolean getSize) throws HpcException {
     // Input validation.
-    if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
+    if (!isValidFileLocation(fileLocation)) {
       throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    if (!isValidS3Account(s3Account)) {
+      throw new HpcException("Invalid S3 Account", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
-    // This is S3 only functionality.
+    // This is S3 only functionality, so we get the S3 data-transfer-proxy.
     HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
     try {
       return dataTransferProxy.getPathAttributes(
