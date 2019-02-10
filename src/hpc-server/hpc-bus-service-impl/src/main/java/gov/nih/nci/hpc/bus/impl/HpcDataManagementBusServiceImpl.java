@@ -1990,17 +1990,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
       if (!pathAttributes.getExists()) {
         throw new HpcException(
-            "Endpoint or path doesn't exist: " + scanDirectoryLocation,
+            "Endpoint or path doesn't exist: "
+                + scanDirectoryLocation.getFileContainerId()
+                + ":"
+                + scanDirectoryLocation.getFileId(),
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
       if (!pathAttributes.getIsAccessible()) {
         throw new HpcException(
-            "Endpoint is not accessible: " + scanDirectoryLocation,
+            "Endpoint is not accessible: "
+                + scanDirectoryLocation.getFileContainerId()
+                + ":"
+                + scanDirectoryLocation.getFileId(),
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
       if (!pathAttributes.getIsDirectory()) {
         throw new HpcException(
-            "Endpoint is not a directory: " + scanDirectoryLocation,
+            "Endpoint is not a directory: "
+                + scanDirectoryLocation.getFileContainerId()
+                + ":"
+                + scanDirectoryLocation.getFileId(),
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
 
@@ -2066,7 +2075,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     // Calculate the data object path to register.
-    String path = toNormalizedPath(basePath + scanItemFilePath);
+    String path = toNormalizedPath(basePath + '/' + scanItemFilePath);
 
     // Construct the registration DTO.
     HpcDataObjectRegistrationItemDTO dataObjectRegistration =
