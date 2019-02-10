@@ -209,10 +209,8 @@ public interface HpcDataTransferProxy {
    * @return A list of files found.
    * @throws HpcException on data transfer system failure.
    */
-  public default List<HpcDirectoryScanItem> scanDirectory(
-      Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException {
-    throw new HpcException("scanDirectory() not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
+  public List<HpcDirectoryScanItem> scanDirectory(
+      Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException;
 
   /**
    * Get a file container name.

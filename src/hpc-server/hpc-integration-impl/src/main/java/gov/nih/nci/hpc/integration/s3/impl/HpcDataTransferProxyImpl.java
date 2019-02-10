@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -19,6 +22,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -35,6 +39,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.Download;
@@ -49,6 +54,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
@@ -87,6 +93,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   // The S3 download executor.
   @Autowired Executor s3Executor = null;
+
+  //Date formatter to format files last-modified date
+  private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -307,19 +316,40 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     GetObjectMetadataRequest request = null;
 
     try {
-      boolean objectExists =
+      boolean fileExists =
           s3Connection
               .getTransferManager(authenticatedToken)
               .getAmazonS3Client()
               .doesObjectExist(fileLocation.getFileContainerId(), fileLocation.getFileId());
 
       pathAttributes.setIsAccessible(true);
-      pathAttributes.setIsDirectory(false);
-      pathAttributes.setExists(objectExists);
-      pathAttributes.setIsFile(objectExists);
 
-      // Optionally get the file size.
-      if (getSize && objectExists) {
+      if (fileExists) {
+        // This is a file.
+        pathAttributes.setIsDirectory(false);
+        pathAttributes.setExists(true);
+        pathAttributes.setIsFile(true);
+      } else {
+        pathAttributes.setIsFile(false);
+
+        // Check if this is a directory.
+        ListObjectsV2Request listObjectsRequest =
+            new ListObjectsV2Request()
+                .withBucketName(fileLocation.getFileContainerId())
+                .withPrefix(fileLocation.getFileId());
+        boolean directoryExists =
+            s3Connection
+                    .getTransferManager(authenticatedToken)
+                    .getAmazonS3Client()
+                    .listObjectsV2(listObjectsRequest)
+                    .getKeyCount()
+                > 0;
+        pathAttributes.setIsDirectory(directoryExists);
+        pathAttributes.setExists(directoryExists);
+      }
+
+      // Optionally get the file size. We currently don't support getting file size for a directory.
+      if (getSize && fileExists) {
         // Create a S3 metadata request.
         request =
             new GetObjectMetadataRequest(
@@ -336,18 +366,60 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       throw new HpcException(
           "[S3] Failed to get object or metadata: " + ase.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
           ase);
 
     } catch (AmazonClientException ace) {
       throw new HpcException(
           "[S3] Failed to get object or metadata: " + ace.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
           ace);
     }
 
     return pathAttributes;
+  }
+
+  @Override
+  public List<HpcDirectoryScanItem> scanDirectory(
+      Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException {
+    List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
+
+    try {
+      // List all the files and directories (including nested) under this directory.
+      ListObjectsV2Request listObjectsRequest =
+          new ListObjectsV2Request()
+              .withBucketName(directoryLocation.getFileContainerId())
+              .withPrefix(directoryLocation.getFileId());
+      s3Connection
+          .getTransferManager(authenticatedToken)
+          .getAmazonS3Client()
+          .listObjectsV2(listObjectsRequest)
+          .getObjectSummaries()
+          .forEach(
+              s3ObjectSummary -> {
+                if (s3ObjectSummary.getSize() > 0) {
+                  HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
+                  directoryScanItem.setFilePath(s3ObjectSummary.getKey());
+                  directoryScanItem.setFileName(FilenameUtils.getName(s3ObjectSummary.getKey()));
+                  directoryScanItem.setLastModified(
+                      dateFormat.format(s3ObjectSummary.getLastModified()));
+                  directoryScanItems.add(directoryScanItem);
+                }
+              });
+
+      return directoryScanItems;
+
+    } catch (AmazonServiceException ase) {
+      throw new HpcException(
+          "[S3] Failed to get object or metadata: " + ase.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR,
+          ase);
+
+    } catch (AmazonClientException ace) {
+      throw new HpcException(
+          "[S3] Failed to get object or metadata: " + ace.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR,
+          ace);
+    }
   }
 
   @Override

@@ -459,7 +459,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
     try {
       return dataTransferProxy.getPathAttributes(
-          dataTransferProxy.authenticate(s3Account), fileLocation, true);
+          dataTransferProxy.authenticate(s3Account), fileLocation, getSize);
 
     } catch (HpcException e) {
       throw new HpcException(
@@ -501,7 +501,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             .scanDirectory(authenticatedToken, directoryLocation);
 
     // Filter the list based on provided patterns.
-    filterScanItems(scanItems, includePatterns, excludePatterns, patternType);
+    filterScanItems(scanItems, includePatterns, excludePatterns, patternType, dataTransferType);
 
     return scanItems;
   }
@@ -1343,13 +1343,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * @param includePatterns The include patterns.
    * @param excludePatterns The exclude patterns.
    * @param patternType The type of patterns provided.
+   * @param dataTransferType The data transfer type (Globus or S3) that provided the directory scan
+   *     items.
    * @throws HpcException on service failure
    */
   private void filterScanItems(
       List<HpcDirectoryScanItem> scanItems,
       List<String> includePatterns,
       List<String> excludePatterns,
-      HpcDirectoryScanPatternType patternType)
+      HpcDirectoryScanPatternType patternType,
+      HpcDataTransferType dataTransferType)
       throws HpcException {
     if (includePatterns.isEmpty() && excludePatterns.isEmpty()) {
       // No patterns provided.
@@ -1362,6 +1365,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           "Null directory scan pattern type", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    // If Globus performed the directory scan, then all the items start with '/'.
+    // We will make sure the pattern also starts with '/'. S3 items don't start with '/'
+    boolean prefixPattern = dataTransferType.equals(HpcDataTransferType.GLOBUS);
+
     // Compile include regex expressions.
     List<Pattern> includeRegex = new ArrayList<>();
     includePatterns.forEach(
@@ -1369,7 +1376,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             includeRegex.add(
                 Pattern.compile(
                     patternType.equals(HpcDirectoryScanPatternType.SIMPLE)
-                        ? toRegex(pattern)
+                        ? toRegex(pattern, prefixPattern)
                         : pattern)));
 
     // Compile exclude regex expressions.
@@ -1379,7 +1386,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             excludeRegex.add(
                 Pattern.compile(
                     patternType.equals(HpcDirectoryScanPatternType.SIMPLE)
-                        ? toRegex(pattern)
+                        ? toRegex(pattern, prefixPattern)
                         : pattern)));
 
     // Match the items against the patterns.
@@ -1417,11 +1424,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * Convert pattern from SIMPLE to REGEX.
    *
    * @param pattern The SIMPLE pattern.
+   * @param prefixPattern If set to true, the pattern will be prefixed by a single '/' (if not
+   *     already sent like that)
    * @return The REGEX pattern.
    */
-  private String toRegex(String pattern) {
+  private String toRegex(String pattern, boolean prefixPattern) {
     // Ensure the pattern starts with '/'.
-    String regex = !pattern.startsWith("/") ? "/" + pattern : pattern;
+    String regex = prefixPattern && !pattern.startsWith("/") ? "/" + pattern : pattern;
 
     // Convert the '**' to regex.
     regex = regex.replaceAll(Pattern.quote("**"), ".*");
