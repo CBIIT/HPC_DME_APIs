@@ -1955,6 +1955,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               HpcErrorType.INVALID_REQUEST_INPUT);
         }
         pathMap.setFromPath(toNormalizedPath(pathMap.getFromPath()));
+        if (directoryScanRegistrationItem.getS3ScanDirectory() != null) {
+          // The 'path' in S3 (which are really object key) don't start with a '/', so need to remove it after normalization.
+          pathMap.setFromPath(pathMap.getFromPath().substring(1));
+        }
         pathMap.setToPath(toNormalizedPath(pathMap.getToPath()));
       }
 
