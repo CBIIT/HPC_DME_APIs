@@ -355,17 +355,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response registerDataObjects(
       HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) {
-    Response response = registerDataObjects(toV2(bulkDataObjectRegistrationRequest));
-    if (response.getEntity()
-        instanceof gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO) {
-      return okResponse(
-          toV1(
-              (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO)
-                  response.getEntity()),
-          false);
-    }
+    HpcBulkDataObjectRegistrationResponseDTO registrationResponse =
+        toV1(
+            (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO)
+                registerDataObjects(toV2(bulkDataObjectRegistrationRequest)).getEntity());
 
-    return response;
+    return !StringUtils.isEmpty(registrationResponse.getTaskId())
+        ? createdResponse(registrationResponse.getTaskId(), registrationResponse)
+        : okResponse(registrationResponse, false);
   }
 
   @Override
