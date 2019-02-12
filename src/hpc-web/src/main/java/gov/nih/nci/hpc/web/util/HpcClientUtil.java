@@ -1564,9 +1564,25 @@ public class HpcClientUtil {
       if (restResponse == null || restResponse.getStatus() != 200) {
         return null;
       }
-      JsonParser parser = new MappingJsonFactory().createParser((InputStream)
-        restResponse.getEntity());
+      
+      ObjectMapper mapper = new ObjectMapper();
+      AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+        new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+        new JacksonAnnotationIntrospector());
+      mapper.setAnnotationIntrospector(intr);
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+      false);
+      mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+      //mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+      MappingJsonFactory factory = new MappingJsonFactory(mapper);
+      JsonParser parser = factory.createParser((InputStream) restResponse
+        .getEntity());
       return parser.readValueAs(HpcBulkDataObjectRegistrationStatusDTO.class);
+      
+      
+//      JsonParser parser = new MappingJsonFactory().createParser((InputStream)
+//        restResponse.getEntity());
+//      return parser.readValueAs(HpcBulkDataObjectRegistrationStatusDTO.class);
     } catch (IllegalStateException | IOException e) {
       e.printStackTrace();
       throw new HpcWebException(

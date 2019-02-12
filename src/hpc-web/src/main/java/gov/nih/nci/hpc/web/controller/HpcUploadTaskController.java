@@ -111,7 +111,25 @@ public class HpcUploadTaskController extends AbstractHpcController {
 			HpcBulkDataObjectRegistrationStatusDTO uploadTask = HpcClientUtil
 				.getDataObjectRegistrationTask(authToken, this.registrationServiceURL,
         taskId, this.sslCertPath, this.sslCertPassword);
+			boolean retry = false;
+			if(uploadTask != null && uploadTask.getTask() != null)
+			{
+				List<HpcDataObjectRegistrationItemDTO> failedRequests = uploadTask.getTask().getFailedItemsRequest();
+				if(failedRequests != null && !failedRequests.isEmpty())
+					retry = true;
+				
+				for(HpcDataObjectRegistrationItemDTO dto : failedRequests)
+				{
+					//Source is null for S3 based bulk requests
+					if(dto.getSource() == null)
+					{
+						retry = false;
+						break;
+					}
+				}
+			}
 			model.addAttribute("hpcBulkDataObjectRegistrationTaskDTO", uploadTask.getTask());
+			model.addAttribute("hpcBulkDataObjectRegistrationRetry", retry);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get registration status: " + e.getMessage());
 			return "redirect:/uploadtasks";
