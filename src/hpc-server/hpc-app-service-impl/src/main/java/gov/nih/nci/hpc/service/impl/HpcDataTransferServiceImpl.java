@@ -1156,6 +1156,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       pathAttributes =
           getPathAttributes(HpcDataTransferType.GLOBUS, sourceFileLocation, true, configurationId);
     } else if (s3UploadSource != null) {
+      sourceFileLocation = s3UploadSource.getSourceLocation();
       pathAttributes =
           getPathAttributes(s3UploadSource.getAccount(), s3UploadSource.getSourceLocation(), true);
 
