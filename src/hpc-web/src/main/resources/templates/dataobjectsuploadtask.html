@@ -179,13 +179,13 @@
 									</div>
 								</div>
 							</div>
-							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationRetry == true}">
+							<div class="panel-heading" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() &gt; 0}">
 								<div class="col-md-3">
 									<h2>
 										<i class="fa fa-list-alt red"></i><strong>Failed</strong>
 									</h2>
 								</div>
-								<div class="col-md-3 col-md-offset-6">
+								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectRegistrationRetry == true}">
 								<h2>
 									<strong> <a id="uploadfailed" class="btn btn-link btn-sm" th:href="@{'javascript:retryUpload(\'' + ${taskId} +'\',\''+${taskType} + '\')'}" ><i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></a></strong>
 								</h2>
