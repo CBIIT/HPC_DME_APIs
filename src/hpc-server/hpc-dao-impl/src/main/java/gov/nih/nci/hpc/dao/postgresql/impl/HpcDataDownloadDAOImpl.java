@@ -239,7 +239,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           destinationLocation.setFileId(destinationLocationFileId);
           downloadTaskResult.setDestinationLocation(destinationLocation);
         }
-        String destinationType = rs.getString("DEASTINATION_TYPE");
+        String destinationType = rs.getString("DESTINATION_TYPE");
         downloadTaskResult.setDestinationType(
             destinationType != null ? HpcDataTransferType.fromValue(destinationType) : null);
         downloadTaskResult.setResult(rs.getBoolean("RESULT"));
