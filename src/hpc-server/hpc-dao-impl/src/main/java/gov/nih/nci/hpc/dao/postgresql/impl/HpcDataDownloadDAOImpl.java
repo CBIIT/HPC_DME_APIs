@@ -94,13 +94,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"RESULT\", "
           + "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict on constraint \"HPC_DOWNLOAD_TASK_RESULT_pkey\" do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", "
           + "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", "
+          + "\"DESTINATION_TYPE\"=excluded.\"DESTINATION_TYPE\", "
           + "\"RESULT\"=excluded.\"RESULT\", "
           + "\"TYPE\"=excluded.\"TYPE\", "
           + "\"MESSAGE\"=excluded.\"MESSAGE\", "
@@ -238,6 +239,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           destinationLocation.setFileId(destinationLocationFileId);
           downloadTaskResult.setDestinationLocation(destinationLocation);
         }
+        String destinationType = rs.getString("DEASTINATION_TYPE");
+        downloadTaskResult.setDestinationType(
+            destinationType != null ? HpcDataTransferType.fromValue(destinationType) : null);
         downloadTaskResult.setResult(rs.getBoolean("RESULT"));
         downloadTaskResult.setMessage(rs.getString("MESSAGE"));
         downloadTaskResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
@@ -458,6 +462,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
               : null,
           taskResult.getDestinationLocation().getFileContainerId(),
           taskResult.getDestinationLocation().getFileId(),
+          taskResult.getDestinationType() != null ? taskResult.getDestinationType().value() : null,
           taskResult.getResult(),
           taskResult.getType().value(),
           taskResult.getMessage(),
@@ -528,8 +533,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       } else {
         destinationLocation =
             collectionDownloadTask.getS3DownloadDestination().getDestinationLocation();
-        HpcS3Account s3Account =
-            collectionDownloadTask.getS3DownloadDestination().getAccount();
+        HpcS3Account s3Account = collectionDownloadTask.getS3DownloadDestination().getAccount();
         s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
         s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
         s3AccountRegion = s3Account.getRegion();

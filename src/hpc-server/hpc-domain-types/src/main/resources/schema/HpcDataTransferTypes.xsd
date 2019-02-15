@@ -271,6 +271,8 @@
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="destinationType"
+				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="result" type="xsd:boolean" />
 			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="items"
