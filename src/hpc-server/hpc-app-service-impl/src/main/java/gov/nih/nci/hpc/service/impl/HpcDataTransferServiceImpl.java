@@ -800,10 +800,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setId(downloadTask.getId());
     taskResult.setUserId(downloadTask.getUserId());
     taskResult.setPath(downloadTask.getPath());
-    taskResult.setDestinationLocation(
-        downloadTask.getS3DownloadDestination() != null
-            ? downloadTask.getS3DownloadDestination().getDestinationLocation()
-            : downloadTask.getGlobusDownloadDestination().getDestinationLocation());
+    if (downloadTask.getS3DownloadDestination() != null) {
+      taskResult.setDestinationLocation(
+          downloadTask.getS3DownloadDestination().getDestinationLocation());
+      taskResult.setDestinationType(HpcDataTransferType.S_3);
+    } else {
+      taskResult.setDestinationLocation(
+          downloadTask.getGlobusDownloadDestination().getDestinationLocation());
+      taskResult.setDestinationType(HpcDataTransferType.GLOBUS);
+    }
     taskResult.setResult(result);
     taskResult.setType(downloadTask.getType());
     taskResult.setMessage(message);

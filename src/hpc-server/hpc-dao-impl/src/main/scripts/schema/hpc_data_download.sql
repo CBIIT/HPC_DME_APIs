@@ -135,6 +135,7 @@ CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"
   "DATA_TRANSFER_TYPE" text,
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text NOT NULL,
   "DESTINATION_LOCATION_FILE_ID" text NOT NULL,
+  "DESTINATION_TYPE" text,
   "RESULT" boolean NOT NULL,
   "MESSAGE" text,
   "ITEMS" text,
@@ -165,6 +166,8 @@ COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_C
                   'The download destination container ID';
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_ID" IS 
                   'The download destination file ID';   
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_TYPE" IS 
+                  'The download destination type - either Globus or S3';                     
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."RESULT" IS 
                   'The download task success/fail indicator';   
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."MESSAGE" IS 

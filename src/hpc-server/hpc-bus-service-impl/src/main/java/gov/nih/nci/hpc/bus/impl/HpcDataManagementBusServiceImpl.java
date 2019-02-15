@@ -1782,16 +1782,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           calculateCollectionDownloadPercentComplete(taskStatus.getCollectionDownloadTask()));
       downloadStatus.setCreated(taskStatus.getCollectionDownloadTask().getCreated());
       downloadStatus.setTaskStatus(taskStatus.getCollectionDownloadTask().getStatus());
-      downloadStatus.setDestinationLocation(
-          taskStatus.getCollectionDownloadTask().getS3DownloadDestination() != null
-              ? taskStatus
-                  .getCollectionDownloadTask()
-                  .getS3DownloadDestination()
-                  .getDestinationLocation()
-              : taskStatus
-                  .getCollectionDownloadTask()
-                  .getGlobusDownloadDestination()
-                  .getDestinationLocation());
+      if (taskStatus.getCollectionDownloadTask().getS3DownloadDestination() != null) {
+        downloadStatus.setDestinationLocation(
+            taskStatus
+                .getCollectionDownloadTask()
+                .getS3DownloadDestination()
+                .getDestinationLocation());
+        downloadStatus.setDestinationType(HpcDataTransferType.S_3);
+      } else {
+        downloadStatus.setDestinationLocation(
+            taskStatus
+                .getCollectionDownloadTask()
+                .getGlobusDownloadDestination()
+                .getDestinationLocation());
+        downloadStatus.setDestinationType(HpcDataTransferType.GLOBUS);
+      }
       populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
 
     } else {
@@ -1801,6 +1806,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
       downloadStatus.setCreated(taskStatus.getResult().getCreated());
       downloadStatus.setDestinationLocation(taskStatus.getResult().getDestinationLocation());
+      downloadStatus.setDestinationType(taskStatus.getResult().getDestinationType());
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
       downloadStatus.setMessage(taskStatus.getResult().getMessage());
       downloadStatus.setResult(taskStatus.getResult().getResult());
