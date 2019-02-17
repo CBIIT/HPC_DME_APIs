@@ -185,4 +185,13 @@ public interface HpcSecurityService {
    */
   public HpcAuthenticationTokenClaims parseAuthenticationToken(String authenticationToken)
       throws HpcException;
+  
+  
+  /**
+   * Reload data management configurations from the database
+   * 
+   * @throws HpcException as service failure
+   */
+  public void refreshDataManagementConfigurations() throws HpcException;
+   
 }

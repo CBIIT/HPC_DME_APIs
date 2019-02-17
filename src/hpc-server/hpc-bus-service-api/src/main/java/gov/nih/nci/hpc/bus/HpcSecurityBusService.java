@@ -164,4 +164,13 @@ public interface HpcSecurityBusService {
    */
   public void registerSystemAccount(HpcSystemAccountDTO systemAccountRegistrationDTO)
       throws HpcException;
+  
+  
+  /**
+   * Refresh data management configurations.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void refreshDataManagementConfigurations()
+      throws HpcException;
 }
