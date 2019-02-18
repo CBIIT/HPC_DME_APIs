@@ -363,10 +363,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       }
 
     } catch (AmazonServiceException ase) {
-      throw new HpcException(
-          "[S3] Failed to get object or metadata: " + ase.getMessage(),
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          ase);
+      if (ase.getStatusCode() == 403) {
+        pathAttributes.setIsAccessible(false);
+      } else {
+        throw new HpcException(
+            "[S3] Failed to get object or metadata: " + ase.getMessage(),
+            HpcErrorType.DATA_TRANSFER_ERROR,
+            ase);
+      }
 
     } catch (AmazonClientException ace) {
       throw new HpcException(
