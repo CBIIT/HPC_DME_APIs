@@ -434,6 +434,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
       return null;
     }
   }
+  
+  
+  @Override 
+  public void refreshDataManagementConfigurations() throws HpcException {
+	  this.dataManagementConfigurationLocator.reload();
+  }
 
   //---------------------------------------------------------------------//
   // Helper Methods

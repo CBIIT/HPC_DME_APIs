@@ -202,4 +202,15 @@ public interface HpcSecurityRestService {
   @Path("/systemAccount")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration);
+  
+  /**
+   * Register system account.
+   *
+   * @param systemAccountRegistration The system account DTO to register.
+   * @return The REST service response.
+   */
+  @POST
+  @Path("/refreshDataManagementConfigurations")
+  public Response refreshDataManagementConfigurations();
+  
 }

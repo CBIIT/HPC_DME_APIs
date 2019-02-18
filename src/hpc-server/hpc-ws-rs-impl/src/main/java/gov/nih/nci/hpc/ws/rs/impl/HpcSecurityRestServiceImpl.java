@@ -240,4 +240,18 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
 
     return createdResponse(systemAccountRegistration.getAccount().getIntegratedSystem().value());
   }
+  
+  @Override
+  public Response refreshDataManagementConfigurations() {
+	
+    try {
+      securityBusService.refreshDataManagementConfigurations();
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+    return okResponse(null, false);
+   
+  }
+  
 }
