@@ -300,7 +300,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
 
       return created;
-      
+
     } finally {
       lock.unlock();
     }
@@ -2337,7 +2337,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         metadataService.getDataObjectSystemGeneratedMetadata(path);
 
     // Download to S3 destination is supported only from S3 archive.
-    if (s3DownloadDestination && !metadata.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+    if (s3DownloadDestination
+        && (metadata.getDataTransferType() == null
+            || !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
       throw new HpcException(
           "S3 download request is not supported for POSIX based file system archive",
           HpcErrorType.INVALID_REQUEST_INPUT);
