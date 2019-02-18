@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Striped;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
@@ -148,6 +150,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   // TheEvent Application Service Instance.
   @Autowired private HpcEventService eventService = null;
 
+  // Locks to synchronize threads executing on path.
+  private Striped<Lock> pathLocks = Striped.lazyWeakLock(10);
+
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -199,95 +204,106 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       String userName,
       String configurationId)
       throws HpcException {
-    // Input validation.
-    validatePath(path);
 
-    if (collectionRegistration == null || collectionRegistration.getMetadataEntries().isEmpty()) {
-      throw new HpcException("Null or empty metadata entries", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+    // Locking the path
+    Lock lock = pathLocks.get(path);
+    lock.lock();
+    try {
 
-    // Create parent collections if requested to.
-    createParentCollections(
-        path,
-        collectionRegistration.getCreateParentCollections(),
-        collectionRegistration.getParentCollectionsBulkMetadataEntries(),
-        userId,
-        userName,
-        configurationId);
+      // Input validation.
+      validatePath(path);
 
-    // Create a collection directory.
-    boolean created = dataManagementService.createDirectory(path);
+      if (collectionRegistration == null || collectionRegistration.getMetadataEntries().isEmpty()) {
+        throw new HpcException(
+            "Null or empty metadata entries", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
 
-    // Attach the metadata.
-    if (created) {
-      boolean registrationCompleted = false;
-      try {
-        // Assign system account as an additional owner of the collection.
-        dataManagementService.setCoOwnership(path, userId);
+      // Create parent collections if requested to.
+      createParentCollections(
+          path,
+          collectionRegistration.getCreateParentCollections(),
+          collectionRegistration.getParentCollectionsBulkMetadataEntries(),
+          userId,
+          userName,
+          configurationId);
 
-        // Add user provided metadata.
-        metadataService.addMetadataToCollection(
-            path, collectionRegistration.getMetadataEntries(), configurationId);
+      // Create a collection directory.
+      boolean created = dataManagementService.createDirectory(path);
 
-        // Generate system metadata and attach to the collection.
-        metadataService.addSystemGeneratedMetadataToCollection(
-            path, userId, userName, configurationId);
+      // Attach the metadata.
+      if (created) {
+        boolean registrationCompleted = false;
+        try {
+          // Assign system account as an additional owner of the collection.
+          dataManagementService.setCoOwnership(path, userId);
 
-        // Validate the collection hierarchy.
-        securityService.executeAsSystemAccount(
-            Optional.empty(),
-            () -> dataManagementService.validateHierarchy(path, configurationId, false));
+          // Add user provided metadata.
+          metadataService.addMetadataToCollection(
+              path, collectionRegistration.getMetadataEntries(), configurationId);
 
-        // Add collection update event.
-        addCollectionUpdatedEvent(path, true, false, userId);
+          // Generate system metadata and attach to the collection.
+          metadataService.addSystemGeneratedMetadataToCollection(
+              path, userId, userName, configurationId);
 
-        registrationCompleted = true;
+          // Validate the collection hierarchy.
+          securityService.executeAsSystemAccount(
+              Optional.empty(),
+              () -> dataManagementService.validateHierarchy(path, configurationId, false));
 
-      } finally {
-        if (!registrationCompleted) {
-          // Collection registration failed. Remove it from Data Management.
-          dataManagementService.delete(path, true);
+          // Add collection update event.
+          addCollectionUpdatedEvent(path, true, false, userId);
+
+          registrationCompleted = true;
+
+        } finally {
+          if (!registrationCompleted) {
+            // Collection registration failed. Remove it from Data Management.
+            dataManagementService.delete(path, true);
+          }
         }
+
+      } else {
+        // Get the metadata for this collection.
+        HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
+        HpcSystemGeneratedMetadata systemGeneratedMetadata =
+            metadataService.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
+
+        // Update the metadata.
+        boolean updated = true;
+        String message = null;
+        try {
+          metadataService.updateCollectionMetadata(
+              path,
+              collectionRegistration.getMetadataEntries(),
+              systemGeneratedMetadata.getConfigurationId());
+
+        } catch (HpcException e) {
+          // Collection metadata update failed. Capture this in the audit record.
+          updated = false;
+          message = e.getMessage();
+          throw (e);
+
+        } finally {
+          // Add an audit record of this deletion attempt.
+          dataManagementService.addAuditRecord(
+              path,
+              HpcAuditRequestType.UPDATE_COLLECTION,
+              metadataBefore,
+              metadataService.getCollectionMetadataEntries(path),
+              null,
+              updated,
+              null,
+              message);
+        }
+
+        addCollectionUpdatedEvent(path, false, false, userId);
       }
 
-    } else {
-      // Get the metadata for this collection.
-      HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
-      HpcSystemGeneratedMetadata systemGeneratedMetadata =
-          metadataService.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
-
-      // Update the metadata.
-      boolean updated = true;
-      String message = null;
-      try {
-        metadataService.updateCollectionMetadata(
-            path,
-            collectionRegistration.getMetadataEntries(),
-            systemGeneratedMetadata.getConfigurationId());
-
-      } catch (HpcException e) {
-        // Collection metadata update failed. Capture this in the audit record.
-        updated = false;
-        message = e.getMessage();
-        throw (e);
-
-      } finally {
-        // Add an audit record of this deletion attempt.
-        dataManagementService.addAuditRecord(
-            path,
-            HpcAuditRequestType.UPDATE_COLLECTION,
-            metadataBefore,
-            metadataService.getCollectionMetadataEntries(path),
-            null,
-            updated,
-            null,
-            message);
-      }
-
-      addCollectionUpdatedEvent(path, false, false, userId);
+      return created;
+      
+    } finally {
+      lock.unlock();
     }
-
-    return created;
   }
 
   @Override
