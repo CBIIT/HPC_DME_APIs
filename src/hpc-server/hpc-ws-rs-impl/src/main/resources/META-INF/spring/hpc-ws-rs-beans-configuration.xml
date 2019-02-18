@@ -202,6 +202,8 @@
 				<entry key="deleteGroup" value="${hpc.ws.rs.auth.security.delete-group}" />
 				<entry key="registerSystemAccount"
 					value="${hpc.ws.rs.auth.security.register-system-account}" />
+				<entry key="refreshDataManagementConfigurations"
+					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />	
 
 				<!-- Data Management Service Authorizations -->
 				<entry key="registerCollection"
