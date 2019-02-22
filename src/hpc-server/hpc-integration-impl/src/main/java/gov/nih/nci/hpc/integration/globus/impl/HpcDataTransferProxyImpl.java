@@ -514,6 +514,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 error);
 
           } catch (Exception e) {
+            logger.error("Failed to submit a transfer request to Globus: " + e.getMessage(), e);
             throw new HpcException(
                 "[GLOBUS] Failed to transfer: "
                     + e.getMessage()
