@@ -508,6 +508,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             return taskId;
 
           } catch (APIError error) {
+        	logger.error("Error while submitting transfer request to Globus for"
+                	+ " Source "
+                	+ source
+                	+ " and Destination " 
+                    + destination
+                	+ ": " + error.message, error);  
             throw new HpcException(
                 "[GLOBUS] Failed to transfer: "
                     + error.message
@@ -520,7 +526,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                 error);
 
           } catch (Exception e) {
-            logger.error("Failed to submit a transfer request to Globus: " + e.getMessage(), e);
+            logger.error("Failed to submit transfer request to Globus for"
+            		+ " Source "
+            		+ source
+            		+ " and Destination " 
+            		+ destination
+            		+ ": " + e.getMessage(), e);
             throw new HpcException(
                 "[GLOBUS] Failed to transfer: "
                     + e.getMessage()
