@@ -183,17 +183,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           "Globus data transfer doesn't support progress listener", HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    if(uploadRequest.getS3UploadSource() != null) {
-      throw new HpcException(
-          "Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
+    if (uploadRequest.getS3UploadSource() != null) {
+      throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
     }
-    
+
     // Generating upload URL or direct file upload not supported.
     if (uploadRequest.getGenerateUploadRequestURL()) {
       throw new HpcException(
           "Globus data transfer doesn't support upload URL", HpcErrorType.UNEXPECTED_ERROR);
     }
-    
+
     // Calculate the archive destination.
     HpcFileLocation archiveDestinationLocation =
         getArchiveDestinationLocation(
@@ -522,7 +521,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
           } catch (Exception e) {
             throw new HpcException(
-                "[GLOBUS] Failed to transfer. Source: " + source + ". Destination: " + destination,
+                "[GLOBUS] Failed to transfer: "
+                    + e.getMessage()
+                    + ". Source: "
+                    + source
+                    + ". Destination: "
+                    + destination,
                 HpcErrorType.DATA_TRANSFER_ERROR,
                 HpcIntegratedSystem.GLOBUS,
                 e);
