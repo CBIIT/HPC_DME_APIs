@@ -104,23 +104,24 @@
 									onchange="show(this.value)">
 									<option value="-1">----Select----</option>
 
-									<option value="USAGE_SUMMARY"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY'}">Summary report</option>
-									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary report
-										by Date range</option>
-									<option value="USAGE_SUMMARY_BY_DOC" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC'}">DOC Report</option>
-									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC
-										report by Date range</option>
-									<option value="USAGE_SUMMARY_BY_USER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER'}">User report</option>
-									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User
-										report by Date range</option>
 									<option value="USAGE_SUMMARY_BY_BASEPATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH'}">Base path report</option>
 									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base path
 										report by Date range</option>
 									<option value="USAGE_SUMMARY_BY_PATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH'}">Collection path report</option>
 									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection path
 										report by Date range</option>
+									<option value="USAGE_SUMMARY_BY_DOC" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC'}">DOC Report</option>
+									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC
+										report by Date range</option>
+									<option value="USAGE_SUMMARY"
+										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY'}">Summary report</option>
+									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
+										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary report
+										by Date range</option>
+									<option value="USAGE_SUMMARY_BY_USER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER'}">User report</option>
+									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User
+										report by Date range</option>
+									
 								</select>
 							</div>
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
