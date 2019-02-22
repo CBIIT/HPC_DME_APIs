@@ -515,7 +515,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
           } catch (Exception e) {
             throw new HpcException(
-                "[GLOBUS] Failed to transfer. Source: " + source + ". Destination: " + destination,
+                "[GLOBUS] Failed to transfer: "
+                    + e.getMessage()
+                    + ". Source: "
+                    + source
+                    + ". Destination: "
+                    + destination,
                 HpcErrorType.DATA_TRANSFER_ERROR,
                 HpcIntegratedSystem.GLOBUS,
                 e);
