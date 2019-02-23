@@ -1097,6 +1097,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           taskStatus.getDataObjectDownloadTask().getDataTransferType());
       downloadStatus.setDestinationLocation(
           taskStatus.getDataObjectDownloadTask().getDestinationLocation());
+      downloadStatus.setDestinationType(
+          taskStatus.getDataObjectDownloadTask().getDataTransferType());
       downloadStatus.setPercentComplete(
           taskStatus.getDataObjectDownloadTask().getPercentComplete());
 
@@ -1107,6 +1109,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setDataTransferRequestId(taskStatus.getResult().getDataTransferRequestId());
       downloadStatus.setDataTransferType(taskStatus.getResult().getDataTransferType());
       downloadStatus.setDestinationLocation(taskStatus.getResult().getDestinationLocation());
+      downloadStatus.setDestinationType(taskStatus.getResult().getDestinationType());
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
       downloadStatus.setMessage(taskStatus.getResult().getMessage());
       downloadStatus.setResult(taskStatus.getResult().getResult());

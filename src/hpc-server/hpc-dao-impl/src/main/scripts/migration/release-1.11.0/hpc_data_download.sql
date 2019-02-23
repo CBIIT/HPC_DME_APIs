@@ -13,4 +13,10 @@
                  
 ALTER TABLE public."HPC_DOWNLOAD_TASK_RESULT" ADD COLUMN "DESTINATION_TYPE" text;
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_TYPE" IS 
-                  'The download destination type - either Globus or S3';     
+                  'The download destination type - either Globus or S3';  
+                  
+ALTER TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK" ADD COLUMN "DESTINATION_TYPE" text;
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_TYPE" IS 
+                  'The download destination type - either Globus or S3';  
+                  
+                     

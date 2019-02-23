@@ -26,6 +26,7 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "ARCHIVE_LOCATION_FILE_ID" text,
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text,
   "DESTINATION_LOCATION_FILE_ID" text,
+  "DESTINATION_TYPE" text,
   "COMPLETION_EVENT" boolean,
   "PERCENT_COMPLETE" integer,
   "SIZE" bigint,
@@ -59,6 +60,8 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_LOCATION_F
                   'The download destination container ID';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_ID" IS 
                   'The download destination file ID';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_TYPE" IS 
+                  'The download destination type - either Globus or S3';  
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."COMPLETION_EVENT" IS 
                   'An indicator whether a completion event needs to be generated when the task is completed';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PERCENT_COMPLETE" IS 
