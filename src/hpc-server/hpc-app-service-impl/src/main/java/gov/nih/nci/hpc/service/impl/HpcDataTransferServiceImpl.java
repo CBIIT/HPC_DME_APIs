@@ -610,6 +610,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
     taskResult.setDataTransferType(downloadTask.getDataTransferType());
     taskResult.setDestinationLocation(downloadTask.getDestinationLocation());
+    taskResult.setDestinationType(downloadTask.getDestinationType());
     taskResult.setResult(result);
     taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
     taskResult.setMessage(message);
@@ -1611,6 +1612,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             HpcDataTransferType.GLOBUS,
             downloadRequest.getArchiveLocation().getFileId(),
             downloadRequest.getConfigurationId()));
+    downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
     downloadTask.setPath(downloadRequest.getPath());
     downloadTask.setUserId(downloadRequest.getUserId());
 
@@ -1985,6 +1987,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setArchiveLocation(secondHopDownloadRequest.getArchiveLocation());
       downloadTask.setDestinationLocation(
           secondHopDownloadRequest.getGlobusDestination().getDestinationLocation());
+      downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
       downloadTask.setCreated(Calendar.getInstance());
       downloadTask.setPercentComplete(0);
       downloadTask.setSize(secondHopDownloadRequest.getSize());
@@ -2132,6 +2135,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
       downloadTask.setDestinationLocation(
           downloadRequest.getS3Destination().getDestinationLocation());
+      downloadTask.setDestinationType(HpcDataTransferType.S_3);
       downloadTask.setCreated(Calendar.getInstance());
       downloadTask.setPercentComplete(0);
       downloadTask.setSize(downloadRequest.getSize());

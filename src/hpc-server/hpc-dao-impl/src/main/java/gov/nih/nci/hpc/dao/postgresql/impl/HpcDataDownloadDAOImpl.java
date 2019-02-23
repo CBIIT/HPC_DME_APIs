@@ -60,9 +60,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
           + "\"DATA_TRANSFER_STATUS\", \"DOWNLOAD_FILE_PATH\","
           + "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", "
-          + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", "
+          + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", "
           + "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
@@ -74,6 +74,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"ARCHIVE_LOCATION_FILE_ID\"=excluded.\"ARCHIVE_LOCATION_FILE_ID\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", "
+          + "\"DESTINATION_TYPE\"=excluded.\"DESTINATION_TYPE\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
           + "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", "
           + "\"SIZE\"=excluded.\"SIZE\", "
@@ -210,6 +211,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           destinationLocation.setFileId(destinationLocationFileId);
           dataObjectDownloadTask.setDestinationLocation(destinationLocation);
         }
+
+        String destinationType = rs.getString("DESTINATION_TYPE");
+        dataObjectDownloadTask.setDestinationType(
+            destinationType != null ? HpcDataTransferType.fromValue(destinationType) : null);
 
         Calendar created = Calendar.getInstance();
         created.setTime(rs.getTimestamp("CREATED"));
@@ -384,6 +389,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           dataObjectDownloadTask.getArchiveLocation().getFileId(),
           dataObjectDownloadTask.getDestinationLocation().getFileContainerId(),
           dataObjectDownloadTask.getDestinationLocation().getFileId(),
+          dataObjectDownloadTask.getDestinationType(),
           dataObjectDownloadTask.getCompletionEvent(),
           dataObjectDownloadTask.getPercentComplete(),
           dataObjectDownloadTask.getSize(),
