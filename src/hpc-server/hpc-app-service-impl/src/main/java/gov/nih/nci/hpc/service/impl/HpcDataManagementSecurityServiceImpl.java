@@ -210,13 +210,10 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
   @Override
   public List<String> getGroups(String groupPattern) throws HpcException {
     // Input validation.
-    
-	//Disabling this - since the DAO presently requires the groupPattern  
-	//to be null to return all groups
-    /*if (StringUtils.isEmpty(groupPattern)) {
+    if (StringUtils.isEmpty(groupPattern)) {
       throw new HpcException(
           "Null or empty group search criteria", HpcErrorType.INVALID_REQUEST_INPUT);
-    }*/
+    }
 
     // Note: The Jargon API doesn't support case insensitive query. To workaround, we query the iRODS DB.
     // Once the Jargon API is enhanced to support case insensitive search, it needs to be used and the DAO retired.
