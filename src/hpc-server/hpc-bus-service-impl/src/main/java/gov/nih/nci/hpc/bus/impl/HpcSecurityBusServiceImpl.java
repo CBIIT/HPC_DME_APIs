@@ -485,12 +485,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
   @Override
   public HpcGroupListDTO getGroups(String groupPattern) throws HpcException {
-    // Search for groups.
-    List<String> groupNames =
-        dataManagementSecurityService.getGroups(groupPattern != null ? groupPattern : "%");
-    if (groupNames == null || groupNames.isEmpty()) {
-      return null;
-    }
+    
+	// Search for groups.
+	List<String> groupNames =
+		        dataManagementSecurityService.getGroups(groupPattern);  
 
     // Construct the DTO to return.
     HpcGroupListDTO groups = new HpcGroupListDTO();
