@@ -151,7 +151,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   @Autowired private HpcEventService eventService = null;
 
   // Locks to synchronize threads executing on path.
-  private Striped<Lock> pathLocks = Striped.lazyWeakLock(10);
+  private Striped<Lock> pathLocks = Striped.lazyWeakLock(100);
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
