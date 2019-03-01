@@ -16,45 +16,23 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
 import gov.nih.nci.hpc.cli.util.Constants;
-import gov.nih.nci.hpc.cli.util.HpcBatchException;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import gov.nih.nci.hpc.cli.util.HpcLogWriter;
-import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanPathMapDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 
 public class HpcGlobusDirectoryListProcessor {
 
@@ -154,7 +132,7 @@ public class HpcGlobusDirectoryListProcessor {
 		source.setFileId(globusEndpointPath);
 		folder.setBasePath(destinationBasePath);
 		folder.setScanDirectoryLocation(source);
-		HpcDirectoryScanPathMapDTO pathDTO = new HpcDirectoryScanPathMapDTO();
+		HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
 		pathDTO.setFromPath(globusEndpointPath);
 		pathDTO.setToPath(globusEndpointPath);
 		folder.setPathMap(pathDTO);

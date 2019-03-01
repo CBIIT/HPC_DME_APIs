@@ -16,7 +16,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,7 +26,6 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
-
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -39,7 +37,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -62,9 +60,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
           + "\"DATA_TRANSFER_STATUS\", \"DOWNLOAD_FILE_PATH\","
           + "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", "
-          + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", "
+          + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", "
           + "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
@@ -76,6 +74,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"ARCHIVE_LOCATION_FILE_ID\"=excluded.\"ARCHIVE_LOCATION_FILE_ID\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", "
+          + "\"DESTINATION_TYPE\"=excluded.\"DESTINATION_TYPE\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
           + "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", "
           + "\"SIZE\"=excluded.\"SIZE\", "
@@ -94,15 +93,16 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL =
       "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( "
           + "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
-          + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"RESULT\", "
+          + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", \"RESULT\", "
           + "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict on constraint \"HPC_DOWNLOAD_TASK_RESULT_pkey\" do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", "
           + "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", "
+          + "\"DESTINATION_TYPE\"=excluded.\"DESTINATION_TYPE\", "
           + "\"RESULT\"=excluded.\"RESULT\", "
           + "\"TYPE\"=excluded.\"TYPE\", "
           + "\"MESSAGE\"=excluded.\"MESSAGE\", "
@@ -212,6 +212,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           dataObjectDownloadTask.setDestinationLocation(destinationLocation);
         }
 
+        String destinationType = rs.getString("DESTINATION_TYPE");
+        dataObjectDownloadTask.setDestinationType(
+            destinationType != null ? HpcDataTransferType.fromValue(destinationType) : null);
+
         Calendar created = Calendar.getInstance();
         created.setTime(rs.getTimestamp("CREATED"));
         dataObjectDownloadTask.setCreated(created);
@@ -240,6 +244,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           destinationLocation.setFileId(destinationLocationFileId);
           downloadTaskResult.setDestinationLocation(destinationLocation);
         }
+        String destinationType = rs.getString("DESTINATION_TYPE");
+        downloadTaskResult.setDestinationType(
+            destinationType != null ? HpcDataTransferType.fromValue(destinationType) : null);
         downloadTaskResult.setResult(rs.getBoolean("RESULT"));
         downloadTaskResult.setMessage(rs.getString("MESSAGE"));
         downloadTaskResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
@@ -279,11 +286,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           destinationLocation.setFileId(destinationLocationFileId);
         }
 
-        HpcS3DownloadAccount s3Account = null;
+        HpcS3Account s3Account = null;
         byte[] s3AccountAccessKey = rs.getBytes("S3_ACCOUNT_ACCESS_KEY");
         byte[] s3AccountSecretKey = rs.getBytes("S3_ACCOUNT_SECRET_KEY");
         if (s3AccountAccessKey != null && s3AccountSecretKey != null) {
-          s3Account = new HpcS3DownloadAccount();
+          s3Account = new HpcS3Account();
           s3Account.setAccessKey(this.encryptor.decrypt(s3AccountAccessKey));
           s3Account.setSecretKey(this.encryptor.decrypt(s3AccountSecretKey));
           s3Account.setRegion(rs.getString("S3_ACCOUNT_REGION"));
@@ -382,6 +389,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           dataObjectDownloadTask.getArchiveLocation().getFileId(),
           dataObjectDownloadTask.getDestinationLocation().getFileContainerId(),
           dataObjectDownloadTask.getDestinationLocation().getFileId(),
+          dataObjectDownloadTask.getDestinationType().value(),
           dataObjectDownloadTask.getCompletionEvent(),
           dataObjectDownloadTask.getPercentComplete(),
           dataObjectDownloadTask.getSize(),
@@ -460,6 +468,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
               : null,
           taskResult.getDestinationLocation().getFileContainerId(),
           taskResult.getDestinationLocation().getFileId(),
+          taskResult.getDestinationType().value(),
           taskResult.getResult(),
           taskResult.getType().value(),
           taskResult.getMessage(),
@@ -530,8 +539,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       } else {
         destinationLocation =
             collectionDownloadTask.getS3DownloadDestination().getDestinationLocation();
-        HpcS3DownloadAccount s3Account =
-            collectionDownloadTask.getS3DownloadDestination().getAccount();
+        HpcS3Account s3Account = collectionDownloadTask.getS3DownloadDestination().getAccount();
         s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
         s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
         s3AccountRegion = s3Account.getRegion();

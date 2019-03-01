@@ -12,7 +12,6 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -28,7 +27,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -40,10 +42,12 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public interface HpcDataTransferService {
   /**
-   * Upload data. Either upload from the input stream or submit a transfer request for the source.
+   * Upload a data object. Caller must provide one of the following 1. A source file. 2. A request
+   * to generate upload URL. 3. A Globus source location. 4. An AWS S3 source location.
    *
-   * @param sourceLocation The source for data transfer.
-   * @param sourceFile The source file.
+   * @param globusUploadSource (Optional) The Globus upload source.
+   * @param s3UploadSource (Optional) The S3 upload source.
+   * @param sourceFile (Optional) The source file.
    * @param generateUploadRequestURL Generate an upload URL (so caller can directly upload file into
    *     archive).
    * @param uploadRequestURLChecksum A checksum provided by the caller to be attached to the upload
@@ -57,7 +61,8 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public HpcDataObjectUploadResponse uploadDataObject(
-      HpcFileLocation sourceLocation,
+      HpcGlobusUploadSource globusUploadSource,
+      HpcS3UploadSource s3UploadSource,
       File sourceFile,
       boolean generateUploadRequestURL,
       String uploadRequestURLChecksum,
@@ -103,7 +108,7 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
-   * @return The download URT.
+   * @return The download URL.
    * @throws HpcException on service failure.
    */
   public String generateDownloadRequestURL(
@@ -175,7 +180,7 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Get endpoint/path attributes.
+   * Get path attributes for a given file in Globus or Cleversafe (using system account).
    *
    * @param dataTransferType The data transfer type.
    * @param fileLocation The endpoint/path to get attributes for.
@@ -193,9 +198,23 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
+   * Get path attributes for a given file in AWS S3 (using user provided S3 account).
+   *
+   * @param s3Account The user provided S3 account.
+   * @param fileLocation The bucket/object-id to get attributes for.
+   * @param getSize If set to true, the file/directory size will be returned.
+   * @return The path attributes.
+   * @throws HpcException on service failure.
+   */
+  public HpcPathAttributes getPathAttributes(
+      HpcS3Account s3Account, HpcFileLocation fileLocation, boolean getSize)
+      throws HpcException;
+
+  /**
    * Scan a directory (recursively) and return a list of all its files.
    *
    * @param dataTransferType The data transfer type.
+   * @param (Optional) S3 account to use. If null, then system account for the data transfer type is used.
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
@@ -207,6 +226,7 @@ public interface HpcDataTransferService {
    */
   public List<HpcDirectoryScanItem> scanDirectory(
       HpcDataTransferType dataTransferType,
+      HpcS3Account s3Account,
       HpcFileLocation directoryLocation,
       String configurationId,
       List<String> includePatterns,

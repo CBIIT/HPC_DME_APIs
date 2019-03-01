@@ -39,7 +39,11 @@
 				<sec:clientAuthentication want="${hpc.ws.rs.ssl.wantClientAuth}"
 					required="${hpc.ws.rs.ssl.needClientAuth}" />
 				<sec:cipherSuitesFilter>
-					<sec:include>.*_WITH_AES_.*</sec:include>
+					<sec:include>.*_WITH_AES_.*</sec:include>							
+					<sec:include>TLS_DHE_RSA_WITH_AES_128_CBC_SHA</sec:include>
+                    <sec:include>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</sec:include>
+                    <sec:include>TLS_RSA_WITH_AES_128_CBC_SHA</sec:include>
+                    <sec:include>TLS_RSA_WITH_AES_256_CBC_SHA</sec:include>
 					<sec:exclude>EDH-DSS-DES-CBC3-SHA</sec:exclude>
 					<sec:exclude>.*_DH_anon_.*</sec:exclude>
 				</sec:cipherSuitesFilter>
@@ -198,6 +202,8 @@
 				<entry key="deleteGroup" value="${hpc.ws.rs.auth.security.delete-group}" />
 				<entry key="registerSystemAccount"
 					value="${hpc.ws.rs.auth.security.register-system-account}" />
+				<entry key="refreshDataManagementConfigurations"
+					value="${hpc.ws.rs.auth.security.refresh-data-management-configurations}" />	
 
 				<!-- Data Management Service Authorizations -->
 				<entry key="registerCollection"

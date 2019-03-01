@@ -25,7 +25,7 @@ public interface HpcSystemBusService {
   public void processDataTranferUploadReceived() throws HpcException;
 
   /**
-   * Update the data transfer upload status of all data objects that the transfer is 'in progress'.
+   * Update the data transfer upload status of all data objects that the transfer is 'in progress' (Globus).
    *
    * @throws HpcException on service failure.
    */
@@ -38,6 +38,13 @@ public interface HpcSystemBusService {
    * @throws HpcException on service failure.
    */
   public void processDataTranferUploadInProgressWithGeneratedURL() throws HpcException;
+  
+  /**
+   * Update the data transfer upload status of all data objects that are currently streamed (S3).
+   *
+   * @throws HpcException on service failure.
+   */
+  public void processDataTranferUploadStreamingInProgress() throws HpcException;
 
   /**
    * Transfer data objects currently in temporary archive to the (permanent) archive, and complete

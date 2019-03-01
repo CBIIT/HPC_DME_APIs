@@ -92,6 +92,7 @@ public interface HpcDataManagementRestService {
   /**
    * Download a collection.
    *
+   * @deprecated
    * @param path The collection path.
    * @param downloadRequest The download request.
    * @return The REST service response w/ HpcCollectionDownloadResponseDTO entity.
@@ -222,11 +223,13 @@ public interface HpcDataManagementRestService {
   /**
    * Data object registration.
    *
+   * @deprecated
    * @param path The data object path.
    * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
    * @param dataObjectInputStream The data object input stream.
    * @return The REST service response.
    */
+  @Deprecated
   @PUT
   @Path("/dataObject/{path:.*}")
   @Consumes("multipart/form-data")
@@ -239,11 +242,33 @@ public interface HpcDataManagementRestService {
           InputStream dataObjectInputStream);
 
   /**
-   * Data objects registration.
+   * Data object registration.
    *
-   * @param bulkDataObjectRegistrationRequest The bulk registration request.
+   * @param path The data object path.
+   * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
+   * @param dataObjectInputStream The data object input stream.
    * @return The REST service response.
    */
+  @PUT
+  @Path("/v2/dataObject/{path:.*}")
+  @Consumes("multipart/form-data")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response registerDataObject(
+      @PathParam("path") String path,
+      @Multipart(value = "dataObjectRegistration", type = "application/json")
+          gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
+              dataObjectRegistration,
+      @Multipart(value = "dataObject", type = "application/octet-stream", required = false)
+          InputStream dataObjectInputStream);
+
+  /**
+   * Data objects registration.
+   *
+   * @deprecated
+   * @param bulkDataObjectRegistrationRequest The bulk registration request.
+   * @return The REST service response w/ HpcBulkDataObjectRegistrationResponseDTO entity.
+   */
+  @Deprecated
   @PUT
   @Path("/registration")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
@@ -252,16 +277,59 @@ public interface HpcDataManagementRestService {
       HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
 
   /**
+   * Data objects registration.
+   *
+   * @param bulkDataObjectRegistrationRequest The bulk registration request.
+   * @return The REST service response w/ HpcBulkDataObjectRegistrationResponseDTO entity.
+   */
+  @PUT
+  @Path("/v2/registration")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response registerDataObjects(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO
+          bulkDataObjectRegistrationRequest);
+
+  /**
+   * Get bulk data object registration task status.
+   *
+   * @deprecated
+   * @param taskId The registration task ID.
+   * @return The REST service response w/ HpcDataObjectListRegistrationStatusDTO entity.
+   */
+  @Deprecated
+  @GET
+  @Path("/registration/{taskId}")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response getDataObjectsRegistrationStatusV1(@PathParam("taskId") String taskId);
+
+  /**
    * Get bulk data object registration task status.
    *
    * @param taskId The registration task ID.
    * @return The REST service response w/ HpcDataObjectListRegistrationStatusDTO entity.
    */
   @GET
-  @Path("/registration/{taskId}")
+  @Path("/v2/registration/{taskId}")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getDataObjectsRegistrationStatus(@PathParam("taskId") String taskId);
 
+  /**
+   * Get data objects registration summary (for the request invoker).
+   *
+   * @deprecated
+   * @param page The requested results page.
+   * @param totalCount If set to true, return the total count of completed tasks. All active tasks
+   *     are always returned.
+   * @return The REST service response w/ HpcBulkDataObjectRegistrationSummaryDTO entity.
+   */
+  @Deprecated
+  @GET
+  @Path("/registration")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response getRegistrationSummaryV1(
+      @QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount);
+  
   /**
    * Get data objects registration summary (for the request invoker).
    *
@@ -271,7 +339,7 @@ public interface HpcDataManagementRestService {
    * @return The REST service response w/ HpcBulkDataObjectRegistrationSummaryDTO entity.
    */
   @GET
-  @Path("/registration")
+  @Path("/v2/registration")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getRegistrationSummary(
       @QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount);
@@ -290,6 +358,7 @@ public interface HpcDataManagementRestService {
   /**
    * Download a data object.
    *
+   * @deprecated
    * @param path The data object path.
    * @param downloadRequest The download request.
    * @param mc The message context.
@@ -411,6 +480,7 @@ public interface HpcDataManagementRestService {
   /**
    * Download a list of data objects.
    *
+   * @deprecated
    * @param downloadRequest The download request.
    * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO entity.
    */
@@ -420,7 +490,7 @@ public interface HpcDataManagementRestService {
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest);
-  
+
   /**
    * Download a list of data objects.
    *
@@ -431,7 +501,8 @@ public interface HpcDataManagementRestService {
   @Path("/v2/download")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-  public Response downloadDataObjects(gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest);
+  public Response downloadDataObjects(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest);
 
   /**
    * Get data objects download task status.
