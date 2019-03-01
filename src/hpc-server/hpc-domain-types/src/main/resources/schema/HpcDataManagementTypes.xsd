@@ -173,6 +173,13 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcDirectoryScanPathMap">
+		<xsd:sequence>
+			<xsd:element name="fromPath" type="xsd:string" />
+			<xsd:element name="toPath" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:simpleType name="HpcBulkDataObjectRegistrationTaskStatus">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />

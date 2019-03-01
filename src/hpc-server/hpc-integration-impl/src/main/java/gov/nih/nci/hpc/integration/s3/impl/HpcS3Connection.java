@@ -15,7 +15,7 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadAccount;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -72,7 +72,7 @@ public class HpcS3Connection {
    * @return TransferManager
    * @throws HpcException if authentication failed
    */
-  public Object authenticate(HpcS3DownloadAccount s3Account) throws HpcException {
+  public Object authenticate(HpcS3Account s3Account) throws HpcException {
     try {
       // Create the credential provider based on provided S3 account.
       BasicAWSCredentials awsCredentials =

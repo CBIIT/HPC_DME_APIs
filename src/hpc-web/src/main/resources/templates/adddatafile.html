@@ -317,7 +317,8 @@
 	
 	$("#hpcDatafile").change(function (e) {
 	    //Append the file name to the data file path
-	    var value = $("#path").val() + "/" + $(this).val();
+	    var filename = $(this).val().replace(/^C:\\fakepath\\/, "")
+	    var value = $("#path").val() + "/" + filename;
 	    $("#path").val(value);
 	    $("#path").show();
 	});

@@ -183,6 +183,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           "Globus data transfer doesn't support progress listener", HpcErrorType.UNEXPECTED_ERROR);
     }
 
+    if (uploadRequest.getS3UploadSource() != null) {
+      throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
+    }
+
     // Generating upload URL or direct file upload not supported.
     if (uploadRequest.getGenerateUploadRequestURL()) {
       throw new HpcException(
@@ -220,7 +224,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     String requestId =
         transferData(
             globusConnection.getTransferClient(authenticatedToken),
-            uploadRequest.getSourceLocation(),
+            uploadRequest.getGlobusUploadSource().getSourceLocation(),
             archiveDestinationLocation);
 
     // Package and return the response.
@@ -230,6 +234,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
     uploadResponse.setDataTransferStarted(Calendar.getInstance());
     uploadResponse.setDataTransferCompleted(null);
+    uploadResponse.setUploadSource(uploadRequest.getGlobusUploadSource().getSourceLocation());
+    uploadResponse.setSourceSize(uploadRequest.getSourceSize());
     if (baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
       uploadResponse.setDataTransferStatus(
           HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
@@ -503,11 +509,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
           } catch (APIError error) {
         	logger.error("Error while submitting transfer request to Globus for"
+<<<<<<< HEAD
               		+ " Source "
               		+ source
               		+ " and Destination " 
               		+ destination
               		+ ": " + error.message, error);
+=======
+                	+ " Source "
+                	+ source
+                	+ " and Destination " 
+                    + destination
+                	+ ": " + error.message, error);  
+>>>>>>> origin/releases/1.11.0
             throw new HpcException(
                 "[GLOBUS] Failed to transfer: "
                     + error.message
@@ -880,6 +894,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferType(HpcDataTransferType.GLOBUS);
     uploadResponse.setDataTransferStarted(transferStarted);
     uploadResponse.setDataTransferCompleted(Calendar.getInstance());
+    uploadResponse.setSourceSize(sourceFile.length());
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
 
     return uploadResponse;

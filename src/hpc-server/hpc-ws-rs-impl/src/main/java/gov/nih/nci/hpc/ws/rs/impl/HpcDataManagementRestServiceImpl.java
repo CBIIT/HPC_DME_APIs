@@ -25,12 +25,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
@@ -44,6 +47,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -57,7 +61,6 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
-
 /**
  * HPC Data Management REST Service Implementation.
  *
@@ -299,10 +302,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(resultDto, true);
   }
 
+  @Deprecated
   @Override
   public Response registerDataObject(
       String path,
       HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
+      InputStream dataObjectInputStream) {
+    return registerDataObject(path, toV2(dataObjectRegistration), dataObjectInputStream);
+  }
+
+  @Override
+  public Response registerDataObject(
+      String path,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
+          dataObjectRegistration,
       InputStream dataObjectInputStream) {
     File dataObjectFile = null;
     HpcDataObjectRegistrationResponseDTO responseDTO = null;
@@ -338,10 +351,26 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
   }
 
+  @Deprecated
   @Override
   public Response registerDataObjects(
       HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) {
-    HpcBulkDataObjectRegistrationResponseDTO registrationResponse = null;
+    HpcBulkDataObjectRegistrationResponseDTO registrationResponse =
+        toV1(
+            (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO)
+                registerDataObjects(toV2(bulkDataObjectRegistrationRequest)).getEntity());
+
+    return !StringUtils.isEmpty(registrationResponse.getTaskId())
+        ? createdResponse(registrationResponse.getTaskId(), registrationResponse)
+        : okResponse(registrationResponse, false);
+  }
+
+  @Override
+  public Response registerDataObjects(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO
+          bulkDataObjectRegistrationRequest) {
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO
+        registrationResponse = null;
     try {
       registrationResponse =
           dataManagementBusService.registerDataObjects(bulkDataObjectRegistrationRequest);
@@ -355,9 +384,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         : okResponse(registrationResponse, false);
   }
 
+  @Deprecated
+  @Override
+  public Response getDataObjectsRegistrationStatusV1(String taskId) {
+    Response response = getDataObjectsRegistrationStatus(taskId);
+    if (response.getEntity() == null) {
+      return response;
+    }
+
+    return okResponse(
+        toV1(
+            (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO)
+                response.getEntity()),
+        true);
+  }
+
   @Override
   public Response getDataObjectsRegistrationStatus(String taskId) {
-    HpcBulkDataObjectRegistrationStatusDTO registrationStatus = null;
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO
+        registrationStatus = null;
     try {
       registrationStatus = dataManagementBusService.getDataObjectsRegistrationStatus(taskId);
 
@@ -368,9 +413,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     return okResponse(registrationStatus, true);
   }
 
+  @Deprecated
+  @Override
+  public Response getRegistrationSummaryV1(Integer page, Boolean totalCount) {
+    Response response = getRegistrationSummary(page, totalCount);
+    if (response.getEntity() == null) {
+      return response;
+    }
+
+    return okResponse(
+        toV1(
+            (gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO) response.getEntity()),
+        true);
+  }
+
   @Override
   public Response getRegistrationSummary(Integer page, Boolean totalCount) {
-    HpcRegistrationSummaryDTO registrationSummary = null;
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO registrationSummary = null;
     try {
       registrationSummary =
           dataManagementBusService.getRegistrationSummary(
@@ -453,9 +512,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       return errorResponse(e);
     }
 
-    Map<String, String> header = new HashMap<>();
-    header.put("DATA_TRANSFER_TYPE", downloadResponse.getDataTransferType());
-    return downloadResponse(downloadResponse, messageContext, header);
+    return downloadResponse(downloadResponse, messageContext);
   }
 
   @Override
@@ -657,11 +714,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @return an OK response.
    */
   private Response downloadResponse(
-      HpcDataObjectDownloadResponseDTO downloadResponse,
-      MessageContext messageContext,
-      Map<String, String> header) {
+      HpcDataObjectDownloadResponseDTO downloadResponse, MessageContext messageContext) {
     if (downloadResponse == null) {
-      return okResponse(null, false, header);
+      return okResponse(null, false);
     }
     Response response = null;
     if (downloadResponse.getDestinationFile() != null) {
@@ -671,11 +726,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
           DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE, downloadResponse.getDestinationFile());
       response =
           okResponse(
-              downloadResponse.getDestinationFile(),
-              MediaType.APPLICATION_OCTET_STREAM_TYPE,
-              header);
+              downloadResponse.getDestinationFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE);
     } else {
-      response = okResponse(downloadResponse, false, header);
+      response = okResponse(downloadResponse, false);
     }
     return response;
   }
@@ -728,5 +781,285 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
 
     return v2DownloadRequest;
+  }
+
+  /**
+   * Convert v1 of HpcDataObjectRegistrationRequestDTO to v2 of the API.
+   *
+   * @param downloadRequest download request (v1).
+   * @return The download request in v2 form.
+   */
+  private gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO toV2(
+      HpcDataObjectRegistrationRequestDTO dataObjectRegistration) {
+    if (dataObjectRegistration == null) {
+      return null;
+    }
+
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
+        v2DataObjectRegistration =
+            new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO();
+    v2DataObjectRegistration.setCallerObjectId(dataObjectRegistration.getCallerObjectId());
+    v2DataObjectRegistration.setChecksum(dataObjectRegistration.getChecksum());
+    v2DataObjectRegistration.setCreateParentCollections(
+        dataObjectRegistration.getCreateParentCollections());
+    v2DataObjectRegistration.setParentCollectionsBulkMetadataEntries(
+        dataObjectRegistration.getParentCollectionsBulkMetadataEntries());
+    v2DataObjectRegistration.setGenerateUploadRequestURL(
+        dataObjectRegistration.getGenerateUploadRequestURL());
+    v2DataObjectRegistration
+        .getMetadataEntries()
+        .addAll(dataObjectRegistration.getMetadataEntries());
+
+    if (dataObjectRegistration.getSource() != null
+        && !StringUtils.isEmpty(dataObjectRegistration.getSource().getFileContainerId())
+        && !StringUtils.isEmpty(dataObjectRegistration.getSource().getFileId())) {
+      HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+      globusUploadSource.setSourceLocation(dataObjectRegistration.getSource());
+      v2DataObjectRegistration.setGlobusUploadSource(globusUploadSource);
+    }
+
+    return v2DataObjectRegistration;
+  }
+
+  /**
+   * Convert v1 of HpcBulkDataObjectRegistrationRequestDTO to v2 of the API.
+   *
+   * @param bulkDataObjectRegistrationRequest bulk registration request (v1).
+   * @return The bulk registration in v2 form.
+   */
+  private gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO toV2(
+      HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) {
+    if (bulkDataObjectRegistrationRequest == null) {
+      return null;
+    }
+
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO
+        v2BulkDataObjectRegistrationRequest =
+            new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO();
+    v2BulkDataObjectRegistrationRequest.setDryRun(bulkDataObjectRegistrationRequest.getDryRun());
+    v2BulkDataObjectRegistrationRequest.setUiURL(bulkDataObjectRegistrationRequest.getUiURL());
+
+    bulkDataObjectRegistrationRequest
+        .getDataObjectRegistrationItems()
+        .forEach(
+            dataObjectRegistrationItem -> {
+              gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO
+                  v2DataObjectRegistrationItem =
+                      new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
+              v2DataObjectRegistrationItem.setCallerObjectId(
+                  dataObjectRegistrationItem.getCallerObjectId());
+              v2DataObjectRegistrationItem.setCreateParentCollections(
+                  dataObjectRegistrationItem.getCreateParentCollections());
+              v2DataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
+                  dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
+              v2DataObjectRegistrationItem.setPath(dataObjectRegistrationItem.getPath());
+              v2DataObjectRegistrationItem
+                  .getDataObjectMetadataEntries()
+                  .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
+              HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+              globusUploadSource.setSourceLocation(dataObjectRegistrationItem.getSource());
+              v2DataObjectRegistrationItem.setGlobusUploadSource(globusUploadSource);
+              v2BulkDataObjectRegistrationRequest
+                  .getDataObjectRegistrationItems()
+                  .add(v2DataObjectRegistrationItem);
+            });
+
+    bulkDataObjectRegistrationRequest
+        .getDirectoryScanRegistrationItems()
+        .forEach(
+            directoryScanRegistrationItem -> {
+              gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO
+                  v2DirectoryScanRegistrationItem =
+                      new gov.nih.nci.hpc.dto.datamanagement.v2
+                          .HpcDirectoryScanRegistrationItemDTO();
+              v2DirectoryScanRegistrationItem.setBasePath(
+                  directoryScanRegistrationItem.getBasePath());
+              v2DirectoryScanRegistrationItem.setBulkMetadataEntries(
+                  directoryScanRegistrationItem.getBulkMetadataEntries());
+              v2DirectoryScanRegistrationItem.setCallerObjectId(
+                  directoryScanRegistrationItem.getCallerObjectId());
+              v2DirectoryScanRegistrationItem.setPathMap(
+                  directoryScanRegistrationItem.getPathMap());
+              v2DirectoryScanRegistrationItem.setPatternType(
+                  directoryScanRegistrationItem.getPatternType());
+              v2DirectoryScanRegistrationItem
+                  .getExcludePatterns()
+                  .addAll(directoryScanRegistrationItem.getExcludePatterns());
+              v2DirectoryScanRegistrationItem
+                  .getIncludePatterns()
+                  .addAll(directoryScanRegistrationItem.getIncludePatterns());
+              HpcGlobusScanDirectory globusScanDirectory = new HpcGlobusScanDirectory();
+              globusScanDirectory.setDirectoryLocation(
+                  directoryScanRegistrationItem.getScanDirectoryLocation());
+              v2DirectoryScanRegistrationItem.setGlobusScanDirectory(globusScanDirectory);
+              v2BulkDataObjectRegistrationRequest
+                  .getDirectoryScanRegistrationItems()
+                  .add(v2DirectoryScanRegistrationItem);
+            });
+
+    return v2BulkDataObjectRegistrationRequest;
+  }
+
+  /**
+   * Convert v2 of HpcBulkDataObjectRegistrationResponseDTO to v1 of the API.
+   *
+   * @param v2BulkDataObjectRegistrationResponse bulk registration response (v2).
+   * @return The bulk registration in v1 form.
+   */
+  private HpcBulkDataObjectRegistrationResponseDTO toV1(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO
+          v2BulkDataObjectRegistrationResponse) {
+    if (v2BulkDataObjectRegistrationResponse == null) {
+      return null;
+    }
+
+    HpcBulkDataObjectRegistrationResponseDTO bulkDataObjectRegistrationResponse =
+        new HpcBulkDataObjectRegistrationResponseDTO();
+
+    bulkDataObjectRegistrationResponse.setTaskId(v2BulkDataObjectRegistrationResponse.getTaskId());
+    v2BulkDataObjectRegistrationResponse
+        .getDataObjectRegistrationItems()
+        .forEach(
+            v2DataObjectRegistrationItem -> {
+              HpcDataObjectRegistrationItemDTO dataObjectRegistrationItem =
+                  new HpcDataObjectRegistrationItemDTO();
+              dataObjectRegistrationItem.setCallerObjectId(
+                  v2DataObjectRegistrationItem.getCallerObjectId());
+              dataObjectRegistrationItem.setCreateParentCollections(
+                  v2DataObjectRegistrationItem.getCreateParentCollections());
+              dataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
+                  v2DataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
+              dataObjectRegistrationItem.setPath(v2DataObjectRegistrationItem.getPath());
+              dataObjectRegistrationItem
+                  .getDataObjectMetadataEntries()
+                  .addAll(v2DataObjectRegistrationItem.getDataObjectMetadataEntries());
+              if (v2DataObjectRegistrationItem.getGlobusUploadSource() != null) {
+                dataObjectRegistrationItem.setSource(
+                    v2DataObjectRegistrationItem.getGlobusUploadSource().getSourceLocation());
+              }
+              bulkDataObjectRegistrationResponse
+                  .getDataObjectRegistrationItems()
+                  .add(dataObjectRegistrationItem);
+            });
+
+    return bulkDataObjectRegistrationResponse;
+  }
+
+  /**
+   * Convert v2 of HpcBulkDataObjectRegistrationStatusDTO to v1 of the API.
+   *
+   * @param v2BulkDataObjectRegistrationStatus bulk registration status (v2).
+   * @return The bulk registration status in v1 form.
+   */
+  private HpcBulkDataObjectRegistrationStatusDTO toV1(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO
+          v2BulkDataObjectRegistrationStatus) {
+    if (v2BulkDataObjectRegistrationStatus == null) {
+      return null;
+    }
+
+    HpcBulkDataObjectRegistrationStatusDTO bulkDataObjectRegistrationStatus =
+        new HpcBulkDataObjectRegistrationStatusDTO();
+
+    bulkDataObjectRegistrationStatus.setInProgress(
+        v2BulkDataObjectRegistrationStatus.getInProgress());
+    bulkDataObjectRegistrationStatus.setTask(toV1(v2BulkDataObjectRegistrationStatus.getTask()));
+
+    return bulkDataObjectRegistrationStatus;
+  }
+
+  /**
+   * Convert v2 of HpcBulkDataObjectRegistrationTaskDTO to v1 of the API.
+   *
+   * @param v2BulkDataObjectRegistrationTask bulk registration task (v2).
+   * @return The bulk registration task in v1 form.
+   */
+  private HpcBulkDataObjectRegistrationTaskDTO toV1(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO
+          v2BulkDataObjectRegistrationTask) {
+    if (v2BulkDataObjectRegistrationTask == null) {
+      return null;
+    }
+
+    HpcBulkDataObjectRegistrationTaskDTO bulkDataObjectRegistrationTask =
+        new HpcBulkDataObjectRegistrationTaskDTO();
+
+    bulkDataObjectRegistrationTask.setTaskId(v2BulkDataObjectRegistrationTask.getTaskId());
+    bulkDataObjectRegistrationTask.setTaskStatus(v2BulkDataObjectRegistrationTask.getTaskStatus());
+    bulkDataObjectRegistrationTask.setResult(v2BulkDataObjectRegistrationTask.getResult());
+    bulkDataObjectRegistrationTask
+        .getCompletedItems()
+        .addAll(v2BulkDataObjectRegistrationTask.getCompletedItems());
+    bulkDataObjectRegistrationTask
+        .getFailedItems()
+        .addAll(v2BulkDataObjectRegistrationTask.getFailedItems());
+    bulkDataObjectRegistrationTask
+        .getInProgressItems()
+        .addAll(v2BulkDataObjectRegistrationTask.getInProgressItems());
+    bulkDataObjectRegistrationTask.setMessage(v2BulkDataObjectRegistrationTask.getMessage());
+    bulkDataObjectRegistrationTask.setEffectiveTransferSpeed(
+        v2BulkDataObjectRegistrationTask.getEffectiveTransferSpeed());
+    bulkDataObjectRegistrationTask.setPercentComplete(
+        v2BulkDataObjectRegistrationTask.getPercentComplete());
+    bulkDataObjectRegistrationTask.setCreated(v2BulkDataObjectRegistrationTask.getCreated());
+    bulkDataObjectRegistrationTask.setCompleted(v2BulkDataObjectRegistrationTask.getCompleted());
+    v2BulkDataObjectRegistrationTask
+        .getFailedItemsRequest()
+        .forEach(
+            v2DataObjectRegistrationItem -> {
+              HpcDataObjectRegistrationItemDTO dataObjectRegistrationItem =
+                  new HpcDataObjectRegistrationItemDTO();
+              dataObjectRegistrationItem.setCallerObjectId(
+                  v2DataObjectRegistrationItem.getCallerObjectId());
+              dataObjectRegistrationItem.setCreateParentCollections(
+                  v2DataObjectRegistrationItem.getCreateParentCollections());
+              dataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
+                  v2DataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
+              dataObjectRegistrationItem.setPath(v2DataObjectRegistrationItem.getPath());
+              dataObjectRegistrationItem
+                  .getDataObjectMetadataEntries()
+                  .addAll(v2DataObjectRegistrationItem.getDataObjectMetadataEntries());
+              dataObjectRegistrationItem.setSource(
+                  v2DataObjectRegistrationItem.getGlobusUploadSource() != null
+                      ? v2DataObjectRegistrationItem.getGlobusUploadSource().getSourceLocation()
+                      : null);
+              bulkDataObjectRegistrationTask
+                  .getFailedItemsRequest()
+                  .add(dataObjectRegistrationItem);
+            });
+
+    return bulkDataObjectRegistrationTask;
+  }
+
+  /**
+   * Convert v2 of HpcRegistrationSummaryDTO to v1 of the API.
+   *
+   * @param v2RegistrationSummary The registration summary (v2).
+   * @return The registration summary in v1 form.
+   */
+  private HpcRegistrationSummaryDTO toV1(
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO v2RegistrationSummary) {
+    if (v2RegistrationSummary == null) {
+      return null;
+    }
+
+    HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
+    registrationSummary.setLimit(v2RegistrationSummary.getLimit());
+    registrationSummary.setPage(v2RegistrationSummary.getPage());
+    registrationSummary.setTotalCount(v2RegistrationSummary.getTotalCount());
+    v2RegistrationSummary
+        .getActiveTasks()
+        .forEach(
+            v2BulkDataObjectRegistrationTask ->
+                registrationSummary.getActiveTasks().add(toV1(v2BulkDataObjectRegistrationTask)));
+    v2RegistrationSummary
+        .getCompletedTasks()
+        .forEach(
+            v2BulkDataObjectRegistrationTask ->
+                registrationSummary
+                    .getCompletedTasks()
+                    .add(toV1(v2BulkDataObjectRegistrationTask)));
+
+    return registrationSummary;
   }
 }

@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import java.util.Calendar;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -25,6 +26,7 @@ import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataBrowseService;
+import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
@@ -46,6 +48,9 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
   
   //Data Management Application Service instance
   @Autowired private HpcDataManagementService dataManagementService = null;
+  
+  //Data Management Security Application Service instance
+  @Autowired private HpcDataManagementSecurityService dataManagementSecurityService = null;
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -196,11 +201,24 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
   @Override
   public HpcBookmarkListDTO getBookmarks() throws HpcException {
     HpcBookmarkListDTO bookmarkList = new HpcBookmarkListDTO();
+    String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
     bookmarkList
         .getBookmarks()
         .addAll(
-            dataBrowseService.getBookmarks(
-                securityService.getRequestInvoker().getNciAccount().getUserId()));
+            dataBrowseService.getBookmarks(userId));
+    
+    //Get all the groups this user belongs to
+    List<String> groups = dataManagementSecurityService.getGroups("%");
+    for(String group: groups) {
+    	List<String> userIds = dataManagementSecurityService.getGroupMembers(group);
+    	if(userIds != null && !userIds.isEmpty()) {
+    		if(userIds.contains(userId)) {
+    			//Get all the bookmarks on this group
+    			List<HpcBookmark> groupBookmarks = dataBrowseService.getBookmarks(group);
+    			bookmarkList.getBookmarks().addAll(groupBookmarks);
+    		}
+    	}
+    }
 
     return bookmarkList;
   }

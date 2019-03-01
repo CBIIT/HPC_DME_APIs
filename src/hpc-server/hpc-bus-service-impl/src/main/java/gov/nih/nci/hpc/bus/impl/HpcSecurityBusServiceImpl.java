@@ -520,6 +520,13 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // Delete the group.
     executeGroupAdminAsSystemAccount(() -> dataManagementSecurityService.deleteGroup(groupName));
   }
+  
+  
+  @Override
+  public void refreshDataManagementConfigurations() throws HpcException {
+    
+    securityService.refreshDataManagementConfigurations();
+  }
 
   //---------------------------------------------------------------------//
   // Helper Methods

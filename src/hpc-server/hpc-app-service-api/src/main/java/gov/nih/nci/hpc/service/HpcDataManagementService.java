@@ -279,6 +279,14 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure.
    */
   public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException;
+  
+  /**
+   * Get data objects that have their data transfer upload in progress via streaming.
+   *
+   * @return A list of data objects.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException;
 
   /**
    * Get data objects that have their data stored in temporary archive.

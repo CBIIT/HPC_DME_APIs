@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>1.10.0</version>
+		<version>1.11.0</version>
 	</parent>
 	<artifactId>hpc-app-service-impl</artifactId>
 	<packaging>bundle</packaging>
@@ -79,15 +79,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -109,9 +101,18 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
 		</dependency>
+	    <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+		</dependency> 
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

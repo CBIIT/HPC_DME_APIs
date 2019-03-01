@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -43,6 +44,17 @@ public interface HpcDataTransferProxy {
    */
   public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String url)
       throws HpcException;
+
+  /**
+   * Authenticate a AWS S3 account.
+   *
+   * @param s3Account S3 account.
+   * @return An authenticated token, to be used in subsequent calls to data transfer.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default Object authenticate(HpcS3Account s3Account) throws HpcException {
+    throw new HpcException("authenticate(s3Account) not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
 
   /**
    * Check if upload/download requests are accepted at the moment.
@@ -197,10 +209,8 @@ public interface HpcDataTransferProxy {
    * @return A list of files found.
    * @throws HpcException on data transfer system failure.
    */
-  public default List<HpcDirectoryScanItem> scanDirectory(
-      Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException {
-    throw new HpcException("scanDirectory() not supported", HpcErrorType.UNEXPECTED_ERROR);
-  }
+  public List<HpcDirectoryScanItem> scanDirectory(
+      Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException;
 
   /**
    * Get a file container name.
