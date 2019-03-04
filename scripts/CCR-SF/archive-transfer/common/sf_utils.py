@@ -15,6 +15,7 @@ class SFUtils(object):
         path = filepath.replace("uploads/", "")
         path = re.sub(r'.*Unaligned[^/]*/', '', path)
         path = re.sub(r'.*Unalignd[^/]*/', '', path)
+        path = re.sub(r'.*Unlianged[^/]*/', '', path)
 
         # strip 'Project_' if it exists
         path = path.replace("Project_", "")
@@ -123,11 +124,11 @@ class SFUtils(object):
                 break
 
         if tarfile_contents is None:
-            command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
+            command = "tar tvf " + tarfile_path + " > " + 'tar_contents/' + tarfile_name + ".list"
             # os.system(command)
             subprocess.call(command, shell=True)
             logging.info("Created contents file: " + command)
-            tarfile_contents = open(tarfile_name + '.list')
+            tarfile_contents = open('tar_contents/' + tarfile_name + '.list')
 
         logging.info("Obtained contents for: " + tarfile_name)
         return tarfile_contents
