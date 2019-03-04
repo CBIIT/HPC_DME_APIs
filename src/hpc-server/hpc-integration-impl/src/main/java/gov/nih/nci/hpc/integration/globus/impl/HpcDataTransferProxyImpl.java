@@ -509,19 +509,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
           } catch (APIError error) {
         	logger.error("Error while submitting transfer request to Globus for"
-<<<<<<< HEAD
-              		+ " Source "
-              		+ source
-              		+ " and Destination " 
-              		+ destination
-              		+ ": " + error.message, error);
-=======
                 	+ " Source "
                 	+ source
                 	+ " and Destination " 
                     + destination
                 	+ ": " + error.message, error);  
->>>>>>> origin/releases/1.11.0
             throw new HpcException(
                 "[GLOBUS] Failed to transfer: "
                     + error.message
