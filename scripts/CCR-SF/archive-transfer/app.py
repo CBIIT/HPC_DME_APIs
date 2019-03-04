@@ -78,6 +78,7 @@ def main(args):
 
             continue;
 
+        #Get or create list file (if not present)
         tarfile_contents = SFUtils.get_tarball_contents(tarfile_name, tarfile_dir, sf_audit)
         if tarfile_contents is None:
             continue
@@ -90,13 +91,14 @@ def main(args):
                 continue;
 
         #loop through each line in the contents file of this tarball
-        #We need to do an upload for each fatq.gz or BAM file
+        #We need to do an upload for each fastq.gz or BAM file
         for line in tarfile_contents.readlines():
 
             if(line.rstrip().endswith("/")):
                 #This is a directory, nothing to do
                 continue
 
+            #Get full path of the extracted file
             filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
 
             #if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):

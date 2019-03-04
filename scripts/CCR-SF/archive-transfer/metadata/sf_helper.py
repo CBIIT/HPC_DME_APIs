@@ -14,10 +14,28 @@ class SFHelper(object):
                     "Jonathan_Keller_Sun": "Jonathan_Keller", "Nagao": "Keisuke_Nagao", "Bustin": "Michael_Bustin", "Restifo": "Nicholas_Restifo",
                     "Philipp_Oberdoerffer_Kim": "Philipp_Oberdoerffer", "Xin_Wei_Wang": "Xin_Wang", "Pommier": "Yves_Pommier", "Vinson": "Chuck_Vinson",
                     "Batchelor": "Eric_Batchelor", "Brownell": "Issac_Brownell", "Ji_Luo": "Ji_Luo", "ShivGrewal": "Shiv_Grewal",
-                    "Mark_Raffeld_Brenda": "Mark_Raffeld", "Javed": "Javed_Khan", "_tumor": "Tomas_Villmas", "_pancreas": "Tomas_Villmas",
-                    "JingHuang": "Jing_Huang", "Aladjem": "Mirit_Aladjem", "Muegge": "Kathrin_Muegge", "Li_Yang": "Li_Yang", "Pastan": "Ira_Pastan",
+                    "Raffeld": "Mark_Raffeld", "Javed": "Javed_Khan", "_tumor": "Tomas_Villmas", "_pancreas": "Tomas_Villmas",
+                    "JingHuang": "Jing_Huang", "Aladjem": "Mirit_Aladjem", "Alajem": "Mirit_Aladjem", "Muegge": "Kathrin_Muegge", "Li_Yang": "Li_Yang",
                     "Thiele": "Carol_Thiele", "Bosselut": "Remy_Bosselut", "Frederick_Barr": "Frederick_Barr", "Trinchieri": "Giorgio_Trinchieri",
-                    "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer", "Sample_SPECS_2070": "Louis_Staudt"}
+                    "Ripley": "Taylor_Ripley", "Alfred_Singer": "Alfred_Singer", "Sample_SPECS_2070": "Louis_Staudt", "Pastan": "Ira_Pastan",
+                    "Merlino": "Glenn_Merlino", "Udayan": "Udayan_Guha", "LiYang": "Li_Yang", "Bhandoola":"Avinash_Bhandoola",
+                    "Levens": "David_Levens", "SteveHughes": "Stephen_Hughes", "StephenHuges": "Stephen_Hughes", "Shalini": "Shalini_Oberdoerffer",
+                    "Strathern": "Jeff_Strathern", "HonpingZheng": "Honping_Zheng", "Wakefield": "Lalage_Wakefield",
+                    "LiWang": "Li_Wang", "Guerrerio": "Pamela_Guerrerio", "KathyKelly": "Kathy_Kelly", "ShuoGu": "Shuo_Gu",
+                    "MarkGilbert": "Mark_Gilbert", "Yamini": "Yamini_Dalal", "AartiGautam": "Aarti_Gautam", "Hernandez": "Jonathan_Hernandez",
+                    "DinahSinger": "Dinah_Singer", "Reid": "Thomas_Reid", "JingHuang": "Jing_Huang", "YingZhang": "Ying_Zhang",
+                    "Nickerson": "Mike_Nickerson", "Lipkowitz": "Stan_Lipkowitz", "Brownell": "Issac_Brownell", "Jung-Min": "Jung-Min_Lee",
+                    "PhilippOberdoerffer": "Philipp_Oberdoerffer", "Ambs": "Stefan_Ambs", "Shern": "Jack_Shern", "Tofilon": "Philip_Tofilon",
+                    "Doroshow": "James_Doroshow", "Alewine": "Christine_Alewine", "JonathanKeller": "Jonathan_Keller",
+                    "HowardYoung": "Howard_Young", "Klinman": "Dennis_Klinman", "Dean": "Micheal_Dean",
+                    "Pinto": "Ligia_Pinto", "Fountaine": "Thomas_Fountaine", "Rudloff": "Udo_Rudloff",
+                    "Sowalsky": "Adam_Sowalsky", "Hongliang": "Hongliang_Zhang", "Franchini": "Genoveffa_Franchini",
+                    "Myong-Hee": "Myong-Hee_Sung", "YinlingHu": "Yinling_Hu", "Agdashian": "David_Agdashian",
+                    "AlfredSinger": "Alfred_Singer", "Szabova": "Ludmila_Szabova", "XiWang":"Xi_Wang", "Gottesman": "Michael_Gottesman",
+                    "Yuspa": "Stuart_Yuspa", "Roberts": "David_Roberts", "Mistelli": "Tom_Misteli", "Misteli": "Tom_Misteli",
+                    "Tomozumi": "Tomozumi_Imamichi", "Raffit": "Raffit_Hassan", "Bartolome": "Ramiro_Iglesias-Bartolome",
+                    "RobertWest": "Robert_West", "Citrin": "Deborah_Citrin", "XinWang": "Xin_Wang", "Chunzhang": "Chunzhang_Yang"}
+
         pi_name = 'CCRSF'
 
         if log is True:
@@ -27,8 +45,9 @@ class SFHelper(object):
         if 'Undetermined' in path or path.endswith('supplement.tar') or 'singlecell' in path:
             pi_name = 'SF_Archive_Flowcell_Info'
 
-        elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path:
-            for element in pi_names:
+        elif 'NEBnext_UltraII' not in path and 'Neoprep' not in path \
+                and 'testing' not in path and 'SEER' not in path:
+            for element in (pi_names):
                 if element in path:
                     #Perform mapping using pi_names if match is found
                     pi_name = pi_names[element]
