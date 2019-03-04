@@ -310,8 +310,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       perform2HopDownload(downloadRequest, response, baseArchiveDestination);
 
     } else if (dataTransferType.equals(HpcDataTransferType.S_3) && s3DownloadDestination != null) {
-      // This is an asynchronous download request from a Cleversafe archive to a S3 destination.
-      performDestinationUrlDownload(downloadRequest, response, baseArchiveDestination);
+      // This is an asynchronous download request from a Cleversafe archive to a AWS S3 destination.
+      performS3AsynchronousDownload(downloadRequest, response, baseArchiveDestination);
 
     } else {
       throw new HpcException("Invalid download request", HpcErrorType.UNEXPECTED_ERROR);
@@ -1624,7 +1624,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   /**
-   * Perform a download request to user's provided S3 upload URL from Cleversafe archive.
+   * Perform a download request to user's provided AWS S3 destination from Cleversafe archive.
    *
    * @param downloadRequest The data object download request.
    * @param response The download response object. This method sets download task id and destination
@@ -1632,7 +1632,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * @param baseArchiveDestination The base archive destination of the requested data object.
    * @throws HpcException on service failure.
    */
-  private void performDestinationUrlDownload(
+  private void performS3AsynchronousDownload(
       HpcDataObjectDownloadRequest downloadRequest,
       HpcDataObjectDownloadResponse response,
       HpcArchive baseArchiveDestination)
@@ -1804,6 +1804,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   void setSystemAccountLocator(HpcSystemAccountLocator systemAccountLocator) {
     this.systemAccountLocator = systemAccountLocator;
+  }
+  
+  void setDataDownloadDAO(HpcDataDownloadDAO dataDownloadDAO) {
+    this.dataDownloadDAO = dataDownloadDAO;
   }
 
   // Second hop download.
