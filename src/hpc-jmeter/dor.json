@@ -1,0 +1,238 @@
+{
+	"callerObjectId": "eran-load-test-archive",
+	"metadataEntries": [{
+			"attribute": "name",
+			"value": "file-name"
+		},
+		{
+			"attribute": "description",
+			"value": "file-description"
+		},
+		{
+			"attribute": "source_lab_pi",
+			"value": "file-Source Lab PI"
+		},
+		{
+			"attribute": "lab_branch",
+			"value": "file-Lab / Branch Name"
+		},
+		{
+			"attribute": "pi_doc",
+			"value": "FNLCR"
+		},
+		{
+			"attribute": "flow_cell_id",
+			"value": "file-FlowCell ID"
+		},
+		{
+			"attribute": "run_id",
+			"value": "file-Run ID"
+		},
+		{
+			"attribute": "run_date",
+			"value": "10/11/2015"
+		},
+		{
+			"attribute": "library_id",
+			"value": "file-Library ID"
+		},
+		{
+			"attribute": "test-md-1",
+			"value": "A"
+		},
+		{
+			"attribute": "test-unit",
+			"value": "E",
+			"unit": "KG"
+		},
+		{
+			"attribute": "object_name",
+			"value": "Eran S3 object name"
+		}
+	],
+	"parentCollectionsBulkMetadataEntries": {
+		"pathsMetadataEntries": [{
+				"path": "/TEST_NO_HIER_Archive/eran-collection-a",
+				"pathMetadataEntries": [{
+						"attribute": "name",
+						"value": "Child Demo Project Name"
+					},
+					{
+						"attribute": "project_id_CSAS_NAS",
+						"value": "eran-project-ID -- updated again"
+					},
+					{
+						"attribute": "collection_type",
+						"value": "Project"
+					},
+					{
+						"attribute": "description",
+						"value": "Project desc1"
+					},
+					{
+						"attribute": "internal_project_id",
+						"value": "ipi"
+					},
+					{
+						"attribute": "source_lab_pi",
+						"value": "Source Lab PI"
+					},
+					{
+						"attribute": "project_id_CSAS",
+						"value": "CSAS"
+					},
+					{
+						"attribute": "lab_branch",
+						"value": "Lab / Branch Name Child"
+					},
+					{
+						"attribute": "pi_doc",
+						"value": "FNLCR"
+					},
+					{
+						"attribute": "child-custom-md",
+						"value": "Some custome metadata value"
+					},
+					{
+						"attribute": "parent-md-only",
+						"value": "testing testing testing"
+					}
+				]
+			},
+			{
+				"path": "/TEST_NO_HIER_Archive/eran-collection-a/eran-collection-b",
+				"pathMetadataEntries": [{
+						"attribute": "name",
+						"value": "Child Demo Project Name"
+					},
+					{
+						"attribute": "collection_type",
+						"value": "Flowcell"
+					},
+					{
+						"attribute": "library_id",
+						"value": "library_id"
+					},
+					{
+						"attribute": "flowcell_id",
+						"value": "flow_cell_id"
+					},
+					{
+						"attribute": "run_id",
+						"value": "run_id"
+					},
+					{
+						"attribute": "run_date",
+						"value": "run_date"
+					},
+					{
+						"attribute": "run_name",
+						"value": "run_name"
+					},
+					{
+						"attribute": "description",
+						"value": "Project desc"
+					},
+					{
+						"attribute": "internal_project_id",
+						"value": "ipi"
+					},
+					{
+						"attribute": "source_lab_pi",
+						"value": "Source Lab PI"
+					},
+					{
+						"attribute": "lab_branch",
+						"value": "Lab / Branch Name Child"
+					},
+					{
+						"attribute": "pi_doc",
+						"value": "FNLCR"
+					},
+					{
+						"attribute": "child-custom-md",
+						"value": "Rosenberg Eran"
+					},
+					{
+						"attribute": "parent-md-only",
+						"value": "testing testing testing"
+					},
+					{
+						"attribute": "sequencing_platform",
+						"value": "*** sequencing_platform ***"
+					},
+					{
+						"attribute": "sequencing_application_type",
+						"value": "***sequencing_application_type ***"
+					},
+					{
+						"attribute": "read_length",
+						"value": "***read_length %%% ***"
+					},
+					{
+						"attribute": "pooling",
+						"value": "*** pooling %%% ***"
+					}
+				]
+			},
+			{
+				"path": "/TEST_NO_HIER_Archive/eran-collection-a/eran-collection-b/eran-collection-c",
+				"pathMetadataEntries": [{
+						"attribute": "name",
+						"value": "Child Demo Project Name"
+					},
+					{
+						"attribute": "collection_type",
+						"value": "Sample"
+					},
+					{
+						"attribute": "library_id",
+						"value": "library_id"
+					},
+					{
+						"attribute": "flow_cell_id",
+						"value": "flow_cell_id"
+					},
+					{
+						"attribute": "sample_id",
+						"value": "run_id"
+					},
+					{
+						"attribute": "sample_date",
+						"value": "run_date"
+					},
+					{
+						"attribute": "description",
+						"value": "Project desc"
+					},
+					{
+						"attribute": "internal_project_id",
+						"value": "ipi"
+					},
+					{
+						"attribute": "source_lab_pi",
+						"value": "Source Lab PI"
+					},
+					{
+						"attribute": "sample_name",
+						"value": "Lab / Branch Name Child"
+					},
+					{
+						"attribute": "pi_doc",
+						"value": "FNLCR"
+					},
+					{
+						"attribute": "source_organism",
+						"value": "Rosenberg Eran"
+					},
+					{
+						"attribute": "parent-md-only",
+						"value": "testing testing testing"
+					}
+
+				]
+			}
+		]
+	},
+	"createParentCollections": true
+}
