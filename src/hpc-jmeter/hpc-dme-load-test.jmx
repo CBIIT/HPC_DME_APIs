@@ -248,8 +248,8 @@
       <hashTree>
         <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
           <collectionProp name="Arguments.arguments">
-            <elementProp name="fileIndex" elementType="Argument">
-              <stringProp name="Argument.name">fileIndex</stringProp>
+            <elementProp name="index" elementType="Argument">
+              <stringProp name="Argument.name">index</stringProp>
               <stringProp name="Argument.value">1</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
@@ -293,7 +293,7 @@
           <stringProp name="HTTPSampler.port"></stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/hpc-server/v2/dataObject/TEST_NO_HIER_Archive/eran-collection-a/eran-collection-b/eran-collection-c/eran-collection-d/${randomCollection}/user-${__threadNum}-data-object-synchronous${fileIndex}</stringProp>
+          <stringProp name="HTTPSampler.path">/hpc-server/v2/dataObject/TEST_NO_HIER_Archive/eran-collection-a/eran-collection-b/eran-collection-c/${randomCollection}/user-${__threadNum}-collection-${index}/user-${__threadNum}-data-object-synchronous-${index}</stringProp>
           <stringProp name="HTTPSampler.method">PUT</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -304,13 +304,13 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="Increment file index" enabled="true">
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="Increment index" enabled="true">
             <stringProp name="filename"></stringProp>
             <stringProp name="parameters"></stringProp>
             <boolProp name="resetInterpreter">false</boolProp>
-            <stringProp name="script">long fileIndex = Long.parseLong(vars.get(&quot;fileIndex&quot;));
-fileIndex++;
-vars.put(&quot;fileIndex&quot;, String.valueOf(fileIndex));</stringProp>
+            <stringProp name="script">long index = Long.parseLong(vars.get(&quot;index&quot;));
+index++;
+vars.put(&quot;index&quot;, String.valueOf(index));</stringProp>
           </BeanShellPostProcessor>
           <hashTree/>
           <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="User Parameters" enabled="true">
