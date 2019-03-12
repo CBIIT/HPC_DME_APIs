@@ -588,7 +588,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
                     size,
                     request.getRequestClientOptions().getReadLimit());
 
-                // Wait for the result. This ensures the input stream to the URL remains opened and connected until the download is complete.
+                // Wait for the result. This ensures the input stream to the URL remains opened and connected until the upload is complete.
                 // Note that this wait for AWS transfer manager completion is done in a separate thread (from s3Executor pool), so callers to
                 // the API don't wait.
                 s3Upload.waitForUploadResult();
