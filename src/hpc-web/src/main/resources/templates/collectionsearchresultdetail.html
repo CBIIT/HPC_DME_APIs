@@ -112,6 +112,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         displayName : 'Created On'
       },
       {
+          field : 'download',
+          width : 50,
+          displayName : 'Download',
+          cellFilter : 'dmePathEncoding',
+          cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+          exporterSuppressExport : true
+      },
+      {
         field : 'permission',
         width : 120,
         displayName : 'Permission',
@@ -206,6 +214,14 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 									</div>
 									<!-- /.modal-dialog -->
 								</div>
+								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
+									aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content"></div>
+										<!-- /.modal-content -->
+									</div>
+									<!-- /.modal-dialog -->
+								</div>	
 							</div>
 							<!--panel-body start-->
 							<div class="panel-body">
