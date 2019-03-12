@@ -68,7 +68,7 @@
 </script>
 
 <script>
-var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns']);
+var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns', 'ui.grid.moveColumns', 'ui.grid.exporter']);
 
 app.filter('dmePathEncoding', function () {
   return function (dmePathValue) {
@@ -79,6 +79,8 @@ app.filter('dmePathEncoding', function () {
 app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConstants', function ($scope, $http, $interval, uiGridGroupingConstants ) {
 
 	$scope.gridOptions1 = {
+	exporterMenuPdf: false,
+	enableGridMenu: true,
     enableSorting: true,
     enableFiltering: true,
     paginationPageSize: 100,
@@ -98,14 +100,16 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         width : 50,
         displayName : 'Download',
         cellFilter : 'dmePathEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
+        cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+        exporterSuppressExport : true
       },
       {
         field : 'permission',
         width : 120,
         displayName : 'Permission',
         cellFilter : 'dmePathEncoding',
-        cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
+        cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>',
+        exporterSuppressExport : true
       }
     ],
     onRegisterApi: function( gridApi ) {
@@ -206,7 +210,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 							<!--panel-body start-->
 							<div class="panel-body">
 								<div ng-controller="MainCtrl">
-									<div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true"
+									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
      <p>Current page: {{ currentPage }} of {{ totalPages }} &nbsp;&nbsp;|&nbsp;&nbsp;Page Size: {{ currentPageSize }} &nbsp;&nbsp;|&nbsp;&nbsp;Total Records: {{ totalRows }}</p>
