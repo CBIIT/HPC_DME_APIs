@@ -75,7 +75,7 @@
 //<![CDATA[
 	var app = angular.module('app', [ 'ngAnimate', 'ngTouch', 'ui.grid',
 			'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns',
-			'ui.grid.moveColumns', 'ui.grid.selection' ]);
+			'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection' ]);
 	app
     .filter('dmePathEncoding', function () {
       return function (value) {
@@ -88,6 +88,8 @@
       '$interval',
       function($scope, $http, $interval) {
         $scope.gridOptions1 = {
+          exporterMenuPdf: false,
+          enableGridMenu: true,
           enableSorting : true,
           enableFiltering : true,
           paginationPageSize: 100,
@@ -107,14 +109,16 @@
               width : 150,
               displayName : 'Download',
               cellFilter : 'dmePathEncoding',
-              cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>'
+              cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+              exporterSuppressExport : true
             },
             {
               field : 'permission',
               width : 150,
               displayName : 'Permission',
               cellFilter : 'dmePathEncoding',
-              cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=dataObject&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>'
+              cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=dataObject&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>',
+              exporterSuppressExport: true
             }
           ],
           onRegisterApi : function(gridApi) {
@@ -378,7 +382,7 @@
 							<!--panel-body start-->
 							<div class="panel-body">
 								<div >
-									<div id="grid1" ui-grid="gridOptions1" ui-grid-cellNav="true"
+									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
 										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true"></div>
      <p>Current page: {{ currentPage }} of {{ totalPages }} &nbsp;&nbsp;|&nbsp;&nbsp;Page Size: {{ currentPageSize }} &nbsp;&nbsp;|&nbsp;&nbsp;Total Records: {{ totalRows }}</p>
