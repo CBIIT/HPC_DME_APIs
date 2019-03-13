@@ -153,6 +153,7 @@ public interface HpcMetadataService {
    * @param dataTransferStarted The time data transfer started.
    * @param dataTransferCompleted (Optional) The time data transfer completed.
    * @param sourceSize (Optional) The data source size in bytes.
+   * @param sourceURL (Optional) The data object source URL.
    * @param callerObjectId (Optional) The caller object ID.
    * @param userId The user ID.
    * @param userName The user name.
@@ -172,6 +173,7 @@ public interface HpcMetadataService {
       Calendar dataTransferStarted,
       Calendar dataTransferCompleted,
       Long sourceSize,
+      String sourceURL,
       String callerObjectId,
       String userId,
       String userName,

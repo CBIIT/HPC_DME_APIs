@@ -26,6 +26,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATT
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_COMPLETION_EVENT_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
 
@@ -273,6 +274,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
         metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE) != null
             ? Long.valueOf(metadataMap.get(SOURCE_FILE_SIZE_ATTRIBUTE))
             : null);
+    systemGeneratedMetadata.setSourceURL(metadataMap.get(SOURCE_FILE_URL_ATTRIBUTE));
     systemGeneratedMetadata.setCallerObjectId(metadataMap.get(CALLER_OBJECT_ID_ATTRIBUTE));
     systemGeneratedMetadata.setChecksum(metadataMap.get(CHECKSUM_ATTRIBUTE));
 
@@ -363,6 +365,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
       Calendar dataTransferStarted,
       Calendar dataTransferCompleted,
       Long sourceSize,
+      String sourceURL,
       String callerObjectId,
       String userId,
       String userName,
@@ -450,6 +453,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
     // Create the Source File Size metadata.
     addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, sourceSize));
+    
+    // Create the Source File URL metadata.
+    addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_URL_ATTRIBUTE, sourceURL));
 
     // Create the Caller Object ID metadata.
     addMetadataEntry(metadataEntries, toMetadataEntry(CALLER_OBJECT_ID_ATTRIBUTE, callerObjectId));

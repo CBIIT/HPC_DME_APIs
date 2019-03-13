@@ -56,6 +56,7 @@ public class HpcMetadataValidator {
   public static final String DATA_TRANSFER_STARTED_ATTRIBUTE = "data_transfer_started";
   public static final String DATA_TRANSFER_COMPLETED_ATTRIBUTE = "data_transfer_completed";
   public static final String SOURCE_FILE_SIZE_ATTRIBUTE = "source_file_size";
+  public static final String SOURCE_FILE_URL_ATTRIBUTE = "source_file_url";
   public static final String CALLER_OBJECT_ID_ATTRIBUTE = "archive_caller_object_id";
   public static final String CHECKSUM_ATTRIBUTE = "checksum";
   public static final String METADATA_UPDATED_ATTRIBUTE = "metadata_updated";

@@ -1263,25 +1263,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         throw new HpcException(
             "Invalid S3 download destination location", HpcErrorType.INVALID_REQUEST_INPUT);
       }
-      // For S3 download of a single data object, either S3 account or (pre-signed) destination upload URL must be provided.
-      // For S3 download of list-of-files or collection, a S3 account must be provided.
-      HpcS3Account s3Account = s3DownloadDestination.getAccount();
-      if (s3Account != null) {
-        if (s3DownloadDestination.getDestinationURL() != null) {
-          throw new HpcException(
-              "Both S3 account and destination URL provided", HpcErrorType.INVALID_REQUEST_INPUT);
-        }
-        if (!isValidS3Account(s3Account)) {
-          throw new HpcException("Invalid S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
-        }
-      } else {
-        if (bulkDownload) {
-          throw new HpcException(
-              "No S3 account provided in collection/bulk download request",
-              HpcErrorType.INVALID_REQUEST_INPUT);
-        } else if (StringUtils.isEmpty(s3DownloadDestination.getDestinationURL())) {
-          throw new HpcException("Invalid S3 destination URL", HpcErrorType.INVALID_REQUEST_INPUT);
-        }
+
+      if (!isValidS3Account(s3DownloadDestination.getAccount())) {
+        throw new HpcException("Invalid S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
   }
@@ -1805,7 +1789,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   void setSystemAccountLocator(HpcSystemAccountLocator systemAccountLocator) {
     this.systemAccountLocator = systemAccountLocator;
   }
-  
+
   void setDataDownloadDAO(HpcDataDownloadDAO dataDownloadDAO) {
     this.dataDownloadDAO = dataDownloadDAO;
   }
