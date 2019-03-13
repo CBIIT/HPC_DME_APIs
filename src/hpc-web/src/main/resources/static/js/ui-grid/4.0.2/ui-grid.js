@@ -22532,7 +22532,7 @@ module.filter('px', function() {
                   if (grid.options.useCustomPagination) {
                     return publicApi.methods.pagination.getFirstRowIndex() + grid.options.paginationPageSizes[grid.options.paginationCurrentPage - 1];
                   }
-                  return Math.min(grid.options.paginationCurrentPage * grid.options.paginationPageSize, grid.options.totalItems);
+                  return Math.min(grid.options.paginationCurrentPage * grid.options.paginationPageSize, grid.options.totalItems) -1;
                 },
                 /**
                  * @ngdoc method

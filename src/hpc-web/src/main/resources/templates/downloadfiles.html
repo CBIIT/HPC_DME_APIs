@@ -179,14 +179,19 @@
 			<input type="hidden" name="actionType" id="actionType" value="pagination"/>
 			<input type="hidden"
 				class="form-control" name="pageNumber" id="pageNumber"
-				 th:value="${hpcSearch.getPageNumber()}"/>			
+				 th:value="${hpcSearch.getPageNumber()}"/>
+			<input type="hidden"
+				class="form-control" name="pageSize" id="pageSize"
+				 th:value="${hpcSearch.getPageSize()}"/>			
 		</form>
 		<form class="form-horizontal" id="searchForm"
 			th:object="${hpcSearch}" method="POST" th:action="@{/search}">
 			<input type="hidden" name="queryName" id="queryName"
 				th:value="${hpcSearch.getQueryName()}" /> <input type="hidden"
 				class="form-control" name="pageNumber" id="pageNumber"
-				 th:value="${hpcSearch.getPageNumber()}"/>
+				 th:value="${hpcSearch.getPageNumber()}"/> <input type="hidden"
+				class="form-control" name="pageSize" id="pageSize"
+				 th:value="${hpcSearch.getPageSize()}"/>
 		</form>
 						</div>
 				</div>

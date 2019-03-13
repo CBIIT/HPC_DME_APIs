@@ -13,6 +13,7 @@ public class HpcSearch {
 	private String advancedCriteria;
 	private String actionType;
 	private int pageNumber=1;
+	private int pageSize=100;
 	private String queryName;
 	
 	public String getQueryName() {
@@ -110,4 +111,12 @@ public class HpcSearch {
 	public void setPageNumber(int pageNumber) {
 		this.pageNumber = pageNumber;
 	}
+
+    public int getPageSize() {
+      return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+      this.pageSize = pageSize;
+    }
 }

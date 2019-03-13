@@ -83,8 +83,12 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	enableGridMenu: true,
     enableSorting: true,
     enableFiltering: true,
-    paginationPageSize: 25,
-    enablePaginationControls: false,
+    useExternalPagination: true,
+    useExternalSorting: false,
+    enablePaginationControls : true,
+    paginationPageSizes: [10, 20, 50, 100],
+    paginationPageSize: parseInt(currentPageSize),
+    paginationCurrentPage: parseInt(currentPage),
     columnDefs: [
       {
         field : 'path',
@@ -118,7 +122,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
           displayName : 'Download',
           cellFilter : 'dmePathEncoding',
           cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
-          exporterSuppressExport : true
+          exporterSuppressExport : true,
+          enableSorting: false
       },
       {
         field : 'permission',
@@ -126,7 +131,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         displayName : 'Permission',
         cellFilter : 'dmePathEncoding',
         cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>',
-        exporterSuppressExport : true
+        exporterSuppressExport : true,
+        enableSorting: false
       }
 	 	],
     treeRowHeaderAlwaysVisible: false,
@@ -136,6 +142,20 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
       $scope.currentPage = currentPage;
       $scope.totalRows = totalRows;
       $scope.currentPageSize = currentPageSize;
+      
+      gridApi.pagination.on.paginationChanged($scope, function (newPage, pageSize) {
+          if(pageSize != parseInt(currentPageSize))
+              updatePage('first', pageSize);
+          else if(newPage == parseInt(currentPage) + 1)
+        	  updatePage('next', pageSize);
+          else if(newPage == parseInt(currentPage) - 1)
+        	  updatePage('previous', pageSize)
+          else if(newPage == 1)
+        	  updatePage('first', pageSize);
+          else
+        	  updatePage('last', pageSize);
+
+        });
     }
   };
   $scope.gridOptions1.totalItems = totalRows;
@@ -229,21 +249,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 								<div ng-controller="MainCtrl">
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
-										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
-     <p>Current page: {{ currentPage }} of {{ totalPages }} &nbsp;&nbsp;|&nbsp;&nbsp;Page Size: {{ currentPageSize }} &nbsp;&nbsp;|&nbsp;&nbsp;Total Records: {{ totalRows }}</p>
-      <button type="button" id="btnFirst" class="btn btn-md btn-primary" onclick="updatePage('first')">
-        First 
-      </button>
-      <button type="button" id="btnPrevious" class="btn btn-md btn-primary" onclick="updatePage('previous')">
-        Previous
-      </button>
-      <button type="button" id="btnNext" class="btn btn-md btn-primary" onclick="updatePage('next')">
-        Next
-      </button>
-      <button type="button" id="btnLast" class="btn btn-md btn-primary" onclick="updatePage('last')">
-        Last
-      </button>
-										
+										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>	
 								</div>
 							</div>
 						</div>
@@ -254,6 +260,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						method="post" enctype="multipart/form-data">
 						<input type="hidden" id="actionType" name="actionType" value="pagination"/>
 						<input type="hidden" id="pageNumber" name="pageNumber"/>
+						<input type="hidden" id="pageSize" name="pageSize"/>
 					</form> 
 
 				</div>
@@ -273,19 +280,26 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	<script src="js/jquery.customSelect.min.js"></script>
 <script>
 /*<![CDATA[*/
-    function updatePage(action)
+    function updatePage(action, newPageSize)
     {
+    	$('.ui-grid-pager-next').prop('disabled', true);
+		$('.ui-grid-pager-control-input').prop('disabled', true);
+		$('.ui-grid-pager-previous').prop('disabled', true);
+		$('.ui-grid-pager-first').prop('disabled', true);
+		$('.ui-grid-pager-last').prop('disabled', true);
+		$('div.ui-grid-pager-row-count-picker').find( "select" ).prop('disabled', true);
+		
 		if(source == "'search'" || source == 'search')
 		{
 		  var percentEncodedQueryName = encodeURIComponent(queryName);
 			if(action == "next")
-			 	window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + (parseInt(currentPage) +1);
+			 	window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + (parseInt(currentPage) +1) + "&pageSize=" + (parseInt(newPageSize));
 			else if(action == "previous")
-				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + (parseInt(currentPage) - 1);
+				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + (parseInt(currentPage) - 1) + "&pageSize=" + (parseInt(newPageSize));
 			else if(action == "first")
-				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=1";
+				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=1" + "&pageSize=" + (parseInt(newPageSize));
 			else if(action == "last")
-				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + totalPages;
+				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + totalPages + "&pageSize=" + (parseInt(newPageSize));
 		}
 		else
 		{
@@ -298,45 +312,12 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 			else if(action == "last")
 				document.getElementById("pageNumber").value = totalPages;
 			
+			document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(newPageSize);
+			
 			document.getElementById("simplesearchform").submit();
 		}
 		
     }
-	
-	if(currentPage == "1")
-	{
-		$('#btnPrevious').addClass('disabled');
-		$('#btnPrevious').prop('disabled', true);
-		$('#btnFirst').addClass('disabled');
-		$('#btnFirst').prop('disabled', true);
-		$('#btnNext').removeClass('disabled');
-		$('#btnNext').prop('disabled', false);
-		$('#btnLast').removeClass('disabled');
-		$('#btnLast').prop('disabled', false);
-	}
-	else
-	{
-		$('#btnPrevious').removeClass('disabled');
-		$('#btnPrevious').prop('disabled', false);
-		$('#btnFirst').removeClass('disabled');
-		$('#btnFirst').prop('disabled', false);
-	}
-	
-	if(currentPage == totalPages)
-	{
-		$('#btnNext').addClass('disabled');
-		$('#btnNext').prop('disabled', true);
-		$('#btnLast').addClass('disabled');
-		$('#btnLast').prop('disabled', true);
-	}
-	else
-	{
-		$('#btnNext').removeClass('disabled');
-		$('#btnNext').prop('disabled', false);
-		$('#btnLast').removeClass('disabled');
-		$('#btnLast').prop('disabled', false);
-	}
-
 /*]]>*/
 </script>
 

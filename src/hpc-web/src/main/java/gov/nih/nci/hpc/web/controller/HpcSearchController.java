@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -74,14 +74,17 @@ public class HpcSearchController extends AbstractHpcController {
 	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String body, @RequestParam String queryName,
-			@RequestParam String page, Model model, BindingResult bindingResult, HttpSession session,
+			@RequestParam String page, @RequestParam(required = false) String pageSize, Model model, BindingResult bindingResult, HttpSession session,
 			HttpServletRequest request) {
 		HpcNamedCompoundMetadataQueryDTO query = null;
-
+		HpcSearch search = new HpcSearch();
+		
 		try {
-			HpcSearch search = new HpcSearch();
+			
 			search.setQueryName(queryName);
 			search.setPageNumber(Integer.parseInt(page));
+			if(StringUtils.isNotEmpty(pageSize))
+			  search.setPageSize(Integer.parseInt(pageSize));
 			query = processSearch(search, session, request, model, bindingResult);
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
 			e.printStackTrace();
@@ -112,6 +115,7 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("source", "search");
 		model.addAttribute("queryName", queryName);
 		model.addAttribute("pageNumber", new Integer(page).intValue());
+		model.addAttribute("pageSize", search.getPageSize());
 		HpcSearchUtil.cacheSelectedRows(session, request, model);
 
 		if (query == null)
@@ -180,7 +184,8 @@ public class HpcSearchController extends AbstractHpcController {
 
 		model.addAttribute("source", "search");
 		model.addAttribute("queryName", search.getQueryName());
-		model.addAttribute("pageNumber", new Integer(search.getPageNumber()).intValue());
+        model.addAttribute("pageNumber", new Integer(search.getPageNumber()).intValue());
+		model.addAttribute("pageSize", new Integer(search.getPageSize()).intValue());
 
 		if (query == null)
 			return "dashboard";
@@ -229,7 +234,7 @@ public class HpcSearchController extends AbstractHpcController {
     session.setAttribute("namedCompoundQuery", query.getNamedCompoundQuery());
 
     ucBuilder.pathSegment(search.getQueryName()).queryParam("totalCount",
-      Boolean.TRUE).queryParam("page", Integer.valueOf(search.getPageNumber()));
+      Boolean.TRUE).queryParam("page", Integer.valueOf(search.getPageNumber())).queryParam("pageSize", Integer.valueOf(search.getPageSize()));
 
     if (query.getNamedCompoundQuery().getDetailedResponse()) {
       ucBuilder.queryParam("detailedResponse", Boolean.TRUE);
