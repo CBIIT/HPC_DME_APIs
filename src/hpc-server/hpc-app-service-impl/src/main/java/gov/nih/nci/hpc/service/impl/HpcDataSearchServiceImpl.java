@@ -49,11 +49,10 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   // The Data Management Proxy instance.
   @Autowired private HpcDataManagementProxy dataManagementProxy = null;
 
-  // Pagination support.
-  @Autowired
-  @Qualifier("hpcDataSearchPagination")
-  private HpcPagination pagination = null;
-
+  // Default page size and max page size for pagination
+  private int defaultPageSize;
+  private int defaultMaxPageSize;
+  
   // Default level filters for collection and data object search.
   HpcMetadataQueryLevelFilter defaultCollectionLevelFilter = null;
   HpcMetadataQueryLevelFilter defaultDataObjectLevelFilter = null;
@@ -102,7 +101,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   //---------------------------------------------------------------------//
 
   @Override
-  public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page)
+  public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
     // Input validation.
     HpcDomainValidationResult validationResult =
@@ -113,6 +112,15 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    HpcPagination pagination = new HpcPagination(defaultPageSize, defaultMaxPageSize);
+    //If pageSize is specified, replace the default defined
+    if(pageSize != 0) {
+      if(pageSize <= pagination.getMaxPageSize())
+        pagination.setPageSize(pageSize);
+      else
+        pagination.setPageSize(pagination.getMaxPageSize());
+    }
+    
     // Use the hierarchical metadata views to perform the search.
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
@@ -145,7 +153,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   }
 
   @Override
-  public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page)
+  public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
     // Input Validation.
     HpcDomainValidationResult validationResult =
@@ -156,6 +164,15 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    HpcPagination pagination = new HpcPagination(defaultPageSize, defaultMaxPageSize);
+    //If pageSize is specified, replace the default defined
+    if(pageSize != 0) {
+      if(pageSize <= pagination.getMaxPageSize())
+        pagination.setPageSize(pageSize);
+      else
+        pagination.setPageSize(pagination.getMaxPageSize());
+    }
+    
     // Use the hierarchical metadata views to perform the search.
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
@@ -188,8 +205,14 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   }
 
   @Override
-  public int getSearchResultsPageSize() {
-    return pagination.getPageSize();
+  public int getSearchResultsPageSize(int pageSize) {
+    if(pageSize != 0) {
+      if(pageSize <= defaultMaxPageSize)
+        return pageSize;
+      else
+        return defaultMaxPageSize;
+    }
+    return defaultPageSize;
   }
 
   @Override
@@ -268,5 +291,21 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     }
 
     return relativePaths;
+  }
+
+  public int getDefaultPageSize() {
+    return defaultPageSize;
+  }
+
+  public void setDefaultPageSize(int defaultPageSize) {
+    this.defaultPageSize = defaultPageSize;
+  }
+  
+  public int getDefaultMaxPageSize() {
+    return defaultMaxPageSize;
+  }
+
+  public void setDefaultMaxPageSize(int defaultMaxPageSize) {
+    this.defaultMaxPageSize = defaultMaxPageSize;
   }
 }

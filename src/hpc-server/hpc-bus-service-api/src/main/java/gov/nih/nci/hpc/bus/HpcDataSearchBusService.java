@@ -44,7 +44,7 @@ public interface HpcDataSearchBusService {
    * @throws HpcException on service failure.
    */
   public HpcCollectionListDTO getCollections(
-      String queryName, Boolean detailedResponse, Integer page, Boolean totalCount)
+      String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException;
 
   /**
@@ -69,7 +69,7 @@ public interface HpcDataSearchBusService {
    * @throws HpcException on service failure.
    */
   public HpcDataObjectListDTO getDataObjects(
-      String queryName, Boolean detailedResponse, Integer page, Boolean totalCount)
+      String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException;
 
   /**

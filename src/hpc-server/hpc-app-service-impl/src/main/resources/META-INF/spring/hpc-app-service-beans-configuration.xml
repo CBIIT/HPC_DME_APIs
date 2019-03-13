@@ -110,12 +110,11 @@
 	</bean>
 	<bean id="hpcDataManagementSecurityService" class="gov.nih.nci.hpc.service.impl.HpcDataManagementSecurityServiceImpl" />
 	
-	<bean id="hpcDataSearchPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
-		<constructor-arg value="${hpc.service.dataSearch.searchResultsPageSize}" />
-	</bean>
 	<bean id="hpcDataSearchService" class="gov.nih.nci.hpc.service.impl.HpcDataSearchServiceImpl">
 		<constructor-arg ref="hpcDefaultCollectionLevelFilter" index="0" />
 		<constructor-arg ref="hpcDefaultDataObjectLevelFilter" index="1" />
+		<property name="defaultPageSize" value="${hpc.service.dataSearch.searchResultsPageSize}" />
+		<property name="defaultMaxPageSize" value="${hpc.service.dataSearch.searchResultsMaxPageSize}" />
 	</bean>
 	<bean id="hpcMetadataService" class="gov.nih.nci.hpc.service.impl.HpcMetadataServiceImpl" />
 	<bean id="hpcDataBrowseService" class="gov.nih.nci.hpc.service.impl.HpcDataBrowseServiceImpl" />
