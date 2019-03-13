@@ -29,6 +29,7 @@
 			    <xsd:element name="compoundQueryType" type="hpc-domain-metadata:HpcCompoundMetadataQueryType" />
 			    <xsd:element name="detailedResponse" type="xsd:boolean" minOccurs="0" />
 			    <xsd:element name="page" type="xsd:int" minOccurs="0" />
+			    <xsd:element name="pageSize" type="xsd:int" minOccurs="0" />
 			    <xsd:element name="totalCount" type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>

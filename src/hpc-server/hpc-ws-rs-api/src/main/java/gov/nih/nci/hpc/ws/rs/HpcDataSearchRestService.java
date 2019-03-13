@@ -56,6 +56,7 @@ public interface HpcDataSearchRestService {
       @PathParam("queryName") String queryName,
       @QueryParam("detailedResponse") Boolean detailedResponse,
       @QueryParam("page") Integer page,
+      @QueryParam("pageSize") Integer pageSize,
       @QueryParam("totalCount") Boolean totalCount);
 
   /**
@@ -87,6 +88,7 @@ public interface HpcDataSearchRestService {
       @PathParam("queryName") String queryName,
       @QueryParam("detailedResponse") Boolean detailedResponse,
       @QueryParam("page") Integer page,
+      @QueryParam("pageSize") Integer pageSize,
       @QueryParam("totalCount") Boolean totalCount);
 
   /**

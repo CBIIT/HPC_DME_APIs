@@ -75,18 +75,19 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
         compoundMetadataQueryDTO.getDetailedResponse() != null
             && compoundMetadataQueryDTO.getDetailedResponse();
     int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
+    int pageSize = compoundMetadataQueryDTO.getPageSize() != null ? compoundMetadataQueryDTO.getPageSize() : 0;
     boolean totalCount =
         compoundMetadataQueryDTO.getTotalCount() != null
             && compoundMetadataQueryDTO.getTotalCount();
 
     // Execute the query and package the results in a DTO.
     List<String> collectionPaths =
-        dataSearchService.getCollectionPaths(compoundMetadataQueryDTO.getCompoundQuery(), page);
+        dataSearchService.getCollectionPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
     HpcCollectionListDTO collectionsDTO = toCollectionListDTO(collectionPaths, detailedResponse);
 
     // Set page, limit and total count.
     collectionsDTO.setPage(page);
-    int limit = dataSearchService.getSearchResultsPageSize();
+    int limit = dataSearchService.getSearchResultsPageSize(pageSize);
     collectionsDTO.setLimit(limit);
 
     if (totalCount) {
@@ -102,10 +103,10 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
   @Override
   public HpcCollectionListDTO getCollections(
-      String queryName, Boolean detailedResponse, Integer page, Boolean totalCount)
+      String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException {
     return getCollections(
-        toCompoundMetadataQueryDTO(queryName, detailedResponse, page, totalCount));
+        toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
   }
 
   @Override
@@ -120,19 +121,20 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
         compoundMetadataQueryDTO.getDetailedResponse() != null
             && compoundMetadataQueryDTO.getDetailedResponse();
     int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
+    int pageSize = compoundMetadataQueryDTO.getPageSize() != null ? compoundMetadataQueryDTO.getPageSize() : 0;
     boolean totalCount =
         compoundMetadataQueryDTO.getTotalCount() != null
             && compoundMetadataQueryDTO.getTotalCount();
 
     // Execute the query and package the results into a DTO.
     List<String> dataObjectPaths =
-        dataSearchService.getDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page);
+        dataSearchService.getDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
     HpcDataObjectListDTO dataObjectsDTO =
         toDataObjectListDTO(dataObjectPaths, detailedResponse);
 
     // Set page, limit and total count.
     dataObjectsDTO.setPage(page);
-    int limit = dataSearchService.getSearchResultsPageSize();
+    int limit = dataSearchService.getSearchResultsPageSize(pageSize);
     dataObjectsDTO.setLimit(limit);
 
     if (totalCount) {
@@ -148,10 +150,10 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
   @Override
   public HpcDataObjectListDTO getDataObjects(
-      String queryName, Boolean detailedResponse, Integer page, Boolean totalCount)
+      String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException {
     return getDataObjects(
-        toCompoundMetadataQueryDTO(queryName, detailedResponse, page, totalCount));
+        toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
   }
 
   @Override
@@ -340,7 +342,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
    * @throws HpcException If the user query was not found.
    */
   private HpcCompoundMetadataQueryDTO toCompoundMetadataQueryDTO(
-      String queryName, Boolean detailedResponse, Integer page, Boolean totalCount)
+      String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException {
     // Input validation.
     if (StringUtils.isEmpty(queryName)) {
@@ -362,6 +364,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     compoundMetadataQueryDTO.setDetailedResponse(
         detailedResponse != null ? detailedResponse : namedCompoundQuery.getDetailedResponse());
     compoundMetadataQueryDTO.setPage(page != null ? page : 1);
+    compoundMetadataQueryDTO.setPageSize(pageSize != null ? pageSize : 0);
     compoundMetadataQueryDTO.setTotalCount(
         totalCount != null ? totalCount : namedCompoundQuery.getTotalCount());
 
