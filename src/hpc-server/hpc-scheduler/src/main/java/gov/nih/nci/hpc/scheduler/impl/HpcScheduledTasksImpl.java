@@ -37,7 +37,9 @@ public class HpcScheduledTasksImpl {
   //---------------------------------------------------------------------//
 
   /** Constructor for Spring Dependency Injection. */
-  private HpcScheduledTasksImpl() {}
+  private HpcScheduledTasksImpl() {
+    logger.error("ERAN: test before scheduled task");
+  }
 
   //---------------------------------------------------------------------//
   // Methods
