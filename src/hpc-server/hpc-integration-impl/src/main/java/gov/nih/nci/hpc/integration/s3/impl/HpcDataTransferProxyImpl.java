@@ -522,13 +522,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           "[S3] File size not provided for an upload from AWS S3", HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    // Authenticate the S3 account.
-    Object s3AccountAuthenticatedToken = s3Connection.authenticate(s3UploadSource.getAccount());
-
-    // Generate a download pre-signed URL for the requested data file from AWS.
+    // If not provided, generate a download pre-signed URL for the requested data file from AWS (using the provided S3 account).
     String sourceURL =
-        generateDownloadRequestURL(
-            s3AccountAuthenticatedToken, s3UploadSource.getSourceLocation(), S3_STREAM_EXPIRATION);
+        StringUtils.isEmpty(s3UploadSource.getSourceURL())
+            ? generateDownloadRequestURL(
+                s3Connection.authenticate(s3UploadSource.getAccount()),
+                s3UploadSource.getSourceLocation(),
+                S3_STREAM_EXPIRATION)
+            : s3UploadSource.getSourceURL();
 
     Calendar dataTransferStarted = Calendar.getInstance();
     CompletableFuture<Void> s3TransferManagerUploadFuture =
@@ -595,6 +596,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         String.valueOf(s3TransferManagerUploadFuture.hashCode()));
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS);
     uploadResponse.setSourceURL(sourceURL);
+    uploadResponse.setSourceSize(size);
 
     return uploadResponse;
   }
