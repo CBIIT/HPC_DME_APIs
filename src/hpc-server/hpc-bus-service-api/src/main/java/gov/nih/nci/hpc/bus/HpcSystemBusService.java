@@ -25,7 +25,8 @@ public interface HpcSystemBusService {
   public void processDataTranferUploadReceived() throws HpcException;
 
   /**
-   * Update the data transfer upload status of all data objects that the transfer is 'in progress' (Globus).
+   * Update the data transfer upload status of all data objects that the transfer is 'in progress'
+   * (Globus).
    *
    * @throws HpcException on service failure.
    */
@@ -38,13 +39,29 @@ public interface HpcSystemBusService {
    * @throws HpcException on service failure.
    */
   public void processDataTranferUploadInProgressWithGeneratedURL() throws HpcException;
-  
+
   /**
    * Update the data transfer upload status of all data objects that are currently streamed (S3).
    *
+   * @param streamingStopped If true, S3 streaming stopped (because API server shutdown). In this
+   *     case we set the upload status to STREAMING_STOPPED. Otherwise, we check if the upload
+   *     completed and update status accordingly.
    * @throws HpcException on service failure.
    */
-  public void processDataTranferUploadStreamingInProgress() throws HpcException;
+  public void processDataTranferUploadStreamingInProgress(boolean streamingStopped)
+      throws HpcException;
+
+  public default void processDataTranferUploadStreamingInProgress() throws HpcException {
+    processDataTranferUploadStreamingInProgress(false);
+  }
+
+  /**
+   * Restart data transfer upload for all streaming from AWS S3 that has stopped (because of prior
+   * server shutdown)
+   *
+   * @throws HpcException on service failure.
+   */
+  public void processDataTranferUploadStreamingStopped() throws HpcException;
 
   /**
    * Transfer data objects currently in temporary archive to the (permanent) archive, and complete

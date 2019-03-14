@@ -43,6 +43,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
@@ -313,7 +314,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
   @Override
   @HpcExecuteAsSystemAccount
-  public void processDataTranferUploadStreamingInProgress() throws HpcException {
+  public void processDataTranferUploadStreamingInProgress(boolean streamingStopped)
+      throws HpcException {
     // Iterate through the data objects that their data transfer is in-progress.
     List<HpcDataObject> dataObjectsInProgress =
         dataManagementService.getDataTranferUploadStreamingInProgress();
@@ -321,14 +323,80 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       String path = dataObject.getAbsolutePath();
       logger.info("Processing data object uploaded via Streaming: {}", path);
       try {
+        if (!streamingStopped) {
+          // Get the system metadata.
+          HpcSystemGeneratedMetadata systemGeneratedMetadata =
+              metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+          // Check if the S3 upload completed, and update upload status accordingly.
+          updateS3UploadStatus(path, systemGeneratedMetadata);
+        } else {
+          // Streaming stopped (server shutdown). We just update the status accordingly.
+          metadataService.updateDataObjectSystemGeneratedMetadata(
+              path,
+              null,
+              null,
+              null,
+              HpcDataTransferUploadStatus.STREAMING_STOPPED,
+              null,
+              null,
+              null,
+              null);
+        }
+
+      } catch (HpcException e) {
+        logger.error("Failed to process data transfer upload streaming in progress:" + path, e);
+
+        // Delete the data object.
+        deleteDataObject(path);
+      }
+    }
+  }
+
+  @Override
+  @HpcExecuteAsSystemAccount
+  public void processDataTranferUploadStreamingStopped()
+      throws
+          HpcException { // Iterate through the data objects that their data transfer (S3 streaming) has stopped.
+    List<HpcDataObject> dataObjectsStreamingStopped =
+        dataManagementService.getDataTranferUploadStreamingStopped();
+    for (HpcDataObject dataObject : dataObjectsStreamingStopped) {
+      String path = dataObject.getAbsolutePath();
+      logger.info("Processing restart upload streaming for data object: {}", path);
+      try {
         // Get the system metadata.
         HpcSystemGeneratedMetadata systemGeneratedMetadata =
             metadataService.getDataObjectSystemGeneratedMetadata(path);
 
-        updateS3UploadStatus(path, systemGeneratedMetadata);
+        // Transfer the data file.
+        HpcDataObjectUploadResponse uploadResponse =
+            dataTransferService.uploadDataObject(
+                null,
+                toS3UploadSource(
+                    systemGeneratedMetadata.getSourceLocation(),
+                    systemGeneratedMetadata.getSourceURL()),
+                null,
+                false,
+                null,
+                path,
+                systemGeneratedMetadata.getRegistrarId(),
+                systemGeneratedMetadata.getCallerObjectId(),
+                systemGeneratedMetadata.getConfigurationId());
+
+        // Streaming stopped (server shutdown). We just update the status accordingly.
+        metadataService.updateDataObjectSystemGeneratedMetadata(
+            path,
+            null,
+            uploadResponse.getDataTransferRequestId(),
+            null,
+            HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS,
+            null,
+            null,
+            null,
+            null);
 
       } catch (HpcException e) {
-        logger.error("Failed to process data transfer upload streaming in progress:" + path, e);
+        logger.error("Failed to process restart upload streaming for data object:" + path, e);
 
         // Delete the data object.
         deleteDataObject(path);
@@ -1492,6 +1560,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
     globusUploadSource.setSourceLocation(sourceLocation);
     return globusUploadSource;
+  }
+
+  /**
+   * Package a source location into a S3 upload source object.
+   *
+   * @param sourceLocation The source location to package.
+   * @param sourceURL The source URL to stream from.
+   * @return The packaged S3 upload source.
+   */
+  private HpcS3UploadSource toS3UploadSource(HpcFileLocation sourceLocation, String sourceURL) {
+    HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+    s3UploadSource.setSourceLocation(sourceLocation);
+    s3UploadSource.setSourceURL(sourceURL);
+    return s3UploadSource;
   }
 
   /**
