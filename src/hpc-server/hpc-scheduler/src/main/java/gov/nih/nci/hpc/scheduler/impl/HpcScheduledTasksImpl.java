@@ -8,14 +8,13 @@
  */
 package gov.nih.nci.hpc.scheduler.impl;
 
-import gov.nih.nci.hpc.bus.HpcSystemBusService;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.exception.HpcException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import gov.nih.nci.hpc.bus.HpcSystemBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * HPC Scheduled tasks implementation.
@@ -38,18 +37,7 @@ public class HpcScheduledTasksImpl {
   //---------------------------------------------------------------------//
 
   /** Constructor for Spring Dependency Injection. */
-  private HpcScheduledTasksImpl() {
-    try {
-      // Server just restarted. All active S3 upload tasks should be marked stopped.
-      systemBusService.processDataTranferUploadStreamingInProgress(true);
-
-    } catch (HpcException e) {
-      logger.error(
-          "Failed to update upload status for current S3 streaming tasks",
-          HpcErrorType.UNEXPECTED_ERROR,
-          e);
-    }
-  }
+  private HpcScheduledTasksImpl() {}
 
   //---------------------------------------------------------------------//
   // Methods
@@ -93,7 +81,7 @@ public class HpcScheduledTasksImpl {
         "processDataTranferUploadStreamingInProgress()",
         systemBusService::processDataTranferUploadStreamingInProgress);
   }
-  
+
   /** Update the data transfer upload status of all data objects that are streamed from AWS S3. */
   @Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingStopped.delay}")
   private void processDataTranferUploadStreamingStopped() {
@@ -207,11 +195,8 @@ public class HpcScheduledTasksImpl {
           executionTime);
     }
   }
-  
-  /**
-   * Mark all S3 upload streaming tasks 'stopped'. Called by Spring dependency injection.
-   *
-   */
+
+  /** Mark all S3 upload streaming tasks 'stopped'. Called by Spring dependency injection. */
   @SuppressWarnings("unused")
   private void init() {
     try {
