@@ -202,19 +202,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Validate S3 upload source.
     if (s3UploadSource != null) {
-      if (globusUploadSource != null || sourceFile != null || generateUploadRequestURL) {
+      if (sourceFile != null || generateUploadRequestURL) {
         throw new HpcException(
             MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
       }
-      if (!isValidFileLocation(s3UploadSource.getSourceLocation())
-          || !isValidS3Account(s3UploadSource.getAccount())) {
-        throw new HpcException("Invalid S3 upload source", HpcErrorType.INVALID_REQUEST_INPUT);
+      if (!isValidFileLocation(s3UploadSource.getSourceLocation())) {
+        throw new HpcException(
+            "Invalid S3 upload source location", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (StringUtils.isEmpty(s3UploadSource.getSourceURL())
+          && !isValidS3Account(s3UploadSource.getAccount())) {
+        throw new HpcException("Invalid S3 upload account", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (!StringUtils.isEmpty(s3UploadSource.getSourceURL())
+          && s3UploadSource.getSourceSize() == null) {
+        throw new HpcException(
+            "source URL provided without source size", HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
     // Validate source file.
-    if (sourceFile != null
-        && (globusUploadSource != null || s3UploadSource != null || generateUploadRequestURL)) {
+    if (sourceFile != null && generateUploadRequestURL) {
       throw new HpcException(
           MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
     }
@@ -1162,6 +1170,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       pathAttributes =
           getPathAttributes(HpcDataTransferType.GLOBUS, sourceFileLocation, true, configurationId);
     } else if (s3UploadSource != null) {
+      if (s3UploadSource.getSourceSize() != null) {
+        // When source URL + size are provided, we skip the source validation because this was done before at the time
+        // the URL was generated.
+        return s3UploadSource.getSourceSize();
+      }
       sourceFileLocation = s3UploadSource.getSourceLocation();
       pathAttributes =
           getPathAttributes(s3UploadSource.getAccount(), s3UploadSource.getSourceLocation(), true);

@@ -131,6 +131,7 @@
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="account" type="hpc-domain-datatransfer:HpcS3Account" />
 			<xsd:element name="sourceURL" type="xsd:string" />
+			<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 

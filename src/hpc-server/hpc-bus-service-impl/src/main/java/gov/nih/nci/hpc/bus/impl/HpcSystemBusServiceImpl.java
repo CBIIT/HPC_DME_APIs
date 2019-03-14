@@ -375,7 +375,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                 null,
                 toS3UploadSource(
                     systemGeneratedMetadata.getSourceLocation(),
-                    systemGeneratedMetadata.getSourceURL()),
+                    systemGeneratedMetadata.getSourceURL(),
+                    systemGeneratedMetadata.getSourceSize()),
                 null,
                 false,
                 null,
@@ -1568,12 +1569,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    *
    * @param sourceLocation The source location to package.
    * @param sourceURL The source URL to stream from.
+   * @param sourceSize The source file size.
    * @return The packaged S3 upload source.
    */
-  private HpcS3UploadSource toS3UploadSource(HpcFileLocation sourceLocation, String sourceURL) {
+  private HpcS3UploadSource toS3UploadSource(
+      HpcFileLocation sourceLocation, String sourceURL, Long sourceSize) {
     HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
     s3UploadSource.setSourceLocation(sourceLocation);
     s3UploadSource.setSourceURL(sourceURL);
+    s3UploadSource.setSourceSize(sourceSize);
     return s3UploadSource;
   }
 
