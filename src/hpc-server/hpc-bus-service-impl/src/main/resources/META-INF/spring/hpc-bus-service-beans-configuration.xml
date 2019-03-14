@@ -26,7 +26,7 @@
 		class="gov.nih.nci.hpc.bus.impl.HpcDataManagementBusServiceImpl" />
 	<bean id="hpcDataSearchBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataSearchBusServiceImpl" />
 	<bean id="hpcDataBrowseBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataBrowseBusServiceImpl" />
-	<bean id="hpcSystemBusService" class="gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl" init-method="init" />
+	<bean id="hpcSystemBusService" class="gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl" />
 	<bean id="hpcNotificationBusService" class="gov.nih.nci.hpc.bus.impl.HpcNotificationBusServiceImpl" />
 	<bean id="hpcReportBusService" class="gov.nih.nci.hpc.bus.impl.HpcReportBusServiceImpl" />
 
