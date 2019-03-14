@@ -49,10 +49,11 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   // The Data Management Proxy instance.
   @Autowired private HpcDataManagementProxy dataManagementProxy = null;
 
-  // Default page size and max page size for pagination
-  private int defaultPageSize;
-  private int defaultMaxPageSize;
-  
+  // Pagination support.
+  @Autowired
+  @Qualifier("hpcDataSearchPagination")
+  private HpcPagination pagination = null;
+
   // Default level filters for collection and data object search.
   HpcMetadataQueryLevelFilter defaultCollectionLevelFilter = null;
   HpcMetadataQueryLevelFilter defaultDataObjectLevelFilter = null;
@@ -112,13 +113,12 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    HpcPagination pagination = new HpcPagination(defaultPageSize, defaultMaxPageSize);
     //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
     if(pageSize != 0) {
-      if(pageSize <= pagination.getMaxPageSize())
-        pagination.setPageSize(pageSize);
-      else
-        pagination.setPageSize(pagination.getMaxPageSize());
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
     }
     
     // Use the hierarchical metadata views to perform the search.
@@ -128,8 +128,8 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
         metadataDAO.getCollectionPaths(
             compoundMetadataQuery,
             dataManagementUsername,
-            pagination.getOffset(page),
-            pagination.getPageSize(),
+            finalOffset,
+            finalPageSize,
             defaultCollectionLevelFilter));
   }
 
@@ -164,13 +164,12 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    HpcPagination pagination = new HpcPagination(defaultPageSize, defaultMaxPageSize);
     //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
     if(pageSize != 0) {
-      if(pageSize <= pagination.getMaxPageSize())
-        pagination.setPageSize(pageSize);
-      else
-        pagination.setPageSize(pagination.getMaxPageSize());
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
     }
     
     // Use the hierarchical metadata views to perform the search.
@@ -180,8 +179,8 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
         metadataDAO.getDataObjectPaths(
             compoundMetadataQuery,
             dataManagementUsername,
-            pagination.getOffset(page),
-            pagination.getPageSize(),
+            finalOffset,
+            finalPageSize,
             defaultDataObjectLevelFilter));
   }
 
@@ -207,12 +206,12 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   @Override
   public int getSearchResultsPageSize(int pageSize) {
     if(pageSize != 0) {
-      if(pageSize <= defaultMaxPageSize)
+      if(pageSize <= pagination.getMaxPageSize())
         return pageSize;
       else
-        return defaultMaxPageSize;
+        return pagination.getMaxPageSize();
     }
-    return defaultPageSize;
+    return pagination.getPageSize();
   }
 
   @Override
@@ -291,21 +290,5 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     }
 
     return relativePaths;
-  }
-
-  public int getDefaultPageSize() {
-    return defaultPageSize;
-  }
-
-  public void setDefaultPageSize(int defaultPageSize) {
-    this.defaultPageSize = defaultPageSize;
-  }
-  
-  public int getDefaultMaxPageSize() {
-    return defaultMaxPageSize;
-  }
-
-  public void setDefaultMaxPageSize(int defaultMaxPageSize) {
-    this.defaultMaxPageSize = defaultMaxPageSize;
   }
 }
