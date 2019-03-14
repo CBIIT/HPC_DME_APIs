@@ -207,4 +207,22 @@ public class HpcScheduledTasksImpl {
           executionTime);
     }
   }
+  
+  /**
+   * Mark all S3 upload streaming tasks 'stopped'. Called by Spring dependency injection.
+   *
+   */
+  @SuppressWarnings("unused")
+  private void init() {
+    try {
+      // Server just restarted. All active S3 upload tasks should be marked stopped.
+      systemBusService.processDataTranferUploadStreamingInProgress(true);
+
+    } catch (HpcException e) {
+      logger.error(
+          "Failed to update upload status for current S3 streaming tasks",
+          HpcErrorType.UNEXPECTED_ERROR,
+          e);
+    }
+  }
 }
