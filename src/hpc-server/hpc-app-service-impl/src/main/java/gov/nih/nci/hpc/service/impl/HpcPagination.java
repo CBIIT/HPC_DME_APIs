@@ -24,7 +24,7 @@ public class HpcPagination {
   // The page size.
   private int pageSize = 0;
 
-  //The page size.
+  //The max page size.
   private int maxPageSize = 0;
  
   //---------------------------------------------------------------------//
@@ -47,19 +47,19 @@ public class HpcPagination {
    */
   private HpcPagination(int pageSize) {
     this.pageSize = pageSize;
-    this.maxPageSize = pageSize;
   }
-  
+
   /**
    * Constructor for Pagination used in Search.
    *
    * @param pageSize The page size
+   * @param maxPageSize The max page size
    */
-  public HpcPagination(int pageSize, int maxPageSize) {
+  private HpcPagination(int pageSize, int maxPageSize) {
     this.pageSize = pageSize;
     this.maxPageSize = maxPageSize;
   }
-
+  
   //---------------------------------------------------------------------//
   // Methods
   //---------------------------------------------------------------------//
@@ -74,18 +74,9 @@ public class HpcPagination {
   }
 
   /**
-   * Set the page size.
-   *
-   * @return The page size.
-   */
-  public void setPageSize(int pageSize) {
-    this.pageSize = pageSize;
-  }
-  
-  /**
    * Get the max page size.
    *
-   * @return The max page size.
+   * @return The page size.
    */
   public int getMaxPageSize() {
     return maxPageSize;

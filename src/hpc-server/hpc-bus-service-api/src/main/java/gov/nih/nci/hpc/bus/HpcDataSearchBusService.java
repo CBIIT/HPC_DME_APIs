@@ -38,6 +38,7 @@ public interface HpcDataSearchBusService {
    * @param queryName The query name.
    * @param detailedResponse If set to true, return entity details (attributes + metadata).
    * @param page The requested results page.
+   * @param pageSize (Optional) The page size specified by the user. If not specified, it will take the default.
    * @param totalCount If set to true, return the total count of collections matching the query
    *     regardless of the limit on returned entities.
    * @return A list of Collection DTO.
@@ -63,6 +64,7 @@ public interface HpcDataSearchBusService {
    * @param queryName The query name.
    * @param detailedResponse If set to true, return entity details (attributes + metadata).
    * @param page The requested results page.
+   * @param pageSize (Optional) The page size specified by the user. If not specified, it will take the default.
    * @param totalCount If set to true, return the total count of collections matching the query
    *     regardless of the limit on returned entities.
    * @return A list of Data Object DTO.
