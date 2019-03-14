@@ -332,6 +332,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           updateS3UploadStatus(path, systemGeneratedMetadata);
         } else {
           // Streaming stopped (server shutdown). We just update the status accordingly.
+          logger.info("Upload streaming stopped for: {}", path);
           metadataService.updateDataObjectSystemGeneratedMetadata(
               path,
               null,
