@@ -389,7 +389,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             null,
             uploadResponse.getDataTransferRequestId(),
             null,
-            HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS,
+            uploadResponse.getDataTransferStatus(),
             null,
             null,
             null,
