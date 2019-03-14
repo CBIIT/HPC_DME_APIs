@@ -9,6 +9,7 @@
 package gov.nih.nci.hpc.scheduler.impl;
 
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import org.slf4j.Logger;
@@ -38,7 +39,16 @@ public class HpcScheduledTasksImpl {
 
   /** Constructor for Spring Dependency Injection. */
   private HpcScheduledTasksImpl() {
-    logger.error("ERAN: test before scheduled task");
+    try {
+      // Server just restarted. All active S3 upload tasks should be marked stopped.
+      systemBusService.processDataTranferUploadStreamingInProgress(true);
+
+    } catch (HpcException e) {
+      logger.error(
+          "Failed to update upload status for current S3 streaming tasks",
+          HpcErrorType.UNEXPECTED_ERROR,
+          e);
+    }
   }
 
   //---------------------------------------------------------------------//
@@ -75,17 +85,21 @@ public class HpcScheduledTasksImpl {
         "processDataTranferUploadInProgressWithGeneratedURLTask()",
         systemBusService::processDataTranferUploadInProgressWithGeneratedURL);
   }
-  
-  /**
-   * Update the data transfer upload status of all data objects that are streamed from AWS S3.
-   */
-  @Scheduled(
-    cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingInProgress.delay}"
-  )
+
+  /** Update the data transfer upload status of all data objects that are streamed from AWS S3. */
+  @Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingInProgress.delay}")
   private void processDataTranferUploadStreamingInProgress() {
     executeTask(
         "processDataTranferUploadStreamingInProgress()",
         systemBusService::processDataTranferUploadStreamingInProgress);
+  }
+  
+  /** Update the data transfer upload status of all data objects that are streamed from AWS S3. */
+  @Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingStopped.delay}")
+  private void processDataTranferUploadStreamingStopped() {
+    executeTask(
+        "processDataTranferUploadStreamingStopped()",
+        systemBusService::processDataTranferUploadStreamingStopped);
   }
 
   /**
@@ -189,7 +203,8 @@ public class HpcScheduledTasksImpl {
       long executionTime = System.currentTimeMillis() - start;
       logger.info(
           "Scheduled task completed: {} - Task execution time: {} milliseconds",
-          name, executionTime);
+          name,
+          executionTime);
     }
   }
 }
