@@ -247,6 +247,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     // Create the directory.
     dataManagementProxy.createCollectionDirectory(authenticatedToken, path);
+    
+    // Set the permission inheritance to true, so any collection / data object created under this collection will inherit
+    // the permissions of this collection.
+    dataManagementProxy.setCollectionPermissionInheritace(authenticatedToken, path, true);
+    
     return true;
   }
 
