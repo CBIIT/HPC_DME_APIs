@@ -283,21 +283,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                 systemGeneratedMetadata.getConfigurationId())) {
           // The data object was not found in archive. i.e. user did not complete the
           // upload and the upload URL has expired.
-          metadataService.updateDataObjectSystemGeneratedMetadata(
-              path,
-              null,
-              null,
-              null,
-              HpcDataTransferUploadStatus.URL_EXPIRED,
-              null,
-              null,
-              null,
-              null);
 
+          // Delete the data object.
+          dataManagementService.delete(path, true);
+
+          // Add event.
           addDataTransferUploadEvent(
               systemGeneratedMetadata.getRegistrarId(),
               path,
-              HpcDataTransferUploadStatus.URL_EXPIRED,
+              HpcDataTransferUploadStatus.URL_GENERATED,
               null,
               null,
               systemGeneratedMetadata.getDataTransferType(),
@@ -938,7 +932,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               dataTransferType.value() + " failure");
           break;
 
-        case URL_EXPIRED:
+        case URL_GENERATED:
           eventService.addDataTransferUploadURLExpiredEvent(userId, path);
           break;
 
