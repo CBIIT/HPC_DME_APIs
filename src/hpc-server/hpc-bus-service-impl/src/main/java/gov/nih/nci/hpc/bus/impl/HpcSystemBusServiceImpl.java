@@ -356,6 +356,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
   @Override
   @HpcExecuteAsSystemAccount
+  public void processDataTranferUploadStreamingInProgress() throws HpcException {
+    processDataTranferUploadStreamingInProgress(false);
+  }
+
+  @Override
+  @HpcExecuteAsSystemAccount
   public void processDataTranferUploadStreamingStopped()
       throws
           HpcException { // Iterate through the data objects that their data transfer (S3 streaming) has stopped.

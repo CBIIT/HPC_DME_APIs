@@ -51,10 +51,8 @@ public interface HpcSystemBusService {
   public void processDataTranferUploadStreamingInProgress(boolean streamingStopped)
       throws HpcException;
 
-  public default void processDataTranferUploadStreamingInProgress() throws HpcException {
-    processDataTranferUploadStreamingInProgress(false);
-  }
-
+  public void processDataTranferUploadStreamingInProgress() throws HpcException;
+  
   /**
    * Restart data transfer upload for all streaming from AWS S3 that has stopped (because of prior
    * server shutdown)
