@@ -249,7 +249,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               systemGeneratedMetadata.getSourceLocation(),
               dataTransferCompleted,
               systemGeneratedMetadata.getDataTransferType(),
-              systemGeneratedMetadata.getConfigurationId());
+              systemGeneratedMetadata.getConfigurationId(),
+              HpcDataTransferType.GLOBUS);
         }
 
       } catch (HpcException e) {
@@ -300,7 +301,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               null,
               null,
               systemGeneratedMetadata.getDataTransferType(),
-              systemGeneratedMetadata.getConfigurationId());
+              systemGeneratedMetadata.getConfigurationId(),
+              HpcDataTransferType.S_3);
         }
 
       } catch (HpcException e) {
@@ -487,7 +489,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               systemGeneratedMetadata.getSourceLocation(),
               uploadResponse.getDataTransferCompleted(),
               uploadResponse.getDataTransferType(),
-              systemGeneratedMetadata.getConfigurationId());
+              systemGeneratedMetadata.getConfigurationId(),
+              HpcDataTransferType.GLOBUS);
         }
 
       } catch (HpcException e) {
@@ -901,8 +904,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param dataTransferStatus The data transfer upload status.
    * @param sourceLocation (Optional) The data transfer source location.
    * @param dataTransferCompleted (Optional) The time the data upload completed.
-   * @param dataTransferType The type of data transfer used to upload (Globus, S3, etc).
+   * @param dataTransferType The type of data transfer last used to upload (Globus, S3, etc).
    * @param configurationId The data management configuration ID.
+   * @param sourceDataTransferType The type of source the file was uploaded from (S3 or Globus)
    */
   private void addDataTransferUploadEvent(
       String userId,
@@ -911,8 +915,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       HpcFileLocation sourceLocation,
       Calendar dataTransferCompleted,
       HpcDataTransferType dataTransferType,
-      String configurationId) {
-    setFileContainerName(HpcDataTransferType.GLOBUS, configurationId, sourceLocation);
+      String configurationId,
+      HpcDataTransferType sourceDataTransferType) {
+    setFileContainerName(sourceDataTransferType, configurationId, sourceLocation);
     try {
       switch (dataTransferStatus) {
         case ARCHIVED:
@@ -1384,7 +1389,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           systemGeneratedMetadata.getSourceLocation(),
           systemGeneratedMetadata.getDataTransferCompleted(),
           systemGeneratedMetadata.getDataTransferType(),
-          systemGeneratedMetadata.getConfigurationId());
+          systemGeneratedMetadata.getConfigurationId(),
+          systemGeneratedMetadata.getDataTransferType());
     }
   }
 
@@ -1638,7 +1644,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             systemGeneratedMetadata.getSourceLocation(),
             dataTransferCompleted,
             systemGeneratedMetadata.getDataTransferType(),
-            systemGeneratedMetadata.getConfigurationId());
+            systemGeneratedMetadata.getConfigurationId(),
+            HpcDataTransferType.S_3);
       }
 
       return true;
