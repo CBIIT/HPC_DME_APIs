@@ -133,6 +133,24 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   }
 
   @Override
+  public void setCollectionPermissionInheritace(
+      Object authenticatedToken, String path, boolean permissionInheritace) throws HpcException {
+    try {
+      irodsConnection
+          .getCollectionAO(authenticatedToken)
+          .setAccessPermissionInherit(
+              irodsConnection.getZone(), getAbsolutePath(path), permissionInheritace);
+
+    } catch (JargonException e) {
+      throw new HpcException(
+          "Failed to set permission inheritance on a collection: " + e.getMessage(),
+          HpcErrorType.DATA_MANAGEMENT_ERROR,
+          HpcIntegratedSystem.IRODS,
+          e);
+    }
+  }
+
+  @Override
   public void createDataObjectFile(Object authenticatedToken, String path) throws HpcException {
     IRODSFile dataObjectFile = null;
     try {
