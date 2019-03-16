@@ -214,7 +214,7 @@ public interface HpcDataTransferService {
    * Scan a directory (recursively) and return a list of all its files.
    *
    * @param dataTransferType The data transfer type.
-   * @param (Optional) S3 account to use. If null, then system account for the data transfer type is used.
+   * @param s3Account (Optional) S3 account to use. If null, then system account for the data transfer type is used.
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).

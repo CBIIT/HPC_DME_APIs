@@ -32,7 +32,6 @@ import org.springframework.util.StringUtils;
  * HPC Data Search Business Service Implementation.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
   //---------------------------------------------------------------------//
@@ -337,6 +336,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
    * @param queryName The user query.
    * @param detailedResponse The detailed response indicator.
    * @param page The requested results page.
+   * @param pageSize The requested page size.
    * @param totalCount The requested total count of results.
    * @return A compound metadata query DTO.
    * @throws HpcException If the user query was not found.

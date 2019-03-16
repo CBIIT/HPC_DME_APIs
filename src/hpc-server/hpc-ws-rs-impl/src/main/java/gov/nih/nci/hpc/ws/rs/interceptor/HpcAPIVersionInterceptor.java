@@ -15,7 +15,6 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.springframework.beans.factory.annotation.Value;
-import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * HPC API Version Interceptor.
@@ -42,11 +41,7 @@ public class HpcAPIVersionInterceptor extends AbstractPhaseInterceptor<Message> 
   // Constructors
   //---------------------------------------------------------------------//
 
-  /**
-   * Default Constructor disabled.
-   *
-   * @throws HpcException Constructor disabled.
-   */
+  /** Default Constructor disabled. */
   private HpcAPIVersionInterceptor() {
     super(Phase.MARSHAL);
   }

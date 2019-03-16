@@ -104,7 +104,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
   /**
    * Constructor for Spring Dependency Injection.
    *
-   * @throws HpcException Constructor is disabled.
    */
   private HpcMetadataServiceImpl() {
     // Set the default collection metadata.

@@ -2145,10 +2145,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     /**
-     * Handle the case when transfer failed. Send a download failed event and cleanup the download
-     * task.
+     * Complete this S3 download task, and send event.
      *
+     * @param result The download task result - true means success.
      * @param message The message to include in the download failed event.
+     * @param bytesTransferred Total bytes transfered in this download task.
      */
     private void completeDownloadTask(boolean result, String message, long bytesTransferred) {
       try {
@@ -2206,6 +2207,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
      * Constructs a S3 upload object (to keep track of async processing)
      *
      * @param path The data object path that is being uploaded.
+     * @param userId The user ID requested the upload.
+     * @param sourceLocation The upload file location.
      */
     public HpcS3Upload(String path, String userId, HpcFileLocation sourceLocation) {
       this.path = path;
