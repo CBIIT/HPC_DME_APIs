@@ -1541,6 +1541,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param destinationLocation The destination file location.
    * @param destinationFile The destination file.
    * @param taskId The data object download task ID.
+   * @param downloadRequestURL A URL to use to download the data object.
+   * @param dataTransferType The data transfer type performing the download (S3 or Globus).
    * @return A download response DTO object
    */
   private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(
@@ -1648,6 +1650,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * sub-collections.
    *
    * @param path The path at the root of the hierarchy to delete from.
+   * @throws HpcException if it failed to delete any object in this collection.
    */
   private void deleteDataObjectsInCollections(String path) throws HpcException {
 
@@ -2161,6 +2164,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param metadataEntries The list of metadata entries to update.
    * @param collectionType The type of collection containing the data object.
    * @param generateUploadRequestURL Indicator whether to re-generate the request upload URL.
+   * @param checksum The data object checksum provided to check upload integrity.
    * @param userId The userId updating the data object.
    * @param callerObjectId The caller's object ID.
    * @return Upload URL if one was requested, otherwise null.
@@ -2370,6 +2374,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * Calculate the overall % complete of a collection download task
    *
    * @param downloadTask The collection download task. return The % complete.
+   * @return The overall % complete of the collection download task.
    */
   private int calculateCollectionDownloadPercentComplete(HpcCollectionDownloadTask downloadTask) {
     if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.ACTIVE)) {
@@ -2395,8 +2400,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   /**
    * Calculate the overall % complete of a bulk data object registration task.
    *
-   * @param downloadTask The bulk download task.
-   * @return The % complete.
+   * @param task The bulk registration task.
+   * @return The % complete of the bulk registration task..
    */
   private int calculateDataObjectBulkRegistrationPercentComplete(
       HpcBulkDataObjectRegistrationTask task) {
@@ -2476,9 +2481,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   /**
-   * Validate all paths in bulk registration request
+   * Validate all paths in bulk registration request.
    *
-   * @param dataObjRegistrationItems The registration items
+   * @param dataObjectRegistrationItems The registration items.
    * @throws HpcException if the any path is invalid.
    */
   private void validateDataObjectRegistrationDestinationPaths(

@@ -497,7 +497,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * Upload a data object file from AWS S3 source.
    *
    * @param authenticatedToken An authenticated token.
-   * @param sourceFile The file to upload.
+   * @param s3UploadSource The S3 upload source.
    * @param archiveDestinationLocation The archive destination location.
    * @param size the size of the file to upload.
    * @param progressListener (Optional) a progress listener for async notification on transfer
@@ -606,7 +606,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    *
    * @param authenticatedToken An authenticated token.
    * @param archiveDestinationLocation The archive destination location.
-   * @param objectMetadata The S3 object metadata.
    * @param uploadRequestURLExpiration The URL expiration (in hours).
    * @param uploadRequestURLChecksum An optional user provided checksum value to attach to the
    *     generated url.

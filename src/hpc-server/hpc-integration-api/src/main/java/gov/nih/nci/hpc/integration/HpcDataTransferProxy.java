@@ -113,7 +113,7 @@ public interface HpcDataTransferProxy {
    * Generate a (pre-signed) download URL for a data object file.
    *
    * @param authenticatedToken An authenticated token.
-   * @param baseArchiveDestination The archive's base destination location.
+   * @param archiveLocation The data object's archive location.
    * @param downloadRequestURLExpiration The expiration period (in days) to set when generating
    *     download URL.
    * @return The download URL
@@ -217,6 +217,7 @@ public interface HpcDataTransferProxy {
    *
    * @param authenticatedToken An authenticated token.
    * @param fileContainerId The file container ID.
+   * @return The file container name.
    * @throws HpcException on data transfer system failure.
    */
   public String getFileContainerName(Object authenticatedToken, String fileContainerId)

@@ -1532,6 +1532,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param urlCreated The data/time the URL was generated
    * @param configurationId The data management configuration ID. This is to get the expiration
    *     config.
+   * @return True if the upload URL expired, or false otherwise.
    */
   private boolean generatedURLExpired(Calendar urlCreated, String configurationId) {
     if (urlCreated == null || StringUtils.isEmpty(configurationId)) {
@@ -1590,7 +1591,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   /**
    * Check if an upload from S3 (either via URL upload or streaming) has completed.
    *
-   * @param The path of the data object to check if an upload from S3 completed.
+   * @param path The path of the data object to check if an upload from S3 completed.
    * @param systemGeneratedMetadata The system generated metadata for the data object.
    * @return true if the uploaded completed, or false otherwise.
    * @throws HpcException If failed to check/update upload status.
