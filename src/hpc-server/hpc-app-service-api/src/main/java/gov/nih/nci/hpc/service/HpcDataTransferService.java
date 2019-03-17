@@ -248,14 +248,12 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Get all data object download tasks for a given data-transfer type.
+   * Get all (active) data object download tasks.
    *
-   * @param dataTransferType The data-transfer type to query.
    * @return A list of data object download tasks.
    * @throws HpcException on service failure.
    */
-  public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(
-      HpcDataTransferType dataTransferType) throws HpcException;
+  public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
 
   /**
    * Get download task status.
@@ -290,10 +288,9 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Continue a data object download task that was queued. Note: If Globus is still busy, the
-   * download task will remain queued.
+   * Continue a data object download task that was queued.
    *
-   * @param downloadTask The download task to submit to Globus.
+   * @param downloadTask The download task to submit.
    * @throws HpcException on service failure.
    */
   public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)

@@ -541,9 +541,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(
-      HpcDataTransferType dataTransferType) throws HpcException {
-    return dataDownloadDAO.getDataObjectDownloadTasks(dataTransferType);
+  public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException {
+    return dataDownloadDAO.getDataObjectDownloadTasks();
   }
 
   @Override
@@ -641,47 +640,64 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException {
-    // Check if Globus accepts transfer requests at this time.
-    if (acceptsTransferRequests(
+    // Check if transfer requests can be acceptable at this time.
+    if (!acceptsTransferRequests(
         downloadTask.getDataTransferType(), downloadTask.getConfigurationId())) {
-      // Globus accepts requests - submit the async download (to Globus).
-      HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
-      downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
-      downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
-      downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
+      logger.info(downloadTask.getDataTransferType() + " is not accepting requests at this time");
+      return;
+    }
+
+    // Recreate the download request from the task (that was persisted).
+    HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+    downloadRequest.setArchiveLocation(downloadTask.getArchiveLocation());
+    downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+    downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
+    downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
+    downloadRequest.setPath(downloadTask.getPath());
+    downloadRequest.setUserId(downloadTask.getUserId());
+    if (downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)) {
       HpcGlobusDownloadDestination globusDestination = new HpcGlobusDownloadDestination();
       globusDestination.setDestinationLocation(downloadTask.getDestinationLocation());
       downloadRequest.setGlobusDestination(globusDestination);
-      downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
-      downloadRequest.setPath(downloadTask.getPath());
-      downloadRequest.setUserId(downloadTask.getUserId());
+    }
 
-      // Get the data transfer configuration.
-      HpcDataTransferConfiguration dataTransferConfiguration =
-          dataManagementConfigurationLocator.getDataTransferConfiguration(
-              downloadRequest.getConfigurationId(), downloadRequest.getDataTransferType());
+    // Get the data transfer configuration.
+    HpcDataTransferConfiguration dataTransferConfiguration =
+        dataManagementConfigurationLocator.getDataTransferConfiguration(
+            downloadRequest.getConfigurationId(), downloadRequest.getDataTransferType());
 
-      // Submit a transfer request to Globus and update the download task with the Globus request ID.
-      try {
-        downloadTask.setDataTransferRequestId(
-            dataTransferProxies
-                .get(downloadRequest.getDataTransferType())
-                .downloadDataObject(
-                    getAuthenticatedToken(
-                        downloadRequest.getDataTransferType(),
-                        downloadRequest.getConfigurationId()),
-                    downloadRequest,
-                    dataTransferConfiguration.getBaseArchiveDestination(),
-                    null));
+    // Construct a 2-Hop download object if we continue a download from Cleversafe archive to Globus destination.
+    HpcSecondHopDownload secondHopDownload =
+        downloadTask.getDestinationType().equals(HpcDataTransferType.GLOBUS)
+                && downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
+            ? new HpcSecondHopDownload(downloadTask)
+            : null;
+    if (secondHopDownload != null) {
+      // Set the first hop file destination to be the source file of the second hop.
+      downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
+    }
 
-      } catch (HpcException e) {
-        // Failed to submit a transfer request to Globus. Cleanup the download task.
-        completeDataObjectDownloadTask(
-            downloadTask, false, e.getMessage(), Calendar.getInstance(), 0);
-        return;
-      }
+    // Submit a transfer request.
+    try {
+      downloadTask.setDataTransferRequestId(
+          dataTransferProxies
+              .get(downloadRequest.getDataTransferType())
+              .downloadDataObject(
+                  getAuthenticatedToken(
+                      downloadRequest.getDataTransferType(), downloadRequest.getConfigurationId()),
+                  downloadRequest,
+                  dataTransferConfiguration.getBaseArchiveDestination(),
+                  secondHopDownload));
 
-      // Persist the download task.
+    } catch (HpcException e) {
+      // Failed to submit a transfer request. Cleanup the download task.
+      completeDataObjectDownloadTask(
+          downloadTask, false, e.getMessage(), Calendar.getInstance(), 0);
+      return;
+    }
+
+    // Persist the download task. In the case of 2-hop, this was already done when the HpcSecondHopDownload was constructed.
+    if (secondHopDownload == null) {
       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
       dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
     }
@@ -1838,11 +1854,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
      */
     public HpcSecondHopDownload(HpcDataObjectDownloadRequest firstHopDownloadRequest)
         throws HpcException {
-      // Get the service invoker.
-      HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-      if (invoker == null) {
-        throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
-      }
       path = firstHopDownloadRequest.getPath();
 
       // Create the 2nd hop download request.
@@ -1873,10 +1884,52 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
                   secondHopDownloadRequest.getArchiveLocation().getFileId(),
                   dataTransferConfiguration.getBaseDownloadSource()));
 
-      // Create an persist a download task. This object tracks the download request
-      // through the 2-hop async
-      // download requests.
+      // Create and persist a download task. This object tracks the download request
+      // through the 2-hop async download requests.
       createDownloadTask();
+    }
+
+    /**
+     * Constructs a 2nd Hop download object (to keep track of async processing). This constructor is
+     * used when a 2-hop download needs to be restarted.
+     *
+     * @param downloadTask An exiting download taskThe first hop download request.
+     * @throws HpcException If it failed to create a download task.
+     */
+    public HpcSecondHopDownload(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+      path = downloadTask.getPath();
+
+      // Create the 2nd hop download request.
+      secondHopDownloadRequest =
+          toSecondHopDownloadRequest(
+              calculateGlobusDownloadDestinationFileLocation(
+                  downloadTask.getDestinationLocation(),
+                  true, // TODO: add to download task - downloadTask.getDestinationOverwrite(),
+                  HpcDataTransferType.GLOBUS,
+                  downloadTask.getArchiveLocation().getFileId(),
+                  downloadTask.getConfigurationId()),
+              HpcDataTransferType.GLOBUS,
+              downloadTask.getPath(),
+              downloadTask.getConfigurationId(),
+              downloadTask.getUserId(),
+              downloadTask.getCompletionEvent(),
+              downloadTask.getSize());
+
+      // Get the data transfer configuration.
+      HpcDataTransferConfiguration dataTransferConfiguration =
+          dataManagementConfigurationLocator.getDataTransferConfiguration(
+              downloadTask.getConfigurationId(), HpcDataTransferType.GLOBUS);
+
+      // Create the source file for the second hop download.
+      sourceFile =
+          createFile(
+              getFilePath(
+                  secondHopDownloadRequest.getArchiveLocation().getFileId(),
+                  dataTransferConfiguration.getBaseDownloadSource()));
+
+      // Update and persist a download task. This object tracks the download request
+      // through the 2-hop async download requests.
+      updateDownloadTask(downloadTask);
     }
 
     // ---------------------------------------------------------------------//
@@ -1994,6 +2047,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setSize(secondHopDownloadRequest.getSize());
 
       dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+    }
+
+    /**
+     * Update a download task for a 2-hop download from an existing download task.
+     *
+     * @param downloadTask The existing download task
+     * @throws HpcException If it failed to persist the task.
+     */
+    private void updateDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+      this.downloadTask.setId(downloadTask.getId());
+      this.downloadTask.setUserId(downloadTask.getUserId());
+      this.downloadTask.setPath(downloadTask.getPath());
+      this.downloadTask.setConfigurationId(downloadTask.getConfigurationId());
+      this.downloadTask.setDataTransferRequestId(null);
+      this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
+      this.downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+      this.downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
+      this.downloadTask.setArchiveLocation(downloadTask.getArchiveLocation());
+      this.downloadTask.setDestinationLocation(downloadTask.getDestinationLocation());
+      this.downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
+      this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
+      this.downloadTask.setCreated(downloadTask.getCreated());
+      this.downloadTask.setPercentComplete(0);
+      this.downloadTask.setSize(downloadTask.getSize());
+
+      dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
     }
 
     /**

@@ -501,7 +501,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   public void completeDataObjectDownloadTasks() throws HpcException {
     // Iterate through all the data object download tasks that are in-progress or pending GLOBUS transfer.
     for (HpcDataObjectDownloadTask downloadTask :
-        dataTransferService.getDataObjectDownloadTasks(HpcDataTransferType.GLOBUS)) {
+        dataTransferService.getDataObjectDownloadTasks()) {
       try {
         switch (downloadTask.getDataTransferStatus()) {
           case RECEIVED:
@@ -1272,6 +1272,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    */
   private void completeDataObjectDownloadTaskInProgress(HpcDataObjectDownloadTask downloadTask)
       throws HpcException {
+    if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)) {
+      // Checking transfer status is done for active Globus downloads only.
+      return;
+    }
 
     // Get the data transfer download status.
     HpcDataTransferDownloadReport dataTransferDownloadReport =
