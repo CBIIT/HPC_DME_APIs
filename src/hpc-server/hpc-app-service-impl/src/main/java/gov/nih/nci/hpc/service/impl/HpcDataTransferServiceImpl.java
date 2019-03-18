@@ -69,6 +69,7 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
+import gov.nih.nci.hpc.service.HpcMetadataService;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -105,6 +106,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   // Event service.
   @Autowired private HpcEventService eventService = null;
+  
+  // Metadata service.
+  @Autowired private HpcMetadataService metadataService = null;
 
   // Data management configuration locator.
   @Autowired
@@ -673,7 +677,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             ? new HpcSecondHopDownload(downloadTask)
             : null;
     if (secondHopDownload != null) {
-      // Set the first hop file destination to be the source file of the second hop.
+      // Set the first hop transfer to be from Cleversafe to the server's Globus mounted file system.
+      downloadRequest.setArchiveLocation(
+          metadataService.getDataObjectSystemGeneratedMetadata(downloadRequest.getPath()).getArchiveLocation());
       downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
     }
 
@@ -1898,22 +1904,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
      */
     public HpcSecondHopDownload(HpcDataObjectDownloadTask downloadTask) throws HpcException {
       path = downloadTask.getPath();
-
+      
       // Create the 2nd hop download request.
-      secondHopDownloadRequest =
-          toSecondHopDownloadRequest(
-              calculateGlobusDownloadDestinationFileLocation(
-                  downloadTask.getDestinationLocation(),
-                  true, // TODO: add to download task - downloadTask.getDestinationOverwrite(),
-                  HpcDataTransferType.GLOBUS,
-                  downloadTask.getArchiveLocation().getFileId(),
-                  downloadTask.getConfigurationId()),
-              HpcDataTransferType.GLOBUS,
-              downloadTask.getPath(),
-              downloadTask.getConfigurationId(),
-              downloadTask.getUserId(),
-              downloadTask.getCompletionEvent(),
-              downloadTask.getSize());
+      secondHopDownloadRequest = toSecondHopDownloadRequest(downloadTask);
 
       // Get the data transfer configuration.
       HpcDataTransferConfiguration dataTransferConfiguration =
@@ -2022,6 +2015,33 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setUserId(userId);
       downloadRequest.setCompletionEvent(completionEvent);
       downloadRequest.setSize(size);
+      return downloadRequest;
+    }
+    
+    /**
+     * Create a download request for a 2nd hop download from local file (as Globus endpoint) to
+     * caller's Globus endpoint destination.
+     *
+     * @param downloadTask A download task to create the 2nd hope download request from.
+     * @return Data object download request.
+     * @throws HpcException If it failed to obtain an authentication token.
+     */
+    private HpcDataObjectDownloadRequest toSecondHopDownloadRequest(
+        HpcDataObjectDownloadTask downloadTask)
+        throws HpcException {
+      // Create and return a download request, from the local GLOBUS endpoint, to the caller's destination.
+      HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
+      downloadRequest.setArchiveLocation(
+          getDownloadSourceLocation(downloadTask.getConfigurationId(), downloadTask.getDataTransferType()));
+      HpcGlobusDownloadDestination globusDestination = new HpcGlobusDownloadDestination();
+      globusDestination.setDestinationLocation(downloadTask.getDestinationLocation());
+      downloadRequest.setGlobusDestination(globusDestination);
+      downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
+      downloadRequest.setPath(downloadTask.getPath());
+      downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
+      downloadRequest.setUserId(downloadTask.getUserId());
+      downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
+      downloadRequest.setSize(downloadTask.getSize());
       return downloadRequest;
     }
 
