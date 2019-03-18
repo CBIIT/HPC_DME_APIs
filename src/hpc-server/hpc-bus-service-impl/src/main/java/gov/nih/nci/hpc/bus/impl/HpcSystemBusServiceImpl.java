@@ -1253,7 +1253,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         path,
         downloadTask.getType(),
         downloadTask.getId(),
-        HpcDataTransferType.GLOBUS,
+        downloadTask.getS3DownloadDestination() != null
+            ? HpcDataTransferType.S_3
+            : HpcDataTransferType.GLOBUS,
         downloadTask.getConfigurationId(),
         result,
         message,
