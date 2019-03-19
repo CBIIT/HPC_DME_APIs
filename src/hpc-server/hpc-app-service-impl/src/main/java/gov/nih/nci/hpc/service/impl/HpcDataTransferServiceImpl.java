@@ -2084,7 +2084,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
       this.downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
       this.downloadTask.setDownloadFilePath(sourceFile.getAbsolutePath());
-      this.downloadTask.setArchiveLocation(downloadTask.getArchiveLocation());
+      this.downloadTask.setArchiveLocation(secondHopDownloadRequest.getArchiveLocation());
       this.downloadTask.setDestinationLocation(downloadTask.getDestinationLocation());
       this.downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
       this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
