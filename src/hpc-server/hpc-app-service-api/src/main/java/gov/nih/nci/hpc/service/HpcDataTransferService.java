@@ -290,10 +290,19 @@ public interface HpcDataTransferService {
   /**
    * Continue a data object download task that was queued.
    *
-   * @param downloadTask The download task to submit.
+   * @param downloadTask The download task to continue.
    * @throws HpcException on service failure.
    */
   public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
+      throws HpcException;
+  
+  /**
+   * Reset a data object download task. Set it's status to RECEIVED.
+   *
+   * @param downloadTask The download task to reset.
+   * @throws HpcException on service failure.
+   */
+  public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException;
 
   /**

@@ -708,6 +708,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
     }
   }
+  
+  @Override
+  public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
+      throws HpcException {
+    downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+    if(!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
+      FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
+      downloadTask.setDownloadFilePath(null);
+    }
+    
+    dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+  }
 
   @Override
   public void updateDataObjectDownloadTask(
