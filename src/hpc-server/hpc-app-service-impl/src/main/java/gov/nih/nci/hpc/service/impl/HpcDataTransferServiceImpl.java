@@ -2032,7 +2032,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // Create and return a download request, from the local GLOBUS endpoint, to the caller's destination.
       HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
       downloadRequest.setArchiveLocation(
-          getDownloadSourceLocation(downloadTask.getConfigurationId(), downloadTask.getDataTransferType()));
+          getDownloadSourceLocation(downloadTask.getConfigurationId(), HpcDataTransferType.GLOBUS));
       HpcGlobusDownloadDestination globusDestination = new HpcGlobusDownloadDestination();
       globusDestination.setDestinationLocation(downloadTask.getDestinationLocation());
       downloadRequest.setGlobusDestination(globusDestination);
