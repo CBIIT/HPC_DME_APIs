@@ -499,7 +499,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   @HpcExecuteAsSystemAccount
   public void completeDataObjectDownloadTasks() throws HpcException {
-    // Iterate through all the data object download tasks that are in-progress or pending GLOBUS transfer.
+    // Iterate through all the data object download tasks that are in-progress.
     for (HpcDataObjectDownloadTask downloadTask :
         dataTransferService.getDataObjectDownloadTasks()) {
       try {
@@ -523,6 +523,26 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
       } catch (HpcException e) {
         logger.error("Failed to complete download task: " + downloadTask.getId(), e);
+      }
+    }
+  }
+
+  @Override
+  @HpcExecuteAsSystemAccount
+  public void restartDataObjectDownloadTasks() throws HpcException {
+    // Iterate through all the data object download tasks that are in-progress or pending GLOBUS transfer.
+    for (HpcDataObjectDownloadTask downloadTask :
+        dataTransferService.getDataObjectDownloadTasks()) {
+      try {
+        if (downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
+            && downloadTask
+                .getDataTransferStatus()
+                .equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+          dataTransferService.resetDataObjectDownloadTask(downloadTask);
+        }
+
+      } catch (HpcException e) {
+        logger.error("Failed to restart download task: " + downloadTask.getId(), e);
       }
     }
   }

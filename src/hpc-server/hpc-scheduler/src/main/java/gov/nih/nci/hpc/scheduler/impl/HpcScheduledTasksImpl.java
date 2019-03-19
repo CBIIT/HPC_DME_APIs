@@ -200,9 +200,14 @@ public class HpcScheduledTasksImpl {
   @SuppressWarnings("unused")
   private void init() {
     try {
-      // Server just restarted. All active S3 upload tasks should be marked stopped.
+      // Server just restarted. 
+      
+      // All active S3 upload tasks should be marked stopped (so they get restarted)
       systemBusService.processDataTranferUploadStreamingInProgress(true);
-
+      
+      // All active S3 download tasks needs to be restarted.
+      systemBusService.restartDataObjectDownloadTasks();
+      
     } catch (HpcException e) {
       logger.error(
           "Failed to update upload status for current S3 streaming tasks",

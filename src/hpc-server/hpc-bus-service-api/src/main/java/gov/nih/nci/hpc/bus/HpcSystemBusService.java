@@ -76,6 +76,13 @@ public interface HpcSystemBusService {
    * @throws HpcException on service failure.
    */
   public void completeDataObjectDownloadTasks() throws HpcException;
+  
+  /**
+   * Restart data object download tasks that are in progress using S3 data transfer.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void restartDataObjectDownloadTasks() throws HpcException;
 
   /**
    * Process collection download tasks that received. i.e. kick off the download of individual data
