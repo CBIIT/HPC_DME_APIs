@@ -2036,7 +2036,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcGlobusDownloadDestination globusDestination = new HpcGlobusDownloadDestination();
       globusDestination.setDestinationLocation(downloadTask.getDestinationLocation());
       downloadRequest.setGlobusDestination(globusDestination);
-      downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
+      downloadRequest.setDataTransferType(HpcDataTransferType.GLOBUS);
       downloadRequest.setPath(downloadTask.getPath());
       downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
       downloadRequest.setUserId(downloadTask.getUserId());
