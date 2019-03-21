@@ -27,6 +27,9 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text,
   "DESTINATION_LOCATION_FILE_ID" text,
   "DESTINATION_TYPE" text,
+  "S3_ACCOUNT_ACCESS_KEY" bytea,
+  "S3_ACCOUNT_SECRET_KEY" bytea,
+  "S3_ACCOUNT_REGION" text,
   "COMPLETION_EVENT" boolean,
   "PERCENT_COMPLETE" integer,
   "SIZE" bigint,
@@ -62,6 +65,12 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_LOCATION_F
                   'The download destination file ID';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_TYPE" IS 
                   'The download destination type - either Globus or S3';  
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_ACCESS_KEY" IS 
+                  'The S3 destination account access key';  
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_SECRET_KEY" IS 
+                  'The S3 destination account secret key';  
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_REGION" IS 
+                  'The S3 destination account region';  
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."COMPLETION_EVENT" IS 
                   'An indicator whether a completion event needs to be generated when the task is completed';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PERCENT_COMPLETE" IS 
