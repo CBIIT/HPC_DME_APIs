@@ -61,8 +61,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"DATA_TRANSFER_STATUS\", \"DOWNLOAD_FILE_PATH\","
           + "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", "
+          + "\"S3_ACCOUNT_ACCESS_KEY\", \"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", "
           + "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
@@ -75,6 +76,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", "
           + "\"DESTINATION_TYPE\"=excluded.\"DESTINATION_TYPE\", "
+          + "\"S3_ACCOUNT_ACCESS_KEY\"=excluded.\"S3_ACCOUNT_ACCESS_KEY\", "
+          + "\"S3_ACCOUNT_SECRET_KEY\"=excluded.\"S3_ACCOUNT_SECRET_KEY\", "
+          + "\"S3_ACCOUNT_REGION\"=excluded.\"S3_ACCOUNT_REGION\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
           + "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", "
           + "\"SIZE\"=excluded.\"SIZE\", "
@@ -204,12 +208,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         String destinationLocationFileContainerId =
             rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
         String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
+        /*
         if (destinationLocationFileContainerId != null && destinationLocationFileId != null) {
           HpcFileLocation destinationLocation = new HpcFileLocation();
           destinationLocation.setFileContainerId(destinationLocationFileContainerId);
           destinationLocation.setFileId(destinationLocationFileId);
           dataObjectDownloadTask.setDestinationLocation(destinationLocation);
-        }
+        }*/
 
         String destinationType = rs.getString("DESTINATION_TYPE");
         dataObjectDownloadTask.setDestinationType(
@@ -218,6 +223,35 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         Calendar created = Calendar.getInstance();
         created.setTime(rs.getTimestamp("CREATED"));
         dataObjectDownloadTask.setCreated(created);
+
+        HpcFileLocation destinationLocation = null;
+        if (destinationLocationFileContainerId != null && destinationLocationFileId != null) {
+          destinationLocation = new HpcFileLocation();
+          destinationLocation.setFileContainerId(destinationLocationFileContainerId);
+          destinationLocation.setFileId(destinationLocationFileId);
+        }
+
+        HpcS3Account s3Account = null;
+        byte[] s3AccountAccessKey = rs.getBytes("S3_ACCOUNT_ACCESS_KEY");
+        byte[] s3AccountSecretKey = rs.getBytes("S3_ACCOUNT_SECRET_KEY");
+        if (s3AccountAccessKey != null && s3AccountSecretKey != null) {
+          s3Account = new HpcS3Account();
+          s3Account.setAccessKey(this.encryptor.decrypt(s3AccountAccessKey));
+          s3Account.setSecretKey(this.encryptor.decrypt(s3AccountSecretKey));
+          s3Account.setRegion(rs.getString("S3_ACCOUNT_REGION"));
+        }
+
+        if (s3Account != null) {
+          HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
+          s3DownloadDestination.setDestinationLocation(destinationLocation);
+          s3DownloadDestination.setAccount(s3Account);
+          dataObjectDownloadTask.setS3DownloadDestination(s3DownloadDestination);
+        } else {
+          HpcGlobusDownloadDestination globusDownloadDestination =
+              new HpcGlobusDownloadDestination();
+          globusDownloadDestination.setDestinationLocation(destinationLocation);
+          dataObjectDownloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+        }
 
         return dataObjectDownloadTask;
       };
@@ -374,6 +408,22 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         dataObjectDownloadTask.setId(UUID.randomUUID().toString());
       }
 
+      HpcFileLocation destinationLocation = null;
+      byte[] s3AccountAccessKey = null;
+      byte[] s3AccountSecretKey = null;
+      String s3AccountRegion = null;
+      if (dataObjectDownloadTask.getGlobusDownloadDestination() != null) {
+        destinationLocation =
+            dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
+      } else {
+        destinationLocation =
+            dataObjectDownloadTask.getS3DownloadDestination().getDestinationLocation();
+        HpcS3Account s3Account = dataObjectDownloadTask.getS3DownloadDestination().getAccount();
+        s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
+        s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
+        s3AccountRegion = s3Account.getRegion();
+      }
+
       jdbcTemplate.update(
           UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL,
           dataObjectDownloadTask.getId(),
@@ -386,9 +436,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           dataObjectDownloadTask.getDownloadFilePath(),
           dataObjectDownloadTask.getArchiveLocation().getFileContainerId(),
           dataObjectDownloadTask.getArchiveLocation().getFileId(),
-          dataObjectDownloadTask.getDestinationLocation().getFileContainerId(),
-          dataObjectDownloadTask.getDestinationLocation().getFileId(),
+          destinationLocation.getFileContainerId(),
+          destinationLocation.getFileId(),
           dataObjectDownloadTask.getDestinationType().value(),
+          s3AccountAccessKey,
+          s3AccountSecretKey,
+          s3AccountRegion,
           dataObjectDownloadTask.getCompletionEvent(),
           dataObjectDownloadTask.getPercentComplete(),
           dataObjectDownloadTask.getSize(),
