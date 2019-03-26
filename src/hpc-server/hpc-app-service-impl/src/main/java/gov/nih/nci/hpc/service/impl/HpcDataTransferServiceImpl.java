@@ -2005,7 +2005,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setPercentComplete(0);
 			this.downloadTask.setSize(downloadTask.getSize());
 
-			dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+			dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
 		}
 
 		/**
