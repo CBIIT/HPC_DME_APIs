@@ -171,12 +171,12 @@
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getCreated() != null}">
 											<label for="textbox1">Transfer Created on:</label> <label
 												for="${hpcDataObjectDownloadStatusDTO.getCreated()}"
-												th:text="${#calendars.format(hpcDataObjectDownloadStatusDTO.getCreated(),'dd MMMM yyyy hh:mm:ss')}"></label>
+												th:text="${#calendars.format(hpcDataObjectDownloadStatusDTO.getCreated(),'dd MMMM yyyy HH:mm:ss')}"></label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getCompleted() != null}">
 											<label for="textbox1">Transfer Completed on:</label> <label
 												for="${hpcDataObjectDownloadStatusDTO.getCompleted()}"
-												th:text="${#calendars.format(hpcDataObjectDownloadStatusDTO.getCompleted(),'dd MMMM yyyy hh:mm:ss')}"></label>
+												th:text="${#calendars.format(hpcDataObjectDownloadStatusDTO.getCompleted(),'dd MMMM yyyy HH:mm:ss')}"></label>
 										</div>
 									</div>
 								</div>
