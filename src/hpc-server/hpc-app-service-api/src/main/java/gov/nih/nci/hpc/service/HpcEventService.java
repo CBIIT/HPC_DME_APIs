@@ -195,7 +195,7 @@ public interface HpcEventService {
    * @param userId The user ID who initiated the action resulted in collection update event.
    * @throws HpcException on service failure.
    */
-  public void addCollectionRegistrationEvent(String path, String dataObject) throws HpcException;
+  public void addCollectionRegistrationEvent(String path, String userId) throws HpcException;
 
   /**
    * Add a data object registration event.

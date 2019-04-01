@@ -86,9 +86,8 @@
 									<div class="col-sm-12 column" th:if="${basePaths != null and basePaths.size() &gt; 0}">
 									<label for="basePath">Default Base Path: </label>
 									<select size="1"
-										id="basePath" name="basePath" class="form-control"
-										th:required="required">
-											<option value="_select_null">----Select----</option>
+										id="basePath" name="basePath" class="form-control">
+											<option value="">----Select----</option>
 									</select>
 									</div>
 									
@@ -122,7 +121,7 @@
 	<script>
 	//<![CDATA[
 	function refreshBasePath(docName) {
-		var attrOptions="<option value='_select_null'>--Select--</option>";
+		var attrOptions="<option value=''>--Select--</option>";
 		if(basePaths != null && basePaths.length > 0)
 		{
 			for(var j=0;j<basePaths.length;j++)

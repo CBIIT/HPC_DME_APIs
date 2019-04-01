@@ -87,8 +87,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
 
   public static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL =
-      "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"DATA_TRANSFER_TYPE\" = ? "
-          + " order by \"CREATED\"";
+      "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" order by \"CREATED\"";
 
   public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL =
       "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( "
@@ -437,13 +436,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   }
 
   @Override
-  public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(
-      HpcDataTransferType dataTransferType) throws HpcException {
+  public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException {
     try {
       return jdbcTemplate.query(
-          GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL,
-          dataObjectDownloadTaskRowMapper,
-          dataTransferType.value());
+          GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL, dataObjectDownloadTaskRowMapper);
 
     } catch (DataAccessException e) {
       throw new HpcException(

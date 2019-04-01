@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -110,6 +110,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			HpcSearch hpcSearch = new HpcSearch();
 			String pageNumber = request.getParameter("pageNumber");
 			hpcSearch.setPageNumber(pageNumber != null ? Integer.parseInt(pageNumber) : 1);
+			String pageSize = request.getParameter("pageSize");
+			if (StringUtils.isNotBlank(pageSize))
+			  hpcSearch.setPageSize(Integer.parseInt(pageSize));
 			hpcSearch.setQueryName(request.getParameter("queryName"));
 			hpcSearch.setSearchType(request.getParameter("searchType"));
 			model.addAttribute("hpcSearch", hpcSearch);

@@ -786,8 +786,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   /**
    * Convert v1 of HpcDataObjectRegistrationRequestDTO to v2 of the API.
    *
-   * @param downloadRequest download request (v1).
-   * @return The download request in v2 form.
+   * @param dataObjectRegistration data object registration (v1).
+   * @return The registration request in v2 form.
    */
   private gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO toV2(
       HpcDataObjectRegistrationRequestDTO dataObjectRegistration) {

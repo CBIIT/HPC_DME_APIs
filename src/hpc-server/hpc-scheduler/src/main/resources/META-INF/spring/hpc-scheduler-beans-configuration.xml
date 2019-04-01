@@ -23,10 +23,10 @@
 	<context:annotation-config />
 	
 	<task:annotation-driven executor="hpcScheduledTaskExecutor" scheduler="hpcScheduledTaskScheduler"/>
-	<task:executor id="hpcScheduledTaskExecutor" pool-size="15"/>
-	<task:scheduler id="hpcScheduledTaskScheduler" pool-size="15"/>
+	<task:executor id="hpcScheduledTaskExecutor" pool-size="20"/>
+	<task:scheduler id="hpcScheduledTaskScheduler" pool-size="20"/>
 	
 	<!--  Scheduled tasks -->
-	<bean id="hpcScheduledTasks" class="gov.nih.nci.hpc.scheduler.impl.HpcScheduledTasksImpl" />
+	<bean id="hpcScheduledTasks" class="gov.nih.nci.hpc.scheduler.impl.HpcScheduledTasksImpl" init-method="init" />
 </beans>
 

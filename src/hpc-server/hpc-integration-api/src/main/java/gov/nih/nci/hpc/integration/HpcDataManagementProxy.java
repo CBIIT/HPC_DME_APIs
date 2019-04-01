@@ -60,6 +60,18 @@ public interface HpcDataManagementProxy {
   public void createCollectionDirectory(Object authenticatedToken, String path) throws HpcException;
 
   /**
+   * Sets permission inheritance on a collection
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param path The collection path.
+   * @param permissionInheritace If true, any collections / data objects created under this
+   *     collection will inherit the same permissions as this collection.
+   * @throws HpcException on data management system failure.
+   */
+  public void setCollectionPermissionInheritace(
+      Object authenticatedToken, String path, boolean permissionInheritace) throws HpcException;
+
+  /**
    * Create a data object's file.
    *
    * @param authenticatedToken An authenticated token.

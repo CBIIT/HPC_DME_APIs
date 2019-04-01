@@ -19,7 +19,7 @@ public interface HpcSystemAccountFunction<T> {
   /**
    * Perform this code using system account credentials.
    *
-   * @throws HpcException
+   * @throws HpcException On any failure.
    */
   public T execute() throws HpcException;
 }

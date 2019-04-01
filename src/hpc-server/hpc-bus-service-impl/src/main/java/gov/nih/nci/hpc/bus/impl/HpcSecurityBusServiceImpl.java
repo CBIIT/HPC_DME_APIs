@@ -559,7 +559,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    *
    * @param systemAccountFunction The functional interface to execute as system account with return
    *     value.
-   * @throws HpcException If the enum value is invalid.
+   * @param <T> A generic returned type.
+   * @return A generic returned type.
+   * @throws HpcException If it failed to identify the request invoker, or the function raised an exception.
    */
   private <T> T executeGroupAdminAsSystemAccount(HpcSystemAccountFunction<T> systemAccountFunction)
       throws HpcException {

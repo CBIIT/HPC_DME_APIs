@@ -524,10 +524,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   }
 
   /**
-   * Convert a JSON array to a list of metadata entries.
+   * Convert a JSON bulk metadata entries to a domain object
    *
-   * @param jsonMetadataEntries The list of collection download items.
-   * @return A JSON representation of download items.
+   * @param jsonBulkMetadataEntries The bulk metadata entries JSON.
+   * @return The domain object
    */
   @SuppressWarnings("unchecked")
   private HpcBulkMetadataEntries fromJSON(JSONObject jsonBulkMetadataEntries) {

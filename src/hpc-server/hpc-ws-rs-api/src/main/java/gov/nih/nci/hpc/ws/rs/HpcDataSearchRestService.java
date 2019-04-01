@@ -45,6 +45,7 @@ public interface HpcDataSearchRestService {
    * @param queryName A named query.
    * @param detailedResponse If set to true, return entity details (attributes + metadata).
    * @param page The requested results page.
+   * @param pageSize The requested page size.
    * @param totalCount If set to true, return the total count of collections matching the query
    *     regardless of the limit on returned entities.
    * @return The REST service response w/ HpcCollectionListDTO entity.
@@ -56,6 +57,7 @@ public interface HpcDataSearchRestService {
       @PathParam("queryName") String queryName,
       @QueryParam("detailedResponse") Boolean detailedResponse,
       @QueryParam("page") Integer page,
+      @QueryParam("pageSize") Integer pageSize,
       @QueryParam("totalCount") Boolean totalCount);
 
   /**
@@ -76,6 +78,7 @@ public interface HpcDataSearchRestService {
    * @param queryName A named query.
    * @param detailedResponse If set to true, return entity details (attributes + metadata).
    * @param page The requested results page.
+   * @param pageSize The requested page size.
    * @param totalCount If set to true, return the total count of collections matching the query
    *     regardless of the limit on returned entities.
    * @return The REST service response w/ HpcDataObjectListDTO entity.
@@ -87,6 +90,7 @@ public interface HpcDataSearchRestService {
       @PathParam("queryName") String queryName,
       @QueryParam("detailedResponse") Boolean detailedResponse,
       @QueryParam("page") Integer page,
+      @QueryParam("pageSize") Integer pageSize,
       @QueryParam("totalCount") Boolean totalCount);
 
   /**

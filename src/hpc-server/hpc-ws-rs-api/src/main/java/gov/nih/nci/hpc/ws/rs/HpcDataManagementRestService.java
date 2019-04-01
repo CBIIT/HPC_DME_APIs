@@ -135,6 +135,7 @@ public interface HpcDataManagementRestService {
    * Delete a collection.
    *
    * @param path The collection path.
+   * @param recursive If true, delete all sub collections and data objects in this collection.
    * @return The REST service response.
    */
   @DELETE
@@ -198,7 +199,7 @@ public interface HpcDataManagementRestService {
    * <p>The userId is embedded in the URI, but the collections' paths are expected to be received as
    * multiple query string parameters, one per collection and each named collectionPath.
    *
-   * @param collectionPaths The collections' paths.
+   * @param collectionsPaths The collections' paths.
    * @param userId The user id to get permissions for.
    * @return The REST service response with HpcUserPermissionsOnMultipleCollectionsDTO instance.
    */
@@ -329,7 +330,7 @@ public interface HpcDataManagementRestService {
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getRegistrationSummaryV1(
       @QueryParam("page") Integer page, @QueryParam("totalCount") Boolean totalCount);
-  
+
   /**
    * Get data objects registration summary (for the request invoker).
    *

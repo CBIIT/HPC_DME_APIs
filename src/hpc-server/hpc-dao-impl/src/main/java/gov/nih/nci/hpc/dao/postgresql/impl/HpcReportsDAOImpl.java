@@ -339,6 +339,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
   /**
    * Constructor for Spring Dependency Injection.
    * 
+   * @param iRodsBasePath The IRODS base path.
    */
   private HpcReportsDAOImpl(String iRodsBasePath) {
     this.iRodsBasePath = iRodsBasePath;

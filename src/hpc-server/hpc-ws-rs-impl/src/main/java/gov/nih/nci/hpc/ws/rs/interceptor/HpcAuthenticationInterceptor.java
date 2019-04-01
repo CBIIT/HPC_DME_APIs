@@ -50,11 +50,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
   // Constructors
   //---------------------------------------------------------------------//
 
-  /**
-   * Constructor for Spring Dependency Injection.
-   *
-   * @param ldapAuthentication Enable LDAP authentication indicator.
-   */
+  /** Constructor for Spring Dependency Injection. */
   public HpcAuthenticationInterceptor() {
     super(Phase.RECEIVE);
 
