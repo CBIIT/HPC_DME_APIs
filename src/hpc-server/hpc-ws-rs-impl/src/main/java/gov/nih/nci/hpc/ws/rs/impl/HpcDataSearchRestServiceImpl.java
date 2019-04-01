@@ -91,13 +91,13 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryCollections(String queryName, Boolean detailedResponse, Integer page, 
+    public Response queryCollections(String queryName, Boolean detailedResponse, Integer page, Integer pageSize, 
     		                         Boolean totalCount)
     {
     	HpcCollectionListDTO collections = null;
 		try {
 			 collections = dataSearchBusService.getCollections(decodeString(queryName), detailedResponse, 
-					                                           page, totalCount);
+					                                           page, pageSize, totalCount);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -123,13 +123,13 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     }
     
     @Override
-    public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page,
+    public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page, Integer pageSize,
     		                         Boolean totalCount)
     {
     	HpcDataObjectListDTO dataObjects = null;
 		try {
 			 dataObjects = dataSearchBusService.getDataObjects(decodeString(queryName), detailedResponse,
-					                                           page, totalCount);
+					                                           page, pageSize, totalCount);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);

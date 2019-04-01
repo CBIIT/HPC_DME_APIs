@@ -108,6 +108,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   // Prepared query to get data objects that have their data transfer upload in progress via streaming.
   private List<HpcMetadataQuery> dataTransferStreamingInProgressQuery = new ArrayList<>();
+  
+  // Prepared query to get data objects that have their data transfer upload via streaming has stopped.
+  private List<HpcMetadataQuery> dataTransferStreamingStoppedQuery = new ArrayList<>();
 
   // Prepared query to get data objects that have their data in temporary archive.
   private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
@@ -161,13 +164,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
             HpcMetadataQueryOperator.EQUAL,
             HpcDataTransferUploadStatus.URL_GENERATED.value()));
 
-    // Prepared query to get data objects that have their data transfer upload by
-    // users via generated URL.
+    // Prepared query to get data objects that have their data transfer upload in progress via streaming 
     dataTransferStreamingInProgressQuery.add(
         toMetadataQuery(
             DATA_TRANSFER_STATUS_ATTRIBUTE,
             HpcMetadataQueryOperator.EQUAL,
             HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS.value()));
+    
+    // Prepared query to get data objects that have their data transfer upload via streaming stopped.
+    dataTransferStreamingStoppedQuery.add(
+        toMetadataQuery(
+            DATA_TRANSFER_STATUS_ATTRIBUTE,
+            HpcMetadataQueryOperator.EQUAL,
+            HpcDataTransferUploadStatus.STREAMING_STOPPED.value()));
 
     // Prepare the query to get data objects in temporary archive.
     dataTransferInTemporaryArchiveQuery.add(
@@ -238,6 +247,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     // Create the directory.
     dataManagementProxy.createCollectionDirectory(authenticatedToken, path);
+    
+    // Set the permission inheritance to true, so any collection / data object created under this collection will inherit
+    // the permissions of this collection.
+    dataManagementProxy.setCollectionPermissionInheritace(authenticatedToken, path, true);
+    
     return true;
   }
 
@@ -583,6 +597,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException {
     return dataManagementProxy.getDataObjects(
         dataManagementAuthenticator.getAuthenticatedToken(), dataTransferStreamingInProgressQuery);
+  }
+  
+  @Override
+  public List<HpcDataObject> getDataTranferUploadStreamingStopped() throws HpcException {
+    return dataManagementProxy.getDataObjects(
+        dataManagementAuthenticator.getAuthenticatedToken(), dataTransferStreamingStoppedQuery);
   }
 
   @Override

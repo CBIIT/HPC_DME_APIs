@@ -214,7 +214,7 @@ public interface HpcDataTransferService {
    * Scan a directory (recursively) and return a list of all its files.
    *
    * @param dataTransferType The data transfer type.
-   * @param (Optional) S3 account to use. If null, then system account for the data transfer type is used.
+   * @param s3Account (Optional) S3 account to use. If null, then system account for the data transfer type is used.
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *     config).
@@ -248,14 +248,12 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Get all data object download tasks for a given data-transfer type.
+   * Get all (active) data object download tasks.
    *
-   * @param dataTransferType The data-transfer type to query.
    * @return A list of data object download tasks.
    * @throws HpcException on service failure.
    */
-  public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks(
-      HpcDataTransferType dataTransferType) throws HpcException;
+  public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
 
   /**
    * Get download task status.
@@ -290,13 +288,21 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
-   * Continue a data object download task that was queued. Note: If Globus is still busy, the
-   * download task will remain queued.
+   * Continue a data object download task that was queued.
    *
-   * @param downloadTask The download task to submit to Globus.
+   * @param downloadTask The download task to continue.
    * @throws HpcException on service failure.
    */
   public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
+      throws HpcException;
+  
+  /**
+   * Reset a data object download task. Set it's status to RECEIVED.
+   *
+   * @param downloadTask The download task to reset.
+   * @throws HpcException on service failure.
+   */
+  public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException;
 
   /**

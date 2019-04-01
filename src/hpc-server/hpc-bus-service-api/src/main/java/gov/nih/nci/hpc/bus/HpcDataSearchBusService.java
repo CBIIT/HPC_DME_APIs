@@ -38,13 +38,14 @@ public interface HpcDataSearchBusService {
    * @param queryName The query name.
    * @param detailedResponse If set to true, return entity details (attributes + metadata).
    * @param page The requested results page.
+   * @param pageSize (Optional) The page size specified by the user. If not specified, it will take the default.
    * @param totalCount If set to true, return the total count of collections matching the query
    *     regardless of the limit on returned entities.
    * @return A list of Collection DTO.
    * @throws HpcException on service failure.
    */
   public HpcCollectionListDTO getCollections(
-      String queryName, Boolean detailedResponse, Integer page, Boolean totalCount)
+      String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException;
 
   /**
@@ -63,13 +64,14 @@ public interface HpcDataSearchBusService {
    * @param queryName The query name.
    * @param detailedResponse If set to true, return entity details (attributes + metadata).
    * @param page The requested results page.
+   * @param pageSize (Optional) The page size specified by the user. If not specified, it will take the default.
    * @param totalCount If set to true, return the total count of collections matching the query
    *     regardless of the limit on returned entities.
    * @return A list of Data Object DTO.
    * @throws HpcException on service failure.
    */
   public HpcDataObjectListDTO getDataObjects(
-      String queryName, Boolean detailedResponse, Integer page, Boolean totalCount)
+      String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException;
 
   /**

@@ -27,10 +27,11 @@ public interface HpcDataSearchService {
    *
    * @param compoundMetadataQuery The compound metadata query.
    * @param page The requested results page.
+   * @param pageSize The page size specified by the user or 0 for default.
    * @return A list of collection paths.
    * @throws HpcException on service failure.
    */
-  public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page)
+  public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException;
 
   /**
@@ -47,10 +48,11 @@ public interface HpcDataSearchService {
    *
    * @param compoundMetadataQuery The compound metadata query.
    * @param page The requested results page.
+   * @param pageSize The page size specified by the user or 0 for default.
    * @return A list of Data Object paths.
    * @throws HpcException on service failure.
    */
-  public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page)
+  public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException;
 
   /**
@@ -65,9 +67,10 @@ public interface HpcDataSearchService {
   /**
    * Get the search results page size.
    *
+   * @param pageSize The pageSize specified or 0 if default.
    * @return The search results page size.
    */
-  public int getSearchResultsPageSize();
+  public int getSearchResultsPageSize(int pageSize);
 
   /**
    * Save a query for a user.

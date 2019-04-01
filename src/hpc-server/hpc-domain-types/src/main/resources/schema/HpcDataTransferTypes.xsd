@@ -28,8 +28,8 @@
 			<xsd:enumeration value="DELETED" />
 			<xsd:enumeration value="DELETE_FAILED" />
 			<xsd:enumeration value="URL_GENERATED" />
-			<xsd:enumeration value="URL_EXPIRED" />
 			<xsd:enumeration value="STREAMING_IN_PROGRESS" />
+			<xsd:enumeration value="STREAMING_STOPPED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -129,6 +129,8 @@
 			<xsd:element name="sourceLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="account" type="hpc-domain-datatransfer:HpcS3Account" />
+			<xsd:element name="sourceURL" type="xsd:string" />
+			<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -178,6 +180,7 @@
 			<xsd:element name="dataTransferStarted" type="xsd:dateTime" />
 			<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
 			<xsd:element name="sourceSize" type="xsd:long" minOccurs="0" />
+			<xsd:element name="sourceURL" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -195,7 +198,6 @@
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="account" type="hpc-domain-datatransfer:HpcS3Account" />
-			<xsd:element name="destinationURL" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

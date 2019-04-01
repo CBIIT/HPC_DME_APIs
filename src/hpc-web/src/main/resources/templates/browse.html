@@ -239,6 +239,9 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
            
+//Invoked after the server side code is executed when 
+//- the browse menu is first accessed
+//- A bookmark is clicked on the Browse page
 $(function() {
     $('#tree1').tree({
     	closedIcon: $('<i class="fa fa-folder" />'),
@@ -250,6 +253,14 @@ $(function() {
             if (node.collection) {
                 $li.find('.jqtree-title').before('<span class="folder-icon"></span>');
                 $li.find('.jqtree-title').after('<div id="' + ("processingIcon"+node.id) + '" style="display:inline-block; visibility:hidden" class="loader"></div>');
+                if(node.populated) {
+                    //Open the node if this onCreateLi method was invoked
+                    //when we select a bookmark or browse dialog. If this
+                    //method was invoked because we clicked the browse menu,
+                    //then the 2nd level collections onwards won't have
+                    //got populated, so we wont get here.
+                    $('#tree1').tree('selectNode', node);
+                }
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
             }
         }
@@ -315,13 +326,15 @@ function scrollWindow()
 }
 
 
-
+ //Invoked when we click on a node to open it or progammatically open it.
  $('#tree1').bind('tree.open', function (e,data) {  
 	//document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
-	//document.getElementById("scrollLoc").value = scrollLoc;
-	//$("#browseForm").submit();
-	if(!refresh) {
+	//Make call to server to get data only if we are coming from onCreateLi
+	//when browse menu was invoked. If we are coming from onCreateLi when a
+	//bookmark or browser dialog was selected, then the node would already
+	//be populated so dont want to go to the server.
+	if(!refresh && !node.populated) {
 		browseNode(node);
 	} else {
 		refresh = null;
@@ -354,7 +367,9 @@ function browseNode(node) {
 };
 
 
-
+//Invoked when
+//- the browse menu is first accessed, at the end of onCreateLi
+// - A bookmark is clicked on the browse page, at the end of onCreateLi
 $('#tree1').bind('tree.init', function() {
 	if ($('#bookmarksDiv:visible').length > 0) {
     	refreshBookmarks(userBookmarks)
@@ -365,7 +380,12 @@ $('#tree1').bind('tree.init', function() {
 	    if(topNode.children != null) {
 	      for (var i=0; i < topNode.children.length; i++) {
 	 	      var child = topNode.children[i];
-              if (child.collection) {
+              //Close the child nodes only if we are coming from
+              //the browse menu. If coming from a bookmark or
+              //browse dialog, we want to keep the child nodes
+              //open, so do the populated check since they would
+              //all have been populated in the server.
+              if (child.collection && !child.populated) {
 	            $('#tree1').tree('closeNode', child, false);
               }
            }

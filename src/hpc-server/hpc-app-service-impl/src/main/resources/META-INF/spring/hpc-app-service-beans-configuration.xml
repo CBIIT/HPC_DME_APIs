@@ -112,6 +112,7 @@
 	
 	<bean id="hpcDataSearchPagination" class="gov.nih.nci.hpc.service.impl.HpcPagination">
 		<constructor-arg value="${hpc.service.dataSearch.searchResultsPageSize}" />
+		<constructor-arg value="${hpc.service.dataSearch.searchResultsMaxPageSize}" />
 	</bean>
 	<bean id="hpcDataSearchService" class="gov.nih.nci.hpc.service.impl.HpcDataSearchServiceImpl">
 		<constructor-arg ref="hpcDefaultCollectionLevelFilter" index="0" />

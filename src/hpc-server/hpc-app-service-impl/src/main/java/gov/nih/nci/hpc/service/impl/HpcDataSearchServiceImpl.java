@@ -102,7 +102,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   //---------------------------------------------------------------------//
 
   @Override
-  public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page)
+  public List<String> getCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
     // Input validation.
     HpcDomainValidationResult validationResult =
@@ -113,6 +113,14 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
+    if(pageSize != 0) {
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
+    }
+    
     // Use the hierarchical metadata views to perform the search.
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
@@ -120,8 +128,8 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
         metadataDAO.getCollectionPaths(
             compoundMetadataQuery,
             dataManagementUsername,
-            pagination.getOffset(page),
-            pagination.getPageSize(),
+            finalOffset,
+            finalPageSize,
             defaultCollectionLevelFilter));
   }
 
@@ -145,7 +153,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   }
 
   @Override
-  public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page)
+  public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
     // Input Validation.
     HpcDomainValidationResult validationResult =
@@ -156,6 +164,14 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
+    if(pageSize != 0) {
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
+    }
+    
     // Use the hierarchical metadata views to perform the search.
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
@@ -163,8 +179,8 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
         metadataDAO.getDataObjectPaths(
             compoundMetadataQuery,
             dataManagementUsername,
-            pagination.getOffset(page),
-            pagination.getPageSize(),
+            finalOffset,
+            finalPageSize,
             defaultDataObjectLevelFilter));
   }
 
@@ -188,7 +204,13 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   }
 
   @Override
-  public int getSearchResultsPageSize() {
+  public int getSearchResultsPageSize(int pageSize) {
+    if(pageSize != 0) {
+      if(pageSize <= pagination.getMaxPageSize())
+        return pageSize;
+      else
+        return pagination.getMaxPageSize();
+    }
     return pagination.getPageSize();
   }
 

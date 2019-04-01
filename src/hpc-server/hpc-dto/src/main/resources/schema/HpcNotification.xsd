@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -21,7 +20,6 @@
 
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/notification"
 		        schemaLocation="HpcNotificationTypes.xsd" />
-	<xsd:import namespace="http://hpc.nci.nih.gov/dto/error" schemaLocation="HpcException.xsd" />
 
 	<!-- Notification Subscriptions DTO -->
 	<xsd:element name="HpcNotificationSubscriptionsRequestDTO">

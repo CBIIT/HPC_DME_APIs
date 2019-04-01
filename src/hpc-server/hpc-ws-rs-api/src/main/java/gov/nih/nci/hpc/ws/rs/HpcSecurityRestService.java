@@ -204,9 +204,8 @@ public interface HpcSecurityRestService {
   public Response registerSystemAccount(HpcSystemAccountDTO systemAccountRegistration);
   
   /**
-   * Register system account.
+   * Refresh data management configurations
    *
-   * @param systemAccountRegistration The system account DTO to register.
    * @return The REST service response.
    */
   @POST
