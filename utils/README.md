@@ -39,3 +39,5 @@ II- Define the environment variable HPC_DM_UTILS and let it point to the
 
       export HPC_DM_UTILS=/path/to/this/README.md
       source  $HPC_DM_UTILS/functions
+
+For more information, refer to the "Getting Started with DME CLU" wiki page (https://wiki.nci.nih.gov/x/go7RFg).

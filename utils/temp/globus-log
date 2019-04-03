@@ -1,0 +1,1 @@
+{"message": "Authentication failed.", "code": "AUTHFAIL", "resource": "/goauth/token?grant_type=client_credentials", "request_id": "5a5ffa62-35f5-11e9-b942-0edc9bdd56a6"}
