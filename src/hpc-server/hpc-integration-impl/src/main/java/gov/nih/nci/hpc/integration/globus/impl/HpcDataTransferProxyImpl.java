@@ -806,7 +806,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       // Globus task requires some manual intervention. We cancel it and consider it a
       // failure.
       logger.error(
-          "Globus transfer deemed failed: task-id: {} [status: {}, rawError: {}, niceStatis: {}]",
+          "Globus transfer deemed failed: task-id: {} [status: {}, rawError: {}, niceStatus: {}]",
           dataTransferRequestId,
           report.status,
           report.rawError,

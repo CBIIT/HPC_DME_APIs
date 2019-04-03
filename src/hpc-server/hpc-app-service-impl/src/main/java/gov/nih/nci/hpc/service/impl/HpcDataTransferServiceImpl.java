@@ -1369,7 +1369,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @param destinationOverwrite If true, the requested destination location will
 	 *                             be overwritten if it exists.
 	 * @param dataTransferType     The data transfer type to create the request.
-	 * @param sourcePath           The source path.
+	 * @param path                 The data object path.
 	 * @param configurationId      The configuration ID (needed to determine the
 	 *                             archive connection config).
 	 * @return The calculated destination file location. The source file name is
@@ -1377,7 +1377,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	private HpcFileLocation calculateGlobusDownloadDestinationFileLocation(HpcFileLocation destinationLocation,
-			boolean destinationOverwrite, HpcDataTransferType dataTransferType, String sourcePath,
+			boolean destinationOverwrite, HpcDataTransferType dataTransferType, String path,
 			String configurationId) throws HpcException {
 		// Validate the download destination location.
 		HpcPathAttributes pathAttributes = validateGlobusDownloadDestinationFileLocation(dataTransferType,
@@ -1389,7 +1389,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcFileLocation calcDestination = new HpcFileLocation();
 			calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
 			calcDestination
-					.setFileId(destinationLocation.getFileId() + sourcePath.substring(sourcePath.lastIndexOf('/')));
+					.setFileId(destinationLocation.getFileId() + path.substring(path.lastIndexOf('/')));
 
 			// Validate the calculated download destination.
 			validateGlobusDownloadDestinationFileLocation(dataTransferType, calcDestination, true,
@@ -1453,7 +1453,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		globusDestination.setDestinationLocation(calculateGlobusDownloadDestinationFileLocation(
 				downloadRequest.getGlobusDestination().getDestinationLocation(),
 				downloadRequest.getGlobusDestination().getDestinationOverwrite(), HpcDataTransferType.GLOBUS,
-				downloadRequest.getArchiveLocation().getFileId(), downloadRequest.getConfigurationId()));
+				downloadRequest.getPath(), downloadRequest.getConfigurationId()));
 		downloadTask.setGlobusDownloadDestination(globusDestination);
 		downloadTask.setDestinationType(HpcDataTransferType.GLOBUS);
 		downloadTask.setPath(downloadRequest.getPath());
@@ -1674,7 +1674,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			secondHopGlobusDestination.setDestinationLocation(calculateGlobusDownloadDestinationFileLocation(
 					firstHopDownloadRequest.getGlobusDestination().getDestinationLocation(),
 					firstHopDownloadRequest.getGlobusDestination().getDestinationOverwrite(),
-					HpcDataTransferType.GLOBUS, firstHopDownloadRequest.getArchiveLocation().getFileId(),
+					HpcDataTransferType.GLOBUS, firstHopDownloadRequest.getPath(),
 					firstHopDownloadRequest.getConfigurationId()));
 			secondHopGlobusDestination
 					.setDestinationOverwrite(firstHopDownloadRequest.getGlobusDestination().getDestinationOverwrite());
