@@ -1600,7 +1600,16 @@ public class HpcClientUtil {
 
     if (restResponse == null || restResponse.getStatus() != 200)
       return null;
-    MappingJsonFactory factory = new MappingJsonFactory();
+    
+    ObjectMapper mapper = new ObjectMapper();
+    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+      new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+      new JacksonAnnotationIntrospector());
+    mapper.setAnnotationIntrospector(intr);
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+    false);
+    mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+    MappingJsonFactory factory = new MappingJsonFactory(mapper);
     JsonParser parser;
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
@@ -1636,7 +1645,16 @@ public class HpcClientUtil {
 
     if (restResponse == null || restResponse.getStatus() != 200)
       return null;
-    MappingJsonFactory factory = new MappingJsonFactory();
+    
+    ObjectMapper mapper = new ObjectMapper();
+    AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+      new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+      new JacksonAnnotationIntrospector());
+    mapper.setAnnotationIntrospector(intr);
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+    false);
+    mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+    MappingJsonFactory factory = new MappingJsonFactory(mapper);
     JsonParser parser;
     try {
       parser = factory.createParser((InputStream) restResponse.getEntity());
