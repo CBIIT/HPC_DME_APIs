@@ -64,7 +64,9 @@
 				$scope.gridOptions1 = {
 				    enableSorting: true,
 				    enableFiltering: true,
+				    enablePaginationControls : true,
 				    paginationPageSize: 25,
+				    paginationPageSizes: [10, 25, 50, 100],
 				    treeRowHeaderAlwaysVisible: false,
 					columnDefs : [ {
 						field : 'groupName',
@@ -78,6 +80,8 @@
 					}],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
+						$("#spinner").hide();
+			            $("#dimmer").hide();
 					}
 				};
 				$scope.gridOptions1.data = results;
@@ -217,6 +221,10 @@
 				<div class="row"></div>
 			</section>
 		</section>
+		<div id="spinner" class="spinner">
+			<img id="img-spinner" th:src="@{/img/spinner.gif}" alt="Loading" />
+		</div>
+		<div id="dimmer"></div>
 		<!--main content end-->
 	</section>
 	<!-- container section start -->
@@ -237,8 +245,12 @@
 
 	<script type="text/javascript">
 		//<![CDATA[
+		$("#spinner").show();
+	    $("#dimmer").show();
 		function prepareAndSubmit()
 		{
+			$("#spinner").show();
+            $("#dimmer").show();
 			document.getElementById("actionType").value = "search";
 		}
 		
