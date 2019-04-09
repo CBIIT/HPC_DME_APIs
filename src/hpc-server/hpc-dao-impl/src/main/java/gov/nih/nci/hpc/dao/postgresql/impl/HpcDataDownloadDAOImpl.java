@@ -205,17 +205,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           dataObjectDownloadTask.setArchiveLocation(archiveLocation);
         }
 
-        String destinationLocationFileContainerId =
-            rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
-        String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
-        /*
-        if (destinationLocationFileContainerId != null && destinationLocationFileId != null) {
-          HpcFileLocation destinationLocation = new HpcFileLocation();
-          destinationLocation.setFileContainerId(destinationLocationFileContainerId);
-          destinationLocation.setFileId(destinationLocationFileId);
-          dataObjectDownloadTask.setDestinationLocation(destinationLocation);
-        }*/
-
         String destinationType = rs.getString("DESTINATION_TYPE");
         dataObjectDownloadTask.setDestinationType(
             destinationType != null ? HpcDataTransferType.fromValue(destinationType) : null);
@@ -224,6 +213,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         created.setTime(rs.getTimestamp("CREATED"));
         dataObjectDownloadTask.setCreated(created);
 
+        String destinationLocationFileContainerId =
+                rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
+            String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
         HpcFileLocation destinationLocation = null;
         if (destinationLocationFileContainerId != null && destinationLocationFileId != null) {
           destinationLocation = new HpcFileLocation();
@@ -241,7 +233,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           s3Account.setRegion(rs.getString("S3_ACCOUNT_REGION"));
         }
 
-        if (s3Account != null) {
+        if (dataObjectDownloadTask.getDestinationType().equals(HpcDataTransferType.S_3)) {
           HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
           s3DownloadDestination.setDestinationLocation(destinationLocation);
           s3DownloadDestination.setAccount(s3Account);
