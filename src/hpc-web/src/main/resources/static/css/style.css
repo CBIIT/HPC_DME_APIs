@@ -4962,3 +4962,24 @@ span.customSelect.changed {
 .customSelectInner {
     background:url(../img/customSelect-arrow.gif) no-repeat center right;
 }
+.spinner {
+    position: fixed;
+    top: 25%;
+    left: 40%;
+    margin-left: -50px; /* half width of the spinner gif */
+    margin-top: -50px; /* half height of the spinner gif */
+    text-align:center;
+    z-index:1234;
+    height: 102px; /*hight of the spinner gif +2px to fix IE8 issue */
+}
+
+#dimmer {
+	background: #000;
+	opacity: 0.5;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height : 100%;
+	z-index: 100500;
+}

@@ -65,7 +65,9 @@
 				$scope.gridOptions1 = {
 				    enableSorting: true,
 				    enableFiltering: true,
+				    enablePaginationControls : true,
 				    paginationPageSize: 25,
+				    paginationPageSizes: [10, 25, 50, 100],
 				    treeRowHeaderAlwaysVisible: false,
 					columnDefs : [ {
 						field : 'userId',
@@ -93,6 +95,8 @@
 						$scope.grid1Api = gridApi;
 						if (type != "'SYSTEM_ADMIN'")
 					        $scope.gridOptions1.columnDefs[4].visible = false;
+						$("#spinner").hide();
+			            $("#dimmer").hide();
 					}
 				};
 				$scope.gridOptions1.data = results;
@@ -248,6 +252,10 @@
 			</section>
 		</section>
 		<!--main content end-->
+		<div id="spinner" class="spinner">
+			<img id="img-spinner" th:src="@{/img/spinner.gif}" alt="Loading" />
+		</div>
+		<div id="dimmer"></div>
 	</section>
 	<!-- container section start -->
 
@@ -267,8 +275,13 @@
 
 	<script type="text/javascript">
 		//<![CDATA[
+		$("#spinner").show();
+	    $("#dimmer").show();
+			            
 		function prepareAndSubmit()
 		{
+			$("#spinner").show();
+            $("#dimmer").show();
 			document.getElementById("actionType").value = "search";
 		}
 		
