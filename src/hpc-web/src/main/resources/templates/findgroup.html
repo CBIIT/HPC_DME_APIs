@@ -76,7 +76,9 @@
 					enableRowSelection : true,
 					enableSelectAll : true,
 					selectedItems : $scope.mySelections,
-					paginationPageSize : 100,
+					enablePaginationControls : true,
+				    paginationPageSize: 25,
+				    paginationPageSizes: [10, 25, 50, 100],
 					treeRowHeaderAlwaysVisible : false,
 					columnDefs : [ {
 						field : 'groupName',
@@ -94,6 +96,8 @@
 					$scope.gridApi.selection.selectAllRows();
 				};
 				$scope.gridOptions1.onRegisterApi = function(gridApi) {
+					$("#spinner").hide();
+		            $("#dimmer").hide();
 					//set gridApi on scope
 					$scope.gridApi = gridApi;
 					gridApi.selection.on.rowSelectionChanged($scope, function(
@@ -245,6 +249,10 @@
 			</section>
 		</section>
 		<!--main content end-->
+		<div id="spinner" class="spinner">
+			<img id="img-spinner" th:src="@{/img/spinner.gif}" alt="Loading" />
+		</div>
+		<div id="dimmer"></div>
 	</section>
 	<!-- container section start -->
 
@@ -264,8 +272,12 @@
 
 	<script type="text/javascript">
 		//<![CDATA[
+		$("#spinner").show();
+	    $("#dimmer").show();
 		function prepareAndSubmit()
 		{
+			$("#spinner").show();
+            $("#dimmer").show();
 			document.getElementById("actionType").value = "search";
 		}
 		
