@@ -206,7 +206,7 @@ public class HpcScheduledTasksImpl {
       systemBusService.processDataTranferUploadStreamingInProgress(true);
       
       // All active S3 download tasks needs to be restarted.
-      //systemBusService.restartDataObjectDownloadTasks();
+      systemBusService.restartDataObjectDownloadTasks();
       
     } catch (HpcException e) {
       logger.error(
