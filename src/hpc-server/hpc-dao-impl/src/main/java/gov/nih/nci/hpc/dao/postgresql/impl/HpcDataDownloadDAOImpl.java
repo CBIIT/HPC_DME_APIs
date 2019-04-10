@@ -374,11 +374,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			} else {
 				destinationLocation = dataObjectDownloadTask.getS3DownloadDestination().getDestinationLocation();
 				HpcS3Account s3Account = dataObjectDownloadTask.getS3DownloadDestination().getAccount();
-				if (s3Account != null) {
-					s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
-					s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
-					s3AccountRegion = s3Account.getRegion();
-				}
+				s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
+				s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
+				s3AccountRegion = s3Account.getRegion();
 			}
 
 			jdbcTemplate.update(UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL, dataObjectDownloadTask.getId(),
