@@ -504,10 +504,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       try {
         switch (downloadTask.getDataTransferStatus()) {
           case RECEIVED:
+        	logger.info("Continuing download task: {}", downloadTask.getId());
             dataTransferService.continueDataObjectDownloadTask(downloadTask);
             break;
 
           case IN_PROGRESS:
+        	logger.info("Completing download task: {}", downloadTask.getId());
             completeDataObjectDownloadTaskInProgress(downloadTask);
             break;
 
@@ -537,6 +539,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             && downloadTask
                 .getDataTransferStatus()
                 .equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+          logger.info("Resetting download task: {}", downloadTask.getId());
           dataTransferService.resetDataObjectDownloadTask(downloadTask);
         }
 
