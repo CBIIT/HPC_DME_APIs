@@ -115,9 +115,11 @@
 								</div>								
 									<div class="form-group">
 										<div class="col-md-12 form-group">
-											<label for="Name">Path:</label> <label
-												for="${hpcDataObjectDownloadStatusDTO.getPath()}"
-												th:text="${hpcDataObjectDownloadStatusDTO.getPath()}"></label>
+											<label for="Name">Path:</label> 
+											<a th:href="@{/datafile(action=view,path=${hpcDataObjectDownloadStatusDTO.getPath()})}">
+                      					  	  <label for="${hpcDataObjectDownloadStatusDTO.getPath()}" th:text="${hpcDataObjectDownloadStatusDTO.getPath()}">
+                     					 	  </label>
+                    						</a>		
 										</div>
 <!-- 
 										<div class="col-md-12 form-group">
