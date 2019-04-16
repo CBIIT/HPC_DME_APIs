@@ -222,8 +222,8 @@
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
 																			id="primaryButton" onClick="prepareAndSubmit()">Search</button>
-																		<button type="cancel" class="btn btn-md btn-primary"
-																			id="cancelButton" onclick="cancel()">Cancel</button>
+																		<button type="reset" class="btn btn-md btn-primary"
+																			id="cancelButton">Clear</button>
 																	</div>
 																</td>
 															</tr>
@@ -285,11 +285,6 @@
 			document.getElementById("actionType").value = "search";
 		}
 		
-		function cancel() {
-			document.getElementById("actionType").value = "cancel";
-			$('#userForm').attr('action', '/finduser');
-			$("#userForm").submit();
-		}
 		/*]]>*/
 	</script>
 
