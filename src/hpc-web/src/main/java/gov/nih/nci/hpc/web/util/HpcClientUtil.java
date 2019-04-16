@@ -1512,7 +1512,7 @@ public class HpcClientUtil {
   }
 
   public static AjaxResponseBody downloadDataFile(String token, String serviceURL,
-      HpcDownloadRequestDTO dto, String hpcCertPath, String hpcCertPassword)
+      HpcDownloadRequestDTO dto, String downloadType, String hpcCertPath, String hpcCertPassword)
       throws JsonParseException, IOException {
     AjaxResponseBody result = new AjaxResponseBody();
     WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
@@ -1526,9 +1526,8 @@ public class HpcClientUtil {
       String taskId = "Unknown";
       if (downloadDTO != null)
         taskId = downloadDTO.getTaskId();
-
       result.setMessage(
-              "Asynchronous download request is submitted successfully! Task Id: <a href='downloadtask?type=DATA_OBJECT&taskId=" + taskId +"'>"+taskId+"</a>");
+              "Asynchronous download request is submitted successfully! Task Id: <a href='downloadtask?type=" + downloadType + "&taskId=" + taskId +"'>"+taskId+"</a>");
       return result;
     } else {
       ObjectMapper mapper = new ObjectMapper();

@@ -186,7 +186,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
             result.setMessage(
                 "Download request successfull. Task Id: " + downloadDTO.getTaskId());
             model.addAttribute("error",
-                    "Download request successfull. Task Id: <a href='downloadtask?type="+HpcDownloadTaskType.DATA_OBJECT_LIST.name()+"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
+                    "Download request successfull. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
           }
 
           model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
@@ -207,7 +207,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           HpcDownloadRequestDTO downloadDTO = new HpcDownloadRequestDTO();
           downloadDTO.setDestination(downloadTask.getDestinationLocation());
           AjaxResponseBody responseBody = HpcClientUtil.downloadDataFile(authToken, serviceURL,
-              downloadDTO, sslCertPath, sslCertPassword);
+              downloadDTO, taskType, sslCertPath, sslCertPassword);
           model.addAttribute("error", responseBody.getMessage());
         }
         model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
