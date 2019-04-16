@@ -47,6 +47,7 @@ import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -134,7 +135,11 @@ public class HpcClientUtil {
       tmf.init(keyStore);
       TrustManager[] trustManagers = tmf.getTrustManagers();
 
-      client = WebClient.create(url, Collections.singletonList(new JacksonJsonProvider()));
+      org.codehaus.jackson.map.ObjectMapper mapper = new org.codehaus.jackson.map.ObjectMapper();
+      SerializationConfig config = mapper.getSerializationConfig();
+      config.set(SerializationConfig.Feature.WRITE_NULL_PROPERTIES, false);
+      mapper.setSerializationConfig(config);
+      client = WebClient.create(url, Collections.singletonList(new JacksonJsonProvider(mapper)));
       WebClient.getConfig(client).getRequestContext().put("support.type.as.multipart", "true");
       WebClient.getConfig(client).getHttpConduit().getClient().setReceiveTimeout(60000000);
       WebClient.getConfig(client).getHttpConduit().getClient().setConnectionTimeout(60000000);
