@@ -155,6 +155,12 @@
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
                   </a>
+                   &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
 								</div>
 								<div th:case="'OWN'">
 									<i class="fa fa-list-alt red"></i>
@@ -180,6 +186,12 @@
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
                   </a>
+                   &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
 								</div>
 								<div th:case="'DELETE'">
 									<i class="fa fa-list-alt red"></i>
@@ -204,6 +216,12 @@
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
+                  </a>
+                   &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
