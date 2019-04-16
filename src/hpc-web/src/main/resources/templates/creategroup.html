@@ -131,8 +131,8 @@
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
 																			id="primaryButton" onClick="return validate()">Create</button>
-																		<button type="submit" class="btn btn-primary"
-																			data-dismiss="modal" id="cancel" onClick="cancel()">Cancel</button>
+																		<button type="reset" class="btn btn-primary"
+																		    id="cancel">Clear</button>
 																	</div>
 																	<input type="hidden" name="actionType" id="actionType"/>
 																</td>
@@ -236,11 +236,7 @@
 	        }
 	    }
 	    
-	    function cancel()
-	    {
-			document.getElementById("actionType").value = "cancel";
-			$("#groupForm").submit();
-	    }
+	   
 		function enableSave() {
 			$('#primaryButton').removeClass('disabled');
 			$('#primaryButton').prop('disabled', false);
