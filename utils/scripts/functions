@@ -48,37 +48,6 @@ function dm_generate_token () {
     fi
 }
 
-#Generate a Globus authentication token
-function dm_globus_generate_token {
-
-    local LOG_FILE=$HPC_DM_UTILS/temp/globus-log
-    local CONFIG_PATH=$HPC_DM_UTILS/tokens/curl-globus
-    rm -f $LOG_FILE 2>/dev/null
-
-    SERVER=$(get_globus_server) || exit 1
-    GLOBUS_USER=$(get_globus_user) || exit 1
-    
-    curl -u $GLOBUS_USER ${SERVER}/goauth/token?grant_type=client_credentials -s  >  $LOG_FILE || exit 1
-    local TOKEN=$(get_json_value $LOG_FILE access_token)
-
-    if [ -z $TOKEN ]
-    then
-        echo "ERROR: no globus token found in $LOG_FILE " >&2
-        local MESSAGE=$(get_json_value $LOG_FILE message)
-        echo "ERROR MESSAGE: $MESSAGE"   
-        exit 1 
-    else  
-      local TOKEN_FILE=$(get_value $HPC_DM_UTILS/hpcdme.properties hpc.globus.login.token)
-      local FORMATED_PATH=$(echo $TOKEN_FILE | sed 's/\\/\//g')
-      echo ${GLOBUS_USER}:${TOKEN} > $HPC_DM_UTILS/${FORMATED_PATH}
-      local CONFIG_STRING=$(cat "$CONFIG_PATH-sample" | sed "s@Bearer.*@Bearer $TOKEN\"@")
-      echo "$CONFIG_STRING" > $CONFIG_PATH
-      rm -f $LOG_FILE 2>/dev/null
-    fi
-}
-
-
-
 
 #Register a collection or a dataObject 
 #Inputs:  <description.json>: The metadata json file 
