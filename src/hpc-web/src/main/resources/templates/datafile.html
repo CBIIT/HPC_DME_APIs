@@ -119,6 +119,11 @@
                      th:href="@{../permissions(assignType=User,type=dataObject,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-users" title="Permissions" aria-hidden="true"></i>
                   </a>
+                   &nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
+                    <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
+                  </a>
                   &nbsp;&nbsp;&nbsp;
                   <a id="createBookmarks" class="btn btn-link btn-sm"
                      th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
@@ -145,6 +150,11 @@
                      th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
                   </a>
+                   &nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
+                    <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
+                  </a>
 								</div>
 								<div th:case="'OWN'">
 									<i class="fa fa-list-alt red"></i>
@@ -165,6 +175,11 @@
                      th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
                   </a>
+                   &nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
+                    <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
+                  </a>
 								</div>
 								<div th:case="'DELETE'">
 									<i class="fa fa-list-alt red"></i>
@@ -184,6 +199,11 @@
                   <a class="btn btn-link btn-sm"
                      th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
+                  </a>
+                   &nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
+                    <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
