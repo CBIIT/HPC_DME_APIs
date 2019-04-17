@@ -396,13 +396,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     } catch (AmazonServiceException ase) {
       throw new HpcException(
-          "[S3] Failed to get object or metadata: " + ase.getMessage(),
+          "[S3] Failed to list objects: " + ase.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR,
           ase);
 
     } catch (AmazonClientException ace) {
       throw new HpcException(
-          "[S3] Failed to get object or metadata: " + ace.getMessage(),
+          "[S3] Failed to list objects: " + ace.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR,
           ace);
     }
