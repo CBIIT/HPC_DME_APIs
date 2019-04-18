@@ -232,7 +232,7 @@
 								</h2>
 							</div>
 							
-							<div th:if="${error != null}">
+							<div th:if="${error != null}" style="word-break: break-all;">
 								<div class="alert alert-error">
 									<a class="close" data-dismiss="alert">×</a> <label
 										for="${error}" th:text="${error}"></label>
@@ -249,7 +249,7 @@
 										<!-- /.modal-dialog -->
 									</div>								
 								
-									<div class="form-group">
+									<div class="form-group" style="word-break: break-all;">
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> <label
 												for="${hpcDatafile.getDataObject().getAbsolutePath()}"
@@ -285,7 +285,7 @@
 									th:object="${hpcDatafile}" method="POST">
 								
 								<div class="form-group">
-									<table width="100%" class="table table-bordered col-md-9" id="metaAttrTable">
+									<table class="table table-bordered col-md-12" id="metaAttrTable">
 										<thead>
 											<tr>
 												<th>Attribute Name</th>
@@ -298,24 +298,24 @@
 												<input type="hidden" name="path" id="path" th:value="${hpcDatafile.getPath()}"/>
 											<tr
 												th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
-												<td width="20%"><label th:text="${metadataItem.getAttrName()}"></label></td>
-												<td width="80%" th:unless="${metadataItem.isSystemAttr() == true}"><input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td th:unless="${metadataItem.isSystemAttr() == true}"><input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 													th:value="${metadataItem.getAttrValue()}"></input></td>
-												<td width="80%" th:if="${metadataItem.isSystemAttr() == true}"><label for="${metadataItem.getAttrName()}"
+												<td th:if="${metadataItem.isSystemAttr() == true}" style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
 													th:text="${metadataItem.getAttrValue()}"></label></td>
 											</tr>
 											</div>
 											<div th:if="${action != 'edit'}">
 											<tr
 												th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
-												<td width="20%"><label th:text="${metadataItem.getAttrName()}"></label></td>
-												<td width="80%"><label for="${metadataItem.getAttrName()}"
+												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
 													th:text="${metadataItem.getAttrValue()}"></label></td>
 											</tr>
 											</div>
 											<tr th:if="${action == 'edit'}">
-											<td width="20%">&nbsp;</td>
-											<td align="right" width="80%">
+											<td>&nbsp;</td>
+											<td align="right">
 												<div class="modal-footer">
 													<button class="btn btn-md btn-primary"
 														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
