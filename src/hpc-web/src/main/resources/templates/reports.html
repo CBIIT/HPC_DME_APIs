@@ -340,14 +340,17 @@
         autoclose: true	    
 	});
  
-  $('#fromDate').datepicker('setDate', new Date());
+  if($('#fromDate').val() == '')
+  	$('#fromDate').datepicker('setDate', new Date());
   
   $('#toDate').datepicker({
 	    format: 'mm/dd/yyyy',
 	    defaultDate: 'now',
         autoclose: true	    
-	});  
-  $('#toDate').datepicker('setDate', new Date());
+	}); 
+  
+  if($('#toDate').val() == '')
+  	$('#toDate').datepicker('setDate', new Date());
   
   //knob
       $(function() {
