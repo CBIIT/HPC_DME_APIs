@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.web.model.HpcNotificationRequest;
 import gov.nih.nci.hpc.web.model.HpcNotificationTriggerModel;
 import gov.nih.nci.hpc.web.model.HpcNotificationTriggerModelEntry;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -811,6 +812,10 @@ public class HpcSubscribeNotificationsController extends
     List<HpcNotification> notifications = new ArrayList<HpcNotification>();
     List<HpcEventType> types = getEventTypes();
     for (HpcEventType type : types) {
+      if ((type.equals(HpcEventType.USAGE_SUMMARY_REPORT)
+              || type.equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT))
+          && !HpcIdentityUtil.isUserSystemAdmin(session)) 
+        continue;
       HpcNotificationSubscription subscription = getNotificationSubscription(
           authToken, type);
       HpcNotification notification = new HpcNotification();
