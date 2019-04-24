@@ -1,15 +1,15 @@
 /**
  * HpcBusServiceAspect.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.bus.aspect;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -21,9 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
-import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
-import gov.nih.nci.hpc.domain.notification.HpcSystemAdminNotificationType;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
@@ -38,20 +35,17 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  */
 @Aspect
 public class HpcBusServiceAspect {
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Instance members
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
-  // Application service instances.
-
-  @Autowired private HpcNotificationService notificationService = null;
-
-  // The system administrator NCI user ID.
-  @Value("${hpc.bus.aspect.systemAdministratorUserId}")
-  private String systemAdministratorUserId = null;
+  // The notification service instance.
+  @Autowired
+  private HpcNotificationService notificationService = null;
 
   // The security service instance.
-  @Autowired private HpcSecurityService securityService = null;
+  @Autowired
+  private HpcSecurityService securityService = null;
 
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
@@ -60,16 +54,16 @@ public class HpcBusServiceAspect {
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constructors
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /** Constructor for Spring Dependency Injection. */
   private HpcBusServiceAspect() {}
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Pointcuts.
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Join Point for all business services that are defined by an interface in the
@@ -80,9 +74,9 @@ public class HpcBusServiceAspect {
     // Intentionally left blank.
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Advices.
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Advice that logs business service execution time.
@@ -102,8 +96,8 @@ public class HpcBusServiceAspect {
 
     } finally {
       long executionTime = System.currentTimeMillis() - start;
-      logger.debug(
-          "{} business service completed in {} milliseconds.", businessService, executionTime);
+      logger.debug("{} business service completed in {} milliseconds.", businessService,
+          executionTime);
     }
   }
 
@@ -116,8 +110,8 @@ public class HpcBusServiceAspect {
   @AfterThrowing(pointcut = "busServices()", throwing = "exception")
   public void logException(JoinPoint joinPoint, HpcException exception) {
     String businessService = joinPoint.getSignature().toShortString();
-    logger.error(
-        "{} business service error: {}", businessService, exception.getMessage(), exception);
+    logger.error("{} business service error: {}", businessService, exception.getMessage(),
+        exception);
   }
 
   /**
@@ -128,34 +122,7 @@ public class HpcBusServiceAspect {
    */
   @AfterThrowing(pointcut = "busServices()", throwing = "exception")
   public void notifySystemAdmin(JoinPoint joinPoint, HpcException exception) {
-    if (exception.getIntegratedSystem() != null) {
-      logger.info("Sending a notification to system admin: " + exception.getMessage());
-
-      // Create a payload containing the exception data.
-      List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
-
-      HpcEventPayloadEntry integratedSystemPayloadEntry = new HpcEventPayloadEntry();
-      integratedSystemPayloadEntry.setAttribute("INTEGRATED_SYSTEM");
-      integratedSystemPayloadEntry.setValue(exception.getIntegratedSystem().value());
-      payloadEntries.add(integratedSystemPayloadEntry);
-
-      HpcEventPayloadEntry errorMessage = new HpcEventPayloadEntry();
-      errorMessage.setAttribute("ERROR_MESSAGE");
-      errorMessage.setValue(exception.getMessage());
-      payloadEntries.add(errorMessage);
-
-      HpcEventPayloadEntry stackTrace = new HpcEventPayloadEntry();
-      stackTrace.setAttribute("STACK_TRACE");
-      stackTrace.setValue(exception.getStackTraceString());
-      payloadEntries.add(stackTrace);
-
-      // Send the notification.
-      notificationService.sendNotification(
-          systemAdministratorUserId,
-          HpcSystemAdminNotificationType.INTEGRATED_SYSTEM_ERROR,
-          payloadEntries,
-          HpcNotificationDeliveryMethod.EMAIL);
-    }
+    notificationService.sendNotification(exception);
   }
 
   /**
@@ -167,16 +134,14 @@ public class HpcBusServiceAspect {
    */
   @Around("busServices() && @annotation(gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount)")
   public Object executeAsSystemAccount(ProceedingJoinPoint joinPoint) throws Throwable {
-    return securityService.executeAsSystemAccount(
-        Optional.of(ldapAuthentication),
-        () -> {
-          try {
-            return joinPoint.proceed();
-          } catch (HpcException e) {
-            throw e;
-          } catch (Throwable t) {
-            throw new HpcException("Failed to execute as system account", t);
-          }
-        });
+    return securityService.executeAsSystemAccount(Optional.of(ldapAuthentication), () -> {
+      try {
+        return joinPoint.proceed();
+      } catch (HpcException e) {
+        throw e;
+      } catch (Throwable t) {
+        throw new HpcException("Failed to execute as system account", t);
+      }
+    });
   }
 }
