@@ -158,6 +158,15 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
     model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
 		return "addcollection";
 	}
+	
+	
+	private String setErrorAndUpdateView(HttpSession session, HttpServletRequest request, Model model, String basePath,
+			String parent, HpcCollectionModel hpcCollection, String errorMsg) {
+		model.addAttribute("hpcCollection", hpcCollection);
+		setCollectionPath(model, request, hpcCollection.getPath());
+		model.addAttribute("error", errorMsg);
+		return updateView(session, request, model, basePath, hpcCollection.getPath(), parent, false);
+	}
 
 	/**
 	 * Create collection
@@ -225,10 +234,12 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 		try {
 			registrationDTO = constructRequest(request, session, hpcCollection.getPath(), hpcCollection);
 		} catch (HpcWebException e) {
-			model.addAttribute("hpcCollection", hpcCollection);
-			setCollectionPath(model, request, originPath);
-			model.addAttribute("error", e.getMessage());
-			return updateView(session, request, model, basePath, hpcCollection.getPath(), originPath, false);
+			//model.addAttribute("hpcCollection", hpcCollection);
+			//setCollectionPath(model, request, originPath);
+			//model.addAttribute("error", e.getMessage());
+			//return updateView(session, request, model, basePath, hpcCollection.getPath(), originPath, false);
+			return setErrorAndUpdateView(session, request, model, basePath, originPath, hpcCollection, 
+					e.getMessage());
 		}
 
 		// Validate parent path
@@ -241,11 +252,18 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 				parentPath = hpcCollection.getPath();
 			if (!parentPath.isEmpty())
 				HpcClientUtil.getCollection(authToken, serviceURL, parentPath, true, sslCertPath, sslCertPassword);
+			else
+				return setErrorAndUpdateView(session, request, model, basePath, originPath, hpcCollection, 
+						"Invalid parent in Collection Path");
 		} catch (HpcWebException e) {
-			model.addAttribute("hpcCollection", hpcCollection);
-			setCollectionPath(model, request, originPath);
-			model.addAttribute("error", "Invalid parent collection: " + e.getMessage());
-			return updateView(session, request, model, basePath, hpcCollection.getPath(), originPath, false);
+			//model.addAttribute("hpcCollection", hpcCollection);
+			//setCollectionPath(model, request, originPath);
+			//model.addAttribute("error", "Invalid parent collection: " + e.getMessage());
+			//return updateView(session, request, model, basePath, hpcCollection.getPath(), originPath, false);
+			
+			return setErrorAndUpdateView(session, request, model, basePath, originPath, hpcCollection, 
+					"Invalid parent in Collection Path: " + e.getMessage());
+			
 		}
 
 		// Validate Collection path
@@ -253,10 +271,13 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			HpcCollectionListDTO collection = HpcClientUtil.getCollection(authToken, serviceURL,
 					hpcCollection.getPath(), false, true, sslCertPath, sslCertPassword);
 			if (collection != null && collection.getCollections() != null && collection.getCollections().size() > 0) {
-				model.addAttribute("hpcCollection", hpcCollection);
-				setCollectionPath(model, request, originPath);
-				model.addAttribute("error", "Collection already exists: " + hpcCollection.getPath());
-				return updateView(session, request, model, basePath, hpcCollection.getPath(), originPath, false);
+				//model.addAttribute("hpcCollection", hpcCollection);
+				//setCollectionPath(model, request, originPath);
+				//model.addAttribute("error", "Collection already exists: " + hpcCollection.getPath());
+				//return updateView(session, request, model, basePath, hpcCollection.getPath(), originPath, false);
+				
+				return setErrorAndUpdateView(session, request, model, basePath, originPath, hpcCollection, 
+						"Collection already exists: " + hpcCollection.getPath());
 			}
 		} catch (HpcWebException e) {
 			// Collection does not exist. We will create the collection
@@ -292,6 +313,7 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
       qParams));
 	}
 
+	
 	private void setCollectionPath(Model model, HttpServletRequest request, String parentPath) {
 		String path = request.getParameter("path");
 		if (path != null && !path.isEmpty()) {
