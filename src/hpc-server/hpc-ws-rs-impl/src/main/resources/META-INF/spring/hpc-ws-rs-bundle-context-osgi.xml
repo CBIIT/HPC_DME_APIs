@@ -28,6 +28,7 @@
 		<prop key="hpc.ws.rs.path">hpc-server</prop>
 		<prop key="hpc.ws.rs.url">http://${hpc.ws.rs.host}:${hpc.ws.rs.port}/${hpc.ws.rs.path}</prop>
 		<prop key="hpc.ws.rs.secured-url">https://${hpc.ws.rs.host}:${hpc.ws.rs.secured-port}/${hpc.ws.rs.path}</prop>
+		<prop key="hpc.ws.rs.secured-sso-url">https://${hpc.ws.rs.host}:${hpc.ws.rs.secured-port}/sso</prop>
 		<prop key="hpc.ws.rs.stackTraceEnabled">true</prop>
 		<prop key="hpc.ws.rs.api-version">1.0.0</prop>
 		<prop key="hpc.ws.rs.attachment-tmp-directory">/tmp/hpc-attachment</prop>

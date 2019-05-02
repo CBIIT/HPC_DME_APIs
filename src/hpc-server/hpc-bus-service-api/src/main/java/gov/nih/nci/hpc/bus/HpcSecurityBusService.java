@@ -88,6 +88,15 @@ public interface HpcSecurityBusService {
   public void authenticate(String nciUserId, String password) throws HpcException;
 
   /**
+   * Authenticate SSO user.
+   *
+   * @param nciUserId The user's ID.
+   * @param password The user's password.
+   * @throws HpcException If user authentication failed.
+   */
+  public void authenticateSso(String nciUserId, String password) throws HpcException;
+
+  /**
    * Authenticate user.
    *
    * @param authenticationToken An Authentication token.

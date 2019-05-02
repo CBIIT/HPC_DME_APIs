@@ -16,6 +16,7 @@ import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.rt.security.saml.claims.SAMLSecurityContext;
 import org.apache.cxf.security.SecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
@@ -38,6 +39,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
   // Authorization Types
   private static final String BASIC_AUTHORIZATION = "Basic";
   private static final String TOKEN_AUTHORIZATION = "Bearer";
+  private static final String SAML_AUTHORIZATION = "SAML";
 
   //---------------------------------------------------------------------//
   // Instance members
@@ -52,7 +54,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
 
   /** Constructor for Spring Dependency Injection. */
   public HpcAuthenticationInterceptor() {
-    super(Phase.RECEIVE);
+    super(Phase.PRE_LOGICAL);
 
     // We need to authenticate first (this interceptor), and then authorize (other 2 interceptors).
     getBefore().add(SecureAnnotationsInterceptor.class.getName());
@@ -109,6 +111,10 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
       authenticate(message.get(AuthorizationPolicy.class));
     } else if (authorizationType.equals(TOKEN_AUTHORIZATION)) {
       authenticate(authorization[1]);
+    } else if (authorizationType.equals(SAML_AUTHORIZATION)) {
+      SAMLSecurityContext samlSecurityContext = (SAMLSecurityContext) message.get(SecurityContext.class);
+      message.put(SAMLSecurityContext.class, samlSecurityContext);
+      authenticate(message.get(SecurityContext.class));
     } else {
       throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType);
     }
@@ -141,6 +147,19 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
     securityBusService.authenticate(token);
   }
 
+  /**
+   * Perform authentication after successful SAML validation
+   *
+   * @param sc The SecurityContext holding the SAML Assertion.
+   * @throws HpcException on processing failure.
+   */
+  private void authenticate(SecurityContext sc) throws HpcException {
+    String userName = sc.getUserPrincipal().getName();
+    String password = "";
+
+    securityBusService.authenticateSso(userName, password);
+  }
+  
   /**
    * Get Authorization array from a message.
    *
