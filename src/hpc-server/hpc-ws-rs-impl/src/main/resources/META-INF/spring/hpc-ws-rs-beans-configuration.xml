@@ -297,11 +297,10 @@
 	</bean>
 
 	<!-- SAML Assertion Handler -->
-	<bean id="samlHeaderHandler" class="org.apache.cxf.rs.security.saml.SamlHeaderInHandler" />
 	<bean id="hpcSamlHeaderHandler" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcSamlHeaderInHandler" />
+	
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
-	<bean id="hpcSecuritySSOService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecuritySSOServiceImpl" />
 	<bean id="hpcDataManagementRestService"
 		class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
 	<bean id="hpcDataSearchRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataSearchRestServiceImpl" />
