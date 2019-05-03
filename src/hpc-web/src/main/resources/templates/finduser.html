@@ -76,7 +76,9 @@
 					enableRowSelection : true,
 					enableSelectAll : true,
 					selectedItems : $scope.mySelections,
-					paginationPageSize : 100,
+					enablePaginationControls : true,
+				    paginationPageSize: 25,
+				    paginationPageSizes: [10, 25, 50, 100],
 					treeRowHeaderAlwaysVisible : false,
 					columnDefs : [ {
 						field : 'userId',
@@ -106,6 +108,8 @@
 					$scope.gridApi.selection.selectAllRows();
 				};
 				$scope.gridOptions1.onRegisterApi = function(gridApi) {
+					$("#spinner").hide();
+		            $("#dimmer").hide();
 					//set gridApi on scope
 					$scope.gridApi = gridApi;
 					gridApi.selection.on.rowSelectionChanged($scope, function(
@@ -167,7 +171,7 @@
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
 							<li><i class="fa fa-list-alt"></i>Authorization</li>
-							<li><i class="fa fa-list-alt"></i>Assign User(s)</li>
+							<li><i class="fa fa-list-alt"></i>Assign User</li>
 						</ol>
 					</div>
 				</div>
@@ -178,7 +182,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Assign User(s)</strong>
+									<i class="fa fa-list-alt red"></i><strong>Assign User</strong>
 								</h2>
 							</div>
 							<div th:if="${error != null}">
@@ -214,7 +218,7 @@
 																<td>
 																	<div class="form-group">
 																		<div class="col-sm-12 column">
-																			<label for="userId">User Id:</label> <input
+																			<label for="userId">User ID:</label> <input
 																				type="text" class="form-control"
 																				th:field="*{nciUserId}" placeholder="Enter UserId" />
 																		</div>
@@ -271,6 +275,10 @@
 			</section>
 		</section>
 		<!--main content end-->
+		<div id="spinner" class="spinner">
+			<img id="img-spinner" th:src="@{/img/spinner.gif}" alt="Loading" />
+		</div>
+		<div id="dimmer"></div>
 	</section>
 	<!-- container section start -->
 
@@ -290,8 +298,12 @@
 
 	<script type="text/javascript">
 		//<![CDATA[
+		$("#spinner").show();
+	    $("#dimmer").show();
 		function prepareAndSubmit()
 		{
+			$("#spinner").show();
+            $("#dimmer").show();
 			document.getElementById("actionType").value = "search";
 		}
 		

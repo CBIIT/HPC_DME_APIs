@@ -88,8 +88,10 @@ public class HpcBrowseController extends AbstractHpcController {
 
 
 	/**
-	 * POST Action. When a tree node is expanded, this action fetches its child
+	 * POST Action. Invoked under the following conditions:
+	 * - When a tree node is expanded, this action fetches its child
 	 * nodes
+	 * - From the browse dialog
 	 * 
 	 * @param hpcBrowserEntry
 	 * @param model
@@ -224,7 +226,11 @@ public class HpcBrowseController extends AbstractHpcController {
 	
 	
   /**
-   * GET operation on Browse. Builds initial tree
+   * GET operation on Browse. Invoked under the following conditions:
+   * - Builds initial tree (/browse?base)
+   * - When the refresh screen button is clicked (/browse?refresh)
+   * - When a bookmark is selected (/browse?refresh&path=/some_path/some_collection_or_file)
+   * - When the browse icon is clicked from the details page (/browse?refresh=1&path=/some_path/some_collection)
    *
    * @param q
    * @param model
@@ -255,11 +261,13 @@ public class HpcBrowseController extends AbstractHpcController {
       session.setAttribute("userDOCModel", modelDTO);
     }
     String partial = request.getParameter("partial");
+    String refresh = request.getParameter("refresh");
+    
     String path = null;
     if (partial != null)
       return "browsepartial";
 
-    if (request.getParameter("refresh") != null) {
+    if (refresh != null) {
       session.removeAttribute("browserEntry");
     }
 
@@ -267,6 +275,25 @@ public class HpcBrowseController extends AbstractHpcController {
       path = request.getParameter("path");
       if (path == null || path.isEmpty()) {
         path = (String) request.getAttribute("path");
+      } else {
+    	  //path is present as a param, so we are either trying to browse from 
+    	  //details page or clicked on a bookmark. We want to check if path 
+    	  //points to file only if we clicked on a bookmark.If we are trying  
+    	  //to browse from details page, refresh will be 1
+    	  if(refresh != null && !refresh.equals("1")) {
+    		  //Check if path refers to file, and if so, redirect to data file view
+			  if (isPathForDataFile(path, authToken)) {
+				  try {
+					  return genRedirectNavForDataFileView(path);
+				  } catch (UnsupportedEncodingException e) {
+					  String errMsg = "Failed to get file details. Reason: " + e.getMessage();
+				        model.addAttribute("message", errMsg);
+				        logger.error(errMsg, e);
+				        return "browse";
+				  }
+			  }
+    	  }
+    	  
       }
     }
     String selectedBrowsePath = (String) session.getAttribute("selectedBrowsePath");
@@ -556,6 +583,7 @@ public class HpcBrowseController extends AbstractHpcController {
 		catch(HpcWebException e)
 		{
 			model.addAttribute("error", e.getMessage());
+			logger.error(e.getMessage(), e);
 		}
 		return partial ? selectedEntry : browserEntry;
 	}

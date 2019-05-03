@@ -196,17 +196,17 @@ public class HpcScheduledTasksImpl {
     }
   }
 
-  /** Mark all S3 upload streaming tasks 'stopped'. Called by Spring dependency injection. */
+  /** Called by Spring dependency injection. 
+   * Reset all active S3 upload/download in progress tasks, so they are restarted following a server restart.
+   * */
   @SuppressWarnings("unused")
   private void init() {
     try {
-      // Server just restarted. 
-      
       // All active S3 upload tasks should be marked stopped (so they get restarted)
       systemBusService.processDataTranferUploadStreamingInProgress(true);
       
       // All active S3 download tasks needs to be restarted.
-      //systemBusService.restartDataObjectDownloadTasks();
+      systemBusService.restartDataObjectDownloadTasks();
       
     } catch (HpcException e) {
       logger.error(

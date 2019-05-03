@@ -1097,7 +1097,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setDataTransferType(
           taskStatus.getDataObjectDownloadTask().getDataTransferType());
       downloadStatus.setDestinationLocation(
-          taskStatus.getDataObjectDownloadTask().getDestinationLocation());
+          taskStatus.getDataObjectDownloadTask().getGlobusDownloadDestination() != null
+              ? taskStatus
+                  .getDataObjectDownloadTask()
+                  .getGlobusDownloadDestination()
+                  .getDestinationLocation()
+              : taskStatus
+                  .getDataObjectDownloadTask()
+                  .getS3DownloadDestination()
+                  .getDestinationLocation());
       downloadStatus.setDestinationType(
           taskStatus.getDataObjectDownloadTask().getDestinationType());
       downloadStatus.setPercentComplete(
