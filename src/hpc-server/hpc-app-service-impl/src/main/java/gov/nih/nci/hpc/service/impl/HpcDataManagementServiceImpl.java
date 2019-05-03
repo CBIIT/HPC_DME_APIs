@@ -1,9 +1,11 @@
 /**
  * HpcDataManagementServiceImpl.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.service.impl;
@@ -52,6 +54,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcNotificationService;
 
 /**
  * HPC Data Management Application Service Implementation.
@@ -64,31 +67,42 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // ---------------------------------------------------------------------//
 
   // The Data Management Proxy instance.
-  @Autowired private HpcDataManagementProxy dataManagementProxy = null;
+  @Autowired
+  private HpcDataManagementProxy dataManagementProxy = null;
 
   // The Data Management Authenticator.
-  @Autowired private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
+  @Autowired
+  private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 
   // System Accounts locator.
-  @Autowired private HpcSystemAccountLocator systemAccountLocator = null;
+  @Autowired
+  private HpcSystemAccountLocator systemAccountLocator = null;
 
   // Data Hierarchy Validator.
-  @Autowired private HpcDataHierarchyValidator dataHierarchyValidator = null;
+  @Autowired
+  private HpcDataHierarchyValidator dataHierarchyValidator = null;
 
   // Data Management configuration locator.
   @Autowired
   private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 
   // Data Management Audit DAO.
-  @Autowired private HpcDataManagementAuditDAO dataManagementAuditDAO = null;
+  @Autowired
+  private HpcDataManagementAuditDAO dataManagementAuditDAO = null;
 
   // Data Registration DAO.
-  @Autowired private HpcDataRegistrationDAO dataRegistrationDAO = null;
+  @Autowired
+  private HpcDataRegistrationDAO dataRegistrationDAO = null;
+
+  // Notification Application Service.
+  @Autowired
+  private HpcNotificationService notificationService = null;
 
   // Pagination support.
   @Autowired
   @Qualifier("hpcRegistrationResultsPagination")
   private HpcPagination pagination = null;
+
 
   // Prepared query to get data objects that have their data transfer in-progress
   // to archive.
@@ -106,10 +120,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // users via generated URL.
   private List<HpcMetadataQuery> dataTransferInProgressWithGeneratedURLQuery = new ArrayList<>();
 
-  // Prepared query to get data objects that have their data transfer upload in progress via streaming.
+  // Prepared query to get data objects that have their data transfer upload in progress via
+  // streaming.
   private List<HpcMetadataQuery> dataTransferStreamingInProgressQuery = new ArrayList<>();
-  
-  // Prepared query to get data objects that have their data transfer upload via streaming has stopped.
+
+  // Prepared query to get data objects that have their data transfer upload via streaming has
+  // stopped.
   private List<HpcMetadataQuery> dataTransferStreamingStoppedQuery = new ArrayList<>();
 
   // Prepared query to get data objects that have their data in temporary archive.
@@ -130,60 +146,43 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    * Constructor for Spring Dependency Injection.
    *
    * @param systemAdminSubjects The system admin subjects (which update permissions not allowed
-   *     for).
+   *        for).
    */
   private HpcDataManagementServiceImpl(String systemAdminSubjects) {
     // Prepare the query to get data objects in data transfer status of received.
-    dataTransferReceivedQuery.add(
-        toMetadataQuery(
-            DATA_TRANSFER_STATUS_ATTRIBUTE,
-            HpcMetadataQueryOperator.EQUAL,
-            HpcDataTransferUploadStatus.RECEIVED.value()));
+    dataTransferReceivedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+        HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.RECEIVED.value()));
 
     // Prepare the query to get data objects in data transfer in-progress to
     // archive.
-    dataTransferInProgressToArchiveQuery.add(
-        toMetadataQuery(
-            DATA_TRANSFER_STATUS_ATTRIBUTE,
-            HpcMetadataQueryOperator.EQUAL,
+    dataTransferInProgressToArchiveQuery
+        .add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL,
             HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE.value()));
 
     // Prepare the query to get data objects in data transfer in-progress to
     // temporary archive.
-    dataTransferInProgressToTemporaryArchiveQuery.add(
-        toMetadataQuery(
-            DATA_TRANSFER_STATUS_ATTRIBUTE,
-            HpcMetadataQueryOperator.EQUAL,
+    dataTransferInProgressToTemporaryArchiveQuery
+        .add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL,
             HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value()));
 
     // Prepared query to get data objects that have their data transfer upload by
     // users via generated URL.
-    dataTransferInProgressWithGeneratedURLQuery.add(
-        toMetadataQuery(
-            DATA_TRANSFER_STATUS_ATTRIBUTE,
-            HpcMetadataQueryOperator.EQUAL,
-            HpcDataTransferUploadStatus.URL_GENERATED.value()));
+    dataTransferInProgressWithGeneratedURLQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+        HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.URL_GENERATED.value()));
 
-    // Prepared query to get data objects that have their data transfer upload in progress via streaming 
-    dataTransferStreamingInProgressQuery.add(
-        toMetadataQuery(
-            DATA_TRANSFER_STATUS_ATTRIBUTE,
-            HpcMetadataQueryOperator.EQUAL,
-            HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS.value()));
-    
-    // Prepared query to get data objects that have their data transfer upload via streaming stopped.
-    dataTransferStreamingStoppedQuery.add(
-        toMetadataQuery(
-            DATA_TRANSFER_STATUS_ATTRIBUTE,
-            HpcMetadataQueryOperator.EQUAL,
-            HpcDataTransferUploadStatus.STREAMING_STOPPED.value()));
+    // Prepared query to get data objects that have their data transfer upload in progress via
+    // streaming
+    dataTransferStreamingInProgressQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+        HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS.value()));
+
+    // Prepared query to get data objects that have their data transfer upload via streaming
+    // stopped.
+    dataTransferStreamingStoppedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+        HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.STREAMING_STOPPED.value()));
 
     // Prepare the query to get data objects in temporary archive.
-    dataTransferInTemporaryArchiveQuery.add(
-        toMetadataQuery(
-            DATA_TRANSFER_STATUS_ATTRIBUTE,
-            HpcMetadataQueryOperator.EQUAL,
-            HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE.value()));
+    dataTransferInTemporaryArchiveQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+        HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE.value()));
 
     // Populate the list of system admin subjects (user-id / group-name). Set
     // permission is
@@ -214,14 +213,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     String relativePath = dataManagementProxy.getRelativePath(path);
     // Validate the path is not a configured base path.
     if (dataManagementConfigurationLocator.getBasePaths().contains(relativePath)) {
-      throw new HpcException(
-          "Invalid collection path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Invalid collection path: " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Validate the path is not root.
     if (relativePath.equals("/")) {
-      throw new HpcException(
-          "Invalid collection path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Invalid collection path: " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Validate the directory path doesn't exist.
@@ -233,38 +232,38 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         return false;
       }
       if (pathAttributes.getIsFile()) {
-        throw new HpcException(
-            "Path already exists as a file: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+        throw new HpcException("Path already exists as a file: " + path,
+            HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
     // Validate the parent directory exists.
     if (!dataManagementProxy.isPathParentDirectory(authenticatedToken, path)) {
-      throw new HpcException(
-          "Invalid collection path. Parent directory doesn't exist: " + path,
+      throw new HpcException("Invalid collection path. Parent directory doesn't exist: " + path,
           HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
     }
 
     // Create the directory.
     dataManagementProxy.createCollectionDirectory(authenticatedToken, path);
-    
-    // Set the permission inheritance to true, so any collection / data object created under this collection will inherit
+
+    // Set the permission inheritance to true, so any collection / data object created under this
+    // collection will inherit
     // the permissions of this collection.
     dataManagementProxy.setCollectionPermissionInheritace(authenticatedToken, path, true);
-    
+
     return true;
   }
 
   @Override
   public boolean isPathParentDirectory(String path) throws HpcException {
-    return dataManagementProxy.isPathParentDirectory(
-        dataManagementAuthenticator.getAuthenticatedToken(), path);
+    return dataManagementProxy
+        .isPathParentDirectory(dataManagementAuthenticator.getAuthenticatedToken(), path);
   }
 
   @Override
   public boolean interrogatePathRef(String path) throws HpcException {
-    return dataManagementProxy.interrogatePathRef(
-        dataManagementAuthenticator.getAuthenticatedToken(), path);
+    return dataManagementProxy
+        .interrogatePathRef(dataManagementAuthenticator.getAuthenticatedToken(), path);
   }
 
   @Override
@@ -280,15 +279,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         return false;
       }
       if (pathAttributes.getIsDirectory()) {
-        throw new HpcException(
-            "Path already exists as a directory: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+        throw new HpcException("Path already exists as a directory: " + path,
+            HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
     // Validate the parent directory exists.
     if (!dataManagementProxy.isPathParentDirectory(authenticatedToken, path)) {
-      throw new HpcException(
-          "Invalid data object path. Parent directory doesn't exist: " + path,
+      throw new HpcException("Invalid data object path. Parent directory doesn't exist: " + path,
           HpcRequestRejectReason.INVALID_DATA_OBJECT_PATH);
     }
 
@@ -306,6 +304,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     } catch (HpcException e) {
       if (quiet) {
         logger.error("Failed to delete a file: {}", path, e);
+        notificationService.sendNotification(e);
+
       } else {
         throw (e);
       }
@@ -328,12 +328,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     if (pathTypeValidation.isPresent()) {
       if (pathTypeValidation.get()) {
         if (!sourcePathAttributes.getIsDirectory()) {
-          throw new HpcException(
-              "Source path is not of a collection", HpcErrorType.INVALID_REQUEST_INPUT);
+          throw new HpcException("Source path is not of a collection",
+              HpcErrorType.INVALID_REQUEST_INPUT);
         }
       } else if (!sourcePathAttributes.getIsFile()) {
-        throw new HpcException(
-            "Source path is not of a data object", HpcErrorType.INVALID_REQUEST_INPUT);
+        throw new HpcException("Source path is not of a data object",
+            HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
@@ -344,13 +344,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       throw new HpcException("Destination path already exists", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Validate the destination parent path exists. i.e. we enforce the move is to an existing collection.
+    // Validate the destination parent path exists. i.e. we enforce the move is to an existing
+    // collection.
     String destinationParentPath = destinationPath.substring(0, destinationPath.lastIndexOf('/'));
     HpcPathAttributes destinationParentPathAttributes =
         dataManagementProxy.getPathAttributes(authenticatedToken, destinationParentPath);
     if (!destinationParentPathAttributes.getExists()) {
-      throw new HpcException(
-          "Destination parent path doesn't exist", HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Destination parent path doesn't exist",
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Perform the move request.
@@ -358,12 +359,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     // Validate the hierarchy.
     try {
-      // Calculate the validation path. It's the collection containing the data object if we move a data object,
+      // Calculate the validation path. It's the collection containing the data object if we move a
+      // data object,
       // or the collection itself if we move a collection.
       String hierachyValidationPath =
           sourcePathAttributes.getIsFile() ? destinationParentPath : destinationPath;
-      validateHierarchy(
-          hierachyValidationPath,
+      validateHierarchy(hierachyValidationPath,
           this.findDataManagementConfigurationId(destinationPath),
           sourcePathAttributes.getIsFile());
 
@@ -375,14 +376,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   }
 
   @Override
-  public void addAuditRecord(
-      String path,
-      HpcAuditRequestType requestType,
-      HpcMetadataEntries metadataBefore,
-      HpcMetadataEntries metadataAfter,
-      HpcFileLocation archiveLocation,
-      boolean dataManagementStatus,
-      Boolean dataTransferStatus,
+  public void addAuditRecord(String path, HpcAuditRequestType requestType,
+      HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
+      HpcFileLocation archiveLocation, boolean dataManagementStatus, Boolean dataTransferStatus,
       String message) {
     // Input validation.
     if (path == null || requestType == null || metadataBefore == null) {
@@ -391,16 +387,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     try {
       dataManagementAuditDAO.insert(
-          HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(),
-          path,
-          requestType,
-          metadataBefore,
-          metadataAfter,
-          archiveLocation,
-          dataManagementStatus,
-          dataTransferStatus,
-          message,
-          Calendar.getInstance());
+          HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), path, requestType,
+          metadataBefore, metadataAfter, archiveLocation, dataManagementStatus, dataTransferStatus,
+          message, Calendar.getInstance());
 
     } catch (HpcException e) {
       logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);
@@ -413,21 +402,21 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     // Validate the permission request - ensure the subject is NOT a system account.
     validatePermissionRequest(subjectPermission);
 
-    dataManagementProxy.setCollectionPermission(
-        dataManagementAuthenticator.getAuthenticatedToken(), path, subjectPermission);
+    dataManagementProxy.setCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(),
+        path, subjectPermission);
   }
 
   @Override
   public List<HpcSubjectPermission> getCollectionPermissions(String path) throws HpcException {
-    return dataManagementProxy.getCollectionPermissions(
-        dataManagementAuthenticator.getAuthenticatedToken(), path);
+    return dataManagementProxy
+        .getCollectionPermissions(dataManagementAuthenticator.getAuthenticatedToken(), path);
   }
 
   @Override
   public HpcSubjectPermission getCollectionPermission(String path, String userId)
       throws HpcException {
-    return dataManagementProxy.getCollectionPermission(
-        dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    return dataManagementProxy
+        .getCollectionPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
   }
 
   @Override
@@ -440,8 +429,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public HpcSubjectPermission getCollectionPermission(String path) throws HpcException {
     return dataManagementProxy.getCollectionPermission(
-        dataManagementAuthenticator.getAuthenticatedToken(),
-        path,
+        dataManagementAuthenticator.getAuthenticatedToken(), path,
         HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
   }
 
@@ -451,28 +439,27 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     // Validate the permission request - ensure the subject is NOT a system account.
     validatePermissionRequest(subjectPermission);
 
-    dataManagementProxy.setDataObjectPermission(
-        dataManagementAuthenticator.getAuthenticatedToken(), path, subjectPermission);
+    dataManagementProxy.setDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(),
+        path, subjectPermission);
   }
 
   @Override
   public List<HpcSubjectPermission> getDataObjectPermissions(String path) throws HpcException {
-    return dataManagementProxy.getDataObjectPermissions(
-        dataManagementAuthenticator.getAuthenticatedToken(), path);
+    return dataManagementProxy
+        .getDataObjectPermissions(dataManagementAuthenticator.getAuthenticatedToken(), path);
   }
 
   @Override
   public HpcSubjectPermission getDataObjectPermission(String path, String userId)
       throws HpcException {
-    return dataManagementProxy.getDataObjectPermission(
-        dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+    return dataManagementProxy
+        .getDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
   }
 
   @Override
   public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException {
     return dataManagementProxy.getDataObjectPermission(
-        dataManagementAuthenticator.getAuthenticatedToken(),
-        path,
+        dataManagementAuthenticator.getAuthenticatedToken(), path,
         HpcRequestContext.getRequestInvoker().getNciAccount().getUserId());
   }
 
@@ -481,8 +468,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     HpcIntegratedSystemAccount dataManagementAccount =
         systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
     if (dataManagementAccount == null) {
-      throw new HpcException(
-          "System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR);
+      throw new HpcException("System Data Management Account not configured",
+          HpcErrorType.UNEXPECTED_ERROR);
     }
 
     // System account ownership request.
@@ -500,12 +487,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     HpcPathAttributes pathAttributes =
         dataManagementProxy.getPathAttributes(authenticatedToken, path);
     if (pathAttributes.getIsDirectory()) {
-      dataManagementProxy.setCollectionPermission(
-          authenticatedToken, path, systemAccountPermissionRequest);
+      dataManagementProxy.setCollectionPermission(authenticatedToken, path,
+          systemAccountPermissionRequest);
       dataManagementProxy.setCollectionPermission(authenticatedToken, path, userPermissionRequest);
     } else if (pathAttributes.getIsFile()) {
-      dataManagementProxy.setDataObjectPermission(
-          authenticatedToken, path, systemAccountPermissionRequest);
+      dataManagementProxy.setDataObjectPermission(authenticatedToken, path,
+          systemAccountPermissionRequest);
       dataManagementProxy.setDataObjectPermission(authenticatedToken, path, userPermissionRequest);
     }
   }
@@ -527,8 +514,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       String collectionType = getCollectionType(subCollectionPath.toString());
       if (collectionType == null) {
         if (!collectionPathTypes.isEmpty()) {
-          throw new HpcException(
-              "Invalid collection path hierarchy: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+          throw new HpcException("Invalid collection path hierarchy: " + path,
+              HpcErrorType.INVALID_REQUEST_INPUT);
         }
       } else {
         collectionPathTypes.add(collectionType);
@@ -536,8 +523,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     }
 
     // Perform the hierarchy validation.
-    dataHierarchyValidator.validateHierarchy(
-        configurationId, collectionPathTypes, dataObjectRegistration);
+    dataHierarchyValidator.validateHierarchy(configurationId, collectionPathTypes,
+        dataObjectRegistration);
   }
 
   @Override
@@ -568,47 +555,44 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   @Override
   public List<HpcDataObject> getDataObjectsUploadReceived() throws HpcException {
-    return dataManagementProxy.getDataObjects(
-        dataManagementAuthenticator.getAuthenticatedToken(), dataTransferReceivedQuery);
+    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+        dataTransferReceivedQuery);
   }
 
   @Override
   public List<HpcDataObject> getDataObjectsUploadInProgress() throws HpcException {
     Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
     List<HpcDataObject> objectsInProgress = new ArrayList<>();
-    objectsInProgress.addAll(
-        dataManagementProxy.getDataObjects(
-            authenticatedToken, dataTransferInProgressToArchiveQuery));
-    objectsInProgress.addAll(
-        dataManagementProxy.getDataObjects(
-            authenticatedToken, dataTransferInProgressToTemporaryArchiveQuery));
+    objectsInProgress.addAll(dataManagementProxy.getDataObjects(authenticatedToken,
+        dataTransferInProgressToArchiveQuery));
+    objectsInProgress.addAll(dataManagementProxy.getDataObjects(authenticatedToken,
+        dataTransferInProgressToTemporaryArchiveQuery));
 
     return objectsInProgress;
   }
 
   @Override
   public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException {
-    return dataManagementProxy.getDataObjects(
-        dataManagementAuthenticator.getAuthenticatedToken(),
+    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
         dataTransferInProgressWithGeneratedURLQuery);
   }
 
   @Override
   public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException {
-    return dataManagementProxy.getDataObjects(
-        dataManagementAuthenticator.getAuthenticatedToken(), dataTransferStreamingInProgressQuery);
+    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+        dataTransferStreamingInProgressQuery);
   }
-  
+
   @Override
   public List<HpcDataObject> getDataTranferUploadStreamingStopped() throws HpcException {
-    return dataManagementProxy.getDataObjects(
-        dataManagementAuthenticator.getAuthenticatedToken(), dataTransferStreamingStoppedQuery);
+    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+        dataTransferStreamingStoppedQuery);
   }
 
   @Override
   public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException {
-    return dataManagementProxy.getDataObjects(
-        dataManagementAuthenticator.getAuthenticatedToken(), dataTransferInTemporaryArchiveQuery);
+    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+        dataTransferInTemporaryArchiveQuery);
   }
 
   @Override
@@ -629,15 +613,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   }
 
   @Override
-  public String registerDataObjects(
-      String userId,
-      String uiURL,
+  public String registerDataObjects(String userId, String uiURL,
       Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
       throws HpcException {
     // Input validation
     if (StringUtils.isEmpty(userId)) {
-      throw new HpcException(
-          "Null / Empty userId in registration list request", HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Null / Empty userId in registration list request",
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     if (dataObjectRegistrationRequests.isEmpty()) {
@@ -690,15 +672,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   @Override
   public void completeBulkDataObjectRegistrationTask(
-      HpcBulkDataObjectRegistrationTask registrationTask,
-      boolean result,
-      String message,
-      Calendar completed)
-      throws HpcException {
+      HpcBulkDataObjectRegistrationTask registrationTask, boolean result, String message,
+      Calendar completed) throws HpcException {
     // Input validation
     if (registrationTask == null) {
-      throw new HpcException(
-          "Invalid data object list registration task", HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Invalid data object list registration task",
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Cleanup the DB record.
@@ -715,7 +694,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     registrationResult.setCompleted(completed);
     registrationResult.getItems().addAll(registrationTask.getItems());
 
-    // Calculate the effective transfer speed (Bytes per second). This is done by averaging the effective transfer speed
+    // Calculate the effective transfer speed (Bytes per second). This is done by averaging the
+    // effective transfer speed
     // of all successful registration items.
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
@@ -728,19 +708,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     registrationResult.setEffectiveTransferSpeed(
         completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
 
-    // For each registration item from AWS S3, mask the (user provided) S3 account information before storing in the DB.
-    registrationResult
-        .getItems()
-        .forEach(
-            bulkDataObjectRegistrationItem ->
-                Optional.of(bulkDataObjectRegistrationItem.getRequest())
-                    .map(HpcDataObjectRegistrationRequest::getS3UploadSource)
-                    .map(HpcS3UploadSource::getAccount)
-                    .ifPresent(
-                        s3Account -> {
-                          s3Account.setAccessKey("****");
-                          s3Account.setSecretKey("****");
-                        }));
+    // For each registration item from AWS S3, mask the (user provided) S3 account information
+    // before storing in the DB.
+    registrationResult.getItems()
+        .forEach(bulkDataObjectRegistrationItem -> Optional
+            .of(bulkDataObjectRegistrationItem.getRequest())
+            .map(HpcDataObjectRegistrationRequest::getS3UploadSource)
+            .map(HpcS3UploadSource::getAccount).ifPresent(s3Account -> {
+              s3Account.setAccessKey("****");
+              s3Account.setSecretKey("****");
+            }));
 
     // Persist to DB.
     dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
@@ -785,8 +762,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Override
   public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page)
       throws HpcException {
-    return dataRegistrationDAO.getBulkDataObjectRegistrationResults(
-        userId, pagination.getOffset(page), pagination.getPageSize());
+    return dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId,
+        pagination.getOffset(page), pagination.getPageSize());
   }
 
   @Override
@@ -801,9 +778,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   @Override
   public String getCollectionType(String path) throws HpcException {
-    for (HpcMetadataEntry metadataEntry :
-        dataManagementProxy.getCollectionMetadata(
-            dataManagementAuthenticator.getAuthenticatedToken(), path)) {
+    for (HpcMetadataEntry metadataEntry : dataManagementProxy
+        .getCollectionMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path)) {
       if (metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
         return metadataEntry.getValue();
       }
@@ -824,8 +800,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     }
 
     String relativePath = dataManagementProxy.getRelativePath(path);
-    for (HpcDataManagementConfiguration dataManagementConfiguration :
-        dataManagementConfigurationLocator.values()) {
+    for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator
+        .values()) {
       if (relativePath.startsWith(dataManagementConfiguration.getBasePath())) {
         return dataManagementConfiguration.getId();
       }
@@ -856,8 +832,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    * @param value The metadata entry value.
    * @return HpcMetadataEntry instance
    */
-  private HpcMetadataQuery toMetadataQuery(
-      String attribute, HpcMetadataQueryOperator operator, String value) {
+  private HpcMetadataQuery toMetadataQuery(String attribute, HpcMetadataQueryOperator operator,
+      String value) {
     HpcMetadataQuery query = new HpcMetadataQuery();
     query.setAttribute(attribute);
     query.setOperator(operator);
@@ -878,8 +854,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     HpcIntegratedSystemAccount dataManagementAccount =
         systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
     if (dataManagementAccount == null) {
-      throw new HpcException(
-          "System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR);
+      throw new HpcException("System Data Management Account not configured",
+          HpcErrorType.UNEXPECTED_ERROR);
     }
 
     String subject = subjectPermission.getSubject();
@@ -902,33 +878,29 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       HpcDataObjectRegistrationRequest registrationRequest, String path) throws HpcException {
     if (registrationRequest.getGlobusUploadSource() != null
         && registrationRequest.getS3UploadSource() != null) {
-      throw new HpcException(
-          "Both Globus and S3 upload source provided for: " + path,
+      throw new HpcException("Both Globus and S3 upload source provided for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     if (registrationRequest.getGlobusUploadSource() == null
         && registrationRequest.getS3UploadSource() == null) {
-      throw new HpcException(
-          "No Globus/S3 upload source provided for: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("No Globus/S3 upload source provided for: " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     if (registrationRequest.getGlobusUploadSource() != null
         && !isValidFileLocation(registrationRequest.getGlobusUploadSource().getSourceLocation())) {
-      throw new HpcException(
-          "Invalid Globus upload source in registration request for: " + path,
+      throw new HpcException("Invalid Globus upload source in registration request for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     if (registrationRequest.getS3UploadSource() != null) {
       if (!isValidFileLocation(registrationRequest.getS3UploadSource().getSourceLocation())) {
-        throw new HpcException(
-            "Invalid S3 upload source in registration request for: " + path,
+        throw new HpcException("Invalid S3 upload source in registration request for: " + path,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
       if (!isValidS3Account(registrationRequest.getS3UploadSource().getAccount())) {
-        throw new HpcException(
-            "Invalid S3 account in registration request for: " + path,
+        throw new HpcException("Invalid S3 account in registration request for: " + path,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }

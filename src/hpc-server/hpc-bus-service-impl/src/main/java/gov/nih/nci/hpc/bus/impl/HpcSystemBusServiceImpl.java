@@ -358,9 +358,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
   @Override
   @HpcExecuteAsSystemAccount
-  public void processDataTranferUploadStreamingStopped()
-      throws
-          HpcException { // Iterate through the data objects that their data transfer (S3 streaming) has stopped.
+  public void processDataTranferUploadStreamingStopped() throws HpcException {
+    // Iterate through the data objects that their data transfer (S3 streaming) has stopped.
     List<HpcDataObject> dataObjectsStreamingStopped =
         dataManagementService.getDataTranferUploadStreamingStopped();
     for (HpcDataObject dataObject : dataObjectsStreamingStopped) {
@@ -387,7 +386,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                 systemGeneratedMetadata.getCallerObjectId(),
                 systemGeneratedMetadata.getConfigurationId());
 
-        // Streaming stopped (server shutdown). We just update the status accordingly.
+        // Update the transfer status and request id.
         metadataService.updateDataObjectSystemGeneratedMetadata(
             path,
             null,
@@ -505,10 +504,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       try {
         switch (downloadTask.getDataTransferStatus()) {
           case RECEIVED:
+        	logger.info("Continuing download task: {}", downloadTask.getId());
             dataTransferService.continueDataObjectDownloadTask(downloadTask);
             break;
 
           case IN_PROGRESS:
+        	logger.info("Completing download task: {}", downloadTask.getId());
             completeDataObjectDownloadTaskInProgress(downloadTask);
             break;
 
@@ -530,7 +531,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   @HpcExecuteAsSystemAccount
   public void restartDataObjectDownloadTasks() throws HpcException {
-    // Iterate through all the data object download tasks that are in-progress or pending GLOBUS transfer.
+    // Iterate through all the data object download tasks that are in-progress w/ S3 transfer.
     for (HpcDataObjectDownloadTask downloadTask :
         dataTransferService.getDataObjectDownloadTasks()) {
       try {
@@ -538,6 +539,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             && downloadTask
                 .getDataTransferStatus()
                 .equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
+          logger.info("Resetting download task: {}", downloadTask.getId());
           dataTransferService.resetDataObjectDownloadTask(downloadTask);
         }
 
@@ -1338,7 +1340,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             downloadTask.getConfigurationId(),
             result,
             message,
-            downloadTask.getDestinationLocation(),
+            downloadTask.getGlobusDownloadDestination().getDestinationLocation(),
             completed);
       }
     } else {

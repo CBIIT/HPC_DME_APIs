@@ -143,6 +143,7 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
     collectionPath = collectionPath.replace("\\", "/");
     localPath = localPath.replace("\\", "/");
     fullFilePathName = fullFilePathName.replace('\\', '/');
+    fullLocalPathName = fullLocalPathName.replace('\\', '/');
     if (collectionPath.equals(localPath)) {
       return "/";
     }

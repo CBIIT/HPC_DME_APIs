@@ -44,6 +44,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
@@ -152,8 +153,10 @@ public class HpcDownloadController extends AbstractHpcController {
 				location.setFileId(downloadFile.getEndPointLocation());
 				dto.setDestination(location);
 			}
-
-			return HpcClientUtil.downloadDataFile(authToken, serviceURL, dto, sslCertPath, sslCertPassword);
+            final String downloadTaskType = "collection".equals(downloadFile.
+                    getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :
+                        HpcDownloadTaskType.DATA_OBJECT.name();
+			return HpcClientUtil.downloadDataFile(authToken, serviceURL, dto, downloadTaskType, sslCertPath, sslCertPassword);
 		} catch (HttpStatusCodeException e) {
 			result.setMessage("Download request is not successfull: " + e.getMessage());
 			return result;
