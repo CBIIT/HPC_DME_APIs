@@ -25,7 +25,7 @@ public class HpcSecuritySSOServiceTest extends AbstractBusClientServerTestBase {
     
     @Test
     public void testGetSAMLTokenAsHeader() {
-        String address = "https://localhost:" + PORT + "/sso/authenticate";
+        String address = "https://localhost:" + PORT + "/hpc-server/authenticate";
         
         WebClient wc = createWebClient(address, new SamlHeaderOutInterceptor(), null, true);
         
@@ -46,7 +46,7 @@ public class HpcSecuritySSOServiceTest extends AbstractBusClientServerTestBase {
     
     @Test
     public void testInvalidSAMLTokenAsHeader() {
-        String address = "https://localhost:" + PORT + "/sso/authenticate";
+        String address = "https://localhost:" + PORT + "/hpc-server/authenticate";
         
         JAXRSClientFactoryBean bean = new JAXRSClientFactoryBean();
         bean.setAddress(address);
@@ -64,7 +64,7 @@ public class HpcSecuritySSOServiceTest extends AbstractBusClientServerTestBase {
     
     @Test
     public void testGetIdpSAMLTokenAsHeader() {
-        String address = "https://localhost:" + PORT + "/sso/authenticate";
+        String address = "https://localhost:" + PORT + "/hpc-server/authenticate";
         
         WebClient wc = 
             createWebClientForExistingToken(address, new SamlHeaderOutInterceptor(), null);

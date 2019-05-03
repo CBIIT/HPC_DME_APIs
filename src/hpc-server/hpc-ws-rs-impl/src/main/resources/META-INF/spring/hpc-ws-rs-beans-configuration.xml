@@ -298,6 +298,7 @@
 
 	<!-- SAML Assertion Handler -->
 	<bean id="samlHeaderHandler" class="org.apache.cxf.rs.security.saml.SamlHeaderInHandler" />
+	<bean id="hpcSamlHeaderHandler" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcSamlHeaderInHandler" />
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
 	<bean id="hpcSecuritySSOService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecuritySSOServiceImpl" />
@@ -351,30 +352,10 @@
 			<ref bean="hpcReportRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
+			<ref bean="hpcSamlHeaderHandler" />
 			<ref bean="jaxbProvider" />
 			<ref bean="jsonProvider" />
 			<ref bean="hpcMultipartProvider" />
-			<ref bean="hpcAuthenticationExceptionMapper" />
-			<ref bean="hpcAuthorizationExceptionMapper" />
-		</jaxrs:providers>
-		<jaxrs:inInterceptors>
-			<ref bean="hpcProfileInInterceptor" />
-			<ref bean="hpcAuthenticationInterceptor" />
-			<ref bean="hpcAuthorizationInterceptor" />
-		</jaxrs:inInterceptors>
-		<jaxrs:outInterceptors>
-			<ref bean="hpcAPIVersionInterceptor" />
-			<ref bean="hpcCleanupInterceptor" />
-			<ref bean="hpcProfileOutInterceptor" />
-		</jaxrs:outInterceptors>
-	</jaxrs:server>
-	<jaxrs:server id="hpc-secured-sso-samlheader" address="${hpc.ws.rs.secured-sso-url}"
-		bus="cxf">
-		<jaxrs:serviceBeans>
-			<ref bean="hpcSecuritySSOService" />
-		</jaxrs:serviceBeans>
-		<jaxrs:providers>
-			<ref bean="samlHeaderHandler" />
 			<ref bean="hpcAuthenticationExceptionMapper" />
 			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
