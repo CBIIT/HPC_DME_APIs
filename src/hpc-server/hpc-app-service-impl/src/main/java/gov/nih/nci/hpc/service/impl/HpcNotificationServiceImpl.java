@@ -1,9 +1,11 @@
 /**
  * HpcNotificationServiceImpl.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.service.impl;
@@ -26,16 +28,16 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcNotificationService;
-
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * HPC Notification Application Service Implementation.
@@ -43,34 +45,41 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcNotificationServiceImpl implements HpcNotificationService {
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Instance members
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   // Map notification delivery method to its notification sender impl.
   private Map<HpcNotificationDeliveryMethod, HpcNotificationSender> notificationSenders =
       new EnumMap<>(HpcNotificationDeliveryMethod.class);
 
   // The Notification DAO instance.
-  @Autowired private HpcNotificationDAO notificationDAO = null;
+  @Autowired
+  private HpcNotificationDAO notificationDAO = null;
 
   // The Data Management Proxy instance.
-  @Autowired private HpcDataManagementProxy dataManagementProxy = null;
+  @Autowired
+  private HpcDataManagementProxy dataManagementProxy = null;
 
   // The Data Management Authenticator.
-  @Autowired private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
+  @Autowired
+  private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 
   // Pagination support.
   @Autowired
   @Qualifier("hpcNotificationPagination")
   private HpcPagination pagination = null;
 
+  // The system administrator NCI user ID.
+  @Value("${hpc.service.notification.systemAdministratorUserId}")
+  private String systemAdministratorUserId = null;
+
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constructors
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Default constructor disabled.
@@ -91,21 +100,20 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
     this.notificationSenders.putAll(notificationSenders);
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // HpcNotificationService Interface Implementation
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   @Override
   public void addUpdateNotificationSubscription(
       HpcNotificationSubscription notificationSubscription) throws HpcException {
     // Input validation.
     if (!isValidNotificationSubscription(notificationSubscription)) {
-      throw new HpcException(
-          "Invalid add/update notification subscription request",
+      throw new HpcException("Invalid add/update notification subscription request",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
@@ -118,20 +126,15 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
     // Validate subscription for usage summary report is allowed for system admin only
     if (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN)) {
       if (notificationSubscription.getEventType().equals(HpcEventType.USAGE_SUMMARY_REPORT)
-          || notificationSubscription
-              .getEventType()
+          || notificationSubscription.getEventType()
               .equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT)
-          || notificationSubscription
-              .getEventType()
+          || notificationSubscription.getEventType()
               .equals(HpcEventType.USAGE_SUMMARY_BY_DOC_REPORT)
-          || notificationSubscription
-              .getEventType()
+          || notificationSubscription.getEventType()
               .equals(HpcEventType.USAGE_SUMMARY_BY_DOC_BY_WEEKLY_REPORT)
-          || notificationSubscription
-              .getEventType()
+          || notificationSubscription.getEventType()
               .equals(HpcEventType.USAGE_SUMMARY_BY_USER_REPORT)
-          || notificationSubscription
-              .getEventType()
+          || notificationSubscription.getEventType()
               .equals(HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT)) {
         throw new HpcException(
             "Not authorizated to subscribe to the report. Please contact system administrator",
@@ -143,8 +146,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
     validateNotificationTriggers(notificationSubscription.getNotificationTriggers());
 
     // Upsert to DB.
-    notificationDAO.upsertSubscription(
-        invoker.getNciAccount().getUserId(), notificationSubscription);
+    notificationDAO.upsertSubscription(invoker.getNciAccount().getUserId(),
+        notificationSubscription);
   }
 
   @Override
@@ -182,8 +185,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
   }
 
   @Override
-  public HpcNotificationSubscription getNotificationSubscription(
-      String userId, HpcEventType eventType) throws HpcException {
+  public HpcNotificationSubscription getNotificationSubscription(String userId,
+      HpcEventType eventType) throws HpcException {
     // Input validation.
     if (userId == null || eventType == null) {
       throw new HpcException("Invalid user ID or event type", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -194,11 +197,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
   }
 
   @Override
-  public boolean sendNotification(
-      String userId,
-      HpcEventType eventType,
-      List<HpcEventPayloadEntry> payloadEntries,
-      HpcNotificationDeliveryMethod deliveryMethod) {
+  public boolean sendNotification(String userId, HpcEventType eventType,
+      List<HpcEventPayloadEntry> payloadEntries, HpcNotificationDeliveryMethod deliveryMethod) {
     // Input validation.
     if (userId == null || eventType == null || deliveryMethod == null) {
       return false;
@@ -224,11 +224,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
   }
 
   @Override
-  public boolean sendNotification(
-      String userId,
-      HpcSystemAdminNotificationType notificationType,
-      List<HpcEventPayloadEntry> payloadEntries,
-      HpcNotificationDeliveryMethod deliveryMethod) {
+  public boolean sendNotification(String userId, HpcSystemAdminNotificationType notificationType,
+      List<HpcEventPayloadEntry> payloadEntries, HpcNotificationDeliveryMethod deliveryMethod) {
     // Input validation.
     if (userId == null || notificationType == null || deliveryMethod == null) {
       return false;
@@ -254,11 +251,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
   }
 
   @Override
-  public void createNotificationDeliveryReceipt(
-      String userId,
-      int eventId,
-      HpcNotificationDeliveryMethod deliveryMethod,
-      boolean deliveryStatus) {
+  public void createNotificationDeliveryReceipt(String userId, int eventId,
+      HpcNotificationDeliveryMethod deliveryMethod, boolean deliveryStatus) {
     if (userId == null || deliveryMethod == null) {
       return;
     }
@@ -287,8 +281,8 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
       throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    return notificationDAO.getDeliveryReceipts(
-        invoker.getNciAccount().getUserId(), pagination.getOffset(page), pagination.getPageSize());
+    return notificationDAO.getDeliveryReceipts(invoker.getNciAccount().getUserId(),
+        pagination.getOffset(page), pagination.getPageSize());
   }
 
   @Override
@@ -319,9 +313,39 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
     return notificationDAO.getDeliveryReceiptsCount(invoker.getNciAccount().getUserId());
   }
 
-  //---------------------------------------------------------------------//
+  @Override
+  public void sendNotification(HpcException exception) {
+    if (exception.getIntegratedSystem() != null) {
+      logger.info("Sending a notification to system admin: {}", exception.getMessage());
+
+      // Create a payload containing the exception data.
+      List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
+
+      HpcEventPayloadEntry integratedSystemPayloadEntry = new HpcEventPayloadEntry();
+      integratedSystemPayloadEntry.setAttribute("INTEGRATED_SYSTEM");
+      integratedSystemPayloadEntry.setValue(exception.getIntegratedSystem().value());
+      payloadEntries.add(integratedSystemPayloadEntry);
+
+      HpcEventPayloadEntry errorMessage = new HpcEventPayloadEntry();
+      errorMessage.setAttribute("ERROR_MESSAGE");
+      errorMessage.setValue(exception.getMessage());
+      payloadEntries.add(errorMessage);
+
+      HpcEventPayloadEntry stackTrace = new HpcEventPayloadEntry();
+      stackTrace.setAttribute("STACK_TRACE");
+      stackTrace.setValue(exception.getStackTraceString());
+      payloadEntries.add(stackTrace);
+
+      // Send the notification.
+      this.sendNotification(systemAdministratorUserId,
+          HpcSystemAdminNotificationType.INTEGRATED_SYSTEM_ERROR, payloadEntries,
+          HpcNotificationDeliveryMethod.EMAIL);
+    }
+  }
+
+  // ---------------------------------------------------------------------//
   // Helper Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Validate notification triggers include collection/data-objects that exist. In addition, event
@@ -339,23 +363,21 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
         if (payloadEntry.getAttribute().equals(COLLECTION_PATH_PAYLOAD_ATTRIBUTE)) {
           String collectionPath = payloadEntry.getValue();
           if (!dataManagementProxy
-              .getPathAttributes(
-                  dataManagementAuthenticator.getAuthenticatedToken(), collectionPath)
+              .getPathAttributes(dataManagementAuthenticator.getAuthenticatedToken(),
+                  collectionPath)
               .getIsDirectory()) {
-            throw new HpcException(
-                "Collection doesn't exist: " + collectionPath, HpcErrorType.INVALID_REQUEST_INPUT);
+            throw new HpcException("Collection doesn't exist: " + collectionPath,
+                HpcErrorType.INVALID_REQUEST_INPUT);
           }
           payloadEntry.setValue(dataManagementProxy.getRelativePath(collectionPath));
           break;
         }
         if (payloadEntry.getAttribute().equals(DATA_OBJECT_PATH_PAYLOAD_ATTRIBUTE)) {
           String dataObjectPath = payloadEntry.getValue();
-          if (!dataManagementProxy
-              .getPathAttributes(
-                  dataManagementAuthenticator.getAuthenticatedToken(), dataObjectPath)
-              .getIsFile()) {
-            throw new HpcException(
-                "Data object doesn't exist: " + dataObjectPath, HpcErrorType.INVALID_REQUEST_INPUT);
+          if (!dataManagementProxy.getPathAttributes(
+              dataManagementAuthenticator.getAuthenticatedToken(), dataObjectPath).getIsFile()) {
+            throw new HpcException("Data object doesn't exist: " + dataObjectPath,
+                HpcErrorType.INVALID_REQUEST_INPUT);
           }
           payloadEntry.setValue(dataManagementProxy.getRelativePath(dataObjectPath));
         }

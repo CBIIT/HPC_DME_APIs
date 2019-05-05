@@ -259,7 +259,7 @@
 														</tr>
 														<tr id='entryTableRow1' align="center" th:if="${permissions.isUserType()} == true">
 															<td style="white-space: nowrap" align="right"><label
-																for="Share With">User(s):</label></td>
+																for="Share With">User:</label></td>
 															<td style="white-space: nowrap" align="left">															
 															<input
 																type="text" id="userName" size="65" th:value="${selectedUsers}" placeholder="Enter User Id delimited with ; or click search button"/>&nbsp;&nbsp;&nbsp;
@@ -271,7 +271,7 @@
 														</tr>
 														<tr id='entryTableRow2' style="display: none" align="center" th:if="${permissions.isUserType()} == true">
 															<td style="white-space: nowrap" align="right"><label
-																for="Share With">Group(s):</label></td>
+																for="Share With">Group:</label></td>
 															<td style="white-space: nowrap" align="left"><input
 																type="text" id="groupName" size="65" th:value="${selectedGroups}" placeholder="Enter Group name delimited with ; or click search button"/>&nbsp;&nbsp;&nbsp;
 																<a id="groupNamelink" class="btn btn-link btn-sm"
@@ -280,7 +280,7 @@
 														</tr>
 														<tr id='entryTableRow1' style="display: none" align="center" th:if="${permissions.isUserType()} == false">
 															<td style="white-space: nowrap" align="right"><label
-																for="Share With">User(s):</label></td>
+																for="Share With">User:</label></td>
 															<td style="white-space: nowrap" align="left">															
 															<input
 																type="text" id="userName" th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp;
@@ -291,7 +291,7 @@
 														</tr>
 														<tr id='entryTableRow2' align="center" th:if="${permissions.isUserType()} == false">
 															<td style="white-space: nowrap" align="right"><label
-																for="Share With">Group(s):</label></td>
+																for="Share With">Group:</label></td>
 															<td style="white-space: nowrap" align="left"><input
 																type="text" id="groupName" th:value="${selectedGroups}" />&nbsp;&nbsp;&nbsp;
 																<a id="groupNamelink" class="btn btn-link btn-sm"

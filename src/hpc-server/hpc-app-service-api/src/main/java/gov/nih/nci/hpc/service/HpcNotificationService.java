@@ -147,4 +147,11 @@ public interface HpcNotificationService {
    * @throws HpcException on service failure.
    */
   public int getNotificationDeliveryReceiptsCount() throws HpcException;
+  
+  /**
+   * Notify HPC-DME system-administrator of an exception
+   *
+   * @exception The exception to send notification for.
+   */
+  public void sendNotification(HpcException exception);
 }
