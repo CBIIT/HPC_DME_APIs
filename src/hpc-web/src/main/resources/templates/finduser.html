@@ -171,7 +171,7 @@
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
 							<li><i class="fa fa-list-alt"></i>Authorization</li>
-							<li><i class="fa fa-list-alt"></i>Assign User(s)</li>
+							<li><i class="fa fa-list-alt"></i>Assign User</li>
 						</ol>
 					</div>
 				</div>
@@ -182,7 +182,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Assign User(s)</strong>
+									<i class="fa fa-list-alt red"></i><strong>Assign User</strong>
 								</h2>
 							</div>
 							<div th:if="${error != null}">
@@ -218,7 +218,7 @@
 																<td>
 																	<div class="form-group">
 																		<div class="col-sm-12 column">
-																			<label for="userId">User Id:</label> <input
+																			<label for="userId">User ID:</label> <input
 																				type="text" class="form-control"
 																				th:field="*{nciUserId}" placeholder="Enter UserId" />
 																		</div>
