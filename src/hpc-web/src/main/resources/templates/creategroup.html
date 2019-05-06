@@ -84,7 +84,7 @@
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
 							<li><i class="fa fa-list-alt"></i>Manage</li>
-							<li><i class="fa fa-list-alt"></i>Group(s)</li>
+							<li><i class="fa fa-list-alt"></i>Group</li>
 						</ol>
 					</div>
 				</div>
@@ -131,8 +131,8 @@
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
 																			id="primaryButton" onClick="return validate()">Create</button>
-																		<button type="reset" class="btn btn-primary"
-																		    id="cancel">Clear</button>
+																		<button type="submit" class="btn btn-md btn-primary"
+																		    id="cancel" onClick="return exit()">Cancel</button>
 																	</div>
 																	<input type="hidden" name="actionType" id="actionType"/>
 																</td>
@@ -172,7 +172,7 @@
 																		<table class="table table-hover" id="entryTable">
 																			<tr id='entryTableRow1' align="center">
 																				<td style="white-space: nowrap" align="right"><label
-																					for="Share With">User(s):</label></td>
+																					for="Share With">User:</label></td>
 																				<td style="white-space: nowrap" align="left"><input
 																					type="text" id="userName"
 																					th:value="${selectedUsers}" />&nbsp;&nbsp;&nbsp; <a
@@ -236,7 +236,12 @@
 	        }
 	    }
 	    
-	   
+	    function exit()
+	    {
+			document.getElementById("actionType").value = "cancel";
+			$("#groupForm").submit();
+	    }
+	    
 		function enableSave() {
 			$('#primaryButton').removeClass('disabled');
 			$('#primaryButton').prop('disabled', false);

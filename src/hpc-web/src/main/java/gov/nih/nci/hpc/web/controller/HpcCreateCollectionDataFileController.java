@@ -489,7 +489,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		}
 
 		// Handle custom attributes. If refresh, ignore them
-	//	if (!refresh) {
+		if (!refresh) {
 			Enumeration<String> params = request.getParameterNames();
 			while (params.hasMoreElements()) {
 				String paramName = params.nextElement();
@@ -504,7 +504,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					userMetadataEntries.add(entry);
 				}
 			}
-		//}
+		}
 
 		if (!attributeNames.isEmpty())
 			model.addAttribute("attributeNames", attributeNames);
@@ -516,26 +516,13 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		// if (!path.isEmpty())
 		// model.addAttribute("collectionPath", path);
 		model.addAttribute("basePath", basePath);
-		if(metadataEntries.size() > 0)
-		{
-			session.setAttribute("metadataEntries", metadataEntries);
-			model.addAttribute("metadataEntries", metadataEntries);
-		}
-		else
-		{
-			session.setAttribute("metadataEntries", cachedEntries);
-			model.addAttribute("metadataEntries", cachedEntries);
-		}
-		if(userMetadataEntries.size() > 0)
-		{
-			session.setAttribute("userMetadataEntries", userMetadataEntries);
-			model.addAttribute("userMetadataEntries", userMetadataEntries);
-		}
-		else
-		{
-			session.setAttribute("userMetadataEntries", cachedUserEntries);
-			model.addAttribute("userMetadataEntries", cachedUserEntries);
-		}
+		
+		session.setAttribute("metadataEntries", metadataEntries);
+		model.addAttribute("metadataEntries", metadataEntries);
+		
+		session.setAttribute("userMetadataEntries", userMetadataEntries);
+		model.addAttribute("userMetadataEntries", userMetadataEntries);
+		
 		
 		String criteriaType = (String)request.getParameter("criteriaType");
 		model.addAttribute("criteriaType", criteriaType);
