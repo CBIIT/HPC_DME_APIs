@@ -70,11 +70,15 @@
 		//<![CDATA[
 		function prepareAndSubmit()
 		{
-			if (!(/^\S{3,}$/.test(document.getElementById("selectedNodePath").value)))
+			
+			path = document.getElementById("selectedNodePath").value;
+			if(path == null || path.trim().length == 0)
 			{
-				alert("Space is not allowed in the path!")
+				alert("Please enter path to browse");
 				return false;
-			}
+			} 
+			
+			document.getElementById("selectedNodePath").value = path.trim();
 			
 			// Clear the local storage to reset the state of the tree
 			// when they browse a new node. 
