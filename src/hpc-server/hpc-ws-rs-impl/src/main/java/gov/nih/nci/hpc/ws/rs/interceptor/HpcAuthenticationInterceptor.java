@@ -20,6 +20,7 @@ import org.apache.cxf.rt.security.saml.claims.SAMLSecurityContext;
 import org.apache.cxf.security.SecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.exception.HpcAuthenticationException;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -39,7 +40,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
   // Authorization Types
   private static final String BASIC_AUTHORIZATION = "Basic";
   private static final String TOKEN_AUTHORIZATION = "Bearer";
-  private static final String SAML_AUTHORIZATION = "SAML";
+  public static final String SAML_AUTHORIZATION = "SAML";
 
   //---------------------------------------------------------------------//
   // Instance members
@@ -54,7 +55,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
 
   /** Constructor for Spring Dependency Injection. */
   public HpcAuthenticationInterceptor() {
-    super(Phase.PRE_LOGICAL);
+    super(Phase.PRE_INVOKE);
 
     // We need to authenticate first (this interceptor), and then authorize (other 2 interceptors).
     getBefore().add(SecureAnnotationsInterceptor.class.getName());
@@ -112,8 +113,6 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
     } else if (authorizationType.equals(TOKEN_AUTHORIZATION)) {
       authenticate(authorization[1]);
     } else if (authorizationType.equals(SAML_AUTHORIZATION)) {
-      SAMLSecurityContext samlSecurityContext = (SAMLSecurityContext) message.get(SecurityContext.class);
-      message.put(SAMLSecurityContext.class, samlSecurityContext);
       authenticate(message.get(SecurityContext.class));
     } else {
       throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType);
@@ -134,7 +133,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
       password = policy.getPassword();
     }
 
-    securityBusService.authenticate(userName, password);
+    securityBusService.authenticate(userName, password, HpcAuthenticationType.LDAP);
   }
 
   /**
@@ -157,7 +156,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
     String userName = sc.getUserPrincipal().getName();
     String password = "";
 
-    securityBusService.authenticateSso(userName, password);
+    securityBusService.authenticate(userName, password, HpcAuthenticationType.NONE);
   }
   
   /**

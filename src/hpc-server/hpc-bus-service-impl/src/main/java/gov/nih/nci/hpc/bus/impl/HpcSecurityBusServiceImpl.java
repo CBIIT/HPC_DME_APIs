@@ -332,34 +332,23 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   }
 
   @Override
-  public void authenticate(String nciUserId, String password) throws HpcException {
+  public void authenticate(String nciUserId, String password, HpcAuthenticationType authenticationType) throws HpcException {
     // Input validation.
-    if (StringUtils.isEmpty(nciUserId) || StringUtils.isEmpty(password)) {
+    if (authenticationType == HpcAuthenticationType.LDAP && (StringUtils.isEmpty(nciUserId) || StringUtils.isEmpty(password))) {
       throw new HpcException("Null NCI user ID or password", HpcErrorType.INVALID_REQUEST_INPUT);
+    } else if (StringUtils.isEmpty(nciUserId)) {
+      throw new HpcException("Null NCI user ID", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Authenticate w/ LDAP (optionally).
-    if (ldapAuthentication && !securityService.authenticate(nciUserId, password)) {
+    if (authenticationType == HpcAuthenticationType.LDAP && ldapAuthentication && !securityService.authenticate(nciUserId, password)) {
       throw new HpcException("LDAP authentidaction failed", HpcErrorType.UNAUTHORIZED_REQUEST);
     }
 
     // Set the request invoker (in thread local).
     setRequestInvoker(
         nciUserId,
-        ldapAuthentication ? HpcAuthenticationType.LDAP : HpcAuthenticationType.NONE,
-        toDataManagementAccount(nciUserId, password));
-  }
-
-  @Override
-  public void authenticateSso(String nciUserId, String password) throws HpcException {
-    // Input validation.
-    if (StringUtils.isEmpty(nciUserId)) {
-      throw new HpcException("Null NCI user ID", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    // Set the request invoker (in thread local).
-    setRequestInvokerSso(
-        nciUserId,
+        authenticationType == HpcAuthenticationType.LDAP && ldapAuthentication ? HpcAuthenticationType.LDAP : 
         HpcAuthenticationType.SAML,
         toDataManagementAccount(nciUserId, password));
   }
@@ -640,7 +629,11 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
     // Instantiate a request invoker and set it on thread local.
     securityService.setRequestInvoker(
-        user.getNciAccount(), ldapAuthentication, authenticationType, dataManagementAccount);
+        user.getNciAccount(),
+        authenticationType != HpcAuthenticationType.SAML && ldapAuthentication
+        && !(authenticationType == HpcAuthenticationType.TOKEN && StringUtils.isBlank(dataManagementAccount.getPassword())),
+        authenticationType,
+        dataManagementAccount);
 
     // Get the user role and update the request invoker.
     securityService
@@ -649,42 +642,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
             dataManagementSecurityService.getUserRole(dataManagementAccount.getUsername()));
   }
 
-  /**
-   * Set the Request invoker for SSO (in thread local).
-   *
-   * @param userId The user ID.
-   * @param authenticationType The method the user was authenticated authentication (SAML).
-   * @param dataManagementAccount The data management account.
-   * @throws HpcException on service failure.
-   */
-  private void setRequestInvokerSso(
-      String userId,
-      HpcAuthenticationType authenticationType,
-      HpcIntegratedSystemAccount dataManagementAccount)
-      throws HpcException {
-    // Get the HPC user and validate the account is active.
-    HpcUser user = securityService.getUser(userId);
-    if (user == null) {
-      throw new HpcException(
-          "User is not registered with HPC-DM: " + userId, HpcErrorType.UNAUTHORIZED_REQUEST);
-    }
-    if (!user.getActive()) {
-      throw new HpcException(
-          "User is inactive. Please contact system administrator to activate account: " + userId,
-          HpcErrorType.UNAUTHORIZED_REQUEST);
-    }
-
-    // Instantiate a request invoker and set it on thread local.
-    securityService.setRequestInvoker(
-        user.getNciAccount(), false, authenticationType, dataManagementAccount);
-
-    // Get the user role and update the request invoker.
-    securityService
-        .getRequestInvoker()
-        .setUserRole(
-            dataManagementSecurityService.getUserRole(dataManagementAccount.getUsername()));
-  }
-  
   /**
    * Update group members of a group.
    *

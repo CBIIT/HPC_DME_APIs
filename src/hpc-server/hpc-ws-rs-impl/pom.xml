@@ -44,6 +44,11 @@
     <main.resources.dir>${basedir}/src/main/resources</main.resources.dir>
     <nih.ldap.cert.alias>NIH-DPKI-CA-1A</nih.ldap.cert.alias>
     <nih.ldap.cert.filename>ldap-intermediate.crt</nih.ldap.cert.filename>
+    <idp.properties.filename>idp.properties</idp.properties.filename>
+    <idp.cert.alias>idp</idp.cert.alias>
+    <idp.cert.filename>idp.crt</idp.cert.filename>
+    <test.cert.alias>alice</test.cert.alias>
+    <test.cert.filename>alice.crt</test.cert.filename>
     <store.pass>changeit</store.pass>
     <validity.days>36500</validity.days>
   </properties>
@@ -184,6 +189,22 @@
             </configuration>
           </execution>
           <execution>
+            <id>importIdpCertificate</id>
+            <goals>
+              <goal>importCertificate</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+              <file>${main.resources.dir}/certs/${idp.cert.filename}</file>
+              <storepass>${store.pass}</storepass>
+              <alias>${idp.cert.alias}</alias>
+              <trustcacerts>true</trustcacerts>
+              <noprompt>true</noprompt>
+              <skipIfExist>false</skipIfExist>
+            </configuration>
+          </execution>
+          <execution>
             <id>generateServerKeystore</id>
             <goals>
               <goal>generateKeyPair</goal>
@@ -269,6 +290,11 @@
                   <type>jks</type>
                   <classifier>keystore</classifier>
                 </artifact>
+                <artifact>
+                  <file>${main.resources.dir}/${idp.properties.filename}</file>
+                  <type>properties</type>
+                  <classifier>idp</classifier>
+                </artifact>
               </artifacts>
             </configuration>
           </execution>
@@ -276,7 +302,61 @@
       </plugin>
     </plugins>
   </build>
-
+	<profiles>
+		<profile>
+		<!-- Only activated if local profile is explicitly activated, include 
+					test cert for local testing -->
+			<id>local</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>keytool-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>importTestCertificate</id>
+								<goals>
+									<goal>importCertificate</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+									<file>${main.resources.dir}/certs/${test.cert.filename}</file>
+									<storepass>${store.pass}</storepass>
+									<alias>${test.cert.alias}</alias>
+									<trustcacerts>true</trustcacerts>
+									<noprompt>true</noprompt>
+									<skipIfExist>false</skipIfExist>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-artifacts</id>
+								<phase>package</phase>
+								<goals>
+									<goal>attach-artifact</goal>
+								</goals>
+								<configuration>
+									<artifacts>
+										<artifact>
+											<file>${main.resources.dir}/${ca.certs.jks.filename}</file>
+											<type>jks</type>
+											<classifier>cacerts</classifier>
+										</artifact>
+									</artifacts>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>

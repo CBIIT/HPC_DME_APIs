@@ -297,7 +297,7 @@
 	</bean>
 
 	<!-- SAML Assertion Handler -->
-	<bean id="hpcSamlHeaderHandler" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcSamlHeaderInHandler" />
+	<bean id="hpcSamlHandler" class="gov.nih.nci.hpc.ws.rs.provider.HpcSamlHandler" />
 	
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
@@ -351,7 +351,7 @@
 			<ref bean="hpcReportRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
-			<ref bean="hpcSamlHeaderHandler" />
+			<ref bean="hpcSamlHandler" />
 			<ref bean="jaxbProvider" />
 			<ref bean="jsonProvider" />
 			<ref bean="hpcMultipartProvider" />
@@ -359,7 +359,7 @@
 			<ref bean="hpcAuthorizationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:properties>
-			<entry key="security.signature.properties" value="idp.properties" />
+			<entry key="security.signature.properties" value="${hpc.ws.rs.security-signature-properties}" />
 		</jaxrs:properties>
 		<jaxrs:inInterceptors>
 			<ref bean="hpcProfileInInterceptor" />

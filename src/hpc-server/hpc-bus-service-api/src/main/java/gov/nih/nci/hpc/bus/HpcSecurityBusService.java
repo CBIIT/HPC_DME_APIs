@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.dto.security.HpcAuthenticationResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroupMembersDTO;
@@ -83,18 +84,10 @@ public interface HpcSecurityBusService {
    *
    * @param nciUserId The user's ID.
    * @param password The user's password.
+   * @param authenticationType The authentication type
    * @throws HpcException If user authentication failed.
    */
-  public void authenticate(String nciUserId, String password) throws HpcException;
-
-  /**
-   * Authenticate SSO user.
-   *
-   * @param nciUserId The user's ID.
-   * @param password The user's password.
-   * @throws HpcException If user authentication failed.
-   */
-  public void authenticateSso(String nciUserId, String password) throws HpcException;
+  public void authenticate(String nciUserId, String password, HpcAuthenticationType authenticationType) throws HpcException;
 
   /**
    * Authenticate user.
