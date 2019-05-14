@@ -155,7 +155,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
     String userName = sc.getUserPrincipal().getName();
     String password = "";
 
-    securityBusService.authenticate(userName, password, HpcAuthenticationType.NONE);
+    securityBusService.authenticate(userName, password, HpcAuthenticationType.SAML);
   }
   
   /**
