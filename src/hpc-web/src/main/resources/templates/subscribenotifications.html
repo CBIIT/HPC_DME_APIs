@@ -242,8 +242,9 @@ function addRow() {
 //		showalert("Please enter path to monitor", "alert-error");
 		alert("Please enter path to monitor");
 		return;
-	}
+	} 
 	
+	path = path.trim();
 	enableSave();
 	rowId++;
     var table = document.getElementById("collectionTable");
