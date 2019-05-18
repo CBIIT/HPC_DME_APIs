@@ -135,6 +135,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // allowed.
   private List<String> systemAdminSubjects = new ArrayList<>();
 
+  // Default UI (deep link) URL to check on bulk registration status.
+  private String defaultBulkRegistrationStatusUiURL = null;
+
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -147,8 +150,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    *
    * @param systemAdminSubjects The system admin subjects (which update permissions not allowed
    *        for).
+   * @param defaultBulkRegistrationStatusUiURL The default UI URL (deep link) to check on bulk
+   *        registration status. This URL need to have a {taks_id} placeholder to plug-in the task
+   *        ID to be displayed.
    */
-  private HpcDataManagementServiceImpl(String systemAdminSubjects) {
+  private HpcDataManagementServiceImpl(String systemAdminSubjects,
+      String defaultBulkRegistrationStatusUiURL) {
     // Prepare the query to get data objects in data transfer status of received.
     dataTransferReceivedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
         HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.RECEIVED.value()));
@@ -184,10 +191,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     dataTransferInTemporaryArchiveQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
         HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE.value()));
 
-    // Populate the list of system admin subjects (user-id / group-name). Set
-    // permission is
-    // not allowed for these subjects.
+    // Populate the list of system admin subjects (user-id / group-name). Set permission is not
+    // allowed for these subjects.
     this.systemAdminSubjects.addAll(Arrays.asList(systemAdminSubjects.split("\\s+")));
+
+    this.defaultBulkRegistrationStatusUiURL = defaultBulkRegistrationStatusUiURL;
   }
 
   /**
@@ -630,7 +638,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     HpcBulkDataObjectRegistrationTask bulkDataObjectRegistrationTask =
         new HpcBulkDataObjectRegistrationTask();
     bulkDataObjectRegistrationTask.setUserId(userId);
-    bulkDataObjectRegistrationTask.setUiURL(uiURL);
+    bulkDataObjectRegistrationTask
+        .setUiURL(!StringUtils.isEmpty(uiURL) ? uiURL : defaultBulkRegistrationStatusUiURL);
     bulkDataObjectRegistrationTask.setCreated(Calendar.getInstance());
     bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED);
 
