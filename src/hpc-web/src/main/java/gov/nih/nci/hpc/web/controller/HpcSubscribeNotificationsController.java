@@ -812,9 +812,9 @@ public class HpcSubscribeNotificationsController extends
     List<HpcNotification> notifications = new ArrayList<HpcNotification>();
     List<HpcEventType> types = getEventTypes();
     for (HpcEventType type : types) {
-      if ((type.equals(HpcEventType.USAGE_SUMMARY_REPORT)
-              || type.equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT))
-          && !HpcIdentityUtil.isUserSystemAdmin(session)) 
+      if (type.equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT)
+              || (type.equals(HpcEventType.USAGE_SUMMARY_REPORT)
+          && !HpcIdentityUtil.isUserSystemAdmin(session)))
         continue;
       HpcNotificationSubscription subscription = getNotificationSubscription(
           authToken, type);
