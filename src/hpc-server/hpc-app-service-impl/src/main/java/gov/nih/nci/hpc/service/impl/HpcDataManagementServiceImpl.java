@@ -150,12 +150,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    *
    * @param systemAdminSubjects The system admin subjects (which update permissions not allowed
    *        for).
-   * @param defaultBulkRegistrationStatusUiURL The default UI URL (deep link) to check on bulk
+   * @param defaultBaseUiURL The default UI base URL.
+   * @param defaultBulkRegistrationStatusUiDeepLink The default UI deep link to check on bulk
    *        registration status. This URL need to have a {taks_id} placeholder to plug-in the task
    *        ID to be displayed.
    */
   private HpcDataManagementServiceImpl(String systemAdminSubjects,
-      String defaultBulkRegistrationStatusUiURL) {
+      String defaultBaseUiURL,
+      String defaultBulkRegistrationStatusUiDeepLink) {
     // Prepare the query to get data objects in data transfer status of received.
     dataTransferReceivedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
         HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.RECEIVED.value()));
@@ -195,7 +197,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     // allowed for these subjects.
     this.systemAdminSubjects.addAll(Arrays.asList(systemAdminSubjects.split("\\s+")));
 
-    this.defaultBulkRegistrationStatusUiURL = defaultBulkRegistrationStatusUiURL;
+    defaultBulkRegistrationStatusUiURL = defaultBaseUiURL + '/' + defaultBulkRegistrationStatusUiDeepLink;
   }
 
   /**
