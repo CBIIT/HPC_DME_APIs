@@ -368,7 +368,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 		//Obtain confirmation from the user - multiple levels of confirmation for recursive delete
 		if(recursive.equalsIgnoreCase("true")) {
 			
-			System.out.println("WARNING: You have requested recursive delete of the collection. This will delete all files and sub-collections within it recursively. Are you sure you would like to proceed? (Y/N):");
+			System.out.println("WARNING: You have requested recursive delete of the collection. This will delete all files and sub-collections within it recursively. Are you sure you want to proceed? (Y/N):");
 			confirm = reader.readLine();
 			if (confirm == null || !"Y".equalsIgnoreCase(confirm)) {
 				System.out.println("Skipped deleting collections");
