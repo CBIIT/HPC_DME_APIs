@@ -134,7 +134,7 @@ public class HPCCmdDatafile extends HPCCmdClient {
 					jline.console.ConsoleReader reader;
 					reader = new jline.console.ConsoleReader();
 					reader.setExpandEvents(false);
-					System.out.println("The file " + path + " will be deleted. Procced with deletion ? (Y/N):");
+					System.out.println("The file " + path + " will be deleted. Are you sure you want to proceed ? (Y/N):");
 					String confirm = reader.readLine();
 					if (confirm == null || !"Y".equalsIgnoreCase(confirm)) {
 						System.out.println("Skipped deleting file");
