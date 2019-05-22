@@ -76,7 +76,7 @@ function get_value {
   INPUT="$1"
   ATTRIBUTE="$2"
   INPUT=`get_file_value "$INPUT"`
-  echo "$INPUT" | grep "^[^#]" |  grep "${ATTRIBUTE}=" | sed "s/.*${ATTRIBUTE}[    ]*=[    ]*\(.*\)/\1/"
+  echo "$INPUT" | grep "^[^#]" |  grep "${ATTRIBUTE}\s*=" | sed "s/.*${ATTRIBUTE}[    ]*=[    ]*\(.*\)/\1/"
 }
 
 
