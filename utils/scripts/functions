@@ -739,7 +739,7 @@ function dm_delete_collection {
 #Print Usage of dm_register_directory function
 function dm_show_register_directory_usage {
   read -d  '' usage <<- EOF
-  Usage: dm_register_directory [OPTIONS]  <source-path> <destination-path> 
+  usage: dm_register_directory [OPTIONS]  <source-path> <destination-path> 
 
   Recursively copy all files in the <source-path> to the archive's <destination-path>. 
   Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example the metadata for the file data.txt should be data.txt.metadata.json
