@@ -606,7 +606,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    * Set the Request invoker (in thread local).
    *
    * @param userId The user ID.
-   * @param authenticationType The method the user was authenticated authentication (LDAP or Token).
+   * @param authenticationType The method the user was authenticated authentication (LDAP or Token or SAML).
    * @param dataManagementAccount The data management account.
    * @throws HpcException on service failure.
    */

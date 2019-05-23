@@ -29,6 +29,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -467,6 +468,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
     // Add the user to iRODS.
     try {
       irodsConnection.getUserAO(authenticatedToken).addUser(irodsUser);
+      if(!irodsConnection.getLdapAuthentication())
+        updateNewUserAccount(authenticatedToken, irodsUser.getName());
 
     } catch (DuplicateDataException ex) {
       throw new HpcException("iRODS account already exists: " + nciAccount.getUserId(),
@@ -1200,4 +1203,26 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
+  
+  /**
+   * Update newly created IRODS account.
+   *
+   * @param authenticatedToken the authenticatedToken
+   * @param name the user name
+   * @throws HpcException
+   * @throws HpcException if update fails
+   */
+  private void updateNewUserAccount(Object authenticatedToken, String name) throws HpcException {
+    try {
+      irodsConnection
+          .getUserAO(authenticatedToken)
+          .changeAUserPasswordByAnAdmin(name, irodsConnection.getUserKey(name));
+    } catch (NoSuchAlgorithmException | JargonException e) {
+      deleteUser(authenticatedToken, name);
+      throw new HpcException(
+          "Failed to update new user: " + e.getMessage(),
+          HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
+    }
+  }
+  
 }
