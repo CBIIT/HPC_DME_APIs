@@ -1423,7 +1423,7 @@ function dm_download_s3_deprecated {
 
 function dm_download_s3 {
 
-    local USAGE="usage: dm_download_s3 <archive-path> <destination_bucket> <destination_path> [aws_credentials_file]"
+    local USAGE="usage: dm_download_s3 <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]"
     local CREDENTIALS_FILE=~/.aws/credentials
     local DESCRIPTION=description.json
 
