@@ -28,7 +28,7 @@ SERVER=`cat ../../utils/server`
 # add -D <filename> to dump the header
 
 server=$(cat $HPC_DM_TEST/utils/server)
-curl  -k $SERVER/hpc-server/user -u testhpcdm:password  -H "Accept: application/json" -D response-header -o response-message.json -s 2> curl-status 
+curl  -k $SERVER/user -u testhpcdm:password  -H "Accept: application/json" -D response-header -o response-message.json -s 2> curl-status 
 
 check_connection $RESPONSE_HEADER
 ERROR_TYPE=`get_json_value $RESPONSE_MSG errorType`
