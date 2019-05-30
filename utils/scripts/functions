@@ -1420,16 +1420,28 @@ function dm_download_s3_deprecated {
     fi
 }
 
+#Print Usage of dm_download_s3 function
+function dm_show_download_s3_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_s3 <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
+  Download the specified dataobject or collection to the s3 bucket
+  archive-path                Source path in the archive
+  destination-bucket          Destination S3 bucket to transfer data to
+  destination_path            Full path of the destination file/folder in the S3 bucket
+  aws_credentials_file_path   Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+EOF
+  echo "$usage"
+}
+
 
 function dm_download_s3 {
 
-    local USAGE="usage: dm_download_s3 <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]"
     local CREDENTIALS_FILE=~/.aws/credentials
     local DESCRIPTION=description.json
 
     if [ "$#" -lt 3 ]
     then
-        echo "$USAGE" >&2
+        dm_show_download_s3_usage >&2
         exit 1
     fi
 
