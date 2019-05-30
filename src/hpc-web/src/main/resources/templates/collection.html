@@ -192,7 +192,7 @@
 								</div>
 								</h2>
 							</div>
-							<div id="errorsFeedback">
+							<div id="errorsFeedback" style="word-break: break-all;">
 								<div class="alert alert-error" th:if="${error != null}">
 									<a class="close" data-dismiss="alert">×</a> <label
 										for="${error}" th:text="${error}"></label>
@@ -217,7 +217,7 @@
 										</div>
 										<!-- /.modal-dialog -->
 									</div>
-                                    <div class="form-group">
+                                    <div class="form-group" style="word-break: break-all;">
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> <label
 												for="${collection.getCollection().getCollectionName()}"
