@@ -1451,8 +1451,25 @@ function dm_download_s3 {
 
    #Create description.json
    local awsAccessKeyId=$(get_value $CREDENTIALS_FILE aws_access_key_id)
+   if [ -z "$awsAccessKeyId" ]
+   then
+       echo "ERROR: Crendetials file does not contain aws_access_key_id property"
+       exit 1
+   fi
+
    local awsSecretAccessKey=$(get_value $CREDENTIALS_FILE aws_secret_access_key)
+   if [ -z "$awsSecretAccessKey" ]
+   then
+       echo "ERROR: Crendetials file does not contain aws_secret_access_key property"
+       exit 1
+   fi
+  
    local awsRegion=$(get_value $CREDENTIALS_FILE region)
+   if [ -z "$awsRegion" ]
+   then
+       echo "ERROR: Crendetials file does not contain region property"
+       exit 1
+   fi
 
    echo -e "{\n \"s3DownloadDestination\": {\n \"destinationLocation\": {" > description.json
    echo " \"fileContainerId\": \"$DESTINATION_BUCKET\"," >> description.json
