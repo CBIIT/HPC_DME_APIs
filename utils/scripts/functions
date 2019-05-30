@@ -1465,21 +1465,21 @@ function dm_download_s3 {
    local awsAccessKeyId=$(get_value $CREDENTIALS_FILE aws_access_key_id)
    if [ -z "$awsAccessKeyId" ]
    then
-       echo "ERROR: Crendetials file does not contain aws_access_key_id property"
+       echo "ERROR: Credentials file does not contain aws_access_key_id property"
        exit 1
    fi
 
    local awsSecretAccessKey=$(get_value $CREDENTIALS_FILE aws_secret_access_key)
    if [ -z "$awsSecretAccessKey" ]
    then
-       echo "ERROR: Crendetials file does not contain aws_secret_access_key property"
+       echo "ERROR: Credentials file does not contain aws_secret_access_key property"
        exit 1
    fi
   
    local awsRegion=$(get_value $CREDENTIALS_FILE region)
    if [ -z "$awsRegion" ]
    then
-       echo "ERROR: Crendetials file does not contain region property"
+       echo "ERROR: Credentials file does not contain region property"
        exit 1
    fi
 
