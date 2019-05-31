@@ -25,6 +25,7 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -63,6 +64,10 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
     dataManagementConfiguration.setId(rs.getString("ID"));
     dataManagementConfiguration.setBasePath(rs.getString("BASE_PATH"));
     dataManagementConfiguration.setDoc(rs.getString("DOC"));
+    String archiveType = rs.getString("ARCHIVE_TYPE");
+    if (!StringUtils.isEmpty(archiveType)) {
+      dataManagementConfiguration.setArchiveType(HpcArchiveType.fromValue(archiveType));
+    }
 
     // Map the S3 Configuration.
     HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();

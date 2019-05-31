@@ -69,10 +69,18 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
+	<!--  2-hop REMOVE -->
 	<xsd:simpleType name="HpcPermTempArchiveType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="TEMPORARY_ARCHIVE" />
 			<xsd:enumeration value="ARCHIVE" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcArchiveType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="CLEVERSAFE" />
+			<xsd:enumeration value="POSIX" />
 		</xsd:restriction>
 	</xsd:simpleType>
 

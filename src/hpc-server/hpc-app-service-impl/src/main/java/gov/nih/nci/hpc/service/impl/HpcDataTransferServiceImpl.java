@@ -31,6 +31,7 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -1423,8 +1424,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       String configurationId) throws HpcException {
     // Determine the data transfer type to use in this upload request (i.e. Globus
     // or S3).
-    HpcDataTransferType archiveDataTransferType =
-        dataManagementConfigurationLocator.getArchiveDataTransferType(configurationId);
+    HpcArchiveType archiveType = dataManagementConfigurationLocator.getArchiveType(configurationId);
 
     if (uploadRequest.getGlobusUploadSource() != null) {
       // It's an asynchronous upload request w/ Globus. This is supported by both
@@ -1435,7 +1435,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     if (uploadRequest.getS3UploadSource() != null) {
       // It's an asynchronous upload request w/ S3. This is only supported Cleversafe
       // archive.
-      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+      if (archiveType.equals(HpcArchiveType.POSIX)) {
         throw new HpcException("S3 upload source not supported by POSIX archive",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
@@ -1443,14 +1443,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     if (uploadRequest.getSourceFile() != null) {
-      // It's a synchrnous upload request - use the configured archive (S3/Cleversafe
-      // or Globus/POSIX).
-      return archiveDataTransferType;
+      // It's a synchronous upload request - supported by both POSIX & Cleversafe archives.
+      // We use GLOBUS data transfer to perform this for POSIX.
+      switch (archiveType) {
+        case CLEVERSAFE:
+          return HpcDataTransferType.S_3;
+        case POSIX:
+          return HpcDataTransferType.GLOBUS;
+        default:
+          // Could not determine data transfer type.
+          throw new HpcException("Could not determine data transfer type",
+              HpcErrorType.UNEXPECTED_ERROR);
+      }
     }
+
     if (uploadRequest.getGenerateUploadRequestURL()) {
       // It's a request to generate upload URL. This is only supported Cleversafe
       // archive.
-      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+      if (archiveType.equals(HpcArchiveType.POSIX)) {
         throw new HpcException("Generate upload URL not supported by POSIX archive",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }

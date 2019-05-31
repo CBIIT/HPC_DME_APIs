@@ -28,6 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -138,8 +139,8 @@ public class HpcDataTransferServiceImplTest {
     pathAttributes.setSize(123456789L);
     when(dataTransferProxyMock.getPathAttributes(anyObject(), same(sourceLocation), eq(true)))
         .thenReturn(pathAttributes);
-    when(dataManagementConfigurationLocatorMock.getArchiveDataTransferType(anyObject()))
-        .thenReturn(HpcDataTransferType.S_3);
+    when(dataManagementConfigurationLocatorMock.getArchiveType(anyObject()))
+        .thenReturn(HpcArchiveType.CLEVERSAFE);
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
         .thenReturn(new HpcIntegratedSystemAccount());
     when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");

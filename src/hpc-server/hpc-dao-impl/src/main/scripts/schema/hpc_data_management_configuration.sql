@@ -17,6 +17,7 @@ CREATE TABLE public."HPC_DATA_MANAGEMENT_CONFIGURATION"
   "ID" text PRIMARY KEY,
   "BASE_PATH" text NOT NULL,
   "DOC" text NOT NULL,
+  "ARCHIVE_TYPE" text NOT NULL,
   "S3_URL" text,
   "S3_VAULT" text,
   "S3_OBJECT_ID" text,
@@ -46,6 +47,8 @@ COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."BASE_PATH" IS
                   'The base path to apply this configuration to';
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."DOC" IS 
                   'The DOC that own this configuration';
+COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."ARCHIVE_TYPE" IS 
+                  'The archive type (Cleversafe or POSIX)';
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_URL" IS 
                   'The S3 archive (Cleversafe) URL';
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_VAULT" IS 

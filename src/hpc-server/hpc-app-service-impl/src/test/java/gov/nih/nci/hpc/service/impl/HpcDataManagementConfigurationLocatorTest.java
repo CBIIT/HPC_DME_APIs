@@ -28,6 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 // import org.springframework.test.util.ReflectionTestUtils;
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
@@ -75,6 +76,7 @@ public class HpcDataManagementConfigurationLocatorTest {
     String basepath = "/CCR_CMM_Archive";
     configuration.setDoc("CMM");
     configuration.setBasePath(basepath);
+    configuration.setArchiveType(HpcArchiveType.CLEVERSAFE);
 
     HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
     HpcArchive hpcS3Archive = new HpcArchive();
@@ -129,12 +131,12 @@ public class HpcDataManagementConfigurationLocatorTest {
    * @throws HpcException
    */
   @Test
-  public void testGetArchiveDataTransferType() throws HpcException {
+  public void testGetArchiveType() throws HpcException {
 
     // This is from the setup data loaded in init method
-    HpcDataTransferType type =
-        dataManagementConfigurationLocator.getArchiveDataTransferType("someId1");
-    assertEquals(type, HpcDataTransferType.S_3);
+    HpcArchiveType type =
+        dataManagementConfigurationLocator.getArchiveType("someId1");
+    assertEquals(type, HpcArchiveType.CLEVERSAFE);
 
   }
 
@@ -259,64 +261,22 @@ public class HpcDataManagementConfigurationLocatorTest {
 
   }
 
-
-
-  /**
-   * Failure test: Throw invalid archive type exception if archive type not correct
-   * 
-   * @throws HpcException
-   */
-  @Test
-  public void testInvalidArchiveTypeConfiguration() throws HpcException {
-
-    // Setup test data
-
-    HpcDataManagementConfiguration configuration = new HpcDataManagementConfiguration();
-    configuration.setId("someId2");
-    String basepath = "/FNL_SF_Archive";
-    configuration.setDoc("FNLCR");
-    configuration.setBasePath(basepath);
-
-    HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
-    HpcArchive hpcS3Archive = new HpcArchive();
-    s3Configuration.setBaseArchiveDestination(hpcS3Archive);
-    configuration.setS3Configuration(s3Configuration);
-
-    HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
-    HpcArchive hpcGlobusArchive = new HpcArchive();
-    globusConfiguration.setBaseArchiveDestination(hpcGlobusArchive);
-    configuration.setGlobusConfiguration(globusConfiguration);
-
-    configurations.add(configuration);
-    when(dataManagementConfigurationDAO.getDataManagementConfigurations())
-        .thenReturn(configurations);
-    when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
-
-    // Exception is thrown because no type is set for either hpcS3Archive nor hpcGlobusArchive
-    expectedException.expect(HpcException.class);
-    expectedException.expectMessage("Invalid S3/Globus archive type configuration: " + basepath);
-
-    dataManagementConfigurationLocator.reload();
-
-  }
-
-
   /**
    * Failure test: get archiveDataTransferType
    * 
    * @throws HpcException
    */
   @Test
-  public void testNoArchiveDataTransferType() throws HpcException {
+  public void testNoArchiveType() throws HpcException {
 
     // Exception is thrown because someIdx configuration id does not exist
     expectedException.expect(HpcException.class);
     expectedException.expectMessage("Could not locate configuration: someIdx");
 
     // This is from the setup data loaded in init method
-    HpcDataTransferType type =
-        dataManagementConfigurationLocator.getArchiveDataTransferType("someIdx");
-    assertEquals(type, HpcDataTransferType.S_3);
+    HpcArchiveType type =
+        dataManagementConfigurationLocator.getArchiveType("someIdx");
+    assertEquals(type, HpcArchiveType.CLEVERSAFE);
 
   }
 
