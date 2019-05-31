@@ -1,9 +1,11 @@
 /**
  * HpcDataManagementConfigurationDAOImpl.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.dao.postgresql.impl;
@@ -12,7 +14,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -24,8 +25,8 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
@@ -39,107 +40,103 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementConfigurationDAO {
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constants
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   // SQL Queries.
   private static final String GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL =
       "select * from public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\"";
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Instance members
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   // The Spring JDBC Template instance.
-  @Autowired private JdbcTemplate jdbcTemplate = null;
+  @Autowired
+  private JdbcTemplate jdbcTemplate = null;
 
   // HpcDataManagementConfiguration Table to Object mapper.
-  private RowMapper<HpcDataManagementConfiguration> rowMapper =
-      (rs, rowNum) -> {
-        HpcDataManagementConfiguration dataManagementConfiguration =
-            new HpcDataManagementConfiguration();
-        dataManagementConfiguration.setId(rs.getString("ID"));
-        dataManagementConfiguration.setBasePath(rs.getString("BASE_PATH"));
-        dataManagementConfiguration.setDoc(rs.getString("DOC"));
+  private RowMapper<HpcDataManagementConfiguration> rowMapper = (rs, rowNum) -> {
+    HpcDataManagementConfiguration dataManagementConfiguration =
+        new HpcDataManagementConfiguration();
+    dataManagementConfiguration.setId(rs.getString("ID"));
+    dataManagementConfiguration.setBasePath(rs.getString("BASE_PATH"));
+    dataManagementConfiguration.setDoc(rs.getString("DOC"));
 
-        // Map the S3 Configuration.
-        HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
-        s3Configuration.setUrl(rs.getString("S3_URL"));
-        HpcArchive s3BaseArchiveDestination = new HpcArchive();
-        HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
-        s3ArchiveLocation.setFileContainerId(rs.getString("S3_VAULT"));
-        s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
-        s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
-        String s3ArchiveType = rs.getString("S3_ARCHIVE_TYPE");
-        if (!StringUtils.isEmpty(s3ArchiveType)) {
-          s3BaseArchiveDestination.setType(HpcArchiveType.fromValue(s3ArchiveType));
-        }
-        s3Configuration.setBaseArchiveDestination(s3BaseArchiveDestination);
-        s3Configuration.setUploadRequestURLExpiration(
-            rs.getInt("S3_UPLOAD_REQUEST_URL_EXPIRATION"));
+    // Map the S3 Configuration.
+    HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
+    s3Configuration.setUrl(rs.getString("S3_URL"));
+    HpcArchive s3BaseArchiveDestination = new HpcArchive();
+    HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
+    s3ArchiveLocation.setFileContainerId(rs.getString("S3_VAULT"));
+    s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
+    s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
+    String s3ArchiveType = rs.getString("S3_ARCHIVE_TYPE");
+    if (!StringUtils.isEmpty(s3ArchiveType)) {
+      s3BaseArchiveDestination
+          .setPermTempArchiveType(HpcPermTempArchiveType.fromValue(s3ArchiveType));
+    }
+    s3Configuration.setBaseArchiveDestination(s3BaseArchiveDestination);
+    s3Configuration.setUploadRequestURLExpiration(rs.getInt("S3_UPLOAD_REQUEST_URL_EXPIRATION"));
 
-        dataManagementConfiguration.setS3Configuration(s3Configuration);
+    dataManagementConfiguration.setS3Configuration(s3Configuration);
 
-        // Map the Globus configuration.
-        HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
-        globusConfiguration.setUrl(rs.getString("GLOBUS_URL"));
+    // Map the Globus configuration.
+    HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
+    globusConfiguration.setUrl(rs.getString("GLOBUS_URL"));
 
-        HpcArchive globusBaseArchiveDestination = new HpcArchive();
-        HpcFileLocation globusArchiveLocation = new HpcFileLocation();
-        globusArchiveLocation.setFileContainerId(rs.getString("GLOBUS_ARCHIVE_ENDPOINT"));
-        globusArchiveLocation.setFileId(rs.getString("GLOBUS_ARCHIVE_PATH"));
-        globusBaseArchiveDestination.setFileLocation(globusArchiveLocation);
-        globusBaseArchiveDestination.setType(
-            HpcArchiveType.fromValue(rs.getString("GLOBUS_ARCHIVE_TYPE")));
-        globusBaseArchiveDestination.setDirectory(rs.getString("GLOBUS_ARCHIVE_DIRECTORY"));
-        globusConfiguration.setBaseArchiveDestination(globusBaseArchiveDestination);
+    HpcArchive globusBaseArchiveDestination = new HpcArchive();
+    HpcFileLocation globusArchiveLocation = new HpcFileLocation();
+    globusArchiveLocation.setFileContainerId(rs.getString("GLOBUS_ARCHIVE_ENDPOINT"));
+    globusArchiveLocation.setFileId(rs.getString("GLOBUS_ARCHIVE_PATH"));
+    globusBaseArchiveDestination.setFileLocation(globusArchiveLocation);
+    globusBaseArchiveDestination.setPermTempArchiveType(
+        HpcPermTempArchiveType.fromValue(rs.getString("GLOBUS_ARCHIVE_TYPE")));
+    globusBaseArchiveDestination.setDirectory(rs.getString("GLOBUS_ARCHIVE_DIRECTORY"));
+    globusConfiguration.setBaseArchiveDestination(globusBaseArchiveDestination);
 
-        HpcArchive globusBaseDownloadSource = new HpcArchive();
-        HpcFileLocation globusDownloadLocation = new HpcFileLocation();
-        globusDownloadLocation.setFileContainerId(rs.getString("GLOBUS_DOWNLOAD_ENDPOINT"));
-        globusDownloadLocation.setFileId(rs.getString("GLOBUS_DOWNLOAD_PATH"));
-        globusBaseDownloadSource.setFileLocation(globusDownloadLocation);
-        globusBaseDownloadSource.setDirectory(rs.getString("GLOBUS_DOWNLOAD_DIRECTORY"));
-        globusConfiguration.setBaseDownloadSource(globusBaseDownloadSource);
+    HpcArchive globusBaseDownloadSource = new HpcArchive();
+    HpcFileLocation globusDownloadLocation = new HpcFileLocation();
+    globusDownloadLocation.setFileContainerId(rs.getString("GLOBUS_DOWNLOAD_ENDPOINT"));
+    globusDownloadLocation.setFileId(rs.getString("GLOBUS_DOWNLOAD_PATH"));
+    globusBaseDownloadSource.setFileLocation(globusDownloadLocation);
+    globusBaseDownloadSource.setDirectory(rs.getString("GLOBUS_DOWNLOAD_DIRECTORY"));
+    globusConfiguration.setBaseDownloadSource(globusBaseDownloadSource);
 
-        dataManagementConfiguration.setGlobusConfiguration(globusConfiguration);
+    dataManagementConfiguration.setGlobusConfiguration(globusConfiguration);
 
-        try {
-          dataManagementConfiguration.setDataHierarchy(
-              getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
-          dataManagementConfiguration
-              .getCollectionMetadataValidationRules()
-              .addAll(
-                  getMetadataValidationRulesFromJSONStr(
-                      rs.getString("COLLECTION_METADATA_VALIDATION_RULES")));
-          dataManagementConfiguration
-              .getDataObjectMetadataValidationRules()
-              .addAll(
-                  getMetadataValidationRulesFromJSONStr(
-                      rs.getString("DATA_OBJECT_METADATA_VALIDATION_RULES")));
+    try {
+      dataManagementConfiguration
+          .setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
+      dataManagementConfiguration.getCollectionMetadataValidationRules()
+          .addAll(getMetadataValidationRulesFromJSONStr(
+              rs.getString("COLLECTION_METADATA_VALIDATION_RULES")));
+      dataManagementConfiguration.getDataObjectMetadataValidationRules()
+          .addAll(getMetadataValidationRulesFromJSONStr(
+              rs.getString("DATA_OBJECT_METADATA_VALIDATION_RULES")));
 
-        } catch (HpcException e) {
-          throw new SQLException(e);
-        }
+    } catch (HpcException e) {
+      throw new SQLException(e);
+    }
 
-        return dataManagementConfiguration;
-      };
+    return dataManagementConfiguration;
+  };
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constructors
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /** Constructor for Spring Dependency Injection. */
   private HpcDataManagementConfigurationDAOImpl() {}
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // HpcDataManagementConfigDAO Interface Implementation
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   @Override
   public List<HpcDataManagementConfiguration> getDataManagementConfigurations()
@@ -148,17 +145,14 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
       return jdbcTemplate.query(GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL, rowMapper);
 
     } catch (DataAccessException e) {
-      throw new HpcException(
-          "Failed to get data management configurations: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR,
-          HpcIntegratedSystem.POSTGRESQL,
-          e);
+      throw new HpcException("Failed to get data management configurations: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Helper Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Verify connection to DB. Called by Spring as init-method.
@@ -171,11 +165,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
       jdbcTemplate.getDataSource().getConnection();
 
     } catch (Exception e) {
-      throw new HpcException(
-          "Failed to connect to PostgreSQL DB. Check credentials config",
-          HpcErrorType.DATABASE_ERROR,
-          HpcIntegratedSystem.POSTGRESQL,
-          e);
+      throw new HpcException("Failed to connect to PostgreSQL DB. Check credentials config",
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
 
@@ -196,10 +187,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
       return dataHierarchyFromJSON((JSONObject) new JSONParser().parse(dataHierarchyJSONStr));
 
     } catch (Exception e) {
-      throw new HpcException(
-          "Failed to parse data hierarchy JSON: " + dataHierarchyJSONStr,
-          HpcErrorType.DATABASE_ERROR,
-          e);
+      throw new HpcException("Failed to parse data hierarchy JSON: " + dataHierarchyJSONStr,
+          HpcErrorType.DATABASE_ERROR, e);
     }
   }
 
@@ -216,21 +205,20 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
     if (!jsonDataHierarchy.containsKey("collectionType")
         || !jsonDataHierarchy.containsKey("isDataObjectContainer")) {
-      throw new HpcException(
-          "Invalid Data Hierarchy Definition: " + jsonDataHierarchy, HpcErrorType.DATABASE_ERROR);
+      throw new HpcException("Invalid Data Hierarchy Definition: " + jsonDataHierarchy,
+          HpcErrorType.DATABASE_ERROR);
     }
 
     dataHierarchy.setCollectionType((String) jsonDataHierarchy.get("collectionType"));
-    dataHierarchy.setIsDataObjectContainer(
-        (Boolean) jsonDataHierarchy.get("isDataObjectContainer"));
+    dataHierarchy
+        .setIsDataObjectContainer((Boolean) jsonDataHierarchy.get("isDataObjectContainer"));
 
     // Iterate through the sub collections.
     JSONArray jsonSubCollections = (JSONArray) jsonDataHierarchy.get("subCollections");
     if (jsonSubCollections != null) {
       Iterator<JSONObject> subCollectionsIterator = jsonSubCollections.iterator();
       while (subCollectionsIterator.hasNext()) {
-        dataHierarchy
-            .getSubCollectionsHierarchies()
+        dataHierarchy.getSubCollectionsHierarchies()
             .add(dataHierarchyFromJSON(subCollectionsIterator.next()));
       }
     }
@@ -253,9 +241,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
     try {
       JSONArray jsonMetadataValidationRules =
-          (JSONArray)
-              ((JSONObject) new JSONParser().parse(metadataValidationRulesJSONStr))
-                  .get("metadataValidationRules");
+          (JSONArray) ((JSONObject) new JSONParser().parse(metadataValidationRulesJSONStr))
+              .get("metadataValidationRules");
       if (jsonMetadataValidationRules == null) {
         throw new HpcException("Empty validation rules", HpcErrorType.DATABASE_ERROR);
       }
@@ -265,8 +252,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
     } catch (Exception e) {
       throw new HpcException(
           "Failed to parse metadata validation rules JSON: " + metadataValidationRulesJSONStr,
-          HpcErrorType.DATABASE_ERROR,
-          e);
+          HpcErrorType.DATABASE_ERROR, e);
     }
   }
 
@@ -290,18 +276,18 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
       if (!jsonMetadataValidationRule.containsKey("attribute")
           || !jsonMetadataValidationRule.containsKey("mandatory")
           || !jsonMetadataValidationRule.containsKey("ruleEnabled")) {
-        throw new HpcException(
-            "Invalid rule JSON object: " + jsonMetadataValidationRule, HpcErrorType.DATABASE_ERROR);
+        throw new HpcException("Invalid rule JSON object: " + jsonMetadataValidationRule,
+            HpcErrorType.DATABASE_ERROR);
       }
 
       // JSON -> POJO.
       HpcMetadataValidationRule metadataValidationRule = new HpcMetadataValidationRule();
       metadataValidationRule.setAttribute((String) jsonMetadataValidationRule.get("attribute"));
       metadataValidationRule.setMandatory((Boolean) jsonMetadataValidationRule.get("mandatory"));
-      metadataValidationRule.setRuleEnabled(
-          (Boolean) jsonMetadataValidationRule.get("ruleEnabled"));
-      metadataValidationRule.setDefaultValue(
-          (String) jsonMetadataValidationRule.get("defaultValue"));
+      metadataValidationRule
+          .setRuleEnabled((Boolean) jsonMetadataValidationRule.get("ruleEnabled"));
+      metadataValidationRule
+          .setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
       metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
 
       JSONArray jsonCollectionTypes = (JSONArray) jsonMetadataValidationRule.get("collectionTypes");

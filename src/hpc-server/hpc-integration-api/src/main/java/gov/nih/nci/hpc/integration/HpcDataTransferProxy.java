@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
@@ -20,6 +19,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -229,7 +229,7 @@ public interface HpcDataTransferProxy {
    * @param baseArchiveDestination The base (archive specific) destination.
    * @param path The data object (logical) path.
    * @param callerObjectId The caller's objectId.
-   * @param archiveType The type of the archive.
+   * @param permTempArchiveType The type of the archive.
    * @param unique If true, the a UUID will be appended to the end of the destination path ensuring
    *     it is unique. Otherwise, no UUID is appended
    * @return The calculated data transfer deposit destination.
@@ -238,13 +238,13 @@ public interface HpcDataTransferProxy {
       HpcFileLocation baseArchiveDestination,
       String path,
       String callerObjectId,
-      HpcArchiveType archiveType,
+      HpcPermTempArchiveType permTempArchiveType,
       boolean unique) {
     // Calculate the data transfer destination absolute path as the following:
     StringBuilder destinationPath = new StringBuilder();
     destinationPath.append(baseArchiveDestination.getFileId());
 
-    if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
+    if (permTempArchiveType.equals(HpcPermTempArchiveType.ARCHIVE)) {
       // For Archive destination, destination path is:
       // 'base path' / 'caller's object-id / 'logical path'_'generated UUID' (note: generated UUID is optional)
       if (callerObjectId != null && !callerObjectId.isEmpty()) {

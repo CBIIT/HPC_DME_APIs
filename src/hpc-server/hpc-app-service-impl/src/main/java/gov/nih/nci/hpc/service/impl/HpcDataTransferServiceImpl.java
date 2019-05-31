@@ -31,7 +31,6 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -54,6 +53,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
@@ -326,12 +326,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // S3 destination.
       performS3AsynchronousDownload(downloadRequest, response, baseArchiveDestination);
 
-    } else if (dataTransferType.equals(HpcDataTransferType.S_3) && googleDriveDownloadDestination != null) {
-      // This is an asynchronous download request from a Cleversafe archive to a Google Drive destination.
+    } else if (dataTransferType.equals(HpcDataTransferType.S_3)
+        && googleDriveDownloadDestination != null) {
+      // This is an asynchronous download request from a Cleversafe archive to a Google Drive
+      // destination.
       performGoogleDriveAsynchronousDownload(downloadRequest, response, baseArchiveDestination);
 
-    } 
-    else {
+    } else {
       throw new HpcException("Invalid download request", HpcErrorType.UNEXPECTED_ERROR);
     }
 
@@ -702,7 +703,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     if (dataManagementConfigurationLocator
         .getDataTransferConfiguration(downloadTask.getConfigurationId(),
             downloadTask.getDataTransferType())
-        .getBaseArchiveDestination().getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
+        .getBaseArchiveDestination().getPermTempArchiveType()
+        .equals(HpcPermTempArchiveType.TEMPORARY_ARCHIVE)) {
       // This is a 2-hop download, and S_3 is complete. Our base % complete is 50%.
       downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
     } else {
@@ -1571,7 +1573,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *
    * @param downloadRequest The data object download request.
    * @param response The download response object. This method sets download task id and destination
-   *        location on the response. 
+   *        location on the response.
    * @param baseArchiveDestination The base archive destination of the requested data object.
    * @throws HpcException on service failure.
    */
@@ -1600,13 +1602,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw (e);
     }
   }
-  
+
   /**
    * Perform a download request to user's provided Google Drive destination from Cleversafe archive.
    *
    * @param downloadRequest The data object download request.
    * @param response The download response object. This method sets download task id and destination
-   *        location on the response. 
+   *        location on the response.
    * @param baseArchiveDestination The base archive destination of the requested data object.
    * @throws HpcException on service failure.
    */

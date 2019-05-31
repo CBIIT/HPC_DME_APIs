@@ -1,9 +1,11 @@
 /**
  * HpcDataManagementConfigurationLocator.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.service.impl;
@@ -16,8 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
@@ -31,17 +33,19 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
  */
 public class HpcDataManagementConfigurationLocator
     extends HashMap<String, HpcDataManagementConfiguration> {
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Instance members
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   private static final long serialVersionUID = -2233828633688868458L;
 
   // The Data Management Proxy instance.
-  @Autowired private HpcDataManagementProxy dataManagementProxy = null;
+  @Autowired
+  private HpcDataManagementProxy dataManagementProxy = null;
 
   // The Data Management Configuration DAO instance.
-  @Autowired private HpcDataManagementConfigurationDAO dataManagementConfigurationDAO = null;
+  @Autowired
+  private HpcDataManagementConfigurationDAO dataManagementConfigurationDAO = null;
 
   // A set of all supported base paths (to allow quick search).
   private Map<String, HpcDataManagementConfiguration> basePathConfigurations = new HashMap<>();
@@ -52,18 +56,18 @@ public class HpcDataManagementConfigurationLocator
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constructors
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /** Default constructor for Spring Dependency Injection. */
   private HpcDataManagementConfigurationLocator() {
     super();
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Get all supported base paths.
@@ -100,11 +104,11 @@ public class HpcDataManagementConfigurationLocator
    * @param configurationId The data management configuration ID.
    * @param dataTransferType The data transfer type.
    * @return The data transfer configuration for the requested configuration ID and data transfer
-   *     type.
+   *         type.
    * @throws HpcException if the configuration was not found.
    */
-  public HpcDataTransferConfiguration getDataTransferConfiguration(
-      String configurationId, HpcDataTransferType dataTransferType) throws HpcException {
+  public HpcDataTransferConfiguration getDataTransferConfiguration(String configurationId,
+      HpcDataTransferType dataTransferType) throws HpcException {
     HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
     if (dataManagementConfiguration != null) {
       return dataTransferType.equals(HpcDataTransferType.S_3)
@@ -113,12 +117,8 @@ public class HpcDataManagementConfigurationLocator
     }
 
     // Configuration was not found.
-    throw new HpcException(
-        "Could not locate data transfer configuration: "
-            + configurationId
-            + " "
-            + dataTransferType.value(),
-        HpcErrorType.UNEXPECTED_ERROR);
+    throw new HpcException("Could not locate data transfer configuration: " + configurationId + " "
+        + dataTransferType.value(), HpcErrorType.UNEXPECTED_ERROR);
   }
 
   /**
@@ -136,8 +136,8 @@ public class HpcDataManagementConfigurationLocator
     }
 
     // Configuration was not found.
-    throw new HpcException(
-        "Could not locate configuration: " + configurationId, HpcErrorType.UNEXPECTED_ERROR);
+    throw new HpcException("Could not locate configuration: " + configurationId,
+        HpcErrorType.UNEXPECTED_ERROR);
   }
 
   /**
@@ -150,9 +150,10 @@ public class HpcDataManagementConfigurationLocator
     basePathConfigurations.clear();
     docs.clear();
 
-    for (HpcDataManagementConfiguration dataManagementConfiguration :
-        dataManagementConfigurationDAO.getDataManagementConfigurations()) {
-      // Ensure the base path is in the form of a relative path, and one level deep (i.e. /base-path).
+    for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationDAO
+        .getDataManagementConfigurations()) {
+      // Ensure the base path is in the form of a relative path, and one level deep (i.e.
+      // /base-path).
       String basePath =
           dataManagementProxy.getRelativePath(dataManagementConfiguration.getBasePath());
       if (basePath.split("/").length != 2) {
@@ -164,33 +165,29 @@ public class HpcDataManagementConfigurationLocator
 
       // Ensure base path is unique (i.e. no 2 configurations share the same base path).
       if (basePathConfigurations.put(basePath, dataManagementConfiguration) != null) {
-        throw new HpcException(
-            "Duplicate base-path in data management configurations:"
-                + dataManagementConfiguration.getBasePath(),
-            HpcErrorType.UNEXPECTED_ERROR);
+        throw new HpcException("Duplicate base-path in data management configurations:"
+            + dataManagementConfiguration.getBasePath(), HpcErrorType.UNEXPECTED_ERROR);
       }
 
-      // Determine the archive data transfer type. Note: the system supports either a S3 archive (Cleversafe)
+      // Determine the archive data transfer type. Note: the system supports either a S3 archive
+      // (Cleversafe)
       // or Globus archive (Isilon file system).
-      HpcArchiveType globusArchiveType =
-          dataManagementConfiguration
-              .getGlobusConfiguration()
-              .getBaseArchiveDestination()
-              .getType();
-      HpcArchiveType s3ArchiveType =
-          dataManagementConfiguration.getS3Configuration().getBaseArchiveDestination().getType();
-      if ((s3ArchiveType != null && s3ArchiveType.equals(HpcArchiveType.ARCHIVE))
+      HpcPermTempArchiveType globusArchiveType = dataManagementConfiguration
+          .getGlobusConfiguration().getBaseArchiveDestination().getPermTempArchiveType();
+      HpcPermTempArchiveType s3ArchiveType = dataManagementConfiguration.getS3Configuration()
+          .getBaseArchiveDestination().getPermTempArchiveType();
+      if ((s3ArchiveType != null && s3ArchiveType.equals(HpcPermTempArchiveType.ARCHIVE))
           && (globusArchiveType == null
-              || globusArchiveType.equals(HpcArchiveType.TEMPORARY_ARCHIVE))) {
+              || globusArchiveType.equals(HpcPermTempArchiveType.TEMPORARY_ARCHIVE))) {
         dataManagementConfiguration.setArchiveDataTransferType(HpcDataTransferType.S_3);
-      } else if ((globusArchiveType != null && globusArchiveType.equals(HpcArchiveType.ARCHIVE))
-          && (s3ArchiveType == null || s3ArchiveType.equals(HpcArchiveType.TEMPORARY_ARCHIVE))) {
+      } else if ((globusArchiveType != null
+          && globusArchiveType.equals(HpcPermTempArchiveType.ARCHIVE))
+          && (s3ArchiveType == null
+              || s3ArchiveType.equals(HpcPermTempArchiveType.TEMPORARY_ARCHIVE))) {
         dataManagementConfiguration.setArchiveDataTransferType(HpcDataTransferType.GLOBUS);
       } else {
-        throw new HpcException(
-            "Invalid S3/Globus archive type configuration: "
-                + dataManagementConfiguration.getBasePath(),
-            HpcErrorType.UNEXPECTED_ERROR);
+        throw new HpcException("Invalid S3/Globus archive type configuration: "
+            + dataManagementConfiguration.getBasePath(), HpcErrorType.UNEXPECTED_ERROR);
       }
 
       // Populate the DOCs list.

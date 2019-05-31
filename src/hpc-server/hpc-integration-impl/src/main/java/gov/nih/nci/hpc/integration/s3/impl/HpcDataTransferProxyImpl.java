@@ -34,7 +34,6 @@ import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
@@ -42,6 +41,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
@@ -126,7 +126,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             baseArchiveDestination.getFileLocation(),
             uploadRequest.getPath(),
             uploadRequest.getCallerObjectId(),
-            baseArchiveDestination.getType(),
+            baseArchiveDestination.getPermTempArchiveType(),
             false);
 
     // If the archive destination file exists, generate a new archive destination w/ unique path.
@@ -136,7 +136,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
               baseArchiveDestination.getFileLocation(),
               uploadRequest.getPath(),
               uploadRequest.getCallerObjectId(),
-              baseArchiveDestination.getType(),
+              baseArchiveDestination.getPermTempArchiveType(),
               true);
     }
 
@@ -155,7 +155,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           uploadRequest.getSourceFile(),
           archiveDestinationLocation,
           progressListener,
-          baseArchiveDestination.getType());
+          baseArchiveDestination.getPermTempArchiveType());
     } else {
       // Upload from AWS S3 source.
       return uploadDataObject(
@@ -426,7 +426,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param archiveDestinationLocation The archive destination location.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
-   * @param archiveType The archive type.
+   * @param permTempArchiveType The archive type.
    * @return A data object upload response.
    * @throws HpcException on data transfer system failure.
    */
@@ -435,7 +435,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       File sourceFile,
       HpcFileLocation archiveDestinationLocation,
       HpcDataTransferProgressListener progressListener,
-      HpcArchiveType archiveType)
+      HpcPermTempArchiveType permTempArchiveType)
       throws HpcException {
     // Create a S3 upload request.
     PutObjectRequest request =
@@ -484,7 +484,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferCompleted(dataTransferCompleted);
     uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
     uploadResponse.setSourceSize(sourceFile.length());
-    if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
+    if (permTempArchiveType.equals(HpcPermTempArchiveType.ARCHIVE)) {
       uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
     } else {
       uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);

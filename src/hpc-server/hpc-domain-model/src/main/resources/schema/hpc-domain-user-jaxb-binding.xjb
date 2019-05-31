@@ -111,8 +111,8 @@
       <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferType']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType" />
       </jxb:bindings>
-      <jxb:bindings node="//xsd:simpleType[@name='HpcArchiveType']">
-         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType" />
+      <jxb:bindings node="//xsd:simpleType[@name='HpcPermTempArchiveType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:simpleType[@name='HpcCollectionDownloadTaskStatus']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus" />

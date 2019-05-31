@@ -69,7 +69,7 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
-	<xsd:simpleType name="HpcArchiveType">
+	<xsd:simpleType name="HpcPermTempArchiveType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="TEMPORARY_ARCHIVE" />
 			<xsd:enumeration value="ARCHIVE" />
@@ -103,8 +103,8 @@
 		<xsd:sequence>
 			<xsd:element name="fileLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="type"
-				type="hpc-domain-datatransfer:HpcArchiveType" />
+			<xsd:element name="permTempArchiveType"
+				type="hpc-domain-datatransfer:HpcPermTempArchiveType" />
 			<xsd:element name="directory" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>

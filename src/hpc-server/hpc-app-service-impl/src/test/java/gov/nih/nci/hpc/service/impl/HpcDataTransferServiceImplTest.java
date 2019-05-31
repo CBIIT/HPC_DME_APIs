@@ -28,10 +28,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
@@ -250,7 +250,7 @@ public class HpcDataTransferServiceImplTest {
   public void testS3DownloadDataObject() throws HpcException {
     // Mock setup.
     HpcArchive baseDownloadSource = new HpcArchive();
-    baseDownloadSource.setType(HpcArchiveType.ARCHIVE);
+    baseDownloadSource.setPermTempArchiveType(HpcPermTempArchiveType.ARCHIVE);
     HpcFileLocation baseDownloadSourceFileLocation = new HpcFileLocation();
     baseDownloadSourceFileLocation.setFileContainerId("testBaseDownloadSource");
     baseDownloadSourceFileLocation.setFileId("testBaseDownloadSource");
