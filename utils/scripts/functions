@@ -326,7 +326,7 @@ function dm_get_dataobject {
 
     local USAGE="usage: dm_get_dataobject <dataobject-path> [metadata-file] [REST-response]"
     
-    while getopts ":rt:" option
+    while getopts ":" option
     do
       case "${option}" in
         *)
@@ -382,7 +382,7 @@ function dm_get_collection {
 
     local USAGE="usage: dm_get_collection <collection-path> [metadata-file] [REST-response]"
 
-    while getopts ":rt:" option
+    while getopts ":" option
     do
       case "${option}" in
         *)
@@ -578,6 +578,16 @@ function dm_delete_datafile {
       return 1
     fi
 
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          echo "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+    done
+
     if [ -z "$1" ] 
     then
         echo "$USAGE" >&2
@@ -655,7 +665,7 @@ function dm_delete_collection {
     numthreads=1
     recursive=false
   
-   while getopts ":rt:" option
+   while getopts ":r:" option
     do
       case "${option}" in
        
@@ -1595,6 +1605,15 @@ function dm_get_download_status {
 function dm_rename() {
 
     local USAGE="usage: dm_rename <description.json> [rename-status-file] [REST-response]"
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          echo "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+    done
 
     if [ -z "$1" ]
     then
