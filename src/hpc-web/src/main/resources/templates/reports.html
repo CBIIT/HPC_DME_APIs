@@ -334,20 +334,24 @@
 	<script src="js/bootstrap-datepicker.js"></script>
 
 	<script>
+	//<![CDATA[
   $('#fromDate').datepicker({
 	    format: 'mm/dd/yyyy',
 	    defaultDate: 'now',
         autoclose: true	    
 	});
  
-  $('#fromDate').datepicker('setDate', new Date());
+  if($('#fromDate').val() == '')
+  	$('#fromDate').datepicker('setDate', new Date());
   
   $('#toDate').datepicker({
 	    format: 'mm/dd/yyyy',
 	    defaultDate: 'now',
         autoclose: true	    
-	});  
-  $('#toDate').datepicker('setDate', new Date());
+	}); 
+  
+  if($('#toDate').val() == '')
+  	$('#toDate').datepicker('setDate', new Date());
   
   //knob
       $(function() {
@@ -500,6 +504,8 @@
           	{
         		document.getElementById("doc").value = "-1";
           		document.getElementById("user").value = "-1";
+          		if(!validateDateRange())
+          			return false;
           	}
           	else if(reportType == "USAGE_SUMMARY_BY_DOC")
           	{
@@ -514,6 +520,8 @@
           		document.getElementById("user").value = "-1";
         	  	if(document.getElementById("doc").value == "-1")
         	  		alert("Please select a DOC");
+        	  	if(!validateDateRange())
+          			return false;
           	}
           	else if(reportType == "USAGE_SUMMARY_BY_USER")
           	{
@@ -528,6 +536,8 @@
         	  	if(document.getElementById("user").value == "-1")
         	  		alert("Please select a user");
         		document.getElementById("doc").value = "-1";
+        		if(!validateDateRange())
+          			return false;
           	}
           	else if(reportType == "USAGE_SUMMARY_BY_BASEPATH")
           	{
@@ -544,6 +554,8 @@
         	  		alert("Please select a Base path");
         		document.getElementById("doc").value = "-1";
         		document.getElementById("user").value = "-1";
+        		if(!validateDateRange())
+          			return false;
           	}
           	else if(reportType == "USAGE_SUMMARY_BY_PATH" || 
           			reportType == "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE")
@@ -555,6 +567,9 @@
         		if(reportType == "USAGE_SUMMARY_BY_PATH") {
         			document.getElementById("fromDate").value = null;
         	  		document.getElementById("toDate").value = null;
+        		} else {
+        			if(!validateDateRange())
+              			return false;
         		}
         		
         	  	if(document.getElementById("path").value == null || document.getElementById("path").value == "")
@@ -581,7 +596,22 @@
     	  }
     	  
 	      document.getElementById("reportsform").submit();
-      }      
+      }
+      function validateDateRange()
+      {
+    	  if($('#fromDate').val() == '' && $('#toDate').val() == '') {
+    		  alert("Please enter a date range");
+    		  return false;
+    	  }
+    	  if($('#fromDate').val() == '')
+    		  $('#fromDate').val('01/01/2016');
+    	  if($('#toDate').val() == '') {
+    		  var now = new Date();
+    		  $('#toDate').val($.datepicker.formatDate("mm/dd/yy", new Date()));
+    	  }
+    	  return true;
+      }
+    //]]>
   </script>
 
 </body>

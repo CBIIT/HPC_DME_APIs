@@ -10,6 +10,8 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -237,6 +239,14 @@ public class HpcReportsController extends AbstractHpcController {
   private List<HpcReportDTO> translate(List<HpcReportDTO> reports) {
     List<HpcReportDTO> tReports = new ArrayList<HpcReportDTO>();
     for (HpcReportDTO dto : reports) {
+      if(dto.getFromDate() != null) {
+        DateTimeFormatter dtoFormat = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+        LocalDate fromDate = LocalDate.parse(dto.getFromDate(), dtoFormat);
+        LocalDate toDate = LocalDate.parse(dto.getToDate(), dtoFormat);
+        dto.setFromDate(formatter.format(fromDate));
+        dto.setToDate(formatter.format(toDate.minusDays(1)));
+      }
       List<HpcReportEntryDTO> entries = dto.getReportEntries();
       for (HpcReportEntryDTO entry : entries) {
         if (env.getProperty(entry.getAttribute()) != null)
