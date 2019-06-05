@@ -155,7 +155,7 @@ public class HPCBatchLocalFolderExecutor {
         try {
           reader = new jline.console.ConsoleReader();
           reader.setExpandEvents(false);
-          System.out.println("Are you sure you want to register? (Y/N):");
+          System.out.println("Are you sure you want to register this directory? (Y/N):");
           String confirm = reader.readLine();
           if (confirm != null && !confirm.equalsIgnoreCase("Y")) {
             System.out.println("Skipped registering data files!");

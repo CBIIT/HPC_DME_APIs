@@ -355,7 +355,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				else {				
 				    String taskId = responseDTO.getTaskId();
 					model.addAttribute("message",
-							"Bulk Data file registration request is submmited! Task Id: <a href='uploadtask?type=&taskId=" + taskId +"'>"+taskId+"</a>");
+							"Bulk Data file registration request is submitted! Task Id: <a href='uploadtask?type=&taskId=" + taskId +"'>"+taskId+"</a>");
 					model.addAttribute("dryRun", false); 
 					session.removeAttribute("dryRun");
 		

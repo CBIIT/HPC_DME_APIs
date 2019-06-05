@@ -368,7 +368,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 		//Obtain confirmation from the user - multiple levels of confirmation for recursive delete
 		if(recursive.equalsIgnoreCase("true")) {
 			
-			System.out.println("WARNING: You have requested recursive delete of the collection. This will delete all files and sub-collections within it recursively. Are you sure you would like to proceed? (Y/N):");
+			System.out.println("WARNING: You have requested recursive delete of the collection. This will delete all files and sub-collections within it recursively. Are you sure you want to proceed? (Y/N):");
 			confirm = reader.readLine();
 			if (confirm == null || !"Y".equalsIgnoreCase(confirm)) {
 				System.out.println("Skipped deleting collections");
@@ -380,13 +380,13 @@ public class HPCCmdCollection extends HPCCmdClient {
 				int fileCount = 0;
 				System.out.println("The following collections and files will be deleted from the Archive:");				
 				fileCount = getDataObjectsPaths(serviceURL, path, authToken, true, fileCount);
-				System.out.println("A total of " + fileCount + " files are marked for deletion. Procced with deletion ? (Y/N):");
+				System.out.println("A total of " + fileCount + " files are marked for deletion. Proceed with deletion ? (Y/N):");
 					
 			} else {
-				System.out.println("The collection " + path + " and all files and sub-collections within it will be recursively deleted. Procced with deletion ? (Y/N):");
+				System.out.println("The collection " + path + " and all files and sub-collections within it will be recursively deleted. Proceed with deletion ? (Y/N):");
 			}
 		} else {
-			System.out.println("The collection " + path + " will be deleted. Procced with deletion ? (Y/N):");
+			System.out.println("The collection " + path + " will be deleted. Proceed with deletion ? (Y/N):");
 		}
 			
 		confirm = reader.readLine();

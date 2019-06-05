@@ -1,9 +1,11 @@
 /**
  * HpcDataTransferService.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.service;
@@ -28,6 +30,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
@@ -49,28 +52,21 @@ public interface HpcDataTransferService {
    * @param s3UploadSource (Optional) The S3 upload source.
    * @param sourceFile (Optional) The source file.
    * @param generateUploadRequestURL Generate an upload URL (so caller can directly upload file into
-   *     archive).
+   *        archive).
    * @param uploadRequestURLChecksum A checksum provided by the caller to be attached to the upload
-   *     request URL.
+   *        request URL.
    * @param path The data object registration path.
    * @param userId The user-id who requested the data upload.
    * @param callerObjectId The caller's provided data object ID.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @return A data object upload response.
    * @throws HpcException on service failure.
    */
-  public HpcDataObjectUploadResponse uploadDataObject(
-      HpcGlobusUploadSource globusUploadSource,
-      HpcS3UploadSource s3UploadSource,
-      File sourceFile,
-      boolean generateUploadRequestURL,
-      String uploadRequestURLChecksum,
-      String path,
-      String userId,
-      String callerObjectId,
-      String configurationId)
-      throws HpcException;
+  public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
+      HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
+      String uploadRequestURLChecksum, String path, String userId, String callerObjectId,
+      String configurationId) throws HpcException;
 
   /**
    * Download a data object file.
@@ -79,26 +75,22 @@ public interface HpcDataTransferService {
    * @param archiveLocation The archive file location.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @param userId The user ID submitting the download request.
    * @param completionEvent If true, an event will be added when async download is complete.
    * @param size The data object's size in bytes.
    * @return A data object download response.
    * @throws HpcException on service failure.
    */
-  public HpcDataObjectDownloadResponse downloadDataObject(
-      String path,
-      HpcFileLocation archiveLocation,
-      HpcGlobusDownloadDestination globusDownloadDestination,
+  public HpcDataObjectDownloadResponse downloadDataObject(String path,
+      HpcFileLocation archiveLocation, HpcGlobusDownloadDestination globusDownloadDestination,
       HpcS3DownloadDestination s3DownloadDestination,
-      HpcDataTransferType dataTransferType,
-      String configurationId,
-      String userId,
-      boolean completionEvent,
-      long size)
-      throws HpcException;
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+      HpcDataTransferType dataTransferType, String configurationId, String userId,
+      boolean completionEvent, long size) throws HpcException;
 
   /**
    * Generate a (pre-signed) download URL for a data object file.
@@ -107,16 +99,12 @@ public interface HpcDataTransferService {
    * @param archiveLocation The archive file location.
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @return The download URL.
    * @throws HpcException on service failure.
    */
-  public String generateDownloadRequestURL(
-      String path,
-      HpcFileLocation archiveLocation,
-      HpcDataTransferType dataTransferType,
-      String configurationId)
-      throws HpcException;
+  public String generateDownloadRequestURL(String path, HpcFileLocation archiveLocation,
+      HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
 
   /**
    * Add system generated metadata to the data object in the archive.
@@ -124,19 +112,15 @@ public interface HpcDataTransferService {
    * @param fileLocation The file location.
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @param objectId The data object id from the data management system (UUID).
    * @param registrarId The user-id of the data registrar.
    * @return The checksum of the data object object.
    * @throws HpcException on service failure.
    */
-  public String addSystemGeneratedMetadataToDataObject(
-      HpcFileLocation fileLocation,
-      HpcDataTransferType dataTransferType,
-      String configurationId,
-      String objectId,
-      String registrarId)
-      throws HpcException;
+  public String addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+      HpcDataTransferType dataTransferType, String configurationId, String objectId,
+      String registrarId) throws HpcException;
 
   /**
    * Delete a data object file.
@@ -144,12 +128,11 @@ public interface HpcDataTransferService {
    * @param fileLocation The file location.
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @throws HpcException on service failure.
    */
-  public void deleteDataObject(
-      HpcFileLocation fileLocation, HpcDataTransferType dataTransferType, String configurationId)
-      throws HpcException;
+  public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+      String configurationId) throws HpcException;
 
   /**
    * Get a data transfer upload request status.
@@ -157,7 +140,7 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param dataTransferRequestId The data transfer request ID.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @return The data transfer upload request status.
    * @throws HpcException on service failure.
    */
@@ -171,7 +154,7 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param dataTransferRequestId The data transfer request ID.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @return The data transfer download request status.
    * @throws HpcException on service failure.
    */
@@ -186,16 +169,12 @@ public interface HpcDataTransferService {
    * @param fileLocation The endpoint/path to get attributes for.
    * @param getSize If set to true, the file/directory size will be returned.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @return The path attributes.
    * @throws HpcException on service failure.
    */
-  public HpcPathAttributes getPathAttributes(
-      HpcDataTransferType dataTransferType,
-      HpcFileLocation fileLocation,
-      boolean getSize,
-      String configurationId)
-      throws HpcException;
+  public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType,
+      HpcFileLocation fileLocation, boolean getSize, String configurationId) throws HpcException;
 
   /**
    * Get path attributes for a given file in AWS S3 (using user provided S3 account).
@@ -206,33 +185,28 @@ public interface HpcDataTransferService {
    * @return The path attributes.
    * @throws HpcException on service failure.
    */
-  public HpcPathAttributes getPathAttributes(
-      HpcS3Account s3Account, HpcFileLocation fileLocation, boolean getSize)
-      throws HpcException;
+  public HpcPathAttributes getPathAttributes(HpcS3Account s3Account, HpcFileLocation fileLocation,
+      boolean getSize) throws HpcException;
 
   /**
    * Scan a directory (recursively) and return a list of all its files.
    *
    * @param dataTransferType The data transfer type.
-   * @param s3Account (Optional) S3 account to use. If null, then system account for the data transfer type is used.
+   * @param s3Account (Optional) S3 account to use. If null, then system account for the data
+   *        transfer type is used.
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @param includePatterns The patterns to use to include files in the scan results.
    * @param excludePatterns The patterns to use to exclude files from the scan results.
    * @param patternType The type of the patterns provided.
    * @return A list of files found.
    * @throws HpcException on service failure.
    */
-  public List<HpcDirectoryScanItem> scanDirectory(
-      HpcDataTransferType dataTransferType,
-      HpcS3Account s3Account,
-      HpcFileLocation directoryLocation,
-      String configurationId,
-      List<String> includePatterns,
-      List<String> excludePatterns,
-      HpcDirectoryScanPatternType patternType)
-      throws HpcException;
+  public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
+      HpcS3Account s3Account, HpcFileLocation directoryLocation, String configurationId,
+      List<String> includePatterns, List<String> excludePatterns,
+      HpcDirectoryScanPatternType patternType) throws HpcException;
 
   /**
    * Get a file from the archive.
@@ -243,9 +217,8 @@ public interface HpcDataTransferService {
    * @return The requested file from the archive.
    * @throws HpcException on service failure.
    */
-  public File getArchiveFile(
-      String configurationId, HpcDataTransferType dataTransferType, String fileId)
-      throws HpcException;
+  public File getArchiveFile(String configurationId, HpcDataTransferType dataTransferType,
+      String fileId) throws HpcException;
 
   /**
    * Get all (active) data object download tasks.
@@ -261,8 +234,8 @@ public interface HpcDataTransferService {
    * @param taskId The download task ID.
    * @param taskType The download task type (data-object or collection).
    * @return A download status object, or null if the task can't be found. Note: The returned object
-   *     is associated with a 'task' object if the download is in-progress. If the download
-   *     completed or failed, the returned object is associated with a 'result' object.
+   *         is associated with a 'task' object if the download is in-progress. If the download
+   *         completed or failed, the returned object is associated with a 'result' object.
    * @throws HpcException on service failure.
    */
   public HpcDownloadTaskStatus getDownloadTaskStatus(String taskId, HpcDownloadTaskType taskType)
@@ -279,13 +252,8 @@ public interface HpcDataTransferService {
    * @param bytesTransferred The total bytes transfered.
    * @throws HpcException on service failure.
    */
-  public void completeDataObjectDownloadTask(
-      HpcDataObjectDownloadTask downloadTask,
-      boolean result,
-      String message,
-      Calendar completed,
-      long bytesTransferred)
-      throws HpcException;
+  public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean result,
+      String message, Calendar completed, long bytesTransferred) throws HpcException;
 
   /**
    * Continue a data object download task that was queued.
@@ -295,7 +263,7 @@ public interface HpcDataTransferService {
    */
   public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException;
-  
+
   /**
    * Reset a data object download task. Set it's status to RECEIVED.
    *
@@ -313,8 +281,8 @@ public interface HpcDataTransferService {
    * @param bytesTransferred The bytes transferred so far.
    * @throws HpcException on service failure.
    */
-  public void updateDataObjectDownloadTask(
-      HpcDataObjectDownloadTask downloadTask, long bytesTransferred) throws HpcException;
+  public void updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+      long bytesTransferred) throws HpcException;
 
   /**
    * Submit a request to download a collection.
@@ -324,16 +292,13 @@ public interface HpcDataTransferService {
    * @param s3DownloadDestination The user requested S3 download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @return The submitted collection download task.
    * @throws HpcException on service failure.
    */
-  public HpcCollectionDownloadTask downloadCollection(
-      String path,
+  public HpcCollectionDownloadTask downloadCollection(String path,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination,
-      String userId,
-      String configurationId)
+      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId)
       throws HpcException;
 
   /**
@@ -346,12 +311,9 @@ public interface HpcDataTransferService {
    * @return The submitted request download task.
    * @throws HpcException on service failure.
    */
-  public HpcCollectionDownloadTask downloadDataObjects(
-      Map<String, String> dataObjectPathsMap,
+  public HpcCollectionDownloadTask downloadDataObjects(Map<String, String> dataObjectPathsMap,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination,
-      String userId)
-      throws HpcException;
+      HpcS3DownloadDestination s3DownloadDestination, String userId) throws HpcException;
 
   /**
    * Update a collection download task.
@@ -381,9 +343,8 @@ public interface HpcDataTransferService {
    * @param completed (Optional) The download task completion timestamp.
    * @throws HpcException on service failure.
    */
-  public void completeCollectionDownloadTask(
-      HpcCollectionDownloadTask downloadTask, boolean result, String message, Calendar completed)
-      throws HpcException;
+  public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask, boolean result,
+      String message, Calendar completed) throws HpcException;
 
   /**
    * Get active download requests for a user.
@@ -426,14 +387,13 @@ public interface HpcDataTransferService {
    *
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
-   *     config).
+   *        config).
    * @param fileContainerId The file container ID.
    * @return The file container name of the provider id.
    * @throws HpcException on data transfer system failure.
    */
-  public String getFileContainerName(
-      HpcDataTransferType dataTransferType, String configurationId, String fileContainerId)
-      throws HpcException;
+  public String getFileContainerName(HpcDataTransferType dataTransferType, String configurationId,
+      String fileContainerId) throws HpcException;
 
   /**
    * Calculate a data object upload % complete. Note: if upload not in progress, null is returned.

@@ -53,6 +53,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
@@ -257,17 +258,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcDataObjectDownloadResponse downloadDataObject(String path,
       HpcFileLocation archiveLocation, HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, HpcDataTransferType dataTransferType,
-      String configurationId, String userId, boolean completionEvent, long size)
-      throws HpcException {
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+      HpcDataTransferType dataTransferType, String configurationId, String userId,
+      boolean completionEvent, long size) throws HpcException {
     // Input Validation.
     if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
       throw new HpcException("Invalid data transfer request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Validate the destination.
-    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, configurationId,
-        false);
+    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination,
+        googleDriveDownloadDestination, configurationId, false);
 
     // Create a download request.
     HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -275,6 +277,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadRequest.setArchiveLocation(archiveLocation);
     downloadRequest.setGlobusDestination(globusDownloadDestination);
     downloadRequest.setS3Destination(s3DownloadDestination);
+    downloadRequest.setGoogleDriveDestination(googleDriveDownloadDestination);
     downloadRequest.setPath(path);
     downloadRequest.setConfigurationId(configurationId);
     downloadRequest.setUserId(userId);
@@ -289,14 +292,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         .getDataTransferConfiguration(configurationId, dataTransferType)
         .getBaseArchiveDestination();
 
-    // There are 3 methods of downloading data object:
+    // There are 4 methods of downloading data object:
     // 1. Synchronous download via REST API. Supported by Cleversafe & POSIX
     // archives.
     // 2. Asynchronous download using Globus. Supported by Cleversafe (in a 2-hop
     // solution) & POSIX archives.
     // 3. Asynchronous download via streaming data object from Cleversafe to user
-    // provided S3 bucket or destination URL. Supported by Cleversafe archive only
-    if (globusDownloadDestination == null && s3DownloadDestination == null) {
+    // provided S3 bucket. Supported by Cleversafe archive only.
+    // 4. Asynchronous download via streaming data object from Cleversafe to user
+    // provided Google Drive. Supported by Cleversafe archive only.
+    if (globusDownloadDestination == null && s3DownloadDestination == null
+        && googleDriveDownloadDestination == null) {
       // This is a synchronous download request.
       performSynchronousDownload(downloadRequest, dataTransferType, response,
           baseArchiveDestination);
@@ -320,7 +326,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // S3 destination.
       performS3AsynchronousDownload(downloadRequest, response, baseArchiveDestination);
 
-    } else {
+    } else if (dataTransferType.equals(HpcDataTransferType.S_3) && googleDriveDownloadDestination != null) {
+      // This is an asynchronous download request from a Cleversafe archive to a Google Drive destination.
+      performGoogleDriveAsynchronousDownload(downloadRequest, response, baseArchiveDestination);
+
+    } 
+    else {
       throw new HpcException("Invalid download request", HpcErrorType.UNEXPECTED_ERROR);
     }
 
@@ -709,8 +720,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId)
       throws HpcException {
     // Validate the download destination.
-    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, configurationId,
-        true);
+    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null,
+        configurationId, true);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -738,8 +749,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // first data object path. At this time, there is no need to validate for all
     // configuration IDs.
     String configurationId = dataObjectPathsMap.values().iterator().next();
-    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, configurationId,
-        true);
+    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null,
+        configurationId, true);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -1166,23 +1177,35 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param configurationId The configuration ID.
    * @param bulkDownload True if this is a request to download a list of files or a collection, or
    *        false if this is a request to download a single data object.
    * @throws HpcException if the download destination is invalid
    */
   private void validateDownloadDestination(HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String configurationId, boolean bulkDownload)
-      throws HpcException {
-    // Validate the destination (if provided) is either Globus or S3.
-    if (globusDownloadDestination != null && s3DownloadDestination != null) {
-      throw new HpcException("Multiple download destinations provided (Globus and S3)",
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String configurationId,
+      boolean bulkDownload) throws HpcException {
+    // Validate the destination (if provided) is either Globus, S3, or Google Drive.
+    int destinations = 0;
+    if (globusDownloadDestination != null) {
+      destinations++;
+    }
+    if (s3DownloadDestination != null) {
+      destinations++;
+    }
+    if (googleDriveDownloadDestination != null) {
+      destinations++;
+    }
+    if (destinations > 1) {
+      throw new HpcException("Multiple download destinations provided (Globus, S3, Google Drive)",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Validate the destination for collection/bulk download is provided.
-    if (bulkDownload && globusDownloadDestination == null && s3DownloadDestination == null) {
-      throw new HpcException("No download destinations provided (Globus or S3)",
+    if (bulkDownload && destinations == 0) {
+      throw new HpcException("No download destination provided (Globus, S3, Google Drive)",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
@@ -1215,6 +1238,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       if (!isValidS3Account(s3DownloadDestination.getAccount())) {
         throw new HpcException("Invalid S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
+    // Validate the Google Drive destination.
+    if (googleDriveDownloadDestination != null) {
+      if (!isValidFileLocation(googleDriveDownloadDestination.getDestinationLocation())) {
+        throw new HpcException("Invalid Google Drive download destination location",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+
+      if (StringUtils.isEmpty(googleDriveDownloadDestination.getAccessToken())) {
+        throw new HpcException("Invalid Google Drive access token",
+            HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
   }
@@ -1472,7 +1508,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * @param downloadRequest The data object download request.
    * @param dataTransferType The data transfer type to use.
    * @param response The download response object. This method sets download task id and destination
-   *        location on the response. it exists.
+   *        location on the response.
    * @param baseArchiveDestination The base archive destination of the requested data object.
    * @throws HpcException on service failure.
    */
@@ -1495,7 +1531,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *
    * @param downloadRequest The data object download request.
    * @param response The download response object. This method sets download task id and destination
-   *        location on the response. it exists.
+   *        location on the response.
    * @throws HpcException on service failure.
    */
   private void performGlobusAsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
@@ -1535,7 +1571,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *
    * @param downloadRequest The data object download request.
    * @param response The download response object. This method sets download task id and destination
-   *        location on the response. it exists.
+   *        location on the response. 
    * @param baseArchiveDestination The base archive destination of the requested data object.
    * @throws HpcException on service failure.
    */
@@ -1563,6 +1599,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       throw (e);
     }
+  }
+  
+  /**
+   * Perform a download request to user's provided Google Drive destination from Cleversafe archive.
+   *
+   * @param downloadRequest The data object download request.
+   * @param response The download response object. This method sets download task id and destination
+   *        location on the response. 
+   * @param baseArchiveDestination The base archive destination of the requested data object.
+   * @throws HpcException on service failure.
+   */
+  private void performGoogleDriveAsynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
+      HpcDataObjectDownloadResponse response, HpcArchive baseArchiveDestination)
+      throws HpcException {
+
+    // TODO: Implement for Google Drive single file download.
+    throw new HpcException("Google Drive download not implemented", HpcErrorType.REQUEST_REJECTED);
   }
 
   /**
