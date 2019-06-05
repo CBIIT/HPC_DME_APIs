@@ -56,12 +56,10 @@ function dm_generate_token () {
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
 
-    local USAGE="USAGE: dm_register <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
+    local USAGE="usage: dm_register <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
     then
-        echo "ERROR: using dm_register" >&2
-        echo "Received: $@" >&2
         echo "$USAGE" >&2
         return 1
     fi
@@ -132,12 +130,10 @@ function dm_register () {
 #         <destinaton-path>: The destination logical path
 function dm_register_collection {
 
-    local USAGE="USAGE: dm_register_collection <description.json> <destination-path>"
+    local USAGE="usage: dm_register_collection <description.json> <destination-path>"
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "ERROR: using dm_register_collection" >&2
-        echo "Received: $@" >&2
         echo "$USAGE" >&2
         return
     fi
@@ -160,12 +156,10 @@ function dm_register_collection {
 #         <source-file>: The source file for synchronous registratio.
 function dm_register_dataobject_presigned {
 
-    local USAGE="USAGE: dm_register_dataobject <description.json> <destination-path> <source-file>"
+    local USAGE="usage: dm_register_dataobject_presigned <description.json> <destination-path> <source-file>"
 
     if [ "$#" -lt 3 ]
     then
-        echo "ERROR: using dm_register_dataobject_presigned" >&2
-        echo "Received: $@" >&2
         echo "$USAGE" >&2
         return
     fi
@@ -212,12 +206,10 @@ function dm_register_dataobject_presigned {
 #         [source-file]: The source file for synchronous registratio.
 function dm_register_dataobject {
 
-    local USAGE="USAGE: dm_register_dataobject <description.json> <destination-path> [source-file]"
+    local USAGE="usage: dm_register_dataobject <description.json> <destination-path> [source-file]"
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "ERROR: using dm_register_collection" >&2
-        echo "Received: $@" >&2
         echo "$USAGE" >&2
         return
     fi
@@ -248,12 +240,10 @@ function dm_register_dataobject {
 #        <destination-path> The destination logical path
 function dm_sync_globus_endpoint  {
 
-    local USAGE="USAGE: dm_sync_folder <source-folder> <destination-path>"
+    local USAGE="usage: dm_sync_folder <source-folder> <destination-path>"
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "ERROR: using dm_register_collection" >&2
-        echo "Received: $@" >&2
         echo "$USAGE" >&2
         return
     fi
@@ -290,11 +280,10 @@ function dm_sync_globus_endpoint  {
 #      : [REST-response]
 function dm_get_item {
 
-    local USAGE="dm_get_item  <item-path> [metadata-file] [REST-response]"
+    local USAGE="usage: dm_get_item <item-path> [metadata-file] [REST-response]"
 
     if [ "$#" -lt 1 ] 
     then
-        echo "ERROR: using dm_get_item" >&2
         echo "$USAGE" >&2
         return 1
     fi
@@ -335,12 +324,20 @@ function dm_get_item {
 #      : [REST-response]
 function dm_get_dataobject {
 
-    local USAGE="dm_get_item_dataobject  <dataobject-path> [metadata-file] [REST-response]"
+    local USAGE="usage: dm_get_dataobject <dataobject-path> [metadata-file] [REST-response]"
+    
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          echo "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+    done
 
     if [ "$#" -lt 1 ] 
     then
-        echo "ERROR: using get_dataobject" >&2
-        echo "recieved $0 $@" 
         echo "$USAGE" >&2
         return
     fi
@@ -383,12 +380,21 @@ function dm_get_dataobject {
 #      : [REST-response]
 function dm_get_collection {
 
-    local USAGE="dm_get_collection  <collection-path> [metadata-file] [REST-response]"
+    local USAGE="usage: dm_get_collection <collection-path> [metadata-file] [REST-response]"
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          echo "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+    done
+
 
     if [ "$#" -lt 1 ] 
     then
-        echo "ERROR: using dm_get_collection" >&2
-        echo "recieved $0 $@" 
         echo "$USAGE" >&2
         return
     fi
@@ -422,11 +428,25 @@ function dm_get_collection {
 }
 
 
+#Print Usage of dm_download_dataobject_sync function
+function dm_show_download_dataobject_sync_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_dataobject_sync [-p] <logic-path> <destination-file>
+
+  Download the specified dataobject to the local machine.
+  OPTIONS:
+  -p                     Use S3-presigned URL for downloading.
+EOF
+  echo "$usage"
+}
+
+
+
 #Download a dataObject synchronously 
 #Inputs: logic-path 
 #        destination-file
 function dm_download_dataobject_sync {
-  local USAGE="USAGE:dm_download_dataobject_sync [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
+  #local USAGE="usage: dm_download_dataobject_sync [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
   local OPTIND
   #Set the default parameters
   local APPLY_PRESIGNED=0
@@ -439,8 +459,7 @@ function dm_download_dataobject_sync {
           TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template.json"
         ;;
         *)
-          echo "ERROR: Unsupported option ${option}" >&2
-          printf "$USAGE" >&2
+          dm_show_download_dataobject_sync_usage >&2
           exit 1
           ;;
       esac
@@ -448,9 +467,7 @@ function dm_download_dataobject_sync {
   shift $(( OPTIND-1 ))
   if [ "$#" -lt 2 ] 
   then
-    echo "ERROR: using dm_downlaod_dataobject_sync" >&2
-    echo "received $@" 
-    printf "$USAGE" >&2
+    dm_show_download_dataobject_sync_usage >&2
     return 1
   fi
   local OBJECT_PATH="$1"
@@ -553,7 +570,7 @@ function dm_download_dataobject_sync {
 
 function dm_delete_datafile {
 
-    local USAGE="USAGE: dm_delete_datafile <file-path>"
+    local USAGE="usage: dm_delete_datafile <file-path>"
 
     check_java
     if [ "$?" -ne 0 ]
@@ -561,9 +578,18 @@ function dm_delete_datafile {
       return 1
     fi
 
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          echo "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+    done
+
     if [ -z "$1" ] 
     then
-        echo "ERROR using dm_delete_datafile" >&2
         echo "$USAGE" >&2
         exit 1 
     fi
@@ -618,7 +644,7 @@ function dm_delete_datafile {
 #Print Usage of dm_register_directory function
 function dm_show_delete_collection_usage {
   read -d  '' usage <<- EOF
-  Usage: dm_delete_collection [OPTIONS] <collection-path> 
+  usage: dm_delete_collection [OPTIONS] <collection-path> 
 
   Delete the collection at the specified path. 
   OPTIONS:
@@ -632,14 +658,14 @@ EOF
 
 function dm_delete_collection {
 
-    local USAGE="USAGE: dm_delete_collection <collection-path>"
+    #local USAGE="usage: dm_delete_collection <collection-path>"
     local OPTIND
     
     #Set the default parameters
     numthreads=1
     recursive=false
   
-   while getopts ":rt:" option
+   while getopts ":r:" option
     do
       case "${option}" in
        
@@ -647,7 +673,6 @@ function dm_delete_collection {
 	  recursive=true
           ;;
         *)
-          echo "ERROR: Unsupported option ${option}" >&2
           dm_show_delete_collection_usage >&2
           exit 1
           ;;
@@ -665,9 +690,7 @@ function dm_delete_collection {
 
     if [ -z "$1" ] 
     then
-        echo "ERROR: using dm_delete_collection" >&2
-        usage=$(dm_show_delete_collection_usage)
-        echo "$usage" >&2
+        dm_show_delete_collection_usage >&2
         exit 1
     fi
 
@@ -726,14 +749,14 @@ function dm_delete_collection {
 #Print Usage of dm_register_directory function
 function dm_show_register_directory_usage {
   read -d  '' usage <<- EOF
-  Usage: dm_register_directory [OPTIONS]  <source-path> <destination-path> 
+  usage: dm_register_directory [OPTIONS]  <source-path> <destination-path> 
 
   Recursively copy all files in the <source-path> to the archive's <destination-path>. 
-  Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example the metatadata for the file foo.txt should be foo.txt.metadata.json
+  Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example the metadata for the file data.txt should be data.txt.metadata.json
   OPTIONS:
   -a[ARCHIVE_TYPE]        The type of the archive. Valid options are "S3" and "POSIX".
   -c                      Turn off checksum calculation. 
-  -d                      Print the files to be included in registration an exit 
+  -d                      Print the files to be included in registration and exit 
   -e[EXCLUDE_FILE_PATH]   Exclude the files that match the patterns specified in the file EXCLUDE_FILE_PATH
   -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
   -l[FILES_LIST]          Register the files mentioned in the FILE_LIST only. Each line in the FILES_LIST file contains a relative path to the source-path.
@@ -741,7 +764,7 @@ function dm_show_register_directory_usage {
   -m                      Register metadata only. Do not register files.
   -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
-  -t[NUM_THREADS]         The number of threads to use while uploading files to cleversafe. This number should be between [1, 32].
+  -t[NUM_THREADS]         The number of threads to use while uploading files to the archive. This number should be between [1, 32].
 EOF
   echo "$usage"
 }
@@ -752,7 +775,7 @@ EOF
 #         <destinaton-path>: The destination logical path on the archive
 function dm_register_directory {
 
-    local USAGE="USAGE: dm_register_directory <source-path> <destination-path>"
+    #local USAGE="USAGE: dm_register_directory <source-path> <destination-path>"
     local OPTIND
     
     #Set the default parameters
@@ -829,7 +852,6 @@ function dm_register_directory {
           fi
           ;;
         *)
-          echo "ERROR: Unsoported option ${option}" >&2
           dm_show_register_directory_usage >&2
           exit 1
           ;;
@@ -845,9 +867,7 @@ function dm_register_directory {
     fi
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "ERROR: using dm_register_directory" >&2
-        usage=$(dm_show_register_directory_usage)
-        echo "$usage" >&2
+        dm_show_register_directory_usage >&2
         exit 1 
     fi
 
@@ -968,11 +988,11 @@ function dm_register_directory {
 #Print Usage of dm_register_globus_directory function
 function dm_show_register_globus_directory_usage {
   read -d  '' usage <<- EOF
-  Usage: dm_register_globus_directory [OPTIONS]  <source-path> <destination-path> [endpoint]
+  usage: dm_register_globus_directory [OPTIONS]  <source-path> <destination-path> [endpoint]
 
-  Recursively copy all files in the globus <source-path> to the archive's <destination-path>. If endpoint is not passed, the default globus endpoint in hpcdme.properties file will be used.
+  Recursively copy all files in the Globus <source-path> to the archive's <destination-path>. If endpoint is not passed, the default Globus endpoint in hpcdme.properties file will be used.
   OPTIONS:
-  -d                      Print the files to be included in registration an exit 
+  -d                      Print the files to be included in registration and exit 
   -e[EXCLUDE_FILE_PATH]   Exclude the files that match the patterns specified in the file EXCLUDE_FILE_PATH
   -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
   -p[PATTERN_TYPE]        The type of the regex pattern in the include/exclude files. Valid options are "Simple" and "RegEx". The default pattern is "Simple"
@@ -1030,11 +1050,10 @@ function dm_register_globus_directory {
           fi
           ;;
         h)
-          dm_show_register_globus_directory_usage 
+          dm_show_register_globus_directory_usage >&2
           exit 1
           ;;
         *)
-          echo "ERROR: Unsoported option ${option}" >&2
           dm_show_register_globus_directory_usage >&2
           exit 1
           ;;
@@ -1050,9 +1069,7 @@ function dm_register_globus_directory {
     fi
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "ERROR: using dm_register_directory" >&2
-        usage=$(dm_show_register_globus_directory_usage)
-        echo "$usage" >&2
+        dm_show_register_globus_directory_usage >&2
         exit 1 
     fi
 
@@ -1150,12 +1167,10 @@ function dm_register_globus_directory {
 function dm_download_collection_async {
 
 
-    local USAGE="USAGE:dm_download_collection_async <collection-logical-path> <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_collection_async <collection-logical-path> <globus-destination-path> [globus-endpoint]"
 
     if [ "$#" -lt 2 ] 
     then
-        echo "ERROR: using dm_download_collection_async" >&2
-        echo "recieved $@" 
         echo "$USAGE" >&2
         return 1
     fi
@@ -1241,12 +1256,10 @@ function dm_download_collection_async {
 function dm_download_async {
 
 
-    local USAGE="USAGE:dm_download_async <archive-path> <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_async <archive-path> <globus-destination-path> [globus-endpoint]"
 
     if [ "$#" -lt 2 ] 
     then
-        echo "ERROR: using dm_download_async" >&2
-        echo "recieved $@" 
         echo "$USAGE" >&2
         exit 1
     fi
@@ -1358,15 +1371,13 @@ function dm_download_async {
 #Download to s3 bucke/description.json
 #Inputs: <archive-path> path on archive
 #        <description.json> JSON file containing dextination S3 bucket information
-function dm_download_s3 {
+function dm_download_s3_deprecated {
 
 
-    local USAGE="USAGE:dm_download_s3 <archive-path> <description.json>"
+    local USAGE="usage: dm_download_s3 <archive-path> <description.json>"
 
     if [ "$#" -lt 2 ]
     then
-        echo "ERROR: using dm_download_s3" >&2
-        echo "recieved $@"
         echo "$USAGE" >&2
         exit 1
     fi
@@ -1419,7 +1430,113 @@ function dm_download_s3 {
     fi
 }
 
+#Print Usage of dm_download_s3 function
+function dm_show_download_s3_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_s3 <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
+  Download the specified dataobject or collection to the s3 bucket
+  archive-path                Source path in the archive
+  destination-bucket          Destination S3 bucket to transfer data to
+  destination_path            Full path of the destination file/folder in the S3 bucket
+  aws_credentials_file_path   Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+EOF
+  echo "$usage"
+}
 
+
+function dm_download_s3 {
+
+    local CREDENTIALS_FILE=~/.aws/credentials
+    local DESCRIPTION=description.json
+
+    if [ "$#" -lt 3 ]
+    then
+        dm_show_download_s3_usage >&2
+        exit 1
+    fi
+
+    if [ "$#" -gt 3 ]
+    then
+       CREDENTIALS_FILE=$4
+    fi
+
+    local SOURCE_PATH="$1"
+    local DESTINATION_BUCKET="$2"
+    local DESTINATION_PATH="$3"
+
+    item_type=$(get_type $SOURCE_PATH) || exit 1
+    if [ "$item_type" == "" ]
+    then
+        echo "ERROR: Can not find the item $SOURCE_PATH in the archive" >&2
+        exit 1
+    fi
+
+   #Create description.json
+   local awsAccessKeyId=$(get_value $CREDENTIALS_FILE aws_access_key_id)
+   if [ -z "$awsAccessKeyId" ]
+   then
+       echo "ERROR: Credentials file does not contain aws_access_key_id property"
+       exit 1
+   fi
+
+   local awsSecretAccessKey=$(get_value $CREDENTIALS_FILE aws_secret_access_key)
+   if [ -z "$awsSecretAccessKey" ]
+   then
+       echo "ERROR: Credentials file does not contain aws_secret_access_key property"
+       exit 1
+   fi
+  
+   local awsRegion=$(get_value $CREDENTIALS_FILE region)
+   if [ -z "$awsRegion" ]
+   then
+       echo "ERROR: Credentials file does not contain region property"
+       exit 1
+   fi
+
+   echo -e "{\n \"s3DownloadDestination\": {\n \"destinationLocation\": {" > description.json
+   echo " \"fileContainerId\": \"$DESTINATION_BUCKET\"," >> description.json
+   echo -e " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
+   echo -e " \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," >> description.json
+   echo " \"secretKey\": \"$awsSecretAccessKey\"," >> description.json
+   echo -e " \"region\": \"$awsRegion\" \n}\n}\n} " >> description.json
+
+
+    echo "Sending request to download the $item_type $SOURCE_PATH to S3..."
+    local response_hdr=download-$item_type-response-header.tmp
+    local response_msg=download-$item_type-response-message.json.tmp
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+    curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    check_connection $response_hdr || exit 1
+
+
+    local code=$(get_http_code "$response_hdr")
+
+    if [ "$code" -ne 200 ]
+    then
+      #In this case the destination path file will contain the error code
+      print_error_message "$response_msg" "$code"  || exit 1
+    else
+      rm -f $response_hdr 2> /dev/null
+    fi
+
+    #Parse the download receipt:
+
+    message=$(get_json_value $response_msg message)
+    if [ ! -z "$message" ]
+    then
+        echo "ERROR downloading $src_path:"  >&2
+        echo "$message" >&2
+        exit 1
+    else
+        echo "Download request sent to S3."
+        task_id=$(get_json_value $response_msg taskId)
+        echo "taskID:$task_id"
+        echo "Check the full download receipt at $response_msg"
+    fi
+}
 
 
 #Get the status of asynchronousl download request 
@@ -1430,11 +1547,9 @@ function dm_download_s3 {
 function dm_get_download_status {
 
  
-    local USAGE="dm_get_download_status  <download-taskId> <request-type> [download-status-file] [REST-response]"
+    local USAGE="usage: dm_get_download_status <download-taskId> <request-type> [download-status-file] [REST-response]"
     if [ "$#" -lt 2 ] 
     then
-        echo "ERROR: using dm_get_download_status" >&2
-        echo "recieved $(basename $0) $@" 
         echo "$USAGE" >&2
         return 1
     fi
@@ -1489,11 +1604,19 @@ function dm_get_download_status {
 #Inputs:  <description.json>: The metadata json file
 function dm_rename() {
 
-    local USAGE="USAGE: dm_rename <description.json> [rename-status-file] [REST-response]"
+    local USAGE="usage: dm_rename <description.json> [rename-status-file] [REST-response]"
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          echo "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+    done
 
     if [ -z "$1" ]
     then
-        echo "ERROR using dm_rename" >&2
         echo "$USAGE" >&2
         return 1
     fi
@@ -1549,12 +1672,10 @@ function dm_rename() {
 #         <description.json>: The json file containing the parameters
 function dm_add_bookmark () {
 
-    local USAGE="USAGE: dm_add_bookmark <bookmark_name> <description.json> [REST-response]"
+    local USAGE="usage: dm_add_bookmark <bookmark_name> <description.json> [REST-response]"
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "ERROR: using dm_add_bookmark" >&2
-        echo "Received: $@" >&2
         echo "$USAGE" >&2
         return 1
     fi
@@ -1615,12 +1736,10 @@ function dm_add_bookmark () {
 #         <description.json>: The json file containing the parameters
 function dm_register_user () {
 
-local USAGE="USAGE: dm_register_user <userId> <description.json> [REST-response]"
+local USAGE="usage: dm_register_user <userId> <description.json> [REST-response]"
 
     if [ -z "$1" ] || [ -z "$2" ]
     then
-        echo "ERROR: using dm_register_user" >&2
-        echo "Received: $@" >&2
         echo "$USAGE" >&2
         return 1
     fi
@@ -1678,12 +1797,10 @@ local USAGE="USAGE: dm_register_user <userId> <description.json> [REST-response]
 #         <description.json>: The json file containing the parameters
 function dm_update_user () {
 
-local USAGE="USAGE: dm_update_user <userId> <description.json> [REST-response]"
+local USAGE="usage: dm_update_user <userId> <description.json> [REST-response]"
 
     if [ -z "$1" ] || [ -z "$2" ]
     then
-        echo "ERROR: using dm_update_user" >&2
-        echo "Received: $@" >&2
         echo "$USAGE" >&2
         return 1
     fi
@@ -1783,12 +1900,10 @@ urldecode() {
 #
 # Input: <string> archive path
 function validate_archive_path () {
-  local USAGE="USAGE: validate_archive_path <archive-path>"
+  local USAGE="usage: validate_archive_path <archive-path>"
   if [[ $# -ne 1 ]]
   then
-    echo "ERROR: using validate_archive_path"
-    echo "Received: $@"
-    echo "$USAGE"
+    echo "$USAGE" >&2
   else
     local ARCHIVE_PATH="$1"
     # forbidden chars are [space character] plus {? ; \}
