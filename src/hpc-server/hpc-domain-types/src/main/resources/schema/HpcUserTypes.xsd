@@ -32,6 +32,7 @@
 			<xsd:enumeration value="USER" />
 			<xsd:enumeration value="GROUP_ADMIN" />
 			<xsd:enumeration value="SYSTEM_ADMIN" />
+			<xsd:enumeration value="RESTRICTED" />
 			<xsd:enumeration value="NONE" />
 		</xsd:restriction>
 	</xsd:simpleType>
