@@ -572,12 +572,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Delete the staged download file.
-    if (downloadTask.getDownloadFilePath() != null
-        && !FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
-      logger.error("Failed to delete file: " + downloadTask.getDownloadFilePath());
-    }
-
     // Cleanup the DB record.
     dataDownloadDAO.deleteDataObjectDownloadTask(downloadTask.getId());
 
@@ -671,11 +665,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException {
     downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
-    if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
-      FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
-      downloadTask.setDownloadFilePath(null);
-    }
-
     dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
   }
 
@@ -1852,7 +1841,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         throws HpcException {
       downloadTask.setDataTransferType(HpcDataTransferType.S_3);
       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
-      downloadTask.setDownloadFilePath(null);
       downloadTask.setUserId(downloadRequest.getUserId());
       downloadTask.setPath(downloadRequest.getPath());
       downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
@@ -1877,7 +1865,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       this.downloadTask.setId(downloadTask.getId());
       this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
       this.downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
-      this.downloadTask.setDownloadFilePath(null);
       this.downloadTask.setUserId(downloadTask.getUserId());
       this.downloadTask.setPath(downloadTask.getPath());
       this.downloadTask.setConfigurationId(downloadTask.getConfigurationId());

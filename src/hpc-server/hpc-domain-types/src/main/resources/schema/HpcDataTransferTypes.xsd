@@ -288,7 +288,6 @@
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="dataTransferStatus"
 				type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
-			<xsd:element name="downloadFilePath" type="xsd:string" />
 			<xsd:element name="archiveLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="globusDownloadDestination"

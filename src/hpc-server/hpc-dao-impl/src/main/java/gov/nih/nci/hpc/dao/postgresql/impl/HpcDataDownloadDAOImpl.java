@@ -165,7 +165,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		dataObjectDownloadTask.setDataTransferType(HpcDataTransferType.fromValue(rs.getString(("DATA_TRANSFER_TYPE"))));
 		dataObjectDownloadTask
 				.setDataTransferStatus(HpcDataTransferDownloadStatus.fromValue(rs.getString(("DATA_TRANSFER_STATUS"))));
-		dataObjectDownloadTask.setDownloadFilePath(rs.getString("DOWNLOAD_FILE_PATH"));
 		dataObjectDownloadTask.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
 		dataObjectDownloadTask.setPercentComplete(rs.getInt("PERCENT_COMPLETE"));
 		dataObjectDownloadTask.setSize(rs.getLong("SIZE"));
@@ -384,7 +383,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getConfigurationId(), dataObjectDownloadTask.getDataTransferRequestId(),
 					dataObjectDownloadTask.getDataTransferType().value(),
 					dataObjectDownloadTask.getDataTransferStatus().value(),
-					dataObjectDownloadTask.getDownloadFilePath(),
 					dataObjectDownloadTask.getArchiveLocation().getFileContainerId(),
 					dataObjectDownloadTask.getArchiveLocation().getFileId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), dataObjectDownloadTask.getDestinationType().value(),

@@ -21,7 +21,6 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "DATA_TRANSFER_REQUEST_ID" text,
   "DATA_TRANSFER_TYPE" text,
   "DATA_TRANSFER_STATUS" text,
-  "DOWNLOAD_FILE_PATH" text,
   "ARCHIVE_LOCATION_FILE_CONTAINER_ID" text,
   "ARCHIVE_LOCATION_FILE_ID" text,
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text,
@@ -53,8 +52,6 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_TYPE" IS
                   'The data transfer (S3 or Globus) that is currently in progress';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_STATUS" IS 
                   'The data transfer status (S3 or Globus)';
-COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DOWNLOAD_FILE_PATH" IS 
-                  'The file path used in the 2-hop download';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."ARCHIVE_LOCATION_FILE_CONTAINER_ID" IS 
                   'The archive location container ID of the data object to be downloaded';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."ARCHIVE_LOCATION_FILE_ID" IS 
