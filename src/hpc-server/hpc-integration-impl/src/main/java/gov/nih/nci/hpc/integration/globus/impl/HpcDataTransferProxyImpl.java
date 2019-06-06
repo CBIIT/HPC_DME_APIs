@@ -37,6 +37,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -229,7 +230,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public String downloadDataObject(Object authenticatedToken,
-      HpcDataObjectDownloadRequest downloadRequest, HpcArchive baseArchiveDestination,
+      HpcDataObjectDownloadRequest downloadRequest, HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration,
       HpcDataTransferProgressListener progressListener) throws HpcException {
     // Progress listener not supported.
     if (progressListener != null) {
@@ -240,8 +241,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     if (downloadRequest.getFileDestination() != null) {
       // This is a synchronous download request.
       String archiveFilePath = downloadRequest.getArchiveLocation().getFileId().replaceFirst(
-          baseArchiveDestination.getFileLocation().getFileId(),
-          baseArchiveDestination.getDirectory());
+          archiveDataTransferConfiguration.getArchiveFileLocation().getFileId(),
+          archiveDataTransferConfiguration.getArchiveDirectory());
       try {
         // Copy the file to the dowmload stage area.
         FileUtils.copyFile(new File(archiveFilePath), downloadRequest.getFileDestination());

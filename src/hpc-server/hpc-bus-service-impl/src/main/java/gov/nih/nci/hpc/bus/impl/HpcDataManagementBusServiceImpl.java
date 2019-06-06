@@ -45,6 +45,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionsForCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -938,13 +939,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Validate the following:
-    // 1. Path is not empty.
-    // 2. Data Object exists.
-    // 3. Download to S3 destination is supported only from Cleversafe archive (i.e. not POSIX).
-    // 4. Download to Google Drive destination is supported only from Cleversafe archive (i.e. not
-    // POSIX).
-    // 5. Data Object is archived (i.e. registration completed).
+    // Validate the download request.
     HpcSystemGeneratedMetadata metadata =
         validateDataObjectDownloadRequest(path, downloadRequest.getS3DownloadDestination() != null,
             downloadRequest.getGoogleDriveDownloadDestination() != null);
@@ -1024,11 +1019,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   @Override
   public HpcDataObjectDownloadResponseDTO generateDownloadRequestURL(String path)
       throws HpcException {
-    // Validate the following:
-    // 1. Path is not empty.
-    // 2. Data Object exists.
-    // 3. Download to S3 destination is supported only from Cleversafe archive (i.e. not POSIX).
-    // 4. Data Object is archived (i.e. registration completed).
+    // Validate the download request.
     HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
 
     // Generate a download URL for the data object, and return it in a DTO.
@@ -2091,10 +2082,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   /**
-   * Validate a download request.
+   * Validate a download request: 1. Path is not empty. 2. Data Object exists. 3. Download to S3
+   * destination is supported only from Cleversafe archive (i.e. not POSIX). 4. Download to Google
+   * Drive destination is supported only from Cleversafe archive (i.e. not POSIX). 5. Data Object is
+   * archived (i.e. registration completed).
    *
    * @param path The data object path.
-   * @param s3DownloadDestination True if the download destination is S3.
+   * @param s3DownloadDestination True if the download destination is AWS S3.
    * @param googleDriveDownloadDestination True if the download destination is Google Drive.
    * @return The system generated metadata
    * @throws HpcException If the request is invalid.
@@ -2117,17 +2111,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcSystemGeneratedMetadata metadata =
         metadataService.getDataObjectSystemGeneratedMetadata(path);
 
+    // Get the archive type (Cleversafe or POSIX).
+    HpcArchiveType archiveType = dataManagementService
+        .getDataManagementConfiguration(metadata.getConfigurationId()).getArchiveType();
+
     // Download to S3 destination is supported only from Cleversafe archive.
-    if (s3DownloadDestination && (metadata.getDataTransferType() == null
-        || !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
+    if (s3DownloadDestination && !archiveType.equals(HpcArchiveType.CLEVERSAFE)) {
       throw new HpcException(
           "S3 download request is not supported for POSIX based file system archive",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Download to Google Drive destination is supported only from Cleversafe archive.
-    if (googleDriveDownloadDestination && (metadata.getDataTransferType() == null
-        || !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
+    if (googleDriveDownloadDestination && !archiveType.equals(HpcArchiveType.CLEVERSAFE)) {
       throw new HpcException(
           "Google Drive download request is not supported for POSIX based file system archive",
           HpcErrorType.INVALID_REQUEST_INPUT);

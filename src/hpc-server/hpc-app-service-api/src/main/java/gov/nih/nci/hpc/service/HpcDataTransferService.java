@@ -76,7 +76,7 @@ public interface HpcDataTransferService {
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
    * @param googleDriveDownloadDestination The user requested Google Drive download destination.
-   * @param dataTransferType The data transfer type.
+   * @param archiveDataTransferType The data transfer type used to upload the data object into the archive
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
    * @param userId The user ID submitting the download request.
@@ -89,7 +89,7 @@ public interface HpcDataTransferService {
       HpcFileLocation archiveLocation, HpcGlobusDownloadDestination globusDownloadDestination,
       HpcS3DownloadDestination s3DownloadDestination,
       HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
-      HpcDataTransferType dataTransferType, String configurationId, String userId,
+      HpcDataTransferType archiveDataTransferType, String configurationId, String userId,
       boolean completionEvent, long size) throws HpcException;
 
   /**

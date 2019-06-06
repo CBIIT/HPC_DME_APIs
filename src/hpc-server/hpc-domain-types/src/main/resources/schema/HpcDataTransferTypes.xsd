@@ -66,6 +66,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="S_3" />
+			<xsd:enumeration value="GOOGLE_DRIVE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -107,6 +108,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
+	<!--  2-hop REMOVE -->
 	<xsd:complexType name="HpcArchive">
 		<xsd:sequence>
 			<xsd:element name="fileLocation"

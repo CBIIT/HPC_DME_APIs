@@ -107,6 +107,7 @@ public class HpcDataManagementConfigurationLocator
    *         type.
    * @throws HpcException if the configuration was not found.
    */
+  // 2-hop REMOVE
   public HpcDataTransferConfiguration getDataTransferConfiguration(String configurationId,
       HpcDataTransferType dataTransferType) throws HpcException {
     HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);

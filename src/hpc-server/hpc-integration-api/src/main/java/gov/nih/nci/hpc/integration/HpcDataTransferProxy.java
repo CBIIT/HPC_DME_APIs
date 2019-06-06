@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -96,7 +97,7 @@ public interface HpcDataTransferProxy {
    *
    * @param authenticatedToken An authenticated token.
    * @param downloadRequest The data object download request.
-   * @param baseArchiveDestination The archive's base destination location.
+   * @param archiveDataTransferConfiguration The archive's data transfer configuration.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *     completion.
    * @return A data transfer request Id.
@@ -105,7 +106,7 @@ public interface HpcDataTransferProxy {
   public String downloadDataObject(
       Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest,
-      HpcArchive baseArchiveDestination,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration,
       HpcDataTransferProgressListener progressListener)
       throws HpcException;
 

@@ -36,6 +36,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -257,9 +258,11 @@ public class HpcDataTransferServiceImplTest {
     baseDownloadSourceFileLocation.setFileId("testBaseDownloadSource");
     baseDownloadSource.setFileLocation(baseDownloadSourceFileLocation);
     HpcDataTransferConfiguration dataTransferConfig = new HpcDataTransferConfiguration();
+    HpcDataManagementConfiguration dataManagementConfig = new HpcDataManagementConfiguration();
     dataTransferConfig.setBaseDownloadSource(baseDownloadSource);
     when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
         anyObject())).thenReturn(dataTransferConfig);
+    when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dataManagementConfig);
 
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
         .thenReturn(new HpcIntegratedSystemAccount());

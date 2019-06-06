@@ -30,6 +30,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
+import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
@@ -69,6 +70,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
       dataManagementConfiguration.setArchiveType(HpcArchiveType.fromValue(archiveType));
     }
 
+    // 2-hop REMOVE ------------------------------------------------------------
     // Map the S3 Configuration.
     HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
     s3Configuration.setUrl(rs.getString("S3_URL"));
@@ -110,7 +112,29 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
     globusConfiguration.setBaseDownloadSource(globusBaseDownloadSource);
 
     dataManagementConfiguration.setGlobusConfiguration(globusConfiguration);
+    // -----------------------------------------------------------------------------------------
 
+    // Map the Archive S3 Configuration.
+    HpcArchiveDataTransferConfiguration archiveS3Configuration = new HpcArchiveDataTransferConfiguration();
+    archiveS3Configuration.setUrl(rs.getString("ARCHIVE_S3_URL"));
+    HpcFileLocation archiveS3FileLocation = new HpcFileLocation();
+    archiveS3FileLocation.setFileContainerId(rs.getString("ARCHIVE_S3_VAULT"));
+    archiveS3FileLocation.setFileId(rs.getString("ARCHIVE_S3_OBJECT_ID"));
+    archiveS3Configuration.setArchiveFileLocation(archiveS3FileLocation);
+    archiveS3Configuration.setUploadRequestURLExpiration(rs.getInt("ARCHIVE_S3_UPLOAD_REQUEST_URL_EXPIRATION"));
+    dataManagementConfiguration.setArchiveS3Configuration(archiveS3Configuration);
+    
+
+    // Map the Archive Globus configuration.
+    HpcArchiveDataTransferConfiguration archiveGlobusConfiguration = new HpcArchiveDataTransferConfiguration();
+    archiveGlobusConfiguration.setUrl(rs.getString("ARCHIVE_GLOBUS_URL"));
+    HpcFileLocation archiveGlobusFileLocation = new HpcFileLocation();
+    archiveGlobusFileLocation.setFileContainerId(rs.getString("ARCHIVE_GLOBUS_ENDPOINT"));
+    archiveGlobusFileLocation.setFileId(rs.getString("ARCHIVE_GLOBUS_PATH"));
+    archiveGlobusConfiguration.setArchiveFileLocation(archiveGlobusFileLocation);
+    archiveGlobusConfiguration.setArchiveDirectory(rs.getString("ARCHIVE_GLOBUS_DIRECTORY"));
+    dataManagementConfiguration.setArchiveGlobusConfiguration(archiveGlobusConfiguration);
+    
     try {
       dataManagementConfiguration
           .setDataHierarchy(getDataHierarchyFromJSONStr(rs.getString("DATA_HIERARCHY")));
