@@ -133,7 +133,7 @@
 												role="form" th:action="@{/permissions}"
 												th:object="${permissions}" method="post"
 												enctype="multipart/form-data">
-												<div class="form-group">
+												<div class="form-group" style="word-break: break-all;">
 													<label for="Name">Path:</label> <label
 														for="${permissions.getPath()}"
 														th:text="${permissions.getPath()}"></label>
