@@ -158,7 +158,7 @@
 								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems().size() &gt; 0}">
 								<div class="panel panel-default"
 									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getInProgressItems()}" style="margin-top:5px" >
-									<div class="col-md-12 form-group">
+									<div class="col-md-12 form-group" style="word-break: break-all;">
 										<label for="Name">Path:</label> <label
 											for="${hpcUploadTaskItem.getPath()}"
 											th:text="${hpcUploadTaskItem.getPath()}"></label>
@@ -195,7 +195,7 @@
 								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems() != null and hpcBulkDataObjectRegistrationTaskDTO.getFailedItems().size() &gt; 0}">
 								<div class="panel panel-default"
 									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getFailedItems()}"  style="margin-top:5px">
-									<div class="col-md-12 form-group">
+									<div class="col-md-12 form-group" style="word-break: break-all;">
 										<label for="Name">Path:</label> <label
 											for="${hpcUploadTaskItem.getPath()}"
 											th:text="${hpcUploadTaskItem.getPath()}"></label>
@@ -221,7 +221,7 @@
 								th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCompletedItems().size() > 0}">
 								<div class="panel panel-default"
 									th:each="hpcUploadTaskItem : ${hpcBulkDataObjectRegistrationTaskDTO.getCompletedItems()}"  style="margin-top:5px">
-									<div class="col-md-12 form-group">
+									<div class="col-md-12 form-group" style="word-break: break-all;">
 										<label for="Name">Path:</label>
                     <a th:href="@{/datafile(action=view,path=${hpcUploadTaskItem.getPath()})}">
                       <label for="${hpcUploadTaskItem.getPath()}" th:text="${hpcUploadTaskItem.getPath()}">
