@@ -64,124 +64,276 @@
     var targetType = "datafile";
     var currentPage = "[[${pageNumber}]]";
     var currentPageSize = "[[${currentPageSize}]]";
+    var hpcSelectedDatafileList = [[${hpcSelectedDatafileList}]];
+    var selectedRowsData = [];
 /*]]>*/
 </script>
 
 <script>
+//<![CDATA[
 	var app = angular.module('app', [ 'ngAnimate', 'ngTouch', 'ui.grid',
 			'ui.grid.grouping', 'ui.grid.pagination', 'ui.grid.resizeColumns',
-			'ui.grid.moveColumns', 'ui.grid.exporter' ]);
+			'ui.grid.moveColumns', 'ui.grid.exporter', 'ui.grid.selection' ]);
 
 	app
-			.filter('dmePathEncoding', function () {
-				return function (dmePathValue) {
-					return percentEncodePath(dmePathValue);
-				};
-			})
+	.filter('dmePathEncoding', function () {
+		return function (dmePathValue) {
+			return percentEncodePath(dmePathValue);
+		};
+	})
 
-			.controller(
-					'MainCtrl',
-					[
-							'$scope',
-							'$http',
-							'$interval',
-							'uiGridGroupingConstants',
-							function($scope, $http, $interval,
-									uiGridGroupingConstants) {
+	.controller('MainCtrl',[
+		'$scope',
+		'$http',
+		'$interval',
+		'uiGridGroupingConstants',
+		function($scope, $http, $interval, uiGridGroupingConstants) {
 
-								$scope.gridOptions1 = {
-									exporterMenuPdf: false,
-								    enableGridMenu: true,
-									enableSorting : true,
-									enableFiltering : true,
-									useExternalPagination: true,
-							        useExternalSorting: false,
-							        enablePaginationControls : true,
-							        paginationPageSizes: [10, 20, 50, 100],
-							        paginationPageSize: parseInt(currentPageSize),
-							        paginationCurrentPage: parseInt(currentPage),
-									columnDefs : [
-											{
-												field : 'path',
-												width : 350,
-												displayName : 'Path',
-												cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../datafile?action=view&amp;path={{COL_FIELD | dmePathEncoding}}">{{COL_FIELD}}</a></div>'
-											}, {
-												field : 'uuid',
-												width : 200,
-												displayName : 'UUID'
-											}, {
-												field : 'registeredBy',
-												width : 200,
-												displayName : 'Registered by'
-											}, {
-												field : 'checksum',
-												width : 250,
-												displayName : 'Checksum'
-											},{
-												field : 'createdOn',
-												width : 200,
-												displayName : 'Created On'
-											},{
-												field : 'download',
-												width : 100,
-												displayName : 'Download',
-												cellFilter : 'dmePathEncoding',
-												cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
-												exporterSuppressExport : true,
-									            enableSorting: false
-											},{
-												field : 'permission',
-												width : 100,
-												displayName : 'Permission',
-												cellFilter : 'dmePathEncoding',
-												cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=dataObject&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>',
-												exporterSuppressExport : true,
-									            enableSorting: false
-											} ],
-									treeRowHeaderAlwaysVisible : false,
-									onRegisterApi : function(gridApi) {
-										$scope.grid1Api = gridApi;
-									    $scope.totalPages = totalPages;
-									    $scope.currentPage = currentPage;
-									    $scope.totalRows = totalRows;
-									    $scope.currentPageSize = currentPageSize;
-									    
-									    gridApi.pagination.on.paginationChanged($scope, function (newPage, pageSize) {
-			 					              if(pageSize != parseInt(currentPageSize))
-			 					                  updatePage('first', pageSize);
-			 					              else if(newPage == parseInt(currentPage) + 1)
-			 					            	  updatePage('next', pageSize);
-			 					              else if(newPage == parseInt(currentPage) - 1)
-			 					            	  updatePage('previous', pageSize)
-			 					              else if(newPage == 1)
-			 					            	  updatePage('first', pageSize);
-			 					              else
-			 					            	  updatePage('last', pageSize);
+		$scope.gridOptions1 = {
+			exporterMenuPdf: false,
+			enableGridMenu: true,
+			enableSorting : true,
+			enableFiltering : true,
+			useExternalPagination: true,
+			useExternalSorting: false,
+			enablePaginationControls : true,
+			enableRowSelection : true,
+			enableSelectAll : true,
+			paginationPageSizes: [10, 20, 50, 100],
+			paginationPageSize: parseInt(currentPageSize),
+			paginationCurrentPage: parseInt(currentPage),
+			columnDefs : [
+					{
+						field : 'path',
+						width : 350,
+						displayName : 'Path',
+						cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="../datafile?action=view&amp;path={{COL_FIELD | dmePathEncoding}}">{{COL_FIELD}}</a></div>'
+					}, {
+						field : 'uuid',
+						width : 200,
+						displayName : 'UUID'
+					}, {
+						field : 'registeredBy',
+						width : 200,
+						displayName : 'Registered by'
+					}, {
+						field : 'checksum',
+						width : 250,
+						displayName : 'Checksum'
+					},{
+						field : 'createdOn',
+						width : 200,
+						displayName : 'Created On'
+					},{
+						field : 'download',
+						width : 100,
+						displayName : 'Download',
+						cellFilter : 'dmePathEncoding',
+						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+						exporterSuppressExport : true,
+						enableSorting: false
+					},{
+						field : 'permission',
+						width : 100,
+						displayName : 'Permission',
+						cellFilter : 'dmePathEncoding',
+						cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=dataObject&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>',
+						exporterSuppressExport : true,
+						enableSorting: false
+					} ],
+			treeRowHeaderAlwaysVisible : false,
+			onRegisterApi : function(gridApi) {
+				$scope.grid1Api = gridApi;
+			}
+		};
+		$scope.gridOptions1.totalItems = totalRows;
+        $scope.gridOptions1.multiSelect = true;
+        //$scope.gridOptions1.data = resultsArray;
+        $scope.gridOptions1.data = results;
+        $scope.selectedRows = [];
 
-			 					            });
-									}
-								};
-								$scope.gridOptions1.data = results;
- 							    $scope.gridOptions1.totalItems = totalRows;
- 					          
-								$scope.expandAll = function() {
-									$scope.gridApi.treeBase.expandAllRows();
-								};
+        $scope.selectAll = function() {
+          $scope.gridApi.selection.selectAllRows();
+        };
 
-								$scope.getId = function(grid, row, col) {
-									console.log(row);
-									if (row.treeNode.children[0].row.treeNode.children[0]) {
-										var entity = row.treeNode.children[0].row.treeNode.children[0].row.entity;
-										return entity.id;
-									} else if (row.treeNode.children[0]) {
-										var entity = row.treeNode.children[0].row.entity;
-										return entity.id;
-									}
+        $scope.expandAll = function() {
+          $scope.gridApi.treeBase.expandAllRows();
+        };
 
-									return row.entity.id;
-								}
-							} ]);
+        $scope.gridOptions1.onRegisterApi = function(gridApi) {
+          //set gridApi on scope
+          $scope.gridApi = gridApi;
+            $scope.totalPages = totalPages;
+            $scope.currentPage = currentPage;
+            $scope.totalRows = totalRows;
+            $scope.currentPageSize = currentPageSize;
+
+            $interval(function() {
+              if(hpcSelectedDatafileList != null)
+              {
+              for(var i=0;i<hpcSelectedDatafileList.length;i++)
+                {
+                var row = hpcSelectedDatafileList[i];
+                //alert(row);
+                  var pageRow = row.substring(0,row.lastIndexOf(":"));
+  //								    		  alert(pageRow);
+                  var page = pageRow.substring(0,pageRow.indexOf(":"));
+  //								    		  alert(page);
+                  var row = pageRow.substring(pageRow.indexOf(":")+1);
+  //							    		  alert(row);
+  //						    		  alert($scope.currentPage);
+                  if(page == $scope.currentPage)
+                   $scope.gridApi.selection.selectRow($scope.gridOptions1.data[row]);
+                }
+              }
+                            }, 0, 1);
+
+          gridApi.selection.on.rowSelectionChanged($scope, function(
+              row) {
+            var selectedRowIndex = $scope.gridOptions1.data.indexOf(row.entity);
+            if(row.isSelected)
+            {
+              if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
+                $scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
+              selectedRowsData = $scope.selectedRows;
+            }
+            else
+            {
+              var selectedPath = $scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path;
+              var indexFromSelectedRows = -1;
+              for(var x=0;x<$scope.selectedRows.length;x++)
+              {
+                if(selectedPath == $scope.selectedRows[x])
+                  indexFromSelectedRows = x;
+              }
+              //$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
+              $scope.selectedRows.splice(indexFromSelectedRows, 1);
+            }
+            selectedRowsData = $scope.selectedRows;
+            console.log('SUCCESS: ', $scope.selectedRows);
+          });
+
+          gridApi.pagination.on.paginationChanged($scope, function (newPage, pageSize) {
+              if(pageSize != parseInt(currentPageSize))
+                  updatePage('first', pageSize);
+              else if(newPage == parseInt(currentPage) + 1)
+            	  updatePage('next', pageSize);
+              else if(newPage == parseInt(currentPage) - 1)
+            	  updatePage('previous', pageSize)
+              else if(newPage == 1)
+            	  updatePage('first', pageSize);
+              else
+            	  updatePage('last', pageSize);
+
+            });
+          
+          gridApi.selection.on.rowSelectionChangedBatch($scope, function(
+              row) {
+
+                var selectAll = false;
+                if(gridApi.selection.getSelectedRows().length > 0)
+                  selectAll = true;
+
+                gridApi.selection.getSelectedRows().forEach(function(row) {
+                  console.log('SUCCESS: ', row);
+                  var selectedRowIndex = $scope.gridOptions1.data.indexOf(row);
+                  if(!$scope.selectedRows.contains($scope.currentPage + ":"+selectedRowIndex + ":" + row.path))
+                    $scope.selectedRows.push($scope.currentPage + ":"+selectedRowIndex + ":" + row.path);
+                });
+              if(!selectAll)
+              {
+                for(var z=0;z<$scope.gridOptions1.data.length;z++)
+                {
+                  var row = $scope.gridOptions1.data[z];
+                  var selectedRowIndex = $scope.gridOptions1.data.indexOf(row);
+                  //alert("unselected "+$scope.currentPage + ":"+selectedRowIndex + ":" + row.path);
+                  var selectedPath = $scope.currentPage + ":"+selectedRowIndex + ":" + row.path;
+                  var indexFromSelectedRows = -1;
+                  for(var x=0;x<$scope.selectedRows.length;x++)
+                  {
+                    if(selectedPath == $scope.selectedRows[x])
+                      indexFromSelectedRows = x;
+                  }
+                  //$scope.selectedRows.pop($scope.currentPage + ":"+selectedRowIndex + ":" + row.entity.path);
+                  $scope.selectedRows.splice(indexFromSelectedRows, 1);
+                }
+              }
+            console.log('SUCCESS: ', $scope.selectedRows);
+            selectedRowsData = $scope.selectedRows;
+          });
+        };
+
+        Array.prototype.contains = function(obj) {
+            var i = this.length;
+            while (i--) {
+                if (this[i] == obj) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $scope.downloadSelectedRows = function() {
+          console.log('$scope.selectedRows: ', $scope.selectedRows);
+          console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
+          var updatedList = [];
+          if($scope.selectedRows != null)
+            {
+              if(hpcSelectedDatafileList != null)
+              {
+                for(var i=hpcSelectedDatafileList.length-1;i>=0;i--)
+                {
+                    var row = hpcSelectedDatafileList[i];
+                  var pageRow = row.substring(0,row.lastIndexOf(":"));
+                  var page = pageRow.substring(0,pageRow.indexOf(":"));
+                  if(page != $scope.currentPage)
+                    updatedList.push(row)
+                }
+              }
+
+              for(var i=0;i<selectedRowsData.length;i++)
+                {
+                if(!updatedList.contains(selectedRowsData[i]))
+                  updatedList.push(selectedRowsData[i]);
+              }
+            }
+          console.log(' after updatedList: ', updatedList);
+
+          if(updatedList == null || updatedList.length == 0)
+          {
+            alert("Select at least one data file to download");
+            return false;
+          }
+          document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
+          if(source == "criteria")
+            document.getElementById("searchType").value = "criteria";
+          else
+            document.getElementById("searchType").value = "search";
+          document.getElementById("downloadFilesform").elements.namedItem("pageNumber").value =  currentPage;
+          document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
+          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
+          document.getElementById("downloadType").value = "datafiles";
+          document.getElementById("downloadFilesform").submit();
+        };
+
+        $scope.clearAll = function() {
+          $scope.gridApi.selection.clearSelectedRows();
+        };
+
+        $scope.getId = function(grid, row, col) {
+          console.log(row);
+          if (row.treeNode.children[0].row.treeNode.children[0]) {
+            var entity = row.treeNode.children[0].row.treeNode.children[0].row.entity;
+            return entity.id;
+          } else if (row.treeNode.children[0]) {
+            var entity = row.treeNode.children[0].row.entity;
+            return entity.id;
+          }
+
+          return row.entity.id;
+        }
+      } ]);
+/*]]>*/
 </script>
 <style>
 /*style.css*/
@@ -213,7 +365,7 @@
 				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
-					<div class="col-lg-12 col-md-12">
+					<div class="col-lg-12 col-md-12" ng-controller="MainCtrl">
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<div class="pull-left">
@@ -223,6 +375,9 @@
 									</h2>
 								</div>
 								<div class="pull-right">
+									<a data-toggle="modal" id="downloadselectedlink"
+										class="btn btn-link btn-sm" ng-click="downloadSelectedRows()"
+										>Download Selected files</a>
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" href="/savesearch"
 										data-target="#myModal">Save Search Criteria</a>
@@ -235,7 +390,23 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>
+								<div class="modal fade" id="downloadFilesModal" tabindex="-1" role="dialog"
+									aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content"></div>
+										<!-- /.modal-content -->
+									</div>
+									<!-- /.modal-dialog -->
+								</div>								
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
+									aria-labelledby="myModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content"></div>
+										<!-- /.modal-content -->
+									</div>
+									<!-- /.modal-dialog -->
+								</div>								
+								<div class="modal fade" id="permissionModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
 									<div class="modal-dialog">
 										<div class="modal-content"></div>
@@ -246,10 +417,11 @@
 							</div>
 							<!--panel-body start-->
 							<div class="panel-body">
-								<div ng-controller="MainCtrl">
+								<div >
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
-										ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
+										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true"></div>
+										
 								</div>
 							</div>
 						</div>
@@ -261,7 +433,20 @@
 						<input type="hidden" id="actionType" name="actionType" value="pagination"/>
 						<input type="hidden" id="pageNumber" name="pageNumber"/>
 						<input type="hidden" id="pageSize" name="pageSize"/>
+						<input type="hidden" id="queryName" name="queryName"/>
+						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 					</form> 
+					<form class="form-horizontal" id="downloadFilesform" action="#"
+						role="form" th:action="@{/downloadfiles}" 
+						method="post" enctype="multipart/form-data">
+						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="downloadType" name="downloadType" value=""/>
+						<input type="hidden" id="searchType" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber" name="pageNumber"/>
+						<input type="hidden" id="pageSize" name="pageSize"/>
+						<input type="hidden" id="queryName" name="queryName"/>
+					</form> 
+
 				</div>
 				<!--/col-->
 
@@ -281,7 +466,7 @@
 /*<![CDATA[*/
     function updatePage(action, newPageSize)
     {
-	
+
     	$('.ui-grid-pager-next').prop('disabled', true);
 		$('.ui-grid-pager-control-input').prop('disabled', true);
 		$('.ui-grid-pager-previous').prop('disabled', true);
@@ -289,34 +474,45 @@
 		$('.ui-grid-pager-last').prop('disabled', true);
 		$('div.ui-grid-pager-row-count-picker').find( "select" ).prop('disabled', true);
 		
+		if(action == "next")
+			document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = parseInt(currentPage) + 1;
+		else if(action == "previous")
+			document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = parseInt(currentPage) - 1;
+		else if(action == "first")
+			document.getElementById("simplesearchform").elements.namedItem("pageNumber").value =  1;
+		else if(action == "last")
+			document.getElementById("simplesearchform").elements.namedItem("pageNumber").value = totalPages;
+
 		if(source == "'search'" || source == 'search')
-		{
-		  var percentEncodedQueryName = encodeURIComponent(queryName);
-			if(action == "next")
-			 	window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + (parseInt(currentPage) +1) + "&pageSize=" + (parseInt(newPageSize));
-			else if(action == "previous")
-				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + (parseInt(currentPage) - 1) + "&pageSize=" + (parseInt(newPageSize));
-			else if(action == "first")
-				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=1" + "&pageSize=" + (parseInt(newPageSize));
-			else if(action == "last")
-				window.location.href = "/search?queryName=" + percentEncodedQueryName + "&page=" + totalPages + "&pageSize=" + (parseInt(newPageSize));
-		}
-		else
-		{
-			if(action == "next")
-				document.getElementById("pageNumber").value = parseInt(currentPage) + 1;
-			else if(action == "previous")
-				document.getElementById("pageNumber").value = parseInt(currentPage) - 1;
-			else if(action == "first")
-				document.getElementById("pageNumber").value =  1;
-			else if(action == "last")
-				document.getElementById("pageNumber").value = totalPages;
-			
-			document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(newPageSize);
-			
-			document.getElementById("simplesearchform").submit();
-		}
+			document.getElementById("simplesearchform").action = "/search";
 		
+		document.getElementById("simplesearchform").elements.namedItem("pageSize").value = parseInt(newPageSize);
+		
+		var updatedList = [];
+		if(selectedRowsData != null)
+    	{
+	    	if(hpcSelectedDatafileList != null)
+	    	{
+	    	  for(var i=hpcSelectedDatafileList.length-1;i>=0;i--)
+	    	  {
+		    	  var row = hpcSelectedDatafileList[i];
+	    		  var pageRow = row.substring(0,row.lastIndexOf(":"));
+	    		  var page = pageRow.substring(0,pageRow.indexOf(":"));
+	    		  if(page != currentPage)
+	    			  updatedList.push(row)
+	    	  }
+	    	}
+			
+	    	for(var i=0;i<selectedRowsData.length;i++)
+    	    {
+	    		if(!updatedList.contains(selectedRowsData[i]))
+	    			updatedList.push(selectedRowsData[i]);
+	    	}
+    	}
+		
+		document.getElementById("simplesearchform").elements.namedItem("queryName").value = queryName;
+		document.getElementById("simplesearchform").elements.namedItem("selectedFilePaths").value = updatedList;
+		document.getElementById("simplesearchform").submit();
     }
 
 /*]]>*/
