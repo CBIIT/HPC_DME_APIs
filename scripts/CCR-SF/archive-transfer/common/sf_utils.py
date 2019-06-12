@@ -17,6 +17,9 @@ class SFUtils(object):
         path = re.sub(r'.*Unalignd[^/]*/', '', path)
         path = re.sub(r'.*Unlianged[^/]*/', '', path)
 
+        #hardcoded exception for 2017 directory only. Can remove after that.
+        path = path.replace("oldMarkRaffeld/", "")
+
         # strip 'Project_' if it exists
         path = path.replace("Project_", "")
 
