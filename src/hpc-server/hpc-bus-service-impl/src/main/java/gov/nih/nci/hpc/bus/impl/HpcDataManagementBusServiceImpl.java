@@ -955,7 +955,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Construct and return a DTO.
     return toDownloadResponseDTO(downloadResponse.getDestinationLocation(),
         downloadResponse.getDestinationFile(), downloadResponse.getDownloadTaskId(), null,
-        metadata.getDataTransferType().value());
+        downloadResponse.getDataTransferType());
   }
 
   @Override
@@ -1026,7 +1026,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return toDownloadResponseDTO(null, null, null,
         dataTransferService.generateDownloadRequestURL(path, metadata.getArchiveLocation(),
             metadata.getDataTransferType(), metadata.getConfigurationId()),
-        metadata.getDataTransferType().value());
+        HpcDataTransferType.S_3);
   }
 
   @Override
@@ -1396,7 +1396,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    */
   private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(
       HpcFileLocation destinationLocation, File destinationFile, String taskId,
-      String downloadRequestURL, String dataTransferType) {
+      String downloadRequestURL, HpcDataTransferType dataTransferType) {
     // Construct and return a DTO
     HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
     downloadResponse.setDestinationFile(destinationFile);

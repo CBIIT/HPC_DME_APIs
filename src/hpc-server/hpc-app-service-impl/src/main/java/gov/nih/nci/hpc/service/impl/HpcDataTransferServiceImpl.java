@@ -54,7 +54,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
@@ -344,6 +343,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     }
 
+    response.setDataTransferType(downloadRequest.getDataTransferType());
     return response;
   }
 
@@ -681,21 +681,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       return;
     }
 
-    // Calculate the percent complete.
-    float percentComplete = 100 * (float) bytesTransferred / downloadTask.getSize();
-    if (dataManagementConfigurationLocator
-        .getDataTransferConfiguration(downloadTask.getConfigurationId(),
-            downloadTask.getDataTransferType())
-        .getBaseArchiveDestination().getPermTempArchiveType()
-        .equals(HpcPermTempArchiveType.TEMPORARY_ARCHIVE)) {
-      // This is a 2-hop download, and S_3 is complete. Our base % complete is 50%.
-      downloadTask.setPercentComplete(50 + Math.round(percentComplete) / 2);
-    } else {
-      // This is a one-hop Globus download from archive to user destination (currently
-      // only supported by file system archive).
-      downloadTask.setPercentComplete(Math.round(percentComplete));
-    }
+    // Calculate and set the percent complete.
+    downloadTask
+        .setPercentComplete(Math.round(100 * (float) bytesTransferred / downloadTask.getSize()));
 
+    // Persist changes to the download task
     dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
   }
 
