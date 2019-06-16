@@ -2110,10 +2110,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
         metadataService.getDataObjectSystemGeneratedMetadata(path);
+    if (metadata == null || metadata.getConfigurationId() == null) {
+      throw new HpcException("Could not get configuration ID for data object: " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
 
     // Get the archive type (Cleversafe or POSIX).
-    HpcArchiveType archiveType = dataManagementService
-        .getDataManagementConfiguration(metadata.getConfigurationId()).getArchiveType();
+    HpcDataManagementConfiguration dataManagementConfiguration =
+        dataManagementService.getDataManagementConfiguration(metadata.getConfigurationId());
+    if (dataManagementConfiguration == null) {
+      throw new HpcException(
+          "Could not get data management configuration. data object: " + path
+              + " configuration-id: " + metadata.getConfigurationId(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    HpcArchiveType archiveType = dataManagementConfiguration.getArchiveType();
 
     // Download to S3 destination is supported only from Cleversafe archive.
     if (s3DownloadDestination && !archiveType.equals(HpcArchiveType.CLEVERSAFE)) {
