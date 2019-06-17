@@ -665,7 +665,7 @@ function dm_delete_collection {
     numthreads=1
     recursive=false
   
-   while getopts ":r:" option
+   while getopts ":r" option
     do
       case "${option}" in
        
