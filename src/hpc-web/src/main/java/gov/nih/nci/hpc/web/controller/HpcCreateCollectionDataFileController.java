@@ -69,7 +69,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login";
 		}
 		return null;
 	}

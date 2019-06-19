@@ -71,7 +71,7 @@ public class HpcFindGroupController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login";
 		}
 		HpcWebGroup webGroup = new HpcWebGroup();
 		webGroup.setPath(path);
