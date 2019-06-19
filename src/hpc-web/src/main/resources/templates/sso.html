@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<HEAD>
+<META HTTP-EQUIV='PRAGMA' CONTENT='NO-CACHE'/>
+<META HTTP-EQUIV='CACHE-CONTROL' CONTENT='NO-CACHE'/>
+<TITLE>HPC DME Auto-POST form</TITLE>
+</HEAD>
+<body onLoad="document.forms[0].submit()">
+	<NOSCRIPT>
+		Your browser does not support JavaScript. Please click the 'Continue'
+		button below to proceed. <br/>
+		<br/>
+	</NOSCRIPT>
+	<form
+		th:action="${redirectURL}"
+		method="POST">
+		<input type="hidden" name="token" th:value="${token}"/>
+		<NOSCRIPT>
+			<INPUT TYPE="SUBMIT" VALUE="Continue"/>
+		</NOSCRIPT>
+	</form>
+</body>
+</html>
