@@ -43,6 +43,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
+import gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
@@ -87,6 +88,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   // The LDAP authenticator instance.
   @Autowired private HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
 
+  //The SPS authorization instance.
+  @Autowired private HpcSpsAuthorizationProxy spsAuthorizationProxy = null;
+ 
   @Autowired private HpcDataManagementProxy dataManagementProxy = null;
 
   // System Accounts locator.
@@ -106,6 +110,10 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   // The authentication token expiration period in minutes.
   @Value("${hpc.service.security.authenticationTokenExpirationPeriod}")
   private int authenticationTokenExpirationPeriod = 0;
+  
+  //The authentication token expiration period in minutes.
+  @Value("${hpc.service.security.authenticationTokenExpirationPeriodSso}")
+  private int authenticationTokenExpirationPeriodSso = 0;
 
   // The data management account expiration period in minutes.
   @Value("${hpc.service.security.dataManagementAccountExpirationPeriod}")
@@ -358,6 +366,19 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   }
 
   @Override
+  public boolean authenticate(String session) throws HpcException {
+	// Input validation.
+	if (session == null || session.trim().length() == 0) {
+	      throw new HpcException(
+	      "SM session cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
+	}
+
+		return spsAuthorizationProxy.authorize(session,
+				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getUsername(),
+				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
+	  }
+  
+  @Override
   public void addSystemAccount(
       HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType, String classifier)
       throws HpcException {
@@ -373,7 +394,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   }
 
   @Override
-  public String createAuthenticationToken(HpcAuthenticationTokenClaims authenticationTokenClaims)
+  public String createAuthenticationToken(HpcAuthenticationType authenticationType, HpcAuthenticationTokenClaims authenticationTokenClaims)
       throws HpcException {
     // Prepare the Claims Map.
     Map<String, Object> claims = new HashMap<>();
@@ -390,7 +411,11 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 
     // Calculate the expiration date.
     Calendar tokenExpiration = Calendar.getInstance();
-    tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
+    if(authenticationType.equals(HpcAuthenticationType.SM)) {
+    	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriodSso);
+    } else {
+    	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
+    }
 
     return Jwts.builder()
         .setSubject(TOKEN_SUBJECT)

@@ -10,6 +10,8 @@ package gov.nih.nci.hpc.ws.rs.interceptor;
 
 import java.util.ArrayList;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor;
 import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
@@ -102,17 +104,24 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
    * @throws HpcException If the caller is not authenticated.
    */
   private void authenticate(Message message) throws HpcException {
-    String[] authorization = getAuthorization(message);
-    String authorizationType = authorization[0];
+	String smSession = getSmSession(message);
+	if(StringUtils.isNotBlank(smSession)) {
+		//SM session cookie is available
+		String smUser = getSmUser(message);
+		authenticate(smUser, smSession);
+	} else {
+		String[] authorization = getAuthorization(message);
+		String authorizationType = authorization[0];
 
-    // Authenticate the caller (if configured to do so) and populate the request context.
-    if (authorizationType.equals(BASIC_AUTHORIZATION)) {
-      authenticate(message.get(AuthorizationPolicy.class));
-    } else if (authorizationType.equals(TOKEN_AUTHORIZATION)) {
-      authenticate(authorization[1]);
-    } else {
-      throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType);
-    }
+		// Authenticate the caller (if configured to do so) and populate the request context.
+		if (authorizationType.equals(BASIC_AUTHORIZATION)) {
+			authenticate(message.get(AuthorizationPolicy.class));
+		} else if (authorizationType.equals(TOKEN_AUTHORIZATION)) {
+			authenticate(authorization[1]);
+		} else {
+			throw new HpcAuthenticationException("Invalid Authorization Type: " + authorizationType);
+		}
+	}
   }
 
   /**
@@ -143,6 +152,18 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
   }
 
   /**
+   * Perform a SPS authentication w/ SM_USER and NIHSMSESSION.
+   *
+   * @param user The user name
+   * @param session The SM session cookie
+   * @throws HpcException on authentication failure.
+   */
+  private void authenticate(String user, String session) throws HpcException {
+
+    securityBusService.authenticateSso(user, session);
+  }
+  
+  /**
    * Get Authorization array from a message.
    *
    * @param message The RS message.
@@ -166,5 +187,58 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
     }
 
     return authorization.get(0).split(" ");
+  }
+  
+  /**
+   * Get SM_USER header from a message.
+   *
+   * @param message The RS message.
+   * @return The the SM_USER header.
+   * @throws HpcAuthenticationException on invalid authorization header. This is a runtime
+   *     exception.
+   */
+  private String getSmUser(Message message) {
+    // Determine the authorization type.
+    @SuppressWarnings("unchecked")
+    Map<String, Object> protocolHeaders =
+        (Map<String, Object>) message.get(Message.PROTOCOL_HEADERS);
+    if (protocolHeaders == null) {
+      throw new HpcAuthenticationException("Invalid Protocol Headers");
+    }
+
+    @SuppressWarnings("unchecked")
+    ArrayList<String> header = (ArrayList<String>) protocolHeaders.get("SM_USER");
+    if (header == null || header.isEmpty()) {
+      return "";
+    }
+
+    return header.get(0);
+  }
+  
+  
+  /**
+   * Get NIHSMSESSION header from a message.
+   *
+   * @param message The RS message.
+   * @return The the NIHSMSESSION header.
+   * @throws HpcAuthenticationException on invalid authorization header. This is a runtime
+   *     exception.
+   */
+  private String getSmSession(Message message) {
+    // Determine the authorization type.
+    @SuppressWarnings("unchecked")
+    Map<String, Object> protocolHeaders =
+        (Map<String, Object>) message.get(Message.PROTOCOL_HEADERS);
+    if (protocolHeaders == null) {
+      throw new HpcAuthenticationException("Invalid Protocol Headers");
+    }
+
+    @SuppressWarnings("unchecked")
+    ArrayList<String> header = (ArrayList<String>) protocolHeaders.get("NIHSMSESSION");
+    if (header == null || header.isEmpty()) {
+      return "";
+    }
+
+    return header.get(0);
   }
 }

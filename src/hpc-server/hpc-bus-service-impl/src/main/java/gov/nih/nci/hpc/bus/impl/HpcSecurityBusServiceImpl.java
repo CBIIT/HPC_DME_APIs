@@ -370,6 +370,25 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
         HpcAuthenticationType.TOKEN,
         authenticationTokenClaims.getDataManagementAccount());
   }
+  
+  @Override
+  public void authenticateSso(String nciUserId, String session) throws HpcException {
+    // Input validation.
+    if (StringUtils.isEmpty(nciUserId) || StringUtils.isEmpty(session)) {
+      throw new HpcException("Null SM_USER or NIHSMSESSION", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Authenticate w/ SPS
+    if (!securityService.authenticate(session)) {
+      throw new HpcException("SPS authentication failed", HpcErrorType.UNAUTHORIZED_REQUEST);
+    }
+
+    // Set the request invoker (in thread local).
+    setRequestInvoker(
+        nciUserId,
+        HpcAuthenticationType.SM,
+        toDataManagementAccount(nciUserId, ""));
+  }
 
   @Override
   public HpcAuthenticationResponseDTO getAuthenticationResponse(boolean generateToken)
@@ -396,7 +415,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       authenticationTokenClaims.setUserId(requestInvoker.getNciAccount().getUserId());
       authenticationTokenClaims.setDataManagementAccount(requestInvoker.getDataManagementAccount());
       authenticationResponse.setToken(
-          securityService.createAuthenticationToken(authenticationTokenClaims));
+              securityService.createAuthenticationToken(requestInvoker.getAuthenticationType(), authenticationTokenClaims));
     }
 
     return authenticationResponse;

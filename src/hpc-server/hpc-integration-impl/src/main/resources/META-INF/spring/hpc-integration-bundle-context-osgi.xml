@@ -48,6 +48,10 @@
 	      <prop key="hpc.integration.ldap.base">OU=NIH,OU=AD,DC=nih,DC=gov</prop>
 	      <prop key="hpc.integration.ldap.userIdFilter">cn</prop>
 	      <prop key="hpc.integration.ldap.userIdDomainName">nih.gov</prop>
+	      
+	      <prop key="hpc.integration.sps.URL">https://authproxyintdev.nih.gov/authazws/AuthRestService/authz/</prop>
+	      <prop key="hpc.integration.sps.resource">authproxyintdev.nih.gov/nihuser</prop>
+	      <prop key="hpc.integration.sps.domain">NIH</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
@@ -61,5 +65,7 @@
 		          interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" />
 	<osgi:service ref="hpcDataManagementProxy"
 		          interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />
+	<osgi:service ref="hpcSpsAuthorizationProxy"
+		          interface="gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy" />
 
 </beans>
