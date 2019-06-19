@@ -108,7 +108,7 @@ public class HpcPermissionController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login";
 		}
 
 		if (assignType == null || assignType.trim().length() == 0)
