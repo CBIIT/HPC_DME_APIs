@@ -39,6 +39,14 @@
     <hpc.server.store.pass>hpc-server-store-pwd</hpc.server.store.pass>
     <irods.cert.alias>NIH-IRODS</irods.cert.alias>
     <irods.cert.filename>irods.crt</irods.cert.filename>
+    <authdev.cert.alias>NIH-AUTH-DEV</authdev.cert.alias>
+    <authdev.cert.filename>authdev.crt</authdev.cert.filename>
+    <hhs.intermediate.cert.alias>HHS-FPKI-Intermediate</hhs.intermediate.cert.alias>
+    <hhs.intermediate.cert.filename>HHS-FPKI-Intermediate.crt</hhs.intermediate.cert.filename>
+    <entrust.root.cert.alias>NIH-ENTRUST-ROOT-LK1</entrust.root.cert.alias>
+    <entrust.root.cert.filename>entrust-root.crt</entrust.root.cert.filename>
+    <federal.root.cert.alias>Federal_CP_Root_SHA256</federal.root.cert.alias>
+    <federal.root.cert.filename>Federal_CP_Root_SHA256.crt</federal.root.cert.filename>
     <ldap.root.cert.alias>NIH-DPKI-ROOT-1A</ldap.root.cert.alias>
     <ldap.root.cert.filename>ldap-root.crt</ldap.root.cert.filename>
     <main.resources.dir>${basedir}/src/main/resources</main.resources.dir>
@@ -178,6 +186,70 @@
               <file>${main.resources.dir}/certs/${nih.ldap.cert.filename}</file>
               <storepass>${store.pass}</storepass>
               <alias>${nih.ldap.cert.alias}</alias>
+              <trustcacerts>true</trustcacerts>
+              <noprompt>true</noprompt>
+              <skipIfExist>false</skipIfExist>
+            </configuration>
+          </execution>
+          <execution>
+            <id>importAuthdevCertificate</id>
+            <goals>
+              <goal>importCertificate</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+              <file>${main.resources.dir}/certs/${authdev.cert.filename}</file>
+              <storepass>${store.pass}</storepass>
+              <alias>${authdev.cert.alias}</alias>
+              <trustcacerts>true</trustcacerts>
+              <noprompt>true</noprompt>
+              <skipIfExist>false</skipIfExist>
+            </configuration>
+          </execution>
+          <execution>
+            <id>importHhsIntermediateCertificate</id>
+            <goals>
+              <goal>importCertificate</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+              <file>${main.resources.dir}/certs/${hhs.intermediate.cert.filename}</file>
+              <storepass>${store.pass}</storepass>
+              <alias>${hhs.intermediate.cert.alias}</alias>
+              <trustcacerts>true</trustcacerts>
+              <noprompt>true</noprompt>
+              <skipIfExist>false</skipIfExist>
+            </configuration>
+          </execution>
+          <execution>
+            <id>importEntrustRootCertificate</id>
+            <goals>
+              <goal>importCertificate</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+              <file>${main.resources.dir}/certs/${entrust.root.cert.filename}</file>
+              <storepass>${store.pass}</storepass>
+              <alias>${entrust.root.cert.alias}</alias>
+              <trustcacerts>true</trustcacerts>
+              <noprompt>true</noprompt>
+              <skipIfExist>false</skipIfExist>
+            </configuration>
+          </execution>
+          <execution>
+            <id>importFederalRootCertificate</id>
+            <goals>
+              <goal>importCertificate</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+              <file>${main.resources.dir}/certs/${federal.root.cert.filename}</file>
+              <storepass>${store.pass}</storepass>
+              <alias>${federal.root.cert.alias}</alias>
               <trustcacerts>true</trustcacerts>
               <noprompt>true</noprompt>
               <skipIfExist>false</skipIfExist>

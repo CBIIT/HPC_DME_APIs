@@ -43,6 +43,7 @@
 			<xsd:enumeration value="TOKEN" />
 			<xsd:enumeration value="NONE" />
 			<xsd:enumeration value="SYSTEM_ACCOUNT" />
+			<xsd:enumeration value="SM" />
 		</xsd:restriction>
 	</xsd:simpleType>
 

@@ -96,6 +96,15 @@ public interface HpcSecurityBusService {
   public void authenticate(String authenticationToken) throws HpcException;
 
   /**
+   * Authenticate SSO session.
+   *
+   * @param nciUserId The user's ID.
+   * @param session The NIHSMSESSION.
+   * @throws HpcException If user authentication failed.
+   */
+  public void authenticateSso(String nciUserId, String session) throws HpcException;
+
+  /**
    * Get the authentication response for the current request invoker.
    *
    * @param generateToken If set to true, an authentication token will get generated and included in

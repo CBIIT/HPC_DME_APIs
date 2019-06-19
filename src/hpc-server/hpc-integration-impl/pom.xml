@@ -42,7 +42,8 @@
 							gov.nih.nci.hpc.integration.globus.impl,
 							gov.nih.nci.hpc.integration.s3.impl,
 							gov.nih.nci.hpc.integration.ldap.impl,
-							gov.nih.nci.hpc.integration.irods.impl
+							gov.nih.nci.hpc.integration.irods.impl,
+							gov.nih.nci.hpc.integration.sps.impl
 						</Private-Package>
 						<Import-Package>
 							org.springframework.scheduling.config,
@@ -118,6 +119,10 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.cxf</groupId>
+		    <artifactId>cxf-rt-rs-client</artifactId>
 		</dependency>
 	</dependencies>
 </project>
