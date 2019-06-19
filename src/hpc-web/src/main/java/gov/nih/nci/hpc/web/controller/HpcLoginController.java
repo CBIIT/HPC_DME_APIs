@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
@@ -22,10 +23,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,13 +70,58 @@ public class HpcLoginController extends AbstractHpcController {
 	
 	
 	@RequestMapping(method = RequestMethod.GET)
-	public String home(Model model, HttpSession session, HttpServletRequest request) {
-		HpcLogin hpcLogin = new HpcLogin();
-		model.addAttribute("hpcLogin", hpcLogin);
-		model.addAttribute("queryURL", queryURL);
-		model.addAttribute("collectionURL", collectionURL);
+	public String home(@CookieValue(value="NIHSMSESSION", required = false) String smSession, Model model, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 		session.setAttribute("callerPath", getCallerPath(request));
-		return "index";
+		String userId = (String) session.getAttribute("hpcUserId");
+		if (StringUtils.isBlank(userId) || StringUtils.isBlank(smSession)) {
+			HpcLogin hpcLogin = new HpcLogin();
+			model.addAttribute("hpcLogin", hpcLogin);
+			model.addAttribute("queryURL", queryURL);
+			model.addAttribute("collectionURL", collectionURL);
+			session.setAttribute("callerPath", getCallerPath(request));
+			return "index";
+		}
+		try {
+			String authToken = HpcClientUtil.getAuthenticationTokenSso(userId, smSession,
+					authenticateURL);
+			session.setAttribute("hpcUserToken", authToken);
+			session.setAttribute("hpcUserSmSession", smSession);
+			try {
+				HpcUserDTO user = HpcClientUtil.getUser(authToken, serviceUserURL, sslCertPath, sslCertPassword);
+				if (user == null)
+					throw new HpcWebException("Invlaid User");
+				session.setAttribute("hpcUser", user);
+				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());			
+				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath,
+						sslCertPassword);
+				
+				if (modelDTO != null)
+					session.setAttribute("userDOCModel", modelDTO);
+				HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId,
+						collectionAclURL, sslCertPath, sslCertPassword);
+						
+				
+			} catch (HpcWebException e) {
+				model.addAttribute("loginStatus", false);
+				model.addAttribute("loginOutput", "Invalid login");
+				ObjectError error = new ObjectError("hpcLogin", "Authentication failed. " + e.getMessage());
+				return "notauthorized";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.addAttribute("loginStatus", false);
+			model.addAttribute("loginOutput", "Invalid login" + e.getMessage());
+			ObjectError error = new ObjectError("hpcLogin", "Authentication failed. " + e.getMessage());
+			return "notauthorized";
+		}
+		model.addAttribute("queryURL", queryURL);
+		String callerPath = (String) session.getAttribute("callerPath");
+		session.removeAttribute("callerPath");
+		
+		if (callerPath == null)
+			return "dashboard";
+		else
+			return "redirect:/" + callerPath;
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
