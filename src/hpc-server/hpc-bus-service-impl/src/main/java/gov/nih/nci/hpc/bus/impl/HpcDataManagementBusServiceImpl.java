@@ -708,7 +708,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
               systemGeneratedMetadata.getArchiveLocation(),
               systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
-              systemGeneratedMetadata.getRegistrarId());
+              systemGeneratedMetadata.getRegistrarId(),
+              systemGeneratedMetadata.getDataTransferType());
 
           metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum, null,
               null, null, null, null);

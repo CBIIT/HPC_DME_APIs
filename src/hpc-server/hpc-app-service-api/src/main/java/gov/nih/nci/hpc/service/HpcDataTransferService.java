@@ -115,11 +115,13 @@ public interface HpcDataTransferService {
    *        config).
    * @param objectId The data object id from the data management system (UUID).
    * @param registrarId The user-id of the data registrar.
+   * @param archiveDataTransferType The data transfer type used to upload the file.
    * @return The checksum of the data object object.
    * @throws HpcException on service failure.
    */
   public String addSystemGeneratedMetadataToDataObject(HpcFileLocation archiveFileLocation,
-      String configurationId, String objectId, String registrarId) throws HpcException;
+      String configurationId, String objectId, String registrarId,
+      HpcDataTransferType archiveDataTransferType) throws HpcException;
 
   /**
    * Delete a data object file.

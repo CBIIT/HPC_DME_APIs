@@ -10,12 +10,10 @@
  */
 package gov.nih.nci.hpc.bus.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,20 +188,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         Calendar dataTransferCompleted = null;
         switch (dataTransferStatus) {
           case ARCHIVED:
-            // Data object is archived. 
+            // Data object is archived.
 
             // Generate archive (File System) system generated metadata.
             String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
                 systemGeneratedMetadata.getArchiveLocation(),
                 systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
-                systemGeneratedMetadata.getRegistrarId());
+                systemGeneratedMetadata.getRegistrarId(),
+                systemGeneratedMetadata.getDataTransferType());
 
             // Update data management w/ data transfer status, checksum and completion time.
             dataTransferCompleted = Calendar.getInstance();
             metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
                 dataTransferStatus, null, null, dataTransferCompleted, null);
             break;
-            
+
           case FAILED:
             // Data transfer failed.
             throw new HpcException("Data transfer failed: " + dataTransferUploadReport.getMessage(),
@@ -1363,7 +1362,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
           systemGeneratedMetadata.getArchiveLocation(),
           systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
-          systemGeneratedMetadata.getRegistrarId());
+          systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getDataTransferType());
 
       // Update the data management (iRODS) data object's system-metadata.
       Calendar dataTransferCompleted = Calendar.getInstance();

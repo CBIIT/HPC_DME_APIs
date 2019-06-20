@@ -367,7 +367,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public String addSystemGeneratedMetadataToDataObject(HpcFileLocation archiveFileLocation,
-      String configurationId, String objectId, String registrarId) throws HpcException {
+      String configurationId, String objectId, String registrarId,
+      HpcDataTransferType archiveDataTransferType) throws HpcException {
     // Add metadata is done by copying the object to itself w/ attached metadata.
 
     // Get the data management configuration.
@@ -383,6 +384,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       dataTransferType = HpcDataTransferType.S_3;
       authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId);
       archiveDataTransferConfiguration = dataManagementConfiguration.getArchiveS3Configuration();
+      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+        // The file was uploaded to Cleversafe by Globus. Since we use the S3 data-transfer-proxy to
+        // create metadata in Cleversafe, we
+        // need to map the archive location for that proxy.
+        archiveFileLocation.setFileContainerId(dataManagementConfiguration
+            .getArchiveS3Configuration().getArchiveFileLocation().getFileContainerId());
+        archiveFileLocation.setFileId(archiveFileLocation.getFileId().replaceFirst(
+            dataManagementConfiguration.getArchiveGlobusConfiguration().getArchiveFileLocation()
+                .getFileId(),
+            dataManagementConfiguration.getArchiveS3Configuration().getArchiveFileLocation()
+                .getFileId()));
+      }
 
     } else {
       dataTransferType = HpcDataTransferType.GLOBUS;
