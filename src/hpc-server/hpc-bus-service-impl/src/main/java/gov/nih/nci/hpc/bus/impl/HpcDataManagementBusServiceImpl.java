@@ -707,7 +707,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           // registration.
           String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
               systemGeneratedMetadata.getArchiveLocation(),
-              systemGeneratedMetadata.getDataTransferType(),
               systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
               systemGeneratedMetadata.getRegistrarId());
 
@@ -1072,9 +1071,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         break;
 
       case RECEIVED:
-      case IN_PROGRESS_TO_TEMPORARY_ARCHIVE:
-      case IN_TEMPORARY_ARCHIVE:
-      case IN_PROGRESS_TO_ARCHIVE:
+      case IN_PROGRESS:
+      case STREAMING_IN_PROGRESS:
+      case STREAMING_STOPPED:
       case URL_GENERATED:
         // Data transfer still in progress.
         throw new HpcException(
@@ -1083,8 +1082,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 
       default:
-        // The file is not in archive (data transfer failed, URL expired or it was
-        // deleted).
+        // The file is not in archive (data transfer failed, or it was deleted).
         break;
     }
 

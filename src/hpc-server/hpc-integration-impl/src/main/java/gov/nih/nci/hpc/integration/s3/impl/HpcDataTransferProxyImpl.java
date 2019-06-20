@@ -33,7 +33,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
@@ -41,7 +40,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
@@ -113,7 +111,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-      HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
+      HpcDataObjectUploadRequest uploadRequest,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration,
       Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener)
       throws HpcException {
     if (uploadRequest.getGlobusUploadSource() != null) {
@@ -121,15 +120,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     // Calculate the archive destination.
-    HpcFileLocation archiveDestinationLocation = getArchiveDestinationLocation(
-        baseArchiveDestination.getFileLocation(), uploadRequest.getPath(),
-        uploadRequest.getCallerObjectId(), baseArchiveDestination.getPermTempArchiveType(), false);
+    HpcFileLocation archiveDestinationLocation =
+        getArchiveDestinationLocation(archiveDataTransferConfiguration.getArchiveFileLocation(),
+            uploadRequest.getPath(), uploadRequest.getCallerObjectId(), false);
 
     // If the archive destination file exists, generate a new archive destination w/ unique path.
     if (getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
-      archiveDestinationLocation = getArchiveDestinationLocation(
-          baseArchiveDestination.getFileLocation(), uploadRequest.getPath(),
-          uploadRequest.getCallerObjectId(), baseArchiveDestination.getPermTempArchiveType(), true);
+      archiveDestinationLocation =
+          getArchiveDestinationLocation(archiveDataTransferConfiguration.getArchiveFileLocation(),
+              uploadRequest.getPath(), uploadRequest.getCallerObjectId(), true);
     }
 
     if (uploadRequest.getGenerateUploadRequestURL()) {
@@ -140,8 +139,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     } else if (uploadRequest.getSourceFile() != null) {
       // Upload a file
       return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(),
-          archiveDestinationLocation, progressListener,
-          baseArchiveDestination.getPermTempArchiveType());
+          archiveDestinationLocation, progressListener);
     } else {
       // Upload from AWS S3 source.
       return uploadDataObject(authenticatedToken, uploadRequest.getS3UploadSource(),
@@ -189,7 +187,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
-      HpcFileLocation destinationFile, HpcArchive baseArchiveDestination,
+      HpcFileLocation destinationFile,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration,
       List<HpcMetadataEntry> metadataEntries) throws HpcException {
 
     // Create a S3 update request w/ new metadata. Copy the file to itself.
@@ -214,7 +213,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-      HpcArchive baseArchiveDestination) throws HpcException {
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration) throws HpcException {
     // Create a S3 delete request.
     DeleteObjectRequest deleteRequest =
         new DeleteObjectRequest(fileLocation.getFileContainerId(), fileLocation.getFileId());
@@ -338,13 +337,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param archiveDestinationLocation The archive destination location.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *        completion.
-   * @param permTempArchiveType The archive type.
    * @return A data object upload response.
    * @throws HpcException on data transfer system failure.
    */
   private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken, File sourceFile,
-      HpcFileLocation archiveDestinationLocation, HpcDataTransferProgressListener progressListener,
-      HpcPermTempArchiveType permTempArchiveType) throws HpcException {
+      HpcFileLocation archiveDestinationLocation, HpcDataTransferProgressListener progressListener)
+      throws HpcException {
     // Create a S3 upload request.
     PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
         archiveDestinationLocation.getFileId(), sourceFile);
@@ -382,11 +380,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferCompleted(dataTransferCompleted);
     uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
     uploadResponse.setSourceSize(sourceFile.length());
-    if (permTempArchiveType.equals(HpcPermTempArchiveType.ARCHIVE)) {
-      uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
-    } else {
-      uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
-    }
+    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
 
     return uploadResponse;
   }

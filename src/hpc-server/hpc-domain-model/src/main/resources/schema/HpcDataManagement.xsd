@@ -27,18 +27,7 @@
 	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
 		schemaLocation="HpcDataTransferTypes.xsd" />
 
-	<!--  2-hop REMOVE -->
-	<xsd:complexType name="HpcDataTransferConfiguration">
-		<xsd:sequence>
-			<xsd:element name="url" type="xsd:string" />
-			<xsd:element name="baseArchiveDestination" type="hpc-domain-datatransfer:HpcArchive" />
-			<xsd:element name="baseDownloadSource" type="hpc-domain-datatransfer:HpcArchive" />
-			<xsd:element name="uploadRequestURLExpiration" type="xsd:int"
-				minOccurs="0" />
-		</xsd:sequence>
-	</xsd:complexType>
-	
-		<xsd:complexType name="HpcArchiveDataTransferConfiguration">
+	<xsd:complexType name="HpcArchiveDataTransferConfiguration">
 		<xsd:sequence>
 			<xsd:element name="url" type="xsd:string" />
 			<xsd:element name="archiveFileLocation"
@@ -58,14 +47,6 @@
 				<xsd:element name="basePath" type="xsd:string" />
 				<xsd:element name="archiveType"
 					type="hpc-domain-datatransfer:HpcArchiveType" />
-					
-				<!--  2-hop REMOVE -->
-				<xsd:element name="s3Configuration"
-					type="hpc-domain-model:HpcDataTransferConfiguration" />
-				<!--  2-hop REMOVE -->
-				<xsd:element name="globusConfiguration"
-					type="hpc-domain-model:HpcDataTransferConfiguration" />
-					
 				<xsd:element name="archiveS3Configuration"
 					type="hpc-domain-model:HpcArchiveDataTransferConfiguration" />
 				<xsd:element name="archiveGlobusConfiguration"

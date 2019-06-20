@@ -90,15 +90,6 @@ public class HpcScheduledTasksImpl {
         systemBusService::processDataTranferUploadStreamingStopped);
   }
 
-  /**
-   * Process data objects in temporary archive task. This tasks transfers data from the temporary
-   * archive to the (permanent) archive and complete data object registration.
-   */
-  @Scheduled(cron = "${hpc.scheduler.cron.processTemporaryArchive.delay}")
-  private void processTemporaryArchiveTask() {
-    executeTask("processTemporaryArchiveTask()", systemBusService::processTemporaryArchive);
-  }
-
   /** Complete (and cleanup) Data Transfer Download Files Tasks. */
   @Scheduled(cron = "${hpc.scheduler.cron.completeDataObjectDownloadTasks.delay}")
   private void completeDataObjectDownloadTasksTask() {

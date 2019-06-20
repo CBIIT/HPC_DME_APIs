@@ -187,23 +187,6 @@ public class HpcEventServiceImpl implements HpcEventService {
   }
 
   @Override
-  public void addDataTransferUploadInTemporaryArchiveEvent(String userId, String path)
-      throws HpcException {
-    addDataTransferEvent(
-        userId,
-        HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE,
-        null,
-        null,
-        path,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null);
-  }
-
-  @Override
   public void addDataTransferUploadArchivedEvent(
       String userId, String path, HpcFileLocation sourceLocation, Calendar dataTransferCompleted)
       throws HpcException {

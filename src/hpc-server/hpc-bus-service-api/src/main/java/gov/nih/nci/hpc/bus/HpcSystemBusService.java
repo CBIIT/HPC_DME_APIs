@@ -62,14 +62,6 @@ public interface HpcSystemBusService {
   public void processDataTranferUploadStreamingStopped() throws HpcException;
 
   /**
-   * Transfer data objects currently in temporary archive to the (permanent) archive, and complete
-   * the registration process.
-   *
-   * @throws HpcException on service failure.
-   */
-  public void processTemporaryArchive() throws HpcException;
-
-  /**
    * Check status of all active data objects download tasks and complete these that are no longer in
    * progress.
    *

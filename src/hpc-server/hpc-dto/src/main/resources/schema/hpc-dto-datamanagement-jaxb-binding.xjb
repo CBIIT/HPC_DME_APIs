@@ -84,9 +84,6 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" />
       </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcArchive']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" />
-      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcFile']">
          <jxb:class ref="java.io.File" />
       </jxb:bindings>
@@ -149,9 +146,6 @@
       </jxb:bindings>
       <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferType']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType" />
-      </jxb:bindings>
-      <jxb:bindings node="//xsd:simpleType[@name='HpcPermTempArchiveType']">
-         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:simpleType[@name='HpcArchiveType']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType" />

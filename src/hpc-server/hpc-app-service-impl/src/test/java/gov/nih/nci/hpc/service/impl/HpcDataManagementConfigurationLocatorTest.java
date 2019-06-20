@@ -27,12 +27,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 // import org.springframework.test.util.ReflectionTestUtils;
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
-import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
+import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -78,16 +76,12 @@ public class HpcDataManagementConfigurationLocatorTest {
     configuration.setBasePath(basepath);
     configuration.setArchiveType(HpcArchiveType.CLEVERSAFE);
 
-    HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
-    HpcArchive hpcS3Archive = new HpcArchive();
-    hpcS3Archive.setPermTempArchiveType(HpcPermTempArchiveType.ARCHIVE);
-    s3Configuration.setBaseArchiveDestination(hpcS3Archive);
-    configuration.setS3Configuration(s3Configuration);
-
-    HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
-    HpcArchive hpcGlobusArchive = new HpcArchive();
-    globusConfiguration.setBaseArchiveDestination(hpcGlobusArchive);
-    configuration.setGlobusConfiguration(globusConfiguration);
+    HpcArchiveDataTransferConfiguration s3Configuration = new HpcArchiveDataTransferConfiguration();
+    s3Configuration.setUploadRequestURLExpiration(100);
+    configuration.setArchiveS3Configuration(s3Configuration);
+    HpcArchiveDataTransferConfiguration globusConfiguration =
+        new HpcArchiveDataTransferConfiguration();
+    configuration.setArchiveGlobusConfiguration(globusConfiguration);
 
     configurations.add(configuration);
 
@@ -134,8 +128,7 @@ public class HpcDataManagementConfigurationLocatorTest {
   public void testGetArchiveType() throws HpcException {
 
     // This is from the setup data loaded in init method
-    HpcArchiveType type =
-        dataManagementConfigurationLocator.getArchiveType("someId1");
+    HpcArchiveType type = dataManagementConfigurationLocator.getArchiveType("someId1");
     assertEquals(type, HpcArchiveType.CLEVERSAFE);
 
   }
@@ -161,11 +154,9 @@ public class HpcDataManagementConfigurationLocatorTest {
   public void testGetDataTransferConfigurationC() throws HpcException {
 
     // This is from the setup data loaded in init method
-    HpcDataTransferConfiguration transferConfig = dataManagementConfigurationLocator
-        .getDataTransferConfiguration("someId1", HpcDataTransferType.S_3);
-    assertEquals(transferConfig.getBaseArchiveDestination().getPermTempArchiveType(),
-        HpcPermTempArchiveType.ARCHIVE);
-
+    HpcArchiveDataTransferConfiguration transferConfig = dataManagementConfigurationLocator
+        .getArchiveDataTransferConfiguration("someId1", HpcDataTransferType.S_3);
+    assertEquals(transferConfig.getUploadRequestURLExpiration(), new Integer(100));
   }
 
 
@@ -274,8 +265,7 @@ public class HpcDataManagementConfigurationLocatorTest {
     expectedException.expectMessage("Could not locate configuration: someIdx");
 
     // This is from the setup data loaded in init method
-    HpcArchiveType type =
-        dataManagementConfigurationLocator.getArchiveType("someIdx");
+    HpcArchiveType type = dataManagementConfigurationLocator.getArchiveType("someIdx");
     assertEquals(type, HpcArchiveType.CLEVERSAFE);
 
   }
@@ -287,7 +277,7 @@ public class HpcDataManagementConfigurationLocatorTest {
    * @throws HpcException
    */
   @Test
-  public void testNoDataTransferConfigurationC() throws HpcException {
+  public void testNoDataTransferConfiguration() throws HpcException {
 
 
     // Exception is thrown because someIdx configuration id does not exist
@@ -295,7 +285,7 @@ public class HpcDataManagementConfigurationLocatorTest {
     expectedException.expectMessage("Could not locate data transfer configuration: " + "someIdx"
         + " " + HpcDataTransferType.S_3);
 
-    dataManagementConfigurationLocator.getDataTransferConfiguration("someIdx",
+    dataManagementConfigurationLocator.getArchiveDataTransferConfiguration("someIdx",
         HpcDataTransferType.S_3);
 
 

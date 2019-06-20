@@ -21,8 +21,8 @@ import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -99,22 +99,20 @@ public class HpcDataManagementConfigurationLocator
   }
 
   /**
-   * Get Data Transfer configuration.
+   * Get Archive Data Transfer configuration.
    *
    * @param configurationId The data management configuration ID.
    * @param dataTransferType The data transfer type.
-   * @return The data transfer configuration for the requested configuration ID and data transfer
-   *         type.
+   * @return The archive data transfer configuration for the requested configuration ID and data transfer type.
    * @throws HpcException if the configuration was not found.
    */
-  // 2-hop REMOVE
-  public HpcDataTransferConfiguration getDataTransferConfiguration(String configurationId,
+  public HpcArchiveDataTransferConfiguration getArchiveDataTransferConfiguration(String configurationId,
       HpcDataTransferType dataTransferType) throws HpcException {
     HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
     if (dataManagementConfiguration != null) {
-      return dataTransferType.equals(HpcDataTransferType.S_3)
-          ? dataManagementConfiguration.getS3Configuration()
-          : dataManagementConfiguration.getGlobusConfiguration();
+      return dataTransferType.equals(HpcDataTransferType.GLOBUS)
+          ? dataManagementConfiguration.getArchiveGlobusConfiguration()
+          : dataManagementConfiguration.getArchiveS3Configuration();
     }
 
     // Configuration was not found.

@@ -23,7 +23,6 @@ import org.springframework.retry.support.RetryTemplate;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
@@ -34,7 +33,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
@@ -167,7 +165,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-      HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
+      HpcDataObjectUploadRequest uploadRequest,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration,
       Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Progress listener not supported.
@@ -187,22 +186,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     // Calculate the archive destination.
-    HpcFileLocation archiveDestinationLocation = getArchiveDestinationLocation(
-        baseArchiveDestination.getFileLocation(), uploadRequest.getPath(),
-        uploadRequest.getCallerObjectId(), baseArchiveDestination.getPermTempArchiveType(), false);
+    HpcFileLocation archiveDestinationLocation =
+        getArchiveDestinationLocation(archiveDataTransferConfiguration.getArchiveFileLocation(),
+            uploadRequest.getPath(), uploadRequest.getCallerObjectId(), false);
 
     if (uploadRequest.getSourceFile() != null) {
       // This is a synchronous upload request. Simply store the data to the file-system.
       // No Globus action is required here.
       return saveFile(uploadRequest.getSourceFile(), archiveDestinationLocation,
-          baseArchiveDestination);
+          archiveDataTransferConfiguration);
     }
 
     // If the archive destination file exists, generate a new archive destination w/ unique path.
     if (getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
-      archiveDestinationLocation = getArchiveDestinationLocation(
-          baseArchiveDestination.getFileLocation(), uploadRequest.getPath(),
-          uploadRequest.getCallerObjectId(), baseArchiveDestination.getPermTempArchiveType(), true);
+      archiveDestinationLocation =
+          getArchiveDestinationLocation(archiveDataTransferConfiguration.getArchiveFileLocation(),
+              uploadRequest.getPath(), uploadRequest.getCallerObjectId(), true);
     }
 
     // Submit a request to Globus to transfer the data.
@@ -218,19 +217,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferCompleted(null);
     uploadResponse.setUploadSource(uploadRequest.getGlobusUploadSource().getSourceLocation());
     uploadResponse.setSourceSize(uploadRequest.getSourceSize());
-    if (baseArchiveDestination.getPermTempArchiveType()
-        .equals(HpcPermTempArchiveType.TEMPORARY_ARCHIVE)) {
-      uploadResponse
-          .setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
-    } else {
-      uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
-    }
+    uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS);
     return uploadResponse;
   }
 
   @Override
   public String downloadDataObject(Object authenticatedToken,
-      HpcDataObjectDownloadRequest downloadRequest, HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration,
+      HpcDataObjectDownloadRequest downloadRequest,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration,
       HpcDataTransferProgressListener progressListener) throws HpcException {
     // Progress listener not supported.
     if (progressListener != null) {
@@ -263,7 +257,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
-      HpcFileLocation destinationFile, HpcArchive baseArchiveDestination,
+      HpcFileLocation destinationFile,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration,
       List<HpcMetadataEntry> metadataEntries) throws HpcException {
     if (sourceFile.getFileContainerId().equals(destinationFile.getFileContainerId())
         && sourceFile.getFileId().equals(destinationFile.getFileId())) {
@@ -271,8 +266,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       // generate and store
       // metadata and return a calculated checksum.
       String archiveFilePath = destinationFile.getFileId().replaceFirst(
-          baseArchiveDestination.getFileLocation().getFileId(),
-          baseArchiveDestination.getDirectory());
+          archiveDataTransferConfiguration.getArchiveFileLocation().getFileId(),
+          archiveDataTransferConfiguration.getArchiveDirectory());
 
       try {
         // Creating the metadata file.
@@ -294,10 +289,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
-      HpcArchive baseArchiveDestination) throws HpcException {
-    String archiveFilePath =
-        fileLocation.getFileId().replaceFirst(baseArchiveDestination.getFileLocation().getFileId(),
-            baseArchiveDestination.getDirectory());
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration) throws HpcException {
+    String archiveFilePath = fileLocation.getFileId().replaceFirst(
+        archiveDataTransferConfiguration.getArchiveFileLocation().getFileId(),
+        archiveDataTransferConfiguration.getArchiveDirectory());
     // Delete the archive file.
     if (!FileUtils.deleteQuietly(new File(archiveFilePath))) {
       logger.error("Failed to delete file: {}", archiveFilePath);
@@ -310,7 +305,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   @Override
   public HpcDataTransferUploadReport getDataTransferUploadStatus(Object authenticatedToken,
-      String dataTransferRequestId, HpcArchive baseArchiveDestination) throws HpcException {
+      String dataTransferRequestId,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration) throws HpcException {
     HpcGlobusDataTransferReport report =
         getDataTransferReport(authenticatedToken, dataTransferRequestId);
 
@@ -319,24 +315,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     statusReport.setBytesTransferred(report.bytesTransferred);
 
     if (report.status.equals(SUCCEEDED_STATUS)) {
-      // Upload completed successfully. Return status based on the archive type.
-      if (baseArchiveDestination.getPermTempArchiveType()
-          .equals(HpcPermTempArchiveType.TEMPORARY_ARCHIVE)) {
-        statusReport.setStatus(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE);
-      } else {
-        statusReport.setStatus(HpcDataTransferUploadStatus.ARCHIVED);
-      }
+      statusReport.setStatus(HpcDataTransferUploadStatus.ARCHIVED);
 
     } else if (transferFailed(authenticatedToken, dataTransferRequestId, report)) {
       // Upload failed.
       statusReport.setStatus(HpcDataTransferUploadStatus.FAILED);
 
-    } else if (baseArchiveDestination.getPermTempArchiveType()
-        .equals(HpcPermTempArchiveType.TEMPORARY_ARCHIVE)) {
-      // Upload is in progress. Return status based on the archive type.
-      statusReport.setStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
     } else {
-      statusReport.setStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
+      statusReport.setStatus(HpcDataTransferUploadStatus.IN_PROGRESS);
     }
 
     return statusReport;
@@ -761,17 +747,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    *
    * @param sourceFile The source file to store.
    * @param archiveDestinationLocation The archive destination location.
-   * @param baseArchiveDestination The base archive destination.
+   * @param archiveDataTransferConfiguration The archive's data transfer configuration.
    * @return A data object upload response object.
    * @throws HpcException on IO exception.
    */
   private HpcDataObjectUploadResponse saveFile(File sourceFile,
-      HpcFileLocation archiveDestinationLocation, HpcArchive baseArchiveDestination)
-      throws HpcException {
+      HpcFileLocation archiveDestinationLocation,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration) throws HpcException {
     Calendar transferStarted = Calendar.getInstance();
     String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
-        baseArchiveDestination.getFileLocation().getFileId(),
-        baseArchiveDestination.getDirectory());
+        archiveDataTransferConfiguration.getArchiveFileLocation().getFileId(),
+        archiveDataTransferConfiguration.getArchiveDirectory());
     try {
       FileUtils.moveFile(sourceFile, new File(archiveFilePath));
     } catch (IOException e) {

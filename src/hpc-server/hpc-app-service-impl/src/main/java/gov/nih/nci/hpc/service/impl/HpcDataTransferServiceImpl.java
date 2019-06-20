@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -64,7 +63,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -357,30 +355,43 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Get the data transfer configuration.
-    HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-        .getDataTransferConfiguration(configurationId, dataTransferType);
+    HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration =
+        dataManagementConfigurationLocator.getArchiveDataTransferConfiguration(configurationId,
+            dataTransferType);
 
     // Generate and return the download URL.
     return dataTransferProxies.get(dataTransferType).generateDownloadRequestURL(
         getAuthenticatedToken(dataTransferType, configurationId), archiveLocation,
-        dataTransferConfiguration.getUploadRequestURLExpiration());
+        archiveDataTransferConfiguration.getUploadRequestURLExpiration());
   }
 
   @Override
-  public String addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
-      HpcDataTransferType dataTransferType, String configurationId, String objectId,
-      String registrarId) throws HpcException {
+  public String addSystemGeneratedMetadataToDataObject(HpcFileLocation archiveFileLocation,
+      String configurationId, String objectId, String registrarId) throws HpcException {
     // Add metadata is done by copying the object to itself w/ attached metadata.
-    // Check that the data transfer system can accept transfer requests.
-    boolean globusSyncUpload =
-        dataTransferType.equals(HpcDataTransferType.GLOBUS) && fileLocation != null;
 
-    return dataTransferProxies.get(dataTransferType).copyDataObject(
-        !globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId) : null,
-        fileLocation, fileLocation,
-        dataManagementConfigurationLocator
-            .getDataTransferConfiguration(configurationId, dataTransferType)
-            .getBaseArchiveDestination(),
+    // Get the data management configuration.
+    HpcDataManagementConfiguration dataManagementConfiguration =
+        dataManagementConfigurationLocator.get(configurationId);
+    Object authenticatedToken = null;
+    HpcDataTransferType dataTransferType = null;
+    HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration = null;
+
+    // If the Archive is Cleversafe, we use S3 data-transfer-proxy to copy the file, otherwise
+    // (archive is POSIX) we user the GLOBUS proxy.
+    if (dataManagementConfiguration.getArchiveType().equals(HpcArchiveType.CLEVERSAFE)) {
+      dataTransferType = HpcDataTransferType.S_3;
+      authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId);
+      archiveDataTransferConfiguration = dataManagementConfiguration.getArchiveS3Configuration();
+
+    } else {
+      dataTransferType = HpcDataTransferType.GLOBUS;
+      archiveDataTransferConfiguration =
+          dataManagementConfiguration.getArchiveGlobusConfiguration();
+    }
+
+    return dataTransferProxies.get(dataTransferType).copyDataObject(authenticatedToken,
+        archiveFileLocation, archiveFileLocation, archiveDataTransferConfiguration,
         generateMetadata(objectId, registrarId));
   }
 
@@ -394,9 +405,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     dataTransferProxies.get(dataTransferType).deleteDataObject(
         getAuthenticatedToken(dataTransferType, configurationId), fileLocation,
-        dataManagementConfigurationLocator
-            .getDataTransferConfiguration(configurationId, dataTransferType)
-            .getBaseArchiveDestination());
+        dataManagementConfigurationLocator.getArchiveDataTransferConfiguration(configurationId,
+            dataTransferType));
   }
 
   @Override
@@ -407,13 +417,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Get the data transfer configuration.
-    HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-        .getDataTransferConfiguration(configurationId, dataTransferType);
-
     return dataTransferProxies.get(dataTransferType).getDataTransferUploadStatus(
         getAuthenticatedToken(dataTransferType, configurationId), dataTransferRequestId,
-        dataTransferConfiguration.getBaseArchiveDestination());
+        dataManagementConfigurationLocator.getArchiveDataTransferConfiguration(configurationId,
+            dataTransferType));
   }
 
   @Override
@@ -502,13 +509,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Invalid file id", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Get the data transfer configuration.
-    HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-        .getDataTransferConfiguration(configurationId, dataTransferType);
+    // Get the archive data transfer configuration.
+    HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration =
+        dataManagementConfigurationLocator.getArchiveDataTransferConfiguration(configurationId,
+            dataTransferType);
 
     // Instantiate the file.
-    File file =
-        new File(getFilePath(fileId, dataTransferConfiguration.getBaseArchiveDestination()));
+    File file = new File(getFilePath(fileId, archiveDataTransferConfiguration));
     if (!file.exists()) {
       throw new HpcException("Archive file could not be found: " + file.getAbsolutePath(),
           HpcRequestRejectReason.FILE_NOT_FOUND);
@@ -863,19 +870,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       return null;
     }
 
-    if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE)) {
-      // Transfer is exactly half way in a 2-hop upload.
-      return 50;
-    }
-
-    if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE)
-        || dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE)) {
+    if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS)) {
       // Data transfer is in progress.
-      if (dataTransferType.equals(HpcDataTransferType.S_3)) {
-        // We don't have visibility into S3 transfer. Return a 50.
-        return 50;
-      }
-
       String dataTransferRequestId = systemGeneratedMetadata.getDataTransferRequestId();
       String configurationId = systemGeneratedMetadata.getConfigurationId();
       Long sourceSize = systemGeneratedMetadata.getSourceSize();
@@ -887,13 +883,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // Get the size of the data transferred so far.
       long transferSize = 0;
       try {
-        // Get the data transfer configuration.
-        HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-            .getDataTransferConfiguration(configurationId, dataTransferType);
-
         transferSize = dataTransferProxies.get(dataTransferType)
             .getDataTransferUploadStatus(getAuthenticatedToken(dataTransferType, configurationId),
-                dataTransferRequestId, dataTransferConfiguration.getBaseArchiveDestination())
+                dataTransferRequestId,
+                dataManagementConfigurationLocator
+                    .getArchiveDataTransferConfiguration(configurationId, dataTransferType))
             .getBytesTransferred();
 
       } catch (HpcException e) {
@@ -901,14 +895,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         return null;
       }
 
-      float percentComplete = (float) 100 * transferSize / sourceSize;
-      if (dataTransferStatus.equals(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE)) {
-        // Transfer is in 1st hop of 2-hop upload. The Globus % complete is half of the
-        // overall upload.
-        percentComplete /= 2;
-      }
-
-      return Math.round(percentComplete);
+      return Math.round((float) 100 * transferSize / sourceSize);
     }
 
     return null;
@@ -954,7 +941,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Authenticate with the data transfer system.
     Object token = dataTransferProxies.get(dataTransferType).authenticate(dataTransferSystemAccount,
         dataManagementConfigurationLocator
-            .getDataTransferConfiguration(configurationId, dataTransferType).getUrl());
+            .getArchiveDataTransferConfiguration(configurationId, dataTransferType).getUrl());
     if (token == null) {
       throw new HpcException("Invalid data transfer account credentials",
           HpcErrorType.DATA_TRANSFER_ERROR, dataTransferSystemAccount.getIntegratedSystem());
@@ -1058,8 +1045,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Get the data transfer configuration.
-    HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-        .getDataTransferConfiguration(configurationId, dataTransferType);
+    HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration =
+        dataManagementConfigurationLocator.getArchiveDataTransferConfiguration(configurationId,
+            dataTransferType);
 
     // In the case of sync upload using a Globus data transfer proxy, there is no
     // need to login to Globus
@@ -1078,8 +1066,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Upload the data object using the appropriate data transfer system proxy.
     return dataTransferProxies.get(dataTransferType).uploadDataObject(
         !globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId) : null,
-        uploadRequest, dataTransferConfiguration.getBaseArchiveDestination(),
-        dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener);
+        uploadRequest, archiveDataTransferConfiguration,
+        archiveDataTransferConfiguration.getUploadRequestURLExpiration(), progressListener);
   }
 
   /**
@@ -1376,12 +1364,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * Get a file path for a given file ID and baseArchive.
    *
    * @param fileId The file ID.
-   * @param baseArchive The base archive.
+   * @param archiveDataTransferConfiguration The archive's data transfer configuration.
    * @return a file path.
    */
-  private String getFilePath(String fileId, HpcArchive baseArchive) {
-    return fileId.replaceFirst(baseArchive.getFileLocation().getFileId(),
-        baseArchive.getDirectory());
+  private String getFilePath(String fileId,
+      HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration) {
+    return fileId.replaceFirst(
+        archiveDataTransferConfiguration.getArchiveFileLocation().getFileId(),
+        archiveDataTransferConfiguration.getArchiveDirectory());
   }
 
   /**

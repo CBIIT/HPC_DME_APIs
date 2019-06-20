@@ -24,15 +24,12 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -69,50 +66,6 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
     if (!StringUtils.isEmpty(archiveType)) {
       dataManagementConfiguration.setArchiveType(HpcArchiveType.fromValue(archiveType));
     }
-
-    // 2-hop REMOVE ------------------------------------------------------------
-    // Map the S3 Configuration.
-    HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
-    s3Configuration.setUrl(rs.getString("S3_URL"));
-    HpcArchive s3BaseArchiveDestination = new HpcArchive();
-    HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
-    s3ArchiveLocation.setFileContainerId(rs.getString("S3_VAULT"));
-    s3ArchiveLocation.setFileId(rs.getString("S3_OBJECT_ID"));
-    s3BaseArchiveDestination.setFileLocation(s3ArchiveLocation);
-    String s3ArchiveType = rs.getString("S3_ARCHIVE_TYPE");
-    if (!StringUtils.isEmpty(s3ArchiveType)) {
-      s3BaseArchiveDestination
-          .setPermTempArchiveType(HpcPermTempArchiveType.fromValue(s3ArchiveType));
-    }
-    s3Configuration.setBaseArchiveDestination(s3BaseArchiveDestination);
-    s3Configuration.setUploadRequestURLExpiration(rs.getInt("S3_UPLOAD_REQUEST_URL_EXPIRATION"));
-
-    dataManagementConfiguration.setS3Configuration(s3Configuration);
-
-    // Map the Globus configuration.
-    HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
-    globusConfiguration.setUrl(rs.getString("GLOBUS_URL"));
-
-    HpcArchive globusBaseArchiveDestination = new HpcArchive();
-    HpcFileLocation globusArchiveLocation = new HpcFileLocation();
-    globusArchiveLocation.setFileContainerId(rs.getString("GLOBUS_ARCHIVE_ENDPOINT"));
-    globusArchiveLocation.setFileId(rs.getString("GLOBUS_ARCHIVE_PATH"));
-    globusBaseArchiveDestination.setFileLocation(globusArchiveLocation);
-    globusBaseArchiveDestination.setPermTempArchiveType(
-        HpcPermTempArchiveType.fromValue(rs.getString("GLOBUS_ARCHIVE_TYPE")));
-    globusBaseArchiveDestination.setDirectory(rs.getString("GLOBUS_ARCHIVE_DIRECTORY"));
-    globusConfiguration.setBaseArchiveDestination(globusBaseArchiveDestination);
-
-    HpcArchive globusBaseDownloadSource = new HpcArchive();
-    HpcFileLocation globusDownloadLocation = new HpcFileLocation();
-    globusDownloadLocation.setFileContainerId(rs.getString("GLOBUS_DOWNLOAD_ENDPOINT"));
-    globusDownloadLocation.setFileId(rs.getString("GLOBUS_DOWNLOAD_PATH"));
-    globusBaseDownloadSource.setFileLocation(globusDownloadLocation);
-    globusBaseDownloadSource.setDirectory(rs.getString("GLOBUS_DOWNLOAD_DIRECTORY"));
-    globusConfiguration.setBaseDownloadSource(globusBaseDownloadSource);
-
-    dataManagementConfiguration.setGlobusConfiguration(globusConfiguration);
-    // -----------------------------------------------------------------------------------------
 
     // Map the Archive S3 Configuration.
     HpcArchiveDataTransferConfiguration archiveS3Configuration = new HpcArchiveDataTransferConfiguration();

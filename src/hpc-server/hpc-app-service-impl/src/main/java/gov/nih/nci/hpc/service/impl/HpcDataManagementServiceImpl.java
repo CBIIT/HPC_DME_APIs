@@ -110,11 +110,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   // Prepared query to get data objects that have their data transfer in-progress
   // to archive.
-  private List<HpcMetadataQuery> dataTransferInProgressToArchiveQuery = new ArrayList<>();
-
-  // Prepared query to get data objects that have their data transfer in-progress
-  // to temporary archive.
-  private List<HpcMetadataQuery> dataTransferInProgressToTemporaryArchiveQuery = new ArrayList<>();
+  private List<HpcMetadataQuery> dataTransferInProgressQuery = new ArrayList<>();
 
   // Prepared query to get data objects that have their data transfer upload by
   // users via generated URL.
@@ -127,9 +123,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // Prepared query to get data objects that have their data transfer upload via streaming has
   // stopped.
   private List<HpcMetadataQuery> dataTransferStreamingStoppedQuery = new ArrayList<>();
-
-  // Prepared query to get data objects that have their data in temporary archive.
-  private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
 
   // List of subjects (user-id / group-name) that permission update is not
   // allowed.
@@ -155,8 +148,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    *        registration status. This URL need to have a {taks_id} placeholder to plug-in the task
    *        ID to be displayed.
    */
-  private HpcDataManagementServiceImpl(String systemAdminSubjects,
-      String defaultBaseUiURL,
+  private HpcDataManagementServiceImpl(String systemAdminSubjects, String defaultBaseUiURL,
       String defaultBulkRegistrationStatusUiDeepLink) {
     // Prepare the query to get data objects in data transfer status of received.
     dataTransferReceivedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
@@ -164,15 +156,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     // Prepare the query to get data objects in data transfer in-progress to
     // archive.
-    dataTransferInProgressToArchiveQuery
-        .add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL,
-            HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE.value()));
-
-    // Prepare the query to get data objects in data transfer in-progress to
-    // temporary archive.
-    dataTransferInProgressToTemporaryArchiveQuery
-        .add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL,
-            HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE.value()));
+    dataTransferInProgressQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+        HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.IN_PROGRESS.value()));
 
     // Prepared query to get data objects that have their data transfer upload by
     // users via generated URL.
@@ -189,15 +174,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     dataTransferStreamingStoppedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
         HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.STREAMING_STOPPED.value()));
 
-    // Prepare the query to get data objects in temporary archive.
-    dataTransferInTemporaryArchiveQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
-        HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE.value()));
-
     // Populate the list of system admin subjects (user-id / group-name). Set permission is not
     // allowed for these subjects.
     this.systemAdminSubjects.addAll(Arrays.asList(systemAdminSubjects.split("\\s+")));
 
-    defaultBulkRegistrationStatusUiURL = defaultBaseUiURL + '/' + defaultBulkRegistrationStatusUiDeepLink;
+    defaultBulkRegistrationStatusUiURL =
+        defaultBaseUiURL + '/' + defaultBulkRegistrationStatusUiDeepLink;
   }
 
   /**
@@ -571,14 +553,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
   @Override
   public List<HpcDataObject> getDataObjectsUploadInProgress() throws HpcException {
-    Object authenticatedToken = dataManagementAuthenticator.getAuthenticatedToken();
-    List<HpcDataObject> objectsInProgress = new ArrayList<>();
-    objectsInProgress.addAll(dataManagementProxy.getDataObjects(authenticatedToken,
-        dataTransferInProgressToArchiveQuery));
-    objectsInProgress.addAll(dataManagementProxy.getDataObjects(authenticatedToken,
-        dataTransferInProgressToTemporaryArchiveQuery));
-
-    return objectsInProgress;
+    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+        dataTransferInProgressQuery);
   }
 
   @Override
@@ -599,11 +575,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         dataTransferStreamingStoppedQuery);
   }
 
-  @Override
-  public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException {
-    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
-        dataTransferInTemporaryArchiveQuery);
-  }
 
   @Override
   public void closeConnection() {

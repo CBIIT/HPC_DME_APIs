@@ -27,17 +27,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
-import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcPermTempArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.model.HpcArchiveDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -145,8 +143,8 @@ public class HpcDataTransferServiceImplTest {
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
         .thenReturn(new HpcIntegratedSystemAccount());
     when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
-    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
-        anyObject())).thenReturn(new HpcDataTransferConfiguration());
+    when(dataManagementConfigurationLocatorMock.getArchiveDataTransferConfiguration(anyObject(),
+        anyObject())).thenReturn(new HpcArchiveDataTransferConfiguration());
 
     // Run the test.
     dataTransferService.uploadDataObject(null, s3UploadSource, null, false, null, "/test/path",
@@ -193,8 +191,8 @@ public class HpcDataTransferServiceImplTest {
   @Test
   public void testGenerateDownloadRequestURL() throws HpcException {
     // Mock setup.
-    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
-        anyObject())).thenReturn(new HpcDataTransferConfiguration());
+    when(dataManagementConfigurationLocatorMock.getArchiveDataTransferConfiguration(anyObject(),
+        anyObject())).thenReturn(new HpcArchiveDataTransferConfiguration());
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
         .thenReturn(new HpcIntegratedSystemAccount());
     when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
@@ -251,16 +249,16 @@ public class HpcDataTransferServiceImplTest {
   @Test
   public void testS3DownloadDataObject() throws HpcException {
     // Mock setup.
-    HpcArchive baseDownloadSource = new HpcArchive();
-    baseDownloadSource.setPermTempArchiveType(HpcPermTempArchiveType.ARCHIVE);
-    HpcFileLocation baseDownloadSourceFileLocation = new HpcFileLocation();
-    baseDownloadSourceFileLocation.setFileContainerId("testBaseDownloadSource");
-    baseDownloadSourceFileLocation.setFileId("testBaseDownloadSource");
-    baseDownloadSource.setFileLocation(baseDownloadSourceFileLocation);
-    HpcDataTransferConfiguration dataTransferConfig = new HpcDataTransferConfiguration();
+    HpcArchiveDataTransferConfiguration dataTransferConfig =
+        new HpcArchiveDataTransferConfiguration();
+    HpcFileLocation archiveFileLocation = new HpcFileLocation();
+    archiveFileLocation.setFileContainerId("testBaseDownloadSource");
+    archiveFileLocation.setFileId("testBaseDownloadSource");
+    dataTransferConfig.setArchiveFileLocation(archiveFileLocation);
+    dataTransferConfig.setUploadRequestURLExpiration(100);
     HpcDataManagementConfiguration dataManagementConfig = new HpcDataManagementConfiguration();
-    dataTransferConfig.setBaseDownloadSource(baseDownloadSource);
-    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
+    dataManagementConfig.setArchiveS3Configuration(dataTransferConfig);
+    when(dataManagementConfigurationLocatorMock.getArchiveDataTransferConfiguration(anyObject(),
         anyObject())).thenReturn(dataTransferConfig);
     when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dataManagementConfig);
 

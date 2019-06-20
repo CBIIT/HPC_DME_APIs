@@ -76,7 +76,8 @@ public interface HpcDataTransferService {
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
    * @param googleDriveDownloadDestination The user requested Google Drive download destination.
-   * @param archiveDataTransferType The data transfer type used to upload the data object into the archive
+   * @param archiveDataTransferType The data transfer type used to upload the data object into the
+   *        archive
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
    * @param userId The user ID submitting the download request.
@@ -109,8 +110,7 @@ public interface HpcDataTransferService {
   /**
    * Add system generated metadata to the data object in the archive.
    *
-   * @param fileLocation The file location.
-   * @param dataTransferType The data transfer type.
+   * @param archiveFileLocation The file location in the archive.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
    * @param objectId The data object id from the data management system (UUID).
@@ -118,9 +118,8 @@ public interface HpcDataTransferService {
    * @return The checksum of the data object object.
    * @throws HpcException on service failure.
    */
-  public String addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
-      HpcDataTransferType dataTransferType, String configurationId, String objectId,
-      String registrarId) throws HpcException;
+  public String addSystemGeneratedMetadataToDataObject(HpcFileLocation archiveFileLocation,
+      String configurationId, String objectId, String registrarId) throws HpcException;
 
   /**
    * Delete a data object file.

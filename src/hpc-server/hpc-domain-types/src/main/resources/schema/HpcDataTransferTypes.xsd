@@ -20,10 +20,7 @@
 	<xsd:simpleType name="HpcDataTransferUploadStatus">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
-			<xsd:enumeration
-				value="IN_PROGRESS_TO_TEMPORARY_ARCHIVE" />
-			<xsd:enumeration value="IN_TEMPORARY_ARCHIVE" />
-			<xsd:enumeration value="IN_PROGRESS_TO_ARCHIVE" />
+			<xsd:enumeration value="IN_PROGRESS" />
 			<xsd:enumeration value="ARCHIVED" />
 			<xsd:enumeration value="FAILED" />
 			<xsd:enumeration value="DELETE_REQUESTED" />
@@ -70,14 +67,6 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
-	<!--  2-hop REMOVE -->
-	<xsd:simpleType name="HpcPermTempArchiveType">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="TEMPORARY_ARCHIVE" />
-			<xsd:enumeration value="ARCHIVE" />
-		</xsd:restriction>
-	</xsd:simpleType>
-	
 	<xsd:simpleType name="HpcArchiveType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="CLEVERSAFE" />
@@ -105,17 +94,6 @@
 			<xsd:element name="fileContainerId" type="xsd:string" />
 			<xsd:element name="fileContainerName" type="xsd:string" />
 			<xsd:element name="fileId" type="xsd:string" />
-		</xsd:sequence>
-	</xsd:complexType>
-
-	<!--  2-hop REMOVE -->
-	<xsd:complexType name="HpcArchive">
-		<xsd:sequence>
-			<xsd:element name="fileLocation"
-				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="permTempArchiveType"
-				type="hpc-domain-datatransfer:HpcPermTempArchiveType" />
-			<xsd:element name="directory" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

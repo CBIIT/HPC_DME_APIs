@@ -91,16 +91,6 @@ public interface HpcEventService {
       throws HpcException;
 
   /**
-   * Add a data transfer upload in temporary archive event.
-   *
-   * @param userId The user ID.
-   * @param path The data object path.
-   * @throws HpcException on service failure.
-   */
-  public void addDataTransferUploadInTemporaryArchiveEvent(String userId, String path)
-      throws HpcException;
-
-  /**
    * Add a data transfer upload archived event.
    *
    * @param userId The user ID.
