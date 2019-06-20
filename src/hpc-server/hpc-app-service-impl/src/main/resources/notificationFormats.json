@@ -1,19 +1,6 @@
 {
 	"notificationFormats": [
 		{
-			"eventType": "DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE",
-			"subjectFormat": "HPC Data Upload received in temporary archive",
-			"subjectArguments": [
-			],
-			"textFormat": "Your data upload request is stored in temporary archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s",
-			"textArguments": [
-				{
-					"payloadEntryAttribute": "DATA_OBJECT_PATH",
-					"index": "0"
-				}
-			]
-		},
-		{
 			"eventType": "DATA_TRANSFER_UPLOAD_ARCHIVED",
 			"subjectFormat": "HPC Data Transfer Upload Request Completed at %1$s",
 			"subjectArguments": [
