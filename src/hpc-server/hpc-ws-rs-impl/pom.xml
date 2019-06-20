@@ -41,6 +41,10 @@
     <irods.cert.filename>irods.crt</irods.cert.filename>
     <authdev.cert.alias>NIH-AUTH-DEV</authdev.cert.alias>
     <authdev.cert.filename>authdev.crt</authdev.cert.filename>
+    <authtest.cert.alias>NIH-AUTH-TEST</authtest.cert.alias>
+    <authtest.cert.filename>authtest.crt</authtest.cert.filename>
+    <auth.cert.alias>NIH-AUTH</auth.cert.alias>
+    <auth.cert.filename>authproxyint.crt</auth.cert.filename>
     <hhs.intermediate.cert.alias>HHS-FPKI-Intermediate</hhs.intermediate.cert.alias>
     <hhs.intermediate.cert.filename>HHS-FPKI-Intermediate.crt</hhs.intermediate.cert.filename>
     <entrust.root.cert.alias>NIH-ENTRUST-ROOT-LK1</entrust.root.cert.alias>
@@ -202,6 +206,38 @@
               <file>${main.resources.dir}/certs/${authdev.cert.filename}</file>
               <storepass>${store.pass}</storepass>
               <alias>${authdev.cert.alias}</alias>
+              <trustcacerts>true</trustcacerts>
+              <noprompt>true</noprompt>
+              <skipIfExist>false</skipIfExist>
+            </configuration>
+          </execution>
+          <execution>
+            <id>importAuthtestCertificate</id>
+            <goals>
+              <goal>importCertificate</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+              <file>${main.resources.dir}/certs/${authtest.cert.filename}</file>
+              <storepass>${store.pass}</storepass>
+              <alias>${authtest.cert.alias}</alias>
+              <trustcacerts>true</trustcacerts>
+              <noprompt>true</noprompt>
+              <skipIfExist>false</skipIfExist>
+            </configuration>
+          </execution>
+          <execution>
+            <id>importAuthCertificate</id>
+            <goals>
+              <goal>importCertificate</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <keystore>${main.resources.dir}/${ca.certs.jks.filename}</keystore>
+              <file>${main.resources.dir}/certs/${auth.cert.filename}</file>
+              <storepass>${store.pass}</storepass>
+              <alias>${auth.cert.alias}</alias>
               <trustcacerts>true</trustcacerts>
               <noprompt>true</noprompt>
               <skipIfExist>false</skipIfExist>
