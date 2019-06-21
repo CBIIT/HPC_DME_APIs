@@ -133,6 +133,8 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			boolean success = constructReponseMessages(hpcWebGroup.getGroupName(), createResponse, model);
 			if (success)
 				session.removeAttribute("selectedUsers");
+			    redirectAttributes.addFlashAttribute("messages", model.asMap().get("messages"));
+			    return "redirect:group?return=true";
 		} catch (Exception e) {
 			messages.add(e.getMessage());
 			model.addAttribute("messages", messages);
