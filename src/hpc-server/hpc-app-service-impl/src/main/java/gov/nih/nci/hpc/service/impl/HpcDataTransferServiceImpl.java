@@ -371,55 +371,29 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcDataTransferType archiveDataTransferType) throws HpcException {
     // Add metadata is done by copying the object to itself w/ attached metadata.
 
-    // Get the data management configuration.
-    HpcDataManagementConfiguration dataManagementConfiguration =
-        dataManagementConfigurationLocator.get(configurationId);
-    Object authenticatedToken = null;
-    HpcDataTransferType dataTransferType = null;
-    HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration = null;
-
-    // If the Archive is Cleversafe, we use S3 data-transfer-proxy to copy the file, otherwise
-    // (archive is POSIX) we user the GLOBUS proxy.
-    if (dataManagementConfiguration.getArchiveType().equals(HpcArchiveType.CLEVERSAFE)) {
-      dataTransferType = HpcDataTransferType.S_3;
-      authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId);
-      archiveDataTransferConfiguration = dataManagementConfiguration.getArchiveS3Configuration();
-      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
-        // The file was uploaded to Cleversafe by Globus. Since we use the S3 data-transfer-proxy to
-        // create metadata in Cleversafe, we
-        // need to map the archive location for that proxy.
-        archiveFileLocation.setFileContainerId(dataManagementConfiguration
-            .getArchiveS3Configuration().getArchiveFileLocation().getFileContainerId());
-        archiveFileLocation.setFileId(archiveFileLocation.getFileId().replaceFirst(
-            dataManagementConfiguration.getArchiveGlobusConfiguration().getArchiveFileLocation()
-                .getFileId(),
-            dataManagementConfiguration.getArchiveS3Configuration().getArchiveFileLocation()
-                .getFileId()));
-      }
-
-    } else {
-      dataTransferType = HpcDataTransferType.GLOBUS;
-      archiveDataTransferConfiguration =
-          dataManagementConfiguration.getArchiveGlobusConfiguration();
-    }
-
-    return dataTransferProxies.get(dataTransferType).copyDataObject(authenticatedToken,
-        archiveFileLocation, archiveFileLocation, archiveDataTransferConfiguration,
+    HpcArchiveFileOperationSupport archiveFileOperationSupport = getArchiveFileOperationSupport(
+        archiveFileLocation, configurationId, archiveDataTransferType);
+    return dataTransferProxies.get(archiveFileOperationSupport.dataTransferType).copyDataObject(
+        archiveFileOperationSupport.authenticatedToken, archiveFileLocation,
+        archiveFileOperationSupport.archiveFileLocation,
+        archiveFileOperationSupport.archiveDataTransferConfiguration,
         generateMetadata(objectId, registrarId));
   }
 
   @Override
-  public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
-      String configurationId) throws HpcException {
+  public void deleteDataObject(HpcFileLocation archiveFileLocation,
+      HpcDataTransferType archiveDataTransferType, String configurationId) throws HpcException {
     // Input validation.
-    if (!HpcDomainValidator.isValidFileLocation(fileLocation)) {
-      throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+    if (!HpcDomainValidator.isValidFileLocation(archiveFileLocation)) {
+      throw new HpcException("Invalid archive file location", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    dataTransferProxies.get(dataTransferType).deleteDataObject(
-        getAuthenticatedToken(dataTransferType, configurationId), fileLocation,
-        dataManagementConfigurationLocator.getArchiveDataTransferConfiguration(configurationId,
-            dataTransferType));
+    HpcArchiveFileOperationSupport archiveFileOperationSupport = getArchiveFileOperationSupport(
+        archiveFileLocation, configurationId, archiveDataTransferType);
+    dataTransferProxies.get(archiveFileOperationSupport.dataTransferType).deleteDataObject(
+        archiveFileOperationSupport.authenticatedToken,
+        archiveFileOperationSupport.archiveFileLocation,
+        archiveFileOperationSupport.archiveDataTransferConfiguration);
   }
 
   @Override
@@ -1655,12 +1629,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * Determine whether a data transfer request can be initiated at current time.
    *
    * @param dataTransferType The type of data transfer.
-   * 
    * @param configurationId The data management configuration ID.
-   * 
    * @return boolean that is true if request can be initiated, false otherwise
-   * 
-   * @throw HpcException On internal error
+   * @throws HpcException On internal error
    */
   private boolean acceptsTransferRequests(HpcDataTransferType dataTransferType,
       String configurationId) throws HpcException {
@@ -1732,6 +1703,68 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       retStrRep = pToken.toString();
     }
     return retStrRep;
+  }
+
+  private class HpcArchiveFileOperationSupport {
+    public Object authenticatedToken = null;
+    public HpcDataTransferType dataTransferType = null;
+    public HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration = null;
+    public HpcFileLocation archiveFileLocation = null;
+  }
+
+  /*
+   * Prepare data needed to perform an operation (copy / delete) on a file in an archive
+   *
+   * @param archiveFileLocation The archive file location.
+   * @param configurationId The data management configuration ID.
+   * @param archiveDataTransferType The data management configuration ID.
+   * @return HpcArchiveFileOperationSupport containing data needed to perform copy / delete file in
+   * the Cleversafe / POSIX archive.
+   * 
+   * @throw HpcException On internal error.
+   */
+  private HpcArchiveFileOperationSupport getArchiveFileOperationSupport(
+      HpcFileLocation archiveFileLocation, String configurationId,
+      HpcDataTransferType archiveDataTransferType) throws HpcException {
+
+    // Get the data management configuration.
+    HpcDataManagementConfiguration dataManagementConfiguration =
+        dataManagementConfigurationLocator.get(configurationId);
+    HpcArchiveFileOperationSupport archiveFileOperationSupport =
+        new HpcArchiveFileOperationSupport();
+    archiveFileOperationSupport.archiveFileLocation = archiveFileLocation;
+
+    if (dataManagementConfiguration.getArchiveType().equals(HpcArchiveType.CLEVERSAFE)) {
+      // Prepare data needed to copy / delete file from Cleversafe archive.
+      archiveFileOperationSupport.dataTransferType = HpcDataTransferType.S_3;
+      archiveFileOperationSupport.authenticatedToken =
+          getAuthenticatedToken(HpcDataTransferType.S_3, configurationId);
+      archiveFileOperationSupport.archiveDataTransferConfiguration =
+          dataManagementConfiguration.getArchiveS3Configuration();
+      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+        // The file was uploaded to Cleversafe by Globus. Since we use the S3 data-transfer-proxy to
+        // create metadata in Cleversafe, we
+        // need to map the archive location for that proxy.
+        archiveFileOperationSupport.archiveFileLocation = new HpcFileLocation();
+        archiveFileOperationSupport.archiveFileLocation
+            .setFileContainerId(dataManagementConfiguration.getArchiveS3Configuration()
+                .getArchiveFileLocation().getFileContainerId());
+        archiveFileOperationSupport.archiveFileLocation
+            .setFileId(archiveFileLocation.getFileId().replaceFirst(
+                dataManagementConfiguration.getArchiveGlobusConfiguration().getArchiveFileLocation()
+                    .getFileId(),
+                dataManagementConfiguration.getArchiveS3Configuration().getArchiveFileLocation()
+                    .getFileId()));
+      }
+
+    } else {
+      // Prepare data needed to copy / delete file from POSIX archive.
+      archiveFileOperationSupport.dataTransferType = HpcDataTransferType.GLOBUS;
+      archiveFileOperationSupport.archiveDataTransferConfiguration =
+          dataManagementConfiguration.getArchiveGlobusConfiguration();
+    }
+
+    return archiveFileOperationSupport;
   }
 
   // ---------------------------------------------------------------------//

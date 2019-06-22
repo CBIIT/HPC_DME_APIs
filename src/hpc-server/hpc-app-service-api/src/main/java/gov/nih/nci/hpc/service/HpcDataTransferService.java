@@ -126,13 +126,14 @@ public interface HpcDataTransferService {
   /**
    * Delete a data object file.
    *
-   * @param fileLocation The file location.
-   * @param dataTransferType The data transfer type.
+   * @param archiveFileLocation The file location in the archive.
+   * @param archiveDataTransferType The data transfer type used to upload the data object into the
+   *        archive
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
    * @throws HpcException on service failure.
    */
-  public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+  public void deleteDataObject(HpcFileLocation archiveFileLocation, HpcDataTransferType archiveDataTransferType,
       String configurationId) throws HpcException;
 
   /**
