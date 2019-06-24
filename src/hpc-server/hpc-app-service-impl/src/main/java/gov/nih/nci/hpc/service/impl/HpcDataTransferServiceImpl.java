@@ -374,7 +374,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     HpcArchiveFileOperationSupport archiveFileOperationSupport = getArchiveFileOperationSupport(
         archiveFileLocation, configurationId, archiveDataTransferType);
     return dataTransferProxies.get(archiveFileOperationSupport.dataTransferType).copyDataObject(
-        archiveFileOperationSupport.authenticatedToken, archiveFileLocation,
+        archiveFileOperationSupport.authenticatedToken,
+        archiveFileOperationSupport.archiveFileLocation,
         archiveFileOperationSupport.archiveFileLocation,
         archiveFileOperationSupport.archiveDataTransferConfiguration,
         generateMetadata(objectId, registrarId));
@@ -1629,8 +1630,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * Determine whether a data transfer request can be initiated at current time.
    *
    * @param dataTransferType The type of data transfer.
+   * 
    * @param configurationId The data management configuration ID.
+   * 
    * @return boolean that is true if request can be initiated, false otherwise
+   * 
    * @throws HpcException On internal error
    */
   private boolean acceptsTransferRequests(HpcDataTransferType dataTransferType,
@@ -1716,8 +1720,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * Prepare data needed to perform an operation (copy / delete) on a file in an archive
    *
    * @param archiveFileLocation The archive file location.
+   * 
    * @param configurationId The data management configuration ID.
+   * 
    * @param archiveDataTransferType The data management configuration ID.
+   * 
    * @return HpcArchiveFileOperationSupport containing data needed to perform copy / delete file in
    * the Cleversafe / POSIX archive.
    * 
