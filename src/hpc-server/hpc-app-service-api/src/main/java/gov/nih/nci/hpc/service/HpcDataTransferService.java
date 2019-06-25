@@ -98,14 +98,14 @@ public interface HpcDataTransferService {
    *
    * @param path The data object path.
    * @param archiveLocation The archive file location.
-   * @param dataTransferType The data transfer type.
+   * @param archiveDataTransferType The data transfer type used to upload the file to the archive.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
    * @return The download URL.
    * @throws HpcException on service failure.
    */
   public String generateDownloadRequestURL(String path, HpcFileLocation archiveLocation,
-      HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
+      HpcDataTransferType archiveDataTransferType, String configurationId) throws HpcException;
 
   /**
    * Add system generated metadata to the data object in the archive.
@@ -133,8 +133,8 @@ public interface HpcDataTransferService {
    *        config).
    * @throws HpcException on service failure.
    */
-  public void deleteDataObject(HpcFileLocation archiveFileLocation, HpcDataTransferType archiveDataTransferType,
-      String configurationId) throws HpcException;
+  public void deleteDataObject(HpcFileLocation archiveFileLocation,
+      HpcDataTransferType archiveDataTransferType, String configurationId) throws HpcException;
 
   /**
    * Get a data transfer upload request status.

@@ -347,22 +347,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public String generateDownloadRequestURL(String path, HpcFileLocation archiveLocation,
-      HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
+      HpcDataTransferType archiveDataTransferType, String configurationId) throws HpcException {
     // Input Validation.
-    if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
+    if (archiveDataTransferType == null || !isValidFileLocation(archiveLocation)) {
       throw new HpcException("Invalid generate download URL request",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Get the data transfer configuration.
-    HpcArchiveDataTransferConfiguration archiveDataTransferConfiguration =
-        dataManagementConfigurationLocator.getArchiveDataTransferConfiguration(configurationId,
-            dataTransferType);
+    // Get the data management configuration.
+    HpcDataManagementConfiguration dataManagementConfiguration =
+        dataManagementConfigurationLocator.get(configurationId);
 
-    // Generate and return the download URL.
-    return dataTransferProxies.get(dataTransferType).generateDownloadRequestURL(
-        getAuthenticatedToken(dataTransferType, configurationId), archiveLocation,
-        archiveDataTransferConfiguration.getUploadRequestURLExpiration());
+    HpcFileLocation cleversafeArchiveLocation = archiveLocation;
+    if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+      // The file was upload with Globus into Cleversafe archive. We need to adjust the archive
+      // location for the
+      // S3 data-transfer-proxy to generate the download URL.
+      cleversafeArchiveLocation.setFileContainerId(dataManagementConfiguration
+          .getArchiveS3Configuration().getArchiveFileLocation().getFileContainerId());
+      cleversafeArchiveLocation.setFileId(archiveLocation.getFileId().replaceFirst(
+          dataManagementConfiguration.getArchiveGlobusConfiguration().getArchiveFileLocation()
+              .getFileId(),
+          dataManagementConfiguration.getArchiveS3Configuration().getArchiveFileLocation()
+              .getFileId()));
+    }
+
+    // Generate and return the download URL. This is only supported by Cleversafe, so we use S3
+    // proxy.
+    return dataTransferProxies.get(HpcDataTransferType.S_3).generateDownloadRequestURL(
+        getAuthenticatedToken(HpcDataTransferType.S_3, configurationId), cleversafeArchiveLocation,
+        dataManagementConfiguration.getArchiveS3Configuration().getUploadRequestURLExpiration());
   }
 
   @Override

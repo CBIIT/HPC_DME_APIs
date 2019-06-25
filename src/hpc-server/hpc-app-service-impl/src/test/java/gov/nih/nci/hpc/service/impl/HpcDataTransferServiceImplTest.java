@@ -191,6 +191,11 @@ public class HpcDataTransferServiceImplTest {
   @Test
   public void testGenerateDownloadRequestURL() throws HpcException {
     // Mock setup.
+    HpcDataManagementConfiguration dataManagementConfiguration = new HpcDataManagementConfiguration();
+    dataManagementConfiguration.setArchiveS3Configuration(new HpcArchiveDataTransferConfiguration());
+    dataManagementConfiguration.getArchiveS3Configuration().setUploadRequestURLExpiration(100);
+    when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dataManagementConfiguration);
+    
     when(dataManagementConfigurationLocatorMock.getArchiveDataTransferConfiguration(anyObject(),
         anyObject())).thenReturn(new HpcArchiveDataTransferConfiguration());
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
