@@ -16,7 +16,7 @@ from common.sf_audit import SFAudit
 def main(args):
 
     if len(sys.argv) < 6:
-        print("\n Usage: python app.py tarfile_list tarfile_dir extract_path audit_dir dryrun initial_bytes initial_file_count")
+        print("\n Usage: python app.py tarfile_list tarfile_dir extract_path audit_dir dryrun include_file_size")
         return
 
     # The file containing the tarlist
