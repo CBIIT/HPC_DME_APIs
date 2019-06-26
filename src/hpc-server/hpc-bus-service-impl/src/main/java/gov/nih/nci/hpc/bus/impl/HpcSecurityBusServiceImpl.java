@@ -379,7 +379,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
 
     // Authenticate w/ SPS
-    if (!securityService.authenticate(session)) {
+    if (!securityService.authenticateSso(nciUserId, session)) {
       throw new HpcException("SPS authentication failed", HpcErrorType.UNAUTHORIZED_REQUEST);
     }
 

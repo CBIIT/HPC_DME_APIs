@@ -366,14 +366,14 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
   }
 
   @Override
-  public boolean authenticate(String session) throws HpcException {
+  public boolean authenticateSso(String nciUserId, String session) throws HpcException {
 	// Input validation.
 	if (session == null || session.trim().length() == 0) {
 	      throw new HpcException(
 	      "SM session cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
 	}
 
-		return spsAuthorizationProxy.authorize(session,
+		return spsAuthorizationProxy.authorize(nciUserId, session,
 				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getUsername(),
 				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
 	  }
@@ -576,4 +576,6 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 
     HpcRequestContext.setRequestInvoker(invoker);
   }
+
+
 }
