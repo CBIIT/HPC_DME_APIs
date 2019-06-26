@@ -81,7 +81,7 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public boolean authorize(String session, String username, String password) throws HpcException {
+	public boolean authorize(String nciUserId, String session, String username, String password) throws HpcException {
 
 		WebClient client = null;
 		try {
@@ -101,8 +101,14 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 			Response response = client.post(authorize);
 			if (response.getStatus() == 200) {
 				AuthorizationResult authorizationResult = response.readEntity(AuthorizationResult.class);
-				if (authorizationResult.getResultCode().equals(AuthorizationResultCodes.AUTHORIZED))
-					return true;
+				if (authorizationResult.getResultCode().equals(AuthorizationResultCodes.AUTHORIZED)) {
+					for(Attribute attribute: authorizationResult.getAuthorizationResponses().getResponse()) {
+						if(attribute.getName().equalsIgnoreCase("SM_USER")) {
+							String smUser = attribute.getValue();
+							return smUser.equalsIgnoreCase(nciUserId);
+						}
+					}
+				}
 			} else {
 				throw new HpcException("SPS Authroize not successful, response=" + response.getStatus(),
 						HpcErrorType.REQUEST_AUTHENTICATION_FAILED);
