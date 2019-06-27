@@ -104,7 +104,7 @@
 		
 		<prop key="hpc.ws.rs.auth.report.generate-report">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		
-		<prop key="hpc.ws.rs.restrictedAddress"></prop>
+		<prop key="hpc.ws.rs.auth.restrictedIPAddress"></prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
