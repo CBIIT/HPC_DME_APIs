@@ -1,5 +1,5 @@
 /**
- * HpcAddressRestrictionInterceptorTest.java
+ * HpcIPAddressRestrictionInterceptorTest.java
  *
  * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
@@ -22,19 +22,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
-import gov.nih.nci.hpc.ws.rs.interceptor.HpcAddressRestrictionInterceptor;
+import gov.nih.nci.hpc.ws.rs.interceptor.HpcIPAddressRestrictionInterceptor;
 
 /**
- * HPC Address Restriction Interceptor JUnit Tests.
+ * HPC IP Address Restriction Interceptor JUnit Tests.
  *
  * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
  */
-public class HpcAddressRestrictionInterceptorTest {
+public class HpcIPAddressRestrictionInterceptorTest {
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
 
-  private HpcAddressRestrictionInterceptor hpcAddressRestrictionInterceptor;
+  private HpcIPAddressRestrictionInterceptor hpcIPAddressRestrictionInterceptor;
 
   private Message message;
 
@@ -43,7 +43,7 @@ public class HpcAddressRestrictionInterceptorTest {
 
   @Before
   public void setUp() throws Exception {
-    hpcAddressRestrictionInterceptor = new HpcAddressRestrictionInterceptor();
+	hpcIPAddressRestrictionInterceptor = new HpcIPAddressRestrictionInterceptor();
     message = new MessageImpl();
   }
 
@@ -163,8 +163,8 @@ public class HpcAddressRestrictionInterceptorTest {
     List<String> restrictedTestAddress = new ArrayList<String>();
     restrictedTestAddress.add(restrictedAddress);
     ReflectionTestUtils.setField(
-        hpcAddressRestrictionInterceptor, "restrictedAddress", restrictedTestAddress);
-    hpcAddressRestrictionInterceptor.handleMessage(message);
+    	hpcIPAddressRestrictionInterceptor, "restrictedIPAddress", restrictedTestAddress);
+    hpcIPAddressRestrictionInterceptor.handleMessage(message);
     SecurityContext sc = (SecurityContext) message.get(SecurityContext.class);
     return sc == null ? false : sc.isUserInRole("RESTRICTED");
   }

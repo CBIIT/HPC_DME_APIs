@@ -55,7 +55,7 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
     super(Phase.RECEIVE);
 
     // We need to authenticate first (this interceptor), and then authorize (other 3 interceptors).
-    getBefore().add(HpcAddressRestrictionInterceptor.class.getName());
+    getBefore().add(HpcIPAddressRestrictionInterceptor.class.getName());
     getBefore().add(SecureAnnotationsInterceptor.class.getName());
     getBefore().add(SimpleAuthorizingInterceptor.class.getName());
   }
