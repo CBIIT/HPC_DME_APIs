@@ -38,6 +38,45 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcSearchMetadataEntry">
+		<xsd:sequence>
+				<xsd:element name="id" type="xsd:int" />
+				<xsd:element name="collectionId" type="xsd:int" />
+				<xsd:element name="collectionName" type="xsd:string" />
+				<xsd:element name="absolutePath" type="xsd:string" />
+				<xsd:element name="dataSize" type="xsd:long" />
+				<xsd:element name="dataPath" type="xsd:string" />
+				<xsd:element name="dataOwnerName" type="xsd:string" />
+				<xsd:element name="createdAt" type="xsd:dateTime" />
+				<xsd:element name="attribute" type="xsd:string" />
+				<xsd:element name="value" type="xsd:string" />
+				<xsd:element name="level" type="xsd:int" minOccurs="0" />
+				<xsd:element name="levelLabel" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcSearchMetadataEntryForCollection">
+		<xsd:sequence>
+				<xsd:element name="collectionId" type="xsd:int" />
+				<xsd:element name="collectionName" type="xsd:string" />
+				<xsd:element name="absolutePath" type="xsd:string" />
+				<xsd:element name="collectionParentName" type="xsd:string" />
+				<xsd:element name="collectionOwnerName" type="xsd:string" />
+				<xsd:element name="collectionOwnerZone" type="xsd:string" />
+				<xsd:element name="collectionMapId" type="xsd:string" />
+				<xsd:element name="collectionInheritance" type="xsd:string" />
+				<xsd:element name="comments" type="xsd:string" />
+				<xsd:element name="info1" type="xsd:string" />
+				<xsd:element name="info2" type="xsd:string" />
+				<xsd:element name="createdAt" type="xsd:dateTime" />
+				<xsd:element name="specColType" type="xsd:string" />
+				<xsd:element name="attribute" type="xsd:string" />
+				<xsd:element name="value" type="xsd:string" />
+				<xsd:element name="level" type="xsd:int" minOccurs="0" />
+				<xsd:element name="levelLabel" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:complexType name="HpcBulkMetadataEntry">
 		<xsd:sequence>
 				<xsd:element name="path" type="xsd:string" />
