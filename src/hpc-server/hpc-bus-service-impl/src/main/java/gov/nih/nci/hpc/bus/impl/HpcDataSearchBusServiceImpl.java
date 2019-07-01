@@ -10,9 +10,17 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntryForCollection;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
@@ -23,9 +31,11 @@ import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
-
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -80,9 +90,19 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
             && compoundMetadataQueryDTO.getTotalCount();
 
     // Execute the query and package the results in a DTO.
-    List<String> collectionPaths =
-        dataSearchService.getCollectionPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
-    HpcCollectionListDTO collectionsDTO = toCollectionListDTO(collectionPaths, detailedResponse);
+    int count = 0;
+    HpcCollectionListDTO collectionsDTO = null;
+    if (!detailedResponse) {
+    	List<String> collectionPaths =
+    			dataSearchService.getCollectionPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+    	collectionsDTO = toCollectionListDTO(collectionPaths, detailedResponse);
+    	count = collectionPaths.size();
+    } else {
+    	List<HpcSearchMetadataEntryForCollection> collectionPaths =
+    			dataSearchService.getDetailedCollectionPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+    	collectionsDTO = toDetailedCollectionListDTO(collectionPaths);
+    	count = collectionsDTO.getCollections().size();
+    }
 
     // Set page, limit and total count.
     collectionsDTO.setPage(page);
@@ -90,7 +110,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     collectionsDTO.setLimit(limit);
 
     if (totalCount) {
-      int count = collectionPaths.size();
       collectionsDTO.setTotalCount(
           (page == 1 && count < limit)
               ? count
@@ -126,10 +145,21 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
             && compoundMetadataQueryDTO.getTotalCount();
 
     // Execute the query and package the results into a DTO.
-    List<String> dataObjectPaths =
-        dataSearchService.getDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
-    HpcDataObjectListDTO dataObjectsDTO =
-        toDataObjectListDTO(dataObjectPaths, detailedResponse);
+    int count = 0;
+    HpcDataObjectListDTO dataObjectsDTO = null;
+    if (!detailedResponse) {
+    	List<String> dataObjectPaths =
+    			dataSearchService.getDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+    	dataObjectsDTO =
+    			toDataObjectListDTO(dataObjectPaths, detailedResponse);
+    	count = dataObjectPaths.size();
+    } else {
+    	List<HpcSearchMetadataEntry> dataObjectPaths =
+    			dataSearchService.getDetailedDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+    	dataObjectsDTO =
+    			toDetailedDataObjectListDTO(dataObjectPaths);
+    	count = dataObjectsDTO.getDataObjects().size();
+    }
 
     // Set page, limit and total count.
     dataObjectsDTO.setPage(page);
@@ -137,7 +167,6 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     dataObjectsDTO.setLimit(limit);
 
     if (totalCount) {
-      int count = dataObjectPaths.size();
       dataObjectsDTO.setTotalCount(
           (page == 1 && count < limit)
               ? count
@@ -307,6 +336,39 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     return collectionsDTO;
   }
 
+  private HpcCollectionListDTO toDetailedCollectionListDTO(List<HpcSearchMetadataEntryForCollection> collectionPaths) {
+	HpcCollectionListDTO collectionDTO = new HpcCollectionListDTO();
+	if(!CollectionUtils.isEmpty(collectionPaths)) {
+		collectionPaths.sort(Comparator.comparing(HpcSearchMetadataEntryForCollection::getAbsolutePath, String::compareToIgnoreCase).thenComparing(HpcSearchMetadataEntryForCollection::getLevel));
+	}
+	int prevId = 0;
+	HpcCollectionDTO collection = null;
+	for (HpcSearchMetadataEntryForCollection collectionPath : collectionPaths) {
+		if(collection == null || collectionPath.getCollectionId() != prevId) {
+			collection = new HpcCollectionDTO();
+			HpcCollection coll = new HpcCollection();
+			BeanUtils.copyProperties(collectionPath, coll);
+			collection.setCollection(coll);
+			collectionDTO.getCollections().add(collection);
+		}
+		if(collection.getMetadataEntries() == null) {
+			HpcMetadataEntries entries = new HpcMetadataEntries();
+			collection.setMetadataEntries(entries);
+		}
+		if(collectionPath.getLevel().intValue() == 1) {
+			HpcMetadataEntry entry = new HpcMetadataEntry();
+			BeanUtils.copyProperties(collectionPath, entry);
+			collection.getMetadataEntries().getSelfMetadataEntries().add(entry);
+		} else {
+			HpcMetadataEntry entry = new HpcMetadataEntry();
+			BeanUtils.copyProperties(collectionPath, entry);
+			collection.getMetadataEntries().getParentMetadataEntries().add(entry);
+		}
+		prevId = collectionPath.getCollectionId();
+    }
+	return collectionDTO;
+  }
+
   /**
    * Construct a data object list DTO.
    *
@@ -328,6 +390,39 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     }
 
     return dataObjectsDTO;
+  }
+  
+  private HpcDataObjectListDTO toDetailedDataObjectListDTO(List<HpcSearchMetadataEntry> dataObjectPaths) {
+	HpcDataObjectListDTO dataObjectsDTO = new HpcDataObjectListDTO();
+	if(!CollectionUtils.isEmpty(dataObjectPaths)) {
+		dataObjectPaths.sort(Comparator.comparing(HpcSearchMetadataEntry::getAbsolutePath, String::compareToIgnoreCase).thenComparing(HpcSearchMetadataEntry::getLevel));
+	}
+	int prevId = 0;
+	HpcDataObjectDTO dataObject = null;
+	for (HpcSearchMetadataEntry dataObjectPath : dataObjectPaths) {
+		if(dataObject == null || dataObjectPath.getId() != prevId) {
+			dataObject = new HpcDataObjectDTO();
+			HpcDataObject dataObj = new HpcDataObject();
+			BeanUtils.copyProperties(dataObjectPath, dataObj);
+			dataObject.setDataObject(dataObj);
+			dataObjectsDTO.getDataObjects().add(dataObject);
+		}
+		if(dataObject.getMetadataEntries() == null) {
+			HpcMetadataEntries entries = new HpcMetadataEntries();
+			dataObject.setMetadataEntries(entries);
+		}
+		if(dataObjectPath.getLevel().intValue() == 1) {
+			HpcMetadataEntry entry = new HpcMetadataEntry();
+			BeanUtils.copyProperties(dataObjectPath, entry);
+			dataObject.getMetadataEntries().getSelfMetadataEntries().add(entry);
+		} else {
+			HpcMetadataEntry entry = new HpcMetadataEntry();
+			BeanUtils.copyProperties(dataObjectPath, entry);
+			dataObject.getMetadataEntries().getParentMetadataEntries().add(entry);
+		}
+		prevId = dataObjectPath.getId();
+    }
+	return dataObjectsDTO;
   }
 
   /**
