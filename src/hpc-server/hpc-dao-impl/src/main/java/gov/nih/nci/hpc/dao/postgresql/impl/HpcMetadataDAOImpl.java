@@ -94,9 +94,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   private static final String GET_DATA_OBJECT_EXACT_ATTRIBUTE_MATCH_FILTER =
       " and dataObject.meta_attr_name = ?";
 
-  private static final String DATA_OBJECT_LEVEL_EQUAL_FILTER = " and dataObject.level = ?";
-  private static final String DATA_OBJECT_LEVEL_NOT_EQUAL_FILTER = " and dataObject.level <> ?";
-  private static final String DATA_OBJECT_LEVEL_NUM_LESS_THAN_FILTER = " and dataObject.level < ?";
+  private static final String DATA_OBJECT_LEVEL_EQUAL_FILTER = " and dataObject.level = ?)";
+  private static final String DATA_OBJECT_LEVEL_NOT_EQUAL_FILTER = " and dataObject.level <> ?)";
+  private static final String DATA_OBJECT_LEVEL_NUM_LESS_THAN_FILTER = " and dataObject.level < ?)";
   private static final String DATA_OBJECT_LEVEL_NUM_LESS_OR_EQUAL_FILTER =
       " and dataObject.level <= ?)";
   private static final String DATA_OBJECT_LEVEL_NUM_GREATER_THAN_FILTER =
@@ -104,9 +104,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   private static final String DATA_OBJECT_LEVEL_NUM_GREATER_OR_EQUAL_FILTER =
       " and dataObject.level >= ?)";
 
-  private static final String COLLECTION_LEVEL_EQUAL_FILTER = " and collection.level = ?";
-  private static final String COLLECTION_LEVEL_NOT_EQUAL_FILTER = " and collection.level <> ?";
-  private static final String COLLECTION_LEVEL_NUM_LESS_THAN_FILTER = " and collection.level < ?";
+  private static final String COLLECTION_LEVEL_EQUAL_FILTER = " and collection.level = ?)";
+  private static final String COLLECTION_LEVEL_NOT_EQUAL_FILTER = " and collection.level <> ?)";
+  private static final String COLLECTION_LEVEL_NUM_LESS_THAN_FILTER = " and collection.level < ?)";
   private static final String COLLECTION_LEVEL_NUM_LESS_OR_EQUAL_FILTER =
       " and collection.level <= ?)";
   private static final String COLLECTION_LEVEL_NUM_GREATER_THAN_FILTER =
