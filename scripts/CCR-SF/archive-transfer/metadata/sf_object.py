@@ -2,7 +2,7 @@ import logging
 
 from metadata.sf_parent import SFParent
 from metadata.sf_helper import SFHelper
-from metadata sf_collection import SFCollection
+from metadata.sf_collection import SFCollection
 
 
 from collections import OrderedDict
