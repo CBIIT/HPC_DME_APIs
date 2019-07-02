@@ -11,6 +11,8 @@ package gov.nih.nci.hpc.service;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntryForCollection;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -35,6 +37,18 @@ public interface HpcDataSearchService {
       throws HpcException;
 
   /**
+   * Get detailed collection paths and attributes by compound metadata query.
+   *
+   * @param compoundMetadataQuery The compound metadata query.
+   * @param page The requested results page.
+   * @param pageSize The page size specified by the user or 0 for default.
+   * @return A list of HpcSearchMetadataEntryForCollection.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcSearchMetadataEntryForCollection> getDetailedCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
+      throws HpcException;
+  
+  /**
    * Get count of collections matching a compound metadata query.
    *
    * @param compoundMetadataQuery The compound metadata query.
@@ -55,6 +69,18 @@ public interface HpcDataSearchService {
   public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException;
 
+  /**
+   * Get detailed data object and attributes by compound metadata query.
+   *
+   * @param compoundMetadataQuery The compound metadata query.
+   * @param page The requested results page.
+   * @param pageSize The page size specified by the user or 0 for default.
+   * @return A list of HpcSearchMetadataEntry.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page,
+			int pageSize) throws HpcException;
+  
   /**
    * Get count of data object matching a compound metadata query.
    *
