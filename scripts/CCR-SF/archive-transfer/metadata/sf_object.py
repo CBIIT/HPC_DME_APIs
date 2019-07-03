@@ -81,7 +81,7 @@ class SFObject(object):
 
 
         pathsMetadataEntry = OrderedDict()
-        pathsMetadataEntry["path"] = SFCollection.get_archive_path(self.tarfile, parent_path, type)
+        pathsMetadataEntry["path"] = SFCollection.get_archive_path(self.tarfile, self.filepath, type)
         pathsMetadataEntry["pathMetadataEntries"] = sf_parent.build_metadata_items()
         parentCollectionsBulkMetadataEntries = OrderedDict()
         parentCollectionsBulkMetadataEntries["pathsMetadataEntries"] = []
