@@ -47,16 +47,6 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 
 		HttpSession session = request.getSession();
 		String user = (String) session.getAttribute("hpcUserId");
-		String userSmSession = (String) session.getAttribute("hpcUserSmSession");
-		
-		//If the SM session cookie value is different, we need to regenerate the token so remove the existing token from session.
-		if (!StringUtils.isBlank(userSmSession)) {
-			Cookie cookie = WebUtils.getCookie(request, "NIHSMSESSION");
-			String cookieSession = cookie.getValue();
-			if(!StringUtils.equals(userSmSession, cookieSession)) {
-				//session.removeAttribute("hpcUserToken");
-			}
-		}
 
 		if (StringUtils.isBlank(user)) {
 			user = request.getHeader("SM_USER");
