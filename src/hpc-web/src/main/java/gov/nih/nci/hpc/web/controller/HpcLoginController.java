@@ -85,7 +85,6 @@ public class HpcLoginController extends AbstractHpcController {
 			String authToken = HpcClientUtil.getAuthenticationTokenSso(userId, smSession,
 					authenticateURL);
 			session.setAttribute("hpcUserToken", authToken);
-			session.setAttribute("hpcUserSmSession", smSession);
 			try {
 				HpcUserDTO user = HpcClientUtil.getUser(authToken, serviceUserURL, sslCertPath, sslCertPassword);
 				if (user == null)
