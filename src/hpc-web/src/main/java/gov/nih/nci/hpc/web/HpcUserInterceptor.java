@@ -54,7 +54,7 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 			Cookie cookie = WebUtils.getCookie(request, "NIHSMSESSION");
 			String cookieSession = cookie.getValue();
 			if(!StringUtils.equals(userSmSession, cookieSession)) {
-				session.removeAttribute("hpcUserToken");
+				//session.removeAttribute("hpcUserToken");
 			}
 		}
 
