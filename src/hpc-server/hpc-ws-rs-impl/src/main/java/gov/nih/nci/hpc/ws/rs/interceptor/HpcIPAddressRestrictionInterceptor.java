@@ -1,5 +1,5 @@
 /**
- * HpcAddressRestrictionInterceptor.java
+ * HpcIPAddressRestrictionInterceptor.java
  *
  * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
@@ -25,18 +25,18 @@ import org.springframework.util.CollectionUtils;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 
 /**
- * HPC Address Restriction Interceptor.
+ * HPC IP Address Restriction Interceptor.
  *
  * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
  */
-public class HpcAddressRestrictionInterceptor extends AbstractPhaseInterceptor<Message> {
+public class HpcIPAddressRestrictionInterceptor extends AbstractPhaseInterceptor<Message> {
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
 
   //Restricted list of IP address.
-  @Value("#{'${hpc.ws.rs.restrictedAddress}'.split(',')}")
-  private List<String> restrictedAddress = null;
+  @Value("#{'${hpc.ws.rs.auth.restrictedIPAddress}'.split(',')}")
+  private List<String> restrictedIPAddress = null;
 
   //The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -46,7 +46,7 @@ public class HpcAddressRestrictionInterceptor extends AbstractPhaseInterceptor<M
   //---------------------------------------------------------------------//
 
   /** Constructor for Spring Dependency Injection. */
-  public HpcAddressRestrictionInterceptor() {
+  public HpcIPAddressRestrictionInterceptor() {
     super(Phase.RECEIVE);
   }
 
@@ -61,7 +61,7 @@ public class HpcAddressRestrictionInterceptor extends AbstractPhaseInterceptor<M
   @Override
   public void handleMessage(Message message) {
     // Validate the caller's IP address and restrict user's role if required.
-    if (!CollectionUtils.isEmpty(restrictedAddress) && StringUtils.isNotEmpty(restrictedAddress.get(0))) {
+    if (!CollectionUtils.isEmpty(restrictedIPAddress) && StringUtils.isNotEmpty(restrictedIPAddress.get(0))) {
       try {
         HttpServletRequest request =
             (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
@@ -71,14 +71,14 @@ public class HpcAddressRestrictionInterceptor extends AbstractPhaseInterceptor<M
           remoteAddress = request.getHeader("X-Forwarded-For");
         }
 
-        if (isRestrictedAddress(remoteAddress)) {
+        if (isRestrictedIPAddress(remoteAddress)) {
           // Set a security context with the restricted user's role.
           HpcSecurityContext sc = new HpcSecurityContext(HpcUserRole.RESTRICTED.value());
           message.put(SecurityContext.class, sc);
         }
       } catch (Exception e) {
-        logger.error("Error occurred during address restriction validation.", e);
-        throw new AccessDeniedException("Error occurred during address restriction validation.");
+        logger.error("Error occurred during IP address restriction validation.", e);
+        throw new AccessDeniedException("Error occurred during IP address restriction validation.");
       }
     }
   }
@@ -87,8 +87,8 @@ public class HpcAddressRestrictionInterceptor extends AbstractPhaseInterceptor<M
   // Helper Methods
   //---------------------------------------------------------------------//
 
-  private boolean isRestrictedAddress(String remoteAddress) {
-    for (String ip : restrictedAddress) {
+  private boolean isRestrictedIPAddress(String remoteAddress) {
+    for (String ip : restrictedIPAddress) {
       IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(ip);
       if (ipAddressMatcher.matches(remoteAddress)) return true;
     }

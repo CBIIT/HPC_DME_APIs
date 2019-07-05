@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
@@ -78,6 +80,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
   private Boolean ldapAuthentication = null;
+  
+  //The logger instance.
+  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -448,6 +453,13 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
           "Delete users is invalid in group registration request",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    
+    //Add requester as a user if he is a group admin. This is to enable the check 
+    //to restrict addition of users to other groups by this group admin.
+    HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
+    if(requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+    	groupMembersRequest.getAddUserIds().add(requestInvoker.getNciAccount().getUserId());
+    }
 
     return executeGroupAdminAsSystemAccount(
         () -> {
@@ -476,6 +488,18 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
           "Null or empty requests to add/delete members to group",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    
+    //Do not allow if this user is a group admin but not a member of this group
+    List<String> userIds = dataManagementSecurityService.getGroupMembers(groupName);
+    HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
+    if(requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+    	if(userIds == null || !userIds.contains(requestInvoker.getNciAccount().getUserId())) {
+    		String msg = "No privileges to add users to " + groupName + " group";
+    		logger.error(requestInvoker.getNciAccount().getUserId() + ":" + msg);
+    		throw new HpcException(msg, HpcErrorType.REQUEST_REJECTED);
+    	}
+    }
+    
 
     return executeGroupAdminAsSystemAccount(
         () ->

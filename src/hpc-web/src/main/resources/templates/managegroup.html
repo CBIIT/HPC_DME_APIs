@@ -173,13 +173,11 @@
 														<table>
 															<tr>
 																<td>
-																	<div class="pull-left" id="message"
-																		style="display: none; float: left">
-																		<p>&nbsp;</p>
-																	</div>
-																	<div class="pull-left" id="wait"
-																		style="display: none; float: left">
-																		<p>&nbsp;</p>
+																	<div th:if="${messages != null}">
+																		<div class="alert alert-error" th:each="message: ${messages}">
+																			<a class="close" data-dismiss="alert">×</a> <label
+																				for="${message}" th:text="${message}"></label>
+																		</div>
 																	</div>
 																</td>
 															</tr>

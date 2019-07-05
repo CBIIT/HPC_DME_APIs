@@ -19,6 +19,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntryForCollection;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
@@ -132,6 +134,43 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
             finalPageSize,
             defaultCollectionLevelFilter));
   }
+  
+  @Override
+  public List<HpcSearchMetadataEntryForCollection> getDetailedCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
+      throws HpcException {
+    // Input validation.
+    HpcDomainValidationResult validationResult =
+        isValidCompoundMetadataQuery(compoundMetadataQuery);
+    if (!validationResult.getValid()) {
+      throw new HpcException(
+          "Invalid compound metadata query: " + validationResult.getMessage(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
+    if(pageSize != 0) {
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
+    }
+    
+    // Use the hierarchical metadata views to perform the search.
+    String dataManagementUsername =
+        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    List<HpcSearchMetadataEntryForCollection> hpcSearchMetadataEntries = metadataDAO.getDetailedCollectionPaths(
+            compoundMetadataQuery,
+            dataManagementUsername,
+            finalOffset,
+            finalPageSize,
+            defaultDataObjectLevelFilter);
+    for(HpcSearchMetadataEntryForCollection hpcSearchMetadataEntry: hpcSearchMetadataEntries) {
+    	hpcSearchMetadataEntry.setCollectionName(toRelativePath(hpcSearchMetadataEntry.getCollectionName()));
+    	hpcSearchMetadataEntry.setAbsolutePath(toRelativePath(hpcSearchMetadataEntry.getAbsolutePath()));
+    	hpcSearchMetadataEntry.setCollectionParentName(toRelativePath(hpcSearchMetadataEntry.getCollectionParentName()));
+    }
+    return hpcSearchMetadataEntries;
+  }
 
   @Override
   public int getCollectionCount(HpcCompoundMetadataQuery compoundMetadataQuery)
@@ -184,6 +223,43 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
             defaultDataObjectLevelFilter));
   }
 
+  
+  @Override
+  public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
+      throws HpcException {
+    // Input Validation.
+    HpcDomainValidationResult validationResult =
+        isValidCompoundMetadataQuery(compoundMetadataQuery);
+    if (!validationResult.getValid()) {
+      throw new HpcException(
+          "Invalid compound metadata query: " + validationResult.getMessage(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
+    if(pageSize != 0) {
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
+    }
+    
+    // Use the hierarchical metadata views to perform the search.
+    String dataManagementUsername =
+        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    List<HpcSearchMetadataEntry> hpcSearchMetadataEntries = metadataDAO.getDetailedDataObjectPaths(
+            compoundMetadataQuery,
+            dataManagementUsername,
+            finalOffset,
+            finalPageSize,
+            defaultDataObjectLevelFilter);
+    for(HpcSearchMetadataEntry hpcSearchMetadataEntry: hpcSearchMetadataEntries) {
+    	hpcSearchMetadataEntry.setCollectionName(toRelativePath(hpcSearchMetadataEntry.getCollectionName()));
+    	hpcSearchMetadataEntry.setAbsolutePath(toRelativePath(hpcSearchMetadataEntry.getAbsolutePath()));
+    }
+    return hpcSearchMetadataEntries;
+  }
+  
   @Override
   public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery)
       throws HpcException {
@@ -290,5 +366,15 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     }
 
     return relativePaths;
+  }
+  
+  /**
+   * Convert an absolute path, to relative path.
+   *
+   * @param path The absolute paths.
+   * @return The relative paths.
+   */
+  public String toRelativePath(String path) {
+    return dataManagementProxy.getRelativePath(path);
   }
 }

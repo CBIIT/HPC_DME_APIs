@@ -64,7 +64,7 @@
 		<prop key="hpc.ws.rs.auth.data-management.get-collection">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.download-collection">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-collection-download-status">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
-		<prop key="hpc.ws.rs.auth.data-management.delete-collection">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.data-management.delete-collection">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.data-management.set-collection-permissions">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-collection-permissions">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.register-data-object">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
@@ -73,7 +73,7 @@
 		<prop key="hpc.ws.rs.auth.data-management.get-data-object">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.download-data-object">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-data-object-download-status">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
-		<prop key="hpc.ws.rs.auth.data-management.delete-data-object">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.data-management.delete-data-object">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.data-management.set-data-object-permissions">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-data-object-permissions">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-management.download-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
@@ -104,7 +104,7 @@
 		
 		<prop key="hpc.ws.rs.auth.report.generate-report">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		
-		<prop key="hpc.ws.rs.restrictedAddress"></prop>
+		<prop key="hpc.ws.rs.auth.restrictedIPAddress"></prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />
