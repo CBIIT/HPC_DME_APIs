@@ -14,6 +14,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntryForCollection;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.Calendar;
@@ -49,6 +51,24 @@ public interface HpcMetadataDAO
     		                              throws HpcException;
     
     /**
+     * Get detailed collection Paths by compound metadata query. 
+     * Only collection Paths accessible to the user are returned. 
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @param dataManagementUsername The Data Management user name. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
+     * @param defaultLevelFilter A default level filter to use if not provided in the query.
+     * @return List of HpcSearchMetadataEntryForCollection.
+     * @throws HpcException on database error.
+     */
+    public List<HpcSearchMetadataEntryForCollection> getDetailedCollectionPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               String dataManagementUsername,
+    		                               int offset, int limit,
+    		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
+    		                              throws HpcException;
+    
+    /**
      * Get count of collections matching a compound metadata query. 
      * Only collections accessible to the user are included in the count. 
      *
@@ -76,6 +96,24 @@ public interface HpcMetadataDAO
      * @throws HpcException on database error.
      */
     public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    		                               String dataManagementUsername,
+    		                               int offset, int limit,
+    		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
+    		                              throws HpcException;
+    
+    /**
+     * Get detailed data object Paths by compound metadata query. 
+     * Only data object Paths accessible to the user are returned. 
+     *
+     * @param compoundMetadataQuery The compound metadata query.
+     * @param dataManagementUsername The Data Management user name. 
+     * @param offset Skip that many path in the returned results.
+     * @param limit No more than 'limit' paths will be returned.
+     * @param defaultLevelFilter A default level filter to use if not provided in the query.
+     * @return List of HpcSearchMetadataEntry
+     * @throws HpcException on database error.
+     */
+    public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
     		                               String dataManagementUsername,
     		                               int offset, int limit,
     		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 

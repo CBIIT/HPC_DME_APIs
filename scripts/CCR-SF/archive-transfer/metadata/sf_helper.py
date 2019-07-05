@@ -132,7 +132,7 @@ class SFHelper(object):
 
                 #If there is a string of the format 'CSXXXXXX' immediately after the
                 #name fields where 'XXXXXX' has only digits, that is the project_id
-                if element.startsWith('CS') and element[2:].isdigit():
+                if element.startswith('CS') and element[4:].isdigit():
                     project_id = element
                     break
 
