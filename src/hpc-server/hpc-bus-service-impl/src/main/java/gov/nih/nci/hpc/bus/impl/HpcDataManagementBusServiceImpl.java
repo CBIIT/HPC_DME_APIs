@@ -474,8 +474,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     		throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
     	}
     	
-    
-    	if(!invoker.getNciAccount().getUserId().equals(collection.getCollectionOwnerName())) {
+    	HpcSystemGeneratedMetadata systemGeneratedMetadata =
+    	        metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+    	if(!invoker.getNciAccount().getUserId().equals(systemGeneratedMetadata.getRegistrarId())) {
     		String message = "The collection at " + path + " can only be deleted by the creator";
     		logger.error(message);
     		throw new HpcException(message, HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
@@ -1113,7 +1114,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     	}
     
     
-    	if(!invoker.getNciAccount().getUserId().equals(dataObject.getDataOwnerName())) {
+    	if(!invoker.getNciAccount().getUserId().equals(systemGeneratedMetadata.getRegistrarId())) {
     		String message = "The data object at " + path + " can only be deleted by the data uploader";
     		logger.error(message);
     		throw new HpcException(message, HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
