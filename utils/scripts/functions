@@ -295,14 +295,14 @@ function dm_get_item {
     then
       RESPONSE_MSG="$2"
     else
-      RESPONSE_MSG=get-item-response-message.json.tmp
+      RESPONSE_MSG=get_item-response-message.json.tmp
     fi 
 
     if [ ! -z "$3" ]
     then
       RESPONSE_HEADER="$3"
     else
-      RESPONSE_HEADER=get-item-response-header.tmp
+      RESPONSE_HEADER=get_item-response-header.tmp
     fi 
 
     CONFIG=$(get_config) || exit 1
@@ -344,8 +344,8 @@ function dm_get_dataobject {
     local ITEM_PATH="$1"
 
 
-    local RESPONSE_MSG=${2-get-item-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-get-item-response-header.tmp}
+    local RESPONSE_MSG=${2-get_dataobject-response-message.json.tmp}
+    local RESPONSE_HEADER=${3-get_dataobject-response-header.tmp}
 
     dm_get_item dataObject/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER" || exit 1
 
@@ -400,8 +400,8 @@ function dm_get_collection {
     fi
     local ITEM_PATH="$1"
 
-    local RESPONSE_MSG=${2-get-item-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-get-item-response-header.tmp}
+    local RESPONSE_MSG=${2-get_collection-response-message.json.tmp}
+    local RESPONSE_HEADER=${3-get_collection-response-header.tmp}
 
     dm_get_item collection/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER" || exit 1
 
@@ -665,7 +665,7 @@ function dm_delete_collection {
     numthreads=1
     recursive=false
   
-   while getopts ":r:" option
+   while getopts ":r" option
     do
       case "${option}" in
        
@@ -1564,8 +1564,8 @@ function dm_get_download_status {
 
 
 
-    local response_msg=${2-get-downlaod-status-response-message.json.tmp}
-    local response_header=${3-get-item-response-header.tmp}
+    local response_msg=${2-get_download_status-response-message.json.tmp}
+    local response_header=${3-get_download_status_response-header.tmp}
 
 
     config=$(get_config) || exit 1
@@ -1694,7 +1694,7 @@ function dm_add_bookmark () {
       exit 1
     fi
     
-    local RESPONSE_MSG=iadd_bookmark-response-message.json.tmp
+    local RESPONSE_MSG=add_bookmark-response-message.json.tmp
     local RESPONSE_HEADER=add_bookmark-response-header.tmp
 
     rm -f  $RESPONSE_MSG 2>/dev/null 
@@ -1819,8 +1819,8 @@ local USAGE="usage: dm_update_user <userId> <description.json> [REST-response]"
       exit 1
     fi
 
-    local RESPONSE_MSG=register_user-response-message.json.tmp
-    local RESPONSE_HEADER=register_user-response-header.tmp
+    local RESPONSE_MSG=update-user-response-message.json.tmp
+    local RESPONSE_HEADER=update-user-response-header.tmp
 
     rm -f  $RESPONSE_MSG 2>/dev/null
     rm -f $RESPONSE_HEADER 2>/dev/null
