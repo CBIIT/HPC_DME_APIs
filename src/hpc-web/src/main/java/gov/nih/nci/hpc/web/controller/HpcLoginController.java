@@ -73,13 +73,16 @@ public class HpcLoginController extends AbstractHpcController {
 	public String home(@CookieValue(value="NIHSMSESSION", required = false) String smSession, Model model, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 		session.setAttribute("callerPath", getCallerPath(request));
 		String userId = (String) session.getAttribute("hpcUserId");
-		if (StringUtils.isBlank(userId) || StringUtils.isBlank(smSession)) {
+		if (StringUtils.isBlank(userId) && StringUtils.isBlank(smSession)) {
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
 			model.addAttribute("queryURL", queryURL);
 			model.addAttribute("collectionURL", collectionURL);
 			session.setAttribute("callerPath", getCallerPath(request));
 			return "index";
+		} else if (StringUtils.isBlank(userId) && !StringUtils.isBlank(smSession)) {
+			//This can happen if login url was requested directly, so go through the interceptor first.
+			return "redirect:/";
 		}
 		try {
 			String authToken = HpcClientUtil.getAuthenticationTokenSso(userId, smSession,
