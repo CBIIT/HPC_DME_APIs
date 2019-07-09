@@ -18,6 +18,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.util.CollectionUtils;
+
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
@@ -28,6 +30,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntryForCollection;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -43,86 +47,86 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
   // SQL Queries.
   private static final String GET_COLLECTION_IDS_EQUAL_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where collection.meta_attr_value = ?";
+      " exists(select 1 from public.\"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and collection.meta_attr_value = ?";
 
   private static final String GET_COLLECTION_IDS_NOT_EQUAL_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where collection.meta_attr_value <> ?";
+      " exists(select 1 from public.\"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and collection.meta_attr_value <> ?";
 
   private static final String GET_COLLECTION_IDS_LIKE_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where lower(collection.meta_attr_value) like lower(?)";
+      " exists(select 1 from public.\"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and lower(collection.meta_attr_value) like lower(?)";
 
   private static final String GET_COLLECTION_IDS_NUM_LESS_THAN_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where num_less_than(collection.meta_attr_value, ?) = true";
+      " exists(select 1 from public.\"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and num_less_than(collection.meta_attr_value, ?) = true";
 
   private static final String GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where num_less_or_equal(collection.meta_attr_value, ?) = true";
+      " exists(select 1 from public.\"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and num_less_or_equal(collection.meta_attr_value, ?) = true";
 
   private static final String GET_COLLECTION_IDS_NUM_GREATER_THAN_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where num_greater_than(collection.meta_attr_value, ?) = true";
+      " exists(select 1 from public.\"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and num_greater_than(collection.meta_attr_value, ?) = true";
 
   private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL =
-      "select distinct collection.object_id from public.\"r_coll_hierarchy_meta_main\" collection where num_greater_or_equal(collection.meta_attr_value, ?) = true";
+      " exists(select 1 from public.\"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and num_greater_or_equal(collection.meta_attr_value, ?) = true";
 
   private static final String GET_COLLECTION_EXACT_ATTRIBUTE_MATCH_FILTER =
       " and collection.meta_attr_name = ?";
 
   private static final String GET_DATA_OBJECT_IDS_EQUAL_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.meta_attr_value = ?";
+      " exists(select 1 from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and dataObject.meta_attr_value = ?";
 
   private static final String GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.meta_attr_value <> ?";
+      " exists(select 1 from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and dataObject.meta_attr_value <> ?";
 
   private static final String GET_DATA_OBJECT_IDS_LIKE_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where lower(dataObject.meta_attr_value) like lower(?)";
+      " exists(select 1 from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and lower(dataObject.meta_attr_value) like lower(?)";
 
   private static final String GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where num_less_than(dataObject.meta_attr_value, ?) = true";
+      " exists(select 1 from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and num_less_than(dataObject.meta_attr_value, ?) = true";
 
   private static final String GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where num_less_or_equal(dataObject.meta_attr_value, ?) = true";
+      " exists(select 1 from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and num_less_or_equal(dataObject.meta_attr_value, ?) = true";
 
   private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_THAN_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where num_greater_than(dataObject.meta_attr_value, ?) = true";
+      " exists(select 1 from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and num_greater_than(dataObject.meta_attr_value, ?) = true";
 
   private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL =
-      "select distinct dataObject.object_id from public.\"r_data_hierarchy_meta_main\" dataObject where num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
+      " exists(select 1 from public.\"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
 
   private static final String GET_DATA_OBJECT_EXACT_ATTRIBUTE_MATCH_FILTER =
       " and dataObject.meta_attr_name = ?";
 
-  private static final String DATA_OBJECT_LEVEL_EQUAL_FILTER = " and dataObject.level = ?";
-  private static final String DATA_OBJECT_LEVEL_NOT_EQUAL_FILTER = " and dataObject.level <> ?";
-  private static final String DATA_OBJECT_LEVEL_NUM_LESS_THAN_FILTER = " and dataObject.level < ?";
+  private static final String DATA_OBJECT_LEVEL_EQUAL_FILTER = " and dataObject.level = ?)";
+  private static final String DATA_OBJECT_LEVEL_NOT_EQUAL_FILTER = " and dataObject.level <> ?)";
+  private static final String DATA_OBJECT_LEVEL_NUM_LESS_THAN_FILTER = " and dataObject.level < ?)";
   private static final String DATA_OBJECT_LEVEL_NUM_LESS_OR_EQUAL_FILTER =
-      " and dataObject.level <= ?";
+      " and dataObject.level <= ?)";
   private static final String DATA_OBJECT_LEVEL_NUM_GREATER_THAN_FILTER =
-      " and dataObject.level > ?";
+      " and dataObject.level > ?)";
   private static final String DATA_OBJECT_LEVEL_NUM_GREATER_OR_EQUAL_FILTER =
-      " and dataObject.level >= ?";
+      " and dataObject.level >= ?)";
 
-  private static final String COLLECTION_LEVEL_EQUAL_FILTER = " and collection.level = ?";
-  private static final String COLLECTION_LEVEL_NOT_EQUAL_FILTER = " and collection.level <> ?";
-  private static final String COLLECTION_LEVEL_NUM_LESS_THAN_FILTER = " and collection.level < ?";
+  private static final String COLLECTION_LEVEL_EQUAL_FILTER = " and collection.level = ?)";
+  private static final String COLLECTION_LEVEL_NOT_EQUAL_FILTER = " and collection.level <> ?)";
+  private static final String COLLECTION_LEVEL_NUM_LESS_THAN_FILTER = " and collection.level < ?)";
   private static final String COLLECTION_LEVEL_NUM_LESS_OR_EQUAL_FILTER =
-      " and collection.level <= ?";
+      " and collection.level <= ?)";
   private static final String COLLECTION_LEVEL_NUM_GREATER_THAN_FILTER =
-      " and collection.level > ?";
+      " and collection.level > ?)";
   private static final String COLLECTION_LEVEL_NUM_GREATER_OR_EQUAL_FILTER =
-      " and collection.level >= ?";
+      " and collection.level >= ?)";
 
   private static final String DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER =
-      " and dataObject.level_label = ?";
+      " and dataObject.level_label = ?)";
   private static final String DATA_OBJECT_LEVEL_LABEL_NOT_EQUAL_FILTER =
-      " and dataObject.level_label <> ?";
+      " and dataObject.level_label <> ?)";
   private static final String DATA_OBJECT_LEVEL_LABEL_LIKE_FILTER =
-      " and dataObject.level_label like ?";
+      " and dataObject.level_label like ?)";
 
   private static final String COLLECTION_LEVEL_LABEL_EQUAL_FILTER =
-      " and collection.level_label = ?";
+      " and collection.level_label = ?)";
   private static final String COLLECTION_LEVEL_LABEL_NOT_EQUAL_FILTER =
-      " and collection.level_label <> ?";
+      " and collection.level_label <> ?)";
   private static final String COLLECTION_LEVEL_LABEL_LIKE_FILTER =
-      " and collection.level_label like ?";
+      " and collection.level_label like ?)";
 
   private static final String USER_ACCESS_SQL =
       "(select distinct access.object_id from public.\"r_objt_access\" access join public.\"r_user_main\" account "
@@ -136,16 +140,31 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   private static final String LIMIT_OFFSET_SQL = " order by object_path limit ? offset ?";
 
   private static final String GET_COLLECTION_PATHS_SQL =
-      "select distinct object_path from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
+      "select distinct object_path from public.\"r_coll_hierarchy_meta_main\" collection1 where ";
+
+  private static final String GET_DETAILED_COLLECTION_PATHS_SQL =
+	  "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
+		  + "coll.coll_owner_zone, coll.coll_map_id, coll.coll_inheritance, coll.r_comment, "
+		  + "coll.coll_info1, coll.coll_info2, coll.create_ts, coll.r_comment, coll.coll_type, "
+		  + "mv.meta_attr_name, mv.meta_attr_value, mv.level, mv.level_label "
+		  + "from public.\"r_coll_hierarchy_meta_main\" mv, public.\"r_coll_main\" coll "
+		  + "where mv.object_id = coll.coll_id and mv.object_path in ";
 
   private static final String GET_COLLECTION_COUNT_SQL =
-      "select count(distinct object_id) from public.\"r_coll_hierarchy_meta_main\" where object_id in ";
+      "select count(distinct object_id) from public.\"r_coll_hierarchy_meta_main\" collection1 where ";
 
   private static final String GET_DATA_OBJECT_PATHS_SQL =
-      "select distinct object_path from public.\"r_data_hierarchy_meta_main\" where object_id in ";
+      "select distinct object_path from public.\"r_data_hierarchy_meta_main\" dataObject1 where ";
+
+  private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL =
+	  "select mv.object_id, coll.coll_id, coll.coll_name, mv.object_path, data.data_size, "
+		  + "data.data_path, data.data_owner_name, data.create_ts, mv.meta_attr_name, "
+		  + "mv.meta_attr_value, mv.level, mv.level_label "
+		  + "from public.\"r_data_hierarchy_meta_main\" mv, public.\"r_data_main\" data, public.\"r_coll_main\" coll "
+		  + "where mv.object_id = data.data_id and data.coll_id = coll.coll_id and mv.object_path in ";
 
   private static final String GET_DATA_OBJECT_COUNT_SQL =
-      "select count(distinct object_id) from public.\"r_data_hierarchy_meta_main\" where object_id in ";
+      "select count(distinct object_id) from public.\"r_data_hierarchy_meta_main\" dataObject1 where ";
 
   private static final String GET_COLLECTION_METADATA_SQL =
       "select meta_attr_name,  meta_attr_value, meta_attr_unit, level, level_label "
@@ -231,7 +250,61 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
         return metadataEntry;
       };
+  private RowMapper<HpcSearchMetadataEntry> searchMetadataEntryRowMapper =
+      (rs, rowNum) -> {
+    	HpcSearchMetadataEntry searchMetadataEntry = new HpcSearchMetadataEntry();
+    	Long id = rs.getLong(1);
+        searchMetadataEntry.setId(id != null ? id.intValue() : null);
+        Long collId = rs.getLong(2);
+        searchMetadataEntry.setCollectionId(collId != null ? collId.intValue() : null);
+        searchMetadataEntry.setCollectionName(rs.getString(3));
+        searchMetadataEntry.setAbsolutePath(rs.getString(4));
+        Long dataSize = rs.getLong(5);
+        searchMetadataEntry.setDataSize(dataSize != null ? dataSize.intValue() : null);
+        searchMetadataEntry.setDataPath(rs.getString(6));
+        searchMetadataEntry.setDataOwnerName(rs.getString(7));
+        String createTs = rs.getString(8);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(Long.parseLong(createTs) * 1000);
+        searchMetadataEntry.setCreatedAt(cal);
+    	searchMetadataEntry.setAttribute(rs.getString(9));
+    	searchMetadataEntry.setValue(rs.getString(10));
+        Long level = rs.getLong(11);
+        searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
+        searchMetadataEntry.setLevelLabel(rs.getString(12));
 
+        return searchMetadataEntry;
+      };
+  private RowMapper<HpcSearchMetadataEntryForCollection> searchMetadataEntryForCollRowMapper =
+      (rs, rowNum) -> {
+    	HpcSearchMetadataEntryForCollection searchMetadataEntry = new HpcSearchMetadataEntryForCollection();
+    	Long collId = rs.getLong(1);
+        searchMetadataEntry.setCollectionId(collId != null ? collId.intValue() : null);
+        searchMetadataEntry.setCollectionName(rs.getString(2));
+        searchMetadataEntry.setAbsolutePath(rs.getString(3));
+        searchMetadataEntry.setCollectionParentName(rs.getString(4));
+        searchMetadataEntry.setCollectionOwnerName(rs.getString(5));
+        searchMetadataEntry.setCollectionOwnerZone(rs.getString(6));
+        Long collMapId = rs.getLong(7);
+        searchMetadataEntry.setCollectionMapId(collMapId != null ? collMapId.toString() : null);
+        searchMetadataEntry.setCollectionInheritance(rs.getString(8));
+        searchMetadataEntry.setComments(rs.getString(9));
+        searchMetadataEntry.setInfo1(rs.getString(10));
+        searchMetadataEntry.setInfo2(rs.getString(11));
+        String createdAt = rs.getString(12);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(Long.parseLong(createdAt) * 1000);
+        searchMetadataEntry.setCreatedAt(cal);
+        searchMetadataEntry.setComments(rs.getString(13));
+        searchMetadataEntry.setSpecColType(rs.getString(14));
+    	searchMetadataEntry.setAttribute(rs.getString(15));
+    	searchMetadataEntry.setValue(rs.getString(16));
+        Integer level = rs.getInt(17);
+        searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
+        searchMetadataEntry.setLevelLabel(rs.getString(18));
+
+        return searchMetadataEntry;
+      };
   // SQL Maps from operators to queries and filters.
   private HpcSQLMaps dataObjectSQL = new HpcSQLMaps();
   private HpcSQLMaps collectionSQL = new HpcSQLMaps();
@@ -338,6 +411,36 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   }
 
   @Override
+  public List<HpcSearchMetadataEntryForCollection> getDetailedCollectionPaths(
+      HpcCompoundMetadataQuery compoundMetadataQuery,
+      String dataManagementUsername,
+      int offset,
+      int limit,
+      HpcMetadataQueryLevelFilter defaultLevelFilter)
+      throws HpcException {
+	  
+	List<HpcSearchMetadataEntryForCollection> collPaths = new ArrayList<>();
+    List<String> paths = getPaths(
+        prepareQuery(
+            GET_COLLECTION_PATHS_SQL,
+            toQuery(collectionSQL, compoundMetadataQuery, defaultLevelFilter),
+            dataManagementUsername,
+            offset,
+            limit));
+    
+    if(CollectionUtils.isEmpty(paths))
+    	return collPaths;
+    
+    return getDetailedPathsForCollection(
+            prepareQuery(
+            	GET_DETAILED_COLLECTION_PATHS_SQL,
+                toQuery(paths),
+                null,
+                null,
+                null));
+  }
+  
+  @Override
   public int getCollectionCount(
       HpcCompoundMetadataQuery compoundMetadataQuery,
       String dataManagementUsername,
@@ -369,6 +472,37 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
             limit));
   }
 
+  @Override
+  public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(
+      HpcCompoundMetadataQuery compoundMetadataQuery,
+      String dataManagementUsername,
+      int offset,
+      int limit,
+      HpcMetadataQueryLevelFilter defaultLevelFilter)
+      throws HpcException {
+	  
+	  List<HpcSearchMetadataEntry> dataPaths = new ArrayList<>();
+	  
+	  List<String> paths = getPaths(
+		        prepareQuery(
+		                GET_DATA_OBJECT_PATHS_SQL,
+		                toQuery(dataObjectSQL, compoundMetadataQuery, defaultLevelFilter),
+		                dataManagementUsername,
+		                offset,
+		                limit));
+	  
+	  if(CollectionUtils.isEmpty(paths))
+	    	return dataPaths;
+	  
+    return getDetailedPaths(
+        prepareQuery(
+        	GET_DETAILED_DATA_OBJECT_PATHS_SQL,
+            toQuery(paths),
+            null,
+            null,
+            null));
+  }
+  
   @Override
   public int getDataObjectCount(
       HpcCompoundMetadataQuery compoundMetadataQuery,
@@ -511,15 +645,17 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
     List<Object> args = new ArrayList<>();
 
     // Combine the metadata queries into a single SQL statement.
-    sqlQueryBuilder.append(getObjectPathsQuery + "(");
+    sqlQueryBuilder.append(getObjectPathsQuery);
     sqlQueryBuilder.append(userQuery.sql);
     args.addAll(Arrays.asList(userQuery.args));
 
     // Add a query to only include entities the user can access.
-    sqlQueryBuilder.append(" intersect ");
-    sqlQueryBuilder.append(USER_ACCESS_SQL + ")");
-    args.add(dataManagementUsername);
-    args.add(dataManagementUsername);
+    if (dataManagementUsername != null) {
+      sqlQueryBuilder.append(" and object_id in ");
+      sqlQueryBuilder.append(USER_ACCESS_SQL);
+      args.add(dataManagementUsername);
+      args.add(dataManagementUsername);
+    }
 
     if (offset != null && limit != null) {
       sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
@@ -598,6 +734,32 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
       }
     }
 
+    sqlQueryBuilder.append(")");
+
+    HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
+    preparedQuery.sql = sqlQueryBuilder.toString();
+    preparedQuery.args = args.toArray();
+    return preparedQuery;
+  }
+  
+  /**
+   * Create a SQL statement from List&lt;String&gt;.
+   *
+   * @param paths The list of paths
+   * @return A prepared query.
+   */
+  private HpcPreparedQuery toQuery(
+      List<String> paths) {
+    StringBuilder sqlQueryBuilder = new StringBuilder();
+    List<Object> args = new ArrayList<>();
+
+    sqlQueryBuilder.append("(");
+    for(String path: paths) {
+    	if (sqlQueryBuilder.length() > 1) {
+    		sqlQueryBuilder.append(",");
+    	}
+    	sqlQueryBuilder.append("\'" + path + "\'");
+    }
     sqlQueryBuilder.append(")");
 
     HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
@@ -685,6 +847,46 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
   }
 
   /**
+   * Execute a SQL query to get data object detailed paths.
+   *
+   * @param preparedQuery The prepared query to execute.
+   * @return A list of paths.
+   * @throws HpcException on database error.
+   */
+  private List<HpcSearchMetadataEntry> getDetailedPaths(HpcPreparedQuery preparedQuery) throws HpcException {
+    try {
+      return jdbcTemplate.query(preparedQuery.sql, searchMetadataEntryRowMapper, preparedQuery.args);
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to get data-object Detailed Paths: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR,
+          HpcIntegratedSystem.POSTGRESQL,
+          e);
+    }
+  }
+
+  /**
+   * Execute a SQL query to get collection detailed paths.
+   *
+   * @param preparedQuery The prepared query to execute.
+   * @return A list of paths.
+   * @throws HpcException on database error.
+   */
+  private List<HpcSearchMetadataEntryForCollection> getDetailedPathsForCollection(HpcPreparedQuery preparedQuery) throws HpcException {
+    try {
+      return jdbcTemplate.query(preparedQuery.sql, searchMetadataEntryForCollRowMapper, preparedQuery.args);
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to get collection Detailed Paths: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR,
+          HpcIntegratedSystem.POSTGRESQL,
+          e);
+    }
+  }
+  
+  /**
    * Execute a SQL query to get collection or data object count.
    *
    * @param preparedQuery The prepared query to execute.
@@ -711,7 +913,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
    * @return A SQL operator string.
    */
   private String toSQLOperator(HpcCompoundMetadataQueryOperator operator) {
-    return operator.equals(HpcCompoundMetadataQueryOperator.AND) ? "intersect" : "union";
+    return operator.equals(HpcCompoundMetadataQueryOperator.AND) ? "and" : "or";
   }
 
   /**

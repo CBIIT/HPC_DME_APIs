@@ -207,8 +207,10 @@
 	<script>
 	function deleteSearch(searchName)
 	{
-		document.getElementById("searchName").value = searchName;
-		$("#searchForm").submit();
+		if (confirm("Are you sure to delete?") == true) {
+		    queryName = searchName.id;
+			window.location.href = '/deleteSearch?queryName='+queryName+'&amp;page=1';
+		}	
 	}
 	
 	</script>

@@ -433,7 +433,7 @@ public class HpcClientUtil {
         return datafiles;
       } else {
         throw new HpcWebException(
-            "Failed to get Data file! It could be because you don't have READ access!");
+            "File does not exist or you do not have READ access.");
       }
 
     } catch (Exception e) {

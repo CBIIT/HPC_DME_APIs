@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,8 +73,10 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
+import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
@@ -454,6 +457,32 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Get the metadata.
     HpcMetadataEntries metadataEntries =
         metadataService.getCollectionMetadataEntries(collection.getAbsolutePath());
+    
+    
+    //If the invoker is a GroupAdmin, then ensure that for recursive delete:
+    //1. The file is less than 60 days old
+    //2. The invoker uploaded the data originally
+    
+    HpcRequestInvoker invoker = securityService.getRequestInvoker();
+    if(recursive && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
+    	
+    	Calendar cutOffDate = Calendar.getInstance();
+    	cutOffDate.add(Calendar.DAY_OF_YEAR, -60);
+    	if(collection.getCreatedAt().before(cutOffDate)) {
+    		String message = "The collection at " + path + " is not eligible for deletion";
+    		logger.error(message);
+    		throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
+    	}
+    	
+    	HpcSystemGeneratedMetadata systemGeneratedMetadata =
+    	        metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
+    	if(!invoker.getNciAccount().getUserId().equals(systemGeneratedMetadata.getRegistrarId())) {
+    		String message = "The collection at " + path + " can only be deleted by the creator";
+    		logger.error(message);
+    		throw new HpcException(message, HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
+    	}
+    }
+    
 
     // Delete the collection.
 
@@ -1044,9 +1073,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if (StringUtils.isEmpty(path)) {
       throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    
+    HpcDataObject dataObject = dataManagementService.getDataObject(path);
 
     // Validate the data object exists.
-    if (dataManagementService.getDataObject(path) == null) {
+    if (dataObject == null) {
       throw new HpcException("Data object doesn't exist: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
@@ -1066,7 +1097,31 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           "Data object can only be deleted by its owner. Your permission: " + permission.value(),
           HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
     }
-
+    
+    //If this is a GroupAdmin, then ensure that:
+    //1. The file is less than 60 days old
+    //2. The invoker uploaded the data originally
+    
+    HpcRequestInvoker invoker = securityService.getRequestInvoker();
+    if(HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
+    
+    	Calendar cutOffDate = Calendar.getInstance();
+    	cutOffDate.add(Calendar.DAY_OF_YEAR, -60);
+    	if(dataObject.getCreatedAt().before(cutOffDate)) {
+    		String message = "The data object at " + path + " is not eligible for deletion";
+    		logger.error(message);
+    		throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
+    	}
+    
+    
+    	if(!invoker.getNciAccount().getUserId().equals(systemGeneratedMetadata.getRegistrarId())) {
+    		String message = "The data object at " + path + " can only be deleted by the data uploader";
+    		logger.error(message);
+    		throw new HpcException(message, HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
+    	}
+    }
+    
+    
     // Instantiate a response DTO
     HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
     dataObjectDeleteResponse.setArchiveDeleteStatus(true);
