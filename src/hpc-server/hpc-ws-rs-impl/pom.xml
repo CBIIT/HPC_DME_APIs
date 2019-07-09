@@ -17,7 +17,7 @@
   <parent>
     <groupId>gov.nih.nci.hpc</groupId>
     <artifactId>hpc-server</artifactId>
-    <version>1.14.0</version>
+    <version>1.15.0</version>
   </parent>
   <artifactId>hpc-ws-rs-impl</artifactId>
   <packaging>bundle</packaging>
@@ -295,6 +295,10 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>

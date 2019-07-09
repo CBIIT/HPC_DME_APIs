@@ -137,6 +137,7 @@ public class HpcFindUserController extends AbstractHpcController {
 			} else if (actionType != null && actionType.length > 0 && actionType[0].equals("cancel")) {
 				session.removeAttribute("selectedUsers");
 				qParamsA.put("path", hpcWebUser.getPath());
+				qParamsA.put("groupName", hpcWebUser.getPath());
 				return baseRedirectSpec.concat("?").concat(MiscUtil
           .generateEncodedQueryString(qParamsA));
 			}

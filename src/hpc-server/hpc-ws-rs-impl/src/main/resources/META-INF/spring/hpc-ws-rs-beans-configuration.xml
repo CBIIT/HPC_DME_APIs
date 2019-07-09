@@ -182,6 +182,10 @@
 	<bean id="hpcAuthenticationInterceptor"
 		class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAuthenticationInterceptor" />
 
+	<!-- Address Restriction Interceptor -->
+	<bean id="hpcIPAddressRestrictionInterceptor"
+		class="gov.nih.nci.hpc.ws.rs.interceptor.HpcIPAddressRestrictionInterceptor" />
+
 	<!-- Authorization Interceptor -->
 	<bean id="hpcAuthorizationInterceptor"
 		class="org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor">
@@ -327,6 +331,7 @@
 		<jaxrs:inInterceptors>
 			<ref bean="hpcProfileInInterceptor" />
 			<ref bean="hpcAuthenticationInterceptor" />
+			<ref bean="hpcIPAddressRestrictionInterceptor" />
 			<ref bean="hpcAuthorizationInterceptor" />
 		</jaxrs:inInterceptors>
 		<jaxrs:outInterceptors>
@@ -357,6 +362,7 @@
 		<jaxrs:inInterceptors>
 			<ref bean="hpcProfileInInterceptor" />
 			<ref bean="hpcAuthenticationInterceptor" />
+			<ref bean="hpcIPAddressRestrictionInterceptor" />
 			<ref bean="hpcAuthorizationInterceptor" />
 		</jaxrs:inInterceptors>
 		<jaxrs:outInterceptors>

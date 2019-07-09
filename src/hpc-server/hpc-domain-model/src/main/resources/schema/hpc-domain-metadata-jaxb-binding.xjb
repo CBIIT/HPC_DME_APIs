@@ -24,6 +24,12 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcMetadataEntry']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcSearchMetadataEntry']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcSearchMetadataEntryForCollection']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntryForCollection" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcMetadataEntries']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries" />
       </jxb:bindings>
