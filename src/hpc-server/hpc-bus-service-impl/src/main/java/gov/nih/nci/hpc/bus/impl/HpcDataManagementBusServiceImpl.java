@@ -465,20 +465,19 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     
     HpcRequestInvoker invoker = securityService.getRequestInvoker();
     if(recursive && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
-    
-    	HpcSystemGeneratedMetadata systemGeneratedMetadata =
-    	        metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
     	
     	Calendar cutOffDate = Calendar.getInstance();
     	cutOffDate.add(Calendar.DAY_OF_YEAR, -60);
-    	if(systemGeneratedMetadata.getDataTransferCompleted().before(cutOffDate)) {
+    	if(collection.getCreatedAt().before(cutOffDate)) {
     		String message = "The collection at " + path + " is not eligible for deletion";
     		logger.error(message);
     		throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
     	}
-    
+    	
+    	HpcSystemGeneratedMetadata systemGeneratedMetadata =
+    	        metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
     	if(!invoker.getNciAccount().getUserId().equals(systemGeneratedMetadata.getRegistrarId())) {
-    		String message = "The collection at " + path + " can only be deleted by the original data uploader";
+    		String message = "The collection at " + path + " can only be deleted by the creator";
     		logger.error(message);
     		throw new HpcException(message, HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
     	}
@@ -1074,9 +1073,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     if (StringUtils.isEmpty(path)) {
       throw new HpcException("Null / empty path", HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    
+    HpcDataObject dataObject = dataManagementService.getDataObject(path);
 
     // Validate the data object exists.
-    if (dataManagementService.getDataObject(path) == null) {
+    if (dataObject == null) {
       throw new HpcException("Data object doesn't exist: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
@@ -1106,7 +1107,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     
     	Calendar cutOffDate = Calendar.getInstance();
     	cutOffDate.add(Calendar.DAY_OF_YEAR, -60);
-    	if(systemGeneratedMetadata.getDataTransferCompleted().before(cutOffDate)) {
+    	if(dataObject.getCreatedAt().before(cutOffDate)) {
     		String message = "The data object at " + path + " is not eligible for deletion";
     		logger.error(message);
     		throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
