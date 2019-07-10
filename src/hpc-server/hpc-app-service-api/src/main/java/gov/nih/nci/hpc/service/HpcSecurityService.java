@@ -159,11 +159,11 @@ public interface HpcSecurityService {
   * Authenticate a user (via SPS).
   * 
   * @param nciUserId The user id.
-  * @param session The NIHSMSESSION
-  * @return true if the user was successfully authenticated and session is still valid, or false otherwise.
+  * @param smSession The NIHSMSESSION
+  * @return true if the user was successfully authenticated and smSession is still valid, or false otherwise.
   * @throws HpcException on service failure.
   */
-public boolean authenticateSso(String nciUserId, String session) throws HpcException;
+public boolean authenticateSso(String nciUserId, String smSession) throws HpcException;
    
   /**
    * Add a system account.

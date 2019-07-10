@@ -377,14 +377,14 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   }
   
   @Override
-  public void authenticateSso(String nciUserId, String session) throws HpcException {
+  public void authenticateSso(String nciUserId, String smSession) throws HpcException {
     // Input validation.
-    if (StringUtils.isEmpty(nciUserId) || StringUtils.isEmpty(session)) {
+    if (StringUtils.isEmpty(nciUserId) || StringUtils.isEmpty(smSession)) {
       throw new HpcException("Null SM_USER or NIHSMSESSION", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Authenticate w/ SPS
-    if (!securityService.authenticateSso(nciUserId, session)) {
+    if (!securityService.authenticateSso(nciUserId, smSession)) {
       throw new HpcException("SPS authentication failed", HpcErrorType.UNAUTHORIZED_REQUEST);
     }
 
