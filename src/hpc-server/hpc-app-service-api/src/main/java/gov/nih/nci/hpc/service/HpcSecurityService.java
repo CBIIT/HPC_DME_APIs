@@ -154,6 +154,17 @@ public interface HpcSecurityService {
    */
   public boolean authenticate(String userName, String password) throws HpcException;
 
+
+ /**
+  * Authenticate a user (via SPS).
+  * 
+  * @param nciUserId The user id.
+  * @param smSession The NIHSMSESSION
+  * @return true if the user was successfully authenticated and smSession is still valid, or false otherwise.
+  * @throws HpcException on service failure.
+  */
+public boolean authenticateSso(String nciUserId, String smSession) throws HpcException;
+   
   /**
    * Add a system account.
    *
@@ -169,11 +180,13 @@ public interface HpcSecurityService {
   /**
    * Create an authentication token, so the caller can use it in subsequent calls.
    *
+   * @param authenticationType The authentication type.
    * @param authenticationTokenClaims The token's claims to put in the token.
    * @return An Authentication token.
    * @throws HpcException on service failure.
    */
-  public String createAuthenticationToken(HpcAuthenticationTokenClaims authenticationTokenClaims)
+  public String createAuthenticationToken(
+		  HpcAuthenticationType authenticationType, HpcAuthenticationTokenClaims authenticationTokenClaims)
       throws HpcException;
 
   /**

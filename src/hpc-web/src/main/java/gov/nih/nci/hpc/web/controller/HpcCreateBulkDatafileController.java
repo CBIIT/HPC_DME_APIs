@@ -99,7 +99,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			HttpSession session, HttpServletRequest request) {
 		try {
 			if (login(model, bindingResult, session, request) != null)
-				return "index";
+				return "redirect:/login";
 
 			String init = request.getParameter("init");
 			if (init != null) {

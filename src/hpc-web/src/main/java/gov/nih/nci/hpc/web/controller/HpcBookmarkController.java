@@ -81,7 +81,7 @@ public class HpcBookmarkController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login";
 		}
 		String path = request.getParameter("path");
 		HpcBookmark bookmark = new HpcBookmark();
