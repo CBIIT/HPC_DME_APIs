@@ -35,6 +35,6 @@ public class HpcDataManagementController extends AbstractHpcController {
 	public String index(Model model) {
 		HpcLogin hpcLogin = new HpcLogin();
 		model.addAttribute("hpcLogin", hpcLogin);
-		return "index";
+		return "redirect:/login";
 	}
 }

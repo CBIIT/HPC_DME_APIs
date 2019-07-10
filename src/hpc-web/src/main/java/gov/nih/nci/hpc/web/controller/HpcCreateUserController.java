@@ -83,7 +83,7 @@ public class HpcCreateUserController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login";
 		}
 		initialize(model, authToken, user, session, request);
 		return "createuser";

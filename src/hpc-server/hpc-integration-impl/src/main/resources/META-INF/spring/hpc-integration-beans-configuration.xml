@@ -71,6 +71,14 @@
 		  <constructor-arg value="${hpc.integration.ldap.userIdDomainName}" index="5" />
 	</bean>
 		
+	<!-- HPC SPS Authorization Proxy -->
+	<bean id="hpcSpsAuthorizationProxy"
+		  class="gov.nih.nci.hpc.integration.sps.impl.HpcSpsAuthorizationProxyImpl" >
+		  <constructor-arg value="${hpc.integration.sps.URL}" index="0" />
+		  <constructor-arg value="${hpc.integration.sps.resource}" index="1" />
+		  <constructor-arg value="${hpc.integration.sps.domain}" index="2" />
+	</bean>
+	
 	<!--  HPC iRODS Connection -->
 	<bean id="hpcIRODSConnection" 
 	      class="gov.nih.nci.hpc.integration.irods.impl.HpcIRODSConnection" >
@@ -79,6 +87,9 @@
 	      <constructor-arg value="${hpc.integration.irods.zone}" index="2" />
 	      <constructor-arg value="${hpc.integration.irods.resource}" index="3" />
 	      <constructor-arg value="${hpc.integration.irods.basePath}" index="4" />
+	      <constructor-arg value="${hpc.integration.irods.key}" index="5" />
+	      <constructor-arg value="${hpc.integration.irods.algorithm}" index="6" />
+	      <constructor-arg value="${hpc.integration.irods.ldapAuthentication}" index="7" />
 	</bean>
 	
 	<!--  HPC Data Management Proxy -->
