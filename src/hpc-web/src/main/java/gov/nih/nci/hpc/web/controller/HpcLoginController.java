@@ -64,6 +64,8 @@ public class HpcLoginController extends AbstractHpcController {
 	private String hpcModelURL;
 	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
 	private String collectionAclURL;
+	@Value("${gov.nih.nci.hpc.login.module:}")
+	protected String hpcLoginModule;
 	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -73,7 +75,8 @@ public class HpcLoginController extends AbstractHpcController {
 	public String home(@CookieValue(value="NIHSMSESSION", required = false) String smSession, Model model, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 		session.setAttribute("callerPath", getCallerPath(request));
 		String userId = (String) session.getAttribute("hpcUserId");
-		if (StringUtils.isBlank(userId) && StringUtils.isBlank(smSession)) {
+		if (StringUtils.equalsIgnoreCase(hpcLoginModule, "LDAP")) {
+			// This is for local configuration where site minder is not available or we don't want to use the SMSESSION.
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
 			model.addAttribute("queryURL", queryURL);
@@ -81,7 +84,7 @@ public class HpcLoginController extends AbstractHpcController {
 			session.setAttribute("callerPath", getCallerPath(request));
 			return "index";
 		} else if (StringUtils.isBlank(userId) && !StringUtils.isBlank(smSession)) {
-			//This can happen if login url was requested directly, so go through the interceptor first.
+			//This can happen if login url was requested directly when site minder is available, so go through the interceptor first.
 			return "redirect:/";
 		}
 		try {
