@@ -23,14 +23,14 @@ import gov.nih.nci.hpc.exception.HpcException;
 public interface HpcSpsAuthorizationProxy 
 {
     /** 
-     * Authorize session. 
+     * Authorize smSession. 
      * 
      * @param nciUserId The user's nciUserId.
-     * @param session The session cookie.
+     * @param smSession The smSession cookie.
      * @param username The user name to authenticate to SPS.
      * @param password The password to authenticate to SPS.
-     * @return True if the session was successfully authorized, or false otherwise.
+     * @return True if the smSession was successfully authorized, or false otherwise.
      * @throws HpcException on SPS authorization failure.
      */
-	public boolean authorize(String nciUserId, String session, String username, String password) throws HpcException;
+	public boolean authorize(String nciUserId, String smSession, String username, String password) throws HpcException;
 }

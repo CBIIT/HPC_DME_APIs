@@ -155,12 +155,12 @@ public class HpcAuthenticationInterceptor extends AbstractPhaseInterceptor<Messa
    * Perform a SPS authentication w/ SM_USER and NIHSMSESSION.
    *
    * @param user The user name
-   * @param session The SM session cookie
+   * @param smSession The SM session cookie
    * @throws HpcException on authentication failure.
    */
-  private void authenticate(String user, String session) throws HpcException {
+  private void authenticate(String user, String smSession) throws HpcException {
 
-    securityBusService.authenticateSso(user, session);
+    securityBusService.authenticateSso(user, smSession);
   }
   
   /**
