@@ -219,7 +219,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
 
     global files_registered, bytes_stored
     #Build metadata for the object
-    object_to_register = SFObject(filepath, tarfile_name, has_parent, type)
+    object_to_register = SFObject(filepath, tarfile_name, ext, has_parent, type)
     object_metadata = object_to_register.get_metadata()
     json_path = sf_audit.audit_path + '/jsons'
 
