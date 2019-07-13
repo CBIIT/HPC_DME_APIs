@@ -83,7 +83,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_SQL = "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
 
-	public static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" order by \"CREATED\"";
+	public static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" order by \"PRIORITY\", \"CREATED\"";
 
 	public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( "
 			+ "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
@@ -124,7 +124,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public static final String DELETE_COLLECTION_DOWNLOAD_TASK_SQL = "delete from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"ID\" = ?";
 
 	public static final String GET_COLLECTION_DOWNLOAD_TASKS_SQL = "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"STATUS\" = ? "
-			+ "order by \"CREATED\"";
+			+ "order by \"PRIORITY\", \"CREATED\"";
 
 	public static final String GET_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select \"ID\", \"PATH\", \"CREATED\", 'DATA_OBJECT' as \"TYPE\", null as \"COMPLETED\", "
 			+ "null as \"RESULT\", null as \"ITEMS\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where "

@@ -228,6 +228,41 @@ public class HpcClientUtil {
       throw new HpcWebException("Failed to get auth token: " + e.getMessage());
     }
   }
+  
+  public static String getAuthenticationTokenSso(String userId, String smSession, String hpcServerURL)
+	      throws HpcWebException {
+	  
+	    WebClient client = HpcClientUtil.getWebClient(hpcServerURL, null, null);
+	    Response restResponse = client.header("SM_USER", userId).header("NIHSMSESSION", smSession).get();
+	    try {
+
+	      if (restResponse.getStatus() != 200) {
+	        ObjectMapper mapper = new ObjectMapper();
+	        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+	            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+	            new JacksonAnnotationIntrospector());
+	        mapper.setAnnotationIntrospector(intr);
+	        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+	        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+	        throw new HpcWebException("Authentication failed: " + exception.getMessage());
+	      }
+	      MappingJsonFactory factory = new MappingJsonFactory();
+	      JsonParser parser;
+	      parser = factory.createParser((InputStream) restResponse.getEntity());
+	      HpcAuthenticationResponseDTO dto = parser.readValueAs(HpcAuthenticationResponseDTO.class);
+	      return dto.getToken();
+	    } catch (IllegalStateException e1) {
+	      e1.printStackTrace();
+	      throw new HpcWebException("Failed to get auth token: " + e1.getMessage());
+	    } catch (IOException e) {
+	      e.printStackTrace();
+	      throw new HpcWebException("Failed to get auth token: " + e.getMessage());
+	    }
+	  }
 
   public static List<HpcDataManagementRulesDTO> getUserDOCManagementRules(
       HpcDataManagementModelDTO docModelDto, String userDoc) {
@@ -433,7 +468,7 @@ public class HpcClientUtil {
         return datafiles;
       } else {
         throw new HpcWebException(
-            "Failed to get Data file! It could be because you don't have READ access!");
+            "File does not exist or you do not have READ access.");
       }
 
     } catch (Exception e) {

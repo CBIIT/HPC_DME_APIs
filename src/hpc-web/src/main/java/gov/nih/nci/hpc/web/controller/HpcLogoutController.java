@@ -41,6 +41,6 @@ public class HpcLogoutController extends AbstractHpcController {
 		session = null;
 		HpcLogin hpcLogin = new HpcLogin();
 		model.addAttribute("hpcLogin", hpcLogin);
-		return "index";
+		return "logout";
 	}
 }

@@ -126,8 +126,14 @@ class SFHelper(object):
             #is not a 5 digit number then use default project_id
             for element in path_elements:
                 if element.isdigit():
-                    if len(str(element)) is 5:
+                    if len(str(element)) >= 5:
                         project_id = element
+                    break
+
+                #If there is a string of the format 'CSXXXXXX' immediately after the
+                #name fields where 'XXXXXX' has only digits, that is the project_id
+                if element.startswith('CS') and element[4:].isdigit():
+                    project_id = element
                     break
 
             #Assumes that PI and contact names are in the format 'FirstnameLastname'

@@ -74,7 +74,7 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login";
 		}
 		initialize(model, authToken, user, session);
 		return "creategroup";
@@ -111,7 +111,7 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login";
 		}
 
 		try {
@@ -133,6 +133,9 @@ public class HpcCreateGroupController extends AbstractHpcController {
 			boolean success = constructReponseMessages(hpcWebGroup.getGroupName(), createResponse, model);
 			if (success)
 				session.removeAttribute("selectedUsers");
+			    redirectAttributes.addFlashAttribute("messages", model.asMap().get("messages"));
+			    session.setAttribute("groupName", hpcWebGroup.getGroupName());
+			    return "redirect:group?return=true";
 		} catch (Exception e) {
 			messages.add(e.getMessage());
 			model.addAttribute("messages", messages);

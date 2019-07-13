@@ -45,14 +45,15 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
       {
         field : 'createdOn',
         width : 200,
-        displayName : 'Created On'
+        displayName : 'Created On',
+        type:'date'
       },
       {
         field : 'delete',
         width : 200,
         displayName : 'Delete',
         cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="deleteSearch?queryName={{COL_FIELD CUSTOM_FILTERS}}&amp;page=1">Delete</a></div>'
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)">Delete</a></div>'
       }
     ],
   };

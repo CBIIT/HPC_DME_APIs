@@ -14,8 +14,11 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
-
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +69,9 @@ public class HpcIRODSConnection {
   private String irodsZone = null;
   private String irodsResource = null;
   private String basePath = null;
+  private String key = null;
+  private String algorithm = null;
+  private Boolean ldapAuthentication = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -82,10 +88,13 @@ public class HpcIRODSConnection {
    * @param irodsZone The iRODS zone.
    * @param irodsResource The iRODS resource to use.
    * @param basePath The iRODS base path.
+   * @param key The configured key.
+   * @param algorithm The configured algorithm
+   * @param ldapAuthentication LDAP authentication on/off switch.
    * @throws HpcException If it failed to instantiate the iRODS file system.
    */
   private HpcIRODSConnection(
-      String irodsHost, Integer irodsPort, String irodsZone, String irodsResource, String basePath)
+      String irodsHost, Integer irodsPort, String irodsZone, String irodsResource, String basePath, String key, String algorithm, Boolean ldapAuthentication)
       throws HpcException {
     if (irodsHost == null
         || irodsHost.isEmpty()
@@ -95,7 +104,12 @@ public class HpcIRODSConnection {
         || irodsResource == null
         || irodsResource.isEmpty()
         || basePath == null
-        || basePath.isEmpty()) {
+        || basePath.isEmpty()
+        || key == null
+        || key.isEmpty()
+        || algorithm == null
+        || algorithm.isEmpty()
+        || ldapAuthentication == null) {
       throw new HpcException(
           "Null or empty iRODS connection attributes", HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }
@@ -104,6 +118,9 @@ public class HpcIRODSConnection {
     this.irodsZone = irodsZone;
     this.irodsResource = irodsResource;
     this.basePath = basePath;
+    this.key = key;
+    this.algorithm = algorithm;
+    this.ldapAuthentication = ldapAuthentication;
 
     try {
       irodsFileSystem = IRODSFileSystem.instance();
@@ -271,7 +288,7 @@ public class HpcIRODSConnection {
       throws HpcException {
 
     // Determine the authentication scheme to use. PAM if LDAP is turned on.
-    AuthScheme authenticationScheme = ldapAuthentication ? AuthScheme.PAM : AuthScheme.STANDARD;
+    AuthScheme authenticationScheme = this.ldapAuthentication ? AuthScheme.PAM : AuthScheme.STANDARD;
 
     IRODSAccount irodsAccount = null;
     try {
@@ -320,6 +337,12 @@ public class HpcIRODSConnection {
           HpcErrorType.DATA_MANAGEMENT_ERROR,
           HpcIntegratedSystem.IRODS,
           e);
+    } catch (NoSuchAlgorithmException e) {
+      throw new HpcException(
+          "Failed to authenticate an iRODS account: " + e.getMessage(),
+          HpcErrorType.DATA_MANAGEMENT_ERROR,
+          HpcIntegratedSystem.IRODS,
+          e);
     }
   }
 
@@ -357,6 +380,15 @@ public class HpcIRODSConnection {
     return basePath;
   }
 
+  /**
+   * Get the ldap authentication flag.
+   *
+   * @return The ldap authentication flag.
+   */
+  public Boolean getLdapAuthentication() {
+    return ldapAuthentication;
+  } 
+
   //---------------------------------------------------------------------//
   // Helper Methods
   //---------------------------------------------------------------------//
@@ -377,7 +409,7 @@ public class HpcIRODSConnection {
               irodsHost,
               irodsPort,
               dataManagementAccount.getUsername(),
-              dataManagementAccount.getPassword(),
+              this.ldapAuthentication ? dataManagementAccount.getPassword() : getUserKey(dataManagementAccount.getUsername()),
               "",
               irodsZone,
               irodsResource);
@@ -385,6 +417,11 @@ public class HpcIRODSConnection {
       return irodsAccount;
 
     } catch (JargonException e) {
+      throw new HpcException(
+          "Failed instantiate an iRODS account: " + e.getMessage(),
+          HpcErrorType.DATA_MANAGEMENT_ERROR,
+          e);
+    } catch (NoSuchAlgorithmException e) {
       throw new HpcException(
           "Failed instantiate an iRODS account: " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR,
@@ -399,10 +436,11 @@ public class HpcIRODSConnection {
    * @param authScheme The iRODS authentication scheme (PAM or STANDARD).
    * @return An iRODS account.
    * @throws JargonException on iRODS failure.
+   * @throws NoSuchAlgorithmException
    */
   private IRODSAccount toAuthenticatedIrodsAccount(
       HpcIntegratedSystemAccount dataManagementAccount, AuthScheme authScheme)
-      throws JargonException {
+      throws JargonException, NoSuchAlgorithmException {
     Map<String, String> properties = new Hashtable<>();
     for (HpcIntegratedSystemAccountProperty property : dataManagementAccount.getProperties()) {
       properties.put(property.getName(), property.getValue());
@@ -412,7 +450,7 @@ public class HpcIRODSConnection {
         properties.get(HOST_PROPERTY),
         Integer.valueOf(properties.get(PORT_PROPERTY)),
         dataManagementAccount.getUsername(),
-        dataManagementAccount.getPassword(),
+        ldapAuthentication ? dataManagementAccount.getPassword() : getUserKey(dataManagementAccount.getUsername()),
         properties.get(HOME_DIRECTORY_PROPERTY),
         properties.get(ZONE_PROPERTY),
         properties.get(DEFAULT_STORAGE_RESOURCE_PROPERTY),
@@ -483,4 +521,19 @@ public class HpcIRODSConnection {
 
     return properties;
   }
+  
+  /**
+   * Get user key for Standard Authentication
+   * 
+   * @param user the username
+   * @return user key
+   * @throws NoSuchAlgorithmException
+   */
+  String getUserKey(String user) throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance(algorithm);
+    digest.update(key.getBytes(StandardCharsets.UTF_8));
+    byte[] userKey = digest.digest(user.getBytes(StandardCharsets.UTF_8));
+    return Base64.getEncoder().encodeToString(userKey);
+  }
+  
 }

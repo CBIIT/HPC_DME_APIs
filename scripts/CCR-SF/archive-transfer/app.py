@@ -16,7 +16,7 @@ from common.sf_audit import SFAudit
 def main(args):
 
     if len(sys.argv) < 6:
-        print("\n Usage: python app.py tarfile_list tarfile_dir extract_path audit_dir dryrun initial_bytes initial_file_count")
+        print("\n Usage: python app.py tarfile_list tarfile_dir extract_path audit_dir dryrun include_file_size")
         return
 
     # The file containing the tarlist
@@ -219,7 +219,7 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
 
     global files_registered, bytes_stored
     #Build metadata for the object
-    object_to_register = SFObject(filepath, tarfile_name, has_parent, type)
+    object_to_register = SFObject(filepath, tarfile_name, ext, has_parent, type)
     object_metadata = object_to_register.get_metadata()
     json_path = sf_audit.audit_path + '/jsons'
 

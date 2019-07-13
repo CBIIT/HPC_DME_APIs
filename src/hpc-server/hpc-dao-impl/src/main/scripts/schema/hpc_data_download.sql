@@ -32,7 +32,8 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "COMPLETION_EVENT" boolean,
   "PERCENT_COMPLETE" integer,
   "SIZE" bigint,
-  "CREATED" timestamp
+  "CREATED" timestamp,
+  "PRIORITY" integer DEFAULT 100
 )
 WITH (
   OIDS=FALSE
@@ -78,6 +79,8 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."SIZE" IS
                   'The data object size';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."CREATED" IS 
                   'The date and time the task was created';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PRIORITY" IS 
+                  'The download task priority';
 
 DROP TABLE IF EXISTS public."HPC_COLLECTION_DOWNLOAD_TASK";
 CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
@@ -96,7 +99,8 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "S3_ACCOUNT_REGION" text,
   "STATUS" text,
   "ITEMS" text,
-  "CREATED" timestamp
+  "CREATED" timestamp,
+  "PRIORITY" integer DEFAULT 100
 )
 WITH (
   OIDS=FALSE
@@ -134,6 +138,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."ITEMS" IS
                   'The download items included in this collection / bulk download request';    
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."CREATED" IS 
                   'The date and time the task was created';
+COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."PRIORITY" IS 
+                  'The download task priority';
                                    
 DROP TABLE IF EXISTS public."HPC_DOWNLOAD_TASK_RESULT";
 CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"

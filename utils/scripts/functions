@@ -295,14 +295,14 @@ function dm_get_item {
     then
       RESPONSE_MSG="$2"
     else
-      RESPONSE_MSG=get-item-response-message.json.tmp
+      RESPONSE_MSG=get_item-response-message.json.tmp
     fi 
 
     if [ ! -z "$3" ]
     then
       RESPONSE_HEADER="$3"
     else
-      RESPONSE_HEADER=get-item-response-header.tmp
+      RESPONSE_HEADER=get_item-response-header.tmp
     fi 
 
     CONFIG=$(get_config) || exit 1
@@ -326,7 +326,7 @@ function dm_get_dataobject {
 
     local USAGE="usage: dm_get_dataobject <dataobject-path> [metadata-file] [REST-response]"
     
-    while getopts ":rt:" option
+    while getopts ":" option
     do
       case "${option}" in
         *)
@@ -344,8 +344,8 @@ function dm_get_dataobject {
     local ITEM_PATH="$1"
 
 
-    local RESPONSE_MSG=${2-get-item-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-get-item-response-header.tmp}
+    local RESPONSE_MSG=${2-get_dataobject-response-message.json.tmp}
+    local RESPONSE_HEADER=${3-get_dataobject-response-header.tmp}
 
     dm_get_item dataObject/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER" || exit 1
 
@@ -382,7 +382,7 @@ function dm_get_collection {
 
     local USAGE="usage: dm_get_collection <collection-path> [metadata-file] [REST-response]"
 
-    while getopts ":rt:" option
+    while getopts ":" option
     do
       case "${option}" in
         *)
@@ -400,8 +400,8 @@ function dm_get_collection {
     fi
     local ITEM_PATH="$1"
 
-    local RESPONSE_MSG=${2-get-item-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-get-item-response-header.tmp}
+    local RESPONSE_MSG=${2-get_collection-response-message.json.tmp}
+    local RESPONSE_HEADER=${3-get_collection-response-header.tmp}
 
     dm_get_item collection/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER" || exit 1
 
@@ -578,6 +578,16 @@ function dm_delete_datafile {
       return 1
     fi
 
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          echo "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+    done
+
     if [ -z "$1" ] 
     then
         echo "$USAGE" >&2
@@ -655,7 +665,7 @@ function dm_delete_collection {
     numthreads=1
     recursive=false
   
-   while getopts ":rt:" option
+   while getopts ":r" option
     do
       case "${option}" in
        
@@ -1420,16 +1430,28 @@ function dm_download_s3_deprecated {
     fi
 }
 
+#Print Usage of dm_download_s3 function
+function dm_show_download_s3_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_s3 <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
+  Download the specified dataobject or collection to the s3 bucket
+  archive-path                Source path in the archive
+  destination-bucket          Destination S3 bucket to transfer data to
+  destination_path            Full path of the destination file/folder in the S3 bucket
+  aws_credentials_file_path   Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+EOF
+  echo "$usage"
+}
+
 
 function dm_download_s3 {
 
-    local USAGE="usage: dm_download_s3 <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]"
     local CREDENTIALS_FILE=~/.aws/credentials
     local DESCRIPTION=description.json
 
     if [ "$#" -lt 3 ]
     then
-        echo "$USAGE" >&2
+        dm_show_download_s3_usage >&2
         exit 1
     fi
 
@@ -1453,21 +1475,21 @@ function dm_download_s3 {
    local awsAccessKeyId=$(get_value $CREDENTIALS_FILE aws_access_key_id)
    if [ -z "$awsAccessKeyId" ]
    then
-       echo "ERROR: Crendetials file does not contain aws_access_key_id property"
+       echo "ERROR: Credentials file does not contain aws_access_key_id property"
        exit 1
    fi
 
    local awsSecretAccessKey=$(get_value $CREDENTIALS_FILE aws_secret_access_key)
    if [ -z "$awsSecretAccessKey" ]
    then
-       echo "ERROR: Crendetials file does not contain aws_secret_access_key property"
+       echo "ERROR: Credentials file does not contain aws_secret_access_key property"
        exit 1
    fi
   
    local awsRegion=$(get_value $CREDENTIALS_FILE region)
    if [ -z "$awsRegion" ]
    then
-       echo "ERROR: Crendetials file does not contain region property"
+       echo "ERROR: Credentials file does not contain region property"
        exit 1
    fi
 
@@ -1542,8 +1564,8 @@ function dm_get_download_status {
 
 
 
-    local response_msg=${2-get-downlaod-status-response-message.json.tmp}
-    local response_header=${3-get-item-response-header.tmp}
+    local response_msg=${2-get_download_status-response-message.json.tmp}
+    local response_header=${3-get_download_status_response-header.tmp}
 
 
     config=$(get_config) || exit 1
@@ -1583,6 +1605,15 @@ function dm_get_download_status {
 function dm_rename() {
 
     local USAGE="usage: dm_rename <description.json> [rename-status-file] [REST-response]"
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          echo "$USAGE" >&2
+          exit 1
+          ;;
+      esac
+    done
 
     if [ -z "$1" ]
     then
@@ -1663,7 +1694,7 @@ function dm_add_bookmark () {
       exit 1
     fi
     
-    local RESPONSE_MSG=iadd_bookmark-response-message.json.tmp
+    local RESPONSE_MSG=add_bookmark-response-message.json.tmp
     local RESPONSE_HEADER=add_bookmark-response-header.tmp
 
     rm -f  $RESPONSE_MSG 2>/dev/null 
@@ -1788,8 +1819,8 @@ local USAGE="usage: dm_update_user <userId> <description.json> [REST-response]"
       exit 1
     fi
 
-    local RESPONSE_MSG=register_user-response-message.json.tmp
-    local RESPONSE_HEADER=register_user-response-header.tmp
+    local RESPONSE_MSG=update-user-response-message.json.tmp
+    local RESPONSE_HEADER=update-user-response-header.tmp
 
     rm -f  $RESPONSE_MSG 2>/dev/null
     rm -f $RESPONSE_HEADER 2>/dev/null
