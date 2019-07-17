@@ -30,22 +30,18 @@ public class HpcExcelUtil {
 	public static final String METADATA_SHEET = "Metadata";
 	public static final String TOKENS_SHEET = "Tokens";
 
-	public static HpcBulkMetadataEntries parseBulkMatadataEntries(MultipartFile metadataFile, String collectionPath) throws HpcWebException{
+	public static HpcBulkMetadataEntries parseBulkMatadataEntries(MultipartFile metadataFile, String collectionPath) throws IOException {
 		HpcBulkMetadataEntries entries = null;
 		if(metadataFile == null || metadataFile.getName().isEmpty() || metadataFile.getOriginalFilename().isEmpty())
 			return null;
 		
-		try {
-			Sheet tokenSheet = getWorkbookSheet(metadataFile, TOKENS_SHEET);
-			Map<String, String> tokens = getTokensMap(tokenSheet);
-			Sheet metadataSheet = getWorkbookSheet(metadataFile, METADATA_SHEET);
-			Map<String, Map<String, String>> metadataMap = getMetadataMap(metadataSheet);
-			entries = buildHpcBulkMetadataEntries(metadataMap, tokens, collectionPath);
-		} catch (IOException e) {
-			throw new HpcWebException("Failed to read metadata Excel file: ", e);
-		} catch (Exception e) {
-			throw new HpcWebException("Failed to read metadata Excel file: " + e.getMessage(), e);
-		}
+		
+		Sheet tokenSheet = getWorkbookSheet(metadataFile, TOKENS_SHEET);
+		Map<String, String> tokens = getTokensMap(tokenSheet);
+		Sheet metadataSheet = getWorkbookSheet(metadataFile, METADATA_SHEET);
+		Map<String, Map<String, String>> metadataMap = getMetadataMap(metadataSheet);
+		entries = buildHpcBulkMetadataEntries(metadataMap, tokens, collectionPath);
+		
 
 		return entries;
 	}
