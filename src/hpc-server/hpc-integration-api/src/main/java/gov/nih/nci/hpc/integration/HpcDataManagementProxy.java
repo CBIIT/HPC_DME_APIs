@@ -32,15 +32,13 @@ public interface HpcDataManagementProxy {
    *
    * @param dataManagementAccount The Data Management account to authenticate.
    * @param authenticationType The authentication type.
-   * @param ldapAuthentication Indicator whether LDAP authentication is on/off.
    * @return An authenticated token, to be used in subsequent calls to data management. It returns
    *     null if the account is not authenticated.
    * @throws HpcException on data management system failure.
    */
   public Object authenticate(
       HpcIntegratedSystemAccount dataManagementAccount,
-      HpcAuthenticationType authenticationType,
-      boolean ldapAuthentication)
+      HpcAuthenticationType authenticationType)
       throws HpcException;
 
   /**
