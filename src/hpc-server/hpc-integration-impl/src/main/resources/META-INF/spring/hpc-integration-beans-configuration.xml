@@ -89,7 +89,7 @@
 	      <constructor-arg value="${hpc.integration.irods.basePath}" index="4" />
 	      <constructor-arg value="${hpc.integration.irods.key}" index="5" />
 	      <constructor-arg value="${hpc.integration.irods.algorithm}" index="6" />
-	      <constructor-arg value="${hpc.integration.irods.ldapAuthentication}" index="7" />
+	      <constructor-arg value="${hpc.integration.irods.pamAuthentication}" index="7" />
 	</bean>
 	
 	<!--  HPC Data Management Proxy -->
