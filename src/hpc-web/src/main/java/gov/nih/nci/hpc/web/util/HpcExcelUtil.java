@@ -97,7 +97,7 @@ public class HpcExcelUtil {
 			Cell currentCell = cellIterator.next();
 			String cellValue = currentCell.getStringCellValue();
 			if (cellValue == null || cellValue.isEmpty())
-				throw new HpcWebException("Invalid header column value");
+				throw new HpcWebException("Empty header column value in column " + currentCell.getColumnIndex());
 			header.add(cellValue);
 		}
 		if (!header.contains("path") && !header.contains("Path"))
