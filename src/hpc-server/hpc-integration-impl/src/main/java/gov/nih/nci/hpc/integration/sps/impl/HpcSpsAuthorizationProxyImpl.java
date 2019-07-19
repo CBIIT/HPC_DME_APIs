@@ -105,7 +105,7 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 					for(Attribute attribute: authorizationResult.getAuthorizationResponses().getResponse()) {
 						if(attribute.getName().equalsIgnoreCase("SM_USER")) {
 							String smUser = attribute.getValue();
-							return smUser.equalsIgnoreCase(nciUserId);
+							return smUser.contains(nciUserId);
 						}
 					}
 				}
