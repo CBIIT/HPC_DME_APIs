@@ -70,8 +70,7 @@ public class HpcDataManagementAuthenticator {
     Object token =
         dataManagementProxy.authenticate(
             dataManagementAccount,
-            invoker.getAuthenticationType(),
-            invoker.getLdapAuthentication());
+            invoker.getAuthenticationType());
     if (token == null) {
       throw new HpcException(
           "Invalid data management account credentials",
