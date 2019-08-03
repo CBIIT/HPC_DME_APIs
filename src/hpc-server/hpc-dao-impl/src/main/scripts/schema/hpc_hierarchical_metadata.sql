@@ -9,7 +9,6 @@
 --
 --
 -- @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
--- @version $Id$
 --
 
 -- Drop all views first.
@@ -214,6 +213,37 @@ $$
 STRICT
 LANGUAGE plpgsql IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION timestamp_less_than(text, text, text) RETURNS BOOLEAN AS $$
+DECLARE attr_value TEXT;
+DECLARE value TEXT;
+DECLARE format TEXT;
+BEGIN
+    attr_value = $1::TEXT;
+    value = $2::TEXT;
+    format = $3::TEXT;
+    RETURN to_timestamp(attr_value, format) < value;
+EXCEPTION WHEN others THEN
+    RETURN FALSE;
+END;
+$$
+STRICT
+LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION timestamp_greater_than(text, text, text) RETURNS BOOLEAN AS $$
+DECLARE attr_value TEXT;
+DECLARE value TEXT;
+DECLARE format TEXT;
+BEGIN
+    attr_value = $1::TEXT;
+    value = $2::TEXT;
+    format = $3::TEXT;
+    RETURN to_timestamp(attr_value, format) > value;
+EXCEPTION WHEN others THEN
+    RETURN FALSE;
+END;
+$$
+STRICT
+LANGUAGE plpgsql IMMUTABLE;
 
 -- Refresh views
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY r_coll_hierarchy_metamap;
