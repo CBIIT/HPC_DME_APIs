@@ -425,11 +425,16 @@ public class HpcDomainValidator {
         return levelFilterValidationResult;
       }
     }
-    if ((metadataQuery.getOperator().equals(HpcMetadataQueryOperator.TIMESTAMP_GREATER_THAN)
-        || metadataQuery.getOperator().equals(HpcMetadataQueryOperator.TIMESTAMP_LESS_THAN))
-        && StringUtils.isEmpty(metadataQuery.getValueFormat())) {
+    if (metadataQuery.getOperator().equals(HpcMetadataQueryOperator.TIMESTAMP_GREATER_THAN)
+        || metadataQuery.getOperator().equals(HpcMetadataQueryOperator.TIMESTAMP_LESS_THAN)) {
+      if (StringUtils.isEmpty(metadataQuery.getFormat())) {
+        validationResult
+            .setMessage("Null format in query with timestamp operator [" + metadataQuery + "]");
+        return validationResult;
+      }
+    } else if (!StringUtils.isEmpty(metadataQuery.getFormat())) {
       validationResult.setMessage(
-          "Null metadata value format in query with timestamp operator [" + metadataQuery + "]");
+          "Format provided in query with no timestamp operator [" + metadataQuery + "]");
       return validationResult;
     }
 
