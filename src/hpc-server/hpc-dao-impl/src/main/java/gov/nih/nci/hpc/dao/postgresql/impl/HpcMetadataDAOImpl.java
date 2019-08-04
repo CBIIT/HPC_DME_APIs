@@ -641,8 +641,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
       // Append the SQL query representing the requested metadata query operator and its arguments.
       sqlQueryBuilder.append(sqlQuery);
       args.add(metadataQuery.getValue());
-      if (!StringUtils.isEmpty(metadataQuery.getValueFormat())) {
-        args.add(metadataQuery.getValueFormat());
+      if (!StringUtils.isEmpty(metadataQuery.getFormat())) {
+        args.add(metadataQuery.getFormat());
       }
 
       // Optionally append a filter to have exact attribute match.

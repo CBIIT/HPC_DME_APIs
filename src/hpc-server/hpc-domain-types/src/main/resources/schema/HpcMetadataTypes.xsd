@@ -131,7 +131,7 @@
 			<xsd:element name="attribute" type="xsd:string" />
 			<xsd:element name="operator" type="hpc-domain-metadata:HpcMetadataQueryOperator" />
 			<xsd:element name="value" type="xsd:string" />
-			<xsd:element name="valueFormat" type="xsd:string" />
+			<xsd:element name="format" type="xsd:string" />
 			<xsd:element name="levelFilter" type="hpc-domain-metadata:HpcMetadataQueryLevelFilter" />
 			<xsd:element name="attributeMatch" type="hpc-domain-metadata:HpcMetadataQueryAttributeMatch" />
 		</xsd:sequence>
