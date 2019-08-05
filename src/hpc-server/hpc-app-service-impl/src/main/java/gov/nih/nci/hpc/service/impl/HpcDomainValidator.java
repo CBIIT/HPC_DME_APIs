@@ -1,9 +1,11 @@
 /**
  * HpcDomainValidator.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.service.impl;
@@ -38,29 +40,29 @@ import gov.nih.nci.hpc.domain.user.HpcNciAccount;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcDomainValidator {
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constants
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   private static final int MAX_COMPOUND_METADATA_QUERY_DEPTH = 10;
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Class members
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   // The logger instance.
   private static final Logger logger = LoggerFactory.getLogger(HpcDomainValidator.class.getName());
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constructors
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /** Default constructor is disabled. */
   private HpcDomainValidator() {}
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Security Domain Object Types Validators
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Validate User object.
@@ -87,8 +89,7 @@ public class HpcDomainValidator {
       return false;
     }
 
-    if (nciAccount.getFirstName() == null
-        || nciAccount.getLastName() == null
+    if (nciAccount.getFirstName() == null || nciAccount.getLastName() == null
         || nciAccount.getDoc() == null) {
       return false;
     }
@@ -104,8 +105,7 @@ public class HpcDomainValidator {
    */
   public static boolean isValidIntegratedSystemAccount(
       HpcIntegratedSystemAccount integratedSystemAccount) {
-    if (integratedSystemAccount == null
-        || integratedSystemAccount.getUsername() == null
+    if (integratedSystemAccount == null || integratedSystemAccount.getUsername() == null
         || integratedSystemAccount.getPassword() == null
         || integratedSystemAccount.getIntegratedSystem() == null) {
       logger.info("Invalid Integrated System Account: " + integratedSystemAccount);
@@ -114,9 +114,9 @@ public class HpcDomainValidator {
     return true;
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Data Management Domain Object Types Validators
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Validate a file location object.
@@ -125,8 +125,7 @@ public class HpcDomainValidator {
    * @return true if valid, false otherwise.
    */
   public static boolean isValidFileLocation(HpcFileLocation location) {
-    if (location == null
-        || StringUtils.isEmpty(location.getFileContainerId())
+    if (location == null || StringUtils.isEmpty(location.getFileContainerId())
         || StringUtils.isEmpty(location.getFileId())) {
       logger.info("Invalid File Location: {}", location);
       return false;
@@ -141,8 +140,7 @@ public class HpcDomainValidator {
    * @return true if valid, false otherwise.
    */
   public static boolean isValidS3Account(HpcS3Account s3Account) {
-    if (s3Account == null
-        || StringUtils.isEmpty(s3Account.getAccessKey())
+    if (s3Account == null || StringUtils.isEmpty(s3Account.getAccessKey())
         || StringUtils.isEmpty(s3Account.getSecretKey())
         || StringUtils.isEmpty(s3Account.getRegion())) {
       return false;
@@ -150,9 +148,9 @@ public class HpcDomainValidator {
     return true;
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Metadata Domain Object Types Validators
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Validate metadata entry collection.
@@ -189,10 +187,8 @@ public class HpcDomainValidator {
       return validationResult;
     }
     if (levelFilter.getOperator() == null) {
-      validationResult.setMessage(
-          "Null level filter operator. Valid values are ["
-              + Arrays.asList(HpcMetadataQueryOperator.values())
-              + "]");
+      validationResult.setMessage("Null level filter operator. Valid values are ["
+          + Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
       return validationResult;
     }
     if (levelFilter.getLevel() == null
@@ -248,10 +244,8 @@ public class HpcDomainValidator {
       return validationResult;
     }
     if (namedCompoundMetadataQuery.getCompoundQueryType() == null) {
-      validationResult.setMessage(
-          "Null compound query type. Valid values are ["
-              + Arrays.asList(HpcCompoundMetadataQueryType.values())
-              + "]");
+      validationResult.setMessage("Null compound query type. Valid values are ["
+          + Arrays.asList(HpcCompoundMetadataQueryType.values()) + "]");
       return validationResult;
     }
 
@@ -264,9 +258,9 @@ public class HpcDomainValidator {
     return isValidCompoundMetadataQuery(namedCompoundMetadataQuery.getCompoundQuery());
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Notification Domain Object Types Validators
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Validate a notification subscription object.
@@ -276,8 +270,7 @@ public class HpcDomainValidator {
    */
   public static boolean isValidNotificationSubscription(
       HpcNotificationSubscription notificationSubscription) {
-    if (notificationSubscription == null
-        || notificationSubscription.getEventType() == null
+    if (notificationSubscription == null || notificationSubscription.getEventType() == null
         || isEmpty(notificationSubscription.getNotificationDeliveryMethods())
         || notificationSubscription.getNotificationDeliveryMethods().contains(null)) {
       return false;
@@ -286,9 +279,9 @@ public class HpcDomainValidator {
     return true;
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Data Browse Domain Object Types Validators
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Validate a bookmark.
@@ -317,9 +310,9 @@ public class HpcDomainValidator {
     return validationResult;
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Helper Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Check if a collection is empty.
@@ -355,23 +348,16 @@ public class HpcDomainValidator {
     }
 
     if (compoundMetadataQuery.getOperator() == null) {
-      validationResult.setMessage(
-          "Null compound query operator in query ["
-              + compoundMetadataQuery
-              + "]. "
-              + "Valid values are ["
-              + Arrays.asList(HpcCompoundMetadataQueryOperator.values())
-              + "]");
+      validationResult.setMessage("Null compound query operator in query [" + compoundMetadataQuery
+          + "]. " + "Valid values are [" + Arrays.asList(HpcCompoundMetadataQueryOperator.values())
+          + "]");
       return validationResult;
     }
 
     if (isEmpty(compoundMetadataQuery.getQueries())
         && isEmpty(compoundMetadataQuery.getCompoundQueries())) {
-      validationResult.setMessage(
-          "Compound query ["
-              + compoundMetadataQuery
-              + "]. "
-              + "contains no sub queries (simple or compound)");
+      validationResult.setMessage("Compound query [" + compoundMetadataQuery + "]. "
+          + "contains no sub queries (simple or compound)");
       return validationResult;
     }
 
@@ -418,10 +404,9 @@ public class HpcDomainValidator {
     }
     if ((attribueMatch != null && attribueMatch.equals(HpcMetadataQueryAttributeMatch.ANY))
         && !StringUtils.isEmpty(metadataQuery.getAttribute())) {
-      validationResult.setMessage(
-          "Metadata attribute in not empty w/ match any attribute in query ["
-              + metadataQuery
-              + "]");
+      validationResult
+          .setMessage("Metadata attribute in not empty w/ match any attribute in query ["
+              + metadataQuery + "]");
       return validationResult;
     }
     if (StringUtils.isEmpty(metadataQuery.getValue())) {
@@ -429,13 +414,8 @@ public class HpcDomainValidator {
       return validationResult;
     }
     if (metadataQuery.getOperator() == null) {
-      validationResult.setMessage(
-          "Null operator in query ["
-              + metadataQuery
-              + "]. "
-              + "Valid values are ["
-              + Arrays.asList(HpcMetadataQueryOperator.values())
-              + "]");
+      validationResult.setMessage("Null operator in query [" + metadataQuery + "]. "
+          + "Valid values are [" + Arrays.asList(HpcMetadataQueryOperator.values()) + "]");
       return validationResult;
     }
     if (metadataQuery.getLevelFilter() != null) {
@@ -444,6 +424,18 @@ public class HpcDomainValidator {
       if (!levelFilterValidationResult.getValid()) {
         return levelFilterValidationResult;
       }
+    }
+    if (metadataQuery.getOperator().equals(HpcMetadataQueryOperator.TIMESTAMP_GREATER_THAN)
+        || metadataQuery.getOperator().equals(HpcMetadataQueryOperator.TIMESTAMP_LESS_THAN)) {
+      if (StringUtils.isEmpty(metadataQuery.getFormat())) {
+        validationResult
+            .setMessage("Null format in query with timestamp operator [" + metadataQuery + "]");
+        return validationResult;
+      }
+    } else if (!StringUtils.isEmpty(metadataQuery.getFormat())) {
+      validationResult.setMessage(
+          "Format provided in query with no timestamp operator [" + metadataQuery + "]");
+      return validationResult;
     }
 
     validationResult.setValid(true);
