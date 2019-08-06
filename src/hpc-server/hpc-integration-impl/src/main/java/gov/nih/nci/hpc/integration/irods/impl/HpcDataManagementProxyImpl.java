@@ -98,9 +98,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
   @Override
   public Object authenticate(HpcIntegratedSystemAccount dataManagementAccount,
-      HpcAuthenticationType authenticationType, boolean ldapAuthentication) throws HpcException {
-    return irodsConnection.authenticate(dataManagementAccount, authenticationType,
-        ldapAuthentication);
+      HpcAuthenticationType authenticationType) throws HpcException {
+    return irodsConnection.authenticate(dataManagementAccount, authenticationType);
   }
 
   @Override
@@ -468,7 +467,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
     // Add the user to iRODS.
     try {
       irodsConnection.getUserAO(authenticatedToken).addUser(irodsUser);
-      if(!irodsConnection.getLdapAuthentication())
+      if(!irodsConnection.getPamAuthentication())
         updateNewUserAccount(authenticatedToken, irodsUser.getName());
 
     } catch (DuplicateDataException ex) {
@@ -1209,7 +1208,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
    *
    * @param authenticatedToken the authenticatedToken
    * @param name the user name
-   * @throws HpcException
    * @throws HpcException if update fails
    */
   private void updateNewUserAccount(Object authenticatedToken, String name) throws HpcException {

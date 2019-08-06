@@ -71,7 +71,7 @@ public class HpcIRODSConnection {
   private String basePath = null;
   private String key = null;
   private String algorithm = null;
-  private Boolean ldapAuthentication = null;
+  private Boolean pamAuthentication = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -90,11 +90,11 @@ public class HpcIRODSConnection {
    * @param basePath The iRODS base path.
    * @param key The configured key.
    * @param algorithm The configured algorithm
-   * @param ldapAuthentication LDAP authentication on/off switch.
+   * @param pamAuthentication PAM authentication on/off switch.
    * @throws HpcException If it failed to instantiate the iRODS file system.
    */
   private HpcIRODSConnection(
-      String irodsHost, Integer irodsPort, String irodsZone, String irodsResource, String basePath, String key, String algorithm, Boolean ldapAuthentication)
+      String irodsHost, Integer irodsPort, String irodsZone, String irodsResource, String basePath, String key, String algorithm, Boolean pamAuthentication)
       throws HpcException {
     if (irodsHost == null
         || irodsHost.isEmpty()
@@ -109,7 +109,7 @@ public class HpcIRODSConnection {
         || key.isEmpty()
         || algorithm == null
         || algorithm.isEmpty()
-        || ldapAuthentication == null) {
+        || pamAuthentication == null) {
       throw new HpcException(
           "Null or empty iRODS connection attributes", HpcErrorType.SPRING_CONFIGURATION_ERROR);
     }
@@ -120,7 +120,7 @@ public class HpcIRODSConnection {
     this.basePath = basePath;
     this.key = key;
     this.algorithm = algorithm;
-    this.ldapAuthentication = ldapAuthentication;
+    this.pamAuthentication = pamAuthentication;
 
     try {
       irodsFileSystem = IRODSFileSystem.instance();
@@ -277,18 +277,16 @@ public class HpcIRODSConnection {
    *
    * @param dataManagementAccount A data management account to authenticate.
    * @param authenticationType The authentication type.
-   * @param ldapAuthentication Indicator whether LDAP authentication is on/off.
    * @return An authenticated IRODSAccount object, or null if authentication failed.
    * @throws HpcException on iRODS failure.
    */
   public IRODSAccount authenticate(
       HpcIntegratedSystemAccount dataManagementAccount,
-      HpcAuthenticationType authenticationType,
-      boolean ldapAuthentication)
+      HpcAuthenticationType authenticationType)
       throws HpcException {
 
-    // Determine the authentication scheme to use. PAM if LDAP is turned on.
-    AuthScheme authenticationScheme = this.ldapAuthentication ? AuthScheme.PAM : AuthScheme.STANDARD;
+    // Determine the authentication scheme to use. PAM if flag is turned on.
+    AuthScheme authenticationScheme = this.pamAuthentication ? AuthScheme.PAM : AuthScheme.STANDARD;
 
     IRODSAccount irodsAccount = null;
     try {
@@ -381,12 +379,12 @@ public class HpcIRODSConnection {
   }
 
   /**
-   * Get the ldap authentication flag.
+   * Get the PAM authentication flag.
    *
-   * @return The ldap authentication flag.
+   * @return The PAM authentication flag.
    */
-  public Boolean getLdapAuthentication() {
-    return ldapAuthentication;
+  public Boolean getPamAuthentication() {
+    return pamAuthentication;
   } 
 
   //---------------------------------------------------------------------//
@@ -409,7 +407,7 @@ public class HpcIRODSConnection {
               irodsHost,
               irodsPort,
               dataManagementAccount.getUsername(),
-              this.ldapAuthentication ? dataManagementAccount.getPassword() : getUserKey(dataManagementAccount.getUsername()),
+              this.pamAuthentication ? dataManagementAccount.getPassword() : getUserKey(dataManagementAccount.getUsername()),
               "",
               irodsZone,
               irodsResource);
@@ -450,7 +448,7 @@ public class HpcIRODSConnection {
         properties.get(HOST_PROPERTY),
         Integer.valueOf(properties.get(PORT_PROPERTY)),
         dataManagementAccount.getUsername(),
-        ldapAuthentication ? dataManagementAccount.getPassword() : getUserKey(dataManagementAccount.getUsername()),
+        pamAuthentication ? dataManagementAccount.getPassword() : getUserKey(dataManagementAccount.getUsername()),
         properties.get(HOME_DIRECTORY_PROPERTY),
         properties.get(ZONE_PROPERTY),
         properties.get(DEFAULT_STORAGE_RESOURCE_PROPERTY),

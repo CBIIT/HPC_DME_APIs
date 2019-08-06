@@ -228,7 +228,7 @@ public abstract class HpcRestServiceTest extends Assert
     	MockitoAnnotations.initMocks(this);
     	
     	// Mock the IRODS authentication method.
-    	when(dataManagementProxyMock.authenticate(anyObject(), anyObject(), anyObject())).thenReturn(new String("Authenticated"));
+    	when(dataManagementProxyMock.authenticate(anyObject(), anyObject())).thenReturn(new String("Authenticated"));
     }
 }
 

@@ -30,7 +30,7 @@
 	      <prop key="hpc.integration.irods.basePath">/tempZone/home</prop>
 	      <prop key="hpc.integration.irods.key">Configure Me</prop>
 	      <prop key="hpc.integration.irods.algorithm">Configure Me</prop>
-	      <prop key="hpc.integration.irods.ldapAuthentication">false</prop>
+	      <prop key="hpc.integration.irods.pamAuthentication">false</prop>
 	      
 	      <prop key="hpc.integration.globus.globusAuthScope">urn:globus:auth:scope:transfer.api.globus.org:all</prop>
 	      <prop key="hpc.integration.globus.queueSize">90</prop>

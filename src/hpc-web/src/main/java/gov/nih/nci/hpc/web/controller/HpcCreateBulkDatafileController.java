@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -170,8 +172,9 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				populateCollectionTypes(session, model, basePath, parent);
 
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed to initialize add data file: " + e.getMessage());
-			e.printStackTrace();
+			String errormsg = "Failed to initialize add data file: " + e.getMessage();
+			log.error(errormsg, e);
+			model.addAttribute("error", errormsg);
 		}
 		model.addAttribute("hpcDatafile", new HpcDatafileModel());
 		model.addAttribute("serverURL", serverURL);
@@ -364,11 +367,10 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 
 			// clearSessionAttrs(session);
 		} catch (Exception e) {
-			e.printStackTrace();
+		  log.error("failed to create data file: " + e.getMessage(), e);
 		  String msg = e.getMessage().replace("\n", "<br/>");
-		  model.addAttribute("error", "Failed to create data file: <br/><br/>" +
-        msg);
-      model.addAttribute("invalidCharacters4PathName", forbiddenChars);
+		  model.addAttribute("error", "Failed to create data file: <br/><br/>" + msg);
+          model.addAttribute("invalidCharacters4PathName", forbiddenChars);
 			return "adddatafilebulk";
 		} finally {
 			if (parent == null || parent.isEmpty()) {
@@ -416,11 +418,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				if (attrName.length > 0 && !attrName[0].isEmpty())
 					entry.setAttribute(attrName[0]);
 				else
-					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
+					throw new HpcWebException("Invalid (empty) metadata attribute name for param " + paramName);
 				if (attrValue.length > 0 && !attrValue[0].isEmpty())
 					entry.setValue(attrValue[0]);
 				else
-					throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+					throw new HpcWebException("Invalid (empty) metadata attribute value for param " + paramName);
 				metadataEntries.add(entry);
 				HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 				attrEntry.setAttrName(attrName[0]);
