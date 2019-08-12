@@ -108,6 +108,8 @@
 			<xsd:enumeration value="NUM_GREATER_OR_EQUAL" />
 			<xsd:enumeration value="TIMESTAMP_LESS_THAN" />
 			<xsd:enumeration value="TIMESTAMP_GREATER_THAN" />
+			<xsd:enumeration value="TIMESTAMP_LESS_OR_EQUAL" />
+			<xsd:enumeration value="TIMESTAMP_GREATER_OR_EQUAL" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	

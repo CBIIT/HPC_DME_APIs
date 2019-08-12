@@ -16,7 +16,7 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.BasicAuthentication;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson.JacksonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -63,7 +63,7 @@ public class HpcGlobusConnection {
     // Instantiate a client credentials token request.
     ClientCredentialsTokenRequest tokenRequest =
         new ClientCredentialsTokenRequest(
-            new NetHttpTransport(), new JacksonFactory(), new GenericUrl(globusAuthUrl));
+            new NetHttpTransport(), JacksonFactory.getDefaultInstance(), new GenericUrl(globusAuthUrl));
     tokenRequest.setClientAuthentication(authentication);
     tokenRequest.setScopes(Arrays.asList(globusAuthScope));
 

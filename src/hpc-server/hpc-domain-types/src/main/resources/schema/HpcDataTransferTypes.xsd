@@ -66,6 +66,7 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="GLOBUS" />
 			<xsd:enumeration value="S_3" />
+			<xsd:enumeration value="GOOGLE_DRIVE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -239,6 +240,7 @@
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="archiveLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="archiveLocationURL" type="xsd:string" />
 			<xsd:element name="globusDestination"
 				type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
 			<xsd:element name="s3Destination"

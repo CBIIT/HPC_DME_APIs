@@ -55,6 +55,7 @@
 							<directory>${basedir}/src/main/resources</directory>
 							<includes>
             					<include>hpc-server.properties</include>
+            					<include>features.xml</include>
           					</includes>
 						</fileset>
 					</filesets>
