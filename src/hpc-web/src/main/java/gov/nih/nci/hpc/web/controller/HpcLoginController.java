@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -36,6 +37,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
 
 
@@ -67,6 +69,9 @@ public class HpcLoginController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.login.module:}")
 	protected String hpcLoginModule;
 	
+	@Autowired
+	private HpcModelBuilder hpcModelBuilder;
+	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 	
@@ -97,13 +102,13 @@ public class HpcLoginController extends AbstractHpcController {
 					throw new HpcWebException("Invlaid User");
 				session.setAttribute("hpcUser", user);
 				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());			
-				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath,
-						sslCertPassword);
+				//Get DOC Models, go to server only if not available in cache
+				HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 				
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
 				
-				//This will be populated on an as needed basis
+				//Not required here, this is being populated on an as needed basis elsewhere
 				//HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId,
 				//	collectionAclURL, sslCertPath, sslCertPassword);
 						
@@ -144,16 +149,16 @@ public class HpcLoginController extends AbstractHpcController {
 			try {
 				HpcUserDTO user = HpcClientUtil.getUser(authToken, serviceUserURL, sslCertPath, sslCertPassword);
 				if (user == null)
-					throw new HpcWebException("Invlaid User");
+					throw new HpcWebException("Invalid User");
 				session.setAttribute("hpcUser", user);
 				session.setAttribute("hpcUserId", hpcLogin.getUserId());
 				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());			
-				HpcDataManagementModelDTO modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath,
-						sslCertPassword);
+				//Get DOC Models, go to server only if not available in cache
+				HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 				
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
-				//This will be populated on an as needed basis
+				//Not required here, this is being populated on an as needed basis elsewhere
 				//HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, hpcLogin.getUserId(),							
 				
 			} catch (HpcWebException e) {

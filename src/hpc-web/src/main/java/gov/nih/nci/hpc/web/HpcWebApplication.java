@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.web;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 
 /**
  * <p>
@@ -23,6 +24,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @SpringBootApplication
+@EnableCaching
 public class HpcWebApplication {
 
 	public static void main(String[] args) {
