@@ -38,6 +38,8 @@ public interface HpcGroupDAO
      * @throws HpcException on service failure.
      */
     public List<String> getGroups(String groupPattern) throws HpcException;
+
+	public List<String> getUserGroups(String userId) throws HpcException;
 }
 
  
