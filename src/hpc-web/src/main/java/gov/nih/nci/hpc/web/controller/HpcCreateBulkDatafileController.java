@@ -327,6 +327,19 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			if(registrationDTO.getDataObjectRegistrationItems().size() == 0 && registrationDTO.getDirectoryScanRegistrationItems().size() == 0)
 				throw new HpcWebException("No input file(s) / folder(s) are selected");
 			Set<String> basePaths = (Set<String>) session.getAttribute("basePaths");
+			
+			if (basePaths == null || basePaths.isEmpty()) {
+				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+				if (modelDTO == null) {
+					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
+					session.setAttribute("userDOCModel", modelDTO);
+				}
+				String userId = (String) session.getAttribute("hpcUserId");
+				HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, serviceURL, sslCertPath,
+						sslCertPassword);
+				basePaths = (Set<String>) session.getAttribute("basePaths");
+			}
+			
 			if (!registrationDTO.getDryRun() && !basePaths.contains(hpcDataModel.getPath().trim())) {
 				HpcCollectionRegistrationDTO collectionRegistrationDTO = constructRequest(request, session,
 						hpcDataModel.getPath().trim(), null);
