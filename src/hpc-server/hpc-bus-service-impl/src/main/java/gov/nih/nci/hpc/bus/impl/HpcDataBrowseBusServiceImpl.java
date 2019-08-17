@@ -202,22 +202,19 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
   public HpcBookmarkListDTO getBookmarks() throws HpcException {
     HpcBookmarkListDTO bookmarkList = new HpcBookmarkListDTO();
     String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    
+    //Get bookmarks for this user
     bookmarkList
         .getBookmarks()
         .addAll(
             dataBrowseService.getBookmarks(userId));
     
-    //Get all the groups this user belongs to
-    List<String> groups = dataManagementSecurityService.getGroups("%");
+    //Get bookmarks for all the groups this user belongs to
+    List<String> groups = dataManagementSecurityService.getUserGroups(userId);
     for(String group: groups) {
-    	List<String> userIds = dataManagementSecurityService.getGroupMembers(group);
-    	if(userIds != null && !userIds.isEmpty()) {
-    		if(userIds.contains(userId)) {
-    			//Get all the bookmarks on this group
-    			List<HpcBookmark> groupBookmarks = dataBrowseService.getBookmarks(group);
-    			bookmarkList.getBookmarks().addAll(groupBookmarks);
-    		}
-    	}
+    	//Get all the bookmarks on this group
+    	List<HpcBookmark> groupBookmarks = dataBrowseService.getBookmarks(group);
+    	bookmarkList.getBookmarks().addAll(groupBookmarks);		
     }
 
     return bookmarkList;

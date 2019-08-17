@@ -64,8 +64,6 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcCollectionController extends AbstractHpcController {
     private static final String
       ERROR_MSG__$DELETE_FAILED = "Failed to delete collection.",
-      ERROR_MSG_TEMPLATE__$DELETE_FAILED_WITH_REASON =
-        ERROR_MSG__$DELETE_FAILED.concat("  Reason: %s"),
       FEEDBACK_MSG__$DELETE_SUCCEEDED = "Collection has been deleted!",
       KEY_PREFIX = "fdc-",
       NAV_OUTCOME_FORWARD_PREFIX = "forward:",
@@ -168,15 +166,17 @@ public class HpcCollectionController extends AbstractHpcController {
 	}
 
     /**
-     * Finds out whether specified Collection be deleted by current
-     * (authenticated) User.
+     * Finds out whether delete icon should be displayed in the detailed
+     * view for the (authenticated) User.
      *
-     * Delete on a Collection is allowed if following 2 conditions are
+     * Delete icon will be displayed if the following 2 conditions are
      * satisfied:
      *   1. Current user is in the role of either Group Admin or System
-     *      Admin and has Own permission on the Collection.
-     *   2. Collection is empty, having zero sub-collections and zero
-     *      data objects.
+     *      Admin 
+     *   2. The user has Own permission on the Collection.
+     *   Note: Additional criteria may be applied at the server, in 
+     *   which case, failure to meet these will cause an error msg to
+     *   be returned.
      *
      * @param theUserPermDto  HpcUserPermissionDTO instance representing
      *                        current user
@@ -187,10 +187,7 @@ public class HpcCollectionController extends AbstractHpcController {
      */
 	private boolean determineIfCollectionCanBeDelete(
       HttpSession session, HpcCollectionDTO collection) {
-        final String authToken = (String) session.getAttribute("hpcUserToken");
         final boolean retVal =
-          determineWhetherCollectionHasChildren(authToken,
-            collection.getCollection().getAbsolutePath()) &&
           HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session) &&
           HpcCollectionUtil.isUserCollectionOwner(session, collection);
 
@@ -349,8 +346,7 @@ public class HpcCollectionController extends AbstractHpcController {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			model.addAttribute("error", String.format(
-					ERROR_MSG_TEMPLATE__$DELETE_FAILED_WITH_REASON, e.getMessage()));
+			model.addAttribute("error", e.getMessage());
 			copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
 			final Map<String, String> qParams = new HashMap<>();
 			qParams.put("path", collPath);
