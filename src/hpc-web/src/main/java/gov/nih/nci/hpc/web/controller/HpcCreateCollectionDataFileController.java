@@ -59,6 +59,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
+	@Value("${gov.nih.nci.hpc.server.collection.acl.user}")
+	private String collectionAclURL;
 
 	protected String login(Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		// User Session validation
@@ -102,7 +104,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 				session.setAttribute("userDOCModel", modelDTO);
 			}
-			HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, serviceURL, sslCertPath,
+			HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId, collectionAclURL, sslCertPath,
 					sslCertPassword);
 			basePaths = (Set<String>) session.getAttribute("basePaths");
 		}

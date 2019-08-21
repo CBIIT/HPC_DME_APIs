@@ -159,7 +159,8 @@ public class HpcLoginController extends AbstractHpcController {
 				if (modelDTO != null)
 					session.setAttribute("userDOCModel", modelDTO);
 				//Not required here, this is being populated on an as needed basis elsewhere
-				//HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, hpcLogin.getUserId(),							
+				//HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, hpcLogin.getUserId(),
+					//collectionAclURL, sslCertPath, sslCertPassword);
 				
 			} catch (HpcWebException e) {
 				model.addAttribute("loginStatus", false);
