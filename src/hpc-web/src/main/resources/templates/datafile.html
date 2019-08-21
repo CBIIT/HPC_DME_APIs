@@ -240,6 +240,16 @@
 							</div>
 								<!--panel-body start-->
 								<div class="panel-body" th:if="${hpcDatafile != null}">
+								    <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
+									  aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-dialog">
+										<div class="modal-content"></div>
+										<!-- /.modal-content -->
+									  </div>
+									  <!-- /.modal-dialog -->
+								    </div>	
+																
+								
 									<div class="modal fade" id="createBookmarksTarget" tabindex="-1" role="dialog"
 										aria-labelledby="browsePartialLabel" aria-hidden="true">
 										<div class="modal-dialog">
@@ -267,24 +277,19 @@
 										</div>
 									</div>
 								</div>
+								
+								
 								<div class="panel-heading">
 									<h2>
-										<i class="fa fa-list-alt red"></i><strong>Metadata</strong>
+										<i class="fa fa-list-alt red"></i><strong>User Metadata</strong>
 									</h2>
 								</div>
 								<div class="panel-body" th:if="${hpcDatafile != null}">
-								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
-									aria-labelledby="myModalLabel" aria-hidden="true">
-									<div class="modal-dialog">
-										<div class="modal-content"></div>
-										<!-- /.modal-content -->
-									</div>
-									<!-- /.modal-dialog -->
-								</div>								
+								
 								<form class="form-horizontal" id="datafileForm" th:action="@{/datafile}"
 									th:object="${hpcDatafile}" method="POST">
 								
-								<div class="form-group">
+								  <div class="form-group">
 									<table class="table table-bordered col-md-12" id="metaAttrTable">
 										<thead>
 											<tr>
@@ -294,28 +299,28 @@
 										</thead>
 										<tbody th:if="${hpcDatafile.getSelfMetadataEntries() != null}">
 											<div th:if="${action == 'edit'}">
-												<input type="hidden" name="action" id="action" value="edit"/>
-												<input type="hidden" name="path" id="path" th:value="${hpcDatafile.getPath()}"/>
-											<tr
-												th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
-												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												<td th:unless="${metadataItem.isSystemAttr() == true}"><input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+										      <input type="hidden" name="action" id="action" value="edit"/>
+											  <input type="hidden" name="path" id="path" th:value="${hpcDatafile.getPath()}"/>
+											  <tr th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
+												<div th:unless="${metadataItem.isSystemAttr() == true}">
+												  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												  <td><input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 													th:value="${metadataItem.getAttrValue()}"></input></td>
-												<td th:if="${metadataItem.isSystemAttr() == true}" style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
-													th:text="${metadataItem.getAttrValue()}"></label></td>
-											</tr>
+												</div>
+											  </tr>
 											</div>
 											<div th:if="${action != 'edit'}">
-											<tr
-												th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
-												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												<td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
+											  <tr th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
+												<div th:unless="${metadataItem.isSystemAttr() == true}">
+												  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												  <td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
 													th:text="${metadataItem.getAttrValue()}"></label></td>
-											</tr>
+											    </div>
+											  </tr>
 											</div>
 											<tr th:if="${action == 'edit'}">
-											<td>&nbsp;</td>
-											<td align="right">
+											  <td>&nbsp;</td>
+											  <td align="right">
 												<div class="modal-footer">
 													<button class="btn btn-md btn-primary"
 														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
@@ -324,17 +329,48 @@
 													<button type="button" class="btn btn-primary"
 														id="cancel" onClick="cancelEdit()">Cancel</button>
 												</div>
-												</td>
+											  </td>
 											</tr>
 										</tbody>
 									</table>
-								</div>
+								  </div>
 								</form>
 								<form class="form-horizontal" id="datafileDeleteForm" th:action="@{/datafile}"
 									th:object="${hpcDatafile}">
 									<input type="hidden" name="deletepath" id="deletepath" th:value="${hpcDatafile.getDataObject().getAbsolutePath()}"/>
 								</form>
 								</div>
+								
+								
+								<div class="panel-heading">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>System Metadata</strong>
+									</h2>
+								</div>
+								<div class="panel-body" th:if="${hpcDatafile != null}">
+								 
+								  <div class="form-group">
+									<table class="table table-bordered col-md-12" id="sysMetaAttrTable">
+										<thead>
+											<tr>
+												<th>Attribute Name</th>
+												<th>Value</th>
+											</tr>
+										</thead>
+										<tbody th:if="${hpcDatafile.getSelfMetadataEntries() != null}">
+											<tr th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
+												<div th:if="${metadataItem.isSystemAttr() == true}">
+												  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												  <td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
+													th:text="${metadataItem.getAttrValue()}"></label></td>
+												</div>
+											</tr>
+										</tbody>
+									</table>
+								  </div>
+								</div>
+								
+								
 								<div class="panel-heading" th:if="${hpcDatafile != null}">
 									<h2>
 										<i class="fa fa-list-alt red"></i> <a class="btn link"

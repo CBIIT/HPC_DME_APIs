@@ -963,7 +963,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       }
 
     } catch (HpcException e) {
-      logger.error("Failed to add a data transfer upload event", e);
+      logger.error("Failed to add a data transfer upload event for path " + path + ", user: " + userId, e);
     }
   }
 
@@ -1069,7 +1069,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       }
 
     } catch (HpcException e) {
-      logger.error("Failed to add a data transfer download event", e);
+      logger.error("Failed to add a data transfer download event for path " + path + ", user: " + userId, e);
     }
   }
 
@@ -1180,7 +1180,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
     } catch (HpcException e) {
       // Data object download failed.
-      logger.error("Failed to download data object in a collection", e);
+      logger.error("Failed to download data object in a collection at path " + path + ", user: " + userId, e);
 
       downloadItem.setResult(false);
       downloadItem.setDestinationLocation(

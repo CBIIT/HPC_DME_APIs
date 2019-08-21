@@ -92,7 +92,7 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			bindingResult.addError(error);
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
-			return "index";
+			return "redirect:/login";
 		}
 		return "savesearch";
 	}

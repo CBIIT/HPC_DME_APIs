@@ -84,7 +84,7 @@
 											<select size="1"
 												id="doc" name="doc" class="form-control"
 												th:required="required"  onChange="refreshBasePath(this.value)">
-													<option value="-1">----Select----</option>
+													<option th:if="${#lists.size(docs) &gt; 1}" value="-1">----Select----</option>
 													<option
 														th:each="attrName : ${docs}"
 														th:value="${attrName}" th:text="${attrName}" th:selected="${attrName == userDTO.getDoc()}">
@@ -108,7 +108,7 @@
 											<select size="1"
 												id="userRole" name="userRole" class="form-control"
 												th:required="required">
-													<option value="-1">----Select----</option>
+													<option th:if="${#lists.size(roles) &gt; 1}" value="-1">----Select----</option>
 													<option
 														th:each="attrName : ${roles}"
 														th:value="${attrName}" th:text="${attrName}" th:selected="${attrName == userDTO.getUserRole()}">
