@@ -41,6 +41,13 @@ public class HpcGroupDAOImpl implements HpcGroupDAO
     // SQL Queries.
 	private static final String GET_GROUPS_SQL = "select user_name from public.r_user_main where " +
                                                  "user_type_name = 'rodsgroup' and user_name <> 'rodsadmin'";
+	
+	//Get all groups to which the given user belongs
+	private static final String GET_USER_GROUPS_SQL ="select m.user_name from r_user_main m, r_user_group g, r_user_main u "
+	                                                 + "where m.user_type_name = 'rodsgroup' and "
+	                                                 + "m.user_id = g.group_user_id and "
+			                                         + "u.user_name = ?";
+	
     
 	private static final String GET_GROUPS_GROUP_NAME_PATTERN_FILTER = " and lower(user_name) like lower(?) ";
 	
@@ -100,6 +107,28 @@ public class HpcGroupDAOImpl implements HpcGroupDAO
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
     }
+	
+	
+	@Override
+	public List<String> getUserGroups(String userId) throws HpcException
+    {
+		// Build the query based on provided search criteria.
+		StringBuilder sqlQueryBuilder = new StringBuilder();
+    	List<Object> args = new ArrayList<>();
+    	
+    	sqlQueryBuilder.append(GET_USER_GROUPS_SQL);
+    	args.add(userId);
+    	
+    	
+		try {
+		     return jdbcTemplate.queryForList(sqlQueryBuilder.toString(), String.class, args.toArray());
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get groups for user: " + userId + ": " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}		
+    }
+	
 }
 
  

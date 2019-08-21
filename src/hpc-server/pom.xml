@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc</artifactId>
-		<version>1.15.0</version>
+		<version>1.16.0</version>
 	</parent>
 	<artifactId>hpc-server</artifactId>
 	<packaging>pom</packaging>
@@ -32,12 +32,12 @@
 		<spring.retry.version>1.2.1.RELEASE</spring.retry.version>
         <spring.security.version>3.2.10.RELEASE</spring.security.version>
 		<amazon-aws.version>1.11.125</amazon-aws.version>
-		<jackson.version>2.8.5</jackson.version>
+		<jackson.version>2.9.9</jackson.version>
 		<jargon.version>4.1.10.0-RELEASE</jargon.version>
-		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version>
+		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version> 
 		<google-json-simple.version>1.1.1</google-json-simple.version>
 		<google-guava.version>20.0</google-guava.version>
-		<google-oauth-client.version>1.22.0</google-oauth-client.version>
+		<google-drive-sdk.version>1.25.0</google-drive-sdk.version>
 		<jjwt.version>0.6.0</jjwt.version>
 		<commons-io.version>2.5</commons-io.version>
 		<aspectj.version>1.7.4</aspectj.version>
@@ -307,14 +307,14 @@
 		    	<version>${google-guava.version}</version>
 			</dependency>
 			<dependency>
-  				<groupId>com.google.oauth-client</groupId>
-  				<artifactId>google-oauth-client</artifactId>
-  				<version>${google-oauth-client.version}</version>
+    			<groupId>com.google.apis</groupId>
+    			<artifactId>google-api-services-drive</artifactId>
+    			<version>v3-rev173-${google-drive-sdk.version}</version>
 			</dependency>
 			<dependency>
-    			<groupId>com.google.http-client</groupId>
-    			<artifactId>google-http-client-jackson</artifactId>
-    			<version>${google-oauth-client.version}</version>
+    			<groupId>com.google.api-client</groupId>
+    			<artifactId>google-api-client</artifactId>
+    			<version>${google-drive-sdk.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.jsonwebtoken</groupId>

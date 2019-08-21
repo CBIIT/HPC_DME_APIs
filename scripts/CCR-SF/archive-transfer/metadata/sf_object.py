@@ -12,9 +12,10 @@ import json
 class SFObject(object):
 
 
-    def __init__(self, filepath, tarfile, addParent, parentType = None):
+    def __init__(self, filepath, tarfile, ext, addParent, parentType = None):
         self.filepath = filepath
         self.tarfile = tarfile
+        self.ext = ext
         self.addParent = addParent
         self.metadata = OrderedDict()
         self.metadata["generateUploadRequestURL"] = True
@@ -74,7 +75,7 @@ class SFObject(object):
         if self.parentType is not None:
             type = self.parentType
 
-        sf_parent = SFParent(parent_path, type, self.tarfile)
+        sf_parent = SFParent(parent_path, type, self.tarfile, self.ext)
         #sf_parent.build_metadata_items()
         self.metadata["createParentCollections"] = True
         #self.metadata["parentCollectionMetadataEntries"] = sf_parent.get_metadata_items()

@@ -408,12 +408,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
   }
 
-  @Override
-  public String getFileContainerName(Object authenticatedToken, String fileContainerId)
-      throws HpcException {
-    return fileContainerId;
-  }
-
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//

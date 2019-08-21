@@ -219,6 +219,18 @@ public class HpcDataManagementSecurityServiceImpl implements HpcDataManagementSe
     // Once the Jargon API is enhanced to support case insensitive search, it needs to be used and the DAO retired.
     return groupDAO.getGroups(groupPattern);
   }
+  
+  
+  @Override
+  public List<String> getUserGroups(String userId) throws HpcException {
+    // Input validation.
+    if (StringUtils.isEmpty(userId)) {
+      throw new HpcException(
+          "Null or empty userId", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    return groupDAO.getUserGroups(userId);
+  }
 
   //---------------------------------------------------------------------//
   // Helper Methods

@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>1.15.0</version>
+		<version>1.16.0</version>
 	</parent>
 	<artifactId>hpc-integration-impl</artifactId>
 	<packaging>bundle</packaging>
@@ -42,7 +42,9 @@
 							gov.nih.nci.hpc.integration.globus.impl,
 							gov.nih.nci.hpc.integration.s3.impl,
 							gov.nih.nci.hpc.integration.ldap.impl,
-							gov.nih.nci.hpc.integration.irods.impl
+							gov.nih.nci.hpc.integration.irods.impl,
+							gov.nih.nci.hpc.integration.sps.impl,
+							gov.nih.nci.hpc.integration.googledrive.impl
 						</Private-Package>
 						<Import-Package>
 							org.springframework.scheduling.config,
@@ -108,16 +110,17 @@
 			<artifactId>aws-java-sdk-s3</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.oauth-client</groupId>
-			<artifactId>google-oauth-client</artifactId>
+		    <groupId>org.apache.cxf</groupId>
+		    <artifactId>cxf-rt-rs-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.http-client</groupId>
-			<artifactId>google-http-client-jackson</artifactId>
+    		<groupId>com.google.apis</groupId>
+    		<artifactId>google-api-services-drive</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
+    		<groupId>com.google.api-client</groupId>
+    		<artifactId>google-api-client</artifactId>
 		</dependency>
+		
 	</dependencies>
 </project>
