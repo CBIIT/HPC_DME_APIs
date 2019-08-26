@@ -46,6 +46,7 @@ public class HpcGroupDAOImpl implements HpcGroupDAO
 	private static final String GET_USER_GROUPS_SQL ="select m.user_name from r_user_main m, r_user_group g, r_user_main u "
 	                                                 + "where m.user_type_name = 'rodsgroup' and "
 	                                                 + "m.user_id = g.group_user_id and "
+	                                                 + "g.user_id = u.user_id and "
 			                                         + "u.user_name = ?";
 	
     
