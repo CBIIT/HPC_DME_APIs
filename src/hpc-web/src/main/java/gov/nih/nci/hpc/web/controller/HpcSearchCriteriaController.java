@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -408,6 +409,15 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 					criteria.setAttribute(attrName);
 				criteria.setValue(attrValue);
 				criteria.setOperator(HpcMetadataQueryOperator.fromValue(operator));
+				//If its a timestamp operator, specify the format
+				if (operator.startsWith("TIMESTAMP_GREATER")) {
+					criteria.setValue(attrValue.concat(" 00:00:00").replace("/", "-"));
+					criteria.setFormat("MM-DD-YYYY HH24:MI:SS");
+				}
+				if (operator.startsWith("TIMESTAMP_LESS")) {
+					criteria.setValue(attrValue.concat(" 23:59:59").replace("/", "-"));
+					criteria.setFormat("MM-DD-YYYY HH24:MI:SS");
+				}
 				if (level != null) {
 					HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
 					if (level.equals("ANY")) {
@@ -462,7 +472,10 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		entries.put("NUM_GREATER_THAN", ">");
 		entries.put("NUM_GREATER_OR_EQUAL", ">=");
 		entries.put("LIKE", "LIKE");
-		model.addAttribute("operators", entries);
+		entries.put("TIMESTAMP_LESS_OR_EQUAL", "Date less than or equal to");
+		entries.put("TIMESTAMP_GREATER_OR_EQUAL", "Date greater than or equal to");
+		Map<String, String> sortedEntries = new TreeMap<String, String>(entries);
+		model.addAttribute("operators", sortedEntries);
 	}
 
 	private void populateLevelOperators(Model model) {
@@ -473,7 +486,11 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		entries.put("NUM_LESS_OR_EQUAL", "<=");
 		entries.put("NUM_GREATER_THAN", ">");
 		entries.put("NUM_GREATER_OR_EQUAL", ">=");
-		model.addAttribute("leveloperators", entries);
+		entries.put("LIKE", "LIKE");
+		entries.put("TIMESTAMP_LESS_OR_EQUAL", "Date less than or equal to");
+		entries.put("TIMESTAMP_GREATER_OR_EQUAL", "Date greater than or equal to");
+		Map<String, String> sortedEntries = new TreeMap<String, String>(entries);
+		model.addAttribute("leveloperators", sortedEntries);
 	}
 
 	private void populateMetadata(Model model, String authToken, HpcUserDTO user, String type, HttpSession session) {
