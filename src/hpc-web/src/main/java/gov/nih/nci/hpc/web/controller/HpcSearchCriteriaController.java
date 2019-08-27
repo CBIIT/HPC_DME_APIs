@@ -459,6 +459,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		entries.put("NOT_EQUAL", "!=");
 		entries.put("NUM_LESS_THAN", "<");
 		entries.put("NUM_LESS_OR_EQUAL", "<=");
+		entries.put("NUM_GREATER_THAN", ">");
 		entries.put("NUM_GREATER_OR_EQUAL", ">=");
 		entries.put("LIKE", "LIKE");
 		model.addAttribute("operators", entries);
@@ -470,6 +471,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		entries.put("NOT_EQUAL", "!=");
 		entries.put("NUM_LESS_THAN", "<");
 		entries.put("NUM_LESS_OR_EQUAL", "<=");
+		entries.put("NUM_GREATER_THAN", ">");
 		entries.put("NUM_GREATER_OR_EQUAL", ">=");
 		model.addAttribute("leveloperators", entries);
 	}
