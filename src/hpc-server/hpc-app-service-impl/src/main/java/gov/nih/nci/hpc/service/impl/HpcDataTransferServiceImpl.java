@@ -511,7 +511,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		if (taskType.equals(HpcDownloadTaskType.COLLECTION) || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+		if (taskType.equals(HpcDownloadTaskType.COLLECTION) || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)
+				|| taskType.equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 			HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
 			if (task != null) {
 				taskStatus.setCollectionDownloadTask(task);
@@ -700,14 +701,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcCollectionDownloadTask downloadDataObjects(Map<String, String> dataObjectPathsMap,
+	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId) throws HpcException {
-		// Validate the requested destination location. Note: we use the configuration
-		// ID of the
-		// first data object path. At this time, there is no need to validate for all
-		// configuration IDs.
-		String configurationId = dataObjectPathsMap.values().iterator().next();
+			String userId, String configurationId) throws HpcException {
+		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, configurationId, true);
 
 		// Create a new collection download task.
@@ -715,7 +712,34 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
-		downloadTask.getDataObjectPaths().addAll(dataObjectPathsMap.keySet());
+		downloadTask.getCollectionPaths().addAll(collectionPaths);
+		downloadTask.setUserId(userId);
+		downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		downloadTask.setConfigurationId(configurationId);
+
+		// Persist the request.
+		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+
+		return downloadTask;
+	}
+
+	@Override
+	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
+			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
+			String userId, String configurationId) throws HpcException {
+		// Validate the requested destination location. Note: we use the configuration
+		// ID of one data object path. At this time, there is no need to validate for
+		// all
+		// configuration IDs.
+		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, configurationId, true);
+
+		// Create a new collection download task.
+		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+		downloadTask.setCreated(Calendar.getInstance());
+		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+		downloadTask.setS3DownloadDestination(s3DownloadDestination);
+		downloadTask.getDataObjectPaths().addAll(dataObjectPaths);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
