@@ -4983,3 +4983,30 @@ span.customSelect.changed {
 	height : 100%;
 	z-index: 100500;
 }
+
+.tooltip {
+  font-size: 13px;
+}
+
+.tooltip-inner {
+  color: #797979;
+  max-width: 200px;
+  padding: 3px 8px;
+  text-align: left;
+  text-decoration: none;
+  background-color: #ffffff;
+  background-clip: padding-box;
+  border: 1px solid #b3d7ff;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  white-space: normal;
+}
+
+.tooltip.right .tooltip-arrow {
+  top: 50%;
+  left: 0;
+  margin-top: -5px;
+  border-width: 5px 5px 5px 0;
+  border-right-color: #b3d7ff;
+}
