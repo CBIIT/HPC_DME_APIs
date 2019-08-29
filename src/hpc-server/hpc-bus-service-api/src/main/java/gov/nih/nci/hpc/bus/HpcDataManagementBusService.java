@@ -94,10 +94,12 @@ public interface HpcDataManagementBusService {
    *
    * @param path The collection's path.
    * @param list An indicator to list sub-collections and data-objects.
+   * @param includeAcl An indicator to include user permission
    * @return A Collection DTO.
    * @throws HpcException on service failure.
    */
-  public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException;
+  public HpcCollectionDTO getCollection(String path, Boolean list, Boolean includeAcl) throws HpcException;
+  
 
   /**
    * Get Collection children. NO collection metadata will be returned
@@ -301,10 +303,12 @@ public interface HpcDataManagementBusService {
    * Get Data Object.
    *
    * @param path The data object's path.
+   * @param includeAcl An indicator to include user permission
    * @return A Data Object DTO.
    * @throws HpcException on service failure.
    */
-  public HpcDataObjectDTO getDataObject(String path) throws HpcException;
+  public HpcDataObjectDTO getDataObject(String path, Boolean includeAcl) throws HpcException;
+  
 
   /**
    * Download Data Object. In this overloaded method, the request invoker will be notified (if
@@ -419,4 +423,6 @@ public interface HpcDataManagementBusService {
    */
   public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest)
       throws HpcException;
+
+
 }

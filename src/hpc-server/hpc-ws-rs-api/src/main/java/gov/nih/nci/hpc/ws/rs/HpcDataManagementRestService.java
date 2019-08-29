@@ -69,13 +69,15 @@ public interface HpcDataManagementRestService {
    *
    * @param path The collection path.
    * @param list An indicator to list sub-collections and data-objects.
+   * @param includeAcl An indicator to include user permission
    * @return The REST service response w/ HpcCollectionListDTO entity.
    * @see gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO
    */
   @GET
   @Path("/collection/{path:.*}")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-  public Response getCollection(@PathParam("path") String path, @QueryParam("list") Boolean list);
+  public Response getCollection(@PathParam("path") String path, @QueryParam("list") Boolean list, @QueryParam("includeAcl") Boolean includeAcl);
+  
 
   /**
    * Get a collection children. Collection metadata will not be returned
@@ -349,12 +351,14 @@ public interface HpcDataManagementRestService {
    * Get a data object.
    *
    * @param path The data object path.
+   * @param An indicator to include user permission
    * @return The REST service response w/ HpcDataObjectListDTO entity.
    */
   @GET
   @Path("/dataObject/{path:.*}")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-  public Response getDataObject(@PathParam("path") String path);
+  public Response getDataObject(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl);
+  
 
   /**
    * Download a data object.
@@ -551,4 +555,8 @@ public interface HpcDataManagementRestService {
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
+
+
+
+
 }

@@ -327,7 +327,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
       for (String collectionPath : collectionPaths) {
         collectionsDTO
             .getCollections()
-            .add(dataManagementBusService.getCollection(collectionPath, false));
+            .add(dataManagementBusService.getCollection(collectionPath, false, false));
       }
     } else {
       collectionsDTO.getCollectionPaths().addAll(collectionPaths);
@@ -383,7 +383,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
    
     if (detailedResponse) {
       for (String dataObjectPath : dataObjectPaths) {
-        dataObjectsDTO.getDataObjects().add(dataManagementBusService.getDataObject(dataObjectPath));
+        dataObjectsDTO.getDataObjects().add(dataManagementBusService.getDataObject(dataObjectPath, false));
       }
     } else {
       dataObjectsDTO.getDataObjectPaths().addAll(dataObjectPaths);
