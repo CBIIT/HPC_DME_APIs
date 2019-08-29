@@ -122,7 +122,7 @@ public class HpcCollectionController extends AbstractHpcController {
 
 			// Get collection
 			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
-					sslCertPath, sslCertPassword);
+					false, true, sslCertPath, sslCertPassword);
 			if (collections != null && collections.getCollections() != null
 					&& collections.getCollections().size() > 0) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
@@ -132,20 +132,20 @@ public class HpcCollectionController extends AbstractHpcController {
 				}
 				// Get collection permissions to enable Edit, Permission icons
 				// on the UI
-				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
-						serviceURL, sslCertPath, sslCertPassword);
+				//HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
+				//		serviceURL, sslCertPath, sslCertPassword);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
 				HpcCollectionModel hpcCollection = buildHpcCollection(collection,
 						modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
 				model.addAttribute("collection", hpcCollection);
-				model.addAttribute("userpermission", (permission != null && permission.getPermission() != null)
-						? permission.getPermission().toString() : "null");
+				model.addAttribute("userpermission", (collection.getPermission() != null)
+						? collection.getPermission().toString() : "null");
 				model.addAttribute("attributeNames", getMetadataAttributeNames(collection));
                 boolean canDeleteFlag = determineIfCollectionCanBeDelete(session, collection);
 				model.addAttribute("canDelete", Boolean.valueOf(canDeleteFlag).toString());
 				if (action != null && action.equals("edit"))
-					if (permission == null || permission.getPermission().equals(HpcPermission.NONE)
-							|| permission.getPermission().equals(HpcPermission.READ)) {
+					if (collection.getPermission() == null || collection.getPermission().equals(HpcPermission.NONE)
+							|| collection.getPermission().equals(HpcPermission.READ)) {
 						model.addAttribute("error",
 								"No edit permission. Please contact collection owner for write access.");
 						model.addAttribute("action", "view");

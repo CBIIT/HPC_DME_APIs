@@ -297,7 +297,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   @Override
-  public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException {
+  public HpcCollectionDTO getCollection(String path, Boolean list, Boolean includeAcl) throws HpcException {
     // Input validation.
     if (path == null) {
       throw new HpcException("Null collection path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -319,9 +319,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         || !metadataEntries.getSelfMetadataEntries().isEmpty())) {
       collectionDTO.setMetadataEntries(metadataEntries);
     }
+    
+    //Set the permission if requested
+    if(includeAcl) {
+    	collectionDTO.setPermission(dataManagementService.getCollectionPermission(path).getPermission());
+    }
 
     return collectionDTO;
   }
+  
 
   @Override
   public HpcCollectionDTO getCollectionChildren(String path) throws HpcException {
@@ -917,7 +923,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   @Override
-  public HpcDataObjectDTO getDataObject(String path) throws HpcException {
+  public HpcDataObjectDTO getDataObject(String path, Boolean includeAcl) throws HpcException {
     // Input validation.
     if (path == null) {
       throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -937,10 +943,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dataObjectDTO.setMetadataEntries(metadataEntries);
     dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(
         metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
+    
+    if(includeAcl) {
+    	//Set the permission
+        dataObjectDTO.setPermission(dataManagementService.getDataObjectPermission(path).getPermission());
+    }
 
     return dataObjectDTO;
   }
-
+  
+  
   @Override
   public HpcDataObjectDownloadResponseDTO downloadDataObject(String path,
       HpcDownloadRequestDTO downloadRequest) throws HpcException {
