@@ -604,15 +604,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Deprecated
   @Override
   public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
-    return downloadDataObjects(toV2(downloadRequest));
+    return downloadDataObjectsOrCollections(toV2(downloadRequest));
   }
 
   @Override
-  public Response downloadDataObjects(
+  public Response downloadDataObjectsOrCollections(
       gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
     HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
     try {
-      downloadResponse = dataManagementBusService.downloadDataObjects(downloadRequest);
+      downloadResponse = dataManagementBusService.downloadDataObjectsOrCollections(downloadRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -622,10 +622,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getDataObjectsDownloadStatus(String taskId) {
+  public Response getDataObjectsOrCollectionsDownloadStatus(String taskId) {
     HpcCollectionDownloadStatusDTO downloadStatus = null;
     try {
-      downloadStatus = dataManagementBusService.getDataObjectsDownloadStatus(taskId);
+      downloadStatus = dataManagementBusService.getDataObjectsOrCollectionsDownloadStatus(taskId);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -775,7 +775,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO v2DownloadRequest =
         new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO();
-    v2DownloadRequest.setPath(downloadRequest.getPath());
     v2DownloadRequest.getDataObjectPaths().addAll(downloadRequest.getDataObjectPaths());
     if (downloadRequest.getDestination() != null) {
       HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
