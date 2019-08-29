@@ -149,7 +149,7 @@
 														Wireframe</option>
 											</select></td>
 											<td style="white-space: nowrap"><select size="1"
-												id="operator1" name="operator" class="form-control"
+												id="operator1" name="operator" class="form-control operator"
 												th:required="required">
 													<option value="-1">----Select----</option>
 													<option th:each="entry : ${operators.entrySet()}"
@@ -158,7 +158,15 @@
 											</select></td>
 											<td style="white-space: nowrap"><input type="text"
 												id='attrValue1' name="attrValue" placeholder='Value'
-												class="form-control" /></td>
+												class="form-control" />
+												<div
+													class="input-group date" data-provide="datepicker" style="display: none">
+													<input type="text" class="form-control" id="attrValue1X"
+														name="attrValueX" />
+													<div class="input-group-addon">
+														<span class="glyphicon glyphicon-th"></span>
+													</div>
+											</div></td>
 											<td style="white-space: nowrap"><a id="deleteAttr"
 												onClick="deleteRow('attrRow0')"
 												class="pull-right btn btn-default"> <i
@@ -292,6 +300,37 @@
 
       $(function(){
           $('select.styled').customSelect();
+      });
+      
+      //datepicker for timestamp
+      
+      $(document).ready(function() {
+    	  $(document).on('change', 'select.operator', function(){
+    		    var suffix = $(this).attr('id').substring("operator".length);
+    	  		attrValueInput = $(this).parent().next().children('input:nth-child(1)');
+    	  		attrValueDateDiv = $(this).parent().next().children(':nth-child(2)');
+    	  		attrValueDateInput = attrValueDateDiv.children('input:nth-child(1)');
+    		    if(this.value.startsWith('TIMESTAMP')) {
+    		       attrValueInput.hide();
+    		       attrValueInput.attr("name", "attrValueX");
+    		       attrValueInput.attr("id", "attrValue"+suffix+"X");
+    		       attrValueInput.val("");
+    		       attrValueDateDiv.show();
+    		       attrValueDateInput.attr("name", "attrValue");
+    		       attrValueDateInput.attr("id", "attrValue"+suffix);
+    		       attrValueDateInput.datepicker({
+    			    format: 'mm/dd/yyyy'
+    		       });
+    		    } else {
+    		    	attrValueInput.attr("id", "attrValue"+suffix);
+    		    	attrValueInput.attr("name", "attrValue");
+    		    	attrValueInput.show();
+    		    	attrValueDateInput.attr("name", "attrValueX");
+    		    	attrValueDateInput.attr("id", "attrValue"+suffix+"X");
+    		    	attrValueDateInput.val("");
+    		    	attrValueDateDiv.hide();
+    		    }
+    		}).change(); 
       });
 
 	  /* ---------- Map ---------- */
@@ -494,8 +533,8 @@ function addRow() {
     cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
     cell1.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
     cell2.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
-    cell3.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
-    cell4.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/>';
+    cell3.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control operator" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
+    cell4.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/><div class="input-group date" data-provide="datepicker" style="display: none;"><input type="text" class="form-control" id="attrValue'+(rows+1)+'X" name="attrValueX"><div class="input-group-addon"><span class="glyphicon glyphicon-th"></span></div></div>';
    	cell5.innerHTML = '<a id="deleteAttr" onClick="deleteRow(\''+(row.id)+'\')" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>';
 
    	var levelsEle = document.getElementById('level1');
@@ -548,15 +587,15 @@ function validateAndSubmit()
 	inputs = document.getElementsByTagName("select");
 	for(var i = 0; i < inputs.length; i++)
 	{
-		var attrName = inputs[i].getAttribute("name");
+		var attrName = inputs[i].getAttribute("id");
 		if(attrName.startsWith("attrName"))
 		{
 			var suffix = attrName.substring("attrName".length);
-			var attrNameValue = document.getElementsByName(attrName)[0].value;
+			var attrNameValue = document.getElementById(attrName).value;
 			if(attrNameValue != "-1")
 			{
-				var attrOperValue = document.getElementsByName("operator"+suffix)[0].value;	
-				var attrValueValue = document.getElementsByName("attrValue"+suffix)[0].value;
+				var attrOperValue = document.getElementById("operator"+suffix).value;	
+				var attrValueValue = document.getElementById("attrValue"+suffix).value;
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
 					alert("Invalid Valid criteria. Please enter operator and value");
@@ -566,8 +605,8 @@ function validateAndSubmit()
 			}
 			else
 			{
-				var attrOperValue = document.getElementsByName("operator"+suffix)[0].value;	
-				var attrValueValue = document.getElementsByName("attrValue"+suffix)[0].value;
+				var attrOperValue = document.getElementById("operator"+suffix).value;	
+				var attrValueValue = document.getElementById("attrValue"+suffix).value;
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
 					alert("Invalid Valid criteria. Please enter operator and value");

@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,6 +27,7 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
+
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -109,7 +111,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
 			+ "\"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_OVERWRITE\", \"S3_ACCOUNT_ACCESS_KEY\", "
 			+ "\"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", \"ITEMS\", \"STATUS\", \"TYPE\", "
-			+ "\"DATA_OBJECT_PATHS\", \"CREATED\") " + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+			+ "\"DATA_OBJECT_PATHS\", \"COLLECTION_PATHS\", \"CREATED\") "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
 			+ "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + "\"PATH\"=excluded.\"PATH\", "
 			+ "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
 			+ "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
@@ -119,7 +122,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "\"S3_ACCOUNT_SECRET_KEY\"=excluded.\"S3_ACCOUNT_SECRET_KEY\", "
 			+ "\"S3_ACCOUNT_REGION\"=excluded.\"S3_ACCOUNT_REGION\", " + "\"ITEMS\"=excluded.\"ITEMS\", "
 			+ "\"STATUS\"=excluded.\"STATUS\", " + "\"TYPE\"=excluded.\"TYPE\", "
-			+ "\"DATA_OBJECT_PATHS\"=excluded.\"DATA_OBJECT_PATHS\", " + "\"CREATED\"=excluded.\"CREATED\"";
+			+ "\"DATA_OBJECT_PATHS\"=excluded.\"DATA_OBJECT_PATHS\", "
+			+ "\"COLLECTION_PATHS\"=excluded.\"COLLECTION_PATHS\", " + "\"CREATED\"=excluded.\"CREATED\"";
 
 	public static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = "select * from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"ID\" = ?";
 
@@ -307,12 +311,22 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		collectionDownloadTask.setCreated(created);
 
 		// Extract the data objects paths.
-		Array sqlArray = rs.getArray("DATA_OBJECT_PATHS");
-		if (sqlArray != null) {
-			String[] dataObjectPaths = (String[]) sqlArray.getArray();
+		Array dataObjectsSQLArray = rs.getArray("DATA_OBJECT_PATHS");
+		if (dataObjectsSQLArray != null) {
+			String[] dataObjectPaths = (String[]) dataObjectsSQLArray.getArray();
 			int dataObjectPathsSize = dataObjectPaths.length;
 			for (int i = 0; i < dataObjectPathsSize; i++) {
 				collectionDownloadTask.getDataObjectPaths().add(dataObjectPaths[i]);
+			}
+		}
+
+		// Extract the collection paths.
+		Array collectionSQLArray = rs.getArray("COLLECTION_PATHS");
+		if (collectionSQLArray != null) {
+			String[] collectionPaths = (String[]) collectionSQLArray.getArray();
+			int collectionPathsSize = collectionPaths.length;
+			for (int i = 0; i < collectionPathsSize; i++) {
+				collectionDownloadTask.getCollectionPaths().add(collectionPaths[i]);
 			}
 		}
 
@@ -474,11 +488,24 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				collectionDownloadTask.setId(UUID.randomUUID().toString());
 			}
 
-			Array sqlArray = null;
+			Array dataObjectPathsSQLArray = null;
 			if (!collectionDownloadTask.getDataObjectPaths().isEmpty()) {
 				Connection conn = jdbcTemplate.getDataSource().getConnection();
 				try {
-					sqlArray = conn.createArrayOf("text", collectionDownloadTask.getDataObjectPaths().toArray());
+					dataObjectPathsSQLArray = conn.createArrayOf("text",
+							collectionDownloadTask.getDataObjectPaths().toArray());
+
+				} finally {
+					conn.close();
+				}
+			}
+
+			Array collectionPathsSQLArray = null;
+			if (!collectionDownloadTask.getCollectionPaths().isEmpty()) {
+				Connection conn = jdbcTemplate.getDataSource().getConnection();
+				try {
+					collectionPathsSQLArray = conn.createArrayOf("text",
+							collectionDownloadTask.getCollectionPaths().toArray());
 
 				} finally {
 					conn.close();
@@ -506,8 +533,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
 					s3AccountRegion, toJSON(collectionDownloadTask.getItems()),
-					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(), sqlArray,
-					collectionDownloadTask.getCreated());
+					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
+					dataObjectPathsSQLArray, collectionPathsSQLArray, collectionDownloadTask.getCreated());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a collection download request: " + e.getMessage(),

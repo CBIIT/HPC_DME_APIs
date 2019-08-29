@@ -92,6 +92,7 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "PATH" text,
   "CONFIGURATION_ID" text,
   "DATA_OBJECT_PATHS" text[],
+  "COLLECTION_PATHS" text[],
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text,
   "DESTINATION_LOCATION_FILE_ID" text,
   "DESTINATION_OVERWRITE" boolean,
@@ -121,6 +122,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."CONFIGURATION_ID" IS
                   'The configuration ID to use in downloading the collection';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DATA_OBJECT_PATHS" IS 
                   'The list of data object paths to download';
+COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."COLLECTION_PATHS" IS 
+                  'The list of collection paths to download';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_CONTAINER_ID" IS 
                   'The download destination container ID';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_ID" IS 

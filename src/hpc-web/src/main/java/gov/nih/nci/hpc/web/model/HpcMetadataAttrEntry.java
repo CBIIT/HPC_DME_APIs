@@ -9,6 +9,7 @@ public class HpcMetadataAttrEntry {
 	private boolean systemAttr;
 	private List<String> validValues = null;
 	private String defaultValue = null;
+	private String description;
 
 	
 	public List<String> getValidValues() {
@@ -57,6 +58,14 @@ public class HpcMetadataAttrEntry {
 
 	public void setSystemAttr(boolean systemAttr) {
 		this.systemAttr = systemAttr;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 }

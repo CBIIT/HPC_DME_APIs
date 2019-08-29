@@ -13,7 +13,7 @@ package gov.nih.nci.hpc.service;
 import java.io.File;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -300,20 +300,38 @@ public interface HpcDataTransferService {
       HpcGlobusDownloadDestination globusDownloadDestination,
       HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId)
       throws HpcException;
+  
+  /**
+   * Submit a request to download collections.
+   *
+   * @param collectionPaths A list of collection paths.
+   * @param globusDownloadDestination The user requested Glopbus download destination.
+   * @param s3DownloadDestination The user requested S3 download destination.
+   * @param userId The user ID submitting the download request.
+   * @param configurationId A configuration ID used to validate destination location. The list of data objects can be from
+   *        from different configurations (DOCs) but we validate just for one.
+   * @return The submitted request download task.
+   * @throws HpcException on service failure.
+   */
+  public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
+			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
+			String userId, String configurationId) throws HpcException;
 
   /**
    * Submit a request to download data objects.
    *
-   * @param dataObjectPathsMap A map of data-object-path to its configuration ID.
+   * @param dataObjectPaths A list of data object paths.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
    * @param userId The user ID submitting the download request.
+   * @param configurationId A configuration ID used to validate destination location. The list of data objects can be from
+   *        from different configurations (DOCs) but we validate just for one.
    * @return The submitted request download task.
    * @throws HpcException on service failure.
    */
-  public HpcCollectionDownloadTask downloadDataObjects(Map<String, String> dataObjectPathsMap,
+  public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId) throws HpcException;
+			HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId) throws HpcException;
 
   /**
    * Update a collection download task.
