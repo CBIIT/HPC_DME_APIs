@@ -532,7 +532,17 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/dm/model")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataManagementModel();
+	public Response getDataManagementModels();
+	
+	/**
+	 * Get data management model. This includes all rules.
+	 *
+	 * @return The REST service response w/ HpcDataManagementModelDTO entity.
+	 */
+	@GET
+	@Path("/dm/model/{basePath}")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	Response getDataManagementModel(@PathParam("basePath") String basePath);
 
 	/**
 	 * Move a list of data objects and/or collections.
@@ -545,5 +555,7 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
+
+	
 
 }

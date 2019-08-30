@@ -654,10 +654,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getDataManagementModel() {
+  public Response getDataManagementModels() {
     HpcDataManagementModelDTO docModel = null;
     try {
-      docModel = dataManagementBusService.getDataManagementModel();
+      docModel = dataManagementBusService.getDataManagementModels();
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(docModel, true);
+  }
+  
+  @Override
+  public Response getDataManagementModel(String basePath) {
+    HpcDataManagementModelDTO docModel = null;
+    try {
+      docModel = dataManagementBusService.getDataManagementModel(toNormalizedPath(basePath));
 
     } catch (HpcException e) {
       return errorResponse(e);
