@@ -215,7 +215,7 @@
 													th:if="${metadataEntries != null}">
 													<td><label
 														th:text="${hpcMetadataAttrEntry.getAttrName()}"></label>
-														<a href="#" data-toggle="tooltip" data-placement="right" th:if="${!#strings.isEmpty(hpcMetadataAttrEntry.getDescription())}" th:title="${hpcMetadataAttrEntry.getDescription()}">
+														<a href="#" data-toggle="tooltip" data-html="true" data-placement="right" th:if="${!#strings.isEmpty(hpcMetadataAttrEntry.getDescription())}" th:title="${hpcMetadataAttrEntry.getDescription()}">
 														<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 													<td
 														th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input
