@@ -390,13 +390,23 @@ public interface HpcDataManagementBusService {
 	public HpcUserPermissionDTO getDataObjectPermission(String path, String userId) throws HpcException;
 
 	/**
-	 * Get the Data Management Model (Metadata validation rules and hierarchy
-	 * definitions)
+	 * Get the Data Management Models (Metadata validation rules and hierarchy
+	 * definitions for all archives)
 	 *
 	 * @return Data Management Model DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
+	public HpcDataManagementModelDTO getDataManagementModels() throws HpcException;
+	
+
+	/**
+	 * Get a Data Management Model (Metadata validation rules and hierarchy
+	 * definitions) for a specific archive (basePath)
+	 *
+	 * @return Data Management Model DTO.
+	 * @throws HpcException on service failure.
+	 */
+	HpcDataManagementModelDTO getDataManagementModel (String basePath) throws HpcException;
 
 	/**
 	 * Move a path of either a data object or a collection.
@@ -417,5 +427,7 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) throws HpcException;
+
+	
 
 }
