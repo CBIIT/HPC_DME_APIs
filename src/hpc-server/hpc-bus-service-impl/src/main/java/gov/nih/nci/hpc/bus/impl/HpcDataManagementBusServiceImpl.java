@@ -131,6 +131,7 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  */
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService {
 
+
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
@@ -297,7 +298,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException {
+	public HpcCollectionDTO getCollection(String path, Boolean list, Boolean includeAcl) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null collection path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -317,6 +318,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				|| !metadataEntries.getSelfMetadataEntries().isEmpty())) {
 			collectionDTO.setMetadataEntries(metadataEntries);
 		}
+		
+		//Set the permission if requested
+	    if(includeAcl) {
+	    	collectionDTO.setPermission(dataManagementService.getCollectionPermission(path).getPermission());
+	    }
 
 		return collectionDTO;
 	}
@@ -904,7 +910,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataObjectDTO getDataObject(String path) throws HpcException {
+	public HpcDataObjectDTO getDataObject(String path, Boolean includeAcl) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -923,6 +929,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataObjectDTO.setMetadataEntries(metadataEntries);
 		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(
 				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
+		
+		if(includeAcl) {
+	    	//Set the permission
+	        dataObjectDTO.setPermission(dataManagementService.getDataObjectPermission(path).getPermission());
+	    }
 
 		return dataObjectDTO;
 	}
@@ -1216,7 +1227,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDataManagementModelDTO getDataManagementModel() throws HpcException {
+	public HpcDataManagementModelDTO getDataManagementModels() throws HpcException {
 		// Create a map DOC -> HpcDocDataManagementRulesDTO
 		Map<String, HpcDocDataManagementRulesDTO> docsRules = new HashMap<>();
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
@@ -1225,14 +1236,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDocDataManagementRulesDTO docRules = docsRules.containsKey(doc) ? docsRules.get(doc)
 					: new HpcDocDataManagementRulesDTO();
 
-			HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
-			rules.setId(dataManagementConfiguration.getId());
-			rules.setBasePath(dataManagementConfiguration.getBasePath());
-			rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
-			rules.getCollectionMetadataValidationRules()
-					.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
-			rules.getDataObjectMetadataValidationRules()
-					.addAll(dataManagementConfiguration.getDataObjectMetadataValidationRules());
+			HpcDataManagementRulesDTO rules = 
+					getDataManagementRules(dataManagementConfiguration);
 			docRules.setDoc(doc);
 			docRules.getRules().add(rules);
 			docsRules.put(doc, docRules);
@@ -1248,6 +1253,55 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return dataManagementModel;
 	}
+	
+	
+	@Override
+	public HpcDataManagementModelDTO getDataManagementModel(String basePath) throws HpcException {
+		
+		// Construct and return the DTO
+		HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
+		
+		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
+				.getDataManagementConfigurations()) {
+			if(dataManagementConfiguration.getBasePath().equals(basePath)) {
+				HpcDataManagementRulesDTO rules = 
+						getDataManagementRules(dataManagementConfiguration);
+				HpcDocDataManagementRulesDTO docRules = new HpcDocDataManagementRulesDTO();									
+				docRules.setDoc(dataManagementConfiguration.getDoc());
+				docRules.getRules().add(rules);
+				dataManagementModel.getDocRules().add(docRules);
+				break;
+			}	
+		}
+		
+		if(dataManagementModel.getDocRules().isEmpty()) {
+			throw new HpcException("Could not obtain DataManagementConfiguration for basePath " 
+					+ basePath, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
+		dataManagementModel.getCollectionSystemGeneratedMetadataAttributeNames()
+		.addAll(metadataService.getCollectionSystemMetadataAttributeNames());
+		dataManagementModel.getDataObjectSystemGeneratedMetadataAttributeNames()
+		.addAll(metadataService.getDataObjectSystemMetadataAttributeNames());
+		
+		return dataManagementModel;
+	}
+	
+	
+	private HpcDataManagementRulesDTO getDataManagementRules(
+			HpcDataManagementConfiguration dataManagementConfiguration) {
+		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
+		rules.setId(dataManagementConfiguration.getId());
+		rules.setBasePath(dataManagementConfiguration.getBasePath());
+		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
+		rules.getCollectionMetadataValidationRules()
+			.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
+		rules.getDataObjectMetadataValidationRules()
+			.addAll(dataManagementConfiguration.getDataObjectMetadataValidationRules());
+		
+		return rules;
+	}
+	
 
 	@Override
 	public void movePath(String path, boolean pathType, String destinationPath) throws HpcException {
@@ -2315,4 +2369,5 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		resultHpcPermForColl.setPermission(hsPerm.getPermission());
 		return resultHpcPermForColl;
 	}
+
 }

@@ -107,8 +107,8 @@ public class HpcDatafileController extends AbstractHpcController {
 			if (path == null)
 				return "dashboard";
 
-			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, path, false, sslCertPath,
-					sslCertPassword);
+			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, path, false, true, 
+					sslCertPath, sslCertPassword);
 			if (datafiles != null && datafiles.getDataObjects() != null && datafiles.getDataObjects().size() > 0) {
 				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
 				if (modelDTO == null) {
@@ -116,6 +116,7 @@ public class HpcDatafileController extends AbstractHpcController {
 					session.setAttribute("userDOCModel", modelDTO);
 				}
 				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
+				
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames());
 				hpcDatafile.setPath(path);
@@ -124,15 +125,15 @@ public class HpcDatafileController extends AbstractHpcController {
 
 				if (action != null && action.equals("edit"))
 					model.addAttribute("action", "edit");
-				HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
-						serviceURL, sslCertPath, sslCertPassword);
+				//HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
+				//		serviceURL, sslCertPath, sslCertPassword);
 				if (user.getUserRole().equals("SYSTEM_ADMIN") || user.getUserRole().equals("GROUP_ADMIN")) {
-					if (permission.getPermission().equals(HpcPermission.OWN))
+					if (dataFile.getPermission().equals(HpcPermission.OWN))
 						model.addAttribute("userpermission", "DELETE");
 					else
-						model.addAttribute("userpermission", permission.getPermission().toString());
+						model.addAttribute("userpermission", dataFile.getPermission().toString());
 				} else
-					model.addAttribute("userpermission", permission.getPermission().toString());
+					model.addAttribute("userpermission", dataFile.getPermission().toString());
 			} else {
 				String message = "Data file not found!";
 				model.addAttribute("error", message);

@@ -140,11 +140,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getCollection(String path, Boolean list) {
+  public Response getCollection(String path, Boolean list, Boolean includeAcl) {
     HpcCollectionListDTO collections = new HpcCollectionListDTO();
     try {
       HpcCollectionDTO collection =
-          dataManagementBusService.getCollection(toNormalizedPath(path), list);
+          dataManagementBusService.getCollection(toNormalizedPath(path), list, 
+        		  includeAcl != null ? includeAcl : false);
       if (collection != null) {
         collections.getCollections().add(collection);
       }
@@ -155,6 +156,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(!collections.getCollections().isEmpty() ? collections : null, true);
   }
+  
 
   @Override
   public Response getCollectionChildren(String path) {
@@ -448,10 +450,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getDataObject(String path) {
+  public Response getDataObject(String path, Boolean includeAcl) {
     HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
     try {
-      HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path));
+      HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path), 
+    		  includeAcl != null ? includeAcl : false);
       if (dataObject != null) {
         dataObjects.getDataObjects().add(dataObject);
       }
@@ -462,6 +465,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
   }
+  
 
   @Deprecated
   @Override
@@ -650,10 +654,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getDataManagementModel() {
+  public Response getDataManagementModels() {
     HpcDataManagementModelDTO docModel = null;
     try {
-      docModel = dataManagementBusService.getDataManagementModel();
+      docModel = dataManagementBusService.getDataManagementModels();
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(docModel, true);
+  }
+  
+  @Override
+  public Response getDataManagementModel(String basePath) {
+    HpcDataManagementModelDTO docModel = null;
+    try {
+      docModel = dataManagementBusService.getDataManagementModel(toNormalizedPath(basePath));
 
     } catch (HpcException e) {
       return errorResponse(e);
