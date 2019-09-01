@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,14 +24,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Striped;
+
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
@@ -54,11 +58,11 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -414,7 +418,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 
 			// Get configuration ID of the first collection. It will be used to validate
-			// the download destination. 
+			// the download destination.
 			String configurationId = metadataService
 					.getCollectionSystemGeneratedMetadata(downloadRequest.getCollectionPaths().iterator().next())
 					.getConfigurationId();
@@ -521,8 +525,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	@Override
 	public HpcCollectionDownloadStatusDTO getDataObjectsOrCollectionsDownloadStatus(String taskId) throws HpcException {
-		HpcCollectionDownloadStatusDTO downloadStatus =  getCollectionDownloadStatus(taskId, HpcDownloadTaskType.DATA_OBJECT_LIST);
-		return downloadStatus != null ? downloadStatus : getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION_LIST);
+		HpcCollectionDownloadStatusDTO downloadStatus = getCollectionDownloadStatus(taskId,
+				HpcDownloadTaskType.DATA_OBJECT_LIST);
+		return downloadStatus != null ? downloadStatus
+				: getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION_LIST);
 	}
 
 	@Override
@@ -964,7 +970,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
-				metadata.getDataTransferType(), metadata.getConfigurationId(), userId, completionEvent,
+				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
+				metadata.getConfigurationId(), userId, completionEvent,
 				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0);
 
 		// Construct and return a DTO.
@@ -1870,9 +1877,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 
 			// Default pattern type to SIMPLE if not provided by the caller.
-			HpcDirectoryScanPatternType patternType = directoryScanRegistrationItem.getPatternType();
+			HpcPatternType patternType = directoryScanRegistrationItem.getPatternType();
 			if (patternType == null) {
-				patternType = HpcDirectoryScanPatternType.SIMPLE;
+				patternType = HpcPatternType.SIMPLE;
 			}
 
 			final String fileContainerId = scanDirectoryLocation.getFileContainerId();

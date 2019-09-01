@@ -32,6 +32,12 @@
 	<!--  HPC Data Hierarchy Validator -->
 	<bean id="hpcDataHierarchyValidator" class="gov.nih.nci.hpc.service.impl.HpcDataHierarchyValidator" />
 	
+	<!--  HPC Compressed Archive Extractor -->
+	<bean id="hpcCompressedArchiveExtractor" class="gov.nih.nci.hpc.service.impl.HpcCompressedArchiveExtractor" />
+	
+		<!--  HPC Pattern -->
+	<bean id="hpcPattern" class="gov.nih.nci.hpc.service.impl.HpcPattern" />
+	
 	<!--  Map of HPC Data Transfer Proxies -->
 	<util:map id="hpcDataTransferProxies" 
 	          key-type="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType"

@@ -15,17 +15,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -266,9 +269,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					folder.setPathMap(pathDTO);
 				}
 				if(criteriaType != null && criteriaType.equals("Simple"))
-					folder.setPatternType(HpcDirectoryScanPatternType.SIMPLE);
+					folder.setPatternType(HpcPatternType.SIMPLE);
 				else
-					folder.setPatternType(HpcDirectoryScanPatternType.REGEX);
+					folder.setPatternType(HpcPatternType.REGEX);
 				if(exclude.size() > 0)
 					folder.getExcludePatterns().addAll(exclude);
 				if(include.size() > 0)
