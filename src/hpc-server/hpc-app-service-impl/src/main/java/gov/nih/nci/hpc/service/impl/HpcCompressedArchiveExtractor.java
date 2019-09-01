@@ -155,11 +155,13 @@ public class HpcCompressedArchiveExtractor {
 					continue;
 				}
 
-				String entryName = fromArchiveEntry.getName();
-				if (!fromArchiveEntry.isDirectory() && pattern.matches(compiledIncludePatterns, entryName)) {
-					toArchiveOutPutStream.putArchiveEntry(createArchiveEntry(entryName, compressedArchiveType));
-					IOUtils.copy(fromArchiveInputStream, toArchiveOutPutStream);
+				if (!fromArchiveEntry.isDirectory()
+						&& pattern.matches(compiledIncludePatterns, fromArchiveEntry.getName())) {
+					toArchiveOutPutStream.putArchiveEntry(createArchiveEntry(fromArchiveEntry, compressedArchiveType));
+					IOUtils.copyLarge(fromArchiveInputStream, toArchiveOutPutStream);
 					toArchiveOutPutStream.closeArchiveEntry();
+
+					counter++;
 				}
 			}
 
@@ -172,22 +174,24 @@ public class HpcCompressedArchiveExtractor {
 	}
 
 	/**
-	 * Create an archive entry from name and compressedArchiveType
+	 * Create an archive entry from another and compressedArchiveType.
 	 *
-	 * @param entryName             The archive entry name.
+	 * @param fromArchiveEntry      The archive entry to copy name and size from.
 	 * @param compressedArchiveType The compressed archive type.
 	 * @return An archive entry
 	 * @throws HpcException on unsupported compressed archive type.
 	 */
-	private ArchiveEntry createArchiveEntry(String entryName, HpcCompressedArchiveType compressedArchiveType)
-			throws HpcException {
+	private ArchiveEntry createArchiveEntry(ArchiveEntry fromArchiveEntry,
+			HpcCompressedArchiveType compressedArchiveType) throws HpcException {
 		switch (compressedArchiveType) {
 		case TGZ:
 		case TAR:
-			return new TarArchiveEntry(entryName);
+			TarArchiveEntry tarArchiveEntry = new TarArchiveEntry(fromArchiveEntry.getName());
+			tarArchiveEntry.setSize(fromArchiveEntry.getSize());
+			return tarArchiveEntry;
 
 		case ZIP:
-			return new ZipArchiveEntry(entryName);
+			return new ZipArchiveEntry(fromArchiveEntry.getName());
 
 		default:
 			throw new HpcException("Unsupported comressed archive type: " + compressedArchiveType,
