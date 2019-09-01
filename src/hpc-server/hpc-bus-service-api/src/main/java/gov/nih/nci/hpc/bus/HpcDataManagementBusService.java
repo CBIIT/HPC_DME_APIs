@@ -89,10 +89,11 @@ public interface HpcDataManagementBusService {
 	 *
 	 * @param path The collection's path.
 	 * @param list An indicator to list sub-collections and data-objects.
+	 * @param includeAcl An indicator to obtain user permission.
 	 * @return A Collection DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcCollectionDTO getCollection(String path, Boolean list) throws HpcException;
+	public HpcCollectionDTO getCollection(String path, Boolean list, Boolean includeAcl) throws HpcException;
 
 	/**
 	 * Get Collection children. NO collection metadata will be returned
@@ -298,10 +299,11 @@ public interface HpcDataManagementBusService {
 	 * Get Data Object.
 	 *
 	 * @param path The data object's path.
+	 *  * @param includeAcl An indicator to obtain user permission.
 	 * @return A Data Object DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectDTO getDataObject(String path) throws HpcException;
+	public HpcDataObjectDTO getDataObject(String path, Boolean includeAcl) throws HpcException;
 
 	/**
 	 * Download Data Object. In this overloaded method, the request invoker will be
@@ -388,13 +390,23 @@ public interface HpcDataManagementBusService {
 	public HpcUserPermissionDTO getDataObjectPermission(String path, String userId) throws HpcException;
 
 	/**
-	 * Get the Data Management Model (Metadata validation rules and hierarchy
-	 * definitions)
+	 * Get the Data Management Models (Metadata validation rules and hierarchy
+	 * definitions for all archives)
 	 *
 	 * @return Data Management Model DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataManagementModelDTO getDataManagementModel() throws HpcException;
+	public HpcDataManagementModelDTO getDataManagementModels() throws HpcException;
+	
+
+	/**
+	 * Get a Data Management Model (Metadata validation rules and hierarchy
+	 * definitions) for a specific archive (basePath)
+	 *
+	 * @return Data Management Model DTO.
+	 * @throws HpcException on service failure.
+	 */
+	HpcDataManagementModelDTO getDataManagementModel (String basePath) throws HpcException;
 
 	/**
 	 * Move a path of either a data object or a collection.
@@ -415,4 +427,7 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) throws HpcException;
+
+	
+
 }

@@ -488,6 +488,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 							validValues.add(value);
 						entry.setValidValues(validValues);
 					}
+					entry.setDescription(rule.getDescription());
 					metadataEntries.add(entry);
 				}
 			}

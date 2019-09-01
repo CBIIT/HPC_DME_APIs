@@ -395,12 +395,19 @@ public class HpcClientUtil {
 
 
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
-      String path, boolean list, String hpcCertPath, String hpcCertPassword) {
-    return getCollection(token, hpcCollectionlURL, path, false, list, hpcCertPath, hpcCertPassword);
+	  String path, boolean list, String hpcCertPath, String hpcCertPassword) {
+	return getCollection(token, hpcCollectionlURL, path, false, list, false, hpcCertPath, hpcCertPassword);
   }
-
+	  
+  
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean children, boolean list, String hpcCertPath, String hpcCertPassword) {
+    return getCollection(token, hpcCollectionlURL, path, children, list, false, hpcCertPath, hpcCertPassword);
+  }
+  
+
+  public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
+      String path, boolean children, boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
     try {
       final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
         hpcCollectionlURL).path("/{dme-archive-path}");
@@ -409,11 +416,12 @@ public class HpcClientUtil {
       } else {
         ucBuilder.queryParam("list", Boolean.valueOf(list).toString());
       }
+      ucBuilder.queryParam("includeAcl", Boolean.valueOf(includeAcl).toString());
       final String serviceURL = ucBuilder.buildAndExpand(path).encode().toUri()
         .toURL().toExternalForm();
+	  
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
@@ -439,12 +447,21 @@ public class HpcClientUtil {
       throw new HpcWebException(path + ": " + e.getMessage());
     }
   }
+  
+  
+  public static HpcDataObjectListDTO getDatafiles(String token, String hpcDatafileURL, String path,
+	      boolean list, String hpcCertPath, String hpcCertPassword) {
+	  return getDatafiles(token, hpcDatafileURL, path,
+		      list, false, hpcCertPath,hpcCertPassword);
+  }
+  
 
   public static HpcDataObjectListDTO getDatafiles(String token, String hpcDatafileURL, String path,
-      boolean list, String hpcCertPath, String hpcCertPassword) {
+    boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
     try {
       final String url2Apply = UriComponentsBuilder.fromHttpUrl(hpcDatafileURL)
         .path("/{dme-archive-path}").queryParam("list", Boolean.valueOf(list))
+        .queryParam("includeAcl", Boolean.valueOf(includeAcl))
         .buildAndExpand(path).encode().toUri().toURL().toExternalForm();
       WebClient client = HpcClientUtil.getWebClient(url2Apply, hpcCertPath,
         hpcCertPassword);

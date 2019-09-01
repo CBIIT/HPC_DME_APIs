@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 @Path("/")
 public interface HpcDataManagementRestService {
 
+
 	/**
 	 * Examine whether path refers to collection or data file.
 	 *
@@ -75,7 +76,7 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/collection/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getCollection(@PathParam("path") String path, @QueryParam("list") Boolean list);
+	public Response getCollection(@PathParam("path") String path, @QueryParam("list") Boolean list, @QueryParam("includeAcl") Boolean includeAcl);
 
 	/**
 	 * Get a collection children. Collection metadata will not be returned
@@ -353,7 +354,7 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/dataObject/{path:.*}")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataObject(@PathParam("path") String path);
+	public Response getDataObject(@PathParam("path") String path, @QueryParam("includeAcl") Boolean includeAcl);
 
 	/**
 	 * Download a data object.
@@ -531,7 +532,17 @@ public interface HpcDataManagementRestService {
 	@GET
 	@Path("/dm/model")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataManagementModel();
+	public Response getDataManagementModels();
+	
+	/**
+	 * Get data management model. This includes all rules.
+	 *
+	 * @return The REST service response w/ HpcDataManagementModelDTO entity.
+	 */
+	@GET
+	@Path("/dm/model/{basePath}")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	Response getDataManagementModel(@PathParam("basePath") String basePath);
 
 	/**
 	 * Move a list of data objects and/or collections.
@@ -544,4 +555,7 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
+
+	
+
 }
