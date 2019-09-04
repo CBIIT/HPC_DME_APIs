@@ -84,7 +84,6 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	@CrossOrigin(origins = "*")
 	public String home(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		try {
@@ -143,7 +142,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 	 * @return
 	 */
 	@JsonView(Views.Public.class)
-	@RequestMapping(method = RequestMethod.PUT)
+	@RequestMapping(value = "/download", method = RequestMethod.POST)
 	@ResponseBody
 	public AjaxResponseBody download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile,
 			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
