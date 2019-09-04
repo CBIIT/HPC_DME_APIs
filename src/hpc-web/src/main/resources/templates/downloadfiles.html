@@ -262,8 +262,8 @@
 										.getElementById("wait");
 								waitEle.style.display = "block";
 								$.ajax({
-									type : "PUT",
-									url : "/downloadfiles",
+									type : "POST",
+									url : "/downloadfiles/download",
 									data : $form.serialize(),
 									success : function(msg) {
 										waitEle.style.display = "none";
