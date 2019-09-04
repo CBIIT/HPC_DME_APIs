@@ -598,7 +598,7 @@ function validateAndSubmit()
 				var attrValueValue = document.getElementById("attrValue"+suffix).value;
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
-					alert("Invalid Valid criteria. Please enter operator and value");
+					alert("Invalid criteria. Please enter operator and value");
 					return false;
 				}
 				valid = true;
@@ -609,7 +609,7 @@ function validateAndSubmit()
 				var attrValueValue = document.getElementById("attrValue"+suffix).value;
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
-					alert("Invalid Valid criteria. Please enter operator and value");
+					alert("Invalid criteria. Please enter operator and value");
 					return false;
 				}
 				valid = true;
@@ -618,7 +618,7 @@ function validateAndSubmit()
 	}
 	if(!valid)
 	{
-		alert("Invalid Valid criteria");
+		alert("Invalid criteria");
 		return false;
 	}
 	document.getElementById("simplesearchform").submit();
