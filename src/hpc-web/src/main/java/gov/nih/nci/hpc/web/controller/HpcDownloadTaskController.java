@@ -115,6 +115,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         return displayDataObjectTask(authToken, taskId, model);
       else if (type.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name()))
         return diplayDataObjectListTask(authToken, taskId, model);
+      else if (type.equals(HpcDownloadTaskType.COLLECTION_LIST.name()))
+          return displayCollectionListTask(authToken, taskId, model);
       else {
         String message = "Data file not found!";
         model.addAttribute("error", message);
@@ -161,7 +163,8 @@ public class HpcDownloadTaskController extends AbstractHpcController {
       model.addAttribute("taskType", taskType);
       HpcBulkDataObjectDownloadRequestDTO dto = new HpcBulkDataObjectDownloadRequestDTO();
       if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())
-          || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name())) {
+          || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name())
+          || taskType.equals(HpcDownloadTaskType.COLLECTION_LIST.name())) {
         
         String queryServiceURL = null;
         if (taskType.equals(HpcDownloadTaskType.COLLECTION.name()))
@@ -275,5 +278,20 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
     return "dataobjectsdownloadtask";
+  }
+  
+  private String displayCollectionListTask(String authToken, String taskId, Model model) {
+	    String queryServiceURL = dataObjectsDownloadServiceURL + "/" + taskId;
+	    HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
+	        .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
+		boolean retry = true;
+		if(downloadTask != null && downloadTask.getFailedItems() != null && downloadTask.getFailedItems().size() > 0)
+		{
+			if(downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.S_3))
+					retry = false;
+		}
+		model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
+	    model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
+	    return "dataobjectsdownloadtask";
   }
 }

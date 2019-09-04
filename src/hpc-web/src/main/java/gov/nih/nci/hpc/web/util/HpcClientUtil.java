@@ -1563,6 +1563,47 @@ public class HpcClientUtil {
     return response;
   }
 
+  public static HpcBulkDataObjectDownloadResponseDTO downloadFiles(String token, String hpcQueryURL,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO dto, String hpcCertPath, String hpcCertPassword) {
+    HpcBulkDataObjectDownloadResponseDTO response = null;
+    try {
+      WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
+      Response restResponse = client.invoke("POST", dto);
+      if (restResponse.getStatus() == 200) {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+        response = parser.readValueAs(HpcBulkDataObjectDownloadResponseDTO.class);
+      } else {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+        throw new HpcWebException("Failed to submit download request: " + exception.getMessage());
+      }
+    } catch (HpcWebException e) {
+      throw e;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new HpcWebException("Failed to submit download request: " + e.getMessage());
+    }
+    return response;
+  }
+  
   public static AjaxResponseBody downloadDataFile(String token, String serviceURL,
       HpcDownloadRequestDTO dto, String downloadType, String hpcCertPath, String hpcCertPassword)
       throws JsonParseException, IOException {
