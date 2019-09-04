@@ -389,6 +389,8 @@
     	var basepathListEle = document.getElementById("basepathList");
     	var pathEle = document.getElementById("collectionPath");
       	var selectedValue = reportType;
+      	document.getElementById("fromDate").value = null;
+  		document.getElementById("toDate").value = null;
       	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
       	{
       		fromDateEle.style.display = "block";
