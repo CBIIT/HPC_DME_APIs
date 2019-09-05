@@ -58,7 +58,7 @@ function dm_generate_token () {
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
 
-    local USAGE="usage: dm_register [-D REST-repsonse] [-o output-json-file] <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
+    local USAGE="usage: dm_register [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -168,7 +168,7 @@ function dm_register () {
 #         <destinaton-path>: The destination logical path
 function dm_register_collection {
 
-    local USAGE="usage: dm_register_collection [-D REST-repsonse] [-o output-json-file] <description.json> <destination-path>"
+    local USAGE="usage: dm_register_collection [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -229,7 +229,7 @@ function dm_register_collection {
 #         <source-file>: The source file for synchronous registration.
 function dm_register_dataobject_presigned {
 
-    local USAGE="usage: dm_register_dataobject_presigned [-D REST-repsonse] [-o output-json-file] <description.json> <destination-path> <source-file>"
+    local USAGE="usage: dm_register_dataobject_presigned [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> <source-file>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -316,7 +316,7 @@ function dm_register_dataobject_presigned {
 #         [source-file]: The source file for synchronous registration.
 function dm_register_dataobject {
 
-    local USAGE="usage: dm_register_dataobject [-D REST-repsonse] [-o output-json-file] <description.json> <destination-path> [source-file]"
+    local USAGE="usage: dm_register_dataobject [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> [source-file]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -425,7 +425,7 @@ function dm_sync_globus_endpoint  {
 #      : [REST-response] (for backward compatibility)
 function dm_get_item {
 
-    local USAGE="usage: dm_get_item [-D REST-repsonse] [-o metadata-file] <item-path>"
+    local USAGE="usage: dm_get_item [-D REST-respsonse] [-o metadata-file] <item-path>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -499,7 +499,7 @@ function dm_get_item {
 #      : [REST-response] (for backward compatibility)
 function dm_get_dataobject {
 
-    local USAGE="usage: dm_get_dataobject [-D REST-repsonse] [-o metadata-file] <dataobject-path>"
+    local USAGE="usage: dm_get_dataobject [-D REST-respsonse] [-o metadata-file] <dataobject-path>"
     
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -592,7 +592,7 @@ function dm_get_dataobject {
 #      : [REST-response] (for backward compatibility)
 function dm_get_collection {
 
-    local USAGE="usage: dm_get_collection [-D REST-repsonse] [-o metadata-file] <collection-path>"
+    local USAGE="usage: dm_get_collection [-D REST-respsonse] [-o metadata-file] <collection-path>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -679,11 +679,11 @@ function dm_get_collection {
 #Print Usage of dm_download_dataobject_sync function
 function dm_show_download_dataobject_sync_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_dataobject_sync [-D REST-repsonse] [-p] <logic-path> <destination-file>
+  usage: dm_download_dataobject_sync [-D REST-respsonse] [-p] <logic-path> <destination-file>
 
   Download the specified dataobject to the local machine.
   OPTIONS:
-  -D REST-repsonse       Specify the filename to capture rest response
+  -D REST-respsonse       Specify the filename to capture rest response
   -p                     Use S3-presigned URL for downloading.
 EOF
   echo "$usage"
@@ -697,7 +697,7 @@ EOF
 #        logic-path 
 #        destination-file
 function dm_download_dataobject_sync {
-  #local USAGE="usage: dm_download_dataobject_sync [-D REST-repsonse] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
+  #local USAGE="usage: dm_download_dataobject_sync [-D REST-respsonse] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
 
   #Set the default parameters
   local APPLY_PRESIGNED=0
@@ -1427,7 +1427,7 @@ function dm_register_globus_directory {
 function dm_download_collection_async {
 
 
-    local USAGE="usage: dm_download_collection_async [-D REST-repsonse] [-o output-json-file] <collection-logical-path> <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_collection_async [-D REST-respsonse] [-o output-json-file] <collection-logical-path> <globus-destination-path> [globus-endpoint]"
 
     local response_msg
     local response_hdr
@@ -1550,7 +1550,7 @@ function dm_download_collection_async {
 function dm_download_async {
 
 
-    local USAGE="usage: dm_download_async [-D REST-repsonse] [-o output-json-file] <archive-path> <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_async [-D REST-respsonse] [-o output-json-file] <archive-path> <globus-destination-path> [globus-endpoint]"
 
     local response_msg
     local response_hdr
@@ -1760,9 +1760,9 @@ function dm_download_s3_deprecated {
 #Print Usage of dm_download_s3 function
 function dm_show_download_s3_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_s3 [-D REST-repsonse] [-o output-json-file] <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
+  usage: dm_download_s3 [-D REST-respsonse] [-o output-json-file] <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
   Download the specified dataobject or collection to the s3 bucket
-  [-D REST-repsonse]          Optional specify the filename to capture rest response
+  [-D REST-respsonse]          Optional specify the filename to capture rest response
   [-o output-json-file]       Optionally specify the filename to capture the json response
   archive-path                Source path in the archive
   destination-bucket          Destination S3 bucket to transfer data to
@@ -1910,7 +1910,7 @@ function dm_download_s3 {
 function dm_get_download_status {
 
  
-    local USAGE="usage: dm_get_download_status [-D REST-repsonse] [-o download-status-file] <download-taskId> <request-type>"
+    local USAGE="usage: dm_get_download_status [-D REST-respsonse] [-o download-status-file] <download-taskId> <request-type>"
 
     local response_msg
     local response_hdr
@@ -2006,7 +2006,7 @@ function dm_get_download_status {
 #      : [REST-response] (for backward compatibility)
 function dm_rename() {
 
-    local USAGE="usage: dm_rename [-D REST-repsonse] [-o rename-status-file] <description.json>"
+    local USAGE="usage: dm_rename [-D REST-respsonse] [-o rename-status-file] <description.json>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -2105,7 +2105,7 @@ function dm_rename() {
 #      : [REST-response] (for backward compatibility)
 function dm_add_bookmark () {
 
-    local USAGE="usage: dm_add_bookmark [-D REST-repsonse] [-o status-file] <bookmark_name> <description.json>"
+    local USAGE="usage: dm_add_bookmark [-D REST-respsonse] [-o status-file] <bookmark_name> <description.json>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -2206,7 +2206,7 @@ function dm_add_bookmark () {
 #      : [REST-response] (for backward compatibility)
 function dm_register_user () {
 
-local USAGE="usage: dm_register_user [-D REST-repsonse] [-o status-file] <userId> <description.json> [REST-response]"
+local USAGE="usage: dm_register_user [-D REST-respsonse] [-o status-file] <userId> <description.json> [REST-response]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -2304,7 +2304,7 @@ local USAGE="usage: dm_register_user [-D REST-repsonse] [-o status-file] <userId
 #      : [REST-response] (for backward compatibility)
 function dm_update_user () {
 
-local USAGE="usage: dm_update_user [-D REST-repsonse] [-o status-file] <userId> <description.json>"
+local USAGE="usage: dm_update_user [-D REST-respsonse] [-o status-file] <userId> <description.json>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
