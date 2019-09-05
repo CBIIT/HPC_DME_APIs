@@ -189,11 +189,12 @@
 				var ele = document.getElementById("message");
 				ele.style.display = "none";
 				$('#userForm')
-	            .find("input, select")
+	            .find("input")
 	            .not(":button, :submit, :reset, :hidden")
-	            .val("")
-	            .prop("checked", false)
-	            .prop("selected", false);
+	            .val("");
+				$("#doc").val($("#doc option:first").val());
+				$("#basePath").val($("#basePath option:first").val());
+				$("#userRole").val($("#userRole option:first").val());
 			});
 		});
 		
