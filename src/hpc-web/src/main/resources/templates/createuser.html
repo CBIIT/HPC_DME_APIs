@@ -185,9 +185,15 @@
 
 		$(function() {
 			//twitter bootstrap script
-			$('#userForm').on('close', function(e) {
-				$('#userForm').reset();
-				$('#myModal-event').modal('hide');
+			$("#createuserModal").on("hide.bs.modal", function () {
+				var ele = document.getElementById("message");
+				ele.style.display = "none";
+				$('#userForm')
+	            .find("input, select")
+	            .not(":button, :submit, :reset, :hidden")
+	            .val("")
+	            .prop("checked", false)
+	            .prop("selected", false);
 			});
 		});
 		
