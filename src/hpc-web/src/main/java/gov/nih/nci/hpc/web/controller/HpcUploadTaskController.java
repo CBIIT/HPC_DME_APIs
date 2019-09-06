@@ -167,13 +167,13 @@ public class HpcUploadTaskController extends AbstractHpcController {
 			model.addAttribute("hpcBulkDataObjectRegistrationTaskDTO", uploadTask.getTask());
 
 		} catch (HttpStatusCodeException e) {
-			result.setMessage("Upload request is not successfull: " + e.getMessage());
+			result.setMessage("Upload request is not successful: " + e.getMessage());
 			return "dataobjectsuploadtask";
 		} catch (RestClientException e) {
-			result.setMessage("Upload request is not successfull: " + e.getMessage());
+			result.setMessage("Upload request is not successful: " + e.getMessage());
 			return "dataobjectsuploadtask";
 		} catch (Exception e) {
-			result.setMessage("Upload request is not successfull: " + e.getMessage());
+			result.setMessage("Upload request is not successful: " + e.getMessage());
 			return "dataobjectsuploadtask";
 		}
 		return "dataobjectsuploadtask";

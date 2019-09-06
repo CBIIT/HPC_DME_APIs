@@ -1634,10 +1634,10 @@ public class HpcClientUtil {
       JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
       try {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        result.setMessage("Download request is not successfull: " + exception.getMessage());
+        result.setMessage("Download request is not successful: " + exception.getMessage());
         return result;
       } catch (Exception e) {
-        result.setMessage("Download request is not successfull: " + e.getMessage());
+        result.setMessage("Download request is not successful: " + e.getMessage());
         return result;
       }
     }

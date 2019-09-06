@@ -192,20 +192,20 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 					downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
 						.downloadFiles(authToken, collectionsDownloadServiceURL, dtoV2, sslCertPath, sslCertPassword);
 				if (downloadDTO != null)
-					result.setMessage("Download request successfull.<br/> Task Id: " + downloadDTO.getTaskId());
+					result.setMessage("Download request successful.<br/> Task Id: " + downloadDTO.getTaskId());
 				return result;
 			} catch (Exception e) {
-				result.setMessage("Download request is not successfull: " + e.getMessage());
+				result.setMessage("Download request is not successful: " + e.getMessage());
 				return result;
 			}
 		} catch (HttpStatusCodeException e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		} catch (RestClientException e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		} catch (Exception e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		}
 	}
