@@ -88,7 +88,8 @@
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
 								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Download Data files</li>
+							<li th:if="${downloadType == 'datafiles'}"><i class="fa fa-list-alt"></i>Download Data files</li>
+							<li th:if="${downloadType == 'collections'}"><i class="fa fa-list-alt"></i>Download Collections</li>
 						</ol>
 					</div>
 				</div>
@@ -105,12 +106,21 @@
 					<table>
 						<tr>
 							<td>
-								<div class="pull-center">
-								<p>You will download following selected collection of data files to a Globus endpoint location 
-									asynchronously.</p> <p>Please first grant WRITE access of your Globus target endpoint location to the 
-									HPC DME Globus Group (Please refer to User Guide with Globus group account details); Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
+								<div class="pull-center" th:if="${downloadType == 'datafiles'}">
+								<p>This page allows you to download the following selected collection of data files to a Globus endpoint location 
+									asynchronously.</p> <p>First, grant WRITE access of your Globus target endpoint location to the 
+									HPC DME Globus Group (Refer to User Guide, <a target="_blank" href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME">Preparing to Use Globus with DME</a>); 
+									Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
 									into text entry "Globus Endpoint Name (UUID)"; lastly, enter a directory name into text
-									entry "Globus Endpoint (Destination) Path" for the selected collection.<br/>The new directory will be created under your shared endpoint at Globus.</p>			
+									entry "Globus Endpoint (Destination) Path" for the selected collection.<br/>The system copies the data into the directory under your shared endpoint at Globus.</p>			
+								</div>
+								<div class="pull-center" th:if="${downloadType == 'collections'}">
+								<p>This page allows you to download the following selected collections to a Globus endpoint location 
+									asynchronously.</p> <p>First, grant WRITE access of your Globus target endpoint location to the 
+									HPC DME Globus Group (Refer to User Guide, <a target="_blank" href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME">Preparing to Use Globus with DME</a>); 
+									Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
+									into text entry "Globus Endpoint Name (UUID)"; lastly, enter a directory name into text
+									entry "Globus Endpoint (Destination) Path" for the selected collection.<br/>The system copies the data into the directory under your shared endpoint at Globus.</p>			
 								</div>
 							</td>
 						</tr>

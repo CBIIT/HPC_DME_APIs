@@ -187,16 +187,16 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           if (downloadDTO != null)
           {
             result.setMessage(
-                "Download request successfull. Task Id: " + downloadDTO.getTaskId());
+                "Download request successful. Task Id: " + downloadDTO.getTaskId());
             model.addAttribute("message",
-                    "Download request successfull. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
+                    "Download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
           }
 
           model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
           return "dataobjectsdownloadtask";
 
         } catch (Exception e) {
-          result.setMessage("Download request is not successfull: " + e.getMessage());
+          result.setMessage("Download request is not successful: " + e.getMessage());
           model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
           return "dataobjectsdownloadtask";
         }
@@ -217,13 +217,13 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         return "dataobjectdownloadtask";
       }
     } catch (HttpStatusCodeException e) {
-      result.setMessage("Download request is not successfull: " + e.getMessage());
+      result.setMessage("Download request is not successful: " + e.getMessage());
       return "redirect:/downloadtasks";
     } catch (RestClientException e) {
-      result.setMessage("Download request is not successfull: " + e.getMessage());
+      result.setMessage("Download request is not successful: " + e.getMessage());
       return "redirect:/downloadtasks";
     } catch (Exception e) {
-      result.setMessage("Download request is not successfull: " + e.getMessage());
+      result.setMessage("Download request is not successful: " + e.getMessage());
       return "redirect:/downloadtasks";
     }
     return "redirect:/downloadtasks";
