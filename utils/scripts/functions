@@ -503,6 +503,7 @@ function dm_get_dataobject {
     
     local RESPONSE_MSG
     local RESPONSE_HEADER
+	local SHOW_OUTPUT=1
 
     while :; do
         case $1 in
@@ -518,6 +519,7 @@ function dm_get_dataobject {
             -o|--output)
                 if [ "$2" ]; then
                     RESPONSE_MSG="$2"
+					SHOW_OUTPUT=0
                     shift
                 else
                     echo "$USAGE" >&2
@@ -550,6 +552,7 @@ function dm_get_dataobject {
     if [ ! -z "$2" ]
     then
       RESPONSE_MSG="$2"
+	  SHOW_OUTPUT=0
     elif [ -z "$RESPONSE_MSG" ]
     then
       RESPONSE_MSG=get-item-response-message.json.tmp
@@ -575,7 +578,7 @@ function dm_get_dataobject {
     else 
      
 
-      if [ -z "$2" ]
+      if [ $SHOW_OUTPUT -eq 1 ]
       then
         print_json_message "$RESPONSE_MSG"
       fi
@@ -596,6 +599,7 @@ function dm_get_collection {
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
+	local SHOW_OUTPUT=1
 
     while :; do
         case $1 in
@@ -611,6 +615,7 @@ function dm_get_collection {
             -o|--output)
                 if [ "$2" ]; then
                     RESPONSE_MSG="$2"
+					SHOW_OUTPUT=0
                     shift
                 else
                     echo "$USAGE" >&2
@@ -644,6 +649,7 @@ function dm_get_collection {
     if [ ! -z "$2" ]
     then
       RESPONSE_MSG="$2"
+	  SHOW_OUTPUT=0
     elif [ -z "$RESPONSE_MSG" ]
     then
       RESPONSE_MSG=get-item-response-message.json.tmp
@@ -668,7 +674,7 @@ function dm_get_collection {
     else 
      
 
-      if [ -z "$2" ]
+      if [ $SHOW_OUTPUT -eq 1 ]
       then
         print_json_message "$RESPONSE_MSG"    
       fi
@@ -1912,8 +1918,9 @@ function dm_get_download_status {
  
     local USAGE="usage: dm_get_download_status [-D REST-respsonse] [-o download-status-file] <download-taskId> <request-type>"
 
-    local response_msg
+    local RESPONSE_MSG
     local response_hdr
+	local SHOW_OUTPUT=1
 
     while :; do
         case $1 in
@@ -1928,7 +1935,8 @@ function dm_get_download_status {
             ;;
             -o|--output)
                 if [ "$2" ]; then
-                    response_msg="$2"
+                    RESPONSE_MSG="$2"
+					SHOW_OUTPUT=0
                     shift
                 else
                     echo "$USAGE" >&2
@@ -1957,10 +1965,11 @@ function dm_get_download_status {
 
     if [ ! -z "$3" ]
     then
-      response_msg="$3"
-    elif [ -z "$response_msg" ]
+      RESPONSE_MSG="$3"
+	  SHOW_OUTPUT=0
+    elif [ -z "$RESPONSE_MSG" ]
     then
-      response_msg=get-download-status-response-message.json.tmp
+      RESPONSE_MSG=get-download-status-response-message.json.tmp
     fi 
 
     if [ ! -z "$4" ]
@@ -1976,7 +1985,7 @@ function dm_get_download_status {
     server=$(get_server) || exit 1
 
    
-    curl -G -X GET ${server}${request_type}/download?taskId="$task_id"  $config  -H "Accept: application/json" -D $response_header -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    curl -G -X GET ${server}${request_type}/download?taskId="$task_id"  $config  -H "Accept: application/json" -D $response_header -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status
     check_connection $response_header
 
     #TO CONTINUE
@@ -1985,14 +1994,14 @@ function dm_get_download_status {
     if [ "$response_code" -ne 200 ]
     then
       echo "ERROR getting download status for taskID:\"$task_id\" " >&2
-      print_error_message "$response_msg" "$response_code"
+      print_error_message "$RESPONSE_MSG" "$response_code"
       exit 1
     else 
      
 
-      if [ -z "$2" ]
+      if [ $SHOW_OUTPUT -eq 1 ]
       then
-        print_json_message "$response_msg"    
+        print_json_message "$RESPONSE_MSG"    
       fi
     fi
 }
@@ -2010,6 +2019,7 @@ function dm_rename() {
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
+	local SHOW_OUTPUT=1
 
     while :; do
         case $1 in
@@ -2025,6 +2035,7 @@ function dm_rename() {
             -o|--output)
                 if [ "$2" ]; then
                     RESPONSE_MSG="$2"
+					SHOW_OUTPUT=0
                     shift
                 else
                     echo "$USAGE" >&2
@@ -2054,6 +2065,7 @@ function dm_rename() {
     if [ ! -z "$2" ]
     then
       RESPONSE_MSG="$2"
+	  SHOW_OUTPUT=0
     elif [ -z "$RESPONSE_MSG" ]
     then
       RESPONSE_MSG=rename-response-message.json.tmp
@@ -2084,7 +2096,7 @@ function dm_rename() {
     else
 
       
-      if [ -z "$2" ]
+      if [ $SHOW_OUTPUT -eq 1 ]
       then
         print_json_message "$RESPONSE_MSG"
       fi
