@@ -32,19 +32,13 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package>
-							org.globusonline.*,
-							org.bouncycastle.jce.provider,
-							org.bouncycastle.*,
-							org.json.*
-						</Export-Package>
 						<Private-Package>
 							gov.nih.nci.hpc.integration.globus.impl,
 							gov.nih.nci.hpc.integration.s3.impl,
 							gov.nih.nci.hpc.integration.ldap.impl,
 							gov.nih.nci.hpc.integration.irods.impl,
 							gov.nih.nci.hpc.integration.sps.impl,
-							gov.nih.nci.hpc.integration.googledrive.impl
+							gov.nih.nci.hpc.integration.googledrive.impl,
 						</Private-Package>
 						<Import-Package>
 							org.springframework.scheduling.config,
@@ -69,17 +63,14 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.52</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.52</version>
 		</dependency>
 		<dependency>
 			<groupId>org.globusonline</groupId>
 			<artifactId>TransferAPIClient</artifactId>
-			<version>1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
