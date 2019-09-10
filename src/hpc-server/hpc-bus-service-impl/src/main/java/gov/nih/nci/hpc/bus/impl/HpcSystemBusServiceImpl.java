@@ -273,9 +273,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			} catch (HpcException e) {
 				logger.error("Failed to process data transfer upload in progress with URL:" + path, e);
-
-				// Delete the data object.
-				deleteDataObject(path);
+				
+				//This exception prevented us from verifying whether the file was uploaded or not by the 
+				//time the URL expired, so we cannot delete the metadata. This method will be invoked 
+				//the next time around this task is executed, so if this exception was due to a temp  
+				//reason such as Cleversafe not being accessible, it should be resolved within the next  
+				//or a subsequent round, and we should then be able to do proper processing without 
+				//getting into this catch block.
+				//deleteDataObject(path);
+				
 			}
 		}
 	}
