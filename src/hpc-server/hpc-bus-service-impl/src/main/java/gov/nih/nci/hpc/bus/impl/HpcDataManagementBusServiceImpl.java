@@ -1275,7 +1275,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		
 		if(dataManagementModel.getDocRules().isEmpty()) {
-			throw new HpcException("Could not obtain DataManagementConfiguration for basePath " 
+			throw new HpcException("Could not obtain Data Management Model for basePath " 
 					+ basePath, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
