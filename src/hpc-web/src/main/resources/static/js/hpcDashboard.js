@@ -53,7 +53,7 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
         width : 200,
         displayName : 'Delete',
         cellFilter: 'percentEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)">Delete</a></div>'
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}" onclick="deleteSearch(this)">Delete</a></div>'
       }
     ],
   };
