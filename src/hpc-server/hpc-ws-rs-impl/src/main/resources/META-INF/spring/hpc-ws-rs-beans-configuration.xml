@@ -246,6 +246,8 @@
 					value="${hpc.ws.rs.auth.data-management.get-data-objects-download-status}" />
 				<entry key="getDataManagementModel"
 					value="${hpc.ws.rs.auth.data-management.get-data-management-model}" />
+				<entry key="getDataManagementModels"
+					value="${hpc.ws.rs.auth.data-management.get-data-management-models}" />	
 				<entry key="movePaths"
 					value="${hpc.ws.rs.auth.data-management.move-paths}" />
 				<entry key="moveCollection"

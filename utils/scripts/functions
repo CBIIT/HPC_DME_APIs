@@ -50,13 +50,43 @@ function dm_generate_token () {
 
 
 #Register a collection or a dataObject 
-#Inputs:  <description.json>: The metadata json file 
+#Inputs:  [-o output-json-file]
+#         [-D REST-response]
+#         <description.json>: The metadata json file 
 #         <destinaton-path>: The logical path of the destination
 #         <type>: dataObjet or collection 
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
 
-    local USAGE="usage: dm_register <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
+    local USAGE="usage: dm_register [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
     then
@@ -97,8 +127,14 @@ function dm_register () {
       exit 1
     fi
     
-    local RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
-    local RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
+    if [ -z "$RESPONSE_MSG" ]
+     then
+        RESPONSE_MSG=${TYPE}-registration-response-message.json.tmp
+    fi
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=${TYPE}-registration-response-header.tmp
+    fi
 
     rm -f  $RESPONSE_MSG 2>/dev/null 
     rm -f $RESPONSE_HEADER 2>/dev/null 
@@ -126,11 +162,41 @@ function dm_register () {
 }
 
 #Register a collection 
-#Inputs:  <description.json>: The metadata json file for the collection 
+#Inputs:  [-o output-json-file]
+#         [-D REST-response]
+#         <description.json>: The metadata json file for the collection 
 #         <destinaton-path>: The destination logical path
 function dm_register_collection {
 
-    local USAGE="usage: dm_register_collection <description.json> <destination-path>"
+    local USAGE="usage: dm_register_collection [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path>"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
@@ -141,22 +207,57 @@ function dm_register_collection {
     local DESCRIPTION="$1"
     local DESTINATION_PATH="$2"
 
-    dm_register "$DESCRIPTION" "$DESTINATION_PATH" collection || exit 1
+    if [ -z "$RESPONSE_MSG" ]
+     then
+        RESPONSE_MSG=collection-registration-response-message.json.tmp
+    fi
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=collection-registration-response-header.tmp
+    fi
 
-    local RESPONSE_HEADER=collection-registration-response-header.tmp
-    local RESPONSE_MSG=collection-registration-response-message.json.tmp
-
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" "$DESTINATION_PATH" collection || exit 1
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 
 }
 
 #Register a dataObject using presigned S3 URL
-#Inputs:  <description.json>: The metadata json file for the dataObject 
+#Inputs:  [-o output-json-file]
+#         [-D REST-response]
+#         <description.json>: The metadata json file for the dataObject 
 #         <destinaton-path>: The destination logical path
-#         <source-file>: The source file for synchronous registratio.
+#         <source-file>: The source file for synchronous registration.
 function dm_register_dataobject_presigned {
 
-    local USAGE="usage: dm_register_dataobject_presigned <description.json> <destination-path> <source-file>"
+    local USAGE="usage: dm_register_dataobject_presigned [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> <source-file>"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ "$#" -lt 3 ]
     then
@@ -164,27 +265,34 @@ function dm_register_dataobject_presigned {
         return
     fi
 
+    if [ -z "$RESPONSE_MSG" ]
+     then
+        RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+    fi
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=dataObject-registration-response-header.tmp
+    fi
+
     local description="$1"
     local destination_path="$2"
     local source_file="$3"
-    dm_register "$description" "$destination_path" dataObject 
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$description" "$destination_path" dataObject 
     if [ "$?" -eq  1 ]
     then
       return 1
     fi
 
-    local response_header=dataObject-registration-response-header.tmp
-    local response_msg=dataObject-registration-response-message.json.tmp
 
     #verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
-    presigned_url=`get_json_value $response_msg uploadRequestURL`
+    presigned_url=`get_json_value $RESPONSE_MSG uploadRequestURL`
     if [ -z "$presigned_url" ]
     then
-      echo "ERROR: Can not retrieve the presigned url from $response_msg for $destination_path" >&2
+      echo "ERROR: Can not retrieve the presigned url from $RESPONSE_MSG for $destination_path" >&2
       return 1
     fi
 
-    rm $response_header $response_msg
+    rm -f $response_header $response_msg 2>/dev/null
     response_header=presignedURL-registration-response-header.tmp
     response_msg=presignedURL-registration-response-message.tmp
     curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${source_file}" "${presigned_url}" -D $response_header -o $response_msg -s
@@ -195,18 +303,48 @@ function dm_register_dataobject_presigned {
       return 1
     fi
 
-    rm $response_header $response_msg
+    rm -f $response_header $response_msg 2>/dev/null
 }
 
 
 
 #Register a dataObject 
-#Inputs:  <description.json>: The metadata json file for the dataObject 
+#Inputs:  [-o output-json-file]
+#         [-D REST-response]
+#         <description.json>: The metadata json file for the dataObject 
 #         <destinaton-path>: The destination logical path
-#         [source-file]: The source file for synchronous registratio.
+#         [source-file]: The source file for synchronous registration.
 function dm_register_dataobject {
 
-    local USAGE="usage: dm_register_dataobject <description.json> <destination-path> [source-file]"
+    local USAGE="usage: dm_register_dataobject [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> [source-file]"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
@@ -214,18 +352,23 @@ function dm_register_dataobject {
         return
     fi
 
+    if [ -z "$RESPONSE_MSG" ]
+     then
+        RESPONSE_MSG=dataObject-registration-response-message.json.tmp
+    fi
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=dataObject-registration-response-header.tmp
+    fi
+
     local DESCRIPTION="$1"
     local DESTINATION_PATH="$2"
     local SOURCE_FILE=$3
-    dm_register "$DESCRIPTION" "$DESTINATION_PATH" dataObject $SOURCE_FILE 
+    dm_register -D "$RESPONSE_HEADER" -o "$RESPONSE_MSG" "$DESCRIPTION" "$DESTINATION_PATH" dataObject $SOURCE_FILE 
     if [ "$?" -eq  1 ]
     then
       return 1
     fi
-    
-    local RESPONSE_HEADER=dataObject-registration-response-header.tmp
-    local RESPONSE_MSG=dataObject-registration-response-message.json.tmp
-
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 }
 
@@ -275,12 +418,42 @@ function dm_sync_globus_endpoint  {
 
 
 #Get an item (collection or dataObject) from the archive
-#Inputs: <item-path> (should have a prefix of "dataObject" or "collection")
-#      : [metadata-file]
-#      : [REST-response]
+#Inputs: [-o metadata-file]
+#        [-D REST-response]
+#        <item-path> (should have a prefix of "dataObject" or "collection")
+#      : [metadata-file] (for backward compatibility)
+#      : [REST-response] (for backward compatibility)
 function dm_get_item {
 
-    local USAGE="usage: dm_get_item <item-path> [metadata-file] [REST-response]"
+    local USAGE="usage: dm_get_item [-D REST-respsonse] [-o metadata-file] <item-path>"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ "$#" -lt 1 ] 
     then
@@ -289,20 +462,20 @@ function dm_get_item {
     fi
     local ITEM_PATH="$1"
 
-    local RESPONSE_MSG
-    local RESPONSE_HEADER
     if [ ! -z "$2" ]
     then
       RESPONSE_MSG="$2"
-    else
-      RESPONSE_MSG=get_item-response-message.json.tmp
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=get-item-response-message.json.tmp
     fi 
 
     if [ ! -z "$3" ]
     then
       RESPONSE_HEADER="$3"
-    else
-      RESPONSE_HEADER=get_item-response-header.tmp
+    elif [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=get-item-response-header.tmp
     fi 
 
     CONFIG=$(get_config) || exit 1
@@ -319,13 +492,45 @@ function dm_get_item {
 
 
 #Get the metadata of a dataobject from the archive
-#Inputs: <dataObject-path> 
-#      : [metadata-file]
-#      : [REST-response]
+#Inputs: [-o metadata-file]
+#        [-D REST-response]
+#        <dataObject-path> 
+#      : [metadata-file] (for backward compatibility)
+#      : [REST-response] (for backward compatibility)
 function dm_get_dataobject {
 
-    local USAGE="usage: dm_get_dataobject <dataobject-path> [metadata-file] [REST-response]"
+    local USAGE="usage: dm_get_dataobject [-D REST-respsonse] [-o metadata-file] <dataobject-path>"
     
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+	local SHOW_OUTPUT=1
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+					SHOW_OUTPUT=0
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
     while getopts ":" option
     do
       case "${option}" in
@@ -344,10 +549,24 @@ function dm_get_dataobject {
     local ITEM_PATH="$1"
 
 
-    local RESPONSE_MSG=${2-get_dataobject-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-get_dataobject-response-header.tmp}
+    if [ ! -z "$2" ]
+    then
+      RESPONSE_MSG="$2"
+	  SHOW_OUTPUT=0
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=get-item-response-message.json.tmp
+    fi 
 
-    dm_get_item dataObject/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER" || exit 1
+    if [ ! -z "$3" ]
+    then
+      RESPONSE_HEADER="$3"
+    elif [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=get-item-response-header.tmp
+    fi 
+    
+    dm_get_item -o "$RESPONSE_MSG" -D "$RESPONSE_HEADER" dataObject/$ITEM_PATH || exit 1
 
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
@@ -358,29 +577,55 @@ function dm_get_dataobject {
       exit 1
     else 
      
-      #Check if the user needs the response header file 
-      if [ -z "$3" ]
-      then 
-        rm -f "$RESPONSE_HEADER" 2> /dev/null
-      fi
 
-      if [ -z "$2" ]
+      if [ $SHOW_OUTPUT -eq 1 ]
       then
-        print_json_message "$RESPONSE_MSG"    
-        rm -f $RESPONSE_MSG 2> /dev/null 
+        print_json_message "$RESPONSE_MSG"
       fi
-      exit 0
+      return 0
     fi
 }
 
 
 #Get the metadata of a collection from the archive
-#Inputs: <collection-path> 
-#      : [metadata-file]
-#      : [REST-response]
+#Inputs: [-o metadata-file]
+#        [-D REST-response]
+#        <collection-path> 
+#      : [metadata-file] (for backward compatibility)
+#      : [REST-response] (for backward compatibility)
 function dm_get_collection {
 
-    local USAGE="usage: dm_get_collection <collection-path> [metadata-file] [REST-response]"
+    local USAGE="usage: dm_get_collection [-D REST-respsonse] [-o metadata-file] <collection-path>"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+	local SHOW_OUTPUT=1
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+					SHOW_OUTPUT=0
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     while getopts ":" option
     do
@@ -400,10 +645,25 @@ function dm_get_collection {
     fi
     local ITEM_PATH="$1"
 
-    local RESPONSE_MSG=${2-get_collection-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-get_collection-response-header.tmp}
 
-    dm_get_item collection/$ITEM_PATH  "$RESPONSE_MSG" "$RESPONSE_HEADER" || exit 1
+    if [ ! -z "$2" ]
+    then
+      RESPONSE_MSG="$2"
+	  SHOW_OUTPUT=0
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=get-item-response-message.json.tmp
+    fi 
+
+    if [ ! -z "$3" ]
+    then
+      RESPONSE_HEADER="$3"
+    elif [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=get-item-response-header.tmp
+    fi 
+
+    dm_get_item -o "$RESPONSE_MSG"  -D "$RESPONSE_HEADER" collection/$ITEM_PATH || exit 1
 
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
@@ -413,16 +673,10 @@ function dm_get_collection {
       exit 1
     else 
      
-      #Check if the user needs the response header file 
-      if [ -z "$3" ]
-      then 
-        rm -f "$RESPONSE_HEADER" 2> /dev/null
-      fi
 
-      if [ -z "$2" ]
+      if [ $SHOW_OUTPUT -eq 1 ]
       then
         print_json_message "$RESPONSE_MSG"    
-        rm -f $RESPONSE_MSG 2> /dev/null 
       fi
     fi
 }
@@ -431,10 +685,11 @@ function dm_get_collection {
 #Print Usage of dm_download_dataobject_sync function
 function dm_show_download_dataobject_sync_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_dataobject_sync [-p] <logic-path> <destination-file>
+  usage: dm_download_dataobject_sync [-D REST-respsonse] [-p] <logic-path> <destination-file>
 
   Download the specified dataobject to the local machine.
   OPTIONS:
+  -D REST-respsonse       Specify the filename to capture rest response
   -p                     Use S3-presigned URL for downloading.
 EOF
   echo "$usage"
@@ -443,28 +698,38 @@ EOF
 
 
 #Download a dataObject synchronously 
-#Inputs: logic-path 
+#Inputs: [-D REST-response]
+#        [-p]
+#        logic-path 
 #        destination-file
 function dm_download_dataobject_sync {
-  #local USAGE="usage: dm_download_dataobject_sync [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
-  local OPTIND
+  #local USAGE="usage: dm_download_dataobject_sync [-D REST-respsonse] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
+
   #Set the default parameters
   local APPLY_PRESIGNED=0
   local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
-  while getopts ":p" option
-    do
-      case "${option}" in
-        p)
-          APPLY_PRESIGNED=1
-          TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template.json"
-        ;;
-        *)
-          dm_show_download_dataobject_sync_usage >&2
-          exit 1
-          ;;
-      esac
+  local RESPONSE_HEADER
+
+  while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -p)
+                APPLY_PRESIGNED=1
+                TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template.json"
+            ;;
+            *) break
+        esac
+        shift
   done
-  shift $(( OPTIND-1 ))
+
   if [ "$#" -lt 2 ] 
   then
     dm_show_download_dataobject_sync_usage >&2
@@ -486,7 +751,10 @@ function dm_download_dataobject_sync {
   local CONFIG=$(get_config)
   local SERVER=$(get_server)
   local CODE=0
-  local RESPONSE_HEADER=download-dataobject-response-header.tmp
+  if [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=download-dataobject-response-header.tmp
+  fi 
   if [ $APPLY_PRESIGNED -eq 0 ]
   then
     curl -H "Content-Type: application/json" -H "Accept: application/json" \
@@ -500,8 +768,6 @@ function dm_download_dataobject_sync {
     then 
       #In this case the destination path file will contain the error code
       print_error_message "$DESTINATION_PATH" "$CODE" 
-    else
-      rm -f $RESPONSE_HEADER 2> /dev/null
     fi
   else
     local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header.tmp
@@ -556,8 +822,6 @@ function dm_download_dataobject_sync {
           >&2 echo ""
           >&2 cat $RESPONSE_HEADER
           >&2 cat $DESTINATION_PATH
-        else
-          rm -f  $RESPONSE_HEADER  $RESPONSE_HEADER_OBTAIN_PRESIGNED  $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  2> /dev/null
         fi
       fi
     fi
@@ -1162,12 +1426,42 @@ function dm_register_globus_directory {
 }
 
 #Download a collection to Globus 
-#Inputs: collection-apth
+#Inputs: [-o output-json-file]
+#        [-D REST-response]
+#        collection-apth
 #        destination-file
 function dm_download_collection_async {
 
 
-    local USAGE="usage: dm_download_collection_async <collection-logical-path> <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_collection_async [-D REST-respsonse] [-o output-json-file] <collection-logical-path> <globus-destination-path> [globus-endpoint]"
+
+    local response_msg
+    local response_hdr
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ "$#" -lt 2 ] 
     then
@@ -1228,8 +1522,14 @@ function dm_download_collection_async {
     updated_destination=$(echo "$updated_endpoint" | sed "s#${destination}#${dst_path}#")
     echo  "$updated_destination" > $request_file
 
-    local response_hdr=download-dataobject-response-header.tmp
-    local response_msg=download-dataobject-response-message.json.tmp
+    if [ -z "$response_msg" ]
+     then
+        response_msg=download-dataobject-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-dataobject-response-header.tmp
+    fi
 
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
@@ -1244,24 +1544,52 @@ function dm_download_collection_async {
     then 
       #In this case the destination path file will contain the error code
       print_error_message "$reponse_msg" "$code" 
-    else
-      rm -f $response_hdr 2> /dev/null
     fi
 }
 
 
 #Download to Globus 
-#Inputs: <item-path> path on archive
+#Inputs: [-o output-json-file]
+#        [-D REST-response]
+#        <item-path> path on archive
 #        <destination-path> path on Globus
 function dm_download_async {
 
 
-    local USAGE="usage: dm_download_async <archive-path> <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_async [-D REST-respsonse] [-o output-json-file] <archive-path> <globus-destination-path> [globus-endpoint]"
+
+    local response_msg
+    local response_hdr
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ "$#" -lt 2 ] 
     then
         echo "$USAGE" >&2
-        exit 1
+        return 1
     fi
 
     local src_path="$1"
@@ -1331,8 +1659,15 @@ function dm_download_async {
 
 
     echo "Sending request to download the $item_type $src_path to Globus..."
-    local response_hdr=download-$item_type-response-header.tmp
-    local response_msg=download-$item_type-response-message.json.tmp
+    if [ -z "$response_msg" ]
+     then
+        response_msg=download-$item_type-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-$item_type-response-header.tmp
+    fi
+
 
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
@@ -1347,8 +1682,6 @@ function dm_download_async {
     then 
       #In this case the destination path file will contain the error code
       print_error_message "$response_msg" "$code"  || exit 1
-    else
-      rm -f $response_hdr 2> /dev/null
     fi
 
     #Parse the download receipt:
@@ -1433,8 +1766,10 @@ function dm_download_s3_deprecated {
 #Print Usage of dm_download_s3 function
 function dm_show_download_s3_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_s3 <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
+  usage: dm_download_s3 [-D REST-respsonse] [-o output-json-file] <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
   Download the specified dataobject or collection to the s3 bucket
+  [-D REST-respsonse]          Optional specify the filename to capture rest response
+  [-o output-json-file]       Optionally specify the filename to capture the json response
   archive-path                Source path in the archive
   destination-bucket          Destination S3 bucket to transfer data to
   destination_path            Full path of the destination file/folder in the S3 bucket
@@ -1448,6 +1783,34 @@ function dm_download_s3 {
 
     local CREDENTIALS_FILE=~/.aws/credentials
     local DESCRIPTION=description.json
+
+    local response_msg
+    local response_hdr
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ "$#" -lt 3 ]
     then
@@ -1502,8 +1865,14 @@ function dm_download_s3 {
 
 
     echo "Sending request to download the $item_type $SOURCE_PATH to S3..."
-    local response_hdr=download-$item_type-response-header.tmp
-    local response_msg=download-$item_type-response-message.json.tmp
+    if [ -z "$response_msg" ]
+     then
+        response_msg=download-$item_type-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-$item_type-response-header.tmp
+    fi
 
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
@@ -1518,8 +1887,6 @@ function dm_download_s3 {
     then
       #In this case the destination path file will contain the error code
       print_error_message "$response_msg" "$code"  || exit 1
-    else
-      rm -f $response_hdr 2> /dev/null
     fi
 
     #Parse the download receipt:
@@ -1540,14 +1907,47 @@ function dm_download_s3 {
 
 
 #Get the status of asynchronousl download request 
-#Input: <taskId>  a numerical id for the download receipt
+#Input: [-o download-status-file]
+#       [-D REST-response]
+#       <taskId>  a numerical id for the download receipt
 #Input: <request_type> dataObject, collection, or empty string for multiple downloads
-#Input: [download-status-file]
-#Input: [REST-response]
+#Input: [download-status-file] (for backward compatibility)
+#Input: [REST-response] (for backward compatibility)
 function dm_get_download_status {
 
  
-    local USAGE="usage: dm_get_download_status <download-taskId> <request-type> [download-status-file] [REST-response]"
+    local USAGE="usage: dm_get_download_status [-D REST-respsonse] [-o download-status-file] <download-taskId> <request-type>"
+
+    local RESPONSE_MSG
+    local response_hdr
+	local SHOW_OUTPUT=1
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+					SHOW_OUTPUT=0
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
     if [ "$#" -lt 2 ] 
     then
         echo "$USAGE" >&2
@@ -1563,16 +1963,29 @@ function dm_get_download_status {
     fi
 
 
+    if [ ! -z "$3" ]
+    then
+      RESPONSE_MSG="$3"
+	  SHOW_OUTPUT=0
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=get-download-status-response-message.json.tmp
+    fi 
 
-    local response_msg=${2-get_download_status-response-message.json.tmp}
-    local response_header=${3-get_download_status_response-header.tmp}
+    if [ ! -z "$4" ]
+    then
+      response_header="$4"
+    elif [ -z "$response_header" ]
+    then
+      response_header=get-download-status-response-header.tmp
+    fi 
 
 
     config=$(get_config) || exit 1
     server=$(get_server) || exit 1
 
    
-    curl -G -X GET ${server}${request_type}/download?task_id="$taskId"  $config  -H "Accept: application/json" -D $response_header -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+    curl -G -X GET ${server}${request_type}/download?taskId="$task_id"  $config  -H "Accept: application/json" -D $response_header -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status
     check_connection $response_header
 
     #TO CONTINUE
@@ -1580,39 +1993,58 @@ function dm_get_download_status {
     local response_code=$(get_http_code $response_header)
     if [ "$response_code" -ne 200 ]
     then
-      echo "ERROR getting download status for taskID:\"$taskId\" " >&2
-      print_error_message "$response_msg" "$response_code"
+      echo "ERROR getting download status for taskID:\"$task_id\" " >&2
+      print_error_message "$RESPONSE_MSG" "$response_code"
       exit 1
     else 
      
-      #Check if the user needs the response header file 
-      if [ -z "$3" ]
-      then 
-        rm -f "$RESPONSE_HEADER" 2> /dev/null
-      fi
 
-      if [ -z "$2" ]
+      if [ $SHOW_OUTPUT -eq 1 ]
       then
-        print_json_message "$response_msg"    
-        rm -f $response_msg 2> /dev/null 
+        print_json_message "$RESPONSE_MSG"    
       fi
     fi
 }
 
 
 #Rename a collection or a dataObject
-#Inputs:  <description.json>: The metadata json file
+#Inputs: [-o rename-status-file]
+#        [-D REST-response]
+#        <description.json>: The metadata json file
+#      : [rename-status-file] (for backward compatibility)
+#      : [REST-response] (for backward compatibility)
 function dm_rename() {
 
-    local USAGE="usage: dm_rename <description.json> [rename-status-file] [REST-response]"
-    while getopts ":" option
-    do
-      case "${option}" in
-        *)
-          echo "$USAGE" >&2
-          exit 1
-          ;;
-      esac
+    local USAGE="usage: dm_rename [-D REST-respsonse] [-o rename-status-file] <description.json>"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+	local SHOW_OUTPUT=1
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+					SHOW_OUTPUT=0
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
     done
 
     if [ -z "$1" ]
@@ -1629,8 +2061,23 @@ function dm_rename() {
       exit 1
     fi
 
-    local RESPONSE_MSG=${2-rename-response-message.json.tmp}
-    local RESPONSE_HEADER=${3-rename-response-header.tmp}
+
+    if [ ! -z "$2" ]
+    then
+      RESPONSE_MSG="$2"
+	  SHOW_OUTPUT=0
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=rename-response-message.json.tmp
+    fi 
+
+    if [ ! -z "$3" ]
+    then
+      RESPONSE_HEADER="$3"
+    elif [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=rename-response-header.tmp
+    fi 
 
     SERVER=$(get_server) || exit 1
     CONFIG=$(get_config) || exit 1
@@ -1648,16 +2095,10 @@ function dm_rename() {
       exit 1
     else
 
-      #Check if the user needs the response header file
-      if [ -z "$3" ]
-      then
-        rm -f "$RESPONSE_HEADER" 2> /dev/null
-      fi
       
-      if [ -z "$2" ]
+      if [ $SHOW_OUTPUT -eq 1 ]
       then
         print_json_message "$RESPONSE_MSG"
-        rm -f $RESPONSE_MSG 2> /dev/null
       fi
     
     fi 
@@ -1668,11 +2109,43 @@ function dm_rename() {
 
 
 #Add a bookmark for a user
-#Inputs:  <bookmark_name>: Name of the bookmark
+#Inputs:  [-o status-file]
+#         [-D REST-response]
+#         <bookmark_name>: Name of the bookmark
 #         <description.json>: The json file containing the parameters
+#      : [status-file] (for backward compatibility)
+#      : [REST-response] (for backward compatibility)
 function dm_add_bookmark () {
 
-    local USAGE="usage: dm_add_bookmark <bookmark_name> <description.json> [REST-response]"
+    local USAGE="usage: dm_add_bookmark [-D REST-respsonse] [-o status-file] <bookmark_name> <description.json>"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
@@ -1694,8 +2167,22 @@ function dm_add_bookmark () {
       exit 1
     fi
     
-    local RESPONSE_MSG=add_bookmark-response-message.json.tmp
-    local RESPONSE_HEADER=add_bookmark-response-header.tmp
+
+    if [ ! -z "$3" ]
+    then
+      RESPONSE_MSG="$3"
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=add_bookmark-response-message.json.tmp
+    fi 
+
+    if [ ! -z "$4" ]
+    then
+      RESPONSE_HEADER="$4"
+    elif [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=add_bookmark-response-header.tmp
+    fi 
 
     rm -f  $RESPONSE_MSG 2>/dev/null 
     rm -f $RESPONSE_HEADER 2>/dev/null 
@@ -1715,15 +2202,6 @@ function dm_add_bookmark () {
       echo "ERROR enrolling user \"$BOOKMARK_NAME\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
       exit 1
-    else
-
-      #Check if the user needs the response header file
-      if [ -z "$3" ]
-      then
-        rm -f "$RESPONSE_HEADER" 2> /dev/null
-      fi
-
-      rm -f "$RESPONSE_MSG" 2 > /dev/null
     fi
 
 
@@ -1732,11 +2210,43 @@ function dm_add_bookmark () {
 }
 
 #Register a user
-#Inputs:  <user id>: LDAP id of the user
+#Inputs:  [-o status-file]
+#         [-D REST-response]
+#         <user id>: LDAP id of the user
 #         <description.json>: The json file containing the parameters
+#      : [status-file] (for backward compatibility)
+#      : [REST-response] (for backward compatibility)
 function dm_register_user () {
 
-local USAGE="usage: dm_register_user <userId> <description.json> [REST-response]"
+local USAGE="usage: dm_register_user [-D REST-respsonse] [-o status-file] <userId> <description.json> [REST-response]"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ -z "$1" ] || [ -z "$2" ]
     then
@@ -1757,9 +2267,23 @@ local USAGE="usage: dm_register_user <userId> <description.json> [REST-response]
       echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
       exit 1
     fi
-   
-    local RESPONSE_MSG=register_user-response-message.json.tmp
-    local RESPONSE_HEADER=register_user-response-header.tmp
+
+
+    if [ ! -z "$3" ]
+    then
+      RESPONSE_MSG="$3"
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=register_user-response-message.json.tmp
+    fi 
+
+    if [ ! -z "$4" ]
+    then
+      RESPONSE_HEADER="$4"
+    elif [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=register_user-response-header.tmp
+    fi 
 
     rm -f  $RESPONSE_MSG 2>/dev/null
     rm -f $RESPONSE_HEADER 2>/dev/null
@@ -1779,25 +2303,48 @@ local USAGE="usage: dm_register_user <userId> <description.json> [REST-response]
       echo "ERROR enrolling user \"$USER_ID\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
       exit 1
-    else
-
-      #Check if the user needs the response header file
-      if [ -z "$3" ]
-      then
-        rm -f "$RESPONSE_HEADER" 2> /dev/null
-      fi
-
-      rm -f "$RESPONSE_MSG" 2 > /dev/null
     fi
 }
 
 
 #Update an existing user
-#Inputs:  <user id>: LDAP id of the user
+#Inputs:  [-o status-file]
+#         [-D REST-response]
+#         <user id>: LDAP id of the user
 #         <description.json>: The json file containing the parameters
+#      : [status-file] (for backward compatibility)
+#      : [REST-response] (for backward compatibility)
 function dm_update_user () {
 
-local USAGE="usage: dm_update_user <userId> <description.json> [REST-response]"
+local USAGE="usage: dm_update_user [-D REST-respsonse] [-o status-file] <userId> <description.json>"
+
+    local RESPONSE_MSG
+    local RESPONSE_HEADER
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    RESPONSE_MSG="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
 
     if [ -z "$1" ] || [ -z "$2" ]
     then
@@ -1819,8 +2366,23 @@ local USAGE="usage: dm_update_user <userId> <description.json> [REST-response]"
       exit 1
     fi
 
-    local RESPONSE_MSG=update-user-response-message.json.tmp
-    local RESPONSE_HEADER=update-user-response-header.tmp
+
+
+    if [ ! -z "$3" ]
+    then
+      RESPONSE_MSG="$3"
+    elif [ -z "$RESPONSE_MSG" ]
+    then
+      RESPONSE_MSG=update_user-response-message.json.tmp
+    fi 
+
+    if [ ! -z "$4" ]
+    then
+      RESPONSE_HEADER="$4"
+    elif [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=update_user-response-header.tmp
+    fi 
 
     rm -f  $RESPONSE_MSG 2>/dev/null
     rm -f $RESPONSE_HEADER 2>/dev/null
@@ -1840,15 +2402,6 @@ local USAGE="usage: dm_update_user <userId> <description.json> [REST-response]"
       echo "ERROR updating user \"$USER_ID\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
       exit 1
-    else
-
-      #Check if the user needs the response header file
-      if [ -z "$3" ]
-      then
-        rm -f "$RESPONSE_HEADER" 2> /dev/null
-      fi
-
-      rm -f "$RESPONSE_MSG" 2 > /dev/null
     fi
 }
 

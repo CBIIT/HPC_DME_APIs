@@ -10,7 +10,6 @@
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  -->
 
-
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
@@ -87,8 +86,9 @@
 	<xsd:simpleType name="HpcDownloadTaskType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="DATA_OBJECT" />
-			<xsd:enumeration value="COLLECTION" />
 			<xsd:enumeration value="DATA_OBJECT_LIST" />
+			<xsd:enumeration value="COLLECTION" />
+			<xsd:enumeration value="COLLECTION_LIST" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -225,11 +225,22 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:simpleType name="HpcDownloadRequestType">
+	<xsd:complexType name="HpcSynchronousDownloadFilter">
+		<xsd:sequence>
+			<xsd:element name="compressedArchiveType"
+				type="hpc-domain-datatransfer:HpcCompressedArchiveType" />
+			<xsd:element name="includePatterns" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="patternType"
+				type="hpc-domain-datatransfer:HpcPatternType" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:simpleType name="HpcCompressedArchiveType">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="SYNCHRONOUS" />
-			<xsd:enumeration value="GLOBUS" />
-			<xsd:enumeration value="S3" />
+			<xsd:enumeration value="TAR" />
+			<xsd:enumeration value="ZIP" />
+			<xsd:enumeration value="TGZ" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -332,6 +343,8 @@
 			<xsd:element name="configurationId" type="xsd:string" />
 			<xsd:element name="dataObjectPaths" type="xsd:string"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="collectionPaths" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="type"
 				type="hpc-domain-datatransfer:HpcDownloadTaskType" />
 			<xsd:element name="globusDownloadDestination"
@@ -403,7 +416,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:simpleType name="HpcDirectoryScanPatternType">
+	<xsd:simpleType name="HpcPatternType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="SIMPLE" />
 			<xsd:enumeration value="REGEX" />

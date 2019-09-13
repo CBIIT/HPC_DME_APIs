@@ -465,8 +465,6 @@
 	function cancelEdit()
 	{
 		document.getElementById("action").value = "cancel";
-		var percentEncodedDfPath = percentEncodePath(document.getElementById("path").value);
-		$('#datafileForm').attr('action', '/datafile?path=' + percentEncodedDfPath);
 		$("#datafileForm").submit();
 	}
 	

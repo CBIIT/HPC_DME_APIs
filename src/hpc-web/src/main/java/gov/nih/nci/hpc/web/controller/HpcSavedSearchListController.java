@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -33,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcNamedQuery;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
 import gov.nih.nci.hpc.web.model.Views;
@@ -54,6 +57,9 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcSavedSearchListController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.query}")
 	private String queryServiceURL;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	/**
 	 * GET action to query user saved searches
@@ -71,16 +77,13 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 	public List<HpcNamedQuery> get(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
 		String authToken = (String) session.getAttribute("hpcUserToken");
+		String userId = (String) session.getAttribute("hpcUserId");
 		List<HpcNamedQuery> result = new ArrayList<HpcNamedQuery>();
 		try {
 			HpcNamedCompoundMetadataQueryListDTO queries = HpcClientUtil.getSavedSearches(authToken, queryServiceURL,
 					sslCertPath, sslCertPassword);
-			if (queries == null || queries.getNamedCompoundQueries() == null
-					|| queries.getNamedCompoundQueries().size() == 0) {
-				HpcNamedQuery namedQuery = new HpcNamedQuery();
-				namedQuery.setSearchName("No Saved Searches");
-				result.add(namedQuery);
-			} else {
+			if (queries != null && queries.getNamedCompoundQueries() != null
+					&& queries.getNamedCompoundQueries().size() > 0) {
 				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 				for (HpcNamedCompoundMetadataQuery query : queries.getNamedCompoundQueries()) {
 					HpcNamedQuery namedQuery = new HpcNamedQuery();
@@ -93,7 +96,7 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 			}
 			return result;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to retrieve saved searches for user " + userId, e);
 			return result;
 		}
 	}

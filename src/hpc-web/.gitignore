@@ -6,3 +6,4 @@
 /target/
 
 hpcweb.log.*
+/bin/

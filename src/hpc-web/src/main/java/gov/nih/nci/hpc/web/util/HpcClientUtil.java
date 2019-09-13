@@ -395,12 +395,19 @@ public class HpcClientUtil {
 
 
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
-      String path, boolean list, String hpcCertPath, String hpcCertPassword) {
-    return getCollection(token, hpcCollectionlURL, path, false, list, hpcCertPath, hpcCertPassword);
+	  String path, boolean list, String hpcCertPath, String hpcCertPassword) {
+	return getCollection(token, hpcCollectionlURL, path, false, list, false, hpcCertPath, hpcCertPassword);
   }
-
+	  
+  
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean children, boolean list, String hpcCertPath, String hpcCertPassword) {
+    return getCollection(token, hpcCollectionlURL, path, children, list, false, hpcCertPath, hpcCertPassword);
+  }
+  
+
+  public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
+      String path, boolean children, boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
     try {
       final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
         hpcCollectionlURL).path("/{dme-archive-path}");
@@ -409,11 +416,12 @@ public class HpcClientUtil {
       } else {
         ucBuilder.queryParam("list", Boolean.valueOf(list).toString());
       }
+      ucBuilder.queryParam("includeAcl", Boolean.valueOf(includeAcl).toString());
       final String serviceURL = ucBuilder.buildAndExpand(path).encode().toUri()
         .toURL().toExternalForm();
+	  
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
-
       Response restResponse = client.invoke("GET", null);
       // System.out.println("restResponse.getStatus():"
       // +restResponse.getStatus());
@@ -439,12 +447,21 @@ public class HpcClientUtil {
       throw new HpcWebException(path + ": " + e.getMessage());
     }
   }
+  
+  
+  public static HpcDataObjectListDTO getDatafiles(String token, String hpcDatafileURL, String path,
+	      boolean list, String hpcCertPath, String hpcCertPassword) {
+	  return getDatafiles(token, hpcDatafileURL, path,
+		      list, false, hpcCertPath,hpcCertPassword);
+  }
+  
 
   public static HpcDataObjectListDTO getDatafiles(String token, String hpcDatafileURL, String path,
-      boolean list, String hpcCertPath, String hpcCertPassword) {
+    boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
     try {
       final String url2Apply = UriComponentsBuilder.fromHttpUrl(hpcDatafileURL)
         .path("/{dme-archive-path}").queryParam("list", Boolean.valueOf(list))
+        .queryParam("includeAcl", Boolean.valueOf(includeAcl))
         .buildAndExpand(path).encode().toUri().toURL().toExternalForm();
       WebClient client = HpcClientUtil.getWebClient(url2Apply, hpcCertPath,
         hpcCertPassword);
@@ -1546,6 +1563,47 @@ public class HpcClientUtil {
     return response;
   }
 
+  public static HpcBulkDataObjectDownloadResponseDTO downloadFiles(String token, String hpcQueryURL,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO dto, String hpcCertPath, String hpcCertPassword) {
+    HpcBulkDataObjectDownloadResponseDTO response = null;
+    try {
+      WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
+      Response restResponse = client.invoke("POST", dto);
+      if (restResponse.getStatus() == 200) {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+        response = parser.readValueAs(HpcBulkDataObjectDownloadResponseDTO.class);
+      } else {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+        throw new HpcWebException("Failed to submit download request: " + exception.getMessage());
+      }
+    } catch (HpcWebException e) {
+      throw e;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new HpcWebException("Failed to submit download request: " + e.getMessage());
+    }
+    return response;
+  }
+  
   public static AjaxResponseBody downloadDataFile(String token, String serviceURL,
       HpcDownloadRequestDTO dto, String downloadType, String hpcCertPath, String hpcCertPassword)
       throws JsonParseException, IOException {
@@ -1576,10 +1634,10 @@ public class HpcClientUtil {
       JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
       try {
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        result.setMessage("Download request is not successfull: " + exception.getMessage());
+        result.setMessage("Download request is not successful: " + exception.getMessage());
         return result;
       } catch (Exception e) {
-        result.setMessage("Download request is not successfull: " + e.getMessage());
+        result.setMessage("Download request is not successful: " + e.getMessage());
         return result;
       }
     }

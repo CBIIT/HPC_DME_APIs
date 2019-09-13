@@ -22,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +34,7 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
@@ -59,6 +61,9 @@ import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 public class HpcDownloadFilesController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.download}")
 	private String dataObjectsDownloadServiceURL;
+	
+	@Value("${gov.nih.nci.hpc.server.v2.download}")
+	private String collectionsDownloadServiceURL;
 
 	@Value("${gov.nih.nci.hpc.server.collection.download}")
 	private String collectionDownloadServiceURL;
@@ -95,7 +100,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			HpcSearchUtil.cacheSelectedRows(session, request, model);
 			HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 
-			String searchType = request.getParameter("searchType");
+			String downloadType = request.getParameter("downloadType");
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
 			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
@@ -106,6 +111,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 					hpcDownloadDatafile.getSelectedPaths().add(pathStr.substring(pathStr.lastIndexOf(":") + 1));
 				}
 			}
+			model.addAttribute("downloadType", downloadType);
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 			HpcSearch hpcSearch = new HpcSearch();
 			String pageNumber = request.getParameter("pageNumber");
@@ -136,7 +142,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 	 * @return
 	 */
 	@JsonView(Views.Public.class)
-	@RequestMapping(method = RequestMethod.PUT)
+	@RequestMapping(value = "/download", method = RequestMethod.POST)
 	@ResponseBody
 	public AjaxResponseBody download(@Valid @ModelAttribute("hpcDownloadDatafile") HpcDownloadDatafile downloadFile,
 			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,
@@ -150,39 +156,56 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			}
 
 			HpcBulkDataObjectDownloadRequestDTO dto = new HpcBulkDataObjectDownloadRequestDTO();
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO dtoV2 = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO();
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
+			String downloadType = request.getParameter("downloadType");
 			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
 			} else {
 				selectedPathsStr = selectedPathsStr.substring(1, selectedPathsStr.length() - 1);
 				StringTokenizer tokens = new StringTokenizer(selectedPathsStr, ",");
-				while (tokens.hasMoreTokens())
-					dto.getDataObjectPaths().add(tokens.nextToken().trim());
+				while (tokens.hasMoreTokens()) {
+					if(downloadType.equals("datafiles"))
+						dto.getDataObjectPaths().add(tokens.nextToken().trim());
+					else
+						dtoV2.getCollectionPaths().add(tokens.nextToken().trim());
+				}
 			}
 
 			HpcFileLocation location = new HpcFileLocation();
 			location.setFileContainerId(downloadFile.getEndPointName());
 			location.setFileId(downloadFile.getEndPointLocation());
-			dto.setDestination(location);
+			if(downloadType.equals("datafiles"))
+				dto.setDestination(location);
+			else {
+				HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
+				globusDownloadDestination.setDestinationLocation(location);
+				dtoV2.setGlobusDownloadDestination(globusDownloadDestination);
+			}
 
 			try {
-				HpcBulkDataObjectDownloadResponseDTO downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
+				HpcBulkDataObjectDownloadResponseDTO downloadDTO = null;
+				if(downloadType.equals("datafiles"))
+					downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
 						.downloadFiles(authToken, dataObjectsDownloadServiceURL, dto, sslCertPath, sslCertPassword);
+				else
+					downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
+						.downloadFiles(authToken, collectionsDownloadServiceURL, dtoV2, sslCertPath, sslCertPassword);
 				if (downloadDTO != null)
-					result.setMessage("Download request successfull.<br/> Task Id: " + downloadDTO.getTaskId());
+					result.setMessage("Download request successful.<br/> Task Id: " + downloadDTO.getTaskId());
 				return result;
 			} catch (Exception e) {
-				result.setMessage("Download request is not successfull: " + e.getMessage());
+				result.setMessage("Download request is not successful: " + e.getMessage());
 				return result;
 			}
 		} catch (HttpStatusCodeException e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		} catch (RestClientException e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		} catch (Exception e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		}
 	}

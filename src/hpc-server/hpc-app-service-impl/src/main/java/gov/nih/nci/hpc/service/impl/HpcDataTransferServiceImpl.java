@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,12 +23,14 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
+
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -46,7 +49,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -54,9 +56,11 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -119,6 +123,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Data management configuration locator.
 	@Autowired
 	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
+
+	// The compressed archive extractor. Used to extract files from TAR/TGZ/ZIP.
+	@Autowired
+	private HpcCompressedArchiveExtractor compressedArchiveExtractor = null;
+
+	// The pattern convenient class to support string pattern matching
+	@Autowired
+	private HpcPattern pattern = null;
 
 	// Pagination support.
 	@Autowired
@@ -244,7 +256,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcDataObjectDownloadResponse downloadDataObject(String path, HpcFileLocation archiveLocation,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, HpcDataTransferType dataTransferType,
+			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String userId, boolean completionEvent, long size) throws HpcException {
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
@@ -253,7 +266,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate the destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
-				configurationId, false);
+				synchronousDownloadFilter, configurationId, false);
 
 		// Create a download request.
 		HpcDataObjectDownloadRequest downloadRequest = new HpcDataObjectDownloadRequest();
@@ -287,7 +300,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (globusDownloadDestination == null && s3DownloadDestination == null
 				&& googleDriveDownloadDestination == null) {
 			// This is a synchronous download request.
-			performSynchronousDownload(downloadRequest, dataTransferType, response, baseArchiveDestination);
+			performSynchronousDownload(downloadRequest, dataTransferType, response, baseArchiveDestination,
+					synchronousDownloadFilter);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.GLOBUS) && globusDownloadDestination != null) {
 			// This is an asynchronous download request from a file system archive to a
@@ -431,7 +445,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType, HpcS3Account s3Account,
 			HpcFileLocation directoryLocation, String configurationId, List<String> includePatterns,
-			List<String> excludePatterns, HpcDirectoryScanPatternType patternType) throws HpcException {
+			List<String> excludePatterns, HpcPatternType patternType) throws HpcException {
 		// Input validation.
 		if (!HpcDomainValidator.isValidFileLocation(directoryLocation)) {
 			throw new HpcException("Invalid directory location", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -511,7 +525,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
-		if (taskType.equals(HpcDownloadTaskType.COLLECTION) || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+		if (taskType.equals(HpcDownloadTaskType.COLLECTION) || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST)
+				|| taskType.equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 			HpcCollectionDownloadTask task = dataDownloadDAO.getCollectionDownloadTask(taskId);
 			if (task != null) {
 				taskStatus.setCollectionDownloadTask(task);
@@ -680,7 +695,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			String userId, String configurationId) throws HpcException {
 		// Validate the download destination.
-		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, configurationId, true);
+		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, null, configurationId,
+				true);
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
@@ -700,22 +716,47 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcCollectionDownloadTask downloadDataObjects(Map<String, String> dataObjectPathsMap,
+	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId) throws HpcException {
-		// Validate the requested destination location. Note: we use the configuration
-		// ID of the
-		// first data object path. At this time, there is no need to validate for all
-		// configuration IDs.
-		String configurationId = dataObjectPathsMap.values().iterator().next();
-		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, configurationId, true);
+			String userId, String configurationId) throws HpcException {
+		// Validate the download destination.
+		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, null, configurationId,
+				true);
 
 		// Create a new collection download task.
 		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 		downloadTask.setS3DownloadDestination(s3DownloadDestination);
-		downloadTask.getDataObjectPaths().addAll(dataObjectPathsMap.keySet());
+		downloadTask.getCollectionPaths().addAll(collectionPaths);
+		downloadTask.setUserId(userId);
+		downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		downloadTask.setConfigurationId(configurationId);
+
+		// Persist the request.
+		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+
+		return downloadTask;
+	}
+
+	@Override
+	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
+			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
+			String userId, String configurationId) throws HpcException {
+		// Validate the requested destination location. Note: we use the configuration
+		// ID of one data object path. At this time, there is no need to validate for
+		// all
+		// configuration IDs.
+		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, null, configurationId,
+				true);
+
+		// Create a new collection download task.
+		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+		downloadTask.setCreated(Calendar.getInstance());
+		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+		downloadTask.setS3DownloadDestination(s3DownloadDestination);
+		downloadTask.getDataObjectPaths().addAll(dataObjectPaths);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
@@ -1122,6 +1163,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 *                                       destination.
 	 * @param googleDriveDownloadDestination The user requested Google Drive
 	 *                                       download destination.
+	 * @param synchronousDownloadFilter      (Optional) synchronous download filter
+	 *                                       to extract specific files from a data
+	 *                                       object that is 'compressed archive'
+	 *                                       such as ZIP.
 	 * @param configurationId                The configuration ID.
 	 * @param bulkDownload                   True if this is a request to download a
 	 *                                       list of files or a collection, or false
@@ -1131,8 +1176,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 */
 	private void validateDownloadDestination(HpcGlobusDownloadDestination globusDownloadDestination,
 			HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String configurationId,
-			boolean bulkDownload) throws HpcException {
+			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+			HpcSynchronousDownloadFilter synchronousDownloadFilter, String configurationId, boolean bulkDownload)
+			throws HpcException {
 		// Validate the destination (if provided) is either Globus, S3, or Google Drive.
 		int destinations = 0;
 		if (globusDownloadDestination != null) {
@@ -1146,6 +1192,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 		if (destinations > 1) {
 			throw new HpcException("Multiple download destinations provided (Globus, S3, Google Drive)",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate an optional synchronous download filter is provided only for a
+		// synchronous download request.
+		if (destinations == 1 && synchronousDownloadFilter != null) {
+			throw new HpcException(
+					"A download destination (Globus, S3, Google Drive) provided w/ synchronous download filter",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -1194,6 +1248,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 			if (StringUtils.isEmpty(googleDriveDownloadDestination.getAccessToken())) {
 				throw new HpcException("Invalid Google Drive access token", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
+		// Validate the synchronous download filter.
+		if (synchronousDownloadFilter != null) {
+			if (synchronousDownloadFilter.getCompressedArchiveType() == null) {
+				throw new HpcException("No / Invalid compressed archive type provided in synchronous download filter",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			if (synchronousDownloadFilter.getIncludePatterns().isEmpty()) {
+				throw new HpcException("No patterns provided in synchronous download filter",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			if (synchronousDownloadFilter.getPatternType() == null) {
+				// Pattern type is optional and the default is SIMPLE.
+				synchronousDownloadFilter.setPatternType(HpcPatternType.SIMPLE);
 			}
 		}
 	}
@@ -1257,7 +1329,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @throws HpcException on service failure
 	 */
 	private void filterScanItems(List<HpcDirectoryScanItem> scanItems, List<String> includePatterns,
-			List<String> excludePatterns, HpcDirectoryScanPatternType patternType, HpcDataTransferType dataTransferType)
+			List<String> excludePatterns, HpcPatternType patternType, HpcDataTransferType dataTransferType)
 			throws HpcException {
 		if (includePatterns.isEmpty() && excludePatterns.isEmpty()) {
 			// No patterns provided.
@@ -1274,15 +1346,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// '/'
 		boolean prefixPattern = dataTransferType.equals(HpcDataTransferType.GLOBUS);
 
-		// Compile include regex expressions.
-		List<Pattern> includeRegex = new ArrayList<>();
-		includePatterns.forEach(pattern -> includeRegex.add(Pattern.compile(
-				patternType.equals(HpcDirectoryScanPatternType.SIMPLE) ? toRegex(pattern, prefixPattern) : pattern)));
+		// Compile include patterns.
+		List<Pattern> compiledIncludePatterns = pattern.compile(includePatterns, patternType, prefixPattern);
 
-		// Compile exclude regex expressions.
-		List<Pattern> excludeRegex = new ArrayList<>();
-		excludePatterns.forEach(pattern -> excludeRegex.add(Pattern.compile(
-				patternType.equals(HpcDirectoryScanPatternType.SIMPLE) ? toRegex(pattern, prefixPattern) : pattern)));
+		// Compile exclude patterns.
+		List<Pattern> compiledExcludePatterns = pattern.compile(excludePatterns, patternType, prefixPattern);
 
 		// Match the items against the patterns.
 		ListIterator<HpcDirectoryScanItem> iter = scanItems.listIterator();
@@ -1291,51 +1359,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String path = iter.next().getFilePath();
 
 			// Match the patterns.
-			if (!((includeRegex.isEmpty() || matches(includeRegex, path))
-					&& (excludeRegex.isEmpty() || !matches(excludeRegex, path)))) {
+			if (!((compiledIncludePatterns.isEmpty() || pattern.matches(compiledIncludePatterns, path))
+					&& (compiledExcludePatterns.isEmpty() || !pattern.matches(compiledExcludePatterns, path)))) {
 				iter.remove();
 			}
 		}
-	}
-
-	/**
-	 * Regex matching on a list of patterns.
-	 *
-	 * @param patterns A list of patterns to match.
-	 * @param input    The string to match.
-	 * @return true if the input matched at least one of the patterns, or false
-	 *         otherwise.
-	 */
-	private boolean matches(List<Pattern> patterns, String input) {
-		for (Pattern pattern : patterns) {
-			if (pattern.matcher(input).matches()) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Convert pattern from SIMPLE to REGEX.
-	 *
-	 * @param pattern       The SIMPLE pattern.
-	 * @param prefixPattern If set to true, the pattern will be prefixed by a single
-	 *                      '/' (if not already sent like that)
-	 * @return The REGEX pattern.
-	 */
-	private String toRegex(String pattern, boolean prefixPattern) {
-		// Ensure the pattern starts with '/'.
-		String regex = prefixPattern && !pattern.startsWith("/") ? "/" + pattern : pattern;
-
-		// Convert the '**' to regex.
-		regex = regex.replaceAll(Pattern.quote("**"), ".*");
-
-		// Convert the '*' to regex.
-		regex = regex.replaceAll("([^\\.])\\*", "$1[^/]*");
-
-		// Convert the '?' to regex.
-		return regex.replaceAll(Pattern.quote("?"), ".");
 	}
 
 	/**
@@ -1443,18 +1471,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	/**
 	 * Perform a synchronous download from either a Cleversafe or POSIX archive.
 	 *
-	 * @param downloadRequest        The data object download request.
-	 * @param dataTransferType       The data transfer type to use.
-	 * @param response               The download response object. This method sets
-	 *                               download task id and destination location on
-	 *                               the response.
-	 * @param baseArchiveDestination The base archive destination of the requested
-	 *                               data object.
+	 * @param downloadRequest           The data object download request.
+	 * @param dataTransferType          The data transfer type to use.
+	 * @param response                  The download response object. This method
+	 *                                  sets download task id and destination
+	 *                                  location on the response.
+	 * @param baseArchiveDestination    The base archive destination of the
+	 *                                  requested data object.
+	 * @param synchronousDownloadFilter (Optional) synchronous download filter to
+	 *                                  extract specific files from a data object
+	 *                                  that is 'compressed archive' such as ZIP.
 	 * @throws HpcException on service failure.
 	 */
 	private void performSynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
 			HpcDataTransferType dataTransferType, HpcDataObjectDownloadResponse response,
-			HpcArchive baseArchiveDestination) throws HpcException {
+			HpcArchive baseArchiveDestination, HpcSynchronousDownloadFilter synchronousDownloadFilter)
+			throws HpcException {
 		// Create a destination file on the local file system for the synchronous
 		// download.
 		downloadRequest.setFileDestination(createDownloadFile());
@@ -1464,6 +1496,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataTransferProxies.get(dataTransferType).downloadDataObject(
 				getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId()), downloadRequest,
 				baseArchiveDestination, null);
+
+		// If a filter was requested, the data object is expected to be a compressed
+		// archive file (ZIP, TAR, TGZ).
+		// We will return a filtered compressed archive based on patterns provided.
+		if (synchronousDownloadFilter != null) {
+			File filteredCompressedArchive = createDownloadFile();
+			try {
+				if (compressedArchiveExtractor.extract(downloadRequest.getFileDestination(), filteredCompressedArchive,
+						synchronousDownloadFilter.getCompressedArchiveType(),
+						synchronousDownloadFilter.getIncludePatterns(),
+						synchronousDownloadFilter.getPatternType()) > 0) {
+					response.setDestinationFile(filteredCompressedArchive);
+				} else {
+					throw new HpcException("Pattern(s) did not match any entry in compressed archive file",
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+
+			} catch (HpcException e) {
+				FileUtils.deleteQuietly(filteredCompressedArchive);
+				throw (e);
+
+			} finally {
+				FileUtils.deleteQuietly(downloadRequest.getFileDestination());
+			}
+
+		}
 	}
 
 	/**
