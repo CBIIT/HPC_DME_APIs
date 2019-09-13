@@ -140,11 +140,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getCollection(String path, Boolean list) {
+  public Response getCollection(String path, Boolean list, Boolean includeAcl) {
     HpcCollectionListDTO collections = new HpcCollectionListDTO();
     try {
       HpcCollectionDTO collection =
-          dataManagementBusService.getCollection(toNormalizedPath(path), list);
+          dataManagementBusService.getCollection(toNormalizedPath(path), list, 
+        		  includeAcl != null ? includeAcl : false);
       if (collection != null) {
         collections.getCollections().add(collection);
       }
@@ -155,6 +156,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(!collections.getCollections().isEmpty() ? collections : null, true);
   }
+  
 
   @Override
   public Response getCollectionChildren(String path) {
@@ -448,10 +450,11 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getDataObject(String path) {
+  public Response getDataObject(String path, Boolean includeAcl) {
     HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
     try {
-      HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path));
+      HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path), 
+    		  includeAcl != null ? includeAcl : false);
       if (dataObject != null) {
         dataObjects.getDataObjects().add(dataObject);
       }
@@ -462,6 +465,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
   }
+  
 
   @Deprecated
   @Override
@@ -600,15 +604,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Deprecated
   @Override
   public Response downloadDataObjects(HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
-    return downloadDataObjects(toV2(downloadRequest));
+    return downloadDataObjectsOrCollections(toV2(downloadRequest));
   }
 
   @Override
-  public Response downloadDataObjects(
+  public Response downloadDataObjectsOrCollections(
       gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
     HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
     try {
-      downloadResponse = dataManagementBusService.downloadDataObjects(downloadRequest);
+      downloadResponse = dataManagementBusService.downloadDataObjectsOrCollections(downloadRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -618,10 +622,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getDataObjectsDownloadStatus(String taskId) {
+  public Response getDataObjectsOrCollectionsDownloadStatus(String taskId) {
     HpcCollectionDownloadStatusDTO downloadStatus = null;
     try {
-      downloadStatus = dataManagementBusService.getDataObjectsDownloadStatus(taskId);
+      downloadStatus = dataManagementBusService.getDataObjectsOrCollectionsDownloadStatus(taskId);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -650,10 +654,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response getDataManagementModel() {
+  public Response getDataManagementModels() {
     HpcDataManagementModelDTO docModel = null;
     try {
-      docModel = dataManagementBusService.getDataManagementModel();
+      docModel = dataManagementBusService.getDataManagementModels();
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(docModel, true);
+  }
+  
+  @Override
+  public Response getDataManagementModel(String basePath) {
+    HpcDataManagementModelDTO docModel = null;
+    try {
+      docModel = dataManagementBusService.getDataManagementModel(toNormalizedPath(basePath));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -771,7 +788,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO v2DownloadRequest =
         new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO();
-    v2DownloadRequest.setPath(downloadRequest.getPath());
     v2DownloadRequest.getDataObjectPaths().addAll(downloadRequest.getDataObjectPaths());
     if (downloadRequest.getDestination() != null) {
       HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();

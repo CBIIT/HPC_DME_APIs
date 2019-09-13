@@ -38,7 +38,7 @@ public class HpcCompoundSearchValidator {
 				end++;
 		}
 		if (start != end)
-			throw new HpcWebException("Invalid advanced search criteria. Paranthesis in missing");
+			throw new HpcWebException("Invalid advanced search criteria. Parenthesis is missing");
 	}
 
 	private void validateOperators() throws HpcWebException {

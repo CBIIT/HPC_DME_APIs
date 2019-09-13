@@ -186,6 +186,7 @@
 			<xsd:element name="collectionTypes" type="xsd:string" 
 			             minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="ruleEnabled" type="xsd:boolean" />
+			<xsd:element name="description" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

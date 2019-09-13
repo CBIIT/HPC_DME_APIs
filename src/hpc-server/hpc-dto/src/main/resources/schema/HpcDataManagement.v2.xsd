@@ -61,6 +61,8 @@
 					type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
 				<xsd:element name="googleDriveDownloadDestination"
 					type="hpc-domain-datatransfer:HpcGoogleDriveDownloadDestination" />
+				<xsd:element name="synchronousDownloadFilter"
+					type="hpc-domain-datatransfer:HpcSynchronousDownloadFilter" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -68,8 +70,9 @@
 	<xsd:element name="HpcBulkDataObjectDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="path" type="xsd:string" />
 				<xsd:element name="dataObjectPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="collectionPaths" type="xsd:string"
 					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="globusDownloadDestination"
 					type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
@@ -111,7 +114,7 @@
 			<xsd:element name="excludePatterns" type="xsd:string"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="patternType"
-				type="hpc-domain-datatransfer:HpcDirectoryScanPatternType" />
+				type="hpc-domain-datatransfer:HpcPatternType" />
 			<xsd:element name="bulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 			<xsd:element name="pathMap"

@@ -158,13 +158,13 @@ public class HpcDownloadController extends AbstractHpcController {
                         HpcDownloadTaskType.DATA_OBJECT.name();
 			return HpcClientUtil.downloadDataFile(authToken, serviceURL, dto, downloadTaskType, sslCertPath, sslCertPassword);
 		} catch (HttpStatusCodeException e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		} catch (RestClientException e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		} catch (Exception e) {
-			result.setMessage("Download request is not successfull: " + e.getMessage());
+			result.setMessage("Download request is not successful: " + e.getMessage());
 			return result;
 		}
 	}

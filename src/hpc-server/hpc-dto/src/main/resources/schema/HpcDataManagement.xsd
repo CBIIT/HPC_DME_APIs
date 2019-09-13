@@ -47,6 +47,8 @@
 				type="hpc-domain-datamanagement:HpcCollection" />
 			<xsd:element name="metadataEntries"
 				type="hpc-domain-metadata:HpcMetadataEntries" />
+			<xsd:element name="permission"
+				type="hpc-domain-datamanagement:HpcPermission" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -123,7 +125,7 @@
 			<xsd:element name="excludePatterns" type="xsd:string"
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="patternType"
-				type="hpc-domain-datatransfer:HpcDirectoryScanPatternType" />
+				type="hpc-domain-datatransfer:HpcPatternType" />
 			<xsd:element name="bulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 			<xsd:element name="pathMap"
@@ -219,6 +221,8 @@
 				type="hpc-domain-metadata:HpcMetadataEntries" />
 			<xsd:element name="percentComplete" type="xsd:int"
 				minOccurs="0" />
+			<xsd:element name="permission"
+				type="hpc-domain-datamanagement:HpcPermission" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -433,7 +437,6 @@
 	<xsd:element name="HpcBulkDataObjectDownloadRequestDTO">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="path" type="xsd:string" />
 				<xsd:element name="dataObjectPaths" type="xsd:string"
 					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="destination"

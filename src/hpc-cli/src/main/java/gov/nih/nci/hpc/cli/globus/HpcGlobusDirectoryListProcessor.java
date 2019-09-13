@@ -19,16 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
 import gov.nih.nci.hpc.cli.util.Constants;
 import gov.nih.nci.hpc.cli.util.HpcClientUtil;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import gov.nih.nci.hpc.cli.util.HpcLogWriter;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
@@ -139,9 +141,9 @@ public class HpcGlobusDirectoryListProcessor {
 		folders.add(folder);
 		
 		if (criteriaType != null && criteriaType.equals("Simple"))
-			folder.setPatternType(HpcDirectoryScanPatternType.SIMPLE);
+			folder.setPatternType(HpcPatternType.SIMPLE);
 		else
-			folder.setPatternType(HpcDirectoryScanPatternType.REGEX);
+			folder.setPatternType(HpcPatternType.REGEX);
 		if (excludePatterns != null && excludePatterns.size() > 0)
 			folder.getExcludePatterns().addAll(excludePatterns);
 		if (includePatterns != null && includePatterns.size() > 0)
