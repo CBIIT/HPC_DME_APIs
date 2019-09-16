@@ -596,6 +596,9 @@ function validateAndSubmit()
 			{
 				var attrOperValue = document.getElementById("operator"+suffix).value;	
 				var attrValueValue = document.getElementById("attrValue"+suffix).value;
+				if(attrOperValue == "LIKE" && attrValueValue.indexOf('%') == -1) {
+					document.getElementById("attrValue"+suffix).value = '%' + attrValueValue + '%';
+				}
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
 					alert("Invalid criteria. Please enter operator and value");
@@ -607,6 +610,9 @@ function validateAndSubmit()
 			{
 				var attrOperValue = document.getElementById("operator"+suffix).value;	
 				var attrValueValue = document.getElementById("attrValue"+suffix).value;
+				if(attrOperValue == "LIKE" && attrValueValue.indexOf('%') == -1) {
+					document.getElementById("attrValue"+suffix).value = '%' + attrValueValue + '%';
+				}
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
 					alert("Invalid criteria. Please enter operator and value");
