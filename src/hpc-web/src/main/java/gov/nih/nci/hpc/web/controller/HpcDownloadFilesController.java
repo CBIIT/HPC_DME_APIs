@@ -33,6 +33,7 @@ import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
@@ -191,8 +192,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				else
 					downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
 						.downloadFiles(authToken, collectionsDownloadServiceURL, dtoV2, sslCertPath, sslCertPassword);
-				if (downloadDTO != null)
-					result.setMessage("Download request successful.<br/> Task Id: " + downloadDTO.getTaskId());
+				if (downloadDTO != null) {
+					String taskType = downloadType.equals("datafiles") ? HpcDownloadTaskType.DATA_OBJECT_LIST.name(): HpcDownloadTaskType.COLLECTION_LIST.name();
+					result.setMessage("Download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
+				}
 				return result;
 			} catch (Exception e) {
 				result.setMessage("Download request is not successful: " + e.getMessage());

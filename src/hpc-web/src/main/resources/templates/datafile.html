@@ -335,7 +335,7 @@
 									</table>
 								  </div>
 								</form>
-								<form class="form-horizontal" id="datafileDeleteForm" th:action="@{/datafile}"
+								<form class="form-horizontal" id="datafileDeleteForm" th:action="@{/datafile/delete}"
 									th:object="${hpcDatafile}">
 									<input type="hidden" name="deletepath" id="deletepath" th:value="${hpcDatafile.getDataObject().getAbsolutePath()}"/>
 								</form>
@@ -518,8 +518,8 @@
 										.getElementById("deletewait");
 								waitEle.style.display = "block";
 								$.ajax({
-									type : "DELETE",
-									url : "/datafile?deletepath=" + percentEncodePath(document.getElementById("deletepath").value),
+									type : "POST",
+									url : "/datafile/delete?deletepath=" + percentEncodePath(document.getElementById("deletepath").value),
 									data : $form.serialize(),
 									success : function(msg) {
 										waitEle.style.display = "none";
