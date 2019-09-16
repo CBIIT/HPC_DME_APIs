@@ -57,7 +57,7 @@
 									<div class="col-sm-12 column">
 										<label for="userId">User ID:</label> <input
 											type="text" class="form-control"
-											th:field="*{nciUserId}" placeholder="Enter UserId" />
+											th:field="*{nciUserId}" placeholder="Enter User ID" />
 									</div>
 									<div class="col-sm-12 column">
 										<label for="firstName">First Name:</label> <input
@@ -141,7 +141,7 @@
     {
     	var userName = document.getElementById("nciUserId").value;
         if( /[^a-zA-Z0-9\-\_]/.test( userName ) ) {
-        	alert("Invalid UserId. Space is not allowed. Only _ and - special chars are allowed");
+        	alert("Invalid User ID. Space is not allowed. Only _ and - special chars are allowed");
             return false;
         }
     }
