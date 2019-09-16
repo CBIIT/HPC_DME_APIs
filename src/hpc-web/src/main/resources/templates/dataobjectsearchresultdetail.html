@@ -55,7 +55,7 @@
 	<script src="js/scripts.js"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
-    var results = "[[${searchresults}]]";
+    var results = [[${searchresults}]];
     var pageNumber = "[[${pageNumber}]]";
     var source = [[${source}]];
     var  queryName = [[${queryName}]];
@@ -261,6 +261,21 @@
             console.log('SUCCESS: ', $scope.selectedRows);
             selectedRowsData = $scope.selectedRows;
           });
+          
+          var metaSet = new Set(); 
+	      for(var i=0; i<$scope.gridOptions1.data.length; i++){
+	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries.length; j++){
+		    	  attribute = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].attribute;
+		    	  if(!metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "checksum") {
+		    	  	$scope.gridOptions1.columnDefs.push({
+		    			field: attribute,
+		    			width : 200
+		    	  	});
+		    	  	metaSet.add(attribute)
+		    	  }
+		          $scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].value;
+	    	  }
+	      }
         };
 
         Array.prototype.contains = function(obj) {

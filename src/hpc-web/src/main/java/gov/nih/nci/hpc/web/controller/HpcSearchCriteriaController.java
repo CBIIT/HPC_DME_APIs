@@ -301,6 +301,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
 				returnResult.setDownload(result.getCollection().getAbsolutePath());
 				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
+				returnResult.setMetadataEntries(new HpcMetadataEntries());
+				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}
@@ -347,6 +349,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
+				returnResult.setMetadataEntries(new HpcMetadataEntries());
+				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}
