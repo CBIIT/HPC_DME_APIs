@@ -1,5 +1,7 @@
 package gov.nih.nci.hpc.web.model;
 
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+
 public class HpcDatafileSearchResultDetailed {
 	private String path;
 	private String uuid;
@@ -9,6 +11,7 @@ public class HpcDatafileSearchResultDetailed {
 	private String checksum;
 	private String download;
 	private String permission;
+	HpcMetadataEntries metadataEntries;
 
 	public String getPermission() {
 		return permission;
@@ -72,6 +75,14 @@ public class HpcDatafileSearchResultDetailed {
 
 	public void setCreatedOn(String createdOn) {
 		this.createdOn = createdOn;
+	}
+
+	public HpcMetadataEntries getMetadataEntries() {
+		return metadataEntries;
+	}
+
+	public void setMetadataEntries(HpcMetadataEntries metadataEntries) {
+		this.metadataEntries = metadataEntries;
 	}
 
 }
