@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -103,6 +104,8 @@ import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -125,6 +128,9 @@ public class HpcClientUtil {
 
   private static final String JSON_RESPONSE_ATTRIB__ELEMENT_TYPE =
       "elementType";
+  
+  //The logger instance.
+  private final static Logger logger = LoggerFactory.getLogger(HpcClientUtil.class);
 
 
   public static WebClient getWebClient(String url, String hpcCertPath,
@@ -683,13 +689,12 @@ public class HpcClientUtil {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        throw new HpcWebException("Failed to create bookmark: " + exception.getMessage());
+        logger.error("Failed to create bookmark " + hpcBookmarkName, exception);
+        throw new HpcWebException(exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to create bookmark due to: " + e.getMessage());
+      logger.error("Failed to create bookmark " + hpcBookmarkName, e);
+      throw new HpcWebException(e.getMessage());
     }
   }
 
@@ -717,13 +722,12 @@ public class HpcClientUtil {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        throw new HpcWebException("Failed to delete bookmark: " + exception.getMessage());
+        logger.error("Failed to delete bookmark " + hpcBookmarkName, exception);
+        throw new HpcWebException(exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to delete bookmark due to: " + e.getMessage());
+    	logger.error("Failed to delete bookmark " + hpcBookmarkName, e);
+      throw new HpcWebException(e.getMessage());
     }
   }
 
@@ -779,15 +783,9 @@ public class HpcClientUtil {
     }
     try {
       return parser.readValueAs(HpcBookmarkListDTO.class);
-    } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to get Bookmarks due to: " + e.getMessage());
+    } catch (Exception e) {
+      logger.error("Failed to get bookmarks: ", e);
+      throw new HpcWebException(e.getMessage());
     }
   }
 
