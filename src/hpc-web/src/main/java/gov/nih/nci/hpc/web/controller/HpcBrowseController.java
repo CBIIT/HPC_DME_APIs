@@ -198,12 +198,14 @@ public class HpcBrowseController extends AbstractHpcController {
 
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
-						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
+						model, getChildren, true, refresh);
 				if (hpcBrowserEntry.isPartial()) {
 					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
 				}
 
 				browserEntry = trimPath(browserEntry, browserEntry.getName());
+				String name = browserEntry.getName().substring(browserEntry.getName().lastIndexOf('/') + 1);
+				browserEntry.setName(name);
 				entries.add(browserEntry);
 				model.addAttribute("userBookmarks", fetchCurrentUserBookmarks(session));
 				model.addAttribute("browserEntryList", entries);
