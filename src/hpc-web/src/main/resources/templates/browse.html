@@ -198,7 +198,7 @@
                       <li class="divider"></li>
 											<li><a href="#addCollection">Add Collection</a></li>
  											<li class="divider"></li>
-											<li><a href="#addDatafile">Add Datafile</a></li>
+											<li><a href="#addDatafile">Add Data File</a></li>
  											<li class="divider"></li>
 											<li><a href="#addBulk">Add Bulk (Globus)</a></li>
 											<li class="divider"></li>
@@ -338,9 +338,11 @@ function scrollWindow()
 	//be populated so dont want to go to the server.
 	if(!refresh && !node.populated) {
 		browseNode(node);
+		node = $('#tree1').tree('getNodeById', node.id);
 	} else {
 		refresh = null;
 	}
+	
 	$('#tree1').tree('selectNode', node);
 }
 );
@@ -359,8 +361,7 @@ function browseNode(node) {
           success : function(msg) {
        
           	data = msg;
-          	$('#tree1').tree('loadData', data);
-       
+          	$('#tree1').tree('updateNode', node, data[0]);
           },
     	  error : function(e) {
     		 console.log('ERROR: ', e);
