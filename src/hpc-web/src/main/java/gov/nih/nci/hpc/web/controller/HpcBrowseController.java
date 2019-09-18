@@ -199,19 +199,10 @@ public class HpcBrowseController extends AbstractHpcController {
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
 						model, getChildren, true, refresh);
-				if (hpcBrowserEntry.isPartial()) {
-					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
-				}
-
 				browserEntry = trimPath(browserEntry, browserEntry.getName());
 				String name = browserEntry.getName().substring(browserEntry.getName().lastIndexOf('/') + 1);
 				browserEntry.setName(name);
 				entries.add(browserEntry);
-				model.addAttribute("userBookmarks", fetchCurrentUserBookmarks(session));
-				model.addAttribute("browserEntryList", entries);
-				model.addAttribute("browserEntry", browserEntry);
-				model.addAttribute("scrollLoc", hpcBrowserEntry.getScrollLoc());
-				session.setAttribute("browserEntry", browserEntry);
 			}
 		} catch (Exception e) {
 			String errMsg = "Failed to browse: " + e.getMessage();
@@ -219,7 +210,6 @@ public class HpcBrowseController extends AbstractHpcController {
 			model.addAttribute("error", e.getMessage());
 			logger.error(errMsg, e);
 		} 
-		
 		return entries;
 	}
 
