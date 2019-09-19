@@ -84,7 +84,9 @@ public class HpcSaveSearchController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
-		HpcSaveSearch hpcSaveSearch = new HpcSaveSearch();
+		HpcSaveSearch hpcSaveSearch = (HpcSaveSearch) session.getAttribute("hpcSaveSearch");
+		if(hpcSaveSearch == null)
+			hpcSaveSearch = new HpcSaveSearch();
 		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -114,6 +116,9 @@ public class HpcSaveSearchController extends AbstractHpcController {
 	@ResponseBody
 	public AjaxResponseBody search(@Valid @ModelAttribute("hpcSaveSearch") HpcSaveSearch search, Model model,
 			BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
+		
+		HpcSaveSearch hpcPrevSaveSearch = (HpcSaveSearch) session.getAttribute("hpcSaveSearch");
+		
 		AjaxResponseBody result = new AjaxResponseBody();
 		try {
 			HpcCompoundMetadataQueryDTO compoundQuery = null;
@@ -144,6 +149,16 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			}
 
 			String authToken = (String) session.getAttribute("hpcUserToken");
+			//If previous criteria name is provided, delete the saved criteria to re-save the new query
+			if(hpcPrevSaveSearch != null && hpcPrevSaveSearch.getCriteriaName().equals(search.getCriteriaName())) {
+				boolean deleted = HpcClientUtil.deleteSearch(authToken, queryServiceURL, search.getCriteriaName(), sslCertPath,
+						sslCertPassword);
+				if (!deleted) {
+					result.setMessage("Failed to save criteria! Reason: Failed to delete existing criteria");
+					return result;
+				}
+			}
+			
 			final String serviceURL = UriComponentsBuilder.fromHttpUrl(
         this.queryServiceURL).pathSegment(search.getCriteriaName()).build()
 				.encode().toUri().toURL().toExternalForm();
