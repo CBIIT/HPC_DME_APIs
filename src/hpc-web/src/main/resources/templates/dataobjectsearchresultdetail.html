@@ -288,6 +288,10 @@
             return false;
         };
 
+        $scope.editSearch = function() {
+        	document.getElementById("editsearchform").submit();
+        };
+        
         $scope.downloadSelectedRows = function() {
           console.log('$scope.selectedRows: ', $scope.selectedRows);
           console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
@@ -396,6 +400,9 @@
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" href="/savesearch"
 										data-target="#myModal">Save Search Criteria</a>
+									<a id="editsearchlink"
+										class="btn btn-link btn-sm" ng-click="editSearch()"
+										>Edit Search Criteria</a>
 								</div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
@@ -461,7 +468,10 @@
 						<input type="hidden" id="pageSize" name="pageSize"/>
 						<input type="hidden" id="queryName" name="queryName"/>
 					</form> 
-
+					<form class="form-horizontal" id="editsearchform" action="#"
+						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
+						method="post" enctype="multipart/form-data">
+					</form> 
 				</div>
 				<!--/col-->
 

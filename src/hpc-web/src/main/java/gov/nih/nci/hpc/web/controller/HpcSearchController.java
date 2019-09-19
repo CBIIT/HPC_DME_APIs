@@ -36,6 +36,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryType;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.web.model.HpcSaveSearch;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
@@ -78,10 +79,12 @@ public class HpcSearchController extends AbstractHpcController {
 			HttpServletRequest request) {
 		HpcNamedCompoundMetadataQueryDTO query = null;
 		HpcSearch search = new HpcSearch();
+		HpcSaveSearch hpcSaveSearch = new HpcSaveSearch();
 		
 		try {
 			
 			search.setQueryName(queryName);
+			hpcSaveSearch.setCriteriaName(queryName);
 			search.setPageNumber(Integer.parseInt(page));
 			if(StringUtils.isNotEmpty(pageSize))
 			  search.setPageSize(Integer.parseInt(pageSize));
@@ -116,6 +119,8 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("queryName", queryName);
 		model.addAttribute("pageNumber", new Integer(page).intValue());
 		model.addAttribute("pageSize", search.getPageSize());
+		session.setAttribute("hpcSearch", search);
+		session.setAttribute("hpcSaveSearch", hpcSaveSearch);
 		HpcSearchUtil.cacheSelectedRows(session, request, model);
 
 		if (query == null)
@@ -186,6 +191,7 @@ public class HpcSearchController extends AbstractHpcController {
 		model.addAttribute("queryName", search.getQueryName());
         model.addAttribute("pageNumber", new Integer(search.getPageNumber()).intValue());
 		model.addAttribute("pageSize", new Integer(search.getPageSize()).intValue());
+		session.setAttribute("hpcSearch", search);
 
 		if (query == null)
 			return "dashboard";

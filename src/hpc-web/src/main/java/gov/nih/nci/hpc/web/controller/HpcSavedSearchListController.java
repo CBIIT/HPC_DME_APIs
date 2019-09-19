@@ -91,6 +91,7 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 					namedQuery.setSearchType(query.getCompoundQueryType().value());
 					namedQuery.setCreatedOn(format.format(query.getCreated().getTime()));
 					namedQuery.setDelete(URLEncoder.encode(query.getName(), "UTF-8"));
+					namedQuery.setEdit(URLEncoder.encode(query.getName(), "UTF-8"));
 					result.add(namedQuery);
 				}
 			}
