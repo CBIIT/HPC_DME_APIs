@@ -238,6 +238,9 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 			}
 			jsonQuery.put("operator", nestedQuery.getOperator().value());
 			jsonQuery.put("value", nestedQuery.getValue());
+			if(nestedQuery.getFormat() != null) {
+				jsonQuery.put("format", nestedQuery.getFormat());
+			}
 			if(nestedQuery.getLevelFilter() != null) {
 			   jsonQuery.put("level", nestedQuery.getLevelFilter().getLevel());
 			   jsonQuery.put("levelLabel", nestedQuery.getLevelFilter().getLabel());
@@ -352,7 +355,10 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
     			                   jsonMetadataQuery.get("levelOperator").toString()));
     	   metadataQuery.setLevelFilter(levelFilter);
     	}
-    	
+    	Object format = jsonMetadataQuery.get("format");
+    	if(format != null) {
+    		metadataQuery.setFormat(format.toString());
+    	}
     	Object attributeMatch = jsonMetadataQuery.get("attributeMatch");
     	if(attributeMatch != null) {
     		metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.fromValue(attributeMatch.toString()));	
