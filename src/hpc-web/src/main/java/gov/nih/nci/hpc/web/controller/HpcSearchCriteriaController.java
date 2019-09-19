@@ -128,6 +128,9 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("hpcSearch", hpcSearch);
 		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
 		session.removeAttribute("compoundQuery");
+		session.removeAttribute("hpcSearch");
+		session.removeAttribute("hpcSaveSearch");
+		session.removeAttribute("namedCompoundQuery");
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
