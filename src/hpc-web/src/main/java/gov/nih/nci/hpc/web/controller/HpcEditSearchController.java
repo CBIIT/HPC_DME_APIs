@@ -272,7 +272,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 		List<String> attrValueList = new ArrayList<>();
 		for (Map.Entry<String, HpcMetadataQuery> query : compoundQuery.getQueries().entrySet()) {
 			rowIdList.add(query.getKey());
-			levelList.add(query.getValue().getLevelFilter().getLabel());
+			levelList.add(query.getValue().getLevelFilter() == null ? "ANY" : query.getValue().getLevelFilter().getLabel());
 			attrList.add(query.getValue().getAttribute());
 			operatorList.add(query.getValue().getOperator().value());
 			attrValueList.add(query.getValue().getValue());
