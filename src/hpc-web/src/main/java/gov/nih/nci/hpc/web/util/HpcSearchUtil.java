@@ -76,6 +76,7 @@ public class HpcSearchUtil {
 				returnResult.setPermission(result.getCollection().getAbsolutePath());
 				returnResult.setMetadataEntries(new HpcMetadataEntries());
 				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
+				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}
@@ -135,6 +136,7 @@ public class HpcSearchUtil {
 				returnResult.setPermission(result.getDataObject().getAbsolutePath());
 				returnResult.setMetadataEntries(new HpcMetadataEntries());
 				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
+				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}

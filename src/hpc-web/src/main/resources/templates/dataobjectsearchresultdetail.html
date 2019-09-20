@@ -275,6 +275,17 @@
 		    	  }
 		          $scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].value;
 	    	  }
+	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries.length; j++){
+		    	  attribute = $scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries[j].attribute;
+		    	  if(!metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "collection_type") {
+		    	  	$scope.gridOptions1.columnDefs.push({
+		    			field: attribute,
+		    			width : 200
+		    	  	});
+		    	  	metaSet.add(attribute)
+		    	  }
+		          $scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries[j].value;
+	    	  }
 	      }
         };
 
