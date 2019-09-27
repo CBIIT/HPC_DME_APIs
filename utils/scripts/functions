@@ -1870,14 +1870,15 @@ function dm_download_s3_deprecated {
 #Print Usage of dm_download_s3 function
 function dm_show_download_s3_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_s3 [-D REST-respsonse] [-o output-json-file] <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
+  usage: dm_download_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
   Download the specified dataobject or collection to the s3 bucket
-  [-D REST-respsonse]          Optional specify the filename to capture rest response
+  [-D REST-respsonse]         Optional specify the filename to capture rest response
   [-o output-json-file]       Optionally specify the filename to capture the json response
-  archive-path                Source path in the archive
+  [-f paths-file]             New line delimited file which contains the data object paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
   destination-bucket          Destination S3 bucket to transfer data to
   destination_path            Full path of the destination file/folder in the S3 bucket
-  aws_credentials_file_path   Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+  [aws_credentials_file_path] Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
 EOF
   echo "$usage"
 }
@@ -1890,6 +1891,7 @@ function dm_download_s3 {
 
     local response_msg
     local response_hdr
+	local path_file
 
     while :; do
         case $1 in
@@ -1911,12 +1913,20 @@ function dm_download_s3 {
                     return 1
                 fi
             ;;
+			-f|--file)
+                if [ "$2" ]; then
+                    path_file="$2"
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
             *) break
         esac
         shift
     done
 
-    if [ "$#" -lt 3 ]
+    if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
     then
         dm_show_download_s3_usage >&2
         exit 1
@@ -1931,12 +1941,27 @@ function dm_download_s3 {
     local DESTINATION_BUCKET="$2"
     local DESTINATION_PATH="$3"
 
-    item_type=$(get_type $SOURCE_PATH) || exit 1
-    if [ "$item_type" == "" ]
-    then
-        echo "ERROR: Can not find the item $SOURCE_PATH in the archive" >&2
-        exit 1
-    fi
+	if [ -z "$path_file" ]
+	then
+		item_type=$(get_type $SOURCE_PATH) || exit 1
+		if [ "$item_type" == "" ]
+		then
+			echo "ERROR: Can not find the item $SOURCE_PATH in the archive" >&2
+			exit 1
+		fi
+	else
+		if [ ! -e "$path_file" ]
+		then
+			echo "Can not find the path file: $path_file" >&2
+			echo "Please check the file location and try again" >&2
+			exit 1
+		fi
+		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
+		local SOURCE_PATHS=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
+		item_type="dataObject"
+	fi 
+	
+    
 
    #Create description.json
    local awsAccessKeyId=$(get_value $CREDENTIALS_FILE aws_access_key_id)
@@ -1965,7 +1990,15 @@ function dm_download_s3 {
    echo -e " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
    echo -e " \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," >> description.json
    echo " \"secretKey\": \"$awsSecretAccessKey\"," >> description.json
-   echo -e " \"region\": \"$awsRegion\" \n}\n}\n} " >> description.json
+   echo -e " \"region\": \"$awsRegion\" \n}" >> description.json
+   if [ -z "$path_file" ]
+   then
+        echo -e "\n}\n} " >> description.json
+   else
+		echo -e "\n},\n \"dataObjectPaths\": [\n \"$SOURCE_PATHS\"\n]" >> description.json
+		echo -e "\n}" >> description.json
+   fi
+   echo "$description.json"
 
 
     echo "Sending request to download the $item_type $SOURCE_PATH to S3..."
@@ -1981,7 +2014,186 @@ function dm_download_s3 {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	if [ -z "$path_file" ]
+	then
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	else
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	fi
+    check_connection $response_hdr || exit 1
+
+
+    local code=$(get_http_code "$response_hdr")
+
+    if [ "$code" -ne 200 ]
+    then
+      #In this case the destination path file will contain the error code
+      print_error_message "$response_msg" "$code"  || exit 1
+    fi
+
+    #Parse the download receipt:
+
+    message=$(get_json_value $response_msg message)
+    if [ ! -z "$message" ]
+    then
+        echo "ERROR downloading $src_path:"  >&2
+        echo "$message" >&2
+        exit 1
+    else
+        echo "Download request sent to S3."
+        task_id=$(get_json_value $response_msg taskId)
+        echo "taskID:$task_id"
+        echo "Check the full download receipt at $response_msg"
+    fi
+}
+
+#Print Usage of dm_download_s3 function
+function dm_show_download_collection_s3_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_collection_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
+  Download the specified dataobject or collection to the s3 bucket
+  [-D REST-respsonse]         Optional specify the filename to capture rest response
+  [-o output-json-file]       Optionally specify the filename to capture the json response
+  [-f paths-file]             New line delimited file which contains the collection paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
+  destination-bucket          Destination S3 bucket to transfer data to
+  destination_path            Full path of the destination file/folder in the S3 bucket
+  [aws_credentials_file_path] Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+EOF
+  echo "$usage"
+}
+
+
+function dm_download_collection_s3 {
+
+    local CREDENTIALS_FILE=~/.aws/credentials
+    local DESCRIPTION=description.json
+
+    local response_msg
+    local response_hdr
+	local path_file
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+			-f|--file)
+                if [ "$2" ]; then
+                    path_file="$2"
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
+    if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
+    then
+        dm_show_download_collection_s3_usage >&2
+        exit 1
+    fi
+
+    if [ "$#" -gt 3 ]
+    then
+       CREDENTIALS_FILE=$4
+    fi
+
+    local SOURCE_PATH="$1"
+    local DESTINATION_BUCKET="$2"
+    local DESTINATION_PATH="$3"
+
+	item_type="collection"
+	
+	if [ ! -z "$path_file" ]
+	then
+		if [ ! -e "$path_file" ]
+		then
+			echo "Can not find the path file: $path_file" >&2
+			echo "Please check the file location and try again" >&2
+			exit 1
+		fi
+		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
+		local SOURCE_PATHS=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
+	fi 
+	
+    
+
+   #Create description.json
+   local awsAccessKeyId=$(get_value $CREDENTIALS_FILE aws_access_key_id)
+   if [ -z "$awsAccessKeyId" ]
+   then
+       echo "ERROR: Credentials file does not contain aws_access_key_id property"
+       exit 1
+   fi
+
+   local awsSecretAccessKey=$(get_value $CREDENTIALS_FILE aws_secret_access_key)
+   if [ -z "$awsSecretAccessKey" ]
+   then
+       echo "ERROR: Credentials file does not contain aws_secret_access_key property"
+       exit 1
+   fi
+  
+   local awsRegion=$(get_value $CREDENTIALS_FILE region)
+   if [ -z "$awsRegion" ]
+   then
+       echo "ERROR: Credentials file does not contain region property"
+       exit 1
+   fi
+
+   echo -e "{\n \"s3DownloadDestination\": {\n \"destinationLocation\": {" > description.json
+   echo " \"fileContainerId\": \"$DESTINATION_BUCKET\"," >> description.json
+   echo -e " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
+   echo -e " \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," >> description.json
+   echo " \"secretKey\": \"$awsSecretAccessKey\"," >> description.json
+   echo -e " \"region\": \"$awsRegion\" \n}" >> description.json
+   if [ -z "$path_file" ]
+   then
+        echo -e "\n}\n} " >> description.json
+   else
+		echo -e "\n},\n \"collectionPaths\": [\n \"$SOURCE_PATHS\"\n]" >> description.json
+		echo -e "\n}" >> description.json
+   fi
+   echo "$description.json"
+
+
+    echo "Sending request to download the $item_type $SOURCE_PATH to S3..."
+    if [ -z "$response_msg" ]
+     then
+        response_msg=download-$item_type-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-$item_type-response-header.tmp
+    fi
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+	if [ -z "$path_file" ]
+	then
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	else
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	fi
     check_connection $response_hdr || exit 1
 
 
