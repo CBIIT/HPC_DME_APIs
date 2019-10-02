@@ -1,4 +1,7 @@
 {
+    "dataObjectPaths": [
+        "source-paths"
+    ],
     "globusDownloadDestination": {
         "destinationLocation": {
             "fileContainerId": "globus-shared-endpoint-uid",
