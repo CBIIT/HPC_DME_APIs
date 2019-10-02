@@ -368,15 +368,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   public HpcCollection getCollectionChildren(Object authenticatedToken, String path)
       throws HpcException {
     try {
-      Collection collection = irodsConnection.getCollectionAO(authenticatedToken)
-          .findByAbsolutePath(getAbsolutePath(path));
-
-      // TODO - add this validation to the app service.
-      if (collection == null) {
-        throw new HpcException("Invalid Collection path", HpcErrorType.DATA_MANAGEMENT_ERROR);
-      }
-
-      return toHpcCollection(collection,
+     
+      return toHpcCollectionChildren(
           irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken)
               .listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path)));
 
@@ -896,7 +889,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   }
 
   /**
-   * Convert iRODS collection to HPC collection domain object.
+   * Convert iRODS collection to HPC collection domain object. This includes the
+   * collection specified as well as direct children under that parent.
    *
    * @param irodsCollection The iRODS collection.
    * @param listingEntries A list of sub-directories and files under the collection.
@@ -944,6 +938,40 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
     return hpcCollection;
   }
+  
+  
+  /**
+   * Convert list of children of an iRODS collection to HPC collection domain object.
+   * This does not include information about the parent collection.
+   *
+   * @param irodsCollection The iRODS collection.
+   * @param listingEntries A list of sub-directories and files under the collection.
+   * @return A collection.
+   */
+  private HpcCollection toHpcCollectionChildren(
+      List<CollectionAndDataObjectListingEntry> listingEntries) {
+   
+
+    HpcCollection hpcCollection = new HpcCollection();
+
+    if (listingEntries != null) {
+      for (CollectionAndDataObjectListingEntry listingEntry : listingEntries) {
+        HpcCollectionListingEntry hpcCollectionListingEntry = new HpcCollectionListingEntry();
+        hpcCollectionListingEntry.setId(listingEntry.getId());
+        hpcCollectionListingEntry.setPath(getRelativePath(listingEntry.getFormattedAbsolutePath()));
+        if (listingEntry.isCollection()) {
+          hpcCollection.getSubCollections().add(hpcCollectionListingEntry);
+        } else if (listingEntry.isDataObject()) {
+          hpcCollection.getDataObjects().add(hpcCollectionListingEntry);
+        } else {
+          logger.error("Unxpected listing entry type: " + listingEntry.getObjectType());
+        }
+      }
+    }
+
+    return hpcCollection;
+  }
+  
 
   /**
    * Convert iRODS data object to HPC data object domain-object.

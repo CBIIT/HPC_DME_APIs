@@ -476,9 +476,14 @@ public class HpcBrowseController extends AbstractHpcController {
 			if (childEntry.getFullPath() != null && childEntry.getFullPath().equals(path))
 				return childEntry;
 			else {
-				HpcBrowserEntry entry = getSelectedEntry(path, childEntry);
-				if (entry != null)
-					return entry;
+				//Drill down childEntry, but only if this child entry
+				//happens to be an ancestor of the path we are looking for
+				//Else we proceed to next childEntry
+				if(childEntry.getFullPath() != null && path.contains(childEntry.getFullPath())) {
+					HpcBrowserEntry entry = getSelectedEntry(path, childEntry);
+					if (entry != null)
+						return entry;
+				}
 			}
 		}
 		return null;
@@ -524,11 +529,8 @@ public class HpcBrowseController extends AbstractHpcController {
 
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
 				HpcCollection collection = collectionDTO.getCollection();
-				selectedEntry.setFullPath(collection.getAbsolutePath());
-				selectedEntry.setId(collection.getAbsolutePath());
-				selectedEntry.setName(collection.getCollectionName());
 				
-				//this will ensure that the next time we access this path
+				//This will ensure that the next time we access this path
 				//we dont read again from DB, unless an explicit refresh 
 				//request has been made
 				selectedEntry.setPopulated(true);
