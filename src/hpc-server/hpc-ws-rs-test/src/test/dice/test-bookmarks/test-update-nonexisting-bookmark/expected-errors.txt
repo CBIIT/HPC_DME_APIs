@@ -1,3 +1,3 @@
-400
-INVALID_REQUEST_INPUT
-Bookmark name doesn't exist
+500
+DATA_MANAGEMENT_ERROR
+Failed to update bookmark: Bookmark name doesn't exist
