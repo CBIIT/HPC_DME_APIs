@@ -319,42 +319,54 @@ public interface HpcDataTransferService {
 	/**
 	 * Submit a request to download collections.
 	 *
-	 * @param collectionPaths           A list of collection paths.
-	 * @param globusDownloadDestination The user requested Glopbus download
-	 *                                  destination.
-	 * @param s3DownloadDestination     The user requested S3 download destination.
-	 * @param userId                    The user ID submitting the download request.
-	 * @param configurationId           A configuration ID used to validate
-	 *                                  destination location. The list of data
-	 *                                  objects can be from from different
-	 *                                  configurations (DOCs) but we validate just
-	 *                                  for one.
+	 * @param collectionPaths                 A list of collection paths.
+	 * @param globusDownloadDestination       The user requested Glopbus download
+	 *                                        destination.
+	 * @param s3DownloadDestination           The user requested S3 download
+	 *                                        destination.
+	 * @param userId                          The user ID submitting the download
+	 *                                        request.
+	 * @param configurationId                 A configuration ID used to validate
+	 *                                        destination location. The list of data
+	 *                                        objects can be from from different
+	 *                                        configurations (DOCs) but we validate
+	 *                                        just for one.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId, String configurationId) throws HpcException;
+			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
 	 * Submit a request to download data objects.
 	 *
-	 * @param dataObjectPaths           A list of data object paths.
-	 * @param globusDownloadDestination The user requested Glopbus download
-	 *                                  destination.
-	 * @param s3DownloadDestination     The user requested S3 download destination.
-	 * @param userId                    The user ID submitting the download request.
-	 * @param configurationId           A configuration ID used to validate
-	 *                                  destination location. The list of data
-	 *                                  objects can be from from different
-	 *                                  configurations (DOCs) but we validate just
-	 *                                  for one.
+	 * @param dataObjectPaths                 A list of data object paths.
+	 * @param globusDownloadDestination       The user requested Glopbus download
+	 *                                        destination.
+	 * @param s3DownloadDestination           The user requested S3 download
+	 *                                        destination.
+	 * @param userId                          The user ID submitting the download
+	 *                                        request.
+	 * @param configurationId                 A configuration ID used to validate
+	 *                                        destination location. The list of data
+	 *                                        objects can be from from different
+	 *                                        configurations (DOCs) but we validate
+	 *                                        just for one.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId, String configurationId) throws HpcException;
+			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
 	/**
 	 * Update a collection download task.
