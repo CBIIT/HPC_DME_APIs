@@ -1577,11 +1577,11 @@ function dm_download_collection_async {
 
     if [ -z "$response_msg" ]
      then
-        response_msg=download-dataobject-response-message.json.tmp
+        response_msg=download-collection-response-message.json.tmp
     fi
     if [ -z "$response_hdr" ]
     then
-        response_hdr=download-dataobject-response-header.tmp
+        response_hdr=download-collection-response-header.tmp
     fi
 
     local SERVER=$(get_server)
