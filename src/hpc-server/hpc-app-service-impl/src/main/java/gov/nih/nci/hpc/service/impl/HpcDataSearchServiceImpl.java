@@ -192,12 +192,12 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
   }
 
   @Override
-  public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
+  public List<String> getDataObjectPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
     // Input Validation.
     HpcDomainValidationResult validationResult =
         isValidCompoundMetadataQuery(compoundMetadataQuery);
-    if (!validationResult.getValid()) {
+    if (path == null && !validationResult.getValid()) {
       throw new HpcException(
           "Invalid compound metadata query: " + validationResult.getMessage(),
           HpcErrorType.INVALID_REQUEST_INPUT);
@@ -215,22 +215,25 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     return toRelativePaths(
-        metadataDAO.getDataObjectPaths(
-            compoundMetadataQuery,
-            dataManagementUsername,
-            finalOffset,
-            finalPageSize,
-            defaultDataObjectLevelFilter));
+    	metadataDAO.getDataObjectPaths(
+    	   path,
+           compoundMetadataQuery,
+           dataManagementUsername,
+           finalOffset,
+           finalPageSize,
+           defaultDataObjectLevelFilter));
+    
   }
-
+  
   
   @Override
-  public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
+  public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(String path,
+		  HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
     // Input Validation.
     HpcDomainValidationResult validationResult =
         isValidCompoundMetadataQuery(compoundMetadataQuery);
-    if (!validationResult.getValid()) {
+    if (path == null && !validationResult.getValid()) {
       throw new HpcException(
           "Invalid compound metadata query: " + validationResult.getMessage(),
           HpcErrorType.INVALID_REQUEST_INPUT);
@@ -248,7 +251,8 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     String dataManagementUsername =
         HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
     List<HpcSearchMetadataEntry> hpcSearchMetadataEntries = metadataDAO.getDetailedDataObjectPaths(
-            compoundMetadataQuery,
+            path,
+    		compoundMetadataQuery,
             dataManagementUsername,
             finalOffset,
             finalPageSize,

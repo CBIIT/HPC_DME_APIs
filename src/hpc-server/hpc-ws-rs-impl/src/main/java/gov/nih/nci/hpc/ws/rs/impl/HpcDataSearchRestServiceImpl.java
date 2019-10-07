@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.ws.rs.impl;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
@@ -21,6 +22,8 @@ import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataSearchRestService;
+
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -112,7 +115,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
     {
     	HpcDataObjectListDTO dataObjects = null;
 		try {
-			 dataObjects = dataSearchBusService.getDataObjects(compoundMetadataQuery);
+			 dataObjects = dataSearchBusService.getDataObjects(null, compoundMetadataQuery);
 			 
 		} catch(HpcException e) {
 			    return errorResponse(e);
@@ -139,6 +142,24 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
     }
     
+
+   @Override
+    public Response queryDataObjectsInPath(String path, HpcCompoundMetadataQueryDTO compoundMetadataQuery)
+    {
+        HpcDataObjectListDTO dataObjects = null;
+
+		try {
+			 dataObjects = dataSearchBusService.getDataObjects(toNormalizedPath(path), compoundMetadataQuery);
+
+		} catch(HpcException e) {
+			    return errorResponse(e);
+		}
+
+		return okResponse(!dataObjects.getDataObjects().isEmpty() ||
+				          !dataObjects.getDataObjectPaths().isEmpty() ? dataObjects : null, true);
+    }
+
+
     @Override
     public Response addQuery(String queryName,
     		                 HpcCompoundMetadataQueryDTO compoundMetadataQuery)

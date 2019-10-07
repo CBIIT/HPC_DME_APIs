@@ -71,6 +71,23 @@ public interface HpcDataSearchRestService {
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQuery);
+  
+  
+  /**
+   * Get data objects within the requested path by compound metadata query.
+   *
+   * @param queryName The path to search in.
+   * @param compoundMetadataQuery A compound metadata query DTO.
+   * @return The REST service response w/ HpcDataObjectListDTO entity.
+   */
+  @POST
+  @Path("/dataObject/query/{path:.*}")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response queryDataObjectsInPath(
+	  @PathParam("path") String path,
+      HpcCompoundMetadataQueryDTO compoundMetadataQuery);
+  
 
   /**
    * Get data objects by named query.
@@ -92,6 +109,8 @@ public interface HpcDataSearchRestService {
       @QueryParam("page") Integer page,
       @QueryParam("pageSize") Integer pageSize,
       @QueryParam("totalCount") Boolean totalCount);
+  
+  
 
   /**
    * Add a new named query.

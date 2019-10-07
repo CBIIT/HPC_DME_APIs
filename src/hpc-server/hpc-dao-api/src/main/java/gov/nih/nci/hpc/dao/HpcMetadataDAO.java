@@ -87,6 +87,7 @@ public interface HpcMetadataDAO
      * Get data object Paths by compound metadata query. 
      * Only data object Paths accessible to the user are returned. 
      *
+     * @param path The path to search in if specified.
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
      * @param offset Skip that many path in the returned results.
@@ -95,7 +96,8 @@ public interface HpcMetadataDAO
      * @return List of data object Paths.
      * @throws HpcException on database error.
      */
-    public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    public List<String> getDataObjectPaths(String searchPath,
+                                           HpcCompoundMetadataQuery compoundMetadataQuery,
     		                               String dataManagementUsername,
     		                               int offset, int limit,
     		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
@@ -105,6 +107,7 @@ public interface HpcMetadataDAO
      * Get detailed data object Paths by compound metadata query. 
      * Only data object Paths accessible to the user are returned. 
      *
+     * @param path The path to search in if specified.
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
      * @param offset Skip that many path in the returned results.
@@ -113,7 +116,8 @@ public interface HpcMetadataDAO
      * @return List of HpcSearchMetadataEntry
      * @throws HpcException on database error.
      */
-    public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+    public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(String path,
+    									   HpcCompoundMetadataQuery compoundMetadataQuery,
     		                               String dataManagementUsername,
     		                               int offset, int limit,
     		                               HpcMetadataQueryLevelFilter defaultLevelFilter) 
