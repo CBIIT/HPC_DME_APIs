@@ -1562,10 +1562,10 @@ function dm_register_globus_directory {
 #        [-f paths-file]
 #        [collection-path]
 #        destination-file
-function dm_download_collection_async {
+function dm_download_collection_globus {
 
 
-    local USAGE="usage: dm_download_collection_async [-D REST-respsonse] [-o output-json-file] [-f paths-file] [collection-logical-path] <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_collection_globus [-D REST-respsonse] [-o output-json-file] [-f paths-file] [collection-logical-path] <globus-destination-path> [globus-endpoint]"
 
     local response_msg
     local response_hdr
@@ -1736,7 +1736,6 @@ function dm_download_collection_async {
     fi
 }
 
-
 #Download to Globus 
 #Inputs: [-o output-json-file]
 #        [-D REST-response]
@@ -1744,9 +1743,19 @@ function dm_download_collection_async {
 #        [item-path] path on archive
 #        <destination-path> path on Globus
 function dm_download_async {
+	dm_download_dataobject_globus $@
+}
+
+#Download to Globus 
+#Inputs: [-o output-json-file]
+#        [-D REST-response]
+#        [-f paths-file]
+#        [item-path] path on archive
+#        <destination-path> path on Globus
+function dm_download_dataobject_globus {
 
 
-    local USAGE="usage: dm_download_async [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_dataobject_globus [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <globus-destination-path> [globus-endpoint]"
 
     local response_msg
     local response_hdr
@@ -1828,7 +1837,7 @@ function dm_download_async {
 		fi
 		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
 		local src_paths=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
-		local template_file=$HPC_DM_UTILS/templates/download-async-list-template.json
+		local template_file=$HPC_DM_UTILS/templates/download-async-list-template-internal.json
 	fi
    
 
@@ -2001,7 +2010,7 @@ function dm_download_s3_deprecated {
 #Print Usage of dm_download_s3 function
 function dm_show_download_s3_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
+  usage: dm_download_dataobject_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
   Download the specified dataobject or collection to the s3 bucket
   [-D REST-respsonse]         Optional specify the filename to capture rest response
   [-o output-json-file]       Optionally specify the filename to capture the json response
@@ -2014,8 +2023,11 @@ EOF
   echo "$usage"
 }
 
-
 function dm_download_s3 {
+	dm_download_dataobject_s3 $@
+}
+
+function dm_download_dataobject_s3 {
 
     local CREDENTIALS_FILE=~/.aws/credentials
     local DESCRIPTION=description.json
@@ -2178,7 +2190,7 @@ function dm_download_s3 {
     fi
 }
 
-#Print Usage of dm_download_s3 function
+#Print Usage of dm_download_collection_s3 function
 function dm_show_download_collection_s3_usage {
   read -d  '' usage <<- EOF
   usage: dm_download_collection_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
