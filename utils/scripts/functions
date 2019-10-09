@@ -806,12 +806,6 @@ case $1 in
 }
 
 
-
-
-
-
-
-
 #Print Usage of dm_download_dataobject_sync function
 function dm_show_download_dataobject_sync_usage {
   read -d  '' usage <<- EOF
@@ -837,7 +831,7 @@ function dm_download_dataobject_sync {
 
   #Set the default parameters
   local APPLY_PRESIGNED=0
-  local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
+  local TEMPLATE
   local RESPONSE_HEADER
 
   while :; do
@@ -853,12 +847,18 @@ function dm_download_dataobject_sync {
             ;;
             -p)
                 APPLY_PRESIGNED=1
-                TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template.json"
+                TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template-internal.json"
             ;;
             *) break
         esac
         shift
   done
+
+  if [ $APPLY_PRESIGNED -eq 0 ]
+  then
+    printf '{\n}' > $HPC_DM_UTILS/templates/download-sync-template.json.tmp
+    TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json.tmp"
+  fi
 
   if [ "$#" -lt 2 ] 
   then
@@ -894,6 +894,7 @@ function dm_download_dataobject_sync {
       2> $HPC_DM_UTILS/temp/curl-status
     check_connection $RESPONSE_HEADER
     CODE=$(get_http_code "$RESPONSE_HEADER")
+    rm $HPC_DM_UTILS/templates/download-sync-template.json.tmp
     if [ "$CODE" -ne 200 ]
     then 
       #In this case the destination path file will contain the error code
@@ -1627,7 +1628,7 @@ function dm_download_collection_async {
 
 	if [ -z "$path_file" ]
 	then
-		local template_file=$HPC_DM_UTILS/templates/download-async-template.json
+		local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
 	else
 		if [ ! -e "$path_file" ]
 		then
@@ -1637,7 +1638,7 @@ function dm_download_collection_async {
 		fi
 		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
 		local src_paths=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
-		local template_file=$HPC_DM_UTILS/templates/download-async-list-template.json
+		local template_file=$HPC_DM_UTILS/templates/download-async-list-template-internal.json
 	fi 
 	
     if [ ! -e "$template_file" ]
@@ -1801,7 +1802,7 @@ function dm_download_async {
       globus_endpoint="$3"
     fi       
 
-    local template_file=$HPC_DM_UTILS/templates/download-async-template.json
+    local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
     if [ ! -e "$template_file" ]
     then
         echo "Can not file the template file: $template_file" >&2
@@ -1817,7 +1818,7 @@ function dm_download_async {
 			echo "ERROR: Can not find the item $src_path in the archive" >&2
 			exit 1
 		fi
-		local template_file=$HPC_DM_UTILS/templates/download-async-template.json
+		local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
 	else
 		if [ ! -e "$path_file" ]
 		then
