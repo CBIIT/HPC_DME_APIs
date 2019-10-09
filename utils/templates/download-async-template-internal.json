@@ -1,6 +1,8 @@
 {
-    "destination": {
-        "fileContainerId": "globus-shared-endpoint-uid",
-        "fileId": "destination-name"
+    "globusDownloadDestination": {
+        "destinationLocation": {
+            "fileContainerId": "globus-shared-endpoint-uid",
+            "fileId": "destination-name"
+        }
     }
 }
