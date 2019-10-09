@@ -687,7 +687,7 @@ function dm_show_query_dataobject_usage {
 read -d  '' usage <<- EOF
 usage: dm_query_dataobject [-D REST-respsonse] [-o metadata-file] <description.json> [search-path]
 
-Search for dataobjects based on the given compund query and optional search path.
+Search for dataobjects based on the given compound query and optional search path.
 OPTIONS:
 [-D REST-respsonse]         Optionally specify the filename to capture REST response
 [-o output-json-file]       Optionally specify the filename to capture the JSON response
