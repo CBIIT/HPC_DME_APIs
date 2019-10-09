@@ -685,7 +685,7 @@ function dm_get_collection {
 #Print Usage of dm_query_dataobject function
 function dm_show_query_dataobject_usage {
 read -d  '' usage <<- EOF
-usage: dm_query_dataobject [-D REST-respsonse] [-o metadata-file] <description.json> [search-path]
+usage: dm_query_dataobject [-D REST-respsonse] [-o output-json-file] <description.json> [search-path]
 
 Search for dataobjects based on the given compound query and optional search path.
 OPTIONS:
