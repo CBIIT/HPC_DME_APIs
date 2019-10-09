@@ -682,6 +682,136 @@ function dm_get_collection {
 }
 
 
+#Print Usage of dm_query_dataobject function
+function dm_show_query_dataobject_usage {
+read -d  '' usage <<- EOF
+usage: dm_query_dataobject [-D REST-respsonse] [-o metadata-file] <description.json> [search-path]
+
+Search for dataobjects based on the given compund query and optional search path.
+OPTIONS:
+[-D REST-respsonse]         Optionally specify the filename to capture REST response
+[-o output-json-file]       Optionally specify the filename to capture the JSON response
+<criteria.json>             JSON file containing the compound query for the search
+[search-path]               Optionally specify the collection path to search in
+
+EOF
+echo "$usage"
+}
+
+
+#Get the metadata of a dataobject from the archive
+#Inputs: [-D REST-responsea]
+#        [-o metadata-file]
+#        <criteria.json>
+#        [search-path]
+function dm_query_dataobject {
+
+local RESPONSE_MSG
+local RESPONSE_HEADER
+local SHOW_OUTPUT=1
+
+while :; do
+case $1 in
+    -D|--dump-header)
+        if [ "$2" ]; then
+            RESPONSE_HEADER="$2"
+            shift
+        else
+            dm_show_query_dataobject_usage >&2
+                    return 1
+        fi
+        ;;
+    -o|--output)
+        if [ "$2" ]; then
+           RESPONSE_MSG="$2"
+           SHOW_OUTPUT=0
+           shift
+        else
+           dm_show_query_dataobject_usage >&2
+           return 1
+        fi
+        ;;
+        *) break
+        esac
+        shift
+    done
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          dm_show_query_dataobject_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    if [ "$#" -lt 1 ]
+    then
+      dm_show_query_dataobject_usage >&2
+      return 1
+     fi
+    local CRITERIA="$1"
+
+    if [ ! -z "$2" ]
+    then
+      local SEARCH_PATH="$2"
+      echo "SEARCH_PATH specified"
+      local VALDN_RES=$(validate_archive_path "$SEARCH_PATH")
+      if [ "" != "$VALDN_RES" ]
+      then
+          echo "$VALDN_RES" >&2
+          return 1
+      fi
+    fi
+
+
+    if [ -z "$RESPONSE_MSG" ]
+     then
+        RESPONSE_MSG=query-dataobject-response-message.json.tmp
+    fi
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=query-dataobject-response-header.tmp
+    fi
+
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ -z "$SEARCH_PATH" ]
+    then
+      local CURL_FLAGS="-X POST ${SERVER}/dataObject/query  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    else
+      local CURL_FLAGS="-X POST ${SERVER}/dataObject/query/$(urlencode $SEARCH_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    fi 
+
+    curl -H "Content-Type: application/json" -d @$CRITERIA $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 200 ]
+    then
+      echo "Error querying dataobjects " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+    else
+      print_json_message "$RESPONSE_MSG" > ${RESPONSE_MSG}.tmp
+      mv ${RESPONSE_MSG}.tmp $RESPONSE_MSG
+      if [ $SHOW_OUTPUT -eq 1 ]
+      then
+        cat "$RESPONSE_MSG"
+      fi
+      return 0
+    fi
+
+}
+
+
+
+
+
+
+
+
 #Print Usage of dm_download_dataobject_sync function
 function dm_show_download_dataobject_sync_usage {
   read -d  '' usage <<- EOF
