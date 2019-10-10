@@ -89,8 +89,6 @@ public class HpcBrowseController extends AbstractHpcController {
 
 	/**
 	 * POST Action. Invoked under the following conditions:
-	 * - When a tree node is expanded, this action fetches its child
-	 * nodes
 	 * - From the browse dialog
 	 * 
 	 * @param hpcBrowserEntry
@@ -138,6 +136,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
 						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
+
 				if (hpcBrowserEntry.isPartial()) {
 					browserEntry = addPathEntries(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry);
 				}
@@ -164,7 +163,9 @@ public class HpcBrowseController extends AbstractHpcController {
 
 	
 	/**
-	 * POST Action. When a tree node is expanded, this AJAX action fetches its child
+	 * POST Action. This AJAX action is invoked when:
+	 * - A tree node is expanded, 
+	 * - A node is refreshed
 	 * nodes
 	 * 
 	 * @param hpcBrowserEntry
@@ -199,6 +200,7 @@ public class HpcBrowseController extends AbstractHpcController {
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
 						model, getChildren, true, refresh);
+
 				browserEntry = trimPath(browserEntry, browserEntry.getName());
 				String name = browserEntry.getName().substring(browserEntry.getName().lastIndexOf('/') + 1);
 				browserEntry.setName(name);
@@ -506,7 +508,17 @@ public class HpcBrowseController extends AbstractHpcController {
 			boolean getChildren, boolean partial, boolean refresh) {
 
 		path = path.trim();
+		//HpcBrowserEntry selectedEntry = null;
+		
+		//If partial is true, it means we came here from browse dialog,
+		//while building the initial tree, from bookmark, or browse
+		//icon in detail view, so no relative selected entry 
+		//will be found anyways, so skip this. 
+		//If node refresh is true, then we will be re-populating 
+		//selectEntry from irods anyways, so skip this.
+		//if(!partial && !refresh) {		
 		HpcBrowserEntry selectedEntry = getSelectedEntry(path, browserEntry);
+		//}
 
 		if(refresh & selectedEntry != null) {
 			selectedEntry.setPopulated(false);
@@ -524,12 +536,24 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		try
 		{
-			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, collectionURL, path, true, false,
+			//If partial is true or refresh is true, then it means we need to
+			//retrieve info on the selectedEntry also along with it's child list
+			//Else, we only get the child list, since we already have the
+			//info about the selectedEntry.
+			HpcCollectionListDTO collections = HpcClientUtil.getCollection(
+					authToken, collectionURL, path, 
+					partial || refresh ? false : true, partial || refresh,
 					sslCertPath, sslCertPassword);
 
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
 				HpcCollection collection = collectionDTO.getCollection();
 				
+				if(collection.getAbsolutePath() != null) {
+					selectedEntry.setFullPath(collection.getAbsolutePath());
+					selectedEntry.setId(collection.getAbsolutePath());
+					selectedEntry.setName(collection.getCollectionName());
+				}
+
 				//This will ensure that the next time we access this path
 				//we dont read again from DB, unless an explicit refresh 
 				//request has been made
