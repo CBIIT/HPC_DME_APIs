@@ -976,10 +976,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			if (subCollection != null) {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
-						calculateGlobusDownloadDestination(globusDownloadDestination, subCollectionPath,
-								appendPathToDownloadDestination),
-						calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath,
-								appendPathToDownloadDestination),
+						calculateGlobusDownloadDestination(globusDownloadDestination, subCollectionPath, false),
+						calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath, false),
 						appendPathToDownloadDestination, userId));
 			}
 		}
