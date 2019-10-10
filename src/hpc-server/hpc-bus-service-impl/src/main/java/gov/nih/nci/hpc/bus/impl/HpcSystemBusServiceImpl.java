@@ -976,8 +976,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			if (subCollection != null) {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
-						calculateGlobusDownloadDestination(globusDownloadDestination, subCollectionPath, false),
-						calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath, false),
+						calculateGlobusDownloadDestination(globusDownloadDestination, subCollectionPath,
+								appendPathToDownloadDestination ? null : false),
+						calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath,
+								appendPathToDownloadDestination ? null : false),
 						appendPathToDownloadDestination, userId));
 			}
 		}
@@ -1081,12 +1083,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param appendPathToDownloadDestination If true, the (full) object path will
 	 *                                        be used in the destination path,
 	 *                                        otherwise just the object name will be
-	 *                                        used.
+	 *                                        used. If null - not used.
 	 * @return A calculated destination location.
 	 */
 	private HpcGlobusDownloadDestination calculateGlobusDownloadDestination(
 			HpcGlobusDownloadDestination collectionDestination, String collectionListingEntryPath,
-			boolean appendPathToDownloadDestination) {
+			Boolean appendPathToDownloadDestination) {
 		if (collectionDestination == null) {
 			return null;
 		}
@@ -1094,9 +1096,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcGlobusDownloadDestination calcGlobusDestination = new HpcGlobusDownloadDestination();
 		HpcFileLocation calcDestination = new HpcFileLocation();
 		calcDestination.setFileContainerId(collectionDestination.getDestinationLocation().getFileContainerId());
-		calcDestination.setFileId(collectionDestination.getDestinationLocation().getFileId()
-				+ (appendPathToDownloadDestination ? collectionListingEntryPath
-						: collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'))));
+		String fileId = collectionDestination.getDestinationLocation().getFileId();
+		if (appendPathToDownloadDestination != null) {
+			fileId = fileId + (appendPathToDownloadDestination ? collectionListingEntryPath
+					: collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+		}
+		calcDestination.setFileId(fileId);
+
 		calcGlobusDestination.setDestinationLocation(calcDestination);
 		calcGlobusDestination.setDestinationOverwrite(collectionDestination.getDestinationOverwrite());
 
@@ -1114,12 +1120,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param appendPathToDownloadDestination If true, the (full) object path will
 	 *                                        be used in the destination path,
 	 *                                        otherwise just the object name will be
-	 *                                        used.
+	 *                                        used. If null - not used.
 	 * 
 	 * @return A calculated destination location.
 	 */
 	private HpcS3DownloadDestination calculateS3DownloadDestination(HpcS3DownloadDestination collectionDestination,
-			String collectionListingEntryPath, boolean appendPathToDownloadDestination) {
+			String collectionListingEntryPath, Boolean appendPathToDownloadDestination) {
 		if (collectionDestination == null) {
 			return null;
 		}
@@ -1127,9 +1133,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcS3DownloadDestination calcS3Destination = new HpcS3DownloadDestination();
 		HpcFileLocation calcDestination = new HpcFileLocation();
 		calcDestination.setFileContainerId(collectionDestination.getDestinationLocation().getFileContainerId());
-		calcDestination.setFileId(collectionDestination.getDestinationLocation().getFileId()
-				+ (appendPathToDownloadDestination ? collectionListingEntryPath
-						: collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/'))));
+		String fileId = collectionDestination.getDestinationLocation().getFileId();
+		if (appendPathToDownloadDestination != null) {
+			fileId = fileId + (appendPathToDownloadDestination ? collectionListingEntryPath
+					: collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+		}
+		calcDestination.setFileId(fileId);
 		calcS3Destination.setDestinationLocation(calcDestination);
 		calcS3Destination.setAccount(collectionDestination.getAccount());
 
