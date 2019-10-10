@@ -1743,6 +1743,7 @@ function dm_download_collection_globus {
 #        [item-path] path on archive
 #        <destination-path> path on Globus
 function dm_download_async {
+	echo "dm_download_async has been deprecated. Use dm_download_dataobject_globus." >&2
 	dm_download_dataobject_globus $@
 }
 
@@ -2024,6 +2025,7 @@ EOF
 }
 
 function dm_download_s3 {
+	echo "dm_download_s3 has been deprecated. Use dm_download_dataobject_s3." >&2
 	dm_download_dataobject_s3 $@
 }
 

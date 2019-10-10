@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dm_download_s3
+# dm_download_dataobject_s3
 # @author: Sunita Menon 
 # 
 # Copyright Leidos Biomedical Research, Inc
