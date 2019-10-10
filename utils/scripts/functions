@@ -2013,7 +2013,7 @@ function dm_show_download_s3_usage {
   read -d  '' usage <<- EOF
   usage: dm_download_dataobject_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
   Download the specified dataobject or collection to the s3 bucket
-  [-D REST-respsonse]         Optional specify the filename to capture rest response
+  [-D REST-respsonse]         Optionally specify the filename to capture rest response
   [-o output-json-file]       Optionally specify the filename to capture the json response
   [-f paths-file]             New line delimited file which contains the data object paths in DME to be downloaded
   [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
@@ -2197,7 +2197,7 @@ function dm_show_download_collection_s3_usage {
   read -d  '' usage <<- EOF
   usage: dm_download_collection_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
   Download the specified dataobject or collection to the s3 bucket
-  [-D REST-respsonse]         Optional specify the filename to capture rest response
+  [-D REST-respsonse]         Optionally specify the filename to capture rest response
   [-o output-json-file]       Optionally specify the filename to capture the json response
   [-f paths-file]             New line delimited file which contains the collection paths in DME to be downloaded
   [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
