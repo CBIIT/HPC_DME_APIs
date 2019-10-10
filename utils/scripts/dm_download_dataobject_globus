@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# dm_generate_token 
-# @author: George Zaki 
+# dm_download_dataobject_globus 
+# @author: Yuri Dinh 
 # 
 # Copyright Leidos Biomedical Research, Inc
 # 
