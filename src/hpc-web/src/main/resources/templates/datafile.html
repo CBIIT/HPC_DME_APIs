@@ -122,7 +122,7 @@
                    &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
-                    <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
+                    <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;
                   <a id="createBookmarks" class="btn btn-link btn-sm"
@@ -153,7 +153,7 @@
                    &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
-                    <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
+                    <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
                    &nbsp;&nbsp;&nbsp;
                   <a id="createBookmarks" class="btn btn-link btn-sm"
@@ -184,7 +184,7 @@
                    &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
-                    <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
+                    <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
                    &nbsp;&nbsp;&nbsp;
                   <a id="createBookmarks" class="btn btn-link btn-sm"
@@ -215,7 +215,7 @@
                    &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
-                    <i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i>
+                    <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
                    &nbsp;&nbsp;&nbsp;
                   <a id="createBookmarks" class="btn btn-link btn-sm"
@@ -335,7 +335,7 @@
 									</table>
 								  </div>
 								</form>
-								<form class="form-horizontal" id="datafileDeleteForm" th:action="@{/datafile}"
+								<form class="form-horizontal" id="datafileDeleteForm" th:action="@{/datafile/delete}"
 									th:object="${hpcDatafile}">
 									<input type="hidden" name="deletepath" id="deletepath" th:value="${hpcDatafile.getDataObject().getAbsolutePath()}"/>
 								</form>
@@ -518,8 +518,8 @@
 										.getElementById("deletewait");
 								waitEle.style.display = "block";
 								$.ajax({
-									type : "DELETE",
-									url : "/datafile?deletepath=" + percentEncodePath(document.getElementById("deletepath").value),
+									type : "POST",
+									url : "/datafile/delete?deletepath=" + percentEncodePath(document.getElementById("deletepath").value),
 									data : $form.serialize(),
 									success : function(msg) {
 										waitEle.style.display = "none";

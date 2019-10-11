@@ -175,7 +175,7 @@
 															</tr>
 															<tr><td colspan="2">&nbsp;</td></tr>
 															<tr>
-															<td><label>Bulk metadata file: </label></td>
+															<td><label>Bulk Metadata File: </label></td>
 																	<td><input type="file" name="hpcMetaDatafile"
 																		id="hpcMetaDatafile" /></td>
 															</tr>
@@ -281,11 +281,11 @@
 									</div>
 									<div class="col-md-3 col-md-offset-6">
 										<h2>
-											<strong> <a id="refreshBrowse"
-												class="btn btn-link btn-sm" onClick="return addMetadata()"><i
+											<a id="refreshBrowse"
+												class="btn btn-link" onClick="return addMetadata()"><i
 													class="fa fa-plus-square-o" title="Add Metadata"
-													aria-hidden="true"></i></a>Add Metadata
-											</strong>
+													aria-hidden="true"></i><strong>Add Metadata</strong>
+											</a>
 										</h2>
 									</div>
 								</div>
@@ -303,7 +303,9 @@
 												<tr th:each="hpcMetadataAttrEntry : ${metadataEntries}"
 													th:if="${metadataEntries != null}">
 													<td><label
-														th:text="${hpcMetadataAttrEntry.getAttrName()}"></label></td>
+														th:text="${hpcMetadataAttrEntry.getAttrName()}"></label>
+														<a href="#" data-toggle="tooltip" data-placement="right" th:if="${!#strings.isEmpty(hpcMetadataAttrEntry.getDescription())}" th:title="${hpcMetadataAttrEntry.getDescription()}">
+														<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 													<td
 														th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input
 														type="text" class="form-control"
@@ -389,6 +391,7 @@
 	<!-- javascripts -->
 	<!-- bootstrap -->
 	<script src="js/jquery-ui-1.10.4.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
 	<script src="js/jquery.scrollTo.min.js"></script>
 	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
 	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
@@ -397,6 +400,11 @@
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
+	<script>
+		$(document).ready(function(){
+  			$('[data-toggle="tooltip"]').tooltip();
+		});
+	</script>
 	<script type="text/javascript">
 	//<![CDATA[	
 	

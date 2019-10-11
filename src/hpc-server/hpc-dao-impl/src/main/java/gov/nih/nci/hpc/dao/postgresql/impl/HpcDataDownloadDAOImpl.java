@@ -110,9 +110,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( "
 			+ "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
 			+ "\"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_OVERWRITE\", \"S3_ACCOUNT_ACCESS_KEY\", "
-			+ "\"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", \"ITEMS\", \"STATUS\", \"TYPE\", "
-			+ "\"DATA_OBJECT_PATHS\", \"COLLECTION_PATHS\", \"CREATED\") "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+			+ "\"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", \"APPEND_PATH_TO_DOWNLOAD_DESTINATION\", \"ITEMS\", "
+			+ "\"STATUS\", \"TYPE\", \"DATA_OBJECT_PATHS\", \"COLLECTION_PATHS\", \"CREATED\") "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
 			+ "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + "\"PATH\"=excluded.\"PATH\", "
 			+ "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
 			+ "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
@@ -120,8 +120,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "\"DESTINATION_OVERWRITE\"=excluded.\"DESTINATION_OVERWRITE\", "
 			+ "\"S3_ACCOUNT_ACCESS_KEY\"=excluded.\"S3_ACCOUNT_ACCESS_KEY\", "
 			+ "\"S3_ACCOUNT_SECRET_KEY\"=excluded.\"S3_ACCOUNT_SECRET_KEY\", "
-			+ "\"S3_ACCOUNT_REGION\"=excluded.\"S3_ACCOUNT_REGION\", " + "\"ITEMS\"=excluded.\"ITEMS\", "
-			+ "\"STATUS\"=excluded.\"STATUS\", " + "\"TYPE\"=excluded.\"TYPE\", "
+			+ "\"S3_ACCOUNT_REGION\"=excluded.\"S3_ACCOUNT_REGION\", "
+			+ "\"APPEND_PATH_TO_DOWNLOAD_DESTINATION\"=excluded.\"APPEND_PATH_TO_DOWNLOAD_DESTINATION\", "
+			+ "\"ITEMS\"=excluded.\"ITEMS\", " + "\"STATUS\"=excluded.\"STATUS\", " + "\"TYPE\"=excluded.\"TYPE\", "
 			+ "\"DATA_OBJECT_PATHS\"=excluded.\"DATA_OBJECT_PATHS\", "
 			+ "\"COLLECTION_PATHS\"=excluded.\"COLLECTION_PATHS\", " + "\"CREATED\"=excluded.\"CREATED\"";
 
@@ -304,6 +305,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			collectionDownloadTask.setGlobusDownloadDestination(globusDownloadDestination);
 		}
 
+		collectionDownloadTask.setAppendPathToDownloadDestination(rs.getBoolean("APPEND_PATH_TO_DOWNLOAD_DESTINATION"));
 		collectionDownloadTask.getItems().addAll(fromJSON(rs.getString("ITEMS")));
 
 		Calendar created = Calendar.getInstance();
@@ -532,9 +534,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					collectionDownloadTask.getUserId(), collectionDownloadTask.getPath(),
 					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
-					s3AccountRegion, toJSON(collectionDownloadTask.getItems()),
-					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
-					dataObjectPathsSQLArray, collectionPathsSQLArray, collectionDownloadTask.getCreated());
+					s3AccountRegion, collectionDownloadTask.getAppendPathToDownloadDestination(),
+					toJSON(collectionDownloadTask.getItems()), collectionDownloadTask.getStatus().value(),
+					collectionDownloadTask.getType().value(), dataObjectPathsSQLArray, collectionPathsSQLArray,
+					collectionDownloadTask.getCreated());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a collection download request: " + e.getMessage(),

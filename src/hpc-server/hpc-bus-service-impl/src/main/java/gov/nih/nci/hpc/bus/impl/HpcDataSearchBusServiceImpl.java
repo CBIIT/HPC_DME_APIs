@@ -127,8 +127,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
         toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
   }
 
+  
   @Override
-  public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+  public HpcDataObjectListDTO getDataObjects(String path, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
       throws HpcException {
     // Input validation.
     if (compoundMetadataQueryDTO == null) {
@@ -149,13 +150,13 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     HpcDataObjectListDTO dataObjectsDTO = null;
     if (!detailedResponse) {
     	List<String> dataObjectPaths =
-    			dataSearchService.getDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+    	        dataSearchService.getDataObjectPaths(path, compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
     	dataObjectsDTO =
     			toDataObjectListDTO(dataObjectPaths, detailedResponse);
     	count = dataObjectPaths.size();
     } else {
     	List<HpcSearchMetadataEntry> dataObjectPaths =
-    			dataSearchService.getDetailedDataObjectPaths(compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+    			dataSearchService.getDetailedDataObjectPaths(path, compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
     	dataObjectsDTO =
     			toDetailedDataObjectListDTO(dataObjectPaths);
     	count = dataObjectsDTO.getDataObjects().size();
@@ -174,13 +175,18 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     }
 
     return dataObjectsDTO;
+
   }
+  
+
+
+
 
   @Override
   public HpcDataObjectListDTO getDataObjects(
       String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException {
-    return getDataObjects(
+    return getDataObjects(null, 
         toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
   }
 
@@ -219,6 +225,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     // Save the query.
     dataSearchService.saveQuery(nciUserId, namedCompoundMetadataQuery);
   }
+  
 
   @Override
   public void updateQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)

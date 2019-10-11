@@ -1,5 +1,7 @@
 package gov.nih.nci.hpc.web.model;
 
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+
 public class HpcCollectionSearchResultDetailed {
 
 	private String path;
@@ -9,6 +11,7 @@ public class HpcCollectionSearchResultDetailed {
 	private String createdOn;
 	private String permission;
 	private String download;
+	HpcMetadataEntries metadataEntries;
 
 	public String getPermission() {
 		return permission;
@@ -64,5 +67,13 @@ public class HpcCollectionSearchResultDetailed {
 
 	public void setDownload(String download) {
 		this.download = download;
+	}
+
+	public HpcMetadataEntries getMetadataEntries() {
+		return metadataEntries;
+	}
+
+	public void setMetadataEntries(HpcMetadataEntries metadataEntries) {
+		this.metadataEntries = metadataEntries;
 	}
 }

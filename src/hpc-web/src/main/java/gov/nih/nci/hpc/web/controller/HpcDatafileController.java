@@ -217,7 +217,7 @@ public class HpcDatafileController extends AbstractHpcController {
 	}
 
 	@JsonView(Views.Public.class)
-	@RequestMapping(method = RequestMethod.DELETE)
+	@RequestMapping(value = "/delete", method = RequestMethod.POST)
 	@ResponseBody
 	public AjaxResponseBody deleteObject(@Valid @ModelAttribute("hpcDatafile") HpcDatafileModel hpcDatafile,
 			Model model, BindingResult bindingResult, HttpSession session, HttpServletRequest request,

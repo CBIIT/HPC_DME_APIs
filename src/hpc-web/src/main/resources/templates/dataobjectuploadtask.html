@@ -162,12 +162,12 @@
 												th:text="${hpcDataObjectUploadStatusDTO.getMessage()}"></label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectUploadStatusDTO.getCreated() != null}">
-											<label for="textbox1">Transfer Created on:</label> <label
+											<label for="textbox1">Transfer Request Created on:</label> <label
 												for="${hpcDataObjectUploadStatusDTO.getCreated()}"
 												th:text="${#calendars.format(hpcDataObjectUploadStatusDTO.getCreated(),'dd MMMM yyyy HH:mm:ss')}"></label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectUploadStatusDTO.getCompleted() != null}">
-											<label for="textbox1">Transfer Completed on:</label> <label
+											<label for="textbox1">Transfer Request Completed on:</label> <label
 												for="${hpcDataObjectUploadStatusDTO.getCompleted()}"
 												th:text="${#calendars.format(hpcDataObjectUploadStatusDTO.getCompleted(),'dd MMMM yyyy HH:mm:ss')}"></label>
 										</div>

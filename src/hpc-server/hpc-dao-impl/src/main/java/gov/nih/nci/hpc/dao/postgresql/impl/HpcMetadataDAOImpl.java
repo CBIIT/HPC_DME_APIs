@@ -391,22 +391,23 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 
 	@Override
-	public List<String> getDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+	public List<String> getDataObjectPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery,
 			String dataManagementUsername, int offset, int limit, HpcMetadataQueryLevelFilter defaultLevelFilter)
 			throws HpcException {
-		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL,
+		return getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, path,
 				toQuery(dataObjectSQL, compoundMetadataQuery, defaultLevelFilter), dataManagementUsername, offset,
 				limit));
 	}
 
 	@Override
-	public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(HpcCompoundMetadataQuery compoundMetadataQuery,
+	public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(String path, 
+			HpcCompoundMetadataQuery compoundMetadataQuery,
 			String dataManagementUsername, int offset, int limit, HpcMetadataQueryLevelFilter defaultLevelFilter)
 			throws HpcException {
 
 		List<HpcSearchMetadataEntry> dataPaths = new ArrayList<>();
 
-		List<String> paths = getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL,
+		List<String> paths = getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, path,
 				toQuery(dataObjectSQL, compoundMetadataQuery, defaultLevelFilter), dataManagementUsername, offset,
 				limit));
 
@@ -507,13 +508,22 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				HpcMetadataQueryOperator.class);
 		private String exactAttributeMatchFilter = null;
 	}
+	
+	
+	
+	private HpcPreparedQuery prepareQuery(String getObjectPathsQuery, HpcPreparedQuery userQuery,
+			String dataManagementUsername, Integer offset, Integer limit) {
+		return prepareQuery(getObjectPathsQuery, null, userQuery,
+				dataManagementUsername, offset, limit);
+	}
 
 	/**
 	 * Prepare a SQL query. Map operators to SQL and concatenate them with
 	 * 'intersect'.
-	 *
+	 * 
 	 * @param getObjectPathsQuery    The query to get object paths based on object
 	 *                               IDs.
+	 * @param objectPath             The path to search in.                              
 	 * @param userQuery              The calculated SQL query based on user input
 	 *                               (represented by query domain objects).
 	 * @param dataManagementUsername The data management user name.
@@ -521,15 +531,28 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	 * @param limit                  No more than 'limit' paths will be returned.
 	 * @return A prepared query.
 	 */
-	private HpcPreparedQuery prepareQuery(String getObjectPathsQuery, HpcPreparedQuery userQuery,
+	private HpcPreparedQuery prepareQuery(String getObjectPathsQuery, String path, HpcPreparedQuery userQuery,
 			String dataManagementUsername, Integer offset, Integer limit) {
 		StringBuilder sqlQueryBuilder = new StringBuilder();
 		List<Object> args = new ArrayList<>();
 
 		// Combine the metadata queries into a single SQL statement.
 		sqlQueryBuilder.append(getObjectPathsQuery);
-		sqlQueryBuilder.append(userQuery.sql);
-		args.addAll(Arrays.asList(userQuery.args));
+		
+		//Add query to limit results to within the path if specified
+		if(path != null) {
+			sqlQueryBuilder.append("object_path LIKE ?");
+			args.add("%" + path + "%");
+		}
+		
+		//Add query to search for requested metadata
+		if(userQuery != null) {
+			if(path != null) {
+				sqlQueryBuilder.append(" and ");
+			}
+			sqlQueryBuilder.append(userQuery.sql);
+			args.addAll(Arrays.asList(userQuery.args));
+		}
 
 		// Add a query to only include entities the user can access.
 		if (dataManagementUsername != null) {
@@ -663,6 +686,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException {
 		StringBuilder sqlQueryBuilder = new StringBuilder();
 		List<Object> args = new ArrayList<>();
+		
+		if(compoundMetadataQuery == null) {
+			return null;
+		}
 
 		sqlQueryBuilder.append("(");
 		// Append the simple queries.

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# dm_download_dataobject_globus 
+# @author: Yuri Dinh 
+# 
+# Copyright Leidos Biomedical Research, Inc
+# 
+# Distributed under the OSI-approved BSD 3-Clause License.
+# See http://ncip.github.com/HPC/LICENSE.txt for details.
+#
+# Generate an HPC DM token 
+
+source $HPC_DM_UTILS/scripts/functions
+dm_download_dataobject_globus $@
