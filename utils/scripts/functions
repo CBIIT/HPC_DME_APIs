@@ -756,7 +756,6 @@ case $1 in
     if [ ! -z "$2" ]
     then
       local SEARCH_PATH="$2"
-      echo "SEARCH_PATH specified"
       local VALDN_RES=$(validate_archive_path "$SEARCH_PATH")
       if [ "" != "$VALDN_RES" ]
       then
