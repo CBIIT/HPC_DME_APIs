@@ -273,15 +273,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			} catch (HpcException e) {
 				logger.error("Failed to process data transfer upload in progress with URL:" + path, e);
-				
-				//This exception prevented us from verifying whether the file was uploaded or not by the 
-				//time the URL expired, so we cannot delete the metadata. This method will be invoked 
-				//the next time around this task is executed, so if this exception was due to a temp  
-				//reason such as Cleversafe not being accessible, it should be resolved within the next  
-				//or a subsequent round, and we should then be able to do proper processing without 
-				//getting into this catch block.
-				//deleteDataObject(path);
-				
+
+				// This exception prevented us from verifying whether the file was uploaded or
+				// not by the
+				// time the URL expired, so we cannot delete the metadata. This method will be
+				// invoked
+				// the next time around this task is executed, so if this exception was due to a
+				// temp
+				// reason such as Cleversafe not being accessible, it should be resolved within
+				// the next
+				// or a subsequent round, and we should then be able to do proper processing
+				// without
+				// getting into this catch block.
+				// deleteDataObject(path);
+
 			}
 		}
 	}
@@ -486,12 +491,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					// Download all files under this collection.
 					downloadItems = downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
-							downloadTask.getS3DownloadDestination(), downloadTask.getUserId());
+							downloadTask.getS3DownloadDestination(), downloadTask.getAppendPathToDownloadDestination(),
+							downloadTask.getUserId());
 
 				} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 					downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
 							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
-							downloadTask.getUserId());
+							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
 
 				} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 					downloadItems = new ArrayList<>();
@@ -501,7 +507,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 						}
 						downloadItems.addAll(downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
-								downloadTask.getS3DownloadDestination(), downloadTask.getUserId()));
+								downloadTask.getS3DownloadDestination(),
+								downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId()));
 					}
 				}
 
@@ -936,25 +943,30 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * Download a collection. Traverse the collection tree and submit download
 	 * request to all files in the tree.
 	 *
-	 * @param collection                The collection to download.
-	 * @param globusDownloadDestination The user requested Glopbus download
-	 *                                  destination.
-	 * @param s3DownloadDestination     The user requested S3 download destination.
-	 * @param userId                    The user ID who requested the collection
-	 *                                  download.
+	 * @param collection                      The collection to download.
+	 * @param globusDownloadDestination       The user requested Glopbus download
+	 *                                        destination.
+	 * @param s3DownloadDestination           The user requested S3 download
+	 *                                        destination.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used.
+	 * @param userId                          The user ID who requested the
+	 *                                        collection download.
 	 * @return The download task items (each item represent a data-object download
 	 *         under the collection).
 	 * @throws HpcException on service failure.
 	 */
 	private List<HpcCollectionDownloadTaskItem> downloadCollection(HpcCollection collection,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId) throws HpcException {
+			boolean appendPathToDownloadDestination, String userId) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and download them.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
 			downloadItems.add(downloadDataObject(dataObjectEntry.getPath(), globusDownloadDestination,
-					s3DownloadDestination, userId));
+					s3DownloadDestination, appendPathToDownloadDestination, userId));
 		}
 
 		// Iterate through the sub-collections and download them.
@@ -964,8 +976,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			if (subCollection != null) {
 				// Download this sub-collection.
 				downloadItems.addAll(downloadCollection(subCollection,
-						calculateGlobusDownloadDestination(globusDownloadDestination, subCollectionPath),
-						calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath), userId));
+						calculateGlobusDownloadDestination(globusDownloadDestination, subCollectionPath,
+								appendPathToDownloadDestination ? null : false),
+						calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath,
+								appendPathToDownloadDestination ? null : false),
+						appendPathToDownloadDestination, userId));
 			}
 		}
 
@@ -975,24 +990,32 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	/**
 	 * Download a list of data objects.
 	 *
-	 * @param dataObjectPaths           The list of data object path to download.
-	 * @param globusDownloadDestination The user requested Glopbus download
-	 *                                  destination.
-	 * @param s3DownloadDestination     The user requested S3 download destination.
-	 * @param userId                    The user ID who requested the collection
-	 *                                  download.
+	 * @param dataObjectPaths                 The list of data object path to
+	 *                                        download.
+	 * @param globusDownloadDestination       The user requested Glopbus download
+	 *                                        destination.
+	 * @param s3DownloadDestination           The user requested S3 download
+	 *                                        destination.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used.
+	 * @param userId                          The user ID who requested the
+	 *                                        collection download.
+	 * @param userId                          The user ID who requested the
+	 *                                        collection download.
 	 * @return The download task items (each item represent a data-object download
 	 *         from the requested list).
 	 */
 	private List<HpcCollectionDownloadTaskItem> downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId) {
+			boolean appendPathToDownloadDestination, String userId) {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and download them.
 		for (String dataObjectPath : dataObjectPaths) {
-			downloadItems
-					.add(downloadDataObject(dataObjectPath, globusDownloadDestination, s3DownloadDestination, userId));
+			downloadItems.add(downloadDataObject(dataObjectPath, globusDownloadDestination, s3DownloadDestination,
+					appendPathToDownloadDestination, userId));
 		}
 
 		return downloadItems;
@@ -1001,21 +1024,27 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	/**
 	 * Download a data object.
 	 *
-	 * @param path                      The data object path.
-	 * @param globusDownloadDestination The user requested Glopbus download
-	 *                                  destination.
-	 * @param s3DownloadDestination     The user requested S3 download destination.
-	 * @param userId                    The user ID who requested the collection
-	 *                                  download.
+	 * @param path                            The data object path.
+	 * @param globusDownloadDestination       The user requested Glopbus download
+	 *                                        destination.
+	 * @param s3DownloadDestination           The user requested S3 download
+	 *                                        destination.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used.
+	 * @param userId                          The user ID who requested the
+	 *                                        collection download.
 	 * @return The download task item.
 	 */
 	private HpcCollectionDownloadTaskItem downloadDataObject(String path,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId) {
+			boolean appendPathToDownloadDestination, String userId) {
 		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
-		dataObjectDownloadRequest
-				.setGlobusDownloadDestination(calculateGlobusDownloadDestination(globusDownloadDestination, path));
-		dataObjectDownloadRequest.setS3DownloadDestination(calculateS3DownloadDestination(s3DownloadDestination, path));
+		dataObjectDownloadRequest.setGlobusDownloadDestination(
+				calculateGlobusDownloadDestination(globusDownloadDestination, path, appendPathToDownloadDestination));
+		dataObjectDownloadRequest.setS3DownloadDestination(
+				calculateS3DownloadDestination(s3DownloadDestination, path, appendPathToDownloadDestination));
 
 		// Instantiate a download item for this data object.
 		HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
@@ -1047,13 +1076,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * Calculate a Globus download destination path for a collection entry under a
 	 * collection.
 	 *
-	 * @param collectionDestination      The Globus collection destination.
-	 * @param collectionListingEntryPath The entry path under the collection to
-	 *                                   calculate the destination location for.
+	 * @param collectionDestination           The Globus collection destination.
+	 * @param collectionListingEntryPath      The entry path under the collection to
+	 *                                        calculate the destination location
+	 *                                        for.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used. If null - not used.
 	 * @return A calculated destination location.
 	 */
 	private HpcGlobusDownloadDestination calculateGlobusDownloadDestination(
-			HpcGlobusDownloadDestination collectionDestination, String collectionListingEntryPath) {
+			HpcGlobusDownloadDestination collectionDestination, String collectionListingEntryPath,
+			Boolean appendPathToDownloadDestination) {
 		if (collectionDestination == null) {
 			return null;
 		}
@@ -1061,8 +1096,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcGlobusDownloadDestination calcGlobusDestination = new HpcGlobusDownloadDestination();
 		HpcFileLocation calcDestination = new HpcFileLocation();
 		calcDestination.setFileContainerId(collectionDestination.getDestinationLocation().getFileContainerId());
-		calcDestination.setFileId(collectionDestination.getDestinationLocation().getFileId()
-				+ collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+		String fileId = collectionDestination.getDestinationLocation().getFileId();
+		if (appendPathToDownloadDestination != null) {
+			fileId = fileId + (appendPathToDownloadDestination ? collectionListingEntryPath
+					: collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+		}
+		calcDestination.setFileId(fileId);
+
 		calcGlobusDestination.setDestinationLocation(calcDestination);
 		calcGlobusDestination.setDestinationOverwrite(collectionDestination.getDestinationOverwrite());
 
@@ -1073,13 +1113,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * Calculate a S3 download destination path for a collection entry under a
 	 * collection.
 	 *
-	 * @param collectionDestination      The S3 collection destination.
-	 * @param collectionListingEntryPath The entry path under the collection to
-	 *                                   calculate the destination location for.
+	 * @param collectionDestination           The S3 collection destination.
+	 * @param collectionListingEntryPath      The entry path under the collection to
+	 *                                        calculate the destination location
+	 *                                        for.
+	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 *                                        be used in the destination path,
+	 *                                        otherwise just the object name will be
+	 *                                        used. If null - not used.
+	 * 
 	 * @return A calculated destination location.
 	 */
 	private HpcS3DownloadDestination calculateS3DownloadDestination(HpcS3DownloadDestination collectionDestination,
-			String collectionListingEntryPath) {
+			String collectionListingEntryPath, Boolean appendPathToDownloadDestination) {
 		if (collectionDestination == null) {
 			return null;
 		}
@@ -1087,8 +1133,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcS3DownloadDestination calcS3Destination = new HpcS3DownloadDestination();
 		HpcFileLocation calcDestination = new HpcFileLocation();
 		calcDestination.setFileContainerId(collectionDestination.getDestinationLocation().getFileContainerId());
-		calcDestination.setFileId(collectionDestination.getDestinationLocation().getFileId()
-				+ collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+		String fileId = collectionDestination.getDestinationLocation().getFileId();
+		if (appendPathToDownloadDestination != null) {
+			fileId = fileId + (appendPathToDownloadDestination ? collectionListingEntryPath
+					: collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+		}
+		calcDestination.setFileId(fileId);
 		calcS3Destination.setDestinationLocation(calcDestination);
 		calcS3Destination.setAccount(collectionDestination.getAccount());
 

@@ -128,6 +128,9 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 		model.addAttribute("hpcSearch", hpcSearch);
 		model.addAttribute("hpcSaveSearch", hpcSaveSearch);
 		session.removeAttribute("compoundQuery");
+		session.removeAttribute("hpcSearch");
+		session.removeAttribute("hpcSaveSearch");
+		session.removeAttribute("namedCompoundQuery");
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		if (user == null) {
@@ -301,6 +304,9 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
 				returnResult.setDownload(result.getCollection().getAbsolutePath());
 				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
+				returnResult.setMetadataEntries(new HpcMetadataEntries());
+				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
+				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}
@@ -347,6 +353,9 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
+				returnResult.setMetadataEntries(new HpcMetadataEntries());
+				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
+				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}

@@ -26,6 +26,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gov.nih.nci.hpc.bus.HpcDataBrowseBusService;
@@ -53,6 +55,9 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
 
   // The Data Browse Business Service instance.
   @Autowired private HpcDataBrowseBusService dataBrowseBusService = null;
+  
+  //The logger instance.
+  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   //---------------------------------------------------------------------//
   // constructors
@@ -73,15 +78,21 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
   public Response addBookmark(String bookmarkName, HpcBookmarkRequestDTO bookmarkRequest) {
     try {
       dataBrowseBusService.addBookmark(URLDecoder.decode(bookmarkName, "UTF-8"), bookmarkRequest);
-    } catch (UnsupportedEncodingException e) {
-      HpcException hpce =
-          new HpcException(
-              "Failed to decode bookmark name: " + e.getMessage(),
-              HpcErrorType.DATA_MANAGEMENT_ERROR);
-      return errorResponse(hpce);
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+    }  catch (IllegalArgumentException e) {
+    	logger.info("Failed to create bookmark for " + bookmarkName, e);
+    	HpcException hpce =
+    	          new HpcException(
+    	              "Failed to create bookmark: Invalid Bookmark Name",
+    	              HpcErrorType.DATA_MANAGEMENT_ERROR);
+    	      return errorResponse(hpce);
+	} catch (Exception e) {
+		logger.info("Failed to create bookmark " + bookmarkName, e);
+    	HpcException hpce =
+    	          new HpcException(
+    	              "Failed to create bookmark: " + e.getMessage(),
+    	              HpcErrorType.DATA_MANAGEMENT_ERROR);
+    	      return errorResponse(hpce);
+	}
 
     return createdResponse(null);
   }
@@ -91,16 +102,21 @@ public class HpcDataBrowseRestServiceImpl extends HpcRestServiceImpl
     try {
       dataBrowseBusService.updateBookmark(
           URLDecoder.decode(bookmarkName, "UTF-8"), bookmarkRequest);
-
-    } catch (UnsupportedEncodingException e) {
+    } catch (IllegalArgumentException e) {
+    	logger.info("Failed to update bookmark for " + bookmarkName, e);
+    	HpcException hpce =
+    	          new HpcException(
+    	              "Failed to update bookmark: Invalid Bookmark Name",
+    	              HpcErrorType.DATA_MANAGEMENT_ERROR);
+    	      return errorResponse(hpce);
+	} catch (Exception e) {
+      logger.info("Failed to update bookmark " + bookmarkName, e);	
       HpcException hpce =
           new HpcException(
-              "Failed to decode bookmark name: " + e.getMessage(),
+              "Failed to update bookmark: " + e.getMessage(),
               HpcErrorType.DATA_MANAGEMENT_ERROR);
       return errorResponse(hpce);
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+    } 
 
     return okResponse(null, false);
   }

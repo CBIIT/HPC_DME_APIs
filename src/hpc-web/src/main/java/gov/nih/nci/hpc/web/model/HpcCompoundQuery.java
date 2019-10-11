@@ -3,6 +3,9 @@ package gov.nih.nci.hpc.web.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.cxf.xjc.runtime.JAXBToStringStyle;
+
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 
@@ -43,4 +46,9 @@ public class HpcCompoundQuery {
 	public void setCompoundQueries(Map<String, HpcCompoundMetadataQuery> compoundQueries) {
 		this.compoundQueries = compoundQueries;
 	}
+	
+	@Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, JAXBToStringStyle.SIMPLE_STYLE);
+    }
 }

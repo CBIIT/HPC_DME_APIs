@@ -78,6 +78,8 @@
 					type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
 				<xsd:element name="s3DownloadDestination"
 					type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
+				<xsd:element name="appendPathToDownloadDestination"
+					type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

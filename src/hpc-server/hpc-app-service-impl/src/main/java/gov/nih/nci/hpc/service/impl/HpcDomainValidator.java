@@ -337,7 +337,7 @@ public class HpcDomainValidator {
 		}
 
 		if (compoundMetadataQuery == null) {
-			validationResult.setMessage("Null compound query: [" + compoundMetadataQuery + "]");
+			validationResult.setMessage("Null compound query");
 			return validationResult;
 		}
 

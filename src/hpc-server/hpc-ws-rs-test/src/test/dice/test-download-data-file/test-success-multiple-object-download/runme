@@ -50,4 +50,5 @@ fi
 sleep 100
 
 #Verify the files are in globus
-verify_globus_download "$taskId" "$destination_path/dice_object_1 $destination_path/dice_object_2" ""
+verify_globus_download "$taskId" "$destination_path/TEST_Archive/dice_project4/dice_object_1" ""
+verify_globus_download "$taskId" "$destination_path/TEST_Archive/dice_project2/dice_object_2" ""
