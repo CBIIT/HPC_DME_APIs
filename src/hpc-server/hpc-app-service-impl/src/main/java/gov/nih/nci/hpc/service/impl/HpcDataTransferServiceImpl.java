@@ -708,6 +708,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
+		downloadTask.setAppendPathToDownloadDestination(false);
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
@@ -718,7 +719,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId, String configurationId) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, null, configurationId,
 				true);
@@ -733,6 +734,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
+		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
@@ -743,7 +745,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			String userId, String configurationId) throws HpcException {
+			String userId, String configurationId, boolean appendPathToDownloadDestination) throws HpcException {
 		// Validate the requested destination location. Note: we use the configuration
 		// ID of one data object path. At this time, there is no need to validate for
 		// all
@@ -761,7 +763,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
-
+		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
+		
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 

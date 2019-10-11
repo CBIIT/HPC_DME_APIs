@@ -596,6 +596,9 @@ function validateAndSubmit()
 			{
 				var attrOperValue = document.getElementById("operator"+suffix).value;	
 				var attrValueValue = document.getElementById("attrValue"+suffix).value;
+				if(attrOperValue == "LIKE" && attrValueValue.indexOf('%') == -1) {
+					document.getElementById("attrValue"+suffix).value = '%' + attrValueValue + '%';
+				}
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
 					alert("Invalid criteria. Please enter operator and value");
@@ -607,6 +610,9 @@ function validateAndSubmit()
 			{
 				var attrOperValue = document.getElementById("operator"+suffix).value;	
 				var attrValueValue = document.getElementById("attrValue"+suffix).value;
+				if(attrOperValue == "LIKE" && attrValueValue.indexOf('%') == -1) {
+					document.getElementById("attrValue"+suffix).value = '%' + attrValueValue + '%';
+				}
 				if(attrOperValue == "-1" || attrValueValue == null || attrValueValue.trim().length == 0)
 				{
 					alert("Invalid criteria. Please enter operator and value");
@@ -654,7 +660,6 @@ if(advancedCriteriaExist) {
 	advancedSearch();
 }
 
-if(searchError) {
 	resetRows();
 	// Process the hpcSearch object and restore the level criteria
 	for(var i = 0; i < searchCriteria.level.length; i++) {
@@ -669,9 +674,17 @@ if(searchError) {
 		$('#level' + row_id).val(searchCriteria.level[i]).change();
 		$('#attrName' + row_id).val(searchCriteria.attrName[i]);
 		$('#operator' + row_id).val(searchCriteria.operator[i]);
-		$('#attrValue' + row_id).val(searchCriteria.attrValue[i]);
-	}	
-}
+		if(searchCriteria.operator[i].startsWith('TIMESTAMP')) {
+			$('#attrValue' + row_id + 'X').val(searchCriteria.attrValue[i].split(' ')[0].replace(/-/g, "/"));
+		}
+		else {
+			$('#attrValue' + row_id).val(searchCriteria.attrValue[i]);
+		}
+	}
+
+	$(document).ready(function() {
+		$('select.operator').change();
+	});
 //]]>
 </script>
 </body>

@@ -131,7 +131,6 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  */
 public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusService {
 
-
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
@@ -318,11 +317,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				|| !metadataEntries.getSelfMetadataEntries().isEmpty())) {
 			collectionDTO.setMetadataEntries(metadataEntries);
 		}
-		
-		//Set the permission if requested
-	    if(includeAcl) {
-	    	collectionDTO.setPermission(dataManagementService.getCollectionPermission(path).getPermission());
-	    }
+
+		// Set the permission if requested
+		if (includeAcl) {
+			collectionDTO.setPermission(dataManagementService.getCollectionPermission(path).getPermission());
+		}
 
 		return collectionDTO;
 	}
@@ -391,6 +390,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Both data object and collection paths provided",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
+			// Default to true - i.e. use the full data object path in the download
+			// destination.
+			downloadRequest.setAppendPathToDownloadDestination(true);
+		}
 
 		HpcCollectionDownloadTask collectionDownloadTask = null;
 		if (!downloadRequest.getDataObjectPaths().isEmpty()) {
@@ -412,7 +416,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Submit a data objects download task.
 			collectionDownloadTask = dataTransferService.downloadDataObjects(downloadRequest.getDataObjectPaths(),
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
-					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId);
+					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
+					downloadRequest.getAppendPathToDownloadDestination());
 		} else {
 			// Submit a request to download a list of collections.
 
@@ -432,7 +437,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Submit a data objects download task.
 			collectionDownloadTask = dataTransferService.downloadCollections(downloadRequest.getCollectionPaths(),
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
-					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId);
+					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
+					downloadRequest.getAppendPathToDownloadDestination());
 		}
 
 		// Create and return a DTO with the request receipt.
@@ -929,11 +935,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataObjectDTO.setMetadataEntries(metadataEntries);
 		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(
 				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
-		
-		if(includeAcl) {
-	    	//Set the permission
-	        dataObjectDTO.setPermission(dataManagementService.getDataObjectPermission(path).getPermission());
-	    }
+
+		if (includeAcl) {
+			// Set the permission
+			dataObjectDTO.setPermission(dataManagementService.getDataObjectPermission(path).getPermission());
+		}
 
 		return dataObjectDTO;
 	}
@@ -1236,8 +1242,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			HpcDocDataManagementRulesDTO docRules = docsRules.containsKey(doc) ? docsRules.get(doc)
 					: new HpcDocDataManagementRulesDTO();
 
-			HpcDataManagementRulesDTO rules = 
-					getDataManagementRules(dataManagementConfiguration);
+			HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration);
 			docRules.setDoc(doc);
 			docRules.getRules().add(rules);
 			docsRules.put(doc, docRules);
@@ -1253,41 +1258,38 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		return dataManagementModel;
 	}
-	
-	
+
 	@Override
 	public HpcDataManagementModelDTO getDataManagementModel(String basePath) throws HpcException {
-		
+
 		// Construct and return the DTO
 		HpcDataManagementModelDTO dataManagementModel = new HpcDataManagementModelDTO();
-		
+
 		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementService
 				.getDataManagementConfigurations()) {
-			if(dataManagementConfiguration.getBasePath().equals(basePath)) {
-				HpcDataManagementRulesDTO rules = 
-						getDataManagementRules(dataManagementConfiguration);
-				HpcDocDataManagementRulesDTO docRules = new HpcDocDataManagementRulesDTO();									
+			if (dataManagementConfiguration.getBasePath().equals(basePath)) {
+				HpcDataManagementRulesDTO rules = getDataManagementRules(dataManagementConfiguration);
+				HpcDocDataManagementRulesDTO docRules = new HpcDocDataManagementRulesDTO();
 				docRules.setDoc(dataManagementConfiguration.getDoc());
 				docRules.getRules().add(rules);
 				dataManagementModel.getDocRules().add(docRules);
 				break;
-			}	
+			}
 		}
-		
-		if(dataManagementModel.getDocRules().isEmpty()) {
-			throw new HpcException("Could not obtain Data Management Model for basePath " 
-					+ basePath, HpcErrorType.INVALID_REQUEST_INPUT);
+
+		if (dataManagementModel.getDocRules().isEmpty()) {
+			throw new HpcException("Could not obtain Data Management Model for basePath " + basePath,
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		
+
 		dataManagementModel.getCollectionSystemGeneratedMetadataAttributeNames()
-		.addAll(metadataService.getCollectionSystemMetadataAttributeNames());
+				.addAll(metadataService.getCollectionSystemMetadataAttributeNames());
 		dataManagementModel.getDataObjectSystemGeneratedMetadataAttributeNames()
-		.addAll(metadataService.getDataObjectSystemMetadataAttributeNames());
-		
+				.addAll(metadataService.getDataObjectSystemMetadataAttributeNames());
+
 		return dataManagementModel;
 	}
-	
-	
+
 	private HpcDataManagementRulesDTO getDataManagementRules(
 			HpcDataManagementConfiguration dataManagementConfiguration) {
 		HpcDataManagementRulesDTO rules = new HpcDataManagementRulesDTO();
@@ -1295,13 +1297,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		rules.setBasePath(dataManagementConfiguration.getBasePath());
 		rules.setDataHierarchy(dataManagementConfiguration.getDataHierarchy());
 		rules.getCollectionMetadataValidationRules()
-			.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
+				.addAll(dataManagementConfiguration.getCollectionMetadataValidationRules());
 		rules.getDataObjectMetadataValidationRules()
-			.addAll(dataManagementConfiguration.getDataObjectMetadataValidationRules());
-		
+				.addAll(dataManagementConfiguration.getDataObjectMetadataValidationRules());
+
 		return rules;
 	}
-	
 
 	@Override
 	public void movePath(String path, boolean pathType, String destinationPath) throws HpcException {

@@ -49,6 +49,13 @@ app.controller('DashBoardCtrl', ['$scope', '$http', function ($scope, $http) {
         type:'date'
       },
       {
+        field : 'edit',
+        width : 200,
+        displayName : 'Edit',
+        cellFilter: 'percentEncoding',
+        cellTemplate : '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="#" id="{{COL_FIELD CUSTOM_FILTERS}}_edit" onclick="editSearch(this)">Edit</a></div>'
+      },
+      {
         field : 'delete',
         width : 200,
         displayName : 'Delete',

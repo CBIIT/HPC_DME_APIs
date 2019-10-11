@@ -26,27 +26,47 @@
 		<button type="button" class="close" data-dismiss="modal">&times;</button>
 		<h4 class="modal-title">Save Search Criteria</h4>
 	</div>
-	<form class="form-horizontal" id="saveCriteriaForm"
-		th:object="${hpcSaveSearch}">
-		<div class="modal-body">
-			<div class="pull-left" id="message"
-				style="display: none; float: left">
-				<p>&nbsp;</p>
+	<div class="modal-body">
+		<form class="form-horizontal" id="saveCriteriaForm"
+			th:object="${hpcSaveSearch}">
+			<div th:if="${!#strings.isEmpty(hpcSaveSearch.getCriteriaName())}" class="pull-center" id="note">
+				<p>You can save a query with a new name by changing the name below.<br/>
+					Note: Saving with the same name replaces the existing query.</p>
 			</div>
-			<p>&nbsp;</p>
-			<div class="form-group">
-				<label for="criteriaName">Name</label> <input type="text"
-					class="form-control" th:field="*{criteriaName}" id="criteriaName"
-					placeholder="Enter name" />
-			</div>
-		</div>
-		<div class="modal-footer">
-			<button class="btn btn-success" id="submit">Save</button>
-			<button type="button" class="btn btn-default btn-primary" data-dismiss="modal"
-				id="close">Close</button>
-		</div>
-	</form>
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<table style="width: 100%;">
+						<tr>
+							<td>
+								<div class="pull-left" id="message"
+									style="display: none; float: left">
+									<p>&nbsp;</p>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="form-group">
+								  <div class="col-sm-12 column">
+									<label for="criteriaName">Name:</label> <input type="text"
+										class="form-control" th:field="*{criteriaName}" id="criteriaName"
+										placeholder="Enter name" />
+								  </div>
+								</div>
+								<div class="modal-footer">
+									<button class="btn btn-success" id="submit">Save</button>
+									<button type="button" class="btn btn-default btn-primary" data-dismiss="modal"
+										id="close">Close</button>
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
 
+			</div>
+			
+		</form>
+	</div>
 	<script th:inline="javascript">
 	/*<![CDATA[*/
  $(function() {

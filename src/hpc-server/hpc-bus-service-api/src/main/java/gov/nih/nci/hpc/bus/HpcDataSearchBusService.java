@@ -52,10 +52,11 @@ public interface HpcDataSearchBusService {
    * Get data objects by compound metadata query.
    *
    * @param compoundMetadataQueryDTO The compound metadata query DTO.
+   * @param path The path to search in if specified.
    * @return A list of Data Object DTO.
    * @throws HpcException on service failure.
    */
-  public HpcDataObjectListDTO getDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+  public HpcDataObjectListDTO getDataObjects(String path, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
       throws HpcException;
 
   /**
@@ -73,6 +74,7 @@ public interface HpcDataSearchBusService {
   public HpcDataObjectListDTO getDataObjects(
       String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException;
+  
 
   /**
    * Add a named query for a user.
@@ -127,4 +129,5 @@ public interface HpcDataSearchBusService {
    * @throws HpcException on service failure.
    */
   public HpcMetadataAttributesListDTO getMetadataAttributes(String levelLabel) throws HpcException;
+
 }

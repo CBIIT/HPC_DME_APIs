@@ -351,6 +351,7 @@
 				type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
 			<xsd:element name="s3DownloadDestination"
 				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
+			<xsd:element name="appendPathToDownloadDestination" type="xsd:boolean" />
 			<xsd:element name="status"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskStatus" />
 			<xsd:element name="message" type="xsd:string" />

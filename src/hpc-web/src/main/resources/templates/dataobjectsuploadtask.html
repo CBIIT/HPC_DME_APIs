@@ -129,12 +129,12 @@
 											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getMessage()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCreated() != null}">
-										<label for="textbox1">Registration Created on:</label> <label
+										<label for="textbox1">Registration Request Created on:</label> <label
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getCreated()}"
 											th:text="${#calendars.format(hpcBulkDataObjectRegistrationTaskDTO.getCreated(),'dd MMMM yyyy HH:mm:ss')}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCompleted() != null}">
-										<label for="textbox1">Registration Completed on:</label> <label
+										<label for="textbox1">Registration Request Completed on:</label> <label
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getCompleted()}"
 											th:text="${#calendars.format(hpcBulkDataObjectRegistrationTaskDTO.getCompleted(),'dd MMMM yyyy HH:mm:ss')}"></label>
 									</div>
@@ -234,7 +234,7 @@
 											th:text="${hpcUploadTaskItem.getMessage()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getCompleted() != null}">
-										<label for="textbox1">Registration Completed on:</label> <label
+										<label for="textbox1">Registration Request Completed on:</label> <label
 											for="${hpcUploadTaskItem.getCompleted()}"
 											th:text="${#calendars.format(hpcUploadTaskItem.getCompleted(),'dd MMMM yyyy HH:mm:ss')}"></label>
 									</div>

@@ -260,6 +260,33 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
             console.log('SUCCESS: ', $scope.selectedRows);
             selectedRowsData = $scope.selectedRows;
           });
+      
+	      var metaSet = new Set(); 
+	      for(var i=0; i<$scope.gridOptions1.data.length; i++){
+	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries.length; j++){
+		    	  attribute = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].attribute;
+		    	  if(!metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "collection_type") {
+		    	  	$scope.gridOptions1.columnDefs.push({
+		    			field: attribute,
+		    			width : 200
+		    	  	});
+		    	  	metaSet.add(attribute)
+		    	  }
+		          $scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].value;
+	    	  }
+	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries.length; j++){
+		    	  attribute = $scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries[j].attribute;
+		    	  if(!metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "collection_type") {
+		    	  	$scope.gridOptions1.columnDefs.push({
+		    			field: attribute,
+		    			width : 200
+		    	  	});
+		    	  	metaSet.add(attribute)
+		    	  }
+		          $scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries[j].value;
+	    	  }
+	      }
+      
     };
   
     Array.prototype.contains = function(obj) {
@@ -272,7 +299,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         return false;
     };
     
-   
+    $scope.editSearch = function() {
+    	document.getElementById("editsearchform").submit();
+    };
+    
     $scope.downloadSelectedRows = function() {
         console.log('$scope.selectedRows: ', $scope.selectedRows);
         console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
@@ -385,6 +415,9 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" href="/savesearch"
 										data-target="#myModal">Save Search Criteria</a>
+									<a id="editsearchlink"
+										class="btn btn-link btn-sm" ng-click="editSearch()"
+										>Edit Search Criteria</a>
 								</div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
@@ -433,7 +466,10 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<input type="hidden" id="pageSize" name="pageSize"/>
 						<input type="hidden" id="queryName" name="queryName"/>
 					</form> 
-
+					<form class="form-horizontal" id="editsearchform" action="#"
+						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
+						method="post" enctype="multipart/form-data">
+					</form> 
 				</div>
 				<!--/col-->
 

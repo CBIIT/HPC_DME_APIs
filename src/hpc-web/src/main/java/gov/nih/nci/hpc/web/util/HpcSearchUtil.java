@@ -74,6 +74,9 @@ public class HpcSearchUtil {
 				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
 				returnResult.setDownload(result.getCollection().getAbsolutePath());
 				returnResult.setPermission(result.getCollection().getAbsolutePath());
+				returnResult.setMetadataEntries(new HpcMetadataEntries());
+				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
+				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}
@@ -131,6 +134,9 @@ public class HpcSearchUtil {
 				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
 				returnResult.setDownload(result.getDataObject().getAbsolutePath());
 				returnResult.setPermission(result.getDataObject().getAbsolutePath());
+				returnResult.setMetadataEntries(new HpcMetadataEntries());
+				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
+				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
 				returnResults.add(returnResult);
 
 			}

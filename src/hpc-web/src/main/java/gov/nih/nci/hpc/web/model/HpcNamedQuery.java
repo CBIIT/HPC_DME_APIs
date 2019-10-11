@@ -14,6 +14,9 @@ public class HpcNamedQuery {
 
 	@JsonView(Views.Public.class)
 	private String delete;
+	
+	@JsonView(Views.Public.class)
+	private String edit;
 
 	public String getSearchName() {
 		return searchName;
@@ -45,5 +48,13 @@ public class HpcNamedQuery {
 
 	public void setDelete(String delete) {
 		this.delete = delete;
+	}
+
+	public String getEdit() {
+		return edit;
+	}
+
+	public void setEdit(String edit) {
+		this.edit = edit;
 	}
 }

@@ -682,6 +682,130 @@ function dm_get_collection {
 }
 
 
+#Print Usage of dm_query_dataobject function
+function dm_show_query_dataobject_usage {
+read -d  '' usage <<- EOF
+usage: dm_query_dataobject [-D REST-respsonse] [-o output-json-file] <description.json> [search-path]
+
+Search for dataobjects based on the given compound query and optional search path.
+OPTIONS:
+[-D REST-respsonse]         Optionally specify the filename to capture REST response
+[-o output-json-file]       Optionally specify the filename to capture the JSON response
+<criteria.json>             JSON file containing the compound query for the search
+[search-path]               Optionally specify the collection path to search in
+
+EOF
+echo "$usage"
+}
+
+
+#Get the metadata of a dataobject from the archive
+#Inputs: [-D REST-responsea]
+#        [-o metadata-file]
+#        <criteria.json>
+#        [search-path]
+function dm_query_dataobject {
+
+local RESPONSE_MSG
+local RESPONSE_HEADER
+local SHOW_OUTPUT=1
+
+while :; do
+case $1 in
+    -D|--dump-header)
+        if [ "$2" ]; then
+            RESPONSE_HEADER="$2"
+            shift
+        else
+            dm_show_query_dataobject_usage >&2
+                    return 1
+        fi
+        ;;
+    -o|--output)
+        if [ "$2" ]; then
+           RESPONSE_MSG="$2"
+           SHOW_OUTPUT=0
+           shift
+        else
+           dm_show_query_dataobject_usage >&2
+           return 1
+        fi
+        ;;
+        *) break
+        esac
+        shift
+    done
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          dm_show_query_dataobject_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    if [ "$#" -lt 1 ]
+    then
+      dm_show_query_dataobject_usage >&2
+      return 1
+     fi
+    local CRITERIA="$1"
+
+    if [ ! -z "$2" ]
+    then
+      local SEARCH_PATH="$2"
+      echo "SEARCH_PATH specified"
+      local VALDN_RES=$(validate_archive_path "$SEARCH_PATH")
+      if [ "" != "$VALDN_RES" ]
+      then
+          echo "$VALDN_RES" >&2
+          return 1
+      fi
+    fi
+
+
+    if [ -z "$RESPONSE_MSG" ]
+     then
+        RESPONSE_MSG=query-dataobject-response-message.json.tmp
+    fi
+    if [ -z "$RESPONSE_HEADER" ]
+    then
+        RESPONSE_HEADER=query-dataobject-response-header.tmp
+    fi
+
+    SERVER=$(get_server) || exit 1
+    CONFIG=$(get_config) || exit 1
+
+    if [ -z "$SEARCH_PATH" ]
+    then
+      local CURL_FLAGS="-X POST ${SERVER}/dataObject/query  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    else
+      local CURL_FLAGS="-X POST ${SERVER}/dataObject/query/$(urlencode $SEARCH_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    fi 
+
+    curl -H "Content-Type: application/json" -d @$CRITERIA $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status
+
+    #Process response
+    local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
+    if [ "$RESPONSE_CODE" -ne 200 ]
+    then
+      echo "Error querying dataobjects " >&2
+      print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
+    else
+      print_json_message "$RESPONSE_MSG" > ${RESPONSE_MSG}.tmp
+      mv ${RESPONSE_MSG}.tmp $RESPONSE_MSG
+      if [ $SHOW_OUTPUT -eq 1 ]
+      then
+        cat "$RESPONSE_MSG"
+      fi
+      return 0
+    fi
+
+}
+
+
 #Print Usage of dm_download_dataobject_sync function
 function dm_show_download_dataobject_sync_usage {
   read -d  '' usage <<- EOF
@@ -707,7 +831,7 @@ function dm_download_dataobject_sync {
 
   #Set the default parameters
   local APPLY_PRESIGNED=0
-  local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json"
+  local TEMPLATE
   local RESPONSE_HEADER
 
   while :; do
@@ -723,12 +847,18 @@ function dm_download_dataobject_sync {
             ;;
             -p)
                 APPLY_PRESIGNED=1
-                TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template.json"
+                TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template-internal.json"
             ;;
             *) break
         esac
         shift
   done
+
+  if [ $APPLY_PRESIGNED -eq 0 ]
+  then
+    printf '{\n}' > $HPC_DM_UTILS/templates/download-sync-template.json.tmp
+    TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json.tmp"
+  fi
 
   if [ "$#" -lt 2 ] 
   then
@@ -764,6 +894,7 @@ function dm_download_dataobject_sync {
       2> $HPC_DM_UTILS/temp/curl-status
     check_connection $RESPONSE_HEADER
     CODE=$(get_http_code "$RESPONSE_HEADER")
+    rm $HPC_DM_UTILS/templates/download-sync-template.json.tmp
     if [ "$CODE" -ne 200 ]
     then 
       #In this case the destination path file will contain the error code
@@ -1428,15 +1559,17 @@ function dm_register_globus_directory {
 #Download a collection to Globus 
 #Inputs: [-o output-json-file]
 #        [-D REST-response]
-#        collection-apth
+#        [-f paths-file]
+#        [collection-path]
 #        destination-file
-function dm_download_collection_async {
+function dm_download_collection_globus {
 
 
-    local USAGE="usage: dm_download_collection_async [-D REST-respsonse] [-o output-json-file] <collection-logical-path> <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_collection_globus [-D REST-respsonse] [-o output-json-file] [-f paths-file] [collection-logical-path] <globus-destination-path> [globus-endpoint]"
 
     local response_msg
     local response_hdr
+	local path_file
 
     while :; do
         case $1 in
@@ -1458,12 +1591,20 @@ function dm_download_collection_async {
                     return 1
                 fi
             ;;
+			-f|--file)
+                if [ "$2" ]; then
+                    path_file="$2"
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
             *) break
         esac
         shift
     done
 
-    if [ "$#" -lt 2 ] 
+    if [ "$#" -lt 2 ] || [ "$#" -gt 3 ] || [[ "$3" =~ "/" ]]
     then
         echo "$USAGE" >&2
         return 1
@@ -1485,10 +1626,24 @@ function dm_download_collection_async {
       globus_endpoint="$3"
     fi       
 
-    local template_file=$HPC_DM_UTILS/templates/download-async-template.json
+	if [ -z "$path_file" ]
+	then
+		local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
+	else
+		if [ ! -e "$path_file" ]
+		then
+			echo "Can not find the path file: $path_file" >&2
+			echo "Please check the file location and try again" >&2
+			exit 1
+		fi
+		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
+		local src_paths=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
+		local template_file=$HPC_DM_UTILS/templates/download-async-list-template-internal.json
+	fi 
+	
     if [ ! -e "$template_file" ]
     then
-        echo "Can not file the template file: $template_file" >&2
+        echo "Can not find the template file: $template_file" >&2
         echo "Please pull the latest version and try again" >&2
         return 1
     fi
@@ -1496,6 +1651,9 @@ function dm_download_collection_async {
     #Make sure the template did not change:
     local container="globus-shared-endpoint-uid"
     local destination="destination-name"
+	local sourcepaths="source-paths"
+	local attribute="dataObjectPaths"
+
 
     local container_exists=$(grep  $container $template_file) 
     if [ -z "$container_exists" ]
@@ -1513,28 +1671,59 @@ function dm_download_collection_async {
         return 1
     fi 
 
-    local request_file=$HPC_DM_UTILS/temp/async-download.json.tmp
+	if [ ! -z "$path_file" ]
+	then
+		local source_paths_exists=$(grep $sourcepaths $template_file) 
+		if [ -z "$source_paths_exists" ]
+		then
+			echo "The template file $template_file changed." >&2
+			echo "Please pull the latest version and try again" >&2
+			exit 1
+		fi
+		local attribute_exists=$(grep $attribute $template_file) 
+		if [ -z "$attribute_exists" ]
+		then
+			echo "The template file $template_file changed." >&2
+			echo "Please pull the latest version and try again" >&2
+			exit 1
+		fi
+	fi
+	
+	local request_file=$HPC_DM_UTILS/temp/async-download.json.tmp
      
     #Update the globus endpoint
     updated_endpoint=$(cat $template_file | sed "s@$container@$globus_endpoint@")
 
     #Update the file name 
     updated_destination=$(echo "$updated_endpoint" | sed "s#${destination}#${dst_path}#")
-    echo  "$updated_destination" > $request_file
+	
+	if [ -z "$path_file" ]
+	then
+		echo  "$updated_destination" > $request_file
+	else
+		#Update the source paths
+		updated_source_paths=$(echo "$updated_destination" | sed "s#${attribute}#collectionPaths#" | sed "s#${sourcepaths}#${src_paths}#")
+		echo  "$updated_source_paths" > $request_file
+	fi
 
     if [ -z "$response_msg" ]
      then
-        response_msg=download-dataobject-response-message.json.tmp
+        response_msg=download-collection-response-message.json.tmp
     fi
     if [ -z "$response_hdr" ]
     then
-        response_hdr=download-dataobject-response-header.tmp
+        response_hdr=download-collection-response-header.tmp
     fi
 
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/collection/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+	if [ -z "$path_file" ]
+	then
+		curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/v2/collection/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+	else
+		curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+	fi
     check_connection $response_hdr
 
 
@@ -1547,19 +1736,31 @@ function dm_download_collection_async {
     fi
 }
 
+#Download to Globus 
+#Inputs: [-o output-json-file]
+#        [-D REST-response]
+#        [-f paths-file]
+#        [item-path] path on archive
+#        <destination-path> path on Globus
+function dm_download_async {
+	echo "dm_download_async has been deprecated. Use dm_download_dataobject_globus." >&2
+	dm_download_dataobject_globus $@
+}
 
 #Download to Globus 
 #Inputs: [-o output-json-file]
 #        [-D REST-response]
-#        <item-path> path on archive
+#        [-f paths-file]
+#        [item-path] path on archive
 #        <destination-path> path on Globus
-function dm_download_async {
+function dm_download_dataobject_globus {
 
 
-    local USAGE="usage: dm_download_async [-D REST-respsonse] [-o output-json-file] <archive-path> <globus-destination-path> [globus-endpoint]"
+    local USAGE="usage: dm_download_dataobject_globus [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <globus-destination-path> [globus-endpoint]"
 
     local response_msg
     local response_hdr
+	local path_file
 
     while :; do
         case $1 in
@@ -1581,12 +1782,20 @@ function dm_download_async {
                     return 1
                 fi
             ;;
+			-f|--file)
+                if [ "$2" ]; then
+                    path_file="$2"
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
             *) break
         esac
         shift
     done
 
-    if [ "$#" -lt 2 ] 
+    if [ "$#" -lt 2 ] || [ "$#" -gt 3 ] || [[ "$3" =~ "/" ]]
     then
         echo "$USAGE" >&2
         return 1
@@ -1603,7 +1812,7 @@ function dm_download_async {
       globus_endpoint="$3"
     fi       
 
-    local template_file=$HPC_DM_UTILS/templates/download-async-template.json
+    local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
     if [ ! -e "$template_file" ]
     then
         echo "Can not file the template file: $template_file" >&2
@@ -1611,19 +1820,31 @@ function dm_download_async {
         exit 1
     fi
 
-    item_type=$(get_type $src_path) || exit 1
-    if [ "$item_type" == "" ]
-    then
-        echo "ERROR: Can not find the item $src_path in the archive" >&2
-        exit 1
-    fi
+	if [ -z "$path_file" ]
+	then 
+		item_type=$(get_type $src_path) || exit 1
+		if [ "$item_type" == "" ]
+		then
+			echo "ERROR: Can not find the item $src_path in the archive" >&2
+			exit 1
+		fi
+		local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
+	else
+		if [ ! -e "$path_file" ]
+		then
+			echo "Can not find the path file: $path_file" >&2
+			echo "Please check the file location and try again" >&2
+			exit 1
+		fi
+		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
+		local src_paths=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
+		local template_file=$HPC_DM_UTILS/templates/download-async-list-template-internal.json
+	fi
    
 
-
-    local template_file=$HPC_DM_UTILS/templates/download-async-template.json
     if [ ! -e "$template_file" ]
     then
-        echo "Can not file the template file: $template_file" >&2
+        echo "Can not find the template file: $template_file" >&2
         echo "Please pull the latest version and try again" >&2
         exit 1
     fi
@@ -1631,6 +1852,7 @@ function dm_download_async {
     #Make sure the template did not change:
     local container="globus-shared-endpoint-uid"
     local destination="destination-name"
+	local sourcepaths="source-paths"
 
     local container_exists=$(grep  $container $template_file) 
     if [ -z "$container_exists" ]
@@ -1648,6 +1870,17 @@ function dm_download_async {
         exit 1
     fi 
 
+	if [ ! -z "$path_file" ]
+	then
+		local source_paths_exists=$(grep $sourcepaths $template_file) 
+		if [ -z "$source_paths_exists" ]
+		then
+			echo "The template file $template_file changed." >&2
+			echo "Please pull the latest version and try again" >&2
+			exit 1
+		fi
+	fi
+	
     local request_file=$HPC_DM_UTILS/temp/async-download.json.tmp
      
     #Update the globus endpoint
@@ -1655,8 +1888,15 @@ function dm_download_async {
 
     #Update the file name 
     updated_destination=$(echo "$updated_endpoint" | sed "s#${destination}#${dst_path}#")
-    echo  "$updated_destination" > $request_file
-
+	if [ -z "$path_file" ]
+	then
+		echo  "$updated_destination" > $request_file
+	else
+		#Update the source paths
+		updated_source_paths=$(echo "$updated_destination" | sed "s#${sourcepaths}#${src_paths}#")
+		echo  "$updated_source_paths" > $request_file
+		item_type="dataObject"
+	fi
 
     echo "Sending request to download the $item_type $src_path to Globus..."
     if [ -z "$response_msg" ]
@@ -1672,7 +1912,12 @@ function dm_download_async {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/$item_type/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+	if [ -z "$path_file" ]
+	then
+		curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/v2/$item_type/$(urlencode $src_path)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+	else
+		curl -H "Content-Type: application/json" -d @$request_file -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status 
+	fi
     check_connection $response_hdr || exit 1
 
 
@@ -1766,26 +2011,32 @@ function dm_download_s3_deprecated {
 #Print Usage of dm_download_s3 function
 function dm_show_download_s3_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_s3 [-D REST-respsonse] [-o output-json-file] <archive-path> <destination_bucket> <destination_path> [aws_credentials_file_path]
+  usage: dm_download_dataobject_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
   Download the specified dataobject or collection to the s3 bucket
-  [-D REST-respsonse]          Optional specify the filename to capture rest response
+  [-D REST-respsonse]         Optionally specify the filename to capture rest response
   [-o output-json-file]       Optionally specify the filename to capture the json response
-  archive-path                Source path in the archive
+  [-f paths-file]             New line delimited file which contains the data object paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
   destination-bucket          Destination S3 bucket to transfer data to
   destination_path            Full path of the destination file/folder in the S3 bucket
-  aws_credentials_file_path   Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+  [aws_credentials_file_path] Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
 EOF
   echo "$usage"
 }
 
-
 function dm_download_s3 {
+	echo "dm_download_s3 has been deprecated. Use dm_download_dataobject_s3." >&2
+	dm_download_dataobject_s3 $@
+}
+
+function dm_download_dataobject_s3 {
 
     local CREDENTIALS_FILE=~/.aws/credentials
     local DESCRIPTION=description.json
 
     local response_msg
     local response_hdr
+	local path_file
 
     while :; do
         case $1 in
@@ -1807,12 +2058,20 @@ function dm_download_s3 {
                     return 1
                 fi
             ;;
+			-f|--file)
+                if [ "$2" ]; then
+                    path_file="$2"
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
             *) break
         esac
         shift
     done
 
-    if [ "$#" -lt 3 ]
+    if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
     then
         dm_show_download_s3_usage >&2
         exit 1
@@ -1827,12 +2086,27 @@ function dm_download_s3 {
     local DESTINATION_BUCKET="$2"
     local DESTINATION_PATH="$3"
 
-    item_type=$(get_type $SOURCE_PATH) || exit 1
-    if [ "$item_type" == "" ]
-    then
-        echo "ERROR: Can not find the item $SOURCE_PATH in the archive" >&2
-        exit 1
-    fi
+	if [ -z "$path_file" ]
+	then
+		item_type=$(get_type $SOURCE_PATH) || exit 1
+		if [ "$item_type" == "" ]
+		then
+			echo "ERROR: Can not find the item $SOURCE_PATH in the archive" >&2
+			exit 1
+		fi
+	else
+		if [ ! -e "$path_file" ]
+		then
+			echo "Can not find the path file: $path_file" >&2
+			echo "Please check the file location and try again" >&2
+			exit 1
+		fi
+		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
+		local SOURCE_PATHS=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
+		item_type="dataObject"
+	fi 
+	
+    
 
    #Create description.json
    local awsAccessKeyId=$(get_value $CREDENTIALS_FILE aws_access_key_id)
@@ -1861,7 +2135,15 @@ function dm_download_s3 {
    echo -e " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
    echo -e " \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," >> description.json
    echo " \"secretKey\": \"$awsSecretAccessKey\"," >> description.json
-   echo -e " \"region\": \"$awsRegion\" \n}\n}\n} " >> description.json
+   echo -e " \"region\": \"$awsRegion\" \n}" >> description.json
+   if [ -z "$path_file" ]
+   then
+        echo -e "\n}\n} " >> description.json
+   else
+		echo -e "\n},\n \"dataObjectPaths\": [\n \"$SOURCE_PATHS\"\n]" >> description.json
+		echo -e "\n}" >> description.json
+   fi
+   echo "$description.json"
 
 
     echo "Sending request to download the $item_type $SOURCE_PATH to S3..."
@@ -1877,7 +2159,186 @@ function dm_download_s3 {
     local SERVER=$(get_server)
     local CONFIG=$(get_config)
 
-    curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	if [ -z "$path_file" ]
+	then
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	else
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	fi
+    check_connection $response_hdr || exit 1
+
+
+    local code=$(get_http_code "$response_hdr")
+
+    if [ "$code" -ne 200 ]
+    then
+      #In this case the destination path file will contain the error code
+      print_error_message "$response_msg" "$code"  || exit 1
+    fi
+
+    #Parse the download receipt:
+
+    message=$(get_json_value $response_msg message)
+    if [ ! -z "$message" ]
+    then
+        echo "ERROR downloading $src_path:"  >&2
+        echo "$message" >&2
+        exit 1
+    else
+        echo "Download request sent to S3."
+        task_id=$(get_json_value $response_msg taskId)
+        echo "taskID:$task_id"
+        echo "Check the full download receipt at $response_msg"
+    fi
+}
+
+#Print Usage of dm_download_collection_s3 function
+function dm_show_download_collection_s3_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_collection_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
+  Download the specified dataobject or collection to the s3 bucket
+  [-D REST-respsonse]         Optionally specify the filename to capture rest response
+  [-o output-json-file]       Optionally specify the filename to capture the json response
+  [-f paths-file]             New line delimited file which contains the collection paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
+  destination-bucket          Destination S3 bucket to transfer data to
+  destination_path            Full path of the destination file/folder in the S3 bucket
+  [aws_credentials_file_path] Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+EOF
+  echo "$usage"
+}
+
+
+function dm_download_collection_s3 {
+
+    local CREDENTIALS_FILE=~/.aws/credentials
+    local DESCRIPTION=description.json
+
+    local response_msg
+    local response_hdr
+	local path_file
+
+    while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    response_hdr="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            -o|--output)
+                if [ "$2" ]; then
+                    response_msg="$2"
+                    shift
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+			-f|--file)
+                if [ "$2" ]; then
+                    path_file="$2"
+                else
+                    echo "$USAGE" >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+    done
+
+    if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
+    then
+        dm_show_download_collection_s3_usage >&2
+        exit 1
+    fi
+
+    if [ "$#" -gt 3 ]
+    then
+       CREDENTIALS_FILE=$4
+    fi
+
+    local SOURCE_PATH="$1"
+    local DESTINATION_BUCKET="$2"
+    local DESTINATION_PATH="$3"
+
+	item_type="collection"
+	
+	if [ ! -z "$path_file" ]
+	then
+		if [ ! -e "$path_file" ]
+		then
+			echo "Can not find the path file: $path_file" >&2
+			echo "Please check the file location and try again" >&2
+			exit 1
+		fi
+		IFS=$'\n' read -d '' -r -a arr_paths < $path_file
+		local SOURCE_PATHS=$(IFS=, ; echo "${arr_paths[*]}" | sed "s/,/\",\"/g")
+	fi 
+	
+    
+
+   #Create description.json
+   local awsAccessKeyId=$(get_value $CREDENTIALS_FILE aws_access_key_id)
+   if [ -z "$awsAccessKeyId" ]
+   then
+       echo "ERROR: Credentials file does not contain aws_access_key_id property"
+       exit 1
+   fi
+
+   local awsSecretAccessKey=$(get_value $CREDENTIALS_FILE aws_secret_access_key)
+   if [ -z "$awsSecretAccessKey" ]
+   then
+       echo "ERROR: Credentials file does not contain aws_secret_access_key property"
+       exit 1
+   fi
+  
+   local awsRegion=$(get_value $CREDENTIALS_FILE region)
+   if [ -z "$awsRegion" ]
+   then
+       echo "ERROR: Credentials file does not contain region property"
+       exit 1
+   fi
+
+   echo -e "{\n \"s3DownloadDestination\": {\n \"destinationLocation\": {" > description.json
+   echo " \"fileContainerId\": \"$DESTINATION_BUCKET\"," >> description.json
+   echo -e " \"fileId\": \"$DESTINATION_PATH\"\n}," >> description.json
+   echo -e " \"account\": {\n \"accessKey\": \"$awsAccessKeyId\"," >> description.json
+   echo " \"secretKey\": \"$awsSecretAccessKey\"," >> description.json
+   echo -e " \"region\": \"$awsRegion\" \n}" >> description.json
+   if [ -z "$path_file" ]
+   then
+        echo -e "\n}\n} " >> description.json
+   else
+		echo -e "\n},\n \"collectionPaths\": [\n \"$SOURCE_PATHS\"\n]" >> description.json
+		echo -e "\n}" >> description.json
+   fi
+   echo "$description.json"
+
+
+    echo "Sending request to download the $item_type $SOURCE_PATH to S3..."
+    if [ -z "$response_msg" ]
+     then
+        response_msg=download-$item_type-response-message.json.tmp
+    fi
+    if [ -z "$response_hdr" ]
+    then
+        response_hdr=download-$item_type-response-header.tmp
+    fi
+
+    local SERVER=$(get_server)
+    local CONFIG=$(get_config)
+
+	if [ -z "$path_file" ]
+	then
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/$item_type/$(urlencode $SOURCE_PATH)/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	else
+		curl -H "Content-Type: application/json" -d @$DESCRIPTION -X POST ${SERVER}/v2/download  $CONFIG -H "Accept: application/json" -D $response_hdr -o $response_msg -s 2> $HPC_DM_UTILS/temp/curl-status
+	fi
     check_connection $response_hdr || exit 1
 
 

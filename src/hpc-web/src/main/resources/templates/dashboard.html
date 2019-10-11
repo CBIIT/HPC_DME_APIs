@@ -212,6 +212,11 @@
 			window.location.href = '/deleteSearch?queryName='+queryName+'&amp;page=1';
 		}	
 	}
+	function editSearch(searchName)
+	{
+		queryName = searchName.id;
+		window.location.href = '/editSearch?queryName='+queryName.substring(0,queryName.length-5);
+	}
 	
 	</script>
 

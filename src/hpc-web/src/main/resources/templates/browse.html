@@ -153,7 +153,7 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6">
 								<h2>
-									<strong> <a id="refreshBrowse" class="btn btn-link btn-sm" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="bookmarks" class="btn btn-link btn-sm" th:href="@{/bookmarks}" data-target="#bookmarksTarget"><i class="fa fa-star" title="Bookmarks" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="browsepartial" class="btn btn-link btn-sm" th:href="@{/browse?partial}" data-target="#browsePartial"><i class="fa fa-sitemap" title="Browse" aria-hidden="true"></i></a></strong>
+									<strong> <a id="refreshBrowse" class="btn btn-link btn-sm" th:href="@{/browse?refresh}"><i class="fa fa-folder" title="Browse to home" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="bookmarks" class="btn btn-link btn-sm" th:href="@{/bookmarks}" data-target="#bookmarksTarget"><i class="fa fa-star" title="Bookmarks" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="browsepartial" class="btn btn-link btn-sm" th:href="@{/browse?partial}" data-target="#browsePartial"><i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i></a></strong>
 								</h2>
 								</div>
 								
@@ -198,7 +198,7 @@
                       <li class="divider"></li>
 											<li><a href="#addCollection">Add Collection</a></li>
  											<li class="divider"></li>
-											<li><a href="#addDatafile">Add Datafile</a></li>
+											<li><a href="#addDatafile">Add Data File</a></li>
  											<li class="divider"></li>
 											<li><a href="#addBulk">Add Bulk (Globus)</a></li>
 											<li class="divider"></li>
@@ -338,9 +338,11 @@ function scrollWindow()
 	//be populated so dont want to go to the server.
 	if(!refresh && !node.populated) {
 		browseNode(node);
+		node = $('#tree1').tree('getNodeById', node.id);
 	} else {
 		refresh = null;
 	}
+	
 	$('#tree1').tree('selectNode', node);
 }
 );
@@ -359,8 +361,7 @@ function browseNode(node) {
           success : function(msg) {
        
           	data = msg;
-          	$('#tree1').tree('loadData', data);
-       
+          	$('#tree1').tree('updateNode', node, data[0]);
           },
     	  error : function(e) {
     		 console.log('ERROR: ', e);
