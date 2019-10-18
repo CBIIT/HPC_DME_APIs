@@ -19,6 +19,7 @@ public interface HpcSystemAccountFunction<T> {
   /**
    * Perform this code using system account credentials.
    *
+   * @return T The functional interface return type
    * @throws HpcException On any failure.
    */
   public T execute() throws HpcException;
