@@ -292,7 +292,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       String doc,
       String lastNamePattern,
       String defaultBasePath,
-      boolean active)
+      boolean active,
+      boolean query)
       throws HpcException {
     // Get the users based on search criteria.
     HpcUserListDTO users = new HpcUserListDTO();
@@ -312,7 +313,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // Perform the search and construct the return DTO.
     for (HpcUser user :
         securityService.getUsers(
-            nciUserId, firstNamePattern, doc, lastNamePattern, defaultConfigurationId, active)) {
+            nciUserId, firstNamePattern, doc, lastNamePattern, defaultConfigurationId, active, query)) {
       // Get the default data management configuration for this user.
       HpcDataManagementConfiguration dataManagementConfiguration =
           dataManagementService.getDataManagementConfiguration(

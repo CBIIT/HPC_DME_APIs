@@ -99,6 +99,30 @@ public interface HpcSecurityRestService {
       @QueryParam("defaultBasePath") String defaultBasePath);
 
   /**
+   * Query users by username, first or last name. Note: only active users are returned.
+   *
+   * @param nciUserId (Optional) The user ID pattern to search for (using case insensitive comparison).
+   *     SQL LIKE wildcards ('%', '_') are supported.
+   * @param firstNamePattern (Optional) The first-name pattern to search for (using case insensitive
+   *     matching). SQL LIKE wildcards ('%', '_') are supported.
+   * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive
+   *     matching). SQL LIKE wildcards ('%', '_') are supported.
+   * @param doc (optional) The DOC.
+   * @param defaultBasePath (optional) The default base path.
+   * @return The REST service response w/ HpcUserListDTO entity.
+   */
+  @GET
+  @Path("/user/query")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response queryUsers(
+      @QueryParam("nciUserId") String nciUserId,
+      @QueryParam("firstNamePattern") String firstNamePattern,
+      @QueryParam("lastNamePattern") String lastNamePattern,
+      @QueryParam("doc") String doc,
+      @QueryParam("defaultBasePath") String defaultBasePath);
+
+  
+  /**
    * Get users by search criterias. Note: All users are returned, both active and inactive
    *
    * @param nciUserId (Optional) The user ID to search for (using case insensitive comparison).

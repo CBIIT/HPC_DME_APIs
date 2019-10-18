@@ -63,10 +63,16 @@ public class HpcUserDAOImpl implements HpcUserDAO
 	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where ?";
     
 	private static final String GET_USERS_USER_ID_FILTER = " and lower(\"USER_ID\") = lower(?) ";
+	
+	private static final String GET_USERS_USER_ID_PATTERN_FILTER = " lower(\"USER_ID\") like lower(?) ";
     
 	private static final String GET_USERS_FIRST_NAME_PATTERN_FILTER = " and lower(\"FIRST_NAME\") like lower(?) ";
+	
+	private static final String GET_USERS_FIRST_NAME_PATTERN_FILTER_OR = " lower(\"FIRST_NAME\") like lower(?) ";
     
 	private static final String GET_USERS_LAST_NAME_PATTERN_FILTER = " and lower(\"LAST_NAME\") like lower(?) ";
+	
+	private static final String GET_USERS_LAST_NAME_PATTERN_FILTER_OR = " lower(\"LAST_NAME\") like lower(?) ";
 	
 	private static final String GET_USERS_DOC_FILTER = " and lower(\"DOC\") = lower(?) ";
 	
@@ -198,6 +204,65 @@ public class HpcUserDAOImpl implements HpcUserDAO
      	   sqlQueryBuilder.append(GET_USERS_LAST_NAME_PATTERN_FILTER);
      	   args.add(lastNamePattern);
      	}
+    	if(doc != null) {
+       	   sqlQueryBuilder.append(GET_USERS_DOC_FILTER);
+       	   args.add(doc);
+       	}
+    	if(defaultConfigurationId != null) {
+      	   sqlQueryBuilder.append(GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER);
+      	   args.add(defaultConfigurationId);
+      	}
+    	if(active) {
+      	   sqlQueryBuilder.append(GET_USERS_ACTIVE_FILTER);
+      	}
+    	
+		try {
+		     return jdbcTemplate.query(sqlQueryBuilder.toString(), rowMapper, args.toArray());
+		     
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    return null;
+			    
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get users: " + e.getMessage(),
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}		
+    }
+	
+	@Override
+	public List<HpcUser> queryUsers(String nciUserIdPattern, String firstNamePattern, String lastNamePattern, 
+			                      String doc, String defaultConfigurationId, boolean active) 
+                                 throws HpcException
+    {
+		// Build the query based on provided search criteria.
+		StringBuilder sqlQueryBuilder = new StringBuilder();
+    	List<Object> args = new ArrayList<>();
+    	
+    	sqlQueryBuilder.append(GET_USERS_SQL);
+    	args.add(true);
+    	
+    	if(nciUserIdPattern != null) {
+    	   sqlQueryBuilder.append(" and (");
+    	   sqlQueryBuilder.append(GET_USERS_USER_ID_PATTERN_FILTER);
+    	   args.add(nciUserIdPattern);
+    	}
+    	if(firstNamePattern != null) {
+    	   if(nciUserIdPattern == null)
+    		   sqlQueryBuilder.append(" and (");
+    	   else
+    		   sqlQueryBuilder.append(" or ");
+     	   sqlQueryBuilder.append(GET_USERS_FIRST_NAME_PATTERN_FILTER_OR);
+     	   args.add(firstNamePattern);
+     	}
+    	if(lastNamePattern != null) {
+    	   if(nciUserIdPattern == null && firstNamePattern == null)
+     		   sqlQueryBuilder.append(" and (");
+     	   else
+     		   sqlQueryBuilder.append(" or ");
+     	   sqlQueryBuilder.append(GET_USERS_LAST_NAME_PATTERN_FILTER_OR);
+     	   args.add(lastNamePattern);
+     	}
+    	if(nciUserIdPattern != null || firstNamePattern != null || lastNamePattern != null)
+    		sqlQueryBuilder.append(" ) ");
     	if(doc != null) {
        	   sqlQueryBuilder.append(GET_USERS_DOC_FILTER);
        	   args.add(doc);
