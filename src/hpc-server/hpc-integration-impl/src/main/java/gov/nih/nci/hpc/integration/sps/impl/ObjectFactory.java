@@ -38,7 +38,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link AuthorizationResult }
-     * 
+     * @return AuthorizationResult
      */
     public AuthorizationResult createAuthorizationResult() {
         return new AuthorizationResult();
@@ -46,7 +46,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Attribute }
-     * 
+     * @return Attribute
      */
     public Attribute createAttribute() {
         return new Attribute();
@@ -54,7 +54,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Authorize }
-     * 
+     * @return Authorize
      */
     public Authorize createAuthorize() {
         return new Authorize();
@@ -62,7 +62,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link AuthorizeResponse }
-     * 
+     * @return AuthorizeResponse
      */
     public AuthorizeResponse createAuthorizeResponse() {
         return new AuthorizeResponse();
@@ -70,7 +70,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link AuthorizationResult.AuthorizationResponses }
-     * 
+     * @return AuthorizationResponses
      */
     public AuthorizationResult.AuthorizationResponses createAuthorizationResultAuthorizationResponses() {
         return new AuthorizationResult.AuthorizationResponses();
@@ -78,7 +78,7 @@ public class ObjectFactory {
     
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Attribute }{@code >}}
-     * 
+     * @return JAXBElement of type Attribute
      */
     @XmlElementDecl(namespace = "http://www.ca.com/siteminder/authaz/2010/04/15/authaz.xsd", name = "attribute")
     public JAXBElement<Attribute> createAttribute(Attribute value) {
@@ -87,7 +87,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizationResult }{@code >}}
-     * 
+     * @return JAXBElement of type AuthorizationResult
      */
     @XmlElementDecl(namespace = "http://www.ca.com/siteminder/authaz/2010/04/15/authaz.xsd", name = "authorizationResult")
     public JAXBElement<AuthorizationResult> createAuthorizationResult(AuthorizationResult value) {
@@ -96,7 +96,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Authorize }{@code >}}
-     * 
+     * @return JAXBElement of type Authorize
      */
     @XmlElementDecl(namespace = "http://www.ca.com/siteminder/authaz/2010/04/15/authaz.xsd", name = "authorize")
     public JAXBElement<Authorize> createAuthorize(Authorize value) {
@@ -105,7 +105,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizeResponse }{@code >}}
-     * 
+     * @return JAXBElement of type AuthorizeResponse
      */
     @XmlElementDecl(namespace = "http://www.ca.com/siteminder/authaz/2010/04/15/authaz.xsd", name = "authorizeResponse")
     public JAXBElement<AuthorizeResponse> createAuthorizeResponse(AuthorizeResponse value) {

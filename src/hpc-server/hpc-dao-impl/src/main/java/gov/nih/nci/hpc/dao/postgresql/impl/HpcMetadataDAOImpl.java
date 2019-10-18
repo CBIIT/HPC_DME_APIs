@@ -523,7 +523,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	 * 
 	 * @param getObjectPathsQuery    The query to get object paths based on object
 	 *                               IDs.
-	 * @param objectPath             The path to search in.                              
+	 * @param path             		 The path to search in.                              
 	 * @param userQuery              The calculated SQL query based on user input
 	 *                               (represented by query domain objects).
 	 * @param dataManagementUsername The data management user name.

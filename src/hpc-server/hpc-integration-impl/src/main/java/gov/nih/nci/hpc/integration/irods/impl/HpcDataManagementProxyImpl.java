@@ -944,7 +944,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
    * Convert list of children of an iRODS collection to HPC collection domain object.
    * This does not include information about the parent collection.
    *
-   * @param irodsCollection The iRODS collection.
    * @param listingEntries A list of sub-directories and files under the collection.
    * @return A collection.
    */
