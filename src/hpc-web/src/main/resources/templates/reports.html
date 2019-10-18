@@ -98,29 +98,29 @@
 						method="post" enctype="multipart/form-data">
 						<div class="form-group">
 							<label class="control-label col-sm-2" for="level">Report
-								type:</label>
+								Type:</label>
 							<div class="col-sm-6">
 								<select name="reportType" id="reportType" class="form-control"
 									onchange="show(this.value)">
 									<option value="-1">----Select----</option>
 
-									<option value="USAGE_SUMMARY_BY_BASEPATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH'}">Base path report</option>
-									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base path
-										report by Date range</option>
-									<option value="USAGE_SUMMARY_BY_PATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH'}">Collection path report</option>
-									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection path
-										report by Date range</option>
+									<option value="USAGE_SUMMARY_BY_BASEPATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH'}">Base Path Report</option>
+									<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path
+										Report by Date Range</option>
+									<option value="USAGE_SUMMARY_BY_PATH" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH'}">Collection Path Report</option>
+									<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path
+										Report by Date Range</option>
 									<option value="USAGE_SUMMARY_BY_DOC" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC'}">DOC Report</option>
 									<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC
-										report by Date range</option>
+										Report by Date Range</option>
 									<option value="USAGE_SUMMARY"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY'}">Summary report</option>
+										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY'}">Summary Report</option>
 									<option value="USAGE_SUMMARY_BY_DATE_RANGE"
-										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary report
-										by Date range</option>
-									<option value="USAGE_SUMMARY_BY_USER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER'}">User report</option>
+										th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report
+										by Date Range</option>
+									<option value="USAGE_SUMMARY_BY_USER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER'}">User Report</option>
 									<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User
-										report by Date range</option>
+										Report by Date Range</option>
 									
 								</select>
 							</div>
@@ -152,14 +152,14 @@
 													<option
 														th:each="entry : ${docUsers}"
 														th:value="${entry.getUserId()}" th:text="${entry.getFirstName() + ' ' + entry.getLastName()}"
-														th:selected="${reportRequest.getUser() == entry}">
+														th:selected="${reportRequest.getUser() == entry.getUserId()}">
 														Wireframe</option>
 											</select>
 							</div>
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
 						<div class="form-group" style="display: none" id="basepathList">
-							<label class="control-label col-sm-2" for="level">Base path:</label>
+							<label class="control-label col-sm-2" for="level">Base Path:</label>
 							<div class="col-sm-6">
 											<select size="1"
 												id="basepath" name="basepath" class="form-control"
@@ -175,7 +175,7 @@
 							<label class="control-label col-sm-4" for="level">&nbsp;</label>
 						</div>
 						<div class="form-group" style="display: none" id="collectionPath">
-							<label class="control-label col-sm-2" for="level">Collection path:</label>
+							<label class="control-label col-sm-2" for="level">Collection Path:</label>
 							<div class="col-sm-6">
 								<input type="text" name="path" id="path" th:value="${reportRequest.getPath()}" size="100"/>
 							</div>
@@ -256,17 +256,17 @@
 											<tr>
 												<td align="center"
 													style="background-color: #006DCC; color: white;"
-													colspan="2"><label for="path">Base path: </label><label
-													for="user" th:text="${report.path}">Base path</label></td>
+													colspan="2"><label for="path">Base Path: </label><label
+													for="user" th:text="${report.path}">Base Path</label></td>
 											</tr>
 										</div>
 										<div th:if="${report.fromDate != null}">
 										<tr>
 											<td align="center"
 												style="background-color: #006DCC; color: white;" colspan="2">
-												<label for="fromDate">Reporting period from date: </label> <label
+												<label for="fromDate">Reporting Period from Date: </label> <label
 												for="fromDate" th:text="${report.fromDate}">date</label> <br />
-												<label for="toDate">Reporting period to date: </label> <label
+												<label for="toDate">Reporting Period to Date: </label> <label
 												for="toDate" th:text="${report.toDate}">date</label>
 											</td>
 										</tr>
@@ -389,8 +389,10 @@
     	var basepathListEle = document.getElementById("basepathList");
     	var pathEle = document.getElementById("collectionPath");
       	var selectedValue = reportType;
-      	document.getElementById("fromDate").value = null;
-  		document.getElementById("toDate").value = null;
+      	if(selected != reportType) {
+      		$('#fromDate').datepicker('setDate', new Date());
+      		$('#toDate').datepicker('setDate', new Date());
+      	}
       	if(selectedValue == "USAGE_SUMMARY_BY_DATE_RANGE")
       	{
       		fromDateEle.style.display = "block";
