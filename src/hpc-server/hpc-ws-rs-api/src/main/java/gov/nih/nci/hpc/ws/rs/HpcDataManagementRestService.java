@@ -70,6 +70,7 @@ public interface HpcDataManagementRestService {
 	 *
 	 * @param path The collection path.
 	 * @param list An indicator to list sub-collections and data-objects.
+	 * @param includeAcl Flag to include ACL.
 	 * @return The REST service response w/ HpcCollectionListDTO entity.
 	 * @see gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO
 	 */
@@ -349,6 +350,7 @@ public interface HpcDataManagementRestService {
 	 * Get a data object.
 	 *
 	 * @param path The data object path.
+	 * @param includeAcl Flag to include ACL.
 	 * @return The REST service response w/ HpcDataObjectListDTO entity.
 	 */
 	@GET
@@ -537,6 +539,7 @@ public interface HpcDataManagementRestService {
 	/**
 	 * Get data management model. This includes all rules.
 	 *
+	 * @param basePath The base path.
 	 * @return The REST service response w/ HpcDataManagementModelDTO entity.
 	 */
 	@GET
