@@ -150,15 +150,15 @@
 																th:each="permission, iterationStatus : ${permissions.getEntries()}"
 																th:with="index=0">
 																<td style="white-space: nowrap" align="center"><label
-																	for="${permission.getName()}"
+																	th:for="'permissionName'+${iterationStatus.count}"
 																	th:text="${permission.getName()}"></label> <input
 																	type="hidden"
 																	th:id="'permissionName'+${iterationStatus.count}"
 																	th:name="'permissionName'+${iterationStatus.count}"
 																	th:value="${permission.getName()}" /></td>
 																<td style="white-space: nowrap" align="center"><label
-																	for="${permission.getType().value()}"
-																	th:text="${permission.getType().value()}"></label> <input
+																	th:for="'permissionType'+${iterationStatus.count}"
+																	th:text="${#strings.capitalize(#strings.toLowerCase(permission.getType().value()))}"></label> <input
 																	type="hidden"
 																	th:id="'permissionType'+${iterationStatus.count}"
 																	th:name="'permissionType'+${iterationStatus.count}"
@@ -349,7 +349,7 @@
 		        dropdownPosition: 'below',
 		        dropdownParent: $("#addUserModal"),
 		        closeOnSelect: true,
-		        placeholder: "Enter Last, First name or Username",
+		        placeholder: "Enter Last, First Name or User ID",
 		        language: {
 		            inputTooShort: function () {
 		                return '';
@@ -387,7 +387,7 @@
 		        dropdownPosition: 'below',
 		        dropdownParent: $("#addUserModal"),
 		        closeOnSelect: true,
-		        placeholder: "Enter Group name",
+		        placeholder: "Enter Group Name",
 		        language: {
 		            inputTooShort: function () {
 		                return '';
