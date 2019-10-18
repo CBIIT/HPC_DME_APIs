@@ -72,10 +72,12 @@ public interface HpcSecurityService {
    *     matching). SQL LIKE wildcards ('%', '_') are supported.
    * @param lastNamePattern (Optional) The last-name pattern to search for (using case insensitive
    *     matching). SQL LIKE wildcards ('%', '_') are supported.
-   * @param active If set to true, only active users are searched. Otherwise, all users (active and
-   *     inactive) are searched.
    * @param doc The DOC.
    * @param defaultConfigurationId The default configuration ID.
+   * @param active If set to true, only active users are searched. Otherwise, all users (active and
+   *     inactive) are searched.
+   * @param query If set to true, userId or first or last name pattern matching will be performed. 
+   * 	 Otherwise, all provided search criteria must match with an and condition.
    * @return A list of users.
    * @throws HpcException on service failure.
    */
@@ -85,7 +87,8 @@ public interface HpcSecurityService {
       String lastNamePattern,
       String doc,
       String defaultConfigurationId,
-      boolean active)
+      boolean active,
+      boolean query)
       throws HpcException;
 
   /**

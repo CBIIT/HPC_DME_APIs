@@ -66,6 +66,8 @@ public interface HpcSecurityBusService {
    * @param defaultBasePath (Optional) The default base path to search for.
    * @param active If set to true, only active users are searched. Otherwise, all users (active and
    *     inactive) are searched.
+   * @param query If set to true, userId or first or last name pattern matching will be performed. 
+   * 	 Otherwise, all provided search criteria must match with an and condition.
    * @return A list of users.
    * @throws HpcException on service failure.
    */
@@ -75,7 +77,8 @@ public interface HpcSecurityBusService {
       String lastNamePattern,
       String doc,
       String defaultBasePath,
-      boolean active)
+      boolean active,
+      boolean query)
       throws HpcException;
 
   /**
@@ -182,4 +185,5 @@ public interface HpcSecurityBusService {
    */
   public void refreshDataManagementConfigurations()
       throws HpcException;
+
 }
