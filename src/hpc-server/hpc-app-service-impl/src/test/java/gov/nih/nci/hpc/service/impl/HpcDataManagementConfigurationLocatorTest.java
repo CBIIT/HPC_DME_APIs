@@ -79,13 +79,16 @@ public class HpcDataManagementConfigurationLocatorTest {
 	  HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
 	  HpcArchive hpcS3Archive = new HpcArchive();
 	  hpcS3Archive.setType(HpcArchiveType.ARCHIVE);
+	  s3Configuration.setId("S3_CONFIG_ID");
 	  s3Configuration.setBaseArchiveDestination(hpcS3Archive);
-	  configuration.setS3Configuration(s3Configuration);
+	  configuration.getS3Configurations().add(s3Configuration);
 	    
 	  HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
 	  HpcArchive hpcGlobusArchive = new HpcArchive();
 	  globusConfiguration.setBaseArchiveDestination(hpcGlobusArchive);
 	  configuration.setGlobusConfiguration(globusConfiguration);
+	  configuration.setS3UploadConfigurationId("S3_CONFIG_ID");
+	  configuration.setS3DefaultDownloadConfigurationId("S3_CONFIG_ID");
 	    
 	  configurations.add(configuration);
 	    
@@ -269,14 +272,18 @@ public class HpcDataManagementConfigurationLocatorTest {
     
       HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
       HpcArchive hpcS3Archive = new HpcArchive();
+      s3Configuration.setId("S3_CONFIG_ID");
       s3Configuration.setBaseArchiveDestination(hpcS3Archive);
-      configuration.setS3Configuration(s3Configuration);
+      configuration.getS3Configurations().add(s3Configuration);
+      configuration.setS3DefaultDownloadConfigurationId("S3_CONFIG_ID");
+      configuration.setS3UploadConfigurationId("S3_CONFIG_ID");
     
       HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
       HpcArchive hpcGlobusArchive = new HpcArchive();
+      hpcGlobusArchive.setType(HpcArchiveType.ARCHIVE);
       globusConfiguration.setBaseArchiveDestination(hpcGlobusArchive);
       configuration.setGlobusConfiguration(globusConfiguration);
-    
+      
       configurations.add(configuration);
       when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
       when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);

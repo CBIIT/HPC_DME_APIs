@@ -11,16 +11,16 @@
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  -->
 <jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="2.1">
-   <jxb:globalBindings>
+	<jxb:globalBindings>
       <jxb:serializable uid="1" />
       <!-- use Calendar instead of XMLGregorianCalendar -->
       <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime" parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime" printMethod="javax.xml.bind.DatatypeConverter.printDateTime" />
       <jxb:javaType name="java.util.Calendar" xmlType="xsd:date" parseMethod="javax.xml.bind.DatatypeConverter.parseDate" printMethod="javax.xml.bind.DatatypeConverter.printDate" />
       <jxb:javaType name="java.util.Calendar" xmlType="xsd:time" parseMethod="javax.xml.bind.DatatypeConverter.parseTime" printMethod="javax.xml.bind.DatatypeConverter.printTime" />
       <jxb:javaType name="java.lang.String" xmlType="xsd:ID" parseMethod="javax.xml.bind.DatatypeConverter.parseString" printMethod="javax.xml.bind.DatatypeConverter.printString" />
-   </jxb:globalBindings>
+	</jxb:globalBindings>
    
-   <jxb:bindings schemaLocation="HpcDataManagementTypes.xsd">
+	<jxb:bindings schemaLocation="HpcDataManagementTypes.xsd">
       <jxb:bindings node="//xsd:complexType[@name='HpcCollection']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcCollection" />
       </jxb:bindings>
@@ -78,8 +78,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcUserPermsOnManyCollections']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datamanagement.HpcUserPermsOnManyCollections" />
       </jxb:bindings>
-   </jxb:bindings>
-   <jxb:bindings schemaLocation="HpcMetadataTypes.xsd">
+	</jxb:bindings>
+   
+	<jxb:bindings schemaLocation="HpcMetadataTypes.xsd">
       <jxb:bindings node="//xsd:complexType[@name='HpcMetadataEntry']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry" />
       </jxb:bindings>
@@ -128,8 +129,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcMetadataLevelAttributes']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes" />
       </jxb:bindings>
-   </jxb:bindings>
-   <jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
+	</jxb:bindings>
+   
+	<jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
       <jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" />
       </jxb:bindings>
@@ -230,4 +232,26 @@
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter" />
       </jxb:bindings>
    </jxb:bindings>
+   
+ 	<jxb:bindings schemaLocation="HpcUserTypes.xsd">
+      <jxb:bindings node="//xsd:simpleType[@name='HpcIntegratedSystem']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.user.HpcIntegratedSystem" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcUserRole']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.user.HpcUserRole" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcAuthenticationType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.user.HpcAuthenticationType" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcIntegratedSystemAccountProperty']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcIntegratedSystemAccount']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcNciAccount']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.user.HpcNciAccount" />
+      </jxb:bindings>
+   </jxb:bindings>
+   
 </jxb:bindings>

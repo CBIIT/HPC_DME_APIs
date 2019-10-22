@@ -24,6 +24,8 @@
 			<xsd:enumeration value="CLEVERSAFE" />
 			<xsd:enumeration value="LDAP" />
 			<xsd:enumeration value="POSTGRESQL" />
+			<xsd:enumeration value="CLOUDIAN" />
+			<xsd:enumeration value="AWS" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
