@@ -93,6 +93,7 @@ def main(args):
         #loop through each line in the contents file of this tarball
         #We need to do an upload for each fastq.gz or BAM file
         for line in tarfile_contents.readlines():
+            logging.info('processing line in tarfile: ' + line)
 
             if(line.rstrip().endswith("/")):
                 #This is a directory, nothing to do
@@ -100,6 +101,7 @@ def main(args):
 
             #Get full path of the extracted file
             filepath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
+            logging.info('filepath to archive: ' + filepath)
 
             #if SFUtils.path_contains_exclude_str(tarfile_name, line.rstrip()):
             exclusion_list = ['10X', 'demux', 'demultiplex']
@@ -238,10 +240,10 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
     sf_audit.audit_command(command)
 
     #Run the command
-    if not dryrun:
-        response_header = "presignedURL-registration-response-header.tmp"
-        os.system("rm - f " + response_header + " 2>/dev/null")
-        os.system(command)
+    #if not dryrun:
+    #    response_header = "presignedURL-registration-response-header.tmp"
+    #    os.system("rm - f " + response_header + " 2>/dev/null")
+    os.system(command)
 
     #Audit the result
     sf_audit.audit_upload(tarfile_name, filepath, fullpath, archive_path, dryrun, ext)
