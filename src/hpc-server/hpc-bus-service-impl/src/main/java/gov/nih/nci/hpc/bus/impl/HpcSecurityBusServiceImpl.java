@@ -156,6 +156,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
             HpcRequestRejectReason.API_NOT_SUPPORTED);
       }
 
+      // If the invoker is a GroupAdmin, then user being created must belong to their DOC
+      HpcRequestInvoker invoker = securityService.getRequestInvoker();
+      if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) && !invoker.getNciAccount().getDoc().equals(userRegistrationRequest.getDoc())) {
+		String message = "Group Admins can only create user for their DOC";
+		logger.error(message);
+		throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
+	  }
+      
+      
       // Create the data management (IRODS) account.
       executeGroupAdminAsSystemAccount(
           () -> dataManagementSecurityService.addUser(nciAccount, role));
