@@ -456,7 +456,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		if (basePathRules != null) {
 			if (datafile) {
 				HpcDataHierarchy dataHierarchy = basePathRules.getDataHierarchy();
-				if(!isDataObjectContainer(collectionType, dataHierarchy))
+				if(!refresh && !isDataObjectContainer(collectionType, dataHierarchy))
 					throw new HpcWebException("Adding a data file is not allowed under collection type: " + collectionType);
 				rules = basePathRules.getDataObjectMetadataValidationRules();
 			}
