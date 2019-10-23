@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonParser;
@@ -51,10 +53,14 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
+import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
+import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
+
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -74,9 +80,15 @@ public class HpcDownloadController extends AbstractHpcController {
 	private String dataObjectServiceURL;
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String collectionServiceURL;
+	@Value("${gov.nih.nci.hpc.web.server}")
+	private String webServerName;
 
 	/**
-	 * Get action to prepare download page
+	 * Get action to prepare download page. This is invoked when:
+	 * - User clicks download icon on the detail view page
+	 * - User clicks link to Globus endpoint and path on the download page
+	 * - Invoked from Globus site when user presses submit
+	 * 
 	 * 
 	 * @param q
 	 * @param model
@@ -90,9 +102,31 @@ public class HpcDownloadController extends AbstractHpcController {
 			HttpSession session, HttpServletRequest request) {
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-		String downloadFilePath = request.getParameter("path");
+
+		String action = request.getParameter("actionType");
+		String endPointName = request.getParameter("endpoint_id");
 		String downloadType = request.getParameter("type");
+		String downloadFilePath = null;
+
+		if(action == null && endPointName == null) {
+
+			if("collection".equals(downloadType)) {
+				model.addAttribute("searchType", "async");
+				downloadFilePath = request.getParameter("path");
+			} else {
+				downloadFilePath = request.getParameter("downloadFilePath");
+			}
+			session.setAttribute("downloadFilePath", downloadFilePath);
+			session.setAttribute("downloadType", downloadType);
+		}
+
+		if(downloadFilePath == null || downloadFilePath.isEmpty()) {
+			//We could be here from Globus site, so get downloadFilePath from session
+			downloadFilePath = (String)session.getAttribute("downloadFilePath");
+			downloadType = (String)session.getAttribute("downloadType");
+		}
 		model.addAttribute("downloadFilePath", downloadFilePath);
+
 		if (downloadFilePath != null) {
 			String fileName = downloadFilePath;
 			int index = downloadFilePath.lastIndexOf("/");
@@ -106,6 +140,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		}
 		model.addAttribute("downloadType", downloadType);
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
@@ -113,8 +148,40 @@ public class HpcDownloadController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/login";
 		}
+
+		if (action != null && action.equals("Globus")) {
+			//We are going to Globus site, so save the downloadFilePath
+			//to retrieve when we come back
+			//session.setAttribute("basePathSelected", basePath);
+			model.addAttribute("useraction", "globus");
+			session.removeAttribute("GlobusEndpoint");
+			session.removeAttribute("GlobusEndpointPath");
+			session.removeAttribute("GlobusEndpointFiles");
+			session.removeAttribute("GlobusEndpointFolders");
+
+			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
+					this.webServerName) + "/download?downloadFilePath=" + downloadFilePath;
+			return "redirect:https://app.globus.org/file-manager?method=GET&" +
+	        "action=" + percentEncodedReturnURL;
+
+		}
+
+		if(endPointName != null) {
+			//This is return from Globus site
+			model.addAttribute("endPointName", endPointName);
+			String endPointLocation = request.getParameter("path");
+			//Remove the last trailing slash if the path ends with that
+			if(endPointLocation.lastIndexOf('/') == endPointLocation.length() - 1) {
+				endPointLocation = endPointLocation.substring(0, endPointLocation.length()-1);
+			}
+			model.addAttribute("endPointLocation", endPointLocation);
+			model.addAttribute("searchType", "async");
+		}
+
 		return "download";
 	}
+
+
 
 	/**
 	 * POST action to initiate asynchronous download.
