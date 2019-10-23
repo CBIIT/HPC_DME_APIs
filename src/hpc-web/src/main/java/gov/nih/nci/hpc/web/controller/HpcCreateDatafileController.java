@@ -150,6 +150,7 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to initialize add data file: " + e.getMessage());
+			model.addAttribute("create", false);
 			e.printStackTrace();
 		}
 		model.addAttribute("hpcDatafile", new HpcDatafileModel());
