@@ -81,6 +81,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   @Value("${hpc.bus.ldapAuthentication}")
   private Boolean ldapAuthentication = null;
   
+  //LDAP account creation only on/off switch.
+  @Value("${hpc.bus.createLdapAccountOnly}")
+  private Boolean createLdapAccountOnly = null;
+  
   //The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -137,6 +141,16 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     nciAccount.setDoc(userRegistrationRequest.getDoc());
     nciAccount.setDefaultConfigurationId(configurationId);
 
+    // Obtain user's first and last name from AD if LDAP account exists
+    HpcNciAccount ldapNciAccount = securityService.getUserFirstLastNameFromAD(nciUserId);
+    if (ldapNciAccount != null) {
+      nciAccount.setFirstName(ldapNciAccount.getFirstName());
+      nciAccount.setLastName(ldapNciAccount.getLastName());
+	} else {
+	  if (createLdapAccountOnly)
+		  throw new HpcException("UserId does not exist in LDAP: " + nciUserId, HpcErrorType.INVALID_REQUEST_INPUT);
+	}
+    
     // HPC-DM is integrated with a data management system (IRODS). When registering a user with HPC-DM,
     // this service creates an account for the user with the data management system, unless an account
     // already established for the user.
