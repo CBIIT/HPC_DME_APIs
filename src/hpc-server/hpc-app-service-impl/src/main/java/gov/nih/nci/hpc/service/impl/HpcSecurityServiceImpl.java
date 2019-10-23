@@ -470,6 +470,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	  this.dataManagementConfigurationLocator.reload();
   }
 
+  @Override
+  public HpcNciAccount getUserFirstLastNameFromAD(String username) throws HpcException {
+	  
+  	return ldapAuthenticationProxy.getUserFirstLastName(username);
+  }
+  
   //---------------------------------------------------------------------//
   // Helper Methods
   //---------------------------------------------------------------------//

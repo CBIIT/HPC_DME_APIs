@@ -210,4 +210,12 @@ public boolean authenticateSso(String nciUserId, String smSession) throws HpcExc
    */
   public void refreshDataManagementConfigurations() throws HpcException;
    
+  /**
+   * Obtain user's first and last name from LDAP.
+   *
+   * @param username The user's username.
+   * @return The user's first and last name.
+   * @throws HpcException on service failure.
+   */
+  public HpcNciAccount getUserFirstLastNameFromAD(String username) throws HpcException;
 }
