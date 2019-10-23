@@ -97,10 +97,8 @@
 									<i class="fa fa-list-alt red"></i>
 									<strong>Collection</strong>
                   &nbsp;&nbsp;
-                  <a id="downloadlink"
-                     data-target="#downloadModal" data-toggle="modal"
-                     class="btn btn-link btn-sm"
-                     th:href="@{/download(type=collection,path=${collection.getCollection().getCollectionName()})}">
+                   <a  class="btn btn-link btn-sm"
+                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
@@ -125,9 +123,8 @@
 									<i class="fa fa-list-alt red"></i>
                   <strong>Collection</strong>
                   &nbsp;&nbsp;
-                  <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}"
-                     data-target="#downloadModal" data-toggle="modal">
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
@@ -156,9 +153,8 @@
 									<i class="fa fa-list-alt red"></i>
                   <strong>Collection</strong>
                   &nbsp;&nbsp;
-                  <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}"
-                     data-target="#downloadModal" data-toggle="modal">
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
