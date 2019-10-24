@@ -118,7 +118,9 @@
 														<table border="0">
 															<tr
 																th:if="${basePaths != null and basePaths.size() &gt; 0}">
-																<td><label id="basePathId">Base Path: </label></td>
+																<td><label id="basePathId">Base Path: </label>
+																<a th:if="${basePath != null and hasHierarchy != null}" th:href="@{/hierarchy(basePath=${basePath})}" data-target="#validhierarchyModal" data-toggle="modal" data-placement="right">
+																	<img style="width: 25px; height: 25px;" src="img/help.png"></img></a></td>
 																<td><select size="1" id="basePath" name="basePath"
 																	class="form-control" th:required="required"
 																	onChange="return refreshAttributes('BasePath')">
@@ -287,6 +289,14 @@
 										onClick="cancelEdit()">Cancel</button>
 								</div>
 							</form>
+							<div class="modal fade" id="validhierarchyModal" tabindex="-1" role="dialog"
+								aria-labelledby="myModalLabel" aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content"></div>
+									<!-- /.modal-content -->
+								</div>
+								<!-- /.modal-dialog -->
+							</div>			
 						</div>
 						<!--/col-->
 

@@ -454,8 +454,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<HpcMetadataValidationRule> rules = null;
 		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		if (basePathRules != null) {
+			HpcDataHierarchy dataHierarchy = basePathRules.getDataHierarchy();
+			if(dataHierarchy != null)
+				model.addAttribute("hasHierarchy", true);
 			if (datafile) {
-				HpcDataHierarchy dataHierarchy = basePathRules.getDataHierarchy();
 				if(!refresh && !isDataObjectContainer(collectionType, dataHierarchy))
 					throw new HpcWebException("Adding a data file is not allowed under collection type: " + collectionType);
 				rules = basePathRules.getDataObjectMetadataValidationRules();
