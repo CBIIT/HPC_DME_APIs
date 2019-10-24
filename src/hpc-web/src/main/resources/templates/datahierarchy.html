@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link href="css/tree.css" type="text/css" rel="stylesheet" />  
+<style>
+/*style.css*/
+.modal-content {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid #999999;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  background-clip: padding-box;
+  outline: none;
+}
+</style>
+</head>
+<body>
+
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">&times;</button>
+		<h4 class="modal-title">Valid Hierarchies</h4>
+	</div>
+	<div class="modal-body">
+	  <div th:if="${hierarchy != null}">
+        <ul class="tree">
+            <li>
+                <a th:text="${hierarchy.collectionType}">Parent</a><i style="position: absolute;" title="Data file allowed" class="fa fa-check" th:if="${hierarchy.isDataObjectContainer}"></i>
+                <section th:include="@{datahierarchyFragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
+            </li>
+        </ul>
+      </div>  
+    </div>
+</body>
+</html>

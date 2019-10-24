@@ -1,0 +1,10 @@
+<html>
+    <section th:fragment="hierarchy">
+        <ul>
+            <li th:each="hierarchy : ${hierarchyList}">
+            	<a th:text="${hierarchy.collectionType}">Parent</a><i style="position: absolute;" title="Data file allowed" class="fa fa-check" th:if="${hierarchy.isDataObjectContainer}"></i>
+                <section th:include="@{datahierarchyFragment} :: hierarchy" th:with="hierarchyList=${hierarchy.subCollectionsHierarchies}"></section>
+            </li>
+        </ul> 
+    </section>
+</html>
