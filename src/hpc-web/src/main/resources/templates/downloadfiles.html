@@ -147,14 +147,19 @@
 							<td>
 								<div class="form-group" id="AsyncDiv">
 									<div class="col-sm-12 column">
-										<label for="endPointName">Globus Endpoint UUID:</label> <input
-											type="text" class="form-control" th:field="*{endPointName}"
+										<label for="endPointName">Globus Endpoint UUID:</label> 
+										<a id="downloadlink" 
+                                            th:href="@{../downloadfiles}">
+                                            Select Globus Endpoint UUID and Destination Path</a>
+										<input type="hidden" name="actionType" id="actionType" />
+										<input
+											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
 											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 									</div>
 									<div class="col-sm-12 column">
 										<label for="endPointLocation">Globus Endpoint (Destination) Path :</label> <input
-											type="text" class="form-control"
-											th:field="*{endPointLocation}" id="endPointLocation"
+											type="text" class="form-control" name="endPointLocation"
+											th:value="${endPointLocation}" id="endPointLocation"
 											placeholder="Enter Globus Endpoint Path" size="40" />
 									</div>
 								</div>
@@ -170,7 +175,7 @@
 					<input type="hidden" name="destinationPath" id="destinationPath"
 						th:value="${downloadFilePath}" />
 					<input type="hidden" name="downloadType" id="destinationPath"
-						th:value="${downloadType}" />
+						th:value="${hpcDownloadDatafile.downloadType}" />
 					<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 						th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
 				</div>

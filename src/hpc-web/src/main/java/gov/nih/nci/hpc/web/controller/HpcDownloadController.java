@@ -86,9 +86,8 @@ public class HpcDownloadController extends AbstractHpcController {
 	/**
 	 * Get action to prepare download page. This is invoked when:
 	 * - User clicks download icon on the detail view page
-	 * - User clicks link to Globus endpoint and path on the download page
-	 * - Invoked from Globus site when user presses submit
-	 * 
+	 * - User clicks the 'Select Globus Endpoint UUID and Destination' link
+	 * - Invoked from Globus site when user presses Submit button after selecting Globus Endpoint and Path.
 	 * 
 	 * @param q
 	 * @param model
@@ -109,23 +108,16 @@ public class HpcDownloadController extends AbstractHpcController {
 		String downloadFilePath = null;
 
 		if(action == null && endPointName == null) {
-
+			//User clicked the download icon on the detail view page
 			if("collection".equals(downloadType)) {
 				model.addAttribute("searchType", "async");
 				downloadFilePath = request.getParameter("path");
 			} else {
 				downloadFilePath = request.getParameter("downloadFilePath");
 			}
-			session.setAttribute("downloadFilePath", downloadFilePath);
-			session.setAttribute("downloadType", downloadType);
+			session.removeAttribute("downloadType");
+			session.removeAttribute("downloadFilePath");
 		}
-
-		if(downloadFilePath == null || downloadFilePath.isEmpty()) {
-			//We could be here from Globus site, so get downloadFilePath from session
-			downloadFilePath = (String)session.getAttribute("downloadFilePath");
-			downloadType = (String)session.getAttribute("downloadType");
-		}
-		model.addAttribute("downloadFilePath", downloadFilePath);
 
 		if (downloadFilePath != null) {
 			String fileName = downloadFilePath;
@@ -138,7 +130,7 @@ public class HpcDownloadController extends AbstractHpcController {
 				fileName = downloadFilePath.substring(index + 1);
 			model.addAttribute("downloadFilePathName", fileName);
 		}
-		model.addAttribute("downloadType", downloadType);
+
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 
 		if (user == null) {
@@ -150,9 +142,12 @@ public class HpcDownloadController extends AbstractHpcController {
 		}
 
 		if (action != null && action.equals("Globus")) {
-			//We are going to Globus site, so save the downloadFilePath
-			//to retrieve when we come back
-			//session.setAttribute("basePathSelected", basePath);
+
+			session.setAttribute("downloadType", downloadType);
+
+			downloadFilePath = request.getParameter("downloadFilePath");
+			session.setAttribute("downloadFilePath", downloadFilePath);
+
 			model.addAttribute("useraction", "globus");
 			session.removeAttribute("GlobusEndpoint");
 			session.removeAttribute("GlobusEndpointPath");
@@ -160,7 +155,7 @@ public class HpcDownloadController extends AbstractHpcController {
 			session.removeAttribute("GlobusEndpointFolders");
 
 			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
-					this.webServerName) + "/download?downloadFilePath=" + downloadFilePath;
+					this.webServerName) + "/download";
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
 	        "action=" + percentEncodedReturnURL;
 
@@ -176,7 +171,13 @@ public class HpcDownloadController extends AbstractHpcController {
 			}
 			model.addAttribute("endPointLocation", endPointLocation);
 			model.addAttribute("searchType", "async");
+
+			downloadFilePath = (String)session.getAttribute("downloadFilePath");
+			downloadType = (String)session.getAttribute("downloadType");
 		}
+
+		model.addAttribute("downloadFilePath", downloadFilePath);
+		model.addAttribute("downloadType", downloadType);
 
 		return "download";
 	}
