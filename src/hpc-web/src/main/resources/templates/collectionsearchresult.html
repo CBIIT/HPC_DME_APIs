@@ -106,7 +106,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
         width : 50,
         displayName : 'Download',
         cellFilter : 'dmePathEncoding',
-        cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+        cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
         exporterSuppressExport : true,
         enableSorting: false
       },
