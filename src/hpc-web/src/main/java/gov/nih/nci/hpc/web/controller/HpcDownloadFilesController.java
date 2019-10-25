@@ -46,6 +46,7 @@ import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 
 /**
  * <p>
@@ -72,9 +73,13 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.dataObject.download}")
 	private String dataObjectDownloadServiceURL;
 
+	@Value("${gov.nih.nci.hpc.web.server}")
+	private String webServerName;
+
 	/**
 	 * POST operation to display download task details and its metadata
-	 * 
+	 * Invoked from the search results page when user clicks the 
+	 * 'Download Selected Collections' or 'Download Selected Files' link.
 	 * @param body
 	 * @param taskId
 	 * @param type
@@ -102,7 +107,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 
 			String downloadType = request.getParameter("downloadType");
+			hpcDownloadDatafile.setDownloadType(downloadType);
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
+
 			if (selectedPathsStr.isEmpty()) {
 				model.addAttribute("error", "Data file list is missing!");
 			} else {
@@ -113,7 +120,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				}
 			}
 			model.addAttribute("downloadType", downloadType);
+
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+			session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+
 			HpcSearch hpcSearch = new HpcSearch();
 			String pageNumber = request.getParameter("pageNumber");
 			hpcSearch.setPageNumber(pageNumber != null ? Integer.parseInt(pageNumber) : 1);
@@ -123,6 +133,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			hpcSearch.setQueryName(request.getParameter("queryName"));
 			hpcSearch.setSearchType(request.getParameter("searchType"));
 			model.addAttribute("hpcSearch", hpcSearch);
+			session.setAttribute("hpcSearch", hpcSearch);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get selected data file: " + e.getMessage());
 			e.printStackTrace();
@@ -130,6 +141,62 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		}
 		return "downloadfiles";
 	}
+
+
+	/**
+	 * Links to the Globus site to obtain the endpoint UUID and path.
+	 * Invoked from the download page when 
+	 * - user clicks the 'Select Globus Endpoint UUID and Destination Path' link
+	 * - user clicks the Submit button on the Globus page after selecting the Globus endpoint and path
+	 * @param body
+	 * @param model
+	 * @param bindingResult
+	 * @param session
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.GET)
+	public String getGlobusPath(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
+			HttpSession session, HttpServletRequest request) {
+
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		String userId = (String) session.getAttribute("hpcUserId");
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		if (user == null || authToken == null) {
+			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+			bindingResult.addError(error);
+			HpcLogin hpcLogin = new HpcLogin();
+			model.addAttribute("hpcLogin", hpcLogin);
+			return "dashboard";
+		}
+
+		String endPointName = request.getParameter("endpoint_id");
+		if(endPointName == null) {
+			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
+					this.webServerName) + "/downloadfiles";
+			return "redirect:https://app.globus.org/file-manager?method=GET&" +
+			        "action=" + percentEncodedReturnURL;
+		}
+
+		//This is return from Globus site
+
+		model.addAttribute("endPointName", endPointName);
+		String endPointLocation = request.getParameter("path");
+		//Remove the last trailing slash if the path ends with that
+		if(endPointLocation.lastIndexOf('/') == endPointLocation.length() - 1) {
+			endPointLocation = endPointLocation.substring(0, endPointLocation.length()-1);
+		}
+		model.addAttribute("endPointLocation", endPointLocation);
+
+		HpcSearch hpcSearch = (HpcSearch)session.getAttribute("hpcSearch");
+		model.addAttribute("hpcSearch", hpcSearch);
+
+		HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
+		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+
+		return "downloadfiles";
+	}
+
 
 	/**
 	 * POST action to initiate asynchronous download.
