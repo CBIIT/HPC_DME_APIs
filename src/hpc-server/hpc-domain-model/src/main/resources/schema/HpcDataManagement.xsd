@@ -56,9 +56,6 @@
 				<xsd:element name="basePath" type="xsd:string" />
 				<xsd:element name="archiveDataTransferType"
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="s3Configurations"
-					type="hpc-domain-model:HpcDataTransferConfiguration" minOccurs="0"
-					maxOccurs="unbounded" />
 				<xsd:element name="s3UploadConfigurationId" type="xsd:string" />
 				<xsd:element name="s3DefaultDownloadConfigurationId" type="xsd:string" />
 				<xsd:element name="globusConfiguration"

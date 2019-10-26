@@ -271,7 +271,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcS3DownloadDestination s3DownloadDestination,
       HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
       HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-      String configurationId, String userId, boolean completionEvent, long size)
+      String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size)
       throws HpcException {
     // Input Validation.
     if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
@@ -291,6 +291,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadRequest.setGoogleDriveDestination(googleDriveDownloadDestination);
     downloadRequest.setPath(path);
     downloadRequest.setConfigurationId(configurationId);
+    downloadRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
     downloadRequest.setUserId(userId);
     downloadRequest.setCompletionEvent(completionEvent);
     downloadRequest.setSize(size);
@@ -300,7 +301,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Get the base archive destination.
     HpcArchive baseArchiveDestination = dataManagementConfigurationLocator
-        .getDataTransferConfiguration(configurationId, dataTransferType)
+        .getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
         .getBaseArchiveDestination();
 
     // There are 4 methods of downloading data object:
@@ -629,6 +630,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadRequest.setCompletionEvent(downloadTask.getCompletionEvent());
     downloadRequest.setDataTransferType(downloadTask.getDataTransferType());
     downloadRequest.setConfigurationId(downloadTask.getConfigurationId());
+    downloadRequest.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
     downloadRequest.setPath(downloadTask.getPath());
     downloadRequest.setUserId(downloadTask.getUserId());
     downloadRequest.setGlobusDestination(downloadTask.getGlobusDownloadDestination());
@@ -1152,7 +1154,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Get the data transfer configuration.
     HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-        .getDataTransferConfiguration(configurationId, dataTransferType);
+        .getUploadDataTransferConfiguration(configurationId, dataTransferType);
 
     // In the case of sync upload using a Globus data transfer proxy, there is no
     // need to login to Globus
@@ -1626,6 +1628,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
     downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
     downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
+    downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
     downloadTask.setCreated(Calendar.getInstance());
     downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
     downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
@@ -2020,6 +2023,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setUserId(firstHopDownloadRequest.getUserId());
       downloadTask.setPath(firstHopDownloadRequest.getPath());
       downloadTask.setConfigurationId(firstHopDownloadRequest.getConfigurationId());
+      downloadTask.setS3ArchiveConfigurationId(firstHopDownloadRequest.getS3ArchiveConfigurationId());
       downloadTask.setCompletionEvent(firstHopDownloadRequest.getCompletionEvent());
       downloadTask.setArchiveLocation(secondHopArchiveLocation);
       downloadTask.setGlobusDownloadDestination(secondHopGlobusDestination);
@@ -2043,6 +2047,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       this.downloadTask.setUserId(downloadTask.getUserId());
       this.downloadTask.setPath(downloadTask.getPath());
       this.downloadTask.setConfigurationId(downloadTask.getConfigurationId());
+      this.downloadTask.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
       this.downloadTask.setDataTransferRequestId(null);
       this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
       this.downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
@@ -2199,6 +2204,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadTask.setUserId(downloadRequest.getUserId());
       downloadTask.setPath(downloadRequest.getPath());
       downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
+      downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
       downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
       downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
       downloadTask.setS3DownloadDestination(downloadRequest.getS3Destination());
@@ -2224,6 +2230,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       this.downloadTask.setUserId(downloadTask.getUserId());
       this.downloadTask.setPath(downloadTask.getPath());
       this.downloadTask.setConfigurationId(downloadTask.getConfigurationId());
+      this.downloadTask.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
       this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
       this.downloadTask.setArchiveLocation(downloadTask.getArchiveLocation());
       this.downloadTask.setS3DownloadDestination(downloadTask.getS3DownloadDestination());
