@@ -46,8 +46,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
   // SQL Queries.
   private static final String GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL =
       "select * from public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\"";
-  private static final String GET_S3_CONFIGURATIONS_SQL =
-      "select * from public.\"HPC_S3_ARCHIVE_CONFIGURATION\" where \"DATA_MANAGEMENT_CONFIGURATION_ID\" = ?";
+  private static final String GET_S3_ARCHIVE_CONFIGURATIONS_SQL =
+      "select * from public.\"HPC_S3_ARCHIVE_CONFIGURATION\"";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -150,21 +150,25 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
   public List<HpcDataManagementConfiguration> getDataManagementConfigurations()
       throws HpcException {
     try {
-      // Load all the data management configurations from HPC_DATA_MANAGEMENT_CONFIGUARION.
-      List<HpcDataManagementConfiguration> dataManagementConfigurations = jdbcTemplate
-          .query(GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL, dataManagementConfigurationRowMapper);
-
-      // For each configuration, load the S3 Archive Configurations from
-      // HPC_S3_ARCHIVE_CONFIGURATION.
-      dataManagementConfigurations
-          .forEach(dataManagementConfiguration -> dataManagementConfiguration.getS3Configurations()
-              .addAll(jdbcTemplate.query(GET_S3_CONFIGURATIONS_SQL,
-                  dataTransferConfigurationRowMapper, dataManagementConfiguration.getId())));
-
-      return dataManagementConfigurations;
+      // Get all rows from HPC_DATA_MANAGEMENT_CONFIGUARION.
+      return jdbcTemplate.query(GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL,
+          dataManagementConfigurationRowMapper);
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to get data management configurations: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  @Override
+  public List<HpcDataTransferConfiguration> getS3ArchiveConfigurations() throws HpcException {
+    try {
+      // Get all rows from HPC_S3_ARCHIVE_CONFIGUARION.
+      return jdbcTemplate.query(GET_S3_ARCHIVE_CONFIGURATIONS_SQL,
+          dataTransferConfigurationRowMapper);
+
+    } catch (DataAccessException e) {
+      throw new HpcException("Failed to get S3 Archive configurations: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }

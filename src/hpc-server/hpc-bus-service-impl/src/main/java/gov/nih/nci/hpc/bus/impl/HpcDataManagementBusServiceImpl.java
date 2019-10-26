@@ -1040,8 +1040,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         downloadRequest.getS3DownloadDestination(),
         downloadRequest.getGoogleDriveDownloadDestination(),
         downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
-        metadata.getConfigurationId(), userId, completionEvent,
-        metadata.getSourceSize() != null ? metadata.getSourceSize() : 0);
+        metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), userId,
+        completionEvent, metadata.getSourceSize() != null ? metadata.getSourceSize() : 0);
 
     // Construct and return a DTO.
     return toDownloadResponseDTO(downloadResponse.getDestinationLocation(),
