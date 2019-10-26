@@ -261,6 +261,7 @@
 			<xsd:element name="fileDestination"
 				type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="configurationId" type="xsd:string" />
+			<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 			<xsd:element name="size" type="xsd:long" />
@@ -285,6 +286,7 @@
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="configurationId" type="xsd:string" />
+			<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
 			<xsd:element name="dataTransferRequestId"
 				type="xsd:string" />
 			<xsd:element name="dataTransferType"

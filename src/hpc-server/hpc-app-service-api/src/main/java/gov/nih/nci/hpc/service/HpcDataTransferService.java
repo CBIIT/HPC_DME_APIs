@@ -81,6 +81,8 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify the S3 archive
+   *        the data-object is stored. This is only applicable for S3 archives, not POSIX.
    * @param userId The user ID submitting the download request.
    * @param completionEvent If true, an event will be added when async download is complete.
    * @param size The data object's size in bytes.
@@ -92,7 +94,7 @@ public interface HpcDataTransferService {
       HpcS3DownloadDestination s3DownloadDestination,
       HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
       HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-      String configurationId, String userId, boolean completionEvent, long size)
+      String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size)
       throws HpcException;
 
   /**

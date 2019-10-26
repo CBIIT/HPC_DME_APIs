@@ -17,7 +17,6 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CALLER_OBJECT_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CHECKSUM_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CONFIGURATION_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.S3_CONFIGURATION_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_COMPLETED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
@@ -28,6 +27,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRATION_COMPLETION_EVENT_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
@@ -215,6 +215,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
     systemGeneratedMetadata.setRegistrarName(metadataMap.get(REGISTRAR_NAME_ATTRIBUTE));
     systemGeneratedMetadata.setConfigurationId(metadataMap.get(CONFIGURATION_ID_ATTRIBUTE));
+    systemGeneratedMetadata.setS3ArchiveConfigurationId(metadataMap.get(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE));
 
     HpcFileLocation archiveLocation = new HpcFileLocation();
     archiveLocation
@@ -347,7 +348,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
       HpcDataTransferUploadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
       Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize,
       String sourceURL, String callerObjectId, String userId, String userName,
-      String configurationId, String s3ConfigurationId, boolean registrationCompletionEvent)
+      String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
       throws HpcException {
     // Input validation.
     if (path == null || dataTransferStatus == null || dataTransferType == null
@@ -426,7 +427,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
     // Create the S3 Archive Configuration ID.
     addMetadataEntry(metadataEntries,
-        toMetadataEntry(S3_CONFIGURATION_ID_ATTRIBUTE, s3ConfigurationId));
+        toMetadataEntry(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE, s3ArchiveConfigurationId));
 
     // Add Metadata to the DM system.
     dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
