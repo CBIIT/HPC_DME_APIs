@@ -316,17 +316,14 @@ public class HpcDataManagementConfigurationLocatorTest {
    * @throws HpcException
    */
   @Test
-  public void testNoDataTransferConfigurationC() throws HpcException {
+  public void testNoDataTransferConfiguration() throws HpcException {
 	    
 	 
 	  //Exception is thrown because someIdx configuration id does not exist
       expectedException.expect(HpcException.class);
-	  expectedException.expectMessage( "Could not locate data transfer configuration: "
-	            + "someIdx"
-	            + " "
-	            + HpcDataTransferType.S_3);
+	  expectedException.expectMessage( "Could not locate data transfer configuration: someIdx, S_3, S3 Archive: SomeS3Config");
 	  
-	  dataManagementConfigurationLocator.getDataTransferConfiguration("someIdx", HpcDataTransferType.S_3);
+	  dataManagementConfigurationLocator.getDataTransferConfiguration("someIdx", "SomeS3Config", HpcDataTransferType.S_3);
 	  
 	    
   }
