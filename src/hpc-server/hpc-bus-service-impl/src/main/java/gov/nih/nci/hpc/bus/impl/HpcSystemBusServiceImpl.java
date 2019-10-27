@@ -182,7 +182,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         HpcDataTransferUploadReport dataTransferUploadReport = dataTransferService
             .getDataTransferUploadStatus(systemGeneratedMetadata.getDataTransferType(),
                 systemGeneratedMetadata.getDataTransferRequestId(),
-                systemGeneratedMetadata.getConfigurationId());
+                systemGeneratedMetadata.getConfigurationId(),
+                systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
         HpcDataTransferUploadStatus dataTransferStatus = dataTransferUploadReport.getStatus();
         Calendar dataTransferCompleted = null;
@@ -194,8 +195,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
                 systemGeneratedMetadata.getArchiveLocation(),
                 systemGeneratedMetadata.getDataTransferType(),
-                systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
-                systemGeneratedMetadata.getRegistrarId());
+                systemGeneratedMetadata.getConfigurationId(),
+                systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+                systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
 
             // Update data management w/ data transfer status, checksum and completion time.
             dataTransferCompleted = Calendar.getInstance();
@@ -260,7 +262,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       try {
         if (!updateS3UploadStatus(path, systemGeneratedMetadata) && dataTransferService
             .uploadURLExpired(systemGeneratedMetadata.getDataTransferStarted(),
-                systemGeneratedMetadata.getConfigurationId())) {
+                systemGeneratedMetadata.getConfigurationId(),
+                systemGeneratedMetadata.getS3ArchiveConfigurationId())) {
           // The data object was not found in archive. i.e. user did not complete the
           // upload and the upload URL has expired.
 
@@ -389,6 +392,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         // Get the file associated with the data object in the temporary archive.
         File file = dataTransferService.getArchiveFile(systemGeneratedMetadata.getConfigurationId(),
+            systemGeneratedMetadata.getS3ArchiveConfigurationId(),
             systemGeneratedMetadata.getDataTransferType(),
             systemGeneratedMetadata.getArchiveLocation().getFileId());
 
@@ -401,8 +405,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Generate archive (Cleversafe) system generated metadata.
         String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
             uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
-            systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
-            systemGeneratedMetadata.getRegistrarId());
+            systemGeneratedMetadata.getConfigurationId(),
+            systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+            systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
 
         // Delete the file.
         if (!FileUtils.deleteQuietly(file)) {
@@ -934,7 +939,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param downloadTaskType The download task type.
    * @param downloadTaskId The download task ID.
    * @param dataTransferType The data transfer type,
-   * @param configurationId The data management configuration ID..
+   * @param configurationId The data management configuration ID.
    * @param result The download result.
    * @param message A failure message.
    * @param destinationLocation The download destination location.
@@ -1200,7 +1205,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     // Get the data transfer download status.
     HpcDataTransferDownloadReport dataTransferDownloadReport =
         dataTransferService.getDataTransferDownloadStatus(downloadTask.getDataTransferType(),
-            downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId());
+            downloadTask.getDataTransferRequestId(), downloadTask.getConfigurationId(),
+            downloadTask.getS3ArchiveConfigurationId());
 
     // Check the status of the data transfer.
     HpcDataTransferDownloadStatus dataTransferDownloadStatus =
@@ -1461,7 +1467,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     // Lookup the archive for this data object.
     HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
         systemGeneratedMetadata.getDataTransferType(), systemGeneratedMetadata.getArchiveLocation(),
-        true, systemGeneratedMetadata.getConfigurationId());
+        true, systemGeneratedMetadata.getConfigurationId(),
+        systemGeneratedMetadata.getS3ArchiveConfigurationId());
     if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
       // The data object is found in archive. i.e. upload was completed successfully.
 
@@ -1469,8 +1476,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
           systemGeneratedMetadata.getArchiveLocation(),
           systemGeneratedMetadata.getDataTransferType(),
-          systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
-          systemGeneratedMetadata.getRegistrarId());
+          systemGeneratedMetadata.getConfigurationId(),
+          systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+          systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
 
       // Update the data management (iRODS) data object's system-metadata.
       Calendar dataTransferCompleted = Calendar.getInstance();

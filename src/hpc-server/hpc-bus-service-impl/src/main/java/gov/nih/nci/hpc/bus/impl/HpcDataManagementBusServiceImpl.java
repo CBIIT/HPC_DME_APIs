@@ -783,7 +783,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
               systemGeneratedMetadata.getArchiveLocation(),
               systemGeneratedMetadata.getDataTransferType(),
-              systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getObjectId(),
+              systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
               systemGeneratedMetadata.getRegistrarId());
 
           metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum, null,
@@ -1121,7 +1121,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Generate a download URL for the data object, and return it in a DTO.
     return toDownloadResponseDTO(null, null, null,
         dataTransferService.generateDownloadRequestURL(path, metadata.getArchiveLocation(),
-            metadata.getDataTransferType(), metadata.getConfigurationId()),
+            metadata.getDataTransferType(), metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()),
         metadata.getDataTransferType().value());
   }
 
@@ -1870,7 +1870,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     try {
       dataTransferService.deleteDataObject(systemGeneratedMetadata.getArchiveLocation(),
           systemGeneratedMetadata.getDataTransferType(),
-          systemGeneratedMetadata.getConfigurationId());
+          systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
 
     } catch (HpcException e) {
       logger.error("Failed to delete file from archive", e);
@@ -1989,7 +1989,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         scanDirectoryLocation =
             directoryScanRegistrationItem.getGlobusScanDirectory().getDirectoryLocation();
         pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GLOBUS,
-            scanDirectoryLocation, false, configurationId);
+            scanDirectoryLocation, false, configurationId, null);
       } else {
         // It is a request to scan an S3 directory.
         dataTransferType = HpcDataTransferType.S_3;
@@ -2025,7 +2025,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       final String fileContainerId = scanDirectoryLocation.getFileContainerId();
       final HpcS3Account fs3Account = s3Account;
       dataTransferService
-          .scanDirectory(dataTransferType, s3Account, scanDirectoryLocation, configurationId,
+          .scanDirectory(dataTransferType, s3Account, scanDirectoryLocation, configurationId, null,
               directoryScanRegistrationItem.getIncludePatterns(),
               directoryScanRegistrationItem.getExcludePatterns(), patternType)
           .forEach(
