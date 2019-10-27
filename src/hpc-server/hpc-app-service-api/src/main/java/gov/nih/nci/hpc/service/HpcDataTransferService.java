@@ -81,8 +81,9 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify the S3 archive
-   *        the data-object is stored. This is only applicable for S3 archives, not POSIX.
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @param userId The user ID submitting the download request.
    * @param completionEvent If true, an event will be added when async download is complete.
    * @param size The data object's size in bytes.
@@ -94,8 +95,8 @@ public interface HpcDataTransferService {
       HpcS3DownloadDestination s3DownloadDestination,
       HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
       HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-      String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size)
-      throws HpcException;
+      String configurationId, String s3ArchiveConfigurationId, String userId,
+      boolean completionEvent, long size) throws HpcException;
 
   /**
    * Generate a (pre-signed) download URL for a data object file.
@@ -105,11 +106,15 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @return The download URL.
    * @throws HpcException on service failure.
    */
   public String generateDownloadRequestURL(String path, HpcFileLocation archiveLocation,
-      HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
+      HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId)
+      throws HpcException;
 
   /**
    * Add system generated metadata to the data object in the archive.
@@ -118,14 +123,17 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @param objectId The data object id from the data management system (UUID).
    * @param registrarId The user-id of the data registrar.
    * @return The checksum of the data object object.
    * @throws HpcException on service failure.
    */
   public String addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
-      HpcDataTransferType dataTransferType, String configurationId, String objectId,
-      String registrarId) throws HpcException;
+      HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
+      String objectId, String registrarId) throws HpcException;
 
   /**
    * Delete a data object file.
@@ -134,10 +142,13 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @throws HpcException on service failure.
    */
   public void deleteDataObject(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
-      String configurationId) throws HpcException;
+      String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 
   /**
    * Get a data transfer upload request status.
@@ -146,12 +157,15 @@ public interface HpcDataTransferService {
    * @param dataTransferRequestId The data transfer request ID.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @return The data transfer upload request status.
    * @throws HpcException on service failure.
    */
   public HpcDataTransferUploadReport getDataTransferUploadStatus(
-      HpcDataTransferType dataTransferType, String dataTransferRequestId, String configurationId)
-      throws HpcException;
+      HpcDataTransferType dataTransferType, String dataTransferRequestId, String configurationId,
+      String s3ArchiveConfigurationId) throws HpcException;
 
   /**
    * Get a data transfer download request status.
@@ -160,12 +174,15 @@ public interface HpcDataTransferService {
    * @param dataTransferRequestId The data transfer request ID.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @return The data transfer download request status.
    * @throws HpcException on service failure.
    */
   public HpcDataTransferDownloadReport getDataTransferDownloadStatus(
-      HpcDataTransferType dataTransferType, String dataTransferRequestId, String configurationId)
-      throws HpcException;
+      HpcDataTransferType dataTransferType, String dataTransferRequestId, String configurationId,
+      String s3ArchiveConfigurationId) throws HpcException;
 
   /**
    * Get path attributes for a given file in Globus or Cleversafe (using system account).
@@ -175,11 +192,15 @@ public interface HpcDataTransferService {
    * @param getSize If set to true, the file/directory size will be returned.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @return The path attributes.
    * @throws HpcException on service failure.
    */
   public HpcPathAttributes getPathAttributes(HpcDataTransferType dataTransferType,
-      HpcFileLocation fileLocation, boolean getSize, String configurationId) throws HpcException;
+      HpcFileLocation fileLocation, boolean getSize, String configurationId,
+      String s3ArchiveConfigurationId) throws HpcException;
 
   /**
    * Get path attributes for a given file in AWS S3 (using user provided S3 account).
@@ -202,6 +223,9 @@ public interface HpcDataTransferService {
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @param includePatterns The patterns to use to include files in the scan results.
    * @param excludePatterns The patterns to use to exclude files from the scan results.
    * @param patternType The type of the patterns provided.
@@ -210,20 +234,23 @@ public interface HpcDataTransferService {
    */
   public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
       HpcS3Account s3Account, HpcFileLocation directoryLocation, String configurationId,
-      List<String> includePatterns, List<String> excludePatterns, HpcPatternType patternType)
-      throws HpcException;
+      String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
+      HpcPatternType patternType) throws HpcException;
 
   /**
    * Get a file from the archive.
    *
    * @param configurationId The data management configuration ID.
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @param dataTransferType The data transfer type.
    * @param fileId The file ID.
    * @return The requested file from the archive.
    * @throws HpcException on service failure.
    */
-  public File getArchiveFile(String configurationId, HpcDataTransferType dataTransferType,
-      String fileId) throws HpcException;
+  public File getArchiveFile(String configurationId, String s3ArchiveConfigurationId,
+      HpcDataTransferType dataTransferType, String fileId) throws HpcException;
 
   /**
    * Get all (active) data object download tasks.
@@ -441,7 +468,11 @@ public interface HpcDataTransferService {
    * @param urlCreated The data/time the URL was generated
    * @param configurationId The data management configuration ID. This is to get the expiration
    *        config.
+   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
    * @return True if the upload URL expired, or false otherwise.
    */
-  public boolean uploadURLExpired(Calendar urlCreated, String configurationId);
+  public boolean uploadURLExpired(Calendar urlCreated, String configurationId,
+      String s3ArchiveConfigurationId);
 }

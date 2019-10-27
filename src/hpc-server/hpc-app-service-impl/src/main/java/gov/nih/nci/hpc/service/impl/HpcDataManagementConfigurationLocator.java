@@ -103,53 +103,7 @@ public class HpcDataManagementConfigurationLocator
   }
 
   /**
-   * Get Data Transfer configuration.
-   *
-   * @param configurationId The data management configuration ID.
-   * @param dataTransferType The data transfer type.
-   * @return The data transfer configuration for the requested configuration ID and data transfer
-   *         type.
-   * @throws HpcException if the configuration was not found.
-   */
-  public HpcDataTransferConfiguration getDataTransferConfiguration(String configurationId,
-      HpcDataTransferType dataTransferType) throws HpcException {
-    HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
-    if (dataManagementConfiguration != null) {
-      return dataTransferType.equals(HpcDataTransferType.S_3)
-          ? getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId())
-          : dataManagementConfiguration.getGlobusConfiguration();
-    }
-
-    // Configuration was not found.
-    throw new HpcException("Could not locate data transfer configuration: " + configurationId + " "
-        + dataTransferType.value(), HpcErrorType.UNEXPECTED_ERROR);
-  }
-
-  /**
-   * Get Data Transfer configuration to upload a file.
-   *
-   * @param configurationId The data management configuration ID.
-   * @param dataTransferType The data transfer type.
-   * @return The data transfer configuration for the requested configuration ID and data transfer
-   *         type for uploading.
-   * @throws HpcException if the configuration was not found.
-   */
-  public HpcDataTransferConfiguration getUploadDataTransferConfiguration(String configurationId,
-      HpcDataTransferType dataTransferType) throws HpcException {
-    HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
-    if (dataManagementConfiguration != null) {
-      return dataTransferType.equals(HpcDataTransferType.S_3)
-          ? getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId())
-          : dataManagementConfiguration.getGlobusConfiguration();
-    }
-
-    // Configuration was not found.
-    throw new HpcException("Could not locate upload data transfer configuration: " + configurationId
-        + " " + dataTransferType.value(), HpcErrorType.UNEXPECTED_ERROR);
-  }
-
-  /**
-   * Get Data Transfer configuration to access a file in the archive (download , delete, etc)
+   * Get Data Transfer configuration to access a file in the archive (upload, download , delete, etc)
    *
    * @param configurationId The data management configuration ID.
    * @param s3ArchiveConfigurationId (Optional) S3 archive configuration ID.
@@ -170,8 +124,8 @@ public class HpcDataManagementConfigurationLocator
     }
 
     // Configuration was not found.
-    throw new HpcException("Could not locate upload data transfer configuration: " + configurationId
-        + " " + dataTransferType.value(), HpcErrorType.UNEXPECTED_ERROR);
+    throw new HpcException("Could not locate data transfer configuration: " + configurationId
+        + ", " + dataTransferType.value() + ", S3 Archive: " + s3ArchiveConfigurationId, HpcErrorType.UNEXPECTED_ERROR);
   }
 
   /**
