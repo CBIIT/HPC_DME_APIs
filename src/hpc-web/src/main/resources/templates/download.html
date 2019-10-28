@@ -83,10 +83,10 @@
 
 
 			<div class="pull-center" th:if="${downloadType == 'datafile'}">
-			  <p>You may download selected data file either synchronously to your computer or asynchronously to Globus endpoint location.</p>
+			  <p>You may download selected data file either synchronously to your computer or asynchronously to Globus endpoint location or an S3 bucket.</p>
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
-        <p>You will asynchronously download selected collection to Globus endpoint location.  At targeted Globus endpoint, a new directory will be created under the specified directory.</p>
+        <p>You will asynchronously download selected collection to Globus endpoint location or an S3 bucket.  At targeted Globus endpoint or S3 bucket, a new directory will be created under the specified directory.</p>
         <script type="text/javascript">
            setTimeout(function() {
              var asyncRadioBtn = $("input[name='searchType'][value='async']");
@@ -121,13 +121,19 @@
 										<label
 										class="radio-inline"><input type="radio"
 										id="searchType" name="searchType" value="sync"
-										onChange="display(this)" checked="chekced" />Synchronous</label>
+										onChange="display(this)" checked="checked" />Synchronous</label>
 										</div>
 
-										<div class="pull-left">
+										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchType" value="async"
-										onChange="display(this)"/>Asynchronous</label>
+										onChange="display(this)"/>Asynchronous (Globus)</label>
+										</div>
+										
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="searchType" id="searchType" value="s3"
+										onChange="display(this)"/>Asynchronous (S3)</label>
 										</div>
 								</div>
 								<div class="form-group" id="AsyncDiv" style="display: none">
@@ -158,6 +164,44 @@
 											placeholder="Enter Download file name" />
 									</div>
 								</div>
+								
+								<div class="form-group" id="s3Div" style="display: none">
+									<div class="col-sm-12 column">
+										<label for="bucketName">S3 Bucket:</label>
+										<input
+											type="text" class="form-control" name="bucketName" th:value="${bucketName}"
+											id="bucketName" placeholder="Enter S3 Bucket name" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="s3Path">S3 (Destination) Path :</label> <input
+											type="text" class="form-control"
+											th:value="${s3Path}"
+											name="s3Path" id="s3Path"
+											placeholder="Enter S3 (Destination) Path" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="accessKey">Access Key :</label> <input
+											type="text" class="form-control"
+											th:value="${accessKey}"
+											name="accessKey" id="accessKey"
+											placeholder="Enter Access Key" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="secretKey">Secret Access Key :</label> <input
+											type="text" class="form-control"
+											th:value="${secretKey}"
+											name="secretKey" id="secretKey"
+											placeholder="Enter Secret Access Key" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="region">Region :</label> <input
+											type="text" class="form-control"
+											th:value="${region}"
+											name="region" id="region"
+											placeholder="Enter Region (Ex. us-east-1)" size="40" />
+									</div>
+								</div>
+								
 								<div>
 									<button class="btn btn-primary" id="submit"
 										onClick="return validateAndSubmit()">Download</button>
@@ -222,6 +266,26 @@
 					alert("Please enter asynchronous download values");
 					return false;
 				}
+			} else if (radioValue == 's3') {
+				var bucketName = document.getElementById("bucketName").value;
+				var s3Path = document
+						.getElementById("s3Path").value;
+				var accessKey = document.getElementById("accessKey").value;
+				var secretKey = document.getElementById("secretKey").value;
+				var region = document.getElementById("region").value;
+				if (s3Path == null
+						|| s3Path.trim().length == 0
+						|| bucketName == null
+						|| bucketName.trim().length == 0
+						|| accessKey == null
+						|| accessKey.trim().length == 0
+						|| secretKey == null
+						|| secretKey.trim().length == 0
+						|| region == null
+						|| region.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
 			} else {
 				var downloadFileName = document
 						.getElementById("downloadFileName").value;
@@ -266,7 +330,7 @@
 								e.preventDefault();
 								
 								var radioValue = document.querySelector('input[name="searchType"]:checked').value
-								if (radioValue == 'async') {
+								if (radioValue == 'async' || radioValue == 's3') {
 									$("#wait")
 											.html(
 													'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
@@ -305,14 +369,25 @@
 			var asyncDiv = document.getElementById("AsyncDiv");
 			var globusHelpLinksDiv = document.getElementById("globus-help-links");
 			var syncDiv = document.getElementById("SyncDiv");
+			var s3Div = document.getElementById("s3Div");
 			if (ele.value == "async") {
 				asyncDiv.style.display = "block";
 				globusHelpLinksDiv.style.display = "block";
-				syncDiv.style.display = "none";
-			} else {
-				syncDiv.style.display = "block";
+				if(syncDiv)
+					syncDiv.style.display = "none";
+				s3Div.style.display = "none";
+			} else if (ele.value == "sync") {
+				if(syncDiv)
+					syncDiv.style.display = "block";
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
+				s3Div.style.display = "none";
+			} else {
+				if(syncDiv)
+					syncDiv.style.display = "none";
+				asyncDiv.style.display = "none";
+				globusHelpLinksDiv.style.display = "none";
+				s3Div.style.display = "block";
 			}
 		}
 	</script>
