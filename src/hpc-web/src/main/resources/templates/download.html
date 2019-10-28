@@ -98,6 +98,9 @@
       <div id="globus-help-links" style="display: none;">
 				Please grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
       </div>
+      <div id="s3-help-links" style="display: none;">
+				Please set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
+      </div>
 			<div class="panel panel-default">
 				<div class="panel-body">
 
@@ -368,6 +371,7 @@
 		function display(ele) {
 			var asyncDiv = document.getElementById("AsyncDiv");
 			var globusHelpLinksDiv = document.getElementById("globus-help-links");
+			var s3HelpLinksDiv = document.getElementById("s3-help-links");
 			var syncDiv = document.getElementById("SyncDiv");
 			var s3Div = document.getElementById("s3Div");
 			if (ele.value == "async") {
@@ -376,18 +380,21 @@
 				if(syncDiv)
 					syncDiv.style.display = "none";
 				s3Div.style.display = "none";
+				s3HelpLinksDiv.style.display = "none";
 			} else if (ele.value == "sync") {
 				if(syncDiv)
 					syncDiv.style.display = "block";
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
 				s3Div.style.display = "none";
+				s3HelpLinksDiv.style.display = "none";
 			} else {
 				if(syncDiv)
 					syncDiv.style.display = "none";
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
 				s3Div.style.display = "block";
+				s3HelpLinksDiv.style.display = "block";
 			}
 		}
 	</script>
