@@ -9,6 +9,11 @@ public class HpcDownloadDatafile {
 	private String endPointLocation;
 	private String destinationPath;
 	private String downloadFileName;
+	private String bucketName;
+	private String s3Path;
+	private String accessKey;
+	private String secretKey;
+	private String region;
 	private String searchType;
 	private String downloadType;
 	private List<String> selectedPaths;
@@ -70,5 +75,45 @@ public class HpcDownloadDatafile {
 
 	public void setDownloadType(String downloadType) {
 		this.downloadType = downloadType;
+	}
+
+	public String getBucketName() {
+		return bucketName;
+	}
+
+	public void setBucketName(String bucketName) {
+		this.bucketName = bucketName;
+	}
+
+	public String getS3Path() {
+		return s3Path;
+	}
+
+	public void setS3Path(String s3Path) {
+		this.s3Path = s3Path;
+	}
+
+	public String getAccessKey() {
+		return accessKey;
+	}
+
+	public void setAccessKey(String accessKey) {
+		this.accessKey = accessKey;
+	}
+
+	public String getSecretKey() {
+		return secretKey;
+	}
+
+	public void setSecretKey(String secretKey) {
+		this.secretKey = secretKey;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
 	}
 }
