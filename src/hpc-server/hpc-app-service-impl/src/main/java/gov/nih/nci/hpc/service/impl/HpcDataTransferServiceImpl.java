@@ -916,8 +916,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     return dataTransferProxies.get(dataTransferType).getFileContainerName(
-        getAuthenticatedToken(dataTransferType, configurationId, null),
-        fileContainerId);
+        getAuthenticatedToken(dataTransferType, configurationId, null), fileContainerId);
   }
 
   /**
@@ -1045,14 +1044,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     for (HpcDataTransferAuthenticatedToken authenticatedToken : invoker
         .getDataTransferAuthenticatedTokens()) {
       if (authenticatedToken.getDataTransferType().equals(dataTransferType)
-          && authenticatedToken.getConfigurationId().equals(configurationId)) {
+          && authenticatedToken.getConfigurationId().equals(configurationId)
+          && (authenticatedToken.getS3ArchiveConfigurationId() == null || authenticatedToken
+              .getS3ArchiveConfigurationId().equals(s3ArchiveConfigurationId))) {
         return authenticatedToken.getDataTransferAuthenticatedToken();
       }
     }
 
     // No authenticated token found for this request. Create one.
-    HpcIntegratedSystemAccount dataTransferSystemAccount =
-        systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
+    HpcIntegratedSystemAccount dataTransferSystemAccount = null;
+    if (dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+      dataTransferSystemAccount =
+          systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
+    } else if (dataTransferType.equals(HpcDataTransferType.S_3)) {
+      dataTransferSystemAccount = systemAccountLocator.getSystemAccount(
+          dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
+              s3ArchiveConfigurationId, dataTransferType).getArchiveProvider());
+    }
+
     if (dataTransferSystemAccount == null) {
       throw new HpcException("System account not registered for " + dataTransferType.value(),
           HpcErrorType.UNEXPECTED_ERROR);

@@ -146,6 +146,8 @@ public class HpcDataTransferServiceImplTest {
         .thenReturn(HpcDataTransferType.S_3);
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
         .thenReturn(new HpcIntegratedSystemAccount());
+    when(systemAccountLocatorMock.getSystemAccount(anyObject()))
+        .thenReturn(new HpcIntegratedSystemAccount());
     when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
     when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
         anyObject(), anyObject())).thenReturn(new HpcDataTransferConfiguration());
@@ -200,6 +202,7 @@ public class HpcDataTransferServiceImplTest {
         anyObject(), anyObject())).thenReturn(new HpcDataTransferConfiguration());
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
         .thenReturn(new HpcIntegratedSystemAccount());
+    when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
     when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
     when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject()))
         .thenReturn("https://downloadURL");
