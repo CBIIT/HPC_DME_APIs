@@ -165,12 +165,8 @@ public class HpcDownloadController extends AbstractHpcController {
 			//This is return from Globus site
 			model.addAttribute("endPointName", endPointName);
 			String endPointLocation = request.getParameter("path");
-			//Remove the last trailing slash if the path ends with that
-			if(endPointLocation.lastIndexOf('/') == endPointLocation.length() - 1) {
-				endPointLocation = endPointLocation.substring(0, endPointLocation.length()-1);
-			}
 			model.addAttribute("endPointLocation", endPointLocation);
-			model.addAttribute("searchType", "async");
+			model.addAttribute("transferType", "async");
 
 			downloadFilePath = (String)session.getAttribute("downloadFilePath");
 			downloadType = (String)session.getAttribute("downloadType");
