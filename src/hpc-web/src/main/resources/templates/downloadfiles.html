@@ -106,37 +106,21 @@
 					<table>
 						<tr>
 							<td>
-								<div class="pull-center" id="AsyncTextDiv" th:if="${downloadType == 'datafiles'}">
-								<p>This page allows you to download the following selected collection of data files to a Globus endpoint location 
-									asynchronously.</p> <p>First, grant WRITE access of your Globus target endpoint location to the 
-									HPC DME Globus Group (Refer to User Guide, <a target="_blank" href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME">Preparing to Use Globus with DME</a>); 
-									Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
-									into text entry "Globus Endpoint Name (UUID)"; lastly, enter a directory name into text
-									entry "Globus Endpoint (Destination) Path" for the selected collection.<br/>The system copies the data into the directory under your shared endpoint at Globus.</p>			
+								<div class="pull-center" id="AsyncTextDiv" th:if="${downloadType == 'datafiles'}" style="display: none">
+								<p>This page allows you to download the following selected collection of data files to a Globus endpoint location or an S3 bucket
+									asynchronously.</p> <p>Please grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>			
 								</div>
-								<div class="pull-center" id="AsyncTextDiv" th:if="${downloadType == 'collections'}">
-								<p>This page allows you to download the following selected collections to a Globus endpoint location 
-									asynchronously.</p> <p>First, grant WRITE access of your Globus target endpoint location to the 
-									HPC DME Globus Group (Refer to User Guide, <a target="_blank" href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME">Preparing to Use Globus with DME</a>); 
-									Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
-									into text entry "Globus Endpoint Name (UUID)"; lastly, enter a directory name into text
-									entry "Globus Endpoint (Destination) Path" for the selected collection.<br/>The system copies the data into the directory under your shared endpoint at Globus.</p>			
+								<div class="pull-center" id="AsyncTextDiv" th:if="${downloadType == 'collections'}" style="display: none">
+								<p>This page allows you to download the following selected collections to a Globus endpoint location or an S3 bucket
+									asynchronously.</p> <p>Please grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>			
 								</div>
 								<div class="pull-center" id="s3TextDiv" th:if="${downloadType == 'datafiles'}" style="display: none">
-								<p>This page allows you to download the following selected collection of data files to an S3 bucket 
-									asynchronously.</p> <p>First, create a bucket, create an access policy, and obtain the access key with the  
-									proper permissions set up for the bucket (Refer to User Guide, <a target="_blank" href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME">Preparing to use Amazon Web Services S3 with DME</a>); 
-									Enter the name of the destination S3 bucket, path and the name of the folder to be created in the destination bucket; Copy access key and secret key 
-									into text entry "Access Key" and "Secret Access Key"; lastly, enter the Region into text
-									entry "Region".<br/>The system copies the data into the directory under your S3 bucket in the specified path.</p>				
+								<p>This page allows you to download the following selected collection of data files to a Globus endpoint location or an S3 bucket
+									asynchronously.</p> <p>Please set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>				
 								</div>
 								<div class="pull-center" id="s3TextDiv" th:if="${downloadType == 'collections'}" style="display: none">
-								<p>This page allows you to download the following selected collections to an S3 bucket 
-									asynchronously.</p> <p>First, create a bucket, create an access policy, and obtain the access key with the  
-									proper permissions set up for the bucket (Refer to User Guide, <a target="_blank" href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME">Preparing to use Amazon Web Services S3 with DME</a>); 
-									Enter the name of the destination S3 bucket, path and the name of the folder to be created in the destination bucket; Copy access key and secret key 
-									into text entry "Access Key" and "Secret Access Key"; lastly, enter the Region into text
-									entry "Region".<br/>The system copies the data into the directory under your S3 bucket in the specified path.</p>			
+								<p>This page allows you to download the following selected collections to a Globus endpoint location or an S3 bucket
+									asynchronously.</p> <p>Please set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>			
 								</div>
 							</td>
 						</tr>
@@ -164,7 +148,7 @@
 								<div class="form-group">
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchType" value="async" checked="checked"
+										name="searchType" id="searchType" value="async"
 										onChange="display(this)"/>Asynchronous (Globus)</label>
 										</div>
 										
@@ -174,7 +158,7 @@
 										onChange="display(this)"/>Asynchronous (S3)</label>
 										</div>
 								</div>
-								<div class="form-group" id="AsyncDiv">
+								<div class="form-group" id="AsyncDiv" style="display: none">
 									<div class="col-sm-12 column">
 										<label for="endPointName">Globus Endpoint UUID:</label> 
 										<a id="downloadlink" 
@@ -186,7 +170,7 @@
 											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="endPointLocation">Globus Endpoint (Destination) Path :</label> <input
+										<label for="endPointLocation">Globus Endpoint (Destination) Path:</label> <input
 											type="text" class="form-control" name="endPointLocation"
 											th:value="${endPointLocation}" id="endPointLocation"
 											placeholder="Enter Globus Endpoint Path" size="40" />
@@ -197,31 +181,31 @@
 										<label for="bucketName">S3 Bucket:</label>
 										<input
 											type="text" class="form-control" name="bucketName" th:value="${bucketName}"
-											id="bucketName" placeholder="Enter S3 Bucket name" />
+											id="bucketName" placeholder="Enter S3 Bucket Name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="s3Path">S3 (Destination) Path :</label> <input
+										<label for="s3Path">S3 (Destination) Path:</label> <input
 											type="text" class="form-control"
 											th:value="${s3Path}"
 											name="s3Path" id="s3Path"
 											placeholder="Enter S3 (Destination) Path" size="40" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="accessKey">Access Key :</label> <input
+										<label for="accessKey">Access Key:</label> <input
 											type="text" class="form-control"
 											th:value="${accessKey}"
 											name="accessKey" id="accessKey"
 											placeholder="Enter Access Key" size="40" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="secretKey">Secret Access Key :</label> <input
-											type="text" class="form-control"
+										<label for="secretKey">Secret Access Key:</label> <input
+											type="password" class="form-control"
 											th:value="${secretKey}"
 											name="secretKey" id="secretKey"
 											placeholder="Enter Secret Access Key" size="40" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="region">Region :</label> <input
+										<label for="region">Region:</label> <input
 											type="text" class="form-control"
 											th:value="${region}"
 											name="region" id="region"
