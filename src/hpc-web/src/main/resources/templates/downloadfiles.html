@@ -38,11 +38,7 @@
 	src="js/angular/1.5.0/angular-touch.js"></script>
 <script
 	src="js/angular/1.5.0/angular-animate.js"></script>
-<script src="js/ui-grid/csv.js"></script>
-<script src="js/ui-grid/pdfmake.js"></script>
-<script src="js/ui-grid/vfs_fonts.js"></script>
 
-<script src="js/ui-grid/4.0.2/ui-grid.js"></script>
 <script src="../bower_components/jquery/dist/jquery.js"></script>
 
 <link rel="stylesheet" href="css/ui-grid.css"
@@ -106,21 +102,19 @@
 					<table>
 						<tr>
 							<td>
-								<div class="pull-center" id="AsyncTextDiv" th:if="${downloadType == 'datafiles'}" style="display: none">
-								<p>This page allows you to download the following selected collection of data files to a Globus endpoint location or an S3 bucket
-									asynchronously.</p> <p>Please grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>			
+							    <div class="pull-center" th:if="${downloadType == 'datafiles'}" >
+							    <p>This page allows you to download the following selected collection of data files to a Globus endpoint location or an S3 bucket
+									asynchronously.</p> 
+							    </div>
+							    <div class="pull-center" th:if="${downloadType == 'collections'}" >
+							    <p>This page allows you to download the following selected collections to a Globus endpoint location or an S3 bucket
+									asynchronously.</p> 
+							    </div>
+								<div class="pull-center" id="AsyncTextDiv" style="display: none">
+								<p>Grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>			
 								</div>
-								<div class="pull-center" id="AsyncTextDiv" th:if="${downloadType == 'collections'}" style="display: none">
-								<p>This page allows you to download the following selected collections to a Globus endpoint location or an S3 bucket
-									asynchronously.</p> <p>Please grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>			
-								</div>
-								<div class="pull-center" id="s3TextDiv" th:if="${downloadType == 'datafiles'}" style="display: none">
-								<p>This page allows you to download the following selected collection of data files to a Globus endpoint location or an S3 bucket
-									asynchronously.</p> <p>Please set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>				
-								</div>
-								<div class="pull-center" id="s3TextDiv" th:if="${downloadType == 'collections'}" style="display: none">
-								<p>This page allows you to download the following selected collections to a Globus endpoint location or an S3 bucket
-									asynchronously.</p> <p>Please set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>			
+								<div class="pull-center" id="s3TextDiv" style="display: none">
+								<p>Set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.</p>				
 								</div>
 							</td>
 						</tr>
@@ -148,13 +142,13 @@
 								<div class="form-group">
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchType" value="async"
+										name="searchType" id="searchTypeSync" value="async"
 										onChange="display(this)"/>Asynchronous (Globus)</label>
 										</div>
 										
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchType" value="s3"
+										name="searchType" id="searchTypeS3" value="s3"
 										onChange="display(this)"/>Asynchronous (S3)</label>
 										</div>
 								</div>
@@ -199,7 +193,7 @@
 									</div>
 									<div class="col-sm-12 column">
 										<label for="secretKey">Secret Access Key:</label> <input
-											type="password" class="form-control"
+											type="password" autocomplete="secret-access-key" class="form-control"
 											th:value="${secretKey}"
 											name="secretKey" id="secretKey"
 											placeholder="Enter Secret Access Key" size="40" />
@@ -221,9 +215,9 @@
 							</td>
 						</tr>
 					</table>
-					<input type="hidden" name="destinationPath" id="destinationPath"
+					<input type="hidden" name="destinationPath" id="destinationPathId"
 						th:value="${downloadFilePath}" />
-					<input type="hidden" name="downloadType" id="destinationPath"
+					<input type="hidden" name="downloadType" id="downloadType"
 						th:value="${hpcDownloadDatafile.downloadType}" />
 					<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 						th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
@@ -240,12 +234,12 @@
 		</form>
 		<form class="form-horizontal" id="criteriaForm"
 			th:object="${hpcSearch}" method="POST" th:action="@{/criteria}">
-			<input type="hidden" name="actionType" id="actionType" value="pagination"/>
+			<input type="hidden" name="actionType" id="actionTypeId" value="pagination"/>
 			<input type="hidden"
-				class="form-control" name="pageNumber" id="pageNumber"
+				class="form-control" name="pageNumber" id="pageNumberId"
 				 th:value="${hpcSearch.getPageNumber()}"/>
 			<input type="hidden"
-				class="form-control" name="pageSize" id="pageSize"
+				class="form-control" name="pageSize" id="pageSizeId"
 				 th:value="${hpcSearch.getPageSize()}"/>			
 		</form>
 		<form class="form-horizontal" id="searchForm"
