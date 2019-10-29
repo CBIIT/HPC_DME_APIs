@@ -87,13 +87,7 @@
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
         <p>You will asynchronously download selected collection to Globus endpoint location.  At targeted Globus endpoint, a new directory will be created under the specified directory.</p>
-        <script type="text/javascript">
-           setTimeout(function() {
-             var asyncRadioBtn = $("input[name='searchType'][value='async']");
-             $(asyncRadioBtn).click();
-             $(asyncRadioBtn).trigger("change");
-            }, 300);
-        </script>
+
 			</div>
       <div id="globus-help-links" style="display: none;">
 				Please grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
@@ -116,18 +110,18 @@
 						</tr>
 						<tr>
 							<td>
-								<div class="form-group">
+								<div class="form-group" id="radioset">
 										<div class="pull-left" th:if="${downloadType == 'datafile'}">
 										<label
 										class="radio-inline"><input type="radio"
 										id="searchType" name="searchType" value="sync"
-										onChange="display(this)" checked="chekced" />Synchronous</label>
+										onChange="display('sync')" checked="chekced" />Synchronous</label>
 										</div>
 
 										<div class="pull-left">
 										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchType" value="async"
-										onChange="display(this)"/>Asynchronous</label>
+										onChange="display('async')"/>Asynchronous</label>
 										</div>
 								</div>
 								<div class="form-group" id="AsyncDiv" style="display: none">
@@ -169,6 +163,8 @@
 						th:value="${downloadFilePath}" />
 					<input type="hidden" name="downloadType" id="destinationPath"
 						th:value="${downloadType}" />
+					<input type="hidden" name="transferType" id="transferType"
+						th:value="${transferType}" />
 
                   </div>
                  </div> 
@@ -250,6 +246,15 @@
 			$("#downloadForm").submit();
 	    }
 
+
+	    $(document).ready(function(){
+            if($('#transferType').val() == 'async') {
+                $('input:radio[name=searchType]')[1].checked = true;
+                display('async');
+	        }
+	    });
+
+
 		$(function() {
 			//twitter bootstrap script
 			var $form = $('#downloadForm');
@@ -301,11 +306,11 @@
 
 
 		var toggle = true;
-		function display(ele) {
+		function display(value) {
 			var asyncDiv = document.getElementById("AsyncDiv");
 			var globusHelpLinksDiv = document.getElementById("globus-help-links");
 			var syncDiv = document.getElementById("SyncDiv");
-			if (ele.value == "async") {
+			if (value == "async") {
 				asyncDiv.style.display = "block";
 				globusHelpLinksDiv.style.display = "block";
 				syncDiv.style.display = "none";
