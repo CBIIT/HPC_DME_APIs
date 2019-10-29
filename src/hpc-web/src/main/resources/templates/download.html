@@ -151,7 +151,7 @@
 											id="endPointName" placeholder="Enter Globus Endpoint name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="endPointLocation">Globus Endpoint (Destination) Path :</label> <input
+										<label for="endPointLocation">Globus Endpoint (Destination) Path:</label> <input
 											type="text" class="form-control"
 											th:value="${endPointLocation}"
 											name="endPointLocation" id="endPointLocation"
@@ -161,7 +161,7 @@
 
 								<div class="form-group" id="SyncDiv" style="display: show" th:if="${downloadType == 'datafile'}">
 									<div class="col-sm-12 column">
-										<label for="downloadFileName">Download file name:</label> <input
+										<label for="downloadFileName">Download File name:</label> <input
 											type="text" class="form-control"
 											id="downloadFileName" size="45" name="downloadFileName" th:value="${downloadFilePathName}"
 											placeholder="Enter Download file name" />
@@ -173,35 +173,35 @@
 										<label for="bucketName">S3 Bucket:</label>
 										<input
 											type="text" class="form-control" name="bucketName" th:value="${bucketName}"
-											id="bucketName" placeholder="Enter S3 Bucket name" />
+											id="bucketName" placeholder="Enter S3 Bucket Name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="s3Path">S3 (Destination) Path :</label> <input
+										<label for="s3Path">S3 (Destination) Path:</label> <input
 											type="text" class="form-control"
 											th:value="${s3Path}"
 											name="s3Path" id="s3Path"
 											placeholder="Enter S3 (Destination) Path" size="40" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="accessKey">Access Key :</label> <input
+										<label for="accessKey">Access Key:</label> <input
 											type="text" class="form-control"
 											th:value="${accessKey}"
 											name="accessKey" id="accessKey"
 											placeholder="Enter Access Key" size="40" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="secretKey">Secret Access Key :</label> <input
-											type="text" class="form-control"
+										<label for="secretKey">Secret Access Key:</label> <input
+											type="password" class="form-control"
 											th:value="${secretKey}"
 											name="secretKey" id="secretKey"
 											placeholder="Enter Secret Access Key" size="40" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="region">Region :</label> <input
+										<label for="region">Region:</label> <input
 											type="text" class="form-control"
 											th:value="${region}"
 											name="region" id="region"
-											placeholder="Enter Region (Ex. us-east-1)" size="40" />
+											placeholder="Enter Region (for Example us-east-1)" size="40" />
 									</div>
 								</div>
 								
