@@ -112,6 +112,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				}
 			}
 			model.addAttribute("downloadType", downloadType);
+			//Set this to globus for initial radio button auto selection
+			model.addAttribute("transferType", "globus");
 
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 			session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
@@ -187,6 +189,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 
 		HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+		model.addAttribute("transferType", "globus");
 
 		return "downloadfiles";
 	}
