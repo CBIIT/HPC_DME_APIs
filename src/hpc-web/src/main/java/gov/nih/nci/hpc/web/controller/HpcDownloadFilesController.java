@@ -118,18 +118,16 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 			session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 
-			HpcSearch hpcSearch = (HpcSearch)session.getAttribute("hpcSearch");
-			if(hpcSearch == null)
-				hpcSearch = new HpcSearch();
+			HpcSearch hpcSaveSearch = new HpcSearch();
 			String pageNumber = request.getParameter("pageNumber");
-			hpcSearch.setPageNumber(pageNumber != null ? Integer.parseInt(pageNumber) : 1);
+			hpcSaveSearch.setPageNumber(pageNumber != null ? Integer.parseInt(pageNumber) : 1);
 			String pageSize = request.getParameter("pageSize");
 			if (StringUtils.isNotBlank(pageSize))
-			  hpcSearch.setPageSize(Integer.parseInt(pageSize));
-			hpcSearch.setQueryName(request.getParameter("queryName"));
-			hpcSearch.setSearchType(request.getParameter("searchType"));
-			model.addAttribute("hpcSearch", hpcSearch);
-			session.setAttribute("hpcSearch", hpcSearch);
+				hpcSaveSearch.setPageSize(Integer.parseInt(pageSize));
+			hpcSaveSearch.setQueryName(request.getParameter("queryName"));
+			hpcSaveSearch.setSearchType(request.getParameter("searchType"));
+			model.addAttribute("hpcSearch", hpcSaveSearch);
+			session.setAttribute("hpcSaveSearch", hpcSaveSearch);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get selected data file: " + e.getMessage());
 			e.printStackTrace();
@@ -184,8 +182,8 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		}
 		model.addAttribute("endPointLocation", endPointLocation);
 
-		HpcSearch hpcSearch = (HpcSearch)session.getAttribute("hpcSearch");
-		model.addAttribute("hpcSearch", hpcSearch);
+		HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSaveSearch");
+		model.addAttribute("hpcSearch", hpcSaveSearch);
 
 		HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
