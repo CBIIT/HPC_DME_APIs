@@ -12,10 +12,6 @@
 <script src="../js/angular/1.4.3/angular.js"></script>
 <script src="../js/angular/1.4.3/angular-touch.js"></script>
 <script src="../js/angular/1.4.3/angular-animate.js"></script>
-<script src="../js/ui-grid/csv.js"></script>
-<script src="../js/ui-grid/pdfmake.js"></script>
-<script src="../js/ui-grid/vfs_fonts.js"></script>
-<script src="../js/ui-grid/ui-grid.js"></script>
 
 <link rel="stylesheet" href="css/ui-grid.css"
 	type="text/css" />
@@ -34,6 +30,9 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var assignedNames = [[${names}]];
+    var downloadType = [[${downloadType}]];
+    var downloadFilePath = [[${downloadFilePath}]];
+    var source = [[${source}]];
 /*]]>*/
 </script>
 </head>
@@ -89,10 +88,10 @@
               <p>You will asynchronously download selected collection to Globus endpoint location or an S3 bucket.  At targeted Globus endpoint or S3 bucket, a new directory will be created under the specified directory.</p>    
             </div>
       <div id="globus-help-links" style="display: none;">
-				Please grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
+				Grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
       </div>
       <div id="s3-help-links" style="display: none;">
-				Please set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
+				Set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
       </div>
 			<div class="panel panel-default">
 				<div class="panel-body">
@@ -114,9 +113,8 @@
 							<td>
 								<div class="form-group" id="radioset">
 										<div class="pull-left" th:if="${downloadType == 'datafile'}">
-										<label
-										class="radio-inline"><input type="radio"
-										id="searchType" name="searchTypeSync" value="sync"
+										<label class="radio-inline"><input type="radio"
+										id="searchTypeSync" name="searchType" value="sync"
 										onChange="display('sync')" checked="checked" />Synchronous</label>
 										</div>
 										<div class="pull-left" style="margin-left: 15px">
@@ -126,8 +124,8 @@
 										</div>
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchType" value="s3"
-										onChange="display('s3')"/>Asynchronous (S3)</label>
+										name="searchType" id="searchTypeS3" value="s3"
+										onChange="display(this)"/>Asynchronous (S3)</label>
 										</div>
 								</div>
 		                        
@@ -144,7 +142,7 @@
 										<label for="endPointName">Globus Endpoint UUID:</label>
 						                <input
 											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
-											id="endPointName" placeholder="Enter Globus Endpoint name" />
+											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 									</div>
 									<div class="col-sm-12 column">
 										<label for="endPointLocation">Globus Endpoint (Destination) Path:</label> 
@@ -188,7 +186,7 @@
 									</div>
 									<div class="col-sm-12 column">
 										<label for="secretKey">Secret Access Key:</label> <input
-											type="password" class="form-control"
+											type="password" autocomplete="secret-access-key" class="form-control"
 											th:value="${secretKey}"
 											name="secretKey" id="secretKey"
 											placeholder="Enter Secret Access Key" size="40" />
@@ -205,13 +203,15 @@
 								<div>
 									<button class="btn btn-primary" id="submit"
 										onClick="return validateAndSubmit()">Download</button>
+									<button type="button" class="btn btn-primary"
+										onClick="goBack()" id="close">Back</button>
 								</div>
 							</td>
 						</tr>
 					</table>
-					<input type="hidden" name="destinationPath" id="destinationPath"
+					<input type="hidden" name="destinationPath" id="destinationPathId"
 						th:value="${downloadFilePath}" />
-					<input type="hidden" name="downloadType" id="destinationPath"
+					<input type="hidden" name="downloadType" id="downloadType"
 						th:value="${downloadType}" />
 					<input type="hidden" name="transferType" id="transferType"
 						th:value="${transferType}" />
@@ -226,6 +226,25 @@
                                class="form-control" th:field="*{downloadFileName}"
                                id="downloadFileName" placeholder="Enter Download file name" />
                </form>
+				<form class="form-horizontal" id="criteriaForm"
+					th:object="${hpcSearch}" method="POST" th:action="@{/criteria}">
+					<input type="hidden" name="actionType" id="actionTypeId" value="pagination"/>
+					<input type="hidden"
+						class="form-control" name="pageNumber" id="pageNumberId"
+						 th:value="${hpcSearch.getPageNumber()}"/>
+					<input type="hidden"
+						class="form-control" name="pageSize" id="pageSizeId"
+						 th:value="${hpcSearch.getPageSize()}"/>			
+				</form>
+				<form class="form-horizontal" id="searchForm"
+					th:object="${hpcSearch}" method="POST" th:action="@{/search}">
+					<input type="hidden" name="queryName" id="queryName"
+						th:value="${hpcSearch.getQueryName()}" /> <input type="hidden"
+						class="form-control" name="pageNumber" id="pageNumber"
+						 th:value="${hpcSearch.getPageNumber()}"/> <input type="hidden"
+						class="form-control" name="pageSize" id="pageSize"
+						 th:value="${hpcSearch.getPageSize()}"/>
+				</form>
             </div>
           </div>
          </div>
@@ -253,6 +272,7 @@
 	<script src="js/scripts.js"></script>
 	
 	<script>
+	//<![CDATA[	
 		function validateAndSubmit() {
 			var radioSelected = document.getElementsByName("searchType");
 			var radioValue = document.querySelector('input[name="searchType"]:checked').value
@@ -317,6 +337,7 @@
 	    }
 
 
+
 	    $(document).ready(function(){
             if($('#transferType').val() == 'globus') {
             	$("#searchTypeAsync").prop("checked", true); 
@@ -325,6 +346,20 @@
 	        }
 	    });
 
+
+
+		function goBack()
+		{
+			if(source != null && source == "search")
+				document.getElementById("searchForm").submit();
+			else if(source != null && source == "criteria")
+				document.getElementById("criteriaForm").submit();
+			else if(downloadType == "collection")
+				window.location.href = '../collection?action=view&path=' + downloadFilePath;
+			else
+				window.location.href = '../datafile?action=view&path=' + downloadFilePath;
+		}
+		
 
 		$(function() {
 			//twitter bootstrap script
@@ -406,6 +441,7 @@
 				s3HelpLinksDiv.style.display = "block";
 			}
 		}
+	//]]>	
 	</script>
 
 </body>
