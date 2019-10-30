@@ -1,9 +1,11 @@
 /**
  * HpcS3Connection.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.integration.s3.impl;
@@ -17,6 +19,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -26,47 +29,58 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcS3Connection {
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constructors
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /** Constructor for Spring Dependency Injection. */
   private HpcS3Connection() {}
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
-   * Authenticate an account.
+   * Authenticate an account
    *
    * @param dataTransferAccount A data transfer account to authenticate.
-   * @param s3URL The S3 URL to connect to (This is Cleversafe URL).
+   * @param s3URLorRegion The S3 URL if authenticating with a 3rd party S3 Provider (Cleversafe,
+   *        Cloudian, etc), or Region if authenticating w/ AWS.
    * @return An authenticated TransferManager object, or null if authentication failed.
+   * @throws HpcException if authentication failed
    */
-  public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URL) {
+  public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URLorRegion)
+      throws HpcException {
+    if (dataTransferAccount.getIntegratedSystem().equals(HpcIntegratedSystem.AWS)) {
+      // AWS authentication required. Invoke the overloaded method w/ S3 account
+      HpcS3Account s3Account = new HpcS3Account();
+      s3Account.setAccessKey(dataTransferAccount.getUsername());
+      s3Account.setSecretKey(dataTransferAccount.getPassword());
+      s3Account.setRegion(s3URLorRegion);
+      return authenticate(s3Account);
+    }
+
+    // 3rd Party S3 Provider authentication.
+
     // Create the credential provider based on the configured credentials.
-    BasicAWSCredentials cleversafeCredentials =
-        new BasicAWSCredentials(
-            dataTransferAccount.getUsername(), dataTransferAccount.getPassword());
+    BasicAWSCredentials cleversafeCredentials = new BasicAWSCredentials(
+        dataTransferAccount.getUsername(), dataTransferAccount.getPassword());
     AWSStaticCredentialsProvider cleversafeCredentialsProvider =
         new AWSStaticCredentialsProvider(cleversafeCredentials);
 
     // Setup the endpoint configuration.
-    EndpointConfiguration endpointConfiguration = new EndpointConfiguration(s3URL, null);
+    EndpointConfiguration endpointConfiguration = new EndpointConfiguration(s3URLorRegion, null);
 
     // Create and return the transfer manager.
     return TransferManagerBuilder.standard()
         .withS3Client(
-            AmazonS3ClientBuilder.standard()
-                .withCredentials(cleversafeCredentialsProvider)
-                .withEndpointConfiguration(endpointConfiguration)
-                .build())
+            AmazonS3ClientBuilder.standard().withCredentials(cleversafeCredentialsProvider)
+                .withEndpointConfiguration(endpointConfiguration).build())
         .build();
   }
 
   /**
-   * Authenticate an account.
+   * Authenticate an AWS S3 account.
    *
    * @param s3Account AWS S3 account.
    * @return TransferManager
@@ -81,22 +95,14 @@ public class HpcS3Connection {
           new AWSStaticCredentialsProvider(awsCredentials);
 
       // Create and return the transfer manager.
-      return TransferManagerBuilder.standard()
-          .withS3Client(
-              AmazonS3ClientBuilder.standard()
-                  .withRegion(s3Account.getRegion())
-                  .withCredentials(awsCredentialsProvider)
-                  .build())
+      return TransferManagerBuilder
+          .standard().withS3Client(AmazonS3ClientBuilder.standard()
+              .withRegion(s3Account.getRegion()).withCredentials(awsCredentialsProvider).build())
           .build();
 
     } catch (SdkClientException e) {
-      throw new HpcException(
-          "Failed to authenticate S3 account in region ["
-              + s3Account.getRegion()
-              + "] - "
-              + e.getMessage(),
-          HpcErrorType.INVALID_REQUEST_INPUT,
-          e);
+      throw new HpcException("Failed to authenticate S3 account in region [" + s3Account.getRegion()
+          + "] - " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT, e);
     }
   }
 
