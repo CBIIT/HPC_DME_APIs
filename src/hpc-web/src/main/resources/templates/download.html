@@ -87,12 +87,7 @@
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
               <p>You will asynchronously download selected collection to Globus endpoint location or an S3 bucket.  At targeted Globus endpoint or S3 bucket, a new directory will be created under the specified directory.</p>    
             </div>
-      <div id="globus-help-links" style="display: none;">
-				Grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
-      </div>
-      <div id="s3-help-links" style="display: none;">
-				Set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
-      </div>
+     
 			<div class="panel panel-default">
 				<div class="panel-body">
 
@@ -129,18 +124,24 @@
 										</div>
 								</div>
 		                        
+		                        <div id="globus-help-links" style="display: none;">
+                                    To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.
+                                    <br/><br/>
+                                </div>
+                                <div id="s3-help-links" style="display: none;">
+				                    To download to an S3 bucket, proper permissions should be set up.  Refer to <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to use Amazon Web Services S3 with DME</a> for instructions.
+                                    <br/><br/>
+                                </div>	                   
+		                        
 								<div class="form-group" id="AsyncDiv" style="display: none">
 								    <div class="col-sm-12 column">
-								        Enter Endpoint UUID and Destination Path in the fields below or click
-											<a id="downloadlink" 
-                                            th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">
-                                            here </a>to obtain these from Globus.<br/><br/>
+										<label for="endPointName">Globus Endpoint UUID:</label> 
+										Optionally click 
+										<a id="downloadlink" 
+                                            th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">                                  
+                                            here</a> to obtain from Globus
 										<input type="hidden" name="actionType" id="actionType" />
-									
-									</div>
-									<div class="col-sm-12 column">
-										<label for="endPointName">Globus Endpoint UUID:</label>
-						                <input
+										<input
 											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
 											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 									</div>
