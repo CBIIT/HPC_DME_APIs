@@ -22,7 +22,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +35,9 @@ import com.fasterxml.jackson.annotation.JsonView;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -61,18 +62,9 @@ import gov.nih.nci.hpc.web.util.MiscUtil;
 @EnableAutoConfiguration
 @RequestMapping("/downloadfiles")
 public class HpcDownloadFilesController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.download}")
-	private String dataObjectsDownloadServiceURL;
-	
 	@Value("${gov.nih.nci.hpc.server.v2.download}")
-	private String collectionsDownloadServiceURL;
-
-	@Value("${gov.nih.nci.hpc.server.collection.download}")
-	private String collectionDownloadServiceURL;
-
-	@Value("${gov.nih.nci.hpc.server.dataObject.download}")
-	private String dataObjectDownloadServiceURL;
-
+	private String downloadServiceURL;
+	
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
 
@@ -224,7 +216,6 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			}
 
 			HpcBulkDataObjectDownloadRequestDTO dto = new HpcBulkDataObjectDownloadRequestDTO();
-			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO dtoV2 = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO();
 			String selectedPathsStr = request.getParameter("selectedFilePaths");
 			String downloadType = request.getParameter("downloadType");
 			if (selectedPathsStr.isEmpty()) {
@@ -236,29 +227,36 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 					if(downloadType.equals("datafiles"))
 						dto.getDataObjectPaths().add(tokens.nextToken().trim());
 					else
-						dtoV2.getCollectionPaths().add(tokens.nextToken().trim());
+						dto.getCollectionPaths().add(tokens.nextToken().trim());
 				}
 			}
 
-			HpcFileLocation location = new HpcFileLocation();
-			location.setFileContainerId(downloadFile.getEndPointName());
-			location.setFileId(downloadFile.getEndPointLocation());
-			if(downloadType.equals("datafiles"))
-				dto.setDestination(location);
-			else {
+			
+			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getEndPointName());
+				location.setFileId(downloadFile.getEndPointLocation());
 				HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 				globusDownloadDestination.setDestinationLocation(location);
-				dtoV2.setGlobusDownloadDestination(globusDownloadDestination);
+				dto.setGlobusDownloadDestination(globusDownloadDestination);
+			}  else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("s3")) {
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getBucketName());
+				location.setFileId(downloadFile.getS3Path());
+				HpcS3DownloadDestination destination = new HpcS3DownloadDestination();
+				destination.setDestinationLocation(location);
+				HpcS3Account account = new HpcS3Account();
+				account.setAccessKey(downloadFile.getAccessKey());
+				account.setSecretKey(downloadFile.getSecretKey());
+				account.setRegion(downloadFile.getRegion());
+				destination.setAccount(account);
+				dto.setS3DownloadDestination(destination);
 			}
 
 			try {
 				HpcBulkDataObjectDownloadResponseDTO downloadDTO = null;
-				if(downloadType.equals("datafiles"))
-					downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
-						.downloadFiles(authToken, dataObjectsDownloadServiceURL, dto, sslCertPath, sslCertPassword);
-				else
-					downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
-						.downloadFiles(authToken, collectionsDownloadServiceURL, dtoV2, sslCertPath, sslCertPassword);
+				downloadDTO = (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil
+					.downloadFiles(authToken, downloadServiceURL, dto, sslCertPath, sslCertPassword);
 				if (downloadDTO != null) {
 					String taskType = downloadType.equals("datafiles") ? HpcDownloadTaskType.DATA_OBJECT_LIST.name(): HpcDownloadTaskType.COLLECTION_LIST.name();
 					result.setMessage("Download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
