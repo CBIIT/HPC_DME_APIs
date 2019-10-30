@@ -37,6 +37,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
@@ -85,6 +86,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		String action = request.getParameter("actionType");
 		String endPointName = request.getParameter("endpoint_id");
 		String downloadType = request.getParameter("type");
+		String source = request.getParameter("source");
 		String downloadFilePath = null;
 
 		if(action == null && endPointName == null) {
@@ -156,6 +158,15 @@ public class HpcDownloadController extends AbstractHpcController {
 		model.addAttribute("downloadFilePath", downloadFilePath);
 		model.addAttribute("downloadType", downloadType);
 
+		HpcSearch hpcSearch = (HpcSearch)session.getAttribute("hpcSearch");
+		if(hpcSearch != null)
+			hpcSearch.setSearchType(downloadType);
+		else
+			hpcSearch = new HpcSearch();
+		model.addAttribute("hpcSearch", hpcSearch);
+		session.setAttribute("hpcSearch", hpcSearch);
+		model.addAttribute("source", source);
+		
 		return "download";
 	}
 
