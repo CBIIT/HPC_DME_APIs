@@ -133,7 +133,7 @@
 								    <div class="col-sm-12 column">
 								        Enter Endpoint UUID and Destination Path in the fields below or click
 											<a id="downloadlink" 
-                                            th:href="@{../download(type=${downloadType},actionType=Globus,downloadFilePath=${downloadFilePath})}">
+                                            th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">
                                             here </a>to obtain these from Globus.<br/><br/>
 										<input type="hidden" name="actionType" id="actionType" />
 									
