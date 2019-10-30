@@ -813,7 +813,8 @@ public class HpcSubscribeNotificationsController extends
     List<HpcEventType> types = getEventTypes();
     for (HpcEventType type : types) {
       if (type.equals(HpcEventType.USAGE_SUMMARY_BY_WEEKLY_REPORT)
-              || (type.equals(HpcEventType.USAGE_SUMMARY_REPORT)
+              || ((type.equals(HpcEventType.USAGE_SUMMARY_REPORT)
+            		|| type.equals(HpcEventType.DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE))
           && !HpcIdentityUtil.isUserSystemAdmin(session)))
         continue;
       HpcNotificationSubscription subscription = getNotificationSubscription(
