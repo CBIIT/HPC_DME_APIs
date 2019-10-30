@@ -99,6 +99,7 @@ public class HpcDownloadController extends AbstractHpcController {
 				downloadFilePath = request.getParameter("downloadFilePath");
 			}
 			session.removeAttribute("downloadType");
+			session.removeAttribute("downloadSource");
 			session.removeAttribute("downloadFilePath");
 		}
 
@@ -127,7 +128,7 @@ public class HpcDownloadController extends AbstractHpcController {
 		if (action != null && action.equals("Globus")) {
 
 			session.setAttribute("downloadType", downloadType);
-
+			session.setAttribute("downloadSource", source);
 			downloadFilePath = request.getParameter("downloadFilePath");
 			session.setAttribute("downloadFilePath", downloadFilePath);
 
@@ -153,6 +154,7 @@ public class HpcDownloadController extends AbstractHpcController {
 
 			downloadFilePath = (String)session.getAttribute("downloadFilePath");
 			downloadType = (String)session.getAttribute("downloadType");
+			source = (String)session.getAttribute("downloadSource");
 		}
 
 		model.addAttribute("downloadFilePath", downloadFilePath);
