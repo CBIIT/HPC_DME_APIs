@@ -142,24 +142,27 @@
 								<div class="form-group">
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchTypeSync" value="async"
-										onChange="display(this)"/>Asynchronous (Globus)</label>
+										name="searchType" id="searchTypeAsync" value="async"
+										onChange="display('async')"/>Asynchronous (Globus)</label>
 										</div>
 										
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchTypeS3" value="s3"
-										onChange="display(this)"/>Asynchronous (S3)</label>
+										onChange="display('s3')"/>Asynchronous (S3)</label>
 										</div>
 								</div>
 								<div class="form-group" id="AsyncDiv" style="display: none">
-									<div class="col-sm-12 column">
-										<label for="endPointName">Globus Endpoint UUID:</label> 
-										<a id="downloadlink" 
+								    <div class="col-sm-12 column">
+								        Enter Endpoint UUID and Destination Path in the fields below or click
+											<a id="downloadlink"
                                             th:href="@{../downloadfiles}">
-                                            Select Globus Endpoint UUID and Destination Path</a>
+                                            here </a>to obtain these from Globus.<br/><br/>
 										<input type="hidden" name="actionType" id="actionType" />
-										<input
+									</div>
+									<div class="col-sm-12 column">
+										<label for="endPointName">Globus Endpoint UUID:</label>
+						                <input
 											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
 											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
 									</div>
@@ -221,6 +224,8 @@
 						th:value="${hpcDownloadDatafile.downloadType}" />
 					<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 						th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
+					<input type="hidden" name="transferType" id="transferType"
+						th:value="${transferType}" />
 				</div>
 			</div>
 		</form>
@@ -313,6 +318,14 @@
 			}
 		}
 
+		 $(document).ready(function(){
+	        if($('#transferType').val() == 'globus') {
+	            $("#searchTypeAsync").prop("checked", true);
+	            display('async');
+		    }
+		});
+
+
 		function goBack()
 		{
 			if(searchType == "search")
@@ -362,12 +375,12 @@
 		});
 
 		var toggle = true;
-		function display(ele) {
+		function display(value) {
 			var asyncDiv = document.getElementById("AsyncDiv");
 			var s3Div = document.getElementById("s3Div");
 			var asyncTextDiv = document.getElementById("AsyncTextDiv");
 			var s3TextDiv = document.getElementById("s3TextDiv");
-			if (ele.value == "async") {
+			if (value == "async") {
 				asyncDiv.style.display = "block";
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "block";
