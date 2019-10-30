@@ -116,7 +116,9 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 			session.setAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
 
-			HpcSearch hpcSearch = new HpcSearch();
+			HpcSearch hpcSearch = (HpcSearch)session.getAttribute("hpcSearch");
+			if(hpcSearch == null)
+				hpcSearch = new HpcSearch();
 			String pageNumber = request.getParameter("pageNumber");
 			hpcSearch.setPageNumber(pageNumber != null ? Integer.parseInt(pageNumber) : 1);
 			String pageSize = request.getParameter("pageSize");
