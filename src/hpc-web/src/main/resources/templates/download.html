@@ -83,14 +83,16 @@
 
 
 			<div class="pull-center" th:if="${downloadType == 'datafile'}">
-			  <p>You may download selected data file either synchronously to your computer or asynchronously to Globus endpoint location.</p>
+			  <p>You may download the selected data file either synchronously to your computer or asynchronously to Globus endpoint location or an S3 bucket.</p>
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
-        <p>You will asynchronously download selected collection to Globus endpoint location.  At targeted Globus endpoint, a new directory will be created under the specified directory.</p>
-
-			</div>
+              <p>You will asynchronously download selected collection to Globus endpoint location or an S3 bucket.  At targeted Globus endpoint or S3 bucket, a new directory will be created under the specified directory.</p>    
+            </div>
       <div id="globus-help-links" style="display: none;">
 				Please grant write access of targeted Globus endpoint to appropriate HPC DME Globus Group.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
+      </div>
+      <div id="s3-help-links" style="display: none;">
+				Please set up proper permissions for the S3 bucket.  Click <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">here</a> for instructions.
       </div>
 			<div class="panel panel-default">
 				<div class="panel-body">
@@ -114,29 +116,39 @@
 										<div class="pull-left" th:if="${downloadType == 'datafile'}">
 										<label
 										class="radio-inline"><input type="radio"
-										id="searchType" name="searchType" value="sync"
-										onChange="display('sync')" checked="chekced" />Synchronous</label>
+										id="searchType" name="searchTypeSync" value="sync"
+										onChange="display('sync')" checked="checked" />Synchronous</label>
 										</div>
-
-										<div class="pull-left">
+										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
-										name="searchType" id="searchType" value="async"
-										onChange="display('async')"/>Asynchronous</label>
+										name="searchType" id="searchTypeAsync" value="async"
+										onChange="display('async')"/>Asynchronous (Globus)</label>
+										</div>
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="searchType" id="searchType" value="s3"
+										onChange="display('s3')"/>Asynchronous (S3)</label>
 										</div>
 								</div>
+		                        
 								<div class="form-group" id="AsyncDiv" style="display: none">
+								    <div class="col-sm-12 column">
+								        Enter Endpoint UUID and Destination Path in the fields below or click
+											<a id="downloadlink" 
+                                            th:href="@{../download(type=${downloadType},actionType=Globus,downloadFilePath=${downloadFilePath})}">
+                                            here </a>to obtain these from Globus.<br/><br/>
+										<input type="hidden" name="actionType" id="actionType" />
+									
+									</div>
 									<div class="col-sm-12 column">
 										<label for="endPointName">Globus Endpoint UUID:</label>
-											<a id="downloadlink" 
-                                            th:href="@{../download(type=datafile,actionType=Globus,downloadFilePath=${downloadFilePath})}">
-                                            Select Globus Endpoint UUID and Destination Path</a>
-										<input type="hidden" name="actionType" id="actionType" />
-										<input
+						                <input
 											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
 											id="endPointName" placeholder="Enter Globus Endpoint name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="endPointLocation">Globus Endpoint (Destination) Path :</label> <input
+										<label for="endPointLocation">Globus Endpoint (Destination) Path:</label> 
+										<input
 											type="text" class="form-control"
 											th:value="${endPointLocation}"
 											name="endPointLocation" id="endPointLocation"
@@ -146,12 +158,50 @@
 
 								<div class="form-group" id="SyncDiv" style="display: show" th:if="${downloadType == 'datafile'}">
 									<div class="col-sm-12 column">
-										<label for="downloadFileName">Download file name:</label> <input
+										<label for="downloadFileName">Download File name:</label> <input
 											type="text" class="form-control"
 											id="downloadFileName" size="45" name="downloadFileName" th:value="${downloadFilePathName}"
 											placeholder="Enter Download file name" />
 									</div>
 								</div>
+								
+								<div class="form-group" id="s3Div" style="display: none">
+									<div class="col-sm-12 column">
+										<label for="bucketName">S3 Bucket:</label>
+										<input
+											type="text" class="form-control" name="bucketName" th:value="${bucketName}"
+											id="bucketName" placeholder="Enter S3 Bucket Name" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="s3Path">S3 (Destination) Path:</label> <input
+											type="text" class="form-control"
+											th:value="${s3Path}"
+											name="s3Path" id="s3Path"
+											placeholder="Enter S3 (Destination) Path" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="accessKey">Access Key:</label> <input
+											type="text" class="form-control"
+											th:value="${accessKey}"
+											name="accessKey" id="accessKey"
+											placeholder="Enter Access Key" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="secretKey">Secret Access Key:</label> <input
+											type="password" class="form-control"
+											th:value="${secretKey}"
+											name="secretKey" id="secretKey"
+											placeholder="Enter Secret Access Key" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="region">Region:</label> <input
+											type="text" class="form-control"
+											th:value="${region}"
+											name="region" id="region"
+											placeholder="Enter Region (for Example us-east-1)" size="40" />
+									</div>
+								</div>
+								
 								<div>
 									<button class="btn btn-primary" id="submit"
 										onClick="return validateAndSubmit()">Download</button>
@@ -218,6 +268,26 @@
 					alert("Please enter asynchronous download values");
 					return false;
 				}
+			} else if (radioValue == 's3') {
+				var bucketName = document.getElementById("bucketName").value;
+				var s3Path = document
+						.getElementById("s3Path").value;
+				var accessKey = document.getElementById("accessKey").value;
+				var secretKey = document.getElementById("secretKey").value;
+				var region = document.getElementById("region").value;
+				if (s3Path == null
+						|| s3Path.trim().length == 0
+						|| bucketName == null
+						|| bucketName.trim().length == 0
+						|| accessKey == null
+						|| accessKey.trim().length == 0
+						|| secretKey == null
+						|| secretKey.trim().length == 0
+						|| region == null
+						|| region.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
 			} else {
 				var downloadFileName = document
 						.getElementById("downloadFileName").value;
@@ -248,8 +318,9 @@
 
 
 	    $(document).ready(function(){
-            if($('#transferType').val() == 'async') {
-                $('input:radio[name=searchType]')[1].checked = true;
+            if($('#transferType').val() == 'globus') {
+            	$("#searchTypeAsync").prop("checked", true); 
+                //$('input:radio[name=searchType][value=async]').checked = true;
                 display('async');
 	        }
 	    });
@@ -271,7 +342,7 @@
 								e.preventDefault();
 								
 								var radioValue = document.querySelector('input[name="searchType"]:checked').value
-								if (radioValue == 'async') {
+								if (radioValue == 'async' || radioValue == 's3') {
 									$("#wait")
 											.html(
 													'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
@@ -309,15 +380,30 @@
 		function display(value) {
 			var asyncDiv = document.getElementById("AsyncDiv");
 			var globusHelpLinksDiv = document.getElementById("globus-help-links");
+			var s3HelpLinksDiv = document.getElementById("s3-help-links");
 			var syncDiv = document.getElementById("SyncDiv");
+			var s3Div = document.getElementById("s3Div");
 			if (value == "async") {
 				asyncDiv.style.display = "block";
 				globusHelpLinksDiv.style.display = "block";
-				syncDiv.style.display = "none";
-			} else {
-				syncDiv.style.display = "block";
+				if(syncDiv)
+					syncDiv.style.display = "none";
+				s3Div.style.display = "none";
+				s3HelpLinksDiv.style.display = "none";
+			} else if (value == "sync") {
+				if(syncDiv)
+					syncDiv.style.display = "block";
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
+				s3Div.style.display = "none";
+				s3HelpLinksDiv.style.display = "none";
+			} else {
+				if(syncDiv)
+					syncDiv.style.display = "none";
+				asyncDiv.style.display = "none";
+				globusHelpLinksDiv.style.display = "none";
+				s3Div.style.display = "block";
+				s3HelpLinksDiv.style.display = "block";
 			}
 		}
 	</script>

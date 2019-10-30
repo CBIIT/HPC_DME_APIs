@@ -9,20 +9,12 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.io.InputStream;
-
-import java.util.ArrayList;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -34,27 +26,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
-import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
-import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.Views;
@@ -76,9 +56,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @EnableAutoConfiguration
 @RequestMapping("/download")
 public class HpcDownloadController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
+	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
 	private String dataObjectServiceURL;
-	@Value("${gov.nih.nci.hpc.server.collection}")
+	@Value("${gov.nih.nci.hpc.server.v2.collection}")
 	private String collectionServiceURL;
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
@@ -111,6 +91,7 @@ public class HpcDownloadController extends AbstractHpcController {
 			//User clicked the download icon on the detail view page
 			if("collection".equals(downloadType)) {
 				model.addAttribute("searchType", "async");
+				model.addAttribute("transferType", "globus");
 				downloadFilePath = request.getParameter("path");
 			} else {
 				downloadFilePath = request.getParameter("downloadFilePath");
@@ -166,7 +147,7 @@ public class HpcDownloadController extends AbstractHpcController {
 			model.addAttribute("endPointName", endPointName);
 			String endPointLocation = request.getParameter("path");
 			model.addAttribute("endPointLocation", endPointLocation);
-			model.addAttribute("transferType", "async");
+			model.addAttribute("transferType", "globus");
 
 			downloadFilePath = (String)session.getAttribute("downloadFilePath");
 			downloadType = (String)session.getAttribute("downloadType");
@@ -212,10 +193,24 @@ public class HpcDownloadController extends AbstractHpcController {
         .getDestinationPath()).encode().toUri().toURL().toExternalForm();
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
+				HpcGlobusDownloadDestination destination = new HpcGlobusDownloadDestination();
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getEndPointName());
 				location.setFileId(downloadFile.getEndPointLocation());
-				dto.setDestination(location);
+				destination.setDestinationLocation(location);
+				dto.setGlobusDownloadDestination(destination);
+			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("s3")) {
+				HpcS3DownloadDestination destination = new HpcS3DownloadDestination();
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getBucketName());
+				location.setFileId(downloadFile.getS3Path());
+				destination.setDestinationLocation(location);
+				HpcS3Account account = new HpcS3Account();
+				account.setAccessKey(downloadFile.getAccessKey());
+				account.setSecretKey(downloadFile.getSecretKey());
+				account.setRegion(downloadFile.getRegion());
+				destination.setAccount(account);
+				dto.setS3DownloadDestination(destination);
 			}
             final String downloadTaskType = "collection".equals(downloadFile.
                     getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :

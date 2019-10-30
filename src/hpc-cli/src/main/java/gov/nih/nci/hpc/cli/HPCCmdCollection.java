@@ -419,26 +419,32 @@ public class HPCCmdCollection extends HPCCmdClient {
 		Response restResponse = client.get();
 		MappingJsonFactory factory = new MappingJsonFactory();
 		
-		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
-		HpcCollectionDTO collectionDto = collections.getCollections().get(0);
-		HpcCollection collection = collectionDto.getCollection();
-		System.out.println(collection.getAbsolutePath());
-		if(CollectionUtils.isNotEmpty(collection.getDataObjects())) {
-			fileCount = fileCount + collection.getDataObjects().size();
-			if(printFilePath) {
-				for(HpcCollectionListingEntry dataObject:collection.getDataObjects()) {
-					System.out.println(dataObject.getPath());
+		if (restResponse.getStatus() == 200) {
+			JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+			HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
+			HpcCollectionDTO collectionDto = collections.getCollections().get(0);
+			HpcCollection collection = collectionDto.getCollection();
+			System.out.println(collection.getAbsolutePath());
+			if(CollectionUtils.isNotEmpty(collection.getDataObjects())) {
+				fileCount = fileCount + collection.getDataObjects().size();
+				if(printFilePath) {
+					for(HpcCollectionListingEntry dataObject:collection.getDataObjects()) {
+						System.out.println(dataObject.getPath());
+					}
 				}
 			}
-		}
-		if(CollectionUtils.isNotEmpty(collection.getSubCollections())) {
-			for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
-				System.out.println(subCollection.getPath());
-				fileCount = fileCount + getDataObjectsPaths(serviceURL, subCollection.getPath(), authToken, printFilePath, fileCount);
+			if(CollectionUtils.isNotEmpty(collection.getSubCollections())) {
+				for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
+					System.out.println(subCollection.getPath());
+					fileCount = fileCount + getDataObjectsPaths(serviceURL, subCollection.getPath(), authToken, printFilePath, fileCount);
+				}
 			}
-		}
-		return fileCount;
+			return fileCount;
+		}  else {
+	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+	        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+	        throw new HpcCmdException("Failed to list the files under: " + path + exception.getMessage());
+	    }
 	
 	}
 
