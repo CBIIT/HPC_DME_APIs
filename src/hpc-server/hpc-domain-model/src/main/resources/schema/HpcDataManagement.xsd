@@ -36,7 +36,7 @@
 	<xsd:complexType name="HpcDataTransferConfiguration">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
-			<xsd:element name="url" type="xsd:string" />
+			<xsd:element name="urlOrRegion" type="xsd:string" />
 			<xsd:element name="archiveProvider"
 				type="hpc-domain-user:HpcIntegratedSystem" />
 			<xsd:element name="baseArchiveDestination"

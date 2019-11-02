@@ -77,7 +77,7 @@ CREATE TABLE public."HPC_S3_ARCHIVE_CONFIGURATION"
   "ID" text PRIMARY KEY,
   "PROVIDER" text NOT NULL,
   "DATA_MANAGEMENT_CONFIGURATION_ID" text NOT NULL,
-  "URL" text NOT NULL,
+  "URL_OR_REGION" text NOT NULL,
   "BUCKET" text NOT NULL,
   "OBJECT_ID" text NOT NULL,
   "UPLOAD_REQUEST_URL_EXPIRATION" integer NOT NULL
@@ -94,8 +94,8 @@ COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."PROVIDER" IS
                   'The S3 Provider - Cleversafe, Cloudian, AWS, etc';
 COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."DATA_MANAGEMENT_CONFIGURATION_ID" IS 
                   'The DM config that own this S3 archive configuration';
-COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."URL" IS 
-                  'The S3 archive URL';
+COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."URL_OR_REGION" IS 
+                  'The S3 archive URL for 3rd Party S3 Provide, or region for AWS';
 COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."BUCKET" IS 
                   'The S3 archive bucket';
 COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."OBJECT_ID" IS 
