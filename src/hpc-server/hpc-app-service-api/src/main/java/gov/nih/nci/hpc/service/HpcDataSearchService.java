@@ -60,7 +60,7 @@ public interface HpcDataSearchService {
   /**
    * Get data object paths by compound metadata query.
    *
-   * @param The path to search in if specified.
+   * @param path The path to search in if specified.
    * @param compoundMetadataQuery The compound metadata query.
    * @param page The requested results page.
    * @param pageSize The page size specified by the user or 0 for default.
@@ -73,7 +73,7 @@ public interface HpcDataSearchService {
   /**
    * Get detailed data object and attributes by compound metadata query.
    * 
-   * @param The path in search in if specified.
+   * @param path The path in search in if specified.
    * @param compoundMetadataQuery The compound metadata query.
    * @param page The requested results page.
    * @param pageSize The page size specified by the user or 0 for default.

@@ -117,7 +117,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     enablePaginationControls: false,
     treeRowHeaderAlwaysVisible: false,
     columnDefs: [
-                 { field: 'taskId', width:300, displayName: 'Task Id', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="uploadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+                 { field: 'taskId', width:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="uploadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
                  { field: 'result', width:200, displayName: 'Transfer Result'},
                  { field: 'created', width:200, displayName : 'Created On' },
                  { field: 'completed', width:200, displayName : 'Completed On'}
@@ -169,10 +169,12 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-laptop"></i> User Tasks
+							<i class="fa fa-share-alt"></i> Manage
 						</h3>
 						<ol class="breadcrumb">
-							<li><i class="fa fa-home"></i><a th:href="@{/tasks}">Tasks</a></li>
+							<li><i class="fa fa-dashboard"></i><a
+										th:href="@{/dashboard}">Dashboard</a></li>
+							<li><i class="fa fa-list-alt red"></i>Upload Tasks</li>
 						</ol>
 					</div>
 				</div>

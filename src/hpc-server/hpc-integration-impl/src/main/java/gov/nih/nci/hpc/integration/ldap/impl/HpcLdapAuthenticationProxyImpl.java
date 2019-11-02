@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.integration.ldap.impl;
 
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy;
 
@@ -10,6 +11,7 @@ import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
@@ -49,6 +51,12 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 	// User ID filter.
 	String userIdFilter = null;
 	
+	// Last Name filter.
+	String lastNameFilter = null;
+	
+	// First Name filter.
+	String firstNameFilter = null;
+	
 	//User domain name
 	String userDomainName = null;
 	
@@ -69,9 +77,12 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
      * @param base The LDAP search base.
      * @param userIdFilter The user ID filter.
      * @param userDomainName The user domain name.
+     * @param lastNameFilter The last name filter.
+     * @param firstNameFilter The first name filter.
      */
 	private HpcLdapAuthenticationProxyImpl(String url, String username, String password,
-			                               String base, String userIdFilter, String userDomainName) 
+			                               String base, String userIdFilter, String userDomainName,
+			                               String lastNameFilter, String firstNameFilter) 
     {
 		environment.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT);
 		environment.put(Context.PROVIDER_URL, url);
@@ -83,6 +94,8 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 		this.base = base;
 		this.userIdFilter = userIdFilter;
 		this.userDomainName = userDomainName;
+		this.lastNameFilter = lastNameFilter;
+		this.firstNameFilter = firstNameFilter;
     }
 	
     /**
@@ -138,6 +151,50 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 		}
 	}
     
+
+	@Override
+	public HpcNciAccount getUserFirstLastName(String userName) throws HpcException {
+		
+		String[] attributeIDs = { lastNameFilter, firstNameFilter }; 
+		String searchFilter = "(" + userIdFilter + "=" + userName + ")";
+
+		DirContext dirContext = null;
+		try	{
+			 dirContext = new InitialDirContext(environment);
+		
+		} catch(NamingException ne) {
+			    throw new HpcException("Error occured in connecting to the directory server", 
+			    		               HpcErrorType.LDAP_ERROR, HpcIntegratedSystem.LDAP, ne);
+		}
+		
+		SearchControls searchControls = new SearchControls();
+		searchControls.setReturningAttributes(attributeIDs);
+		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		try {		 
+			 NamingEnumeration<SearchResult> searchEnum = 
+					                         dirContext.search(base, searchFilter, searchControls);
+			 HpcNciAccount account = null;
+			 if(searchEnum.hasMore()) {
+				 account = new HpcNciAccount();
+				 Attributes attrs = searchEnum.next().getAttributes();
+				 account.setLastName(attrs.get(lastNameFilter).toString().substring(lastNameFilter.length() + 1).trim());
+				 account.setFirstName(attrs.get(firstNameFilter).toString().substring(firstNameFilter.length() + 1).trim());
+			 }
+			 return account;
+
+		} catch(NamingException ne) {
+				throw new HpcException("User name not found: " + userName, ne);
+			    
+		} finally {
+			       try {
+			            dirContext.close();
+			            
+			       } catch(NamingException ne) {
+					       logger.error("Failed to close LDAP context", ne);
+			       }
+		}
+	}
+	
     //---------------------------------------------------------------------//
     // Helper Methods
     //---------------------------------------------------------------------//  

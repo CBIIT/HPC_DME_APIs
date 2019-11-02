@@ -121,7 +121,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     try {
       users =
           securityBusService.getUsers(
-              nciUserId, firstNamePattern, lastNamePattern, doc, defaultBasePath, true);
+              nciUserId, firstNamePattern, lastNamePattern, doc, defaultBasePath, true, false);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -130,6 +130,26 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     return okResponse(!users.getUsers().isEmpty() ? users : null, true);
   }
 
+  @Override
+  public Response queryUsers(
+      String nciUserId,
+      String firstNamePattern,
+      String lastNamePattern,
+      String doc,
+      String defaultBasePath) {
+    HpcUserListDTO users = null;
+    try {
+      users =
+          securityBusService.getUsers(
+        	  nciUserId, firstNamePattern, lastNamePattern, doc, defaultBasePath, true, true);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(!users.getUsers().isEmpty() ? users : null, true);
+  }
+  
   @Override
   public Response getAllUsers(
       String nciUserId,
@@ -141,7 +161,7 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     try {
       users =
           securityBusService.getUsers(
-              nciUserId, firstNamePattern, lastNamePattern, doc, defaultBasePath, false);
+              nciUserId, firstNamePattern, lastNamePattern, doc, defaultBasePath, false, false);
 
     } catch (HpcException e) {
       return errorResponse(e);

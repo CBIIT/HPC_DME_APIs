@@ -50,8 +50,6 @@ public class HpcSpsAuthorizationProxyImpl implements HpcSpsAuthorizationProxy {
 	 * Constructor for spring injection.
 	 * 
 	 * @param url The Authorize SPS URL.
-	 * @param username The account to access the SPS web service.
-	 * @param password The password to access the SPS web service.
 	 * @param resource The SPS web service resource.
 	 * @param domain The basic auth domain.
 	 */

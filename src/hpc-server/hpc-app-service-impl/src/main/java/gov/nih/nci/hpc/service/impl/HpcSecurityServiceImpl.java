@@ -267,8 +267,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
       String lastNamePattern,
       String doc,
       String defaultConfigurationId,
-      boolean active)
+      boolean active,
+      boolean query)
       throws HpcException {
+	if (query)
+		return userDAO.queryUsers(
+		        nciUserId, firstNamePattern, lastNamePattern, doc, defaultConfigurationId, active);
     return userDAO.getUsers(
         nciUserId, firstNamePattern, lastNamePattern, doc, defaultConfigurationId, active);
   }
@@ -466,6 +470,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 	  this.dataManagementConfigurationLocator.reload();
   }
 
+  @Override
+  public HpcNciAccount getUserFirstLastNameFromAD(String username) throws HpcException {
+	  
+  	return ldapAuthenticationProxy.getUserFirstLastName(username);
+  }
+  
   //---------------------------------------------------------------------//
   // Helper Methods
   //---------------------------------------------------------------------//

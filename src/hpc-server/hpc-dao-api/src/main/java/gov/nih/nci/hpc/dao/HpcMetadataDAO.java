@@ -87,7 +87,7 @@ public interface HpcMetadataDAO
      * Get data object Paths by compound metadata query. 
      * Only data object Paths accessible to the user are returned. 
      *
-     * @param path The path to search in if specified.
+     * @param searchPath The path to search in if specified.
      * @param compoundMetadataQuery The compound metadata query.
      * @param dataManagementUsername The Data Management user name. 
      * @param offset Skip that many path in the returned results.
