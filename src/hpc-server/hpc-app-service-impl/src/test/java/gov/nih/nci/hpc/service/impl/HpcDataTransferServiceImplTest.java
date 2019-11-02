@@ -130,7 +130,7 @@ public class HpcDataTransferServiceImplTest {
     HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
     s3UploadSource.setSourceLocation(sourceLocation);
     s3UploadSource.setAccount(s3Account);
-    
+
     HpcDataManagementConfiguration dmc = new HpcDataManagementConfiguration();
     dmc.setS3UploadConfigurationId("S3_CONFIG_ID");
 
@@ -202,7 +202,8 @@ public class HpcDataTransferServiceImplTest {
         anyObject(), anyObject())).thenReturn(new HpcDataTransferConfiguration());
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
         .thenReturn(new HpcIntegratedSystemAccount());
-    when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+    when(systemAccountLocatorMock.getSystemAccount(anyObject()))
+        .thenReturn(new HpcIntegratedSystemAccount());
     when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
     when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject()))
         .thenReturn("https://downloadURL");
@@ -272,6 +273,8 @@ public class HpcDataTransferServiceImplTest {
         anyObject(), anyObject())).thenReturn(dataTransferConfig);
 
     when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+        .thenReturn(new HpcIntegratedSystemAccount());
+    when(systemAccountLocatorMock.getSystemAccount(anyObject()))
         .thenReturn(new HpcIntegratedSystemAccount());
     when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
 
