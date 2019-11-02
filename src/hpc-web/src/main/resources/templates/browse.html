@@ -131,7 +131,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-dashboard"></i> Dashboard
+							<i class="fa fa-folder"></i> Browse
 						</h3>
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
@@ -264,6 +264,8 @@ $(function() {
                     $('#tree1').tree('selectNode', node);
                 }
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
+            } else {
+            	menuAPI.disable(node.name, ['addCollection','addDatafile','addBulk','refreshNode']);
             }
         }
     });
@@ -413,7 +415,7 @@ function refreshBookmarks(userBookmarks) {
 }
 
 
-$('#tree1').jqTreeContextMenu($('#myMenu'), {
+var menuAPI = $('#tree1').jqTreeContextMenu($('#myMenu'), {
     "viewDetails": function (node) {
     	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
     	                     percentEncodePath(node.fullPath) + "&source=browse&init";

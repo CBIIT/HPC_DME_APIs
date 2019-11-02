@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.integration;
 
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -31,4 +32,13 @@ public interface HpcLdapAuthenticationProxy
      * @throws HpcException on LDAP failure.
      */
 	public boolean authenticate(String userName, String password) throws HpcException;
+	
+	/** 
+     * Get user's first and last name. 
+     * 
+     * @param userName The user name.
+     * @return The user's first and last name.
+     * @throws HpcException on LDAP failure.
+     */
+	public HpcNciAccount getUserFirstLastName(String userName) throws HpcException;
 }

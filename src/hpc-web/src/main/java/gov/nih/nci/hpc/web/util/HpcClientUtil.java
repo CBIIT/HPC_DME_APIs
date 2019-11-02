@@ -16,7 +16,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermissionForCollection;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
@@ -32,7 +32,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
@@ -1522,47 +1522,6 @@ public class HpcClientUtil {
 
   public static HpcBulkDataObjectDownloadResponseDTO downloadFiles(String token, String hpcQueryURL,
       HpcBulkDataObjectDownloadRequestDTO dto, String hpcCertPath, String hpcCertPassword) {
-    HpcBulkDataObjectDownloadResponseDTO response = null;
-    try {
-      WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);
-      client.header("Authorization", "Bearer " + token);
-      Response restResponse = client.invoke("POST", dto);
-      if (restResponse.getStatus() == 200) {
-        ObjectMapper mapper = new ObjectMapper();
-        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-            new JacksonAnnotationIntrospector());
-        mapper.setAnnotationIntrospector(intr);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        MappingJsonFactory factory = new MappingJsonFactory(mapper);
-        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-        response = parser.readValueAs(HpcBulkDataObjectDownloadResponseDTO.class);
-      } else {
-        ObjectMapper mapper = new ObjectMapper();
-        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-            new JacksonAnnotationIntrospector());
-        mapper.setAnnotationIntrospector(intr);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        MappingJsonFactory factory = new MappingJsonFactory(mapper);
-        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-
-        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        throw new HpcWebException("Failed to submit download request: " + exception.getMessage());
-      }
-    } catch (HpcWebException e) {
-      throw e;
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to submit download request: " + e.getMessage());
-    }
-    return response;
-  }
-
-  public static HpcBulkDataObjectDownloadResponseDTO downloadFiles(String token, String hpcQueryURL,
-      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO dto, String hpcCertPath, String hpcCertPassword) {
     HpcBulkDataObjectDownloadResponseDTO response = null;
     try {
       WebClient client = HpcClientUtil.getWebClient(hpcQueryURL, hpcCertPath, hpcCertPassword);

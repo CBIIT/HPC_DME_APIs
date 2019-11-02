@@ -427,6 +427,19 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 
 		return types;
 	}
+	
+	private boolean isDataObjectContainer(String collectionType, HpcDataHierarchy dataHierarchy) {
+		if (dataHierarchy == null)
+			return true;
+		if (dataHierarchy.getCollectionType().equals(collectionType))
+			return dataHierarchy.getIsDataObjectContainer();
+		else {
+			List<HpcDataHierarchy> subs = dataHierarchy.getSubCollectionsHierarchies();
+			for (HpcDataHierarchy sub : subs)
+				return isDataObjectContainer(collectionType, sub);
+		}
+		return false;
+	}
 
 	protected void populateFormAttributes(HttpServletRequest request, HttpSession session,
 			Model model, String basePath, String collectionType, boolean refresh, boolean datafile) {
@@ -441,8 +454,14 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<HpcMetadataValidationRule> rules = null;
 		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		if (basePathRules != null) {
-			if (datafile)
+			HpcDataHierarchy dataHierarchy = basePathRules.getDataHierarchy();
+			if(dataHierarchy != null)
+				model.addAttribute("hasHierarchy", true);
+			if (datafile) {
+				if(!refresh && !isDataObjectContainer(collectionType, dataHierarchy))
+					throw new HpcWebException("Adding a data file is not allowed under collection type: " + collectionType);
 				rules = basePathRules.getDataObjectMetadataValidationRules();
+			}
 			else
 				rules = basePathRules.getCollectionMetadataValidationRules();
 		}

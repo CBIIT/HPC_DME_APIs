@@ -434,7 +434,7 @@ public class HpcIRODSConnection {
    * @param authScheme The iRODS authentication scheme (PAM or STANDARD).
    * @return An iRODS account.
    * @throws JargonException on iRODS failure.
-   * @throws NoSuchAlgorithmException
+   * @throws NoSuchAlgorithmException if algorithm is not supported.
    */
   private IRODSAccount toAuthenticatedIrodsAccount(
       HpcIntegratedSystemAccount dataManagementAccount, AuthScheme authScheme)
@@ -525,7 +525,7 @@ public class HpcIRODSConnection {
    * 
    * @param user the username
    * @return user key
-   * @throws NoSuchAlgorithmException
+   * @throws NoSuchAlgorithmException if algorithm is not supported
    */
   String getUserKey(String user) throws NoSuchAlgorithmException {
     MessageDigest digest = MessageDigest.getInstance(algorithm);
