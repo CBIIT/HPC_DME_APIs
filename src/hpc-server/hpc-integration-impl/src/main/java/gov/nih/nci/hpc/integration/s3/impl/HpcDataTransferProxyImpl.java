@@ -71,12 +71,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // ---------------------------------------------------------------------//
 
   // The S3 connection instance.
-  @Autowired private HpcS3Connection s3Connection = null;
+  @Autowired
+  private HpcS3Connection s3Connection = null;
 
   // The S3 download executor.
-  @Autowired Executor s3Executor = null;
+  @Autowired
+  Executor s3Executor = null;
 
-  //Date formatter to format files last-modified date
+  // Date formatter to format files last-modified date
   private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
   // The logger instance.
@@ -98,9 +100,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // ---------------------------------------------------------------------//
 
   @Override
-  public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String url)
+  public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String urlOrRegion)
       throws HpcException {
-    return s3Connection.authenticate(dataTransferAccount, url);
+    return s3Connection.authenticate(dataTransferAccount, urlOrRegion);
   }
 
   @Override
@@ -109,93 +111,60 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public HpcDataObjectUploadResponse uploadDataObject(
-      Object authenticatedToken,
-      HpcDataObjectUploadRequest uploadRequest,
-      HpcArchive baseArchiveDestination,
-      Integer uploadRequestURLExpiration,
-      HpcDataTransferProgressListener progressListener)
+  public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
+      HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
+      Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener)
       throws HpcException {
     if (uploadRequest.getGlobusUploadSource() != null) {
       throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
     }
 
     // Calculate the archive destination.
-    HpcFileLocation archiveDestinationLocation =
-        getArchiveDestinationLocation(
-            baseArchiveDestination.getFileLocation(),
-            uploadRequest.getPath(),
-            uploadRequest.getCallerObjectId(),
-            baseArchiveDestination.getType(),
-            false);
+    HpcFileLocation archiveDestinationLocation = getArchiveDestinationLocation(
+        baseArchiveDestination.getFileLocation(), uploadRequest.getPath(),
+        uploadRequest.getCallerObjectId(), baseArchiveDestination.getType(), false);
 
     // If the archive destination file exists, generate a new archive destination w/ unique path.
     if (getPathAttributes(authenticatedToken, archiveDestinationLocation, false).getExists()) {
-      archiveDestinationLocation =
-          getArchiveDestinationLocation(
-              baseArchiveDestination.getFileLocation(),
-              uploadRequest.getPath(),
-              uploadRequest.getCallerObjectId(),
-              baseArchiveDestination.getType(),
-              true);
+      archiveDestinationLocation = getArchiveDestinationLocation(
+          baseArchiveDestination.getFileLocation(), uploadRequest.getPath(),
+          uploadRequest.getCallerObjectId(), baseArchiveDestination.getType(), true);
     }
 
     if (uploadRequest.getGenerateUploadRequestURL()) {
       // Generate an upload request URL for the caller to use to upload directly.
-      return generateUploadRequestURL(
-          authenticatedToken,
-          archiveDestinationLocation,
-          uploadRequestURLExpiration,
-          uploadRequest.getUploadRequestURLChecksum());
+      return generateUploadRequestURL(authenticatedToken, archiveDestinationLocation,
+          uploadRequestURLExpiration, uploadRequest.getUploadRequestURLChecksum());
 
     } else if (uploadRequest.getSourceFile() != null) {
       // Upload a file
-      return uploadDataObject(
-          authenticatedToken,
-          uploadRequest.getSourceFile(),
-          archiveDestinationLocation,
-          progressListener,
-          baseArchiveDestination.getType());
+      return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(),
+          archiveDestinationLocation, progressListener, baseArchiveDestination.getType());
     } else {
       // Upload from AWS S3 source.
-      return uploadDataObject(
-          authenticatedToken,
-          uploadRequest.getS3UploadSource(),
-          archiveDestinationLocation,
-          uploadRequest.getSourceSize(),
-          progressListener);
+      return uploadDataObject(authenticatedToken, uploadRequest.getS3UploadSource(),
+          archiveDestinationLocation, uploadRequest.getSourceSize(), progressListener);
     }
   }
 
   @Override
-  public String downloadDataObject(
-      Object authenticatedToken,
-      HpcDataObjectDownloadRequest downloadRequest,
-      HpcArchive baseArchiveDestination,
-      HpcDataTransferProgressListener progressListener)
-      throws HpcException {
+  public String downloadDataObject(Object authenticatedToken,
+      HpcDataObjectDownloadRequest downloadRequest, HpcArchive baseArchiveDestination,
+      HpcDataTransferProgressListener progressListener) throws HpcException {
     if (downloadRequest.getFileDestination() != null) {
       // This is a download request to a local file.
-      return downloadDataObject(
-          authenticatedToken,
-          downloadRequest.getArchiveLocation(),
-          downloadRequest.getFileDestination(),
-          progressListener);
+      return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
+          downloadRequest.getFileDestination(), progressListener);
     } else {
       // This is a download to AWS S3 destination.
-      return downloadDataObject(
-          authenticatedToken,
-          downloadRequest.getArchiveLocation(),
-          downloadRequest.getS3Destination(),
-          progressListener);
+      return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
+          downloadRequest.getS3Destination(), progressListener);
     }
   }
 
   @Override
-  public String generateDownloadRequestURL(
-      Object authenticatedToken,
-      HpcFileLocation archiveSourceLocation,
-      Integer downloadRequestURLExpiration)
+  public String generateDownloadRequestURL(Object authenticatedToken,
+      HpcFileLocation archiveSourceLocation, Integer downloadRequestURLExpiration)
       throws HpcException {
 
     // Calculate the URL expiration date.
@@ -204,105 +173,71 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     // Create a URL generation request.
     GeneratePresignedUrlRequest generatePresignedUrlRequest =
-        new GeneratePresignedUrlRequest(
-                archiveSourceLocation.getFileContainerId(), archiveSourceLocation.getFileId())
-            .withMethod(HttpMethod.GET)
-            .withExpiration(expiration);
+        new GeneratePresignedUrlRequest(archiveSourceLocation.getFileContainerId(),
+            archiveSourceLocation.getFileId()).withMethod(HttpMethod.GET)
+                .withExpiration(expiration);
 
     // Generate the pre-signed URL.
-    URL url =
-        s3Connection
-            .getTransferManager(authenticatedToken)
-            .getAmazonS3Client()
-            .generatePresignedUrl(generatePresignedUrlRequest);
+    URL url = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+        .generatePresignedUrl(generatePresignedUrlRequest);
 
     return url.toString();
   }
 
   @Override
-  public String copyDataObject(
-      Object authenticatedToken,
-      HpcFileLocation sourceFile,
-      HpcFileLocation destinationFile,
-      HpcArchive baseArchiveDestination,
-      List<HpcMetadataEntry> metadataEntries)
-      throws HpcException {
+  public String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
+      HpcFileLocation destinationFile, HpcArchive baseArchiveDestination,
+      List<HpcMetadataEntry> metadataEntries) throws HpcException {
 
     // Create a S3 update request w/ new metadata. Copy the file to itself.
-    CopyObjectRequest copyRequest =
-        new CopyObjectRequest(
-                sourceFile.getFileContainerId(),
-                sourceFile.getFileId(),
-                destinationFile.getFileContainerId(),
-                destinationFile.getFileId())
+    CopyObjectRequest copyRequest = new CopyObjectRequest(sourceFile.getFileContainerId(),
+        sourceFile.getFileId(), destinationFile.getFileContainerId(), destinationFile.getFileId())
             .withNewObjectMetadata(toS3Metadata(metadataEntries));
 
     try {
-      CopyObjectResult copyResult =
-          s3Connection
-              .getTransferManager(authenticatedToken)
-              .getAmazonS3Client()
-              .copyObject(copyRequest);
+      CopyObjectResult copyResult = s3Connection.getTransferManager(authenticatedToken)
+          .getAmazonS3Client().copyObject(copyRequest);
       return copyResult != null ? copyResult.getETag() : null;
 
     } catch (AmazonServiceException ase) {
-      throw new HpcException(
-          "[S3] Failed to copy file: " + copyRequest,
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
-          ase);
+      throw new HpcException("[S3] Failed to copy file: " + copyRequest,
+          HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ase);
 
     } catch (AmazonClientException ace) {
-      throw new HpcException(
-          "[S3] Failed to copy file: " + copyRequest,
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
-          ace);
+      throw new HpcException("[S3] Failed to copy file: " + copyRequest,
+          HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
     }
   }
 
   @Override
-  public void deleteDataObject(
-      Object authenticatedToken, HpcFileLocation fileLocation, HpcArchive baseArchiveDestination)
-      throws HpcException {
+  public void deleteDataObject(Object authenticatedToken, HpcFileLocation fileLocation,
+      HpcArchive baseArchiveDestination) throws HpcException {
     // Create a S3 delete request.
     DeleteObjectRequest deleteRequest =
         new DeleteObjectRequest(fileLocation.getFileContainerId(), fileLocation.getFileId());
     try {
-      s3Connection
-          .getTransferManager(authenticatedToken)
-          .getAmazonS3Client()
+      s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
           .deleteObject(deleteRequest);
 
     } catch (AmazonServiceException ase) {
-      throw new HpcException(
-          "[S3] Failed to delete file: " + deleteRequest,
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
-          ase);
+      throw new HpcException("[S3] Failed to delete file: " + deleteRequest,
+          HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ase);
 
     } catch (AmazonClientException ace) {
-      throw new HpcException(
-          "[S3] Failed to delete file: " + deleteRequest,
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
-          ace);
+      throw new HpcException("[S3] Failed to delete file: " + deleteRequest,
+          HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
     }
   }
 
   @Override
-  public HpcPathAttributes getPathAttributes(
-      Object authenticatedToken, HpcFileLocation fileLocation, boolean getSize)
-      throws HpcException {
+  public HpcPathAttributes getPathAttributes(Object authenticatedToken,
+      HpcFileLocation fileLocation, boolean getSize) throws HpcException {
     HpcPathAttributes pathAttributes = new HpcPathAttributes();
     GetObjectMetadataRequest request = null;
 
     try {
-      boolean fileExists =
-          s3Connection
-              .getTransferManager(authenticatedToken)
-              .getAmazonS3Client()
-              .doesObjectExist(fileLocation.getFileContainerId(), fileLocation.getFileId());
+      boolean fileExists = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+          .doesObjectExist(fileLocation.getFileContainerId(), fileLocation.getFileId());
 
       pathAttributes.setIsAccessible(true);
 
@@ -315,17 +250,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         pathAttributes.setIsFile(false);
 
         // Check if this is a directory.
-        ListObjectsV2Request listObjectsRequest =
-            new ListObjectsV2Request()
-                .withBucketName(fileLocation.getFileContainerId())
-                .withPrefix(fileLocation.getFileId());
-        boolean directoryExists =
-            s3Connection
-                    .getTransferManager(authenticatedToken)
-                    .getAmazonS3Client()
-                    .listObjectsV2(listObjectsRequest)
-                    .getKeyCount()
-                > 0;
+        ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
+            .withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId());
+        boolean directoryExists = s3Connection.getTransferManager(authenticatedToken)
+            .getAmazonS3Client().listObjectsV2(listObjectsRequest).getKeyCount() > 0;
         pathAttributes.setIsDirectory(directoryExists);
         pathAttributes.setExists(directoryExists);
       }
@@ -333,78 +261,59 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       // Optionally get the file size. We currently don't support getting file size for a directory.
       if (getSize && fileExists) {
         // Create a S3 metadata request.
-        request =
-            new GetObjectMetadataRequest(
-                fileLocation.getFileContainerId(), fileLocation.getFileId());
-        pathAttributes.setSize(
-            s3Connection
-                .getTransferManager(authenticatedToken)
-                .getAmazonS3Client()
-                .getObjectMetadata(request)
-                .getContentLength());
+        request = new GetObjectMetadataRequest(fileLocation.getFileContainerId(),
+            fileLocation.getFileId());
+        pathAttributes.setSize(s3Connection.getTransferManager(authenticatedToken)
+            .getAmazonS3Client().getObjectMetadata(request).getContentLength());
       }
 
     } catch (AmazonServiceException ase) {
       if (ase.getStatusCode() == 403) {
         pathAttributes.setIsAccessible(false);
       } else {
-        throw new HpcException(
-            "[S3] Failed to get object or metadata: " + ase.getMessage(),
-            HpcErrorType.DATA_TRANSFER_ERROR,
-            ase);
+        throw new HpcException("[S3] Failed to get object or metadata: " + ase.getMessage(),
+            HpcErrorType.DATA_TRANSFER_ERROR, ase);
       }
 
     } catch (AmazonClientException ace) {
-      throw new HpcException(
-          "[S3] Failed to get object or metadata: " + ace.getMessage(),
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          ace);
+      throw new HpcException("[S3] Failed to get object or metadata: " + ace.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, ace);
     }
 
     return pathAttributes;
   }
 
   @Override
-  public List<HpcDirectoryScanItem> scanDirectory(
-      Object authenticatedToken, HpcFileLocation directoryLocation) throws HpcException {
+  public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken,
+      HpcFileLocation directoryLocation) throws HpcException {
     List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
 
     try {
       // List all the files and directories (including nested) under this directory.
       ListObjectsV2Request listObjectsRequest =
-          new ListObjectsV2Request()
-              .withBucketName(directoryLocation.getFileContainerId())
+          new ListObjectsV2Request().withBucketName(directoryLocation.getFileContainerId())
               .withPrefix(directoryLocation.getFileId());
-      s3Connection
-          .getTransferManager(authenticatedToken)
-          .getAmazonS3Client()
-          .listObjectsV2(listObjectsRequest)
-          .getObjectSummaries()
-          .forEach(
-              s3ObjectSummary -> {
-                if (s3ObjectSummary.getSize() > 0) {
-                  HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
-                  directoryScanItem.setFilePath(s3ObjectSummary.getKey());
-                  directoryScanItem.setFileName(FilenameUtils.getName(s3ObjectSummary.getKey()));
-                  directoryScanItem.setLastModified(
-                      dateFormat.format(s3ObjectSummary.getLastModified()));
-                  directoryScanItems.add(directoryScanItem);
-                }
-              });
+      s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+          .listObjectsV2(listObjectsRequest).getObjectSummaries().forEach(s3ObjectSummary -> {
+            if (s3ObjectSummary.getSize() > 0) {
+              HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
+              directoryScanItem.setFilePath(s3ObjectSummary.getKey());
+              directoryScanItem.setFileName(FilenameUtils.getName(s3ObjectSummary.getKey()));
+              directoryScanItem
+                  .setLastModified(dateFormat.format(s3ObjectSummary.getLastModified()));
+              directoryScanItems.add(directoryScanItem);
+            }
+          });
 
       return directoryScanItems;
 
     } catch (AmazonServiceException ase) {
-      throw new HpcException(
-          "[S3] Failed to list objects: " + ase.getMessage(),
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          ase);
+      throw new HpcException("[S3] Failed to list objects: " + ase.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, ase);
 
     } catch (AmazonClientException ace) {
-      throw new HpcException(
-          "[S3] Failed to list objects: " + ace.getMessage(),
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          ace);
+      throw new HpcException("[S3] Failed to list objects: " + ace.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, ace);
     }
   }
 
@@ -419,24 +328,17 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param sourceFile The file to upload.
    * @param archiveDestinationLocation The archive destination location.
    * @param progressListener (Optional) a progress listener for async notification on transfer
-   *     completion.
+   *        completion.
    * @param archiveType The archive type.
    * @return A data object upload response.
    * @throws HpcException on data transfer system failure.
    */
-  private HpcDataObjectUploadResponse uploadDataObject(
-      Object authenticatedToken,
-      File sourceFile,
-      HpcFileLocation archiveDestinationLocation,
-      HpcDataTransferProgressListener progressListener,
-      HpcArchiveType archiveType)
-      throws HpcException {
+  private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken, File sourceFile,
+      HpcFileLocation archiveDestinationLocation, HpcDataTransferProgressListener progressListener,
+      HpcArchiveType archiveType) throws HpcException {
     // Create a S3 upload request.
-    PutObjectRequest request =
-        new PutObjectRequest(
-            archiveDestinationLocation.getFileContainerId(),
-            archiveDestinationLocation.getFileId(),
-            sourceFile);
+    PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
+        archiveDestinationLocation.getFileId(), sourceFile);
 
     // Upload the data.
     Upload s3Upload = null;
@@ -450,21 +352,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         dataTransferCompleted = Calendar.getInstance();
       } else {
         // Upload asynchronously.
-        s3Upload.addProgressListener(
-            new HpcS3ProgressListener(
-                progressListener,
-                "upload to"
-                    + archiveDestinationLocation.getFileContainerId()
-                    + ":"
-                    + archiveDestinationLocation.getFileId()));
+        s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener,
+            "upload to" + archiveDestinationLocation.getFileContainerId() + ":"
+                + archiveDestinationLocation.getFileId()));
       }
 
     } catch (AmazonClientException ace) {
-      throw new HpcException(
-          "[S3] Failed to upload file.",
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
-          ace);
+      throw new HpcException("[S3] Failed to upload file.", HpcErrorType.DATA_TRANSFER_ERROR,
+          HpcIntegratedSystem.CLEVERSAFE, ace);
 
     } catch (InterruptedException ie) {
       Thread.currentThread().interrupt();
@@ -495,90 +390,76 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param archiveDestinationLocation The archive destination location.
    * @param size the size of the file to upload.
    * @param progressListener (Optional) a progress listener for async notification on transfer
-   *     completion.
+   *        completion.
    * @return A data object upload response.
    * @throws HpcException on data transfer system failure.
    */
-  private HpcDataObjectUploadResponse uploadDataObject(
-      Object authenticatedToken,
-      HpcS3UploadSource s3UploadSource,
-      HpcFileLocation archiveDestinationLocation,
-      Long size,
-      HpcDataTransferProgressListener progressListener)
-      throws HpcException {
+  private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
+      HpcS3UploadSource s3UploadSource, HpcFileLocation archiveDestinationLocation, Long size,
+      HpcDataTransferProgressListener progressListener) throws HpcException {
     if (progressListener == null) {
       throw new HpcException(
           "[S3] No progress listener provided for a upload from AWS S3 destination",
           HpcErrorType.UNEXPECTED_ERROR);
     }
     if (size == null) {
-      throw new HpcException(
-          "[S3] File size not provided for an upload from AWS S3", HpcErrorType.UNEXPECTED_ERROR);
+      throw new HpcException("[S3] File size not provided for an upload from AWS S3",
+          HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    // If not provided, generate a download pre-signed URL for the requested data file from AWS (using the provided S3 account).
-    String sourceURL =
-        StringUtils.isEmpty(s3UploadSource.getSourceURL())
-            ? generateDownloadRequestURL(
-                s3Connection.authenticate(s3UploadSource.getAccount()),
-                s3UploadSource.getSourceLocation(),
-                S3_STREAM_EXPIRATION)
-            : s3UploadSource.getSourceURL();
+    // If not provided, generate a download pre-signed URL for the requested data file from AWS
+    // (using the provided S3 account).
+    String sourceURL = StringUtils.isEmpty(s3UploadSource.getSourceURL())
+        ? generateDownloadRequestURL(s3Connection.authenticate(s3UploadSource.getAccount()),
+            s3UploadSource.getSourceLocation(), S3_STREAM_EXPIRATION)
+        : s3UploadSource.getSourceURL();
 
     Calendar dataTransferStarted = Calendar.getInstance();
-    CompletableFuture<Void> s3TransferManagerUploadFuture =
-        CompletableFuture.runAsync(
-            () -> {
-              try {
-                // Create source URL and open a connection to it.
-                InputStream sourceInputStream = new URL(sourceURL).openStream();
+    CompletableFuture<Void> s3TransferManagerUploadFuture = CompletableFuture.runAsync(() -> {
+      try {
+        // Create source URL and open a connection to it.
+        InputStream sourceInputStream = new URL(sourceURL).openStream();
 
-                // Create a S3 upload request.
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(size);
-                PutObjectRequest request =
-                    new PutObjectRequest(
-                        archiveDestinationLocation.getFileContainerId(),
-                        archiveDestinationLocation.getFileId(),
-                        sourceInputStream,
-                        metadata);
+        // Create a S3 upload request.
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(size);
+        PutObjectRequest request =
+            new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
+                archiveDestinationLocation.getFileId(), sourceInputStream, metadata);
 
-                // Set the read limit on the request to avoid AWSreset exceptions.
-                request.getRequestClientOptions().setReadLimit(getReadLimit(size));
+        // Set the read limit on the request to avoid AWSreset exceptions.
+        request.getRequestClientOptions().setReadLimit(getReadLimit(size));
 
-                // Upload asynchronously. AWS transfer manager will perform the upload in its own managed thread.
-                Upload s3Upload =
-                    s3Connection.getTransferManager(authenticatedToken).upload(request);
+        // Upload asynchronously. AWS transfer manager will perform the upload in its own managed
+        // thread.
+        Upload s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request);
 
-                // Attach a progress listener.
-                String sourceDestinationLogMessage =
-                    "upload from "
-                        + s3UploadSource.getSourceLocation().getFileContainerId()
-                        + ":"
-                        + s3UploadSource.getSourceLocation().getFileId();
-                s3Upload.addProgressListener(
-                    new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
+        // Attach a progress listener.
+        String sourceDestinationLogMessage =
+            "upload from " + s3UploadSource.getSourceLocation().getFileContainerId() + ":"
+                + s3UploadSource.getSourceLocation().getFileId();
+        s3Upload.addProgressListener(
+            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
-                logger.info(
-                    "S3 upload AWS->Cleversafe [{}] started. Source size - {} bytes. Read limit - {}",
-                    sourceDestinationLogMessage,
-                    size,
-                    request.getRequestClientOptions().getReadLimit());
+        logger.info(
+            "S3 upload AWS->Cleversafe [{}] started. Source size - {} bytes. Read limit - {}",
+            sourceDestinationLogMessage, size, request.getRequestClientOptions().getReadLimit());
 
-                // Wait for the result. This ensures the input stream to the URL remains opened and connected until the upload is complete.
-                // Note that this wait for AWS transfer manager completion is done in a separate thread (from s3Executor pool), so callers to
-                // the API don't wait.
-                s3Upload.waitForUploadResult();
+        // Wait for the result. This ensures the input stream to the URL remains opened and
+        // connected until the upload is complete.
+        // Note that this wait for AWS transfer manager completion is done in a separate thread
+        // (from s3Executor pool), so callers to
+        // the API don't wait.
+        s3Upload.waitForUploadResult();
 
-              } catch (AmazonClientException | HpcException | IOException e) {
-                logger.error("[S3] Failed to upload from AWS S3 destination: " + e.getMessage(), e);
-                progressListener.transferFailed(e.getMessage());
+      } catch (AmazonClientException | HpcException | IOException e) {
+        logger.error("[S3] Failed to upload from AWS S3 destination: " + e.getMessage(), e);
+        progressListener.transferFailed(e.getMessage());
 
-              } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-              }
-            },
-            s3Executor);
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+      }
+    }, s3Executor);
 
     // Create and populate the response object.
     HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
@@ -586,8 +467,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
     uploadResponse.setDataTransferStarted(dataTransferStarted);
     uploadResponse.setUploadSource(s3UploadSource.getSourceLocation());
-    uploadResponse.setDataTransferRequestId(
-        String.valueOf(s3TransferManagerUploadFuture.hashCode()));
+    uploadResponse
+        .setDataTransferRequestId(String.valueOf(s3TransferManagerUploadFuture.hashCode()));
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS);
     uploadResponse.setSourceURL(sourceURL);
     uploadResponse.setSourceSize(size);
@@ -602,16 +483,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param archiveDestinationLocation The archive destination location.
    * @param uploadRequestURLExpiration The URL expiration (in hours).
    * @param uploadRequestURLChecksum An optional user provided checksum value to attach to the
-   *     generated url.
+   *        generated url.
    * @return A data object upload response containing the upload request URL.
    * @throws HpcException on data transfer system failure.
    */
-  private HpcDataObjectUploadResponse generateUploadRequestURL(
-      Object authenticatedToken,
-      HpcFileLocation archiveDestinationLocation,
-      int uploadRequestURLExpiration,
-      String uploadRequestURLChecksum)
-      throws HpcException {
+  private HpcDataObjectUploadResponse generateUploadRequestURL(Object authenticatedToken,
+      HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration,
+      String uploadRequestURLChecksum) throws HpcException {
 
     // Calculate the URL expiration date.
     Date expiration = new Date();
@@ -619,11 +497,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     // Create a URL generation request.
     GeneratePresignedUrlRequest generatePresignedUrlRequest =
-        new GeneratePresignedUrlRequest(
-                archiveDestinationLocation.getFileContainerId(),
-                archiveDestinationLocation.getFileId())
-            .withMethod(HttpMethod.PUT)
-            .withExpiration(expiration);
+        new GeneratePresignedUrlRequest(archiveDestinationLocation.getFileContainerId(),
+            archiveDestinationLocation.getFileId()).withMethod(HttpMethod.PUT)
+                .withExpiration(expiration);
 
     // Optionally add a checksum header.
     if (!StringUtils.isEmpty(uploadRequestURLChecksum)) {
@@ -631,11 +507,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     // Generate the pre-signed URL.
-    URL url =
-        s3Connection
-            .getTransferManager(authenticatedToken)
-            .getAmazonS3Client()
-            .generatePresignedUrl(generatePresignedUrlRequest);
+    URL url = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+        .generatePresignedUrl(generatePresignedUrlRequest);
 
     // Create and populate the response object.
     HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
@@ -674,15 +547,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param archiveLocation The data object archive location.
    * @param destinationLocation The local file destination.
    * @param progressListener (Optional) a progress listener for async notification on transfer
-   *     completion.
+   *        completion.
    * @return A data transfer request Id.
    * @throws HpcException on data transfer system failure.
    */
-  private String downloadDataObject(
-      Object authenticatedToken,
-      HpcFileLocation archiveLocation,
-      File destinationLocation,
-      HpcDataTransferProgressListener progressListener)
+  private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
+      File destinationLocation, HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Create a S3 download request.
     GetObjectRequest request =
@@ -691,30 +561,20 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     // Download the file via S3.
     Download s3Download = null;
     try {
-      s3Download =
-          s3Connection
-              .getTransferManager(authenticatedToken)
-              .download(request, destinationLocation);
+      s3Download = s3Connection.getTransferManager(authenticatedToken).download(request,
+          destinationLocation);
       if (progressListener == null) {
         // Download synchronously.
         s3Download.waitForCompletion();
       } else {
         // Download asynchronously.
-        s3Download.addProgressListener(
-            new HpcS3ProgressListener(
-                progressListener,
-                "download from "
-                    + archiveLocation.getFileContainerId()
-                    + ":"
-                    + archiveLocation.getFileId()));
+        s3Download.addProgressListener(new HpcS3ProgressListener(progressListener, "download from "
+            + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
       }
 
     } catch (AmazonClientException ace) {
-      throw new HpcException(
-          "[S3] Failed to download file: [" + ace.getMessage() + "]",
-          HpcErrorType.DATA_TRANSFER_ERROR,
-          HpcIntegratedSystem.CLEVERSAFE,
-          ace);
+      throw new HpcException("[S3] Failed to download file: [" + ace.getMessage() + "]",
+          HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
 
     } catch (InterruptedException ie) {
       Thread.currentThread().interrupt();
@@ -730,15 +590,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param archiveLocation The data object archive location.
    * @param s3Destination The S3 destination.
    * @param progressListener (Optional) a progress listener for async notification on transfer
-   *     completion.
+   *        completion.
    * @return A data transfer request Id.
    * @throws HpcException on data transfer failure.
    */
-  private String downloadDataObject(
-      Object authenticatedToken,
-      HpcFileLocation archiveLocation,
-      HpcS3DownloadDestination s3Destination,
-      HpcDataTransferProgressListener progressListener)
+  private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
+      HpcS3DownloadDestination s3Destination, HpcDataTransferProgressListener progressListener)
       throws HpcException {
     // Authenticate the S3 account.
     Object s3AccountAuthenticatedToken = s3Connection.authenticate(s3Destination.getAccount());
@@ -747,13 +604,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     try {
       getPathAttributes(s3AccountAuthenticatedToken, s3Destination.getDestinationLocation(), false);
     } catch (HpcException e) {
-      throw new HpcException(
-          "Failed to access AWS S3 bucket: ["
-              + e.getMessage()
-              + "] "
-              + s3Destination.getDestinationLocation(),
-          HpcErrorType.INVALID_REQUEST_INPUT,
-          e);
+      throw new HpcException("Failed to access AWS S3 bucket: [" + e.getMessage() + "] "
+          + s3Destination.getDestinationLocation(), HpcErrorType.INVALID_REQUEST_INPUT, e);
     }
 
     // Generate a download pre-signed URL for the requested data file from the Cleversafe archive.
@@ -761,12 +613,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         generateDownloadRequestURL(authenticatedToken, archiveLocation, S3_STREAM_EXPIRATION);
 
     // Use AWS transfer manager to download the file.
-    return downloadDataObject(
-        s3AccountAuthenticatedToken,
-        sourceURL,
+    return downloadDataObject(s3AccountAuthenticatedToken, sourceURL,
         s3Destination.getDestinationLocation(),
-        getPathAttributes(authenticatedToken, archiveLocation, true).getSize(),
-        progressListener);
+        getPathAttributes(authenticatedToken, archiveLocation, true).getSize(), progressListener);
   }
 
   /**
@@ -780,73 +629,60 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @return A data transfer request Id.
    * @throws HpcException on data transfer failure.
    */
-  private String downloadDataObject(
-      Object s3AccountAuthenticatedToken,
-      String sourceURL,
-      HpcFileLocation destinationLocation,
-      long fileSize,
-      HpcDataTransferProgressListener progressListener)
-      throws HpcException {
+  private String downloadDataObject(Object s3AccountAuthenticatedToken, String sourceURL,
+      HpcFileLocation destinationLocation, long fileSize,
+      HpcDataTransferProgressListener progressListener) throws HpcException {
     if (progressListener == null) {
       throw new HpcException(
           "[S3] No progress listener provided for a download to AWS S3 destination",
           HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    CompletableFuture<Void> s3TransferManagerDownloadFuture =
-        CompletableFuture.runAsync(
-            () -> {
-              try {
-                // Create source URL and open a connection to it.
-                InputStream sourceInputStream = new URL(sourceURL).openStream();
+    CompletableFuture<Void> s3TransferManagerDownloadFuture = CompletableFuture.runAsync(() -> {
+      try {
+        // Create source URL and open a connection to it.
+        InputStream sourceInputStream = new URL(sourceURL).openStream();
 
-                // Create a S3 upload request.
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(fileSize);
-                PutObjectRequest request =
-                    new PutObjectRequest(
-                        destinationLocation.getFileContainerId(),
-                        destinationLocation.getFileId(),
-                        sourceInputStream,
-                        metadata);
+        // Create a S3 upload request.
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(fileSize);
+        PutObjectRequest request = new PutObjectRequest(destinationLocation.getFileContainerId(),
+            destinationLocation.getFileId(), sourceInputStream, metadata);
 
-                // Set the read limit on the request to avoid AWSreset exceptions.
-                request.getRequestClientOptions().setReadLimit(getReadLimit(fileSize));
+        // Set the read limit on the request to avoid AWSreset exceptions.
+        request.getRequestClientOptions().setReadLimit(getReadLimit(fileSize));
 
-                // Upload asynchronously. AWS transfer manager will perform the upload in its own managed thread.
-                Upload s3Upload =
-                    s3Connection.getTransferManager(s3AccountAuthenticatedToken).upload(request);
+        // Upload asynchronously. AWS transfer manager will perform the upload in its own managed
+        // thread.
+        Upload s3Upload =
+            s3Connection.getTransferManager(s3AccountAuthenticatedToken).upload(request);
 
-                // Attach a progress listener.
-                String sourceDestinationLogMessage =
-                    "download to "
-                        + destinationLocation.getFileContainerId()
-                        + ":"
-                        + destinationLocation.getFileId();
-                s3Upload.addProgressListener(
-                    new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
+        // Attach a progress listener.
+        String sourceDestinationLogMessage = "download to "
+            + destinationLocation.getFileContainerId() + ":" + destinationLocation.getFileId();
+        s3Upload.addProgressListener(
+            new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
-                logger.info(
-                    "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
-                    sourceDestinationLogMessage,
-                    fileSize,
-                    request.getRequestClientOptions().getReadLimit());
+        logger.info(
+            "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
+            sourceDestinationLogMessage, fileSize,
+            request.getRequestClientOptions().getReadLimit());
 
-                // Wait for the result. This ensures the input stream to the URL remains opened and connected until the download is complete.
-                // Note that this wait for AWS transfer manager completion is done in a separate thread (from s3Executor pool), so callers to
-                // the API don't wait.
-                s3Upload.waitForUploadResult();
+        // Wait for the result. This ensures the input stream to the URL remains opened and
+        // connected until the download is complete.
+        // Note that this wait for AWS transfer manager completion is done in a separate thread
+        // (from s3Executor pool), so callers to
+        // the API don't wait.
+        s3Upload.waitForUploadResult();
 
-              } catch (AmazonClientException | HpcException | IOException e) {
-                logger.error(
-                    "[S3] Failed to downloadload to AWS S3 destination: " + e.getMessage(), e);
-                progressListener.transferFailed(e.getMessage());
+      } catch (AmazonClientException | HpcException | IOException e) {
+        logger.error("[S3] Failed to downloadload to AWS S3 destination: " + e.getMessage(), e);
+        progressListener.transferFailed(e.getMessage());
 
-              } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-              }
-            },
-            s3Executor);
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+      }
+    }, s3Executor);
 
     return String.valueOf(s3TransferManagerDownloadFuture.hashCode());
   }
