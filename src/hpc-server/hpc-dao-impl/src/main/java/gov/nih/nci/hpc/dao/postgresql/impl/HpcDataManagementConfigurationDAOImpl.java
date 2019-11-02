@@ -72,7 +72,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
         // Map the Globus configuration.
         HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
-        globusConfiguration.setUrl(rs.getString("GLOBUS_URL"));
+        globusConfiguration.setUrlOrRegion(rs.getString("GLOBUS_URL"));
 
         HpcArchive globusBaseArchiveDestination = new HpcArchive();
         HpcFileLocation globusArchiveLocation = new HpcFileLocation();
@@ -118,7 +118,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
         HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
         s3Configuration.setId(rs.getString("ID"));
         s3Configuration.setArchiveProvider(HpcIntegratedSystem.fromValue(rs.getString("PROVIDER")));
-        s3Configuration.setUrl(rs.getString("URL"));
+        s3Configuration.setUrlOrRegion(rs.getString("URL_OR_REGION"));
         HpcArchive s3BaseArchiveDestination = new HpcArchive();
         HpcFileLocation s3ArchiveLocation = new HpcFileLocation();
         s3ArchiveLocation.setFileContainerId(rs.getString("BUCKET"));
