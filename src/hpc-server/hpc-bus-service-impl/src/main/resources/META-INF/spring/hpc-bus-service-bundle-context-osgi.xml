@@ -24,6 +24,7 @@
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
 		<prop key="hpc.bus.ldapAuthentication">true</prop>
+		<prop key="hpc.bus.createLdapAccountOnly">true</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

@@ -9,17 +9,10 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.io.InputStream;
-
-import java.util.ArrayList;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -33,28 +26,22 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
-
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
+import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
+
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -70,13 +57,18 @@ import org.springframework.web.util.UriComponentsBuilder;
 @EnableAutoConfiguration
 @RequestMapping("/download")
 public class HpcDownloadController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.dataObject}")
+	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
 	private String dataObjectServiceURL;
-	@Value("${gov.nih.nci.hpc.server.collection}")
+	@Value("${gov.nih.nci.hpc.server.v2.collection}")
 	private String collectionServiceURL;
+	@Value("${gov.nih.nci.hpc.web.server}")
+	private String webServerName;
 
 	/**
-	 * Get action to prepare download page
+	 * Get action to prepare download page. This is invoked when:
+	 * - User clicks download icon on the detail view page
+	 * - User clicks the 'Select Globus Endpoint UUID and Destination' link
+	 * - Invoked from Globus site when user presses Submit button after selecting Globus Endpoint and Path.
 	 * 
 	 * @param q
 	 * @param model
@@ -90,9 +82,27 @@ public class HpcDownloadController extends AbstractHpcController {
 			HttpSession session, HttpServletRequest request) {
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
-		String downloadFilePath = request.getParameter("path");
+
+		String action = request.getParameter("actionType");
+		String endPointName = request.getParameter("endpoint_id");
 		String downloadType = request.getParameter("type");
-		model.addAttribute("downloadFilePath", downloadFilePath);
+		String source = request.getParameter("source");
+		String downloadFilePath = null;
+
+		if(action == null && endPointName == null) {
+			//User clicked the download icon on the detail view page
+			if("collection".equals(downloadType)) {
+				model.addAttribute("searchType", "async");
+				model.addAttribute("transferType", "globus");
+				downloadFilePath = request.getParameter("path");
+			} else {
+				downloadFilePath = request.getParameter("downloadFilePath");
+			}
+			session.removeAttribute("downloadType");
+			session.removeAttribute("downloadSource");
+			session.removeAttribute("downloadFilePath");
+		}
+
 		if (downloadFilePath != null) {
 			String fileName = downloadFilePath;
 			int index = downloadFilePath.lastIndexOf("/");
@@ -104,8 +114,9 @@ public class HpcDownloadController extends AbstractHpcController {
 				fileName = downloadFilePath.substring(index + 1);
 			model.addAttribute("downloadFilePathName", fileName);
 		}
-		model.addAttribute("downloadType", downloadType);
+
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
@@ -113,8 +124,55 @@ public class HpcDownloadController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/login";
 		}
+
+		if (action != null && action.equals("Globus")) {
+
+			session.setAttribute("downloadType", downloadType);
+			session.setAttribute("downloadSource", source);
+			downloadFilePath = request.getParameter("downloadFilePath");
+			session.setAttribute("downloadFilePath", downloadFilePath);
+
+			model.addAttribute("useraction", "globus");
+			session.removeAttribute("GlobusEndpoint");
+			session.removeAttribute("GlobusEndpointPath");
+			session.removeAttribute("GlobusEndpointFiles");
+			session.removeAttribute("GlobusEndpointFolders");
+
+			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
+					this.webServerName) + "/download";
+			return "redirect:https://app.globus.org/file-manager?method=GET&" +
+	        "action=" + percentEncodedReturnURL;
+
+		}
+
+		if(endPointName != null) {
+			//This is return from Globus site
+			model.addAttribute("endPointName", endPointName);
+			String endPointLocation = request.getParameter("path");
+			model.addAttribute("endPointLocation", endPointLocation);
+			model.addAttribute("transferType", "globus");
+
+			downloadFilePath = (String)session.getAttribute("downloadFilePath");
+			downloadType = (String)session.getAttribute("downloadType");
+			source = (String)session.getAttribute("downloadSource");
+		}
+
+		model.addAttribute("downloadFilePath", downloadFilePath);
+		model.addAttribute("downloadType", downloadType);
+
+		HpcSearch hpcSearch = (HpcSearch)session.getAttribute("hpcSearch");
+		if(hpcSearch != null)
+			hpcSearch.setSearchType(downloadType);
+		else
+			hpcSearch = new HpcSearch();
+		model.addAttribute("hpcSearch", hpcSearch);
+		session.setAttribute("hpcSearch", hpcSearch);
+		model.addAttribute("source", source);
+		
 		return "download";
 	}
+
+
 
 	/**
 	 * POST action to initiate asynchronous download.
@@ -148,10 +206,24 @@ public class HpcDownloadController extends AbstractHpcController {
         .getDestinationPath()).encode().toUri().toURL().toExternalForm();
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
+				HpcGlobusDownloadDestination destination = new HpcGlobusDownloadDestination();
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getEndPointName());
 				location.setFileId(downloadFile.getEndPointLocation());
-				dto.setDestination(location);
+				destination.setDestinationLocation(location);
+				dto.setGlobusDownloadDestination(destination);
+			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("s3")) {
+				HpcS3DownloadDestination destination = new HpcS3DownloadDestination();
+				HpcFileLocation location = new HpcFileLocation();
+				location.setFileContainerId(downloadFile.getBucketName());
+				location.setFileId(downloadFile.getS3Path());
+				destination.setDestinationLocation(location);
+				HpcS3Account account = new HpcS3Account();
+				account.setAccessKey(downloadFile.getAccessKey());
+				account.setSecretKey(downloadFile.getSecretKey());
+				account.setRegion(downloadFile.getRegion());
+				destination.setAccount(account);
+				dto.setS3DownloadDestination(destination);
 			}
             final String downloadTaskType = "collection".equals(downloadFile.
                     getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :

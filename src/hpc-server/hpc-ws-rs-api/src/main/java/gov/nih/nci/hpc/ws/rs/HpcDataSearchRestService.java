@@ -76,7 +76,7 @@ public interface HpcDataSearchRestService {
   /**
    * Get data objects within the requested path by compound metadata query.
    *
-   * @param queryName The path to search in.
+   * @param path The path to search in.
    * @param compoundMetadataQuery A compound metadata query DTO.
    * @return The REST service response w/ HpcDataObjectListDTO entity.
    */
