@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataBrowseBusService;
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -24,6 +25,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataBrowseService;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
@@ -51,6 +53,9 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
   
   //Data Management Security Application Service instance
   @Autowired private HpcDataManagementSecurityService dataManagementSecurityService = null;
+  
+  //Data Management Bussiness Service instance
+  @Autowired private HpcDataManagementBusService dataManagementBusService = null;
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -113,7 +118,12 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
       subjectPermission.setPermission(bookmarkRequest.getPermission());
       subjectPermission.setSubject(nciUserId);
       try {
-        dataManagementService.setCollectionPermission(bookmarkRequest.getPath(), subjectPermission);
+    	String path = bookmarkRequest.getPath();
+    	if(dataManagementService.interrogatePathRef(path)) {
+    		dataManagementService.setCollectionPermission(path, subjectPermission);
+    	} else {
+    		dataManagementService.setDataObjectPermission(path, subjectPermission);
+    	}
       } catch(Exception e) {
     	dataBrowseService.deleteBookmark(nciUserId, bookmarkName);
     	throw e;
@@ -169,7 +179,12 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
       subjectPermission.setPermission(bookmarkRequest.getPermission());
       subjectPermission.setSubject(nciUserId);
       try {
-        dataManagementService.setCollectionPermission(bookmarkRequest.getPath(), subjectPermission);
+    	String path = bookmarkRequest.getPath();
+      	if(dataManagementService.interrogatePathRef(path)) {
+      		dataManagementService.setCollectionPermission(path, subjectPermission);
+      	} else {
+      		dataManagementService.setDataObjectPermission(path, subjectPermission);
+      	}
       } finally {
     	dataBrowseService.deleteBookmark(nciUserId, bookmarkName);
       }
