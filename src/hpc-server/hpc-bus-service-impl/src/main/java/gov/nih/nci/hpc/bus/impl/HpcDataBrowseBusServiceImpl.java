@@ -116,20 +116,12 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 
     // Save the bookmark.
     dataBrowseService.saveBookmark(nciUserId, bookmark);
-    
+
     //Set the permission to the bookmark path
     if(bookmarkRequest.getPermission() != null) {
 
       if (securityService.getUser(nciUserId) == null) {
-        //User does not exist, create if the requester has group admin privileges.
-        if(HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) || HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole())) {
-		  HpcUserRequestDTO userRegistrationRequest = new HpcUserRequestDTO();
-		  userRegistrationRequest.setDoc(invoker.getNciAccount().getDoc());
-		  hpcSecurityBusService.registerUser(nciUserId, userRegistrationRequest);
-		  logger.info("Added new user: " + nciUserId + " for setting permissions");
-	    } else {
-	      throw new HpcException("User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
-	    }
+        createUser(invoker, nciUserId);
       }
 
       HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
@@ -190,9 +182,14 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 
     // Save the bookmark.
     dataBrowseService.saveBookmark(nciUserId, bookmark);
-    
+
     //Set the permission to the bookmark path 
     if(bookmarkRequest.getPermission() != null) {
+
+      if (securityService.getUser(nciUserId) == null) {
+        createUser(invoker, nciUserId);
+      }
+
       HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
       subjectPermission.setPermission(bookmarkRequest.getPermission());
       subjectPermission.setSubject(nciUserId);
@@ -245,11 +242,34 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     //Get bookmarks for all the groups this user belongs to
     List<String> groups = dataManagementSecurityService.getUserGroups(userId);
     for(String group: groups) {
-    	//Get all the bookmarks on this group
+        //Get all the bookmarks on this group
     	List<HpcBookmark> groupBookmarks = dataBrowseService.getBookmarks(group);
     	bookmarkList.getBookmarks().addAll(groupBookmarks);		
     }
 
     return bookmarkList;
   }
+
+
+  //---------------------------------------------------------------------//
+	// Helper Methods
+  // ---------------------------------------------------------------------//
+
+
+  private void createUser(HpcRequestInvoker invoker, String nciUserId)
+      throws HpcException {
+
+    //User does not exist, create if the requester has group admin privileges.
+    if(HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) || HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole())) {
+      HpcUserRequestDTO userRegistrationRequest = new HpcUserRequestDTO();
+      userRegistrationRequest.setDoc(invoker.getNciAccount().getDoc());
+      hpcSecurityBusService.registerUser(nciUserId, userRegistrationRequest);
+      logger.info("Added new user: " + nciUserId + " for setting permissions");
+    } else {
+      throw new HpcException("User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+    }
+
+  }
+
+
 }
