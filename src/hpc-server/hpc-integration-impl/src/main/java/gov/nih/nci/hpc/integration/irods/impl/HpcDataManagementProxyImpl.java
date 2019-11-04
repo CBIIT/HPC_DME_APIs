@@ -635,6 +635,33 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
+  
+  
+  @Override
+  public HpcSubjectPermission acquireDataObjectPermission(Object authenticatedToken, String path,
+      String userId) throws HpcException {
+    try {
+      HpcSubjectPermission hsPerm = null;
+      UserFilePermission ufPerm = irodsConnection.getDataObjectAO(authenticatedToken)
+          .getPermissionForDataObjectForUserName(getAbsolutePath(path), userId);
+      if (null == ufPerm) {
+        hsPerm = new HpcSubjectPermission();
+        hsPerm.setSubject(userId);
+        hsPerm.setSubjectType(HpcSubjectType.USER);
+        hsPerm.setPermission(HpcPermission.NONE);
+      } else {
+        hsPerm = toHpcSubjectPermission(authenticatedToken, ufPerm, false);
+      }
+
+      return hsPerm;
+
+    } catch (Exception e) {
+      String msg = String.format("Failed to acquire collection permission for user [%s]: %s",
+          userId, e.getMessage());
+      throw new HpcException(msg, HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
+    }
+  }
+  
 
   @Override
   public void setDataObjectPermission(Object authenticatedToken, String path,
