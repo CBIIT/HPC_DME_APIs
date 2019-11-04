@@ -1410,7 +1410,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				throw new HpcException("Duplicate userId in a permission request: " + userId,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-		    if (securityService.getUser(userId) == null) {
+
+			if (!dataManagementSecurityService.groupExists(userId) && securityService.getUser(userId) == null) { 
 				//User does not exist, create if the requester has group admin privileges.
 				HpcRequestInvoker invoker = securityService.getRequestInvoker();
 				if(HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) || HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole())) {
