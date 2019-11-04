@@ -36,6 +36,7 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.Striped;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
@@ -116,6 +117,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -164,6 +166,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	// TheEvent Application Service Instance.
 	@Autowired
 	private HpcEventService eventService = null;
+	
+	// Data Management Bus Service instance.
+	@Autowired private HpcSecurityBusService hpcSecurityBusService = null;
 
 	// Locks to synchronize threads executing on path.
 	private Striped<Lock> pathLocks = Striped.lock(127);
@@ -1404,8 +1409,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				throw new HpcException("Duplicate userId in a permission request: " + userId,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			if (securityService.getUser(userId) == null) {
-				throw new HpcException("User not found: " + userId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+		    if (securityService.getUser(userId) == null) {
+				//User does not exist, create if the requester has group admin privileges.
+				HpcRequestInvoker invoker = securityService.getRequestInvoker();
+				if(HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) || HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole())) {
+					HpcUserRequestDTO userRegistrationRequest = new HpcUserRequestDTO();
+					userRegistrationRequest.setDoc(invoker.getNciAccount().getDoc());
+					hpcSecurityBusService.registerUser(userId, userRegistrationRequest);
+					logger.info("Added new user: " + userId + " for setting permissions");
+				} else {
+					throw new HpcException("User not found: " + userId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+				}
 			}
 			if (permission == null) {
 				throw new HpcException("Null or empty permission in a permission request. Valid values are ["
