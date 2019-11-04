@@ -629,7 +629,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (dataManagementService.getCollection(path, false) == null) {
 			return null;
 		}
-		HpcSubjectPermission permission = dataManagementService.getCollectionPermission(path, userId);
+		HpcSubjectPermission permission = dataManagementService.acquireCollectionPermission(path, userId);
 
 		return toUserPermissionDTO(permission);
 	}
@@ -1232,7 +1232,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (dataManagementService.getDataObject(path) == null) {
 			return null;
 		}
-		HpcSubjectPermission permission = dataManagementService.getDataObjectPermission(path, userId);
+		HpcSubjectPermission permission = dataManagementService.acquireDataObjectPermission(path, userId);
 
 		return toUserPermissionDTO(permission);
 	}
