@@ -283,6 +283,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					// Collection metadata update failed. Capture this in the audit record.
 					updated = false;
 					message = e.getMessage();
+					logger.error("Error updating collection metadata at path " + path + "for user " + userId + ": " + e.getMessage());
 					throw (e);
 
 				} finally {
