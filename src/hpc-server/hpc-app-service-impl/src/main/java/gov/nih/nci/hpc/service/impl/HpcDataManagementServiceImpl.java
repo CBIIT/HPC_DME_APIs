@@ -465,6 +465,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     return dataManagementProxy
         .getDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
   }
+  
+  @Override
+  public HpcSubjectPermission acquireDataObjectPermission(String path, String userId)
+      throws HpcException {
+    return dataManagementProxy.acquireDataObjectPermission(
+        dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
+  }
+  
 
   @Override
   public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException {
