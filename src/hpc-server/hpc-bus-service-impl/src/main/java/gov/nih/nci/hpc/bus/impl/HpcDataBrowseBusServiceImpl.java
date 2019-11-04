@@ -187,9 +187,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     //Set the permission to the bookmark path 
     if(bookmarkRequest.getPermission() != null) {
 
-      if (securityService.getUser(nciUserId) == null) {
-    	  
-    	  
+      if (!dataManagementSecurityService.groupExists(nciUserId) && securityService.getUser(nciUserId) == null) { 
         createUser(invoker, nciUserId);
       }
 
