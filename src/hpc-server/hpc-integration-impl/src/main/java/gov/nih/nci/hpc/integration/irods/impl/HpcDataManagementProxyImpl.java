@@ -117,7 +117,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       mkdirs(collectionFile);
 
     } catch (JargonException e) {
-      throw new HpcException("Failed to create a collection directory: " + e.getMessage(),
+      throw new HpcException("Failed to create a collection directory at path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
 
     } finally {
@@ -134,7 +134,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
     } catch (JargonException e) {
       throw new HpcException(
-          "Failed to set permission inheritance on a collection: " + e.getMessage(),
+          "Failed to set permission inheritance on a collection at path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -213,7 +213,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       }
 
     } catch (JargonException e) {
-      throw new HpcException("Failed to add metadata to a collection: " + e.getMessage(),
+      throw new HpcException("Failed to add metadata to a collection at path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -237,7 +237,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       }
 
     } catch (JargonException e) {
-      throw new HpcException("Failed to update collection metadata: " + e.getMessage(),
+      throw new HpcException("Failed to update collection metadata for path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -359,7 +359,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
               .listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path)) : null);
 
     } catch (Exception e) {
-      throw new HpcException("Failed to get Collection: " + path + ". " + e.getMessage(),
+      throw new HpcException("Failed to get Collection at path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
@@ -374,7 +374,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
               .listDataObjectsAndCollectionsUnderPath(getAbsolutePath(path)));
 
     } catch (Exception e) {
-      throw new HpcException("Failed to get Collection: " + path + ". " + e.getMessage(),
+      throw new HpcException("Failed to get Collection at path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
@@ -388,7 +388,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
     } catch (Exception e) {
       throw new HpcException(
-          "Failed to get metadata of a collection: " + path + ". " + e.getMessage(),
+          "Failed to get metadata of a collection at path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
@@ -441,7 +441,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
     } catch (Exception e) {
       throw new HpcException(
-          "Failed to get metadata of a data object: " + path + ". " + e.getMessage(),
+          "Failed to get metadata of a data object at path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
@@ -468,7 +468,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcRequestRejectReason.USER_ALREADY_EXISTS, ex);
 
     } catch (Exception e) {
-      throw new HpcException("Failed add iRODS user: " + e.getMessage(),
+      throw new HpcException("Failed add iRODS user " + nciAccount.getUserId() + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -480,7 +480,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       irodsConnection.getUserAO(authenticatedToken).deleteUser(nciUserId);
 
     } catch (Exception e) {
-      throw new HpcException("Failed delete iRODS user: " + e.getMessage(),
+      throw new HpcException("Failed delete iRODS user " + nciUserId + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -504,7 +504,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       irodsConnection.getUserAO(authenticatedToken).updateUser(irodsUser);
 
     } catch (Exception e) {
-      throw new HpcException("Failed to update iRODS user: " + e.getMessage(),
+      throw new HpcException("Failed to update iRODS user " + username + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -532,7 +532,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           .getCollectionAO(authenticatedToken).listPermissionsForCollection(getAbsolutePath(path)));
 
     } catch (Exception e) {
-      throw new HpcException("Failed to get collection permissions: " + e.getMessage(),
+      throw new HpcException("Failed to get collection permissions for path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
@@ -547,7 +547,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           false);
 
     } catch (Exception e) {
-      throw new HpcException("Failed to get collection permission for user: " + e.getMessage(),
+      throw new HpcException("Failed to get collection permission for user " + userId + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
@@ -603,7 +603,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.INVALID_REQUEST_INPUT, iue);
 
     } catch (Exception e) {
-      throw new HpcException("Failed to set collection permission: " + e.getMessage(),
+      throw new HpcException("Failed to set collection permission for path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -616,7 +616,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           .getDataObjectAO(authenticatedToken).listPermissionsForDataObject(getAbsolutePath(path)));
 
     } catch (Exception e) {
-      throw new HpcException("Failed to get data object permissions: " + e.getMessage(),
+      throw new HpcException("Failed to get data object permissions for path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
@@ -631,7 +631,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           false);
 
     } catch (Exception e) {
-      throw new HpcException("Failed to get data object permission for user: " + e.getMessage(),
+      throw new HpcException("Failed to get data object permission for user " + userId + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, null, e);
     }
   }
@@ -689,7 +689,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           HpcErrorType.INVALID_REQUEST_INPUT, iue);
 
     } catch (Exception e) {
-      throw new HpcException("Failed to set data object permission: " + e.getMessage(),
+      throw new HpcException("Failed to set data object permission for path " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -1272,7 +1272,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
     } catch (NoSuchAlgorithmException | JargonException e) {
       deleteUser(authenticatedToken, name);
       throw new HpcException(
-          "Failed to update new user: " + e.getMessage(),
+          "Failed to update new user " + name + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
