@@ -11,11 +11,13 @@ package gov.nih.nci.hpc.bus.impl;
 import java.util.Calendar;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataBrowseBusService;
-import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -25,7 +27,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataBrowseService;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
@@ -54,8 +56,11 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
   //Data Management Security Application Service instance
   @Autowired private HpcDataManagementSecurityService dataManagementSecurityService = null;
   
-  //Data Management Bussiness Service instance
-  @Autowired private HpcDataManagementBusService dataManagementBusService = null;
+  //Data Management Security Bussiness Service instance
+  @Autowired private HpcSecurityBusService hpcSecurityBusService = null;
+
+  //The logger instance.
+  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -112,8 +117,21 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     // Save the bookmark.
     dataBrowseService.saveBookmark(nciUserId, bookmark);
     
-  //Set the permission to the bookmark path 
+    //Set the permission to the bookmark path
     if(bookmarkRequest.getPermission() != null) {
+
+      if (securityService.getUser(nciUserId) == null) {
+        //User does not exist, create if the requester has group admin privileges.
+        if(HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) || HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole())) {
+		  HpcUserRequestDTO userRegistrationRequest = new HpcUserRequestDTO();
+		  userRegistrationRequest.setDoc(invoker.getNciAccount().getDoc());
+		  hpcSecurityBusService.registerUser(nciUserId, userRegistrationRequest);
+		  logger.info("Added new user: " + nciUserId + " for setting permissions");
+	    } else {
+	      throw new HpcException("User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+	    }
+      }
+
       HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
       subjectPermission.setPermission(bookmarkRequest.getPermission());
       subjectPermission.setSubject(nciUserId);
