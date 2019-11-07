@@ -97,7 +97,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     	if (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
     			!invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
     		throw new HpcException(
-    	            "Not authorizated to add bookmark for user " + nciUserId + ". Please contact system administrator",
+    	            "Not authorized to add bookmark for user " + nciUserId + ". Please contact system administrator",
     	            HpcRequestRejectReason.NOT_AUTHORIZED);
     	}
     }
@@ -161,7 +161,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     	if (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
 			!invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
 		throw new HpcException(
-	            "Not authorizated to update bookmark for user " + nciUserId + ". Please contact system administrator",
+	            "Not authorized to update bookmark for user " + nciUserId + ". Please contact system administrator",
 	            HpcRequestRejectReason.NOT_AUTHORIZED);
 	}
 }
