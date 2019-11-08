@@ -86,11 +86,13 @@ public class HpcDomainValidator {
 	 * @return true if valid, false otherwise.
 	 */
 	public static boolean isValidNciAccount(HpcNciAccount nciAccount) {
-		if (nciAccount == null || nciAccount.getUserId() == null) {
+		if (nciAccount == null || StringUtils.isBlank(nciAccount.getUserId())) {
 			return false;
 		}
 
-		if (nciAccount.getFirstName() == null || nciAccount.getLastName() == null || nciAccount.getDoc() == null) {
+		if (StringUtils.isBlank(nciAccount.getFirstName()) || 
+				StringUtils.isBlank(nciAccount.getLastName()) || 
+				StringUtils.isBlank(nciAccount.getDoc())) {
 			return false;
 		}
 

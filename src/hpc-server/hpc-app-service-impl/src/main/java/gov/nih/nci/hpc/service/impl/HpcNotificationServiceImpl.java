@@ -137,7 +137,7 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
           || notificationSubscription.getEventType()
               .equals(HpcEventType.USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT)) {
         throw new HpcException(
-            "Not authorizated to subscribe to the report. Please contact system administrator",
+            "Not authorized to subscribe to the report. Please contact system administrator",
             HpcRequestRejectReason.NOT_AUTHORIZED);
       }
     }

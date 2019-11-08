@@ -123,6 +123,7 @@ class SFUtils(object):
 
         for filename in contentFiles:
             if os.path.exists(filename):
+                logging.info("Located contents file: " + filename)
                 tarfile_contents = open(filename)
                 break
 

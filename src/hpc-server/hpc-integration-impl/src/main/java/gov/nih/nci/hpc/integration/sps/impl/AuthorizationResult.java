@@ -235,7 +235,7 @@ public class AuthorizationResult {
          * Objects of the following type(s) are allowed in the list
          * {@link Attribute }
          * 
-         * 
+         * @return response list of name value pair
          */
         public List<Attribute> getResponse() {
             if (response == null) {

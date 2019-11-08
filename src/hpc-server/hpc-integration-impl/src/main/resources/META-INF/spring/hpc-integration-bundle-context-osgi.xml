@@ -47,6 +47,8 @@
 	      <prop key="hpc.integration.ldap.password">Configure Me</prop>
 	      <prop key="hpc.integration.ldap.base">OU=NIH,OU=AD,DC=nih,DC=gov</prop>
 	      <prop key="hpc.integration.ldap.userIdFilter">cn</prop>
+	      <prop key="hpc.integration.ldap.lastNameFilter">sn</prop>
+	      <prop key="hpc.integration.ldap.firstNameFilter">givenName</prop>
 	      <prop key="hpc.integration.ldap.userIdDomainName">nih.gov</prop>
 	      
 	      <prop key="hpc.integration.sps.URL">https://authproxyintdev.nih.gov/authazws/AuthRestService/authz/</prop>

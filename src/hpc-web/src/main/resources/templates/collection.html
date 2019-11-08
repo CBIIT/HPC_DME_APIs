@@ -77,7 +77,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-dashboard"></i> Dashboard
+							<i class="fa fa-folder"></i> Browse
 						</h3>
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
@@ -97,10 +97,8 @@
 									<i class="fa fa-list-alt red"></i>
 									<strong>Collection</strong>
                   &nbsp;&nbsp;
-                  <a id="downloadlink"
-                     data-target="#downloadModal" data-toggle="modal"
-                     class="btn btn-link btn-sm"
-                     th:href="@{/download(type=collection,path=${collection.getCollection().getCollectionName()})}">
+                   <a  class="btn btn-link btn-sm"
+                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
@@ -125,9 +123,8 @@
 									<i class="fa fa-list-alt red"></i>
                   <strong>Collection</strong>
                   &nbsp;&nbsp;
-                  <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}"
-                     data-target="#downloadModal" data-toggle="modal">
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
@@ -156,9 +153,8 @@
 									<i class="fa fa-list-alt red"></i>
                   <strong>Collection</strong>
                   &nbsp;&nbsp;
-                  <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}"
-                     data-target="#downloadModal" data-toggle="modal">
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
@@ -197,7 +193,6 @@
 									<a class="close" data-dismiss="alert">×</a> <label
 										for="${error}" th:text="${error}"></label>
 								</div>
-                                <div id="auxError" class="alert alert-error d-none"></div>
 							</div>
 								<!--panel-body start-->
 								<div class="panel-body"  th:if="${collection != null}">

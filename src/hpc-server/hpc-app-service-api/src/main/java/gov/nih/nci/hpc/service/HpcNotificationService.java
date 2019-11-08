@@ -151,7 +151,7 @@ public interface HpcNotificationService {
   /**
    * Notify HPC-DME system-administrator of an exception
    *
-   * @exception The exception to send notification for.
+   * @param exception The exception to be notified
    */
   public void sendNotification(HpcException exception);
 }
