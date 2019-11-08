@@ -19,7 +19,7 @@ public interface HpcSystemAccountFunctionNoReturn {
   /**
    * Perform this code using system account credentials.
    *
-   * @throws HpcException
+   * @throws HpcException On any failure.
    */
   public void execute() throws HpcException;
 }

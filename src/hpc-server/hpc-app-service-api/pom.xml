@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>1.18.0</version>
+		<version>1.19.0</version>
 	</parent>
 	<artifactId>hpc-app-service-api</artifactId>
 	<packaging>bundle</packaging>

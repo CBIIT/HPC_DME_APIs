@@ -38,11 +38,7 @@
 	src="js/angular/1.5.0/angular-touch.js"></script>
 <script
 	src="js/angular/1.5.0/angular-animate.js"></script>
-<script src="js/ui-grid/csv.js"></script>
-<script src="js/ui-grid/pdfmake.js"></script>
-<script src="js/ui-grid/vfs_fonts.js"></script>
 
-<script src="js/ui-grid/4.0.2/ui-grid.js"></script>
 <script src="../bower_components/jquery/dist/jquery.js"></script>
 
 <link rel="stylesheet" href="css/ui-grid.css"
@@ -83,7 +79,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-dashboard"></i> Dashboard
+							<i class="fa fa-download"></i> Download
 						</h3>
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
@@ -102,26 +98,23 @@
 		<form class="form-horizontal" id="downloadFilesForm"
 			th:object="${hpcDownloadDatafile}" method="PUT">
 			<div class="panel panel-default">
+			    <div class="panel-heading">
+                    <h2>
+                        <i class="fa fa-list-alt red"></i><strong>Download</strong>
+                    </h2>
+                </div>
 				<div class="panel-body">
 					<table>
 						<tr>
 							<td>
-								<div class="pull-center" th:if="${downloadType == 'datafiles'}">
-								<p>This page allows you to download the following selected collection of data files to a Globus endpoint location 
-									asynchronously.</p> <p>First, grant WRITE access of your Globus target endpoint location to the 
-									HPC DME Globus Group (Refer to User Guide, <a target="_blank" href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME">Preparing to Use Globus with DME</a>); 
-									Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
-									into text entry "Globus Endpoint Name (UUID)"; lastly, enter a directory name into text
-									entry "Globus Endpoint (Destination) Path" for the selected collection.<br/>The system copies the data into the directory under your shared endpoint at Globus.</p>			
-								</div>
-								<div class="pull-center" th:if="${downloadType == 'collections'}">
-								<p>This page allows you to download the following selected collections to a Globus endpoint location 
-									asynchronously.</p> <p>First, grant WRITE access of your Globus target endpoint location to the 
-									HPC DME Globus Group (Refer to User Guide, <a target="_blank" href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME">Preparing to Use Globus with DME</a>); 
-									Copy UUID value from your Shared Endpoint of Globus Manage Endpoints
-									into text entry "Globus Endpoint Name (UUID)"; lastly, enter a directory name into text
-									entry "Globus Endpoint (Destination) Path" for the selected collection.<br/>The system copies the data into the directory under your shared endpoint at Globus.</p>			
-								</div>
+							    <div class="pull-center" th:if="${downloadType == 'datafiles'}" >
+							    <p>This page allows you to download the following selected collection of data files to a Globus endpoint location or an S3 bucket
+									asynchronously.</p> 
+							    </div>
+							    <div class="pull-center" th:if="${downloadType == 'collections'}" >
+							    <p>This page allows you to download the following selected collections to a Globus endpoint location or an S3 bucket
+									asynchronously.</p> 
+							    </div>
 							</td>
 						</tr>
 						<tr><td>&nbsp;</td></tr>
@@ -145,17 +138,82 @@
 						</tr>
 						<tr>
 							<td>
-								<div class="form-group" id="AsyncDiv">
+								<div class="form-group">
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="searchType" id="searchTypeAsync" value="async"
+										onChange="display('async')"/>Asynchronous (Globus)</label>
+										</div>
+										
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="searchType" id="searchTypeS3" value="s3"
+										onChange="display('s3')"/>Asynchronous (S3)</label>
+										</div>
+								</div>
+								
+								<div class="pull-center" id="AsyncTextDiv" style="display: none">
+								    <p>To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.</p>                                 
+								    <br/>
+								</div>
+								<div class="pull-center" id="s3TextDiv" style="display: none">
+								    <p>To download to an S3 bucket, proper permissions should be set up.  Refer to <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to use Amazon Web Services S3 with DME</a> for instructions.</p>				
+								    <br/>
+								</div>
+                                
+                                <div class="form-group" id="AsyncDiv" style="display: none">
+                                    <div class="col-sm-12 column">
+										<label for="endPointName">Globus Endpoint UUID:</label> 
+										Optionally click 
+										<a id="downloadlink"
+										    th:href="@{../downloadfiles}">
+                                            here</a> to obtain from Globus
+										<input type="hidden" name="actionType" id="actionType" />
+										<input
+											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
+											id="endPointName" placeholder="Enter Globus Endpoint UUID" />
+								    </div>								
 									<div class="col-sm-12 column">
-										<label for="endPointName">Globus Endpoint UUID:</label> <input
-											type="text" class="form-control" th:field="*{endPointName}"
-											id="endPointName" placeholder="Enter Globus Endpoint name" />
+										<label for="endPointLocation">Globus Endpoint (Destination) Path:</label> <input
+											type="text" class="form-control" name="endPointLocation"
+											th:value="${endPointLocation}" id="endPointLocation"
+											placeholder="Enter Globus Endpoint Path" size="40" />
+									</div>
+								</div>
+								<div class="form-group" id="s3Div" style="display: none">
+									<div class="col-sm-12 column">
+										<label for="bucketName">S3 Bucket:</label>
+										<input
+											type="text" class="form-control" name="bucketName" th:value="${bucketName}"
+											id="bucketName" placeholder="Enter S3 Bucket Name" />
 									</div>
 									<div class="col-sm-12 column">
-										<label for="endPointLocation">Globus Endpoint (Destination) Path :</label> <input
+										<label for="s3Path">S3 (Destination) Path:</label> <input
 											type="text" class="form-control"
-											th:field="*{endPointLocation}" id="endPointLocation"
-											placeholder="Enter Globus Endpoint Path" size="40" />
+											th:value="${s3Path}"
+											name="s3Path" id="s3Path"
+											placeholder="Enter S3 (Destination) Path" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="accessKey">Access Key:</label> <input
+											type="text" class="form-control"
+											th:value="${accessKey}"
+											name="accessKey" id="accessKey"
+											placeholder="Enter Access Key" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="secretKey">Secret Access Key:</label> <input
+											type="password" autocomplete="secret-access-key" class="form-control"
+											th:value="${secretKey}"
+											name="secretKey" id="secretKey"
+											placeholder="Enter Secret Access Key" size="40" />
+									</div>
+									<div class="col-sm-12 column">
+										<label for="region">Region:</label> <input
+											type="text" class="form-control"
+											th:value="${region}"
+											name="region" id="region"
+											placeholder="Enter Region (for Example us-east-1)" size="40" />
 									</div>
 								</div>
 								<div class="modal-footer">
@@ -167,12 +225,14 @@
 							</td>
 						</tr>
 					</table>
-					<input type="hidden" name="destinationPath" id="destinationPath"
+					<input type="hidden" name="destinationPath" id="destinationPathId"
 						th:value="${downloadFilePath}" />
-					<input type="hidden" name="downloadType" id="destinationPath"
-						th:value="${downloadType}" />
+					<input type="hidden" name="downloadType" id="downloadType"
+						th:value="${hpcDownloadDatafile.downloadType}" />
 					<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 						th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
+					<input type="hidden" name="transferType" id="transferType"
+						th:value="${transferType}" />
 				</div>
 			</div>
 		</form>
@@ -186,12 +246,12 @@
 		</form>
 		<form class="form-horizontal" id="criteriaForm"
 			th:object="${hpcSearch}" method="POST" th:action="@{/criteria}">
-			<input type="hidden" name="actionType" id="actionType" value="pagination"/>
+			<input type="hidden" name="actionType" id="actionTypeId" value="pagination"/>
 			<input type="hidden"
-				class="form-control" name="pageNumber" id="pageNumber"
+				class="form-control" name="pageNumber" id="pageNumberId"
 				 th:value="${hpcSearch.getPageNumber()}"/>
 			<input type="hidden"
-				class="form-control" name="pageSize" id="pageSize"
+				class="form-control" name="pageSize" id="pageSizeId"
 				 th:value="${hpcSearch.getPageSize()}"/>			
 		</form>
 		<form class="form-horizontal" id="searchForm"
@@ -231,17 +291,47 @@
 			var radioSelected = document.getElementsByName("searchType");
 			var radioValue = document.querySelector('input[name="searchType"]:checked').value
 
-			var endPointName = document.getElementById("endPointName").value;
-			var endPointLocation = document
-					.getElementById("endPointLocation").value;
-			if (endPointLocation == null
-					|| endPointLocation.trim().length == 0
-					|| endPointName == null
-					|| endPointName.trim().length == 0) {
-				alert("Please enter asynchronous download values");
-				return false;
+			if (radioValue == 'async') {
+				var endPointName = document.getElementById("endPointName").value;
+				var endPointLocation = document
+						.getElementById("endPointLocation").value;
+				if (endPointLocation == null
+						|| endPointLocation.trim().length == 0
+						|| endPointName == null
+						|| endPointName.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
+			} else if (radioValue == 's3') {
+				var bucketName = document.getElementById("bucketName").value;
+				var s3Path = document
+						.getElementById("s3Path").value;
+				var accessKey = document.getElementById("accessKey").value;
+				var secretKey = document.getElementById("secretKey").value;
+				var region = document.getElementById("region").value;
+				if (s3Path == null
+						|| s3Path.trim().length == 0
+						|| bucketName == null
+						|| bucketName.trim().length == 0
+						|| accessKey == null
+						|| accessKey.trim().length == 0
+						|| secretKey == null
+						|| secretKey.trim().length == 0
+						|| region == null
+						|| region.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
 			}
 		}
+
+		 $(document).ready(function(){
+	        if($('#transferType').val() == 'globus') {
+	            $("#searchTypeAsync").prop("checked", true);
+	            display('async');
+		    }
+		});
+
 
 		function goBack()
 		{
@@ -291,6 +381,24 @@
 							});
 		});
 
+		var toggle = true;
+		function display(value) {
+			var asyncDiv = document.getElementById("AsyncDiv");
+			var s3Div = document.getElementById("s3Div");
+			var asyncTextDiv = document.getElementById("AsyncTextDiv");
+			var s3TextDiv = document.getElementById("s3TextDiv");
+			if (value == "async") {
+				asyncDiv.style.display = "block";
+				s3Div.style.display = "none";
+				asyncTextDiv.style.display = "block";
+				s3TextDiv.style.display = "none";
+			} else {
+				asyncDiv.style.display = "none";
+				s3Div.style.display = "block";
+				asyncTextDiv.style.display = "none";
+				s3TextDiv.style.display = "block";
+			}
+		}
 	</script>
 
 </body>

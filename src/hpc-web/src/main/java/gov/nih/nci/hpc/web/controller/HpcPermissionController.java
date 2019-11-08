@@ -23,8 +23,13 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.AutoCompleteResponseBody;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntry;
 import gov.nih.nci.hpc.web.model.HpcPermissionEntryType;
@@ -41,9 +46,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -53,6 +61,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -79,6 +88,10 @@ public class HpcPermissionController extends AbstractHpcController {
 	private String serverCollectionURL;
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String serverDataObjectURL;
+	@Value("${gov.nih.nci.hpc.server.user.query}")
+	private String activeUsersServiceURL;
+	@Value("${gov.nih.nci.hpc.server.group}")
+	private String groupServiceURL;
 	@Value("${hpc.serviceaccount}")
 	private String serviceAccount;
 
@@ -159,28 +172,31 @@ public class HpcPermissionController extends AbstractHpcController {
 		try {
 			HpcEntityPermissionsDTO subscriptionsRequestDTO = constructRequest(request, permissionsRequest.getPath());
 			setChangedPermissions(session, subscriptionsRequestDTO);
-			WebClient client = HpcClientUtil.getWebClient(serviceAPIUrl, sslCertPath, sslCertPassword);
-			client.header("Authorization", "Bearer " + authToken);
+			if (CollectionUtils.isNotEmpty(subscriptionsRequestDTO.getUserPermissions())
+					|| CollectionUtils.isNotEmpty(subscriptionsRequestDTO.getGroupPermissions())) {
+				WebClient client = HpcClientUtil.getWebClient(serviceAPIUrl, sslCertPath, sslCertPassword);
+				client.header("Authorization", "Bearer " + authToken);
 
-			Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
-			if (restResponse.getStatus() == 200) {
-				redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
-				return "redirect:/permissions?assignType=User&type=" + MiscUtil
-          .performUrlEncoding(permissionsRequest.getType()) + "&path=" +
-          MiscUtil.performUrlEncoding(permissionsRequest.getPath());
-			} else {
-				ObjectMapper mapper = new ObjectMapper();
-				AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
-						new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
-						new JacksonAnnotationIntrospector());
-				mapper.setAnnotationIntrospector(intr);
-				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				Response restResponse = client.invoke("POST", subscriptionsRequestDTO);
+				if (restResponse.getStatus() == 200) {
+					redirectAttrs.addFlashAttribute("updateStatus", "Updated successfully");
+					return "redirect:/permissions?assignType=User&type="
+							+ MiscUtil.performUrlEncoding(permissionsRequest.getType()) + "&path="
+							+ MiscUtil.performUrlEncoding(permissionsRequest.getPath());
+				} else {
+					ObjectMapper mapper = new ObjectMapper();
+					AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+							new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+							new JacksonAnnotationIntrospector());
+					mapper.setAnnotationIntrospector(intr);
+					mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-				MappingJsonFactory factory = new MappingJsonFactory(mapper);
-				JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+					MappingJsonFactory factory = new MappingJsonFactory(mapper);
+					JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-				HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-				model.addAttribute("updateStatus", "Failed to save criteria! Reason: " + exception.getMessage());
+					HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+					model.addAttribute("updateStatus", "Failed to save criteria! Reason: " + exception.getMessage());
+				}
 			}
 		} catch (HttpStatusCodeException e) {
 			model.addAttribute("updateStatus", "Failed to update changes! " + e.getMessage());
@@ -201,12 +217,72 @@ public class HpcPermissionController extends AbstractHpcController {
 				return "redirect:/";
 			}
 		}
-
+		String userId = (String) session.getAttribute("hpcUserId");
 		populatePermissions(model, permissionsRequest.getPath(), permissionsRequest.getType(),
 				permissionsRequest.getAssignType(), authToken, session);
+		HpcUserPermissionDTO userPermission = HpcClientUtil.getPermissionForUser(authToken, permissionsRequest.getPath(), userId,
+				(permissionsRequest.getType() != null && permissionsRequest.getType().equals("collection")) ? serverCollectionURL : serverDataObjectURL, sslCertPath,
+				sslCertPassword);
+		model.addAttribute("ownpermission",
+				(userPermission != null && userPermission.getPermission().equals(HpcPermission.OWN)) ? true : false);
 		return "permission";
 	}
+	
+	/**
+	 * POST Action. This AJAX action is invoked for user search
+	 * 
+	 * @param term
+	 * @return
+	 */
+	@RequestMapping(value = "/users", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody List<AutoCompleteResponseBody> searchUsers(@RequestParam("term") String term,
+			HttpSession session) {
+		List<AutoCompleteResponseBody> entries = new ArrayList<AutoCompleteResponseBody>();
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		String serviceUrl = activeUsersServiceURL;
+		String[] name = term.split(",");
+		String lastNameOrUserId = name[0] + "%";
+		String firstName = name[0] + "%";
+		if (name.length > 1)
+			firstName = name[1] + "%";
+		HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, lastNameOrUserId, firstName,
+				lastNameOrUserId, null, sslCertPath, sslCertPassword);
+		if (users != null && users.getUsers() != null && !users.getUsers().isEmpty()) {
+			for (HpcUserListEntry user : users.getUsers()) {
+				AutoCompleteResponseBody entry = new AutoCompleteResponseBody();
+				entry.setValue(user.getUserId());
+				entry.setLabel(user.getFirstName() + " " + user.getLastName() + " [" + user.getUserId() + "] - "
+						+ user.getDoc());
+				entries.add(entry);
+			}
+		}
+		return entries;
+	}
 
+	/**
+	 * POST Action. This AJAX action is invoked for group search
+	 * 
+	 * @param term
+	 * @return
+	 */
+	@RequestMapping(value = "/groups", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody List<AutoCompleteResponseBody> searchGroups(@RequestParam("term") String term,
+			HttpSession session) {
+		List<AutoCompleteResponseBody> entries = new ArrayList<AutoCompleteResponseBody>();
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		HpcGroupListDTO groups = HpcClientUtil.getGroups(authToken, groupServiceURL, "%" + term + "%", sslCertPath,
+				sslCertPassword);
+		if (groups != null && groups.getGroups() != null && !groups.getGroups().isEmpty()) {
+			for (HpcGroup group : groups.getGroups()) {
+				AutoCompleteResponseBody entry = new AutoCompleteResponseBody();
+				entry.setValue(group.getGroupName());
+				entry.setLabel(group.getGroupName());
+				entries.add(entry);
+			}
+		}
+		return entries;
+	}
+	
 	private String getServiceURL(Model model, String path, String type) {
     try {
       String basisUrl = null;

@@ -2,9 +2,6 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-<link rel="stylesheet" type="text/css" href="../css/style.css" />
-<link href="../css/bootstrap.min.css" rel="stylesheet" />
-<link href="../css/bootstrap-theme.css" rel="stylesheet" />
 
 <script src="../js/angular/1.4.3/angular.js"></script>
 <script src="../js/angular/1.4.3/angular-touch.js"></script>
@@ -24,13 +21,27 @@
 /*<![CDATA[*/
     var basePaths = [[${basePaths}]];
 /*]]>*/
-</script>	
+</script>
+<style>
+/*style.css*/
+.modal-content {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid #999999;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  background-clip: padding-box;
+  outline: none;
+}
+</style>	
 </head>
 <body>
 
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal">&times;</button>
-		<h4 class="modal-title">Create user</h4>
+		<h4 class="modal-title">Create User</h4>
 	</div>
 	<div class="modal-body">
 		<form class="form-horizontal" id="userForm"

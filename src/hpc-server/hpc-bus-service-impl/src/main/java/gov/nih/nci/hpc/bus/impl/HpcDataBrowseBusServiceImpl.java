@@ -11,10 +11,13 @@ package gov.nih.nci.hpc.bus.impl;
 import java.util.Calendar;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.bus.HpcDataBrowseBusService;
+import gov.nih.nci.hpc.bus.HpcSecurityBusService;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -24,6 +27,7 @@ import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkRequestDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataBrowseService;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
@@ -51,6 +55,12 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
   
   //Data Management Security Application Service instance
   @Autowired private HpcDataManagementSecurityService dataManagementSecurityService = null;
+  
+  //Data Management Security Bussiness Service instance
+  @Autowired private HpcSecurityBusService hpcSecurityBusService = null;
+
+  //The logger instance.
+  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -87,7 +97,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     	if (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
     			!invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
     		throw new HpcException(
-    	            "Not authorizated to add bookmark for user " + nciUserId + ". Please contact system administrator",
+    	            "Not authorized to add bookmark for user " + nciUserId + ". Please contact system administrator",
     	            HpcRequestRejectReason.NOT_AUTHORIZED);
     	}
     }
@@ -106,14 +116,25 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 
     // Save the bookmark.
     dataBrowseService.saveBookmark(nciUserId, bookmark);
-    
-  //Set the permission to the bookmark path 
+
+    //Set the permission to the bookmark path
     if(bookmarkRequest.getPermission() != null) {
+
+      //If the given userId is not a group and the user is not present in DME
+      if (!dataManagementSecurityService.groupExists(nciUserId) && securityService.getUser(nciUserId) == null) {
+        createUser(invoker, nciUserId);
+      }
+
       HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
       subjectPermission.setPermission(bookmarkRequest.getPermission());
       subjectPermission.setSubject(nciUserId);
       try {
-        dataManagementService.setCollectionPermission(bookmarkRequest.getPath(), subjectPermission);
+    	String path = bookmarkRequest.getPath();
+    	if(dataManagementService.interrogatePathRef(path)) {
+    		dataManagementService.setCollectionPermission(path, subjectPermission);
+    	} else {
+    		dataManagementService.setDataObjectPermission(path, subjectPermission);
+    	}
       } catch(Exception e) {
     	dataBrowseService.deleteBookmark(nciUserId, bookmarkName);
     	throw e;
@@ -140,7 +161,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     	if (!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN) &&
 			!invoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
 		throw new HpcException(
-	            "Not authorizated to update bookmark for user " + nciUserId + ". Please contact system administrator",
+	            "Not authorized to update bookmark for user " + nciUserId + ". Please contact system administrator",
 	            HpcRequestRejectReason.NOT_AUTHORIZED);
 	}
 }
@@ -162,14 +183,24 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 
     // Save the bookmark.
     dataBrowseService.saveBookmark(nciUserId, bookmark);
-    
+
     //Set the permission to the bookmark path 
     if(bookmarkRequest.getPermission() != null) {
+
+      if (!dataManagementSecurityService.groupExists(nciUserId) && securityService.getUser(nciUserId) == null) { 
+        createUser(invoker, nciUserId);
+      }
+
       HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
       subjectPermission.setPermission(bookmarkRequest.getPermission());
       subjectPermission.setSubject(nciUserId);
       try {
-        dataManagementService.setCollectionPermission(bookmarkRequest.getPath(), subjectPermission);
+    	String path = bookmarkRequest.getPath();
+      	if(dataManagementService.interrogatePathRef(path)) {
+      		dataManagementService.setCollectionPermission(path, subjectPermission);
+      	} else {
+      		dataManagementService.setDataObjectPermission(path, subjectPermission);
+      	}
       } finally {
     	dataBrowseService.deleteBookmark(nciUserId, bookmarkName);
       }
@@ -212,11 +243,34 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     //Get bookmarks for all the groups this user belongs to
     List<String> groups = dataManagementSecurityService.getUserGroups(userId);
     for(String group: groups) {
-    	//Get all the bookmarks on this group
+        //Get all the bookmarks on this group
     	List<HpcBookmark> groupBookmarks = dataBrowseService.getBookmarks(group);
     	bookmarkList.getBookmarks().addAll(groupBookmarks);		
     }
 
     return bookmarkList;
   }
+
+
+  //---------------------------------------------------------------------//
+	// Helper Methods
+  // ---------------------------------------------------------------------//
+
+
+  private void createUser(HpcRequestInvoker invoker, String nciUserId)
+      throws HpcException {
+
+    //User does not exist, create if the requester has group admin privileges.
+    if(HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) || HpcUserRole.SYSTEM_ADMIN.equals(invoker.getUserRole())) {
+      HpcUserRequestDTO userRegistrationRequest = new HpcUserRequestDTO();
+      userRegistrationRequest.setDoc(invoker.getNciAccount().getDoc());
+      hpcSecurityBusService.registerUser(nciUserId, userRegistrationRequest);
+      logger.info("Added new user: " + nciUserId + " for setting permissions");
+    } else {
+      throw new HpcException("User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+    }
+
+  }
+
+
 }

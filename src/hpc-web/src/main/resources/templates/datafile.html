@@ -78,7 +78,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-dashboard"></i> Dashboard
+							<i class="fa fa-folder"></i> Browse
 						</h3>
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
@@ -110,8 +110,7 @@
 									<strong>Data file</strong>
                   &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=datafile,path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                     data-target="#downloadModal" data-toggle="modal">
+                     th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
@@ -136,8 +135,7 @@
                   <strong>Data file</strong>
                   &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=datafile,path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                     data-target="#downloadModal" data-toggle="modal">
+                     th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
@@ -166,9 +164,8 @@
 									<i class="fa fa-list-alt red"></i>
                   <strong>Data file</strong>
                   &nbsp;&nbsp;
-                  <a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=datafile,path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                     data-target="#downloadModal">
+                  <a id="downloadlink" class="btn btn-link btn-sm"
+                     th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
@@ -198,8 +195,7 @@
                   <strong>Data file</strong>
                   &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=datafile,path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                     data-target="#downloadModal" data-toggle="modal">
+                     th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
                   </a>
                   &nbsp;&nbsp;&nbsp;&nbsp;
