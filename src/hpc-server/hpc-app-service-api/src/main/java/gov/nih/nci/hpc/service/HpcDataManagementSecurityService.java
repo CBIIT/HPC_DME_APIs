@@ -134,9 +134,9 @@ public interface HpcDataManagementSecurityService {
   /**
    * Get all the groups to which this user belongs
    * 
-   * @param userId
+   * @param userId The userId
    * @return The list of groups to which this user belongs
-   * @throws HpcException
+   * @throws HpcException on service failure.
    */
   List<String> getUserGroups(String userId) throws HpcException;
 }

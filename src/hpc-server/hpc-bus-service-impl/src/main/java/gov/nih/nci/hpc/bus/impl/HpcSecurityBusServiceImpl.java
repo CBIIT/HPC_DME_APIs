@@ -81,6 +81,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   @Value("${hpc.bus.ldapAuthentication}")
   private Boolean ldapAuthentication = null;
   
+  //LDAP account creation only on/off switch.
+  @Value("${hpc.bus.createLdapAccountOnly}")
+  private Boolean createLdapAccountOnly = null;
+  
   //The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -137,6 +141,16 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     nciAccount.setDoc(userRegistrationRequest.getDoc());
     nciAccount.setDefaultConfigurationId(configurationId);
 
+    // Obtain user's first and last name from AD if LDAP account exists
+    HpcNciAccount ldapNciAccount = securityService.getUserFirstLastNameFromAD(nciUserId);
+    if (ldapNciAccount != null) {
+      nciAccount.setFirstName(ldapNciAccount.getFirstName());
+      nciAccount.setLastName(ldapNciAccount.getLastName());
+	} else {
+	  if (createLdapAccountOnly)
+		  throw new HpcException("UserId does not exist in LDAP: " + nciUserId, HpcErrorType.INVALID_REQUEST_INPUT);
+	}
+    
     // HPC-DM is integrated with a data management system (IRODS). When registering a user with HPC-DM,
     // this service creates an account for the user with the data management system, unless an account
     // already established for the user.
@@ -156,6 +170,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
             HpcRequestRejectReason.API_NOT_SUPPORTED);
       }
 
+      // If the invoker is a GroupAdmin, then user being created must belong to their DOC
+      HpcRequestInvoker invoker = securityService.getRequestInvoker();
+      if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) && !invoker.getNciAccount().getDoc().equals(userRegistrationRequest.getDoc())) {
+		String message = "Group Admins can only create user for their DOC";
+		logger.error(message);
+		throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
+	  }
+      
+      
       // Create the data management (IRODS) account.
       executeGroupAdminAsSystemAccount(
           () -> dataManagementSecurityService.addUser(nciAccount, role));
@@ -292,7 +315,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       String doc,
       String lastNamePattern,
       String defaultBasePath,
-      boolean active)
+      boolean active,
+      boolean query)
       throws HpcException {
     // Get the users based on search criteria.
     HpcUserListDTO users = new HpcUserListDTO();
@@ -312,7 +336,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // Perform the search and construct the return DTO.
     for (HpcUser user :
         securityService.getUsers(
-            nciUserId, firstNamePattern, doc, lastNamePattern, defaultConfigurationId, active)) {
+            nciUserId, firstNamePattern, doc, lastNamePattern, defaultConfigurationId, active, query)) {
       // Get the default data management configuration for this user.
       HpcDataManagementConfiguration dataManagementConfiguration =
           dataManagementService.getDataManagementConfiguration(
@@ -792,7 +816,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
         && userUpdateRequest.getUserRole() != null
         && !userUpdateRequest.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN.value())) {
       throw new HpcException(
-          "Not authorizated to downgrade self role. Please contact system administrator",
+          "Not authorized to downgrade self role. Please contact system administrator",
           HpcRequestRejectReason.NOT_AUTHORIZED);
     }
   }

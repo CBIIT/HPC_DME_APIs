@@ -129,7 +129,7 @@
 						width : 100,
 						displayName : 'Download',
 						cellFilter : 'dmePathEncoding',
-						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;path={{COL_FIELD CUSTOM_FILTERS}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+						cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" href="../download?type=datafile&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source={{grid.appScope.source}}"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
 						exporterSuppressExport : true,
 						enableSorting: false
 					},{
@@ -151,6 +151,7 @@
         //$scope.gridOptions1.data = resultsArray;
         $scope.gridOptions1.data = results;
         $scope.selectedRows = [];
+        $scope.source = source;
 
         $scope.selectAll = function() {
           $scope.gridApi.selection.selectAllRows();
@@ -384,7 +385,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-laptop"></i> Dashboard
+							<i class="fa fa-search"></i> Search
 						</h3>
 						<ol class="breadcrumb">
 							<li><i class="fa fa-home"></i><a th:href="@{/dashboard}">Dashboard
