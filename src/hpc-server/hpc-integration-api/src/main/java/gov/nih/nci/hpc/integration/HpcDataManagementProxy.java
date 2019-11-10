@@ -344,6 +344,25 @@ public interface HpcDataManagementProxy {
   public HpcSubjectPermission acquireCollectionPermission(
       Object authenticatedToken, String path, String userId) throws HpcException;
 
+  
+  /**
+   * Acquire permission on a given DataObject for a given user.
+   *
+   * <p>Similar to <code>getDataObjectPermission</code> method of this class but internally ensures
+   * that no permission is represented as a level of "NONE" even if iRODS Jargon API returns null to
+   * indicate no permission.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param path Path of given DataObject.
+   * @param userId UserId of given user.
+   * @return <code>HpcSubjectPermission</code> instance representing given user's permission on
+   *     given DataObject
+   * @throws HpcException on data management system failure.
+   */
+  public HpcSubjectPermission acquireDataObjectPermission(
+      Object authenticatedToken, String path, String userId) throws HpcException;
+  
+  
   /**
    * Set Collection permission.
    *

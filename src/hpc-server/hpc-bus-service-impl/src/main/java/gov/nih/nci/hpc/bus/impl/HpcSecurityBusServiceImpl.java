@@ -816,7 +816,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
         && userUpdateRequest.getUserRole() != null
         && !userUpdateRequest.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN.value())) {
       throw new HpcException(
-          "Not authorizated to downgrade self role. Please contact system administrator",
+          "Not authorized to downgrade self role. Please contact system administrator",
           HpcRequestRejectReason.NOT_AUTHORIZED);
     }
   }
