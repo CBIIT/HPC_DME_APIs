@@ -72,14 +72,14 @@
 									</div>
 									<div class="col-sm-12 column">
 										<label for="firstName">First Name:</label> <input
-											type="text" class="form-control"
+											id="createUserFirstName" type="text" readonly="readonly" class="form-control"
 											th:field="*{firstName}"
-											placeholder="Enter First Name" size="40" />
+											placeholder="First Name will be retrieved from LDAP" size="40" />
 									</div>
 									<div class="col-sm-12 column">
 										<label for="lastName">Last Name:</label> <input
-											type="text" class="form-control"
-											th:field="*{lastName}" placeholder="Enter Last Name"
+											id="createUserLastName" type="text" readonly="readonly" class="form-control"
+											th:field="*{lastName}" placeholder="Last Name will be retrieved from LDAP"
 											size="40" />
 									</div>
 									<div class="col-sm-12 column">
@@ -183,6 +183,11 @@
 											console.log('SUCCESS: ', msg);
 											$('#message').html(msg.message);
 											ele.style.display = "block";
+											if(msg.message.indexOf("User account created for ") == 0) {
+												var name = msg.message.substring("User account created for ".length);
+												$("#createUserFirstName").val(name.split(',')[1].trim());
+												$("#createUserLastName").val(name.split(',')[0].trim());
+											}
 										},
 										error : function(e) {
 											$("#wait").html('');
