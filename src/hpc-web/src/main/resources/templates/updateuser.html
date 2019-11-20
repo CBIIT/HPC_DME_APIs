@@ -80,12 +80,12 @@
 									<div class="col-sm-12 column">
 										<label for="firstName">First Name:</label> <input
 											type="text" class="form-control"
-											id="firstName" name="firstName"
+											id="firstName" readonly="readonly" name="firstName"
 											th:value="${userDTO.getFirstName()}" size="40" />
 									</div>
 									<div class="col-sm-12 column">
 										<label for="lastName">Last Name:</label> <input
-											type="text" class="form-control"
+											type="text" readonly="readonly" class="form-control"
 											id="lastName" name="lastName" th:value="${userDTO.getLastName()}"
 											size="40" />
 									</div>
