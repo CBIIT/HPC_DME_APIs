@@ -83,7 +83,7 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @param userId The user ID submitting the download request.
@@ -108,7 +108,7 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @return The download URL.
@@ -125,7 +125,7 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @param objectId The data object id from the data management system (UUID).
@@ -144,7 +144,7 @@ public interface HpcDataTransferService {
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @throws HpcException on service failure.
@@ -159,7 +159,7 @@ public interface HpcDataTransferService {
    * @param dataTransferRequestId The data transfer request ID.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @return The data transfer upload request status.
@@ -176,7 +176,7 @@ public interface HpcDataTransferService {
    * @param dataTransferRequestId The data transfer request ID.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @return The data transfer download request status.
@@ -194,7 +194,7 @@ public interface HpcDataTransferService {
    * @param getSize If set to true, the file/directory size will be returned.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @return The path attributes.
@@ -225,7 +225,7 @@ public interface HpcDataTransferService {
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @param includePatterns The patterns to use to include files in the scan results.
@@ -243,7 +243,7 @@ public interface HpcDataTransferService {
    * Get a file from the archive.
    *
    * @param configurationId The data management configuration ID.
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @param dataTransferType The data transfer type.
@@ -492,7 +492,7 @@ public interface HpcDataTransferService {
    * @param urlCreated The data/time the URL was generated
    * @param configurationId The data management configuration ID. This is to get the expiration
    *        config.
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX.
    * @return True if the upload URL expired, or false otherwise.
