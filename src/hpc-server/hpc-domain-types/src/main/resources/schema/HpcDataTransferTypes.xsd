@@ -304,6 +304,7 @@
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />
 			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="processed" type="xsd:dateTime" />
 			<xsd:element name="percentComplete" type="xsd:int" />
 			<xsd:element name="size" type="xsd:long" />
 		</xsd:sequence>

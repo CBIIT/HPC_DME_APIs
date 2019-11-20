@@ -8,10 +8,13 @@
  */
 package gov.nih.nci.hpc.dao;
 
+import java.util.Date;
 import java.util.List;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -58,6 +61,19 @@ public interface HpcDataDownloadDAO {
    * @throws HpcException on database error.
    */
   public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
+
+  /**
+   * Get next data object download task by data transfer status and data transfer type.
+   *
+   * @param dataTransferStatus The data object download task data transfer status.
+   * @param dataTransferType The data object download task data transfer type.
+   * @param processed The processed date to pick up only records that have not yet been processed in this run.
+   * @return A data object download tasks.
+   * @throws HpcException on database error.
+   */
+  public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
+      HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
+      Date processed) throws HpcException;
 
   /**
    * Store a new download task result, or updated an existing task result.

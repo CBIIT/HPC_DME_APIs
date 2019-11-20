@@ -531,6 +531,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
+  public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
+      HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
+      Date processed) throws HpcException {
+    return dataDownloadDAO.getNextDataObjectDownloadTask(
+        dataTransferStatus, dataTransferType, processed);
+  }
+  
+  @Override
   public HpcDownloadTaskStatus getDownloadTaskStatus(String taskId, HpcDownloadTaskType taskType)
       throws HpcException {
     if (taskType == null) {
@@ -703,6 +711,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
   }
 
+  @Override
+  public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
+      throws HpcException {
+    downloadTask.setProcessed(Calendar.getInstance());
+    dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+  }
+  
   @Override
   public void updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
       long bytesTransferred) throws HpcException {

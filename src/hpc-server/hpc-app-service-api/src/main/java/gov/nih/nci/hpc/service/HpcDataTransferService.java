@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
@@ -20,6 +21,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
@@ -261,6 +263,19 @@ public interface HpcDataTransferService {
   public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
 
   /**
+   * Get next data object download task to process given data transfer status and data transfer type.
+   *
+   * @param dataTransferStatus The data object download task data transfer status.
+   * @param dataTransferType The data object download task data transfer type.
+   * @param processed The processed date to pick up only records that have not yet been processed in this run.
+   * @return Data object download task.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
+      HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
+      Date processed) throws HpcException;
+
+  /**
    * Get download task status.
    *
    * @param taskId The download task ID.
@@ -303,6 +318,15 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
+      throws HpcException;
+
+  /**
+   * Mark a data object download task as processed by updating the processed time stamp.
+   *
+   * @param downloadTask The download task to mark processed.
+   * @throws HpcException on service failure.
+   */
+  public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException;
 
   /**
