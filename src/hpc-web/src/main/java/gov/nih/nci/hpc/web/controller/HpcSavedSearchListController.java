@@ -88,7 +88,7 @@ public class HpcSavedSearchListController extends AbstractHpcController {
 				for (HpcNamedCompoundMetadataQuery query : queries.getNamedCompoundQueries()) {
 					HpcNamedQuery namedQuery = new HpcNamedQuery();
 					namedQuery.setSearchName(URLEncoder.encode(query.getName(), "UTF-8"));
-					namedQuery.setSearchType(query.getCompoundQueryType().value());
+					namedQuery.setSearchType("COLLECTION".equals(query.getCompoundQueryType().value()) ? "Collection" : "Data Object");
 					namedQuery.setCreatedOn(format.format(query.getCreated().getTime()));
 					namedQuery.setDelete(URLEncoder.encode(query.getName(), "UTF-8"));
 					namedQuery.setEdit(URLEncoder.encode(query.getName(), "UTF-8"));

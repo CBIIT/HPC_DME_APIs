@@ -557,7 +557,7 @@ a.logo {
     color: #fed189;
     float: left;
     margin-top: 15px;
-    text-transform: uppercase;
+    /*text-transform: uppercase;*/
 }
 
 a.logo:hover, a.logo:focus {
@@ -815,7 +815,7 @@ div[data-role="editor-toolbar"] {
 .dropdown-menu.extended.logout > li:last-child > a, .dropdown-menu.extended.logout > li:last-child > a:hover {
     color: #fff;
     border-bottom: none !important;
-    text-transform: uppercase;
+    /*text-transform: uppercase;*/
     background-color:#688a7e !important;
 }
 
