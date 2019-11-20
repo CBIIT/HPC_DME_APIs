@@ -1042,7 +1042,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *
    * @param dataTransferType The data transfer type.
    * @param configurationId The data management configuration ID.
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
    *        not POSIX
    * @return A data transfer authenticated token.
@@ -1821,7 +1821,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * 
    * @param configurationId The data management configuration ID.
    * 
-   * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
    * the S3 archive the data-object is stored in. This is only applicable for S3 archives, not
    * POSIX.
    * 
@@ -2093,6 +2093,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
      * Update a download task for a 2-hop download from an existing download task.
      *
      * @param downloadTask The existing download task
+     * @param secondHopArchiveLocation The second hop archive location
      * @throws HpcException If it failed to persist the task.
      */
     private void updateDownloadTask(HpcDataObjectDownloadTask downloadTask,
@@ -2151,7 +2152,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
      * Get download source location.
      *
      * @param configurationId The data management configuration ID.
-     * @param S3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+     * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
      *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
      *        not POSIX.
      * @param dataTransferType The data transfer type.
