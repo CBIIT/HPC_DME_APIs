@@ -13,8 +13,10 @@ package gov.nih.nci.hpc.dao.postgresql.impl;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -66,8 +68,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", "
           + "\"S3_ACCOUNT_ACCESS_KEY\", \"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", "
-          + "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\", \"PROCESSED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", " + "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
           + "\"S3_ARCHIVE_CONFIGURATION_ID\"=excluded.\"S3_ARCHIVE_CONFIGURATION_ID\", "
@@ -85,7 +87,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"S3_ACCOUNT_REGION\"=excluded.\"S3_ACCOUNT_REGION\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
           + "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", " + "\"SIZE\"=excluded.\"SIZE\", "
-          + "\"CREATED\"=excluded.\"CREATED\"";
+          + "\"CREATED\"=excluded.\"CREATED\", "
+          + "\"PROCESSED\"=excluded.\"PROCESSED\"";
 
   public static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL =
       "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
@@ -96,6 +99,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   public static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL =
       "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" order by \"PRIORITY\", \"CREATED\"";
 
+  public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL =
+      "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"DATA_TRANSFER_STATUS\" = ? "
+          + "and (\"PROCESSED\" < ? or \"PROCESSED\" is null) order by \"PRIORITY\", \"CREATED\" limit 1";
+
+  public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL =
+      "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"DATA_TRANSFER_STATUS\" = ? and \"DATA_TRANSFER_TYPE\" = ? "
+          + "and (\"PROCESSED\" < ? or \"PROCESSED\" is null) order by \"PRIORITY\", \"CREATED\" limit 1";
+    
   public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL =
       "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( "
           + "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
@@ -439,7 +450,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           dataObjectDownloadTask.getDestinationType().value(), s3AccountAccessKey,
           s3AccountSecretKey, s3AccountRegion, dataObjectDownloadTask.getCompletionEvent(),
           dataObjectDownloadTask.getPercentComplete(), dataObjectDownloadTask.getSize(),
-          dataObjectDownloadTask.getCreated());
+          dataObjectDownloadTask.getCreated(), dataObjectDownloadTask.getProcessed());
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
@@ -485,6 +496,35 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     }
   }
 
+  @Override
+  public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
+      HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
+      Date processed) throws HpcException {
+    try {
+      Timestamp timestamp = new Timestamp(processed.getTime());
+      if (dataTransferType != null) {
+        return jdbcTemplate.query(
+            GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL,
+            dataObjectDownloadTaskRowMapper,
+            dataTransferStatus.value(),
+            dataTransferType.value(),
+            timestamp);
+      }
+      return jdbcTemplate.query(
+          GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL,
+          dataObjectDownloadTaskRowMapper,
+          dataTransferStatus.value(),
+          timestamp);
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to get data object download tasks: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR,
+          HpcIntegratedSystem.POSTGRESQL,
+          e);
+    }
+  }
+  
   @Override
   public void upsertDownloadTaskResult(HpcDownloadTaskResult taskResult) throws HpcException {
     try {
