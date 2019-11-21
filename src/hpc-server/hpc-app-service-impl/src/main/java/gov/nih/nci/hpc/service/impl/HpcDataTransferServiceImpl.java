@@ -1803,6 +1803,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     try {
       long freeSpace = 1000
           * FileSystemUtils.freeSpaceKb(downloadRequest.getFileDestination().getAbsolutePath());
+      
+      logger.error("ERAN: " + freeSpace + " " + downloadRequest.getSize());
+      logger.error("ERAN. Free Space: {} bytes. File size: {} bytes", freeSpace,
+          downloadRequest.getSize());
+      
       if (downloadRequest.getSize() > freeSpace) {
         // Not enough space disk space to perform the first hop download. Log an error and reset the
         // task.
