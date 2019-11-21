@@ -13,12 +13,14 @@ package gov.nih.nci.hpc.bus.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount;
@@ -441,32 +443,24 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
   @Override
   @HpcExecuteAsSystemAccount
+  public void startGlobusDataObjectDownloadTasks() throws HpcException {
+    // Iterate through all the data object download tasks that are received and type is GLOBUS.
+    processDataObjectDownloadTasks(
+        HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GLOBUS);
+  }
+
+  @Override
+  @HpcExecuteAsSystemAccount
+  public void startS3DataObjectDownloadTasks() throws HpcException {
+    // Iterate through all the data object download tasks that are received and type is S3.
+    processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3);
+  }
+
+  @Override
+  @HpcExecuteAsSystemAccount
   public void completeDataObjectDownloadTasks() throws HpcException {
     // Iterate through all the data object download tasks that are in-progress.
-    for (HpcDataObjectDownloadTask downloadTask : dataTransferService
-        .getDataObjectDownloadTasks()) {
-      try {
-        switch (downloadTask.getDataTransferStatus()) {
-          case RECEIVED:
-            logger.info("Continuing download task: {}", downloadTask.getId());
-            dataTransferService.continueDataObjectDownloadTask(downloadTask);
-            break;
-
-          case IN_PROGRESS:
-            logger.info("Completing download task: {}", downloadTask.getId());
-            completeDataObjectDownloadTaskInProgress(downloadTask);
-            break;
-
-          default:
-            throw new HpcException("Unexpected data transfer download status ["
-                + downloadTask.getDataTransferStatus() + "] for task: " + downloadTask.getId(),
-                HpcErrorType.UNEXPECTED_ERROR);
-        }
-
-      } catch (HpcException e) {
-        logger.error("Failed to complete download task: " + downloadTask.getId(), e);
-      }
-    }
+    processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.IN_PROGRESS, null);
   }
 
   @Override
@@ -839,6 +833,55 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
+
+  /**
+   * process data object download task in process or received
+   * 
+   * @param dataTransferStatus The data transfer status to process from the download task
+   * @param dataTransferType The data transfer type to process from the download task
+   * @throws HpcException on service failure.
+   */
+  private void processDataObjectDownloadTasks(
+      HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType)
+      throws HpcException {
+    // Iterate through all the data object download tasks that are in-progress.
+    List<HpcDataObjectDownloadTask> downloadTasks = null;
+    Date runTimestamp = new Date();
+    do {
+      downloadTasks =
+          dataTransferService.getNextDataObjectDownloadTask(
+              dataTransferStatus, dataTransferType, runTimestamp);
+      if (!CollectionUtils.isEmpty(downloadTasks)) {
+        HpcDataObjectDownloadTask downloadTask = downloadTasks.get(0);
+        try {
+          //First mark the task as picked up in this run so we don't pick up the same record.
+          dataTransferService.markProcessedDataObjectDownloadTask(downloadTask);
+          switch (downloadTask.getDataTransferStatus()) {
+            case RECEIVED:
+              logger.info("Continuing download task: {}", downloadTask.getId());
+              dataTransferService.continueDataObjectDownloadTask(downloadTask);
+              break;
+
+            case IN_PROGRESS:
+              logger.info("Completing download task: {}", downloadTask.getId());
+              completeDataObjectDownloadTaskInProgress(downloadTask);
+              break;
+
+            default:
+              throw new HpcException(
+                  "Unexpected data transfer download status ["
+                      + downloadTask.getDataTransferStatus()
+                      + "] for task: "
+                      + downloadTask.getId(),
+                  HpcErrorType.UNEXPECTED_ERROR);
+          }
+
+        } catch (HpcException e) {
+          logger.error("Failed to complete download task: " + downloadTask.getId(), e);
+        }
+      }
+    } while (!CollectionUtils.isEmpty(downloadTasks));
+  }
 
   /**
    * add data transfer upload event.

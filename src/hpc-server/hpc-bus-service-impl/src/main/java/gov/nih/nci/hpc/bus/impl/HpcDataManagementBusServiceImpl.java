@@ -115,6 +115,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -157,6 +158,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   @Autowired
   private HpcMetadataService metadataService = null;
 
+  //The Data Search Application Service Instance.
+  @Autowired
+  private HpcDataSearchService dataSearchService = null;
+  
   // TheEvent Application Service Instance.
   @Autowired
   private HpcEventService eventService = null;
@@ -362,6 +367,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    // Verify data objects found under this collection.
+    List<String> dataObjectPaths = dataSearchService.getDataObjectPaths(path, null, 1, 1);
+    if (dataObjectPaths == null || dataObjectPaths.isEmpty()) {
+      // No data objects found under this collection.
+      throw new HpcException(
+          "No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
         metadataService.getCollectionSystemGeneratedMetadata(path);
@@ -440,6 +453,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         }
       }
 
+      // Verify at least one data object found under these collection.
+      boolean dataObjectExist = false;
+      for (String path : downloadRequest.getCollectionPaths()) {
+        List<String> dataObjectPaths = dataSearchService.getDataObjectPaths(path, null, 1, 1);
+        if (dataObjectPaths != null && !dataObjectPaths.isEmpty()) {
+          dataObjectExist = true;
+          break;
+        }
+      }
+      if (!dataObjectExist) {
+        // No data objects found under this collection.
+        throw new HpcException(
+            "No data objects found under collections", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      
       // Get configuration ID of the first collection. It will be used to validate
       // the download destination.
       String configurationId = metadataService.getCollectionSystemGeneratedMetadata(
