@@ -535,10 +535,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
       HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
       Date processed) throws HpcException {
-    return dataDownloadDAO.getNextDataObjectDownloadTask(
-        dataTransferStatus, dataTransferType, processed);
+    return dataDownloadDAO.getNextDataObjectDownloadTask(dataTransferStatus, dataTransferType,
+        processed);
   }
-  
+
   @Override
   public HpcDownloadTaskStatus getDownloadTaskStatus(String taskId, HpcDownloadTaskType taskType)
       throws HpcException {
@@ -718,7 +718,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadTask.setProcessed(Calendar.getInstance());
     dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
   }
-  
+
   @Override
   public void updateDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
       long bytesTransferred) throws HpcException {
@@ -1794,25 +1794,31 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Set the first hop file destination to be the source file of the second hop.
     downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 
+    // Populate the response object.
+    response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
+    response.setDestinationLocation(secondHopDownload.getDownloadTask()
+        .getGlobusDownloadDestination().getDestinationLocation());
+
     // Confirm that there is enough disk space to perform the first hop download.
     try {
       long freeSpace = 1000
           * FileSystemUtils.freeSpaceKb(downloadRequest.getFileDestination().getAbsolutePath());
-      if (downloadRequest.getSize() < freeSpace) {
+      
+      logger.error("ERAN: " + freeSpace + " " + downloadRequest.getSize());
+      logger.error("ERAN. Free Space: {} bytes. File size: {} bytes", freeSpace,
+          downloadRequest.getSize());
+      
+      if (downloadRequest.getSize() > freeSpace) {
         // Not enough space disk space to perform the first hop download. Log an error and reset the
         // task.
         logger.error(
             "Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
             downloadRequest.getPath(), freeSpace, downloadRequest.getSize());
         resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+        return;
       }
-
-      logger.error("ERAN: " + freeSpace + " " + downloadRequest.getSize());
-      logger.error("ERAN. Free Space: {} bytes. File size: {} bytes", freeSpace,
-          downloadRequest.getSize());
-
     } catch (IOException e) {
-      // Failed to check free disk space. Try the download.
+      // Failed to check free disk space. We'll try the download.
       logger.error("Failed to determine free space", e);
     }
 
@@ -1823,10 +1829,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
               downloadRequest.getS3ArchiveConfigurationId()),
           downloadRequest, baseArchiveDestination, secondHopDownload);
 
-      // Populate the response object.
-      response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
-      response.setDestinationLocation(secondHopDownload.getDownloadTask()
-          .getGlobusDownloadDestination().getDestinationLocation());
+
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
