@@ -101,11 +101,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
   public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL =
       "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"DATA_TRANSFER_STATUS\" = ? "
-          + "and (\"PROCESSED\" < ? or \"PROCESSED\" is null) order by \"PRIORITY\", \"CREATED\" limit 1";
+          + "and (\"PROCESSED\" < ? or \"PROCESSED\" is null) and \"CREATED\" < ? order by \"PRIORITY\", \"CREATED\" limit 1";
 
   public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL =
       "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"DATA_TRANSFER_STATUS\" = ? and \"DATA_TRANSFER_TYPE\" = ? "
-          + "and (\"PROCESSED\" < ? or \"PROCESSED\" is null) order by \"PRIORITY\", \"CREATED\" limit 1";
+          + "and (\"PROCESSED\" < ? or \"PROCESSED\" is null) and \"CREATED\" < ? order by \"PRIORITY\", \"CREATED\" limit 1";
     
   public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL =
       "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( "
@@ -508,12 +508,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
             dataObjectDownloadTaskRowMapper,
             dataTransferStatus.value(),
             dataTransferType.value(),
+            timestamp,
             timestamp);
       }
       return jdbcTemplate.query(
           GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL,
           dataObjectDownloadTaskRowMapper,
           dataTransferStatus.value(),
+          timestamp,
           timestamp);
 
     } catch (DataAccessException e) {
