@@ -463,4 +463,14 @@ public interface HpcDataManagementService {
    * @return A configuration ID, or null if not found.
    */
   public HpcDataManagementConfiguration getDataManagementConfiguration(String id);
+  
+
+  /**
+   * Count the number of data objects (files) under a collection path.
+   *
+   * @param path The collection path.
+   * @throws HpcException on service failure.
+   */
+  public int countDataObjectsUnderPath(String path) 
+      throws HpcException;
 }

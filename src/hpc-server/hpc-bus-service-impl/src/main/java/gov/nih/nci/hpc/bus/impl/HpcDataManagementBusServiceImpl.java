@@ -115,7 +115,6 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
-import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -157,10 +156,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   // The Metadata Application Service Instance.
   @Autowired
   private HpcMetadataService metadataService = null;
-
-  //The Data Search Application Service Instance.
-  @Autowired
-  private HpcDataSearchService dataSearchService = null;
   
   // TheEvent Application Service Instance.
   @Autowired
@@ -368,8 +363,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     // Verify data objects found under this collection.
-    List<String> dataObjectPaths = dataSearchService.getDataObjectPaths(path, null, 1, 1);
-    if (dataObjectPaths == null || dataObjectPaths.isEmpty()) {
+    if (dataManagementService.countDataObjectsUnderPath(path) == 0) {
       // No data objects found under this collection.
       throw new HpcException(
           "No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -456,8 +450,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       // Verify at least one data object found under these collection.
       boolean dataObjectExist = false;
       for (String path : downloadRequest.getCollectionPaths()) {
-        List<String> dataObjectPaths = dataSearchService.getDataObjectPaths(path, null, 1, 1);
-        if (dataObjectPaths != null && !dataObjectPaths.isEmpty()) {
+        if (dataManagementService.countDataObjectsUnderPath(path) > 0) {
           dataObjectExist = true;
           break;
         }
