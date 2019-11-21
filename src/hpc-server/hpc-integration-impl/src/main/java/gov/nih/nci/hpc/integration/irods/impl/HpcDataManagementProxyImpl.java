@@ -789,6 +789,19 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
   }
 
   @Override
+  public int countDataObjectsUnderPath(Object authenticatedToken, String path) throws HpcException {
+    try {
+      return irodsConnection.getCollectionAndDataObjectListAndSearchAO(authenticatedToken).countDataObjectsUnderPath(
+          getAbsolutePath(path));
+
+    } catch (Exception e) {
+      throw new HpcException(
+          "Failed to get the count of data objects under a collection at path " + path + ": " + e.getMessage(),
+          HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
+    }
+  }
+  
+  @Override
   public String getAbsolutePath(String path) {
     if (path == null) {
       return irodsConnection.getBasePath();
