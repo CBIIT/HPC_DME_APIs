@@ -23,7 +23,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import org.apache.commons.io.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1793,28 +1792,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Set the first hop file destination to be the source file of the second hop.
     downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
-
-    // Confirm that there is enough disk space to perform the first hop download.
-    try {
-      long freeSpace = 1000
-          * FileSystemUtils.freeSpaceKb(downloadRequest.getFileDestination().getAbsolutePath());
-      if (downloadRequest.getSize() < freeSpace) {
-        // Not enough space disk space to perform the first hop download. Log an error and reset the
-        // task.
-        logger.error(
-            "Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
-            downloadRequest.getPath(), freeSpace, downloadRequest.getSize());
-        resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
-      }
-
-      logger.error("ERAN: " + freeSpace + " " + downloadRequest.getSize());
-      logger.error("ERAN. Free Space: {} bytes. File size: {} bytes", freeSpace,
-          downloadRequest.getSize());
-
-    } catch (IOException e) {
-      // Failed to check free disk space. Try the download.
-      logger.error("Failed to determine free space", e);
-    }
 
     // Perform the first hop download (From Cleversafe to local file system).
     try {
