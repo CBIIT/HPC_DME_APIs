@@ -129,7 +129,7 @@ public interface HpcSecurityService {
    *
    * @param ldapAuthentication (Optional) If true - authenticate the system account via LDAP.
    * @param systemAccountFunction The function to perform as system account.
-   * @return The functional interface return type
+   * @return T The functional interface return type
    * @throws HpcException thrown by the function.
    */
   public <T> T executeAsSystemAccount(
