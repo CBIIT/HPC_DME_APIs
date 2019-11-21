@@ -35,6 +35,7 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "PERCENT_COMPLETE" integer,
   "SIZE" bigint,
   "CREATED" timestamp,
+  "PROCESSED" timestamp,
   "PRIORITY" integer DEFAULT 100
 )
 WITH (
@@ -83,6 +84,8 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."SIZE" IS
                   'The data object size';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."CREATED" IS 
                   'The date and time the task was created';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PROCESSED" IS 
+                  'The date and time the task was processed';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PRIORITY" IS 
                   'The download task priority';
 

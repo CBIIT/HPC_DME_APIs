@@ -99,6 +99,20 @@ public class HpcScheduledTasksImpl {
     executeTask("processTemporaryArchiveTask()", systemBusService::processTemporaryArchive);
   }
 
+  /** Process Data Transfer Download Files Tasks that are in RECEIVED state for Globus transfer. */
+  @Scheduled(cron = "${hpc.scheduler.cron.startGlobusDataObjectDownloadTasks.delay}")
+  private void startGlobusDataObjectDownloadTasks() {
+    executeTask(
+        "startGlobusDataObjectDownloadTasks()", systemBusService::startGlobusDataObjectDownloadTasks);
+  }
+  
+  /** Process Data Transfer Download Files Tasks that are in RECEIVED state for S3 transfer. */
+  @Scheduled(cron = "${hpc.scheduler.cron.startS3DataObjectDownloadTasks.delay}")
+  private void startS3DataObjectDownloadTasks() {
+    executeTask(
+        "startS3DataObjectDownloadTasks()", systemBusService::startS3DataObjectDownloadTasks);
+  }
+  
   /** Complete (and cleanup) Data Transfer Download Files Tasks. */
   @Scheduled(cron = "${hpc.scheduler.cron.completeDataObjectDownloadTasks.delay}")
   private void completeDataObjectDownloadTasksTask() {
