@@ -60,6 +60,23 @@ public interface HpcUserDAO
     		                      String doc, String defaultConfigurationId, boolean active) 
     		                     throws HpcException;
 
+
+
+    /**
+      * Get users from the repository by role.
+      *
+      * @param role The role to filter by
+      * @param doc (Optional) The doc to filter by.
+      * @param defaultConfigurationId (Optional) The default data management configuration ID.
+      * @param active If set to true, only active users are searched. Otherwise, all users (active and inactive) are searched.
+      * @return A list of users.
+      * @return The user if found, or null otherwise.
+      * @throws HpcException on database error.
+      */
+    public List<HpcUser> getUsersByRole(String role, String doc,
+                String defaultConfigurationId, boolean active)
+               throws HpcException;
+
     /**
      * Query users by search criteria.
      *
