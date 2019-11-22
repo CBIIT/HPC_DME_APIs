@@ -58,9 +58,18 @@ public class HpcUserDAOImpl implements HpcUserDAO
                                                    "\"CREATED\"=excluded.\"CREATED\", " +
                                                    "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
 	
+
+
+
 	private static final String GET_USER_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 
 	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where ?";
+
+	private static final String GET_USERS_SQL_BY_ROLE =
+			"SELECT \"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", \"DEFAULT_CONFIGURATION_ID\", " +
+			"\"ACTIVE\", \"CREATED\", \"LAST_UPDATED\", \"ACTIVE_UPDATED_BY\" " +
+			"FROM public.\"HPC_USER\" u, public.\"r_user_main\" r where " +
+			"u.\"USER_ID\" = r.\"user_name\" and r.\"user_type_name\" = ? ";
     
 	private static final String GET_USERS_USER_ID_FILTER = " and lower(\"USER_ID\") = lower(?) ";
 	
@@ -227,7 +236,45 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}		
     }
-	
+
+
+	@Override
+	public List<HpcUser> getUsersByRole(String role, String doc,
+			                      String defaultConfigurationId, boolean active)
+                                 throws HpcException
+    {
+		// Build the query based on provided search criteria.
+		StringBuilder sqlQueryBuilder = new StringBuilder();
+        List<Object> args = new ArrayList<>();
+
+        sqlQueryBuilder.append(GET_USERS_SQL_BY_ROLE);
+        args.add(role);
+
+        if(doc != null) {
+           sqlQueryBuilder.append(GET_USERS_DOC_FILTER);
+           args.add(doc);
+        }
+        if(defaultConfigurationId != null) {
+           sqlQueryBuilder.append(GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER);
+           args.add(defaultConfigurationId);
+        }
+        if(active) {
+           sqlQueryBuilder.append(GET_USERS_ACTIVE_FILTER);
+        }
+
+		try {
+		     return jdbcTemplate.query(sqlQueryBuilder.toString(), rowMapper, args.toArray());
+
+		} catch(IncorrectResultSizeDataAccessException irse) {
+			    return null;
+
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get users for role = " + role + " in doc = " + doc + e.getMessage(),
+		        HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+    }
+
+
 	@Override
 	public List<HpcUser> queryUsers(String nciUserIdPattern, String firstNamePattern, String lastNamePattern, 
 			                      String doc, String defaultConfigurationId, boolean active) 
