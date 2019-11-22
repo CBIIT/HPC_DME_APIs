@@ -1055,13 +1055,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Unknown user", HpcErrorType.UNEXPECTED_ERROR);
     }
 
+    // Get the data transfer configuration (Globus or S3).
+    HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+        .getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+
     // Search for an existing token.
     for (HpcDataTransferAuthenticatedToken authenticatedToken : invoker
         .getDataTransferAuthenticatedTokens()) {
       if (authenticatedToken.getDataTransferType().equals(dataTransferType)
           && authenticatedToken.getConfigurationId().equals(configurationId)
           && (authenticatedToken.getS3ArchiveConfigurationId() == null || authenticatedToken
-              .getS3ArchiveConfigurationId().equals(s3ArchiveConfigurationId))) {
+              .getS3ArchiveConfigurationId().equals(dataTransferConfiguration.getId()))) {
         return authenticatedToken.getDataTransferAuthenticatedToken();
       }
     }
@@ -1072,9 +1076,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       dataTransferSystemAccount =
           systemAccountLocator.getSystemAccount(dataTransferType, configurationId);
     } else if (dataTransferType.equals(HpcDataTransferType.S_3)) {
-      dataTransferSystemAccount = systemAccountLocator.getSystemAccount(
-          dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
-              s3ArchiveConfigurationId, dataTransferType).getArchiveProvider());
+      dataTransferSystemAccount =
+          systemAccountLocator.getSystemAccount(dataTransferConfiguration.getArchiveProvider());
     }
 
     if (dataTransferSystemAccount == null) {
@@ -1084,8 +1087,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Authenticate with the data transfer system.
     Object token = dataTransferProxies.get(dataTransferType).authenticate(dataTransferSystemAccount,
-        dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
-            s3ArchiveConfigurationId, dataTransferType).getUrlOrRegion());
+        dataTransferConfiguration.getUrlOrRegion());
     if (token == null) {
       throw new HpcException("Invalid data transfer account credentials",
           HpcErrorType.DATA_TRANSFER_ERROR, dataTransferSystemAccount.getIntegratedSystem());
@@ -1096,6 +1098,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     authenticatedToken.setDataTransferAuthenticatedToken(token);
     authenticatedToken.setDataTransferType(dataTransferType);
     authenticatedToken.setConfigurationId(configurationId);
+    authenticatedToken.setS3ArchiveConfigurationId(dataTransferConfiguration.getId());
     authenticatedToken.setSystemAccountId(dataTransferSystemAccount.getUsername());
     invoker.getDataTransferAuthenticatedTokens().add(authenticatedToken);
     HpcRequestContext.setRequestInvoker(invoker);
