@@ -81,6 +81,25 @@ public interface HpcSecurityBusService {
       boolean query)
       throws HpcException;
 
+
+  /**
+     * Get users by by role.
+     *
+     * @param role The Role.
+     * @param doc The DOC
+     * @param defaultBasePath The base path to search in.
+     * @param active If set to true, only active users are searched. Otherwise, all users (active and
+     *     inactive) are searched.
+     * @return A list of users.
+     * @throws HpcException on service failure.
+     */
+  public HpcUserListDTO getUsersByRole(
+        String role,
+        String doc,
+        String defaultBasePath,
+       boolean active)
+        throws HpcException;
+
   /**
    * Authenticate user.
    *
