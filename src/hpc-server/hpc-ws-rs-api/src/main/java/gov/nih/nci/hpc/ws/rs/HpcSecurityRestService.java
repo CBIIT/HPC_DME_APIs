@@ -98,6 +98,23 @@ public interface HpcSecurityRestService {
       @QueryParam("doc") String doc,
       @QueryParam("defaultBasePath") String defaultBasePath);
 
+
+  /**
+   * Get users by their role. Note: only active users are returned.
+   * @param role The role
+   * @param doc (optional) The DOC.
+   * @param defaultBasePath (optional) The default base path.
+   * @return The REST service response w/ HpcUserListDTO entity.
+   */
+  @GET
+  @Path("/user/role/{roleName}")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response getUsersByRole(
+	  @PathParam("roleName") String roleName,
+	  @QueryParam("doc") String doc,
+      @QueryParam("defaultBasePath") String defaultBasePath);
+
+
   /**
    * Query users by username, first or last name. Note: only active users are returned.
    *

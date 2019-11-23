@@ -64,6 +64,8 @@ public interface HpcSecurityService {
    */
   public HpcUser getUser(String nciUserId) throws HpcException;
 
+
+
   /**
    * Get users by search criterias. Note: only active users are returned.
    *
@@ -90,6 +92,26 @@ public interface HpcSecurityService {
       boolean active,
       boolean query)
       throws HpcException;
+
+
+  /**
+   * Get users by by role.
+   *
+   * @param role The Role.
+   * @param doc The DOC
+   * @param defaultConfigurationId The default configuration ID.
+   * @param active If set to true, only active users are searched. Otherwise, all users (active and
+   *     inactive) are searched.
+   * @return A list of users.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcUser> getUsersByRole(
+      String role,
+      String doc,
+      String defaultConfigurationId,
+      boolean active)
+      throws HpcException;
+
 
   /**
    * Get user role.
@@ -129,7 +151,7 @@ public interface HpcSecurityService {
    *
    * @param ldapAuthentication (Optional) If true - authenticate the system account via LDAP.
    * @param systemAccountFunction The function to perform as system account.
-   * @return T The functional interface return type
+   * @return The functional interface return type
    * @throws HpcException thrown by the function.
    */
   public <T> T executeAsSystemAccount(
