@@ -1839,6 +1839,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         "checkIfTransferCanBeLaunched: Entered with parameters of transferType = %s, dataMgmtConfigId = %s",
         dataTransferType.toString(), configurationId));
 
+    if (!dataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+      // The 'data transfer acceptance' check is applicable for Globus transfer only.
+      return true;
+    }
+
     final Object theAuthToken =
         getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
 
