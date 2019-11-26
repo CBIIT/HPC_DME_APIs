@@ -119,7 +119,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     columnDefs: [
                  { field: 'taskId', width:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="downloadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
                  { field: 'path', width:200, displayName : 'Path' },
-                 { field: 'type', width:200, displayName : 'Type'},
+                 { field: 'type', width:200, displayName : 'Type', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{grid.appScope.toTitleCase(row.entity.type)}}</div>'},
                  { field: 'result', width:200, displayName: 'Transfer Result'},
                  
                ],
@@ -154,6 +154,9 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 
 	    return row.entity.id;
 	  }	 
+  $scope.toTitleCase = function( data ) {
+	    return data.toLowerCase().replace(/_/g, ' ').replace(/(^|\s)\S/g, function(t) { return t.toUpperCase() });
+	  };
 }]);
 </script>
 
