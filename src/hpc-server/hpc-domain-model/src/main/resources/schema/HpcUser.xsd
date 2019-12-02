@@ -41,6 +41,7 @@
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="dataTransferAuthenticatedToken" type="xsd:anyType" />
 			<xsd:element name="configurationId" type="xsd:string" />
+			<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
       <xsd:element name="systemAccountId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>

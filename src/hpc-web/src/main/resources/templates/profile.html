@@ -108,7 +108,7 @@
 
                                 <tr>
                                     <th>Role</th>
-                                    <td th:text="${profile.userRole}"></td>
+                                    <td th:text="${#strings.replace(#strings.capitalizeWords(#strings.toLowerCase(profile.userRole),'_'),'_',' ')}"></td>
                                 </tr>
                             </table>
                         </div>
@@ -121,7 +121,7 @@
                                 <th:block th:each="perm: ${permissions.permissionsForCollections}">
                                     <tr th:if="${perm.permission.value()} != 'NONE'">
                                         <td th:text="${perm.collectionPath}"></td>
-                                        <td th:text="${perm.permission.value()}"></td>
+                                        <td th:text="${#strings.capitalize(#strings.toLowerCase(perm.permission.value()))}"></td>
                                     </tr>                                    
                                 </th:block>
                             </table>

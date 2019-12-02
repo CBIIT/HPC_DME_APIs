@@ -18,6 +18,7 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "USER_ID" text,
   "PATH" text,
   "CONFIGURATION_ID" text,
+  "S3_ARCHIVE_CONFIGURATION_ID" text,
   "DATA_TRANSFER_REQUEST_ID" text,
   "DATA_TRANSFER_TYPE" text,
   "DATA_TRANSFER_STATUS" text,
@@ -34,6 +35,7 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "PERCENT_COMPLETE" integer,
   "SIZE" bigint,
   "CREATED" timestamp,
+  "PROCESSED" timestamp,
   "PRIORITY" integer DEFAULT 100
 )
 WITH (
@@ -48,6 +50,8 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."USER_ID" IS
                   'The user ID who submitted the download request';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."CONFIGURATION_ID" IS 
                   'The configuration ID to use in downloading the data object';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ARCHIVE_CONFIGURATION_ID" IS 
+                  'The S3 Archive configuration ID to use if downloading from S3 Archive';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_REQUEST_ID" IS 
                   'The data transfer (S3 or Globus) request ID that is currently in progress';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_TYPE" IS 
@@ -80,6 +84,8 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."SIZE" IS
                   'The data object size';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."CREATED" IS 
                   'The date and time the task was created';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PROCESSED" IS 
+                  'The date and time the task was processed';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PRIORITY" IS 
                   'The download task priority';
 

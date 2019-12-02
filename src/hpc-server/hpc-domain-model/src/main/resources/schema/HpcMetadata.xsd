@@ -30,6 +30,7 @@
 				<xsd:element name="registrarId" type="xsd:string" />
 				<xsd:element name="registrarName" type="xsd:string" />
 				<xsd:element name="configurationId" type="xsd:string" />
+				<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
 				<xsd:element name="archiveLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="dataTransferRequestId" type="xsd:string" />

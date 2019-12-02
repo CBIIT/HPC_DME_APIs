@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 
@@ -52,7 +53,6 @@ public class HpcDataManagementConfigurationLocatorTest {
   
   @InjectMocks
   HpcDataManagementConfigurationLocator dataManagementConfigurationLocator;
-  
   
   //The Data Management Configuration DAO instance.
   @Mock
@@ -76,26 +76,31 @@ public class HpcDataManagementConfigurationLocatorTest {
 	  configuration.setDoc("CMM");
 	  configuration.setBasePath(basepath);
 	    
-	  HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
-	  HpcArchive hpcS3Archive = new HpcArchive();
-	  hpcS3Archive.setType(HpcArchiveType.ARCHIVE);
-	  s3Configuration.setBaseArchiveDestination(hpcS3Archive);
-	  configuration.setS3Configuration(s3Configuration);
-	    
 	  HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
 	  HpcArchive hpcGlobusArchive = new HpcArchive();
 	  globusConfiguration.setBaseArchiveDestination(hpcGlobusArchive);
 	  configuration.setGlobusConfiguration(globusConfiguration);
+	  configuration.setS3UploadConfigurationId("S3_CONFIG_ID");
+	  configuration.setS3DefaultDownloadConfigurationId("S3_CONFIG_ID");
 	    
 	  configurations.add(configuration);
 	    
 	  when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
-	  //ReflectionTestUtils.setField(dataManagementConfigurationLocator, "dataManagementConfigurationDAO", dataManagementConfigurationDAO);
 	   
 	  when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
-	  //ReflectionTestUtils.setField(dataManagementConfigurationLocator, "dataManagementProxy", dataManagementProxy);
+	  
+	  HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
+	  HpcArchive hpcS3Archive = new HpcArchive();
+	  hpcS3Archive.setType(HpcArchiveType.ARCHIVE);
+	  s3Configuration.setBaseArchiveDestination(hpcS3Archive);
+	  s3Configuration.setId("S3_CONFIG_ID");
+	  s3Configuration.setArchiveProvider(HpcIntegratedSystem.CLEVERSAFE);
+	  List<HpcDataTransferConfiguration> s3ArchiveConfigurations = new ArrayList<>();
+	  s3ArchiveConfigurations.add(s3Configuration);
+	  
+	  when(dataManagementConfigurationDAO.getS3ArchiveConfigurations()).thenReturn(s3ArchiveConfigurations);
 	    
-	  //This causes the DAO to update the configuratorLocator cache 
+	  // This causes the DAO to update the configuratorLocator cache 
 	  dataManagementConfigurationLocator.reload();
   }
   
@@ -155,7 +160,7 @@ public class HpcDataManagementConfigurationLocatorTest {
 	    
 	  //This is from the setup data loaded in init method
       HpcDataTransferConfiguration transferConfig = 
-	    	dataManagementConfigurationLocator.getDataTransferConfiguration("someId1", HpcDataTransferType.S_3);
+	    	dataManagementConfigurationLocator.getDataTransferConfiguration("someId1", "S3_CONFIG_ID", HpcDataTransferType.S_3);
 	  assertEquals(transferConfig.getBaseArchiveDestination().getType(), HpcArchiveType.ARCHIVE);
 	    
   }
@@ -267,26 +272,22 @@ public class HpcDataManagementConfigurationLocatorTest {
       configuration.setDoc("FNLCR");
       configuration.setBasePath(basepath);
     
-      HpcDataTransferConfiguration s3Configuration = new HpcDataTransferConfiguration();
-      HpcArchive hpcS3Archive = new HpcArchive();
-      s3Configuration.setBaseArchiveDestination(hpcS3Archive);
-      configuration.setS3Configuration(s3Configuration);
-    
       HpcDataTransferConfiguration globusConfiguration = new HpcDataTransferConfiguration();
       HpcArchive hpcGlobusArchive = new HpcArchive();
+      hpcGlobusArchive.setType(HpcArchiveType.ARCHIVE);
       globusConfiguration.setBaseArchiveDestination(hpcGlobusArchive);
       configuration.setGlobusConfiguration(globusConfiguration);
-    
+      
       configurations.add(configuration);
       when(dataManagementConfigurationDAO.getDataManagementConfigurations()).thenReturn(configurations);
+      when(dataManagementConfigurationDAO.getS3ArchiveConfigurations()).thenReturn(new ArrayList<HpcDataTransferConfiguration>());
       when(dataManagementProxy.getRelativePath(basepath)).thenReturn(basepath);
     
-      //Exception is thrown because no type is set for either hpcS3Archive nor hpcGlobusArchive
+      // Exception is thrown because no type is set for either hpcS3Archive nor hpcGlobusArchive
       expectedException.expect(HpcException.class);
-	  expectedException.expectMessage("Invalid S3/Globus archive type configuration: " + basepath);
+	  expectedException.expectMessage("Could not locate S3 archive configuration: S3_CONFIG_ID");
 	 
       dataManagementConfigurationLocator.reload();
-   
   }
   
   
@@ -315,17 +316,14 @@ public class HpcDataManagementConfigurationLocatorTest {
    * @throws HpcException
    */
   @Test
-  public void testNoDataTransferConfigurationC() throws HpcException {
+  public void testNoDataTransferConfiguration() throws HpcException {
 	    
 	 
 	  //Exception is thrown because someIdx configuration id does not exist
       expectedException.expect(HpcException.class);
-	  expectedException.expectMessage( "Could not locate data transfer configuration: "
-	            + "someIdx"
-	            + " "
-	            + HpcDataTransferType.S_3);
+	  expectedException.expectMessage( "Could not locate data transfer configuration: someIdx, S_3, S3 Archive: SomeS3Config");
 	  
-	  dataManagementConfigurationLocator.getDataTransferConfiguration("someIdx", HpcDataTransferType.S_3);
+	  dataManagementConfigurationLocator.getDataTransferConfiguration("someIdx", "SomeS3Config", HpcDataTransferType.S_3);
 	  
 	    
   }

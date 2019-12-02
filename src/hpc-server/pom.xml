@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc</artifactId>
-		<version>1.19.0</version>
+		<version>1.20.0</version>
 	</parent>
 	<artifactId>hpc-server</artifactId>
 	<packaging>pom</packaging>
@@ -32,7 +32,7 @@
 		<spring.retry.version>1.2.1.RELEASE</spring.retry.version>
         <spring.security.version>3.2.10.RELEASE</spring.security.version>
 		<amazon-aws.version>1.11.125</amazon-aws.version>
-		<jackson.version>2.9.9</jackson.version>
+		<jackson.version>2.10.1</jackson.version>
 		<jargon.version>4.1.10.0-RELEASE</jargon.version>
 		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version> 
 		<google-json-simple.version>1.1.1</google-json-simple.version>
