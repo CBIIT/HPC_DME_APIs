@@ -199,6 +199,7 @@
 				<entry key="getActiveUsers" value="${hpc.ws.rs.auth.security.get-active-users}" />
 				<entry key="queryUsers" value="${hpc.ws.rs.auth.security.query-users}" />
 				<entry key="getAllUsers" value="${hpc.ws.rs.auth.security.get-all-users}" />
+				<entry key="getUsersByRole" value="${hpc.ws.rs.auth.security.get-users-by-role}" />
 				<entry key="authenticate" value="${hpc.ws.rs.auth.security.authenticate}" />
 				<entry key="registerGroup" value="${hpc.ws.rs.auth.security.register-group}" />
 				<entry key="updateGroup" value="${hpc.ws.rs.auth.security.update-group}" />
