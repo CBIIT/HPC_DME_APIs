@@ -363,11 +363,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     // Verify data objects found under this collection.
-    if (dataManagementService.countDataObjectsUnderPath(path) == 0) {
+    /*if (dataManagementService.countDataObjectsUnderPath(path) == 0) {
       // No data objects found under this collection.
       throw new HpcException(
           "No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+    }*/
     
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
@@ -448,7 +448,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
 
       // Verify at least one data object found under these collection.
-      boolean dataObjectExist = false;
+      /*boolean dataObjectExist = false;
       for (String path : downloadRequest.getCollectionPaths()) {
         if (dataManagementService.countDataObjectsUnderPath(path) > 0) {
           dataObjectExist = true;
@@ -459,7 +459,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // No data objects found under this collection.
         throw new HpcException(
             "No data objects found under collections", HpcErrorType.INVALID_REQUEST_INPUT);
-      }
+      }*/
       
       // Get configuration ID of the first collection. It will be used to validate
       // the download destination.
