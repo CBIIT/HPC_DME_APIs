@@ -126,8 +126,10 @@ public class HpcCreateUserController extends AbstractHpcController {
 
 			boolean created = HpcClientUtil.createUser(authToken, userServiceURL, dto, hpcWebUser.getNciUserId(),
 					sslCertPath, sslCertPassword);
-			if (created)
-				result.setMessage("User account created");
+			if (created) {
+				HpcUserDTO createdUser = getUser(hpcWebUser.getNciUserId(), model, authToken);
+				result.setMessage("User account created for " + createdUser.getLastName() + ", " + createdUser.getFirstName());
+			}
 		} catch (Exception e) {
 			result.setMessage("Failed to create user: " + e.getMessage());
 		} finally {
@@ -190,6 +192,12 @@ public class HpcCreateUserController extends AbstractHpcController {
 		} else
 			roles.add("USER");
 		model.addAttribute("roles", roles);
+	}
+
+	private HpcUserDTO getUser(String userId, Model model, String authToken) {
+		HpcUserDTO userDTO = HpcClientUtil.getUserByAdmin(authToken, userServiceURL, userId, sslCertPath,
+				sslCertPassword);
+		return userDTO;
 	}
 
 }

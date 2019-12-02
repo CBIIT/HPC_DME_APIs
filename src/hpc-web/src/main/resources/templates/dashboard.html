@@ -207,7 +207,7 @@
 	<script>
 	function deleteSearch(searchName)
 	{
-		if (confirm("Are you sure to delete?") == true) {
+		if (confirm("Are you sure you want to delete this?") == true) {
 		    queryName = searchName.id;
 			window.location.href = '/deleteSearch?queryName='+queryName+'&amp;page=1';
 		}	

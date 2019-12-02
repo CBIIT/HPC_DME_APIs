@@ -171,21 +171,6 @@ public class HpcSystemAccountLocator {
   }
 
   /**
-   * Get system account by data transfer type
-   *
-   * @param dataTransferType The data transfer type associated with the requested system account.
-   * @return The system account if found, or null otherwise.
-   * @throws HpcException on service failure.
-   */
-  public HpcIntegratedSystemAccount getSystemAccount(HpcDataTransferType dataTransferType)
-      throws HpcException {
-
-    final Object[] configIds = this.dataMgmtConfigLocator.keySet().toArray();
-    final String randomConfigId = (String) configIds[new Random().nextInt(configIds.length)];
-    return getSystemAccount(dataTransferType, randomConfigId);
-  }
-
-  /**
    * Get system account by data transfer type and DOC classifier
    *
    * @param dataTransferType The data transfer type associated with the requested system account.

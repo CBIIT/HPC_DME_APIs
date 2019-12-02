@@ -17,11 +17,8 @@ CREATE TABLE public."HPC_DATA_MANAGEMENT_CONFIGURATION"
   "ID" text PRIMARY KEY,
   "BASE_PATH" text NOT NULL,
   "DOC" text NOT NULL,
-  "S3_URL" text,
-  "S3_VAULT" text,
-  "S3_OBJECT_ID" text,
-  "S3_ARCHIVE_TYPE" text,
-  "S3_UPLOAD_REQUEST_URL_EXPIRATION" integer,
+  "S3_UPLOAD_ARCHIVE_CONFIGURATION_ID" text,
+  "S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID" text,
   "GLOBUS_URL" text NOT NULL,
   "GLOBUS_ARCHIVE_ENDPOINT" text NOT NULL,
   "GLOBUS_ARCHIVE_PATH" text NOT NULL,
@@ -46,16 +43,10 @@ COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."BASE_PATH" IS
                   'The base path to apply this configuration to';
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."DOC" IS 
                   'The DOC that own this configuration';
-COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_URL" IS 
-                  'The S3 archive (Cleversafe) URL';
-COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_VAULT" IS 
-                  'The S3 archive (Cleversafe) vault';
-COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_OBJECT_ID" IS 
-                  'The S3 archive (Cleversafe) object id prefix';
-COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_ARCHIVE_TYPE" IS 
-                  'The S3 archive type (Archive / Temp Archive). Note: Temp Archive is currently not used';  
-COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_UPLOAD_REQUEST_URL_EXPIRATION" IS 
-                  'The expiration period (in hours) to set when S3 upload request URL is generated'; 
+COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_UPLOAD_ARCHIVE_CONFIGURATION_ID" IS 
+                  'The S3 archive to be used for uploading new files for this DOC';
+COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID" IS 
+                  'The default (was first) S3 archive to use for downloading files for this DOC';                  
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_URL" IS 
                   'The Globus authentication URL';    
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_ARCHIVE_ENDPOINT" IS 
@@ -77,4 +68,37 @@ COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."DATA_HIERARCHY" IS
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."COLLECTION_METADATA_VALIDATION_RULES" IS 
                   'The collection metadata validation rules';    
 COMMENT ON COLUMN public."HPC_DATA_MANAGEMENT_CONFIGURATION"."DATA_OBJECT_METADATA_VALIDATION_RULES" IS 
-                  'The data object metadata validation rules';           
+                  'The data object metadata validation rules';   
+                  
+                  
+DROP TABLE IF EXISTS public."HPC_S3_ARCHIVE_CONFIGURATION";
+CREATE TABLE public."HPC_S3_ARCHIVE_CONFIGURATION"
+(
+  "ID" text PRIMARY KEY,
+  "PROVIDER" text NOT NULL,
+  "DATA_MANAGEMENT_CONFIGURATION_ID" text NOT NULL,
+  "URL_OR_REGION" text NOT NULL,
+  "BUCKET" text NOT NULL,
+  "OBJECT_ID" text NOT NULL,
+  "UPLOAD_REQUEST_URL_EXPIRATION" integer NOT NULL
+)
+WITH (
+  OIDS=FALSE
+);  
+
+COMMENT ON TABLE public."HPC_S3_ARCHIVE_CONFIGURATION" IS 
+                 'The S3 archive configurations (per DOC) supported by HPC-DME';
+COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."ID" IS 
+                  'The S3 Configuration ID';
+COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."PROVIDER" IS 
+                  'The S3 Provider - Cleversafe, Cloudian, AWS, etc';
+COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."DATA_MANAGEMENT_CONFIGURATION_ID" IS 
+                  'The DM config that own this S3 archive configuration';
+COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."URL_OR_REGION" IS 
+                  'The S3 archive URL for 3rd Party S3 Provide, or region for AWS';
+COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."BUCKET" IS 
+                  'The S3 archive bucket';
+COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."OBJECT_ID" IS 
+                  'The S3 archive object id prefix';
+COMMENT ON COLUMN public."HPC_S3_ARCHIVE_CONFIGURATION"."UPLOAD_REQUEST_URL_EXPIRATION" IS 
+                  'The expiration period (in hours) to set when S3 upload request URL is generated';      

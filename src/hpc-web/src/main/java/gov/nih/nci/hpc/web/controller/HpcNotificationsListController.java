@@ -19,8 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.apache.commons.lang.WordUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -54,6 +57,8 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 public class HpcNotificationsListController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.notification.receipts}")
 	private String queryServiceURL;
+	@Autowired
+	private Environment env;
 
 	/**
 	 * GET action to get user notifications
@@ -80,11 +85,11 @@ public class HpcNotificationsListController extends AbstractHpcController {
 				for (HpcNotificationDeliveryReceiptDTO receipt : notifications.getNotificationDeliveryReceipts()) {
 					HpcNotificationReceipt notification = new HpcNotificationReceipt();
 					notification.setEventId(new Integer(receipt.getEventId()).toString());
-					notification.setEventType(receipt.getEventType().name());
+					notification.setEventType(getDisplayName(receipt.getEventType().name()));
 					SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 					notification.setEventCreated(format.format(receipt.getEventCreated().getTime()));
 					notification.setDelivered(format.format(receipt.getDelivered().getTime()));
-					notification.setNotificationDeliveryMethod(receipt.getNotificationDeliveryMethod().name());
+					notification.setNotificationDeliveryMethod(WordUtils.capitalizeFully(receipt.getNotificationDeliveryMethod().name()));
 					result.add(notification);
 				}
 			}
@@ -100,5 +105,17 @@ public class HpcNotificationsListController extends AbstractHpcController {
 			}
 		});
 		return result;
+	}
+	
+	/*
+	 * Looks up Display Name for a given Event Name.
+	 *
+	 * @param eventName - Name of an Event
+	 * 
+	 * @return Display Name for Event
+	 */
+	private String getDisplayName(String eventName) {
+		final String displayName = this.env.getProperty(eventName);
+		return (null == displayName) ? eventName : displayName;
 	}
 }

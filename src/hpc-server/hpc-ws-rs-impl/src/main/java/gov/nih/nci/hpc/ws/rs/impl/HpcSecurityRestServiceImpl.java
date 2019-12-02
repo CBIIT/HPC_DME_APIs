@@ -130,6 +130,26 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
     return okResponse(!users.getUsers().isEmpty() ? users : null, true);
   }
 
+
+  @Override
+  public Response getUsersByRole(
+      String roleName,
+      String doc,
+      String defaultBasePath) {
+    HpcUserListDTO users = null;
+    try {
+      users =
+          securityBusService.getUsersByRole(
+              roleName, doc, defaultBasePath, true);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(!users.getUsers().isEmpty() ? users : null, true);
+  }
+
+
   @Override
   public Response queryUsers(
       String nciUserId,
