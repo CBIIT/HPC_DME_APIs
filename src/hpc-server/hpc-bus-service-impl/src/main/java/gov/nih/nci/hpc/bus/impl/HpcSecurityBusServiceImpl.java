@@ -360,6 +360,57 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     return users;
   }
 
+
+  @Override
+  public HpcUserListDTO getUsersByRole(
+      String role,
+      String doc,
+      String defaultBasePath,
+      boolean active)
+      throws HpcException {
+    // Get the users based on search criteria.
+    HpcUserListDTO users = new HpcUserListDTO();
+
+    // If search by 'default base path' requested, get the data management configuration ID.
+    String defaultConfigurationId = null;
+    if (!StringUtils.isEmpty(defaultBasePath)) {
+      defaultConfigurationId =
+          dataManagementService.getDataManagementConfigurationId(defaultBasePath);
+      if (StringUtils.isEmpty(defaultConfigurationId)) {
+        throw new HpcException(
+            INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + defaultBasePath,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
+    // Perform the search and construct the return DTO.
+    for (HpcUser user :
+        securityService.getUsersByRole(
+           role, doc, defaultConfigurationId, active)) {
+      // Get the default data management configuration for this user.
+      HpcDataManagementConfiguration dataManagementConfiguration =
+          dataManagementService.getDataManagementConfiguration(
+              user.getNciAccount().getDefaultConfigurationId());
+
+      // Add user entry into the return list.
+      HpcUserListEntry userListEntry = new HpcUserListEntry();
+      userListEntry.setUserId(user.getNciAccount().getUserId());
+      userListEntry.setFirstName(user.getNciAccount().getFirstName());
+      userListEntry.setLastName(user.getNciAccount().getLastName());
+      userListEntry.setDoc(user.getNciAccount().getDoc());
+      userListEntry.setDefaultBasePath(
+          dataManagementConfiguration != null ? dataManagementConfiguration.getBasePath() : null);
+      if (!active) {
+        // Set the active flag if the search is for all users.
+        userListEntry.setActive(user.getActive());
+      }
+      users.getUsers().add(userListEntry);
+    }
+
+    return users;
+  }
+
+
   @Override
   public void authenticate(String nciUserId, String password) throws HpcException {
     // Input validation.
@@ -644,6 +695,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
   }
 
+
   /**
    * Convert a user role from string to enum.
    *
@@ -665,6 +717,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
           e);
     }
   }
+
 
   /**
    * Set the Request invoker (in thread local).

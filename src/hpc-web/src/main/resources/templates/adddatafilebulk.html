@@ -79,7 +79,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-list-alt"></i> Register
+							<i class="fa fa-list-alt"></i> Register Bulk Data
 						</h3>
 						<ol class="breadcrumb">
 							<li><i class="fa fa-dashboard"></i><a
@@ -135,7 +135,7 @@
 																<button type="submit" class="btn btn-md btn-link"
 																	id="primaryGlobusButton"
 																	onClick="return refreshAttributes('Globus')">Select
-																	File(s)/Folder(s) from Globus endpoint</button>
+																	Data from Globus Endpoint</button>
 															</div>
 															</td></tr>
 															<tr>
@@ -170,7 +170,7 @@
 															</tr>
 															<tr th:if="${dryRun != true}">
 																<td><label>Dry Run: </label></td>
-																<td><input type="checkbox" name="dryrun" id="dryrun"> Check this to see list of file(s)/folder(s) will register. Registration will not happen!</input>
+																<td><input type="checkbox" name="dryrun" id="dryrun"> Check this to see what data the system would register, if you proceed with registration.</input>
 																</td>
 															</tr>
 															<tr><td colspan="2">&nbsp;</td></tr>
@@ -180,7 +180,7 @@
 																		id="hpcMetaDatafile" /></td>
 															</tr>
 															<tr><td colspan="2">&nbsp;</td></tr>
-															<tr th:if="${endpoint_id != null}"><td colspan="2"><strong>Selected files/folders:</strong>
+															<tr th:if="${endpoint_id != null}"><td colspan="2"><strong>Selected Data:</strong>
 															</td>
 															</tr>
 															<tr><td colspan="2">

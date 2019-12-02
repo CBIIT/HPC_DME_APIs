@@ -44,6 +44,7 @@ public class HpcMetadataValidator {
   public static final String REGISTRAR_ID_ATTRIBUTE = "registered_by";
   public static final String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
   public static final String CONFIGURATION_ID_ATTRIBUTE = "configuration_id";
+  public static final String S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE = "s3_archive_configuration_id";
   public static final String SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE =
       "source_file_container_id";
   public static final String SOURCE_LOCATION_FILE_ID_ATTRIBUTE = "source_file_id";
@@ -88,6 +89,7 @@ public class HpcMetadataValidator {
             REGISTRAR_ID_ATTRIBUTE,
             REGISTRAR_NAME_ATTRIBUTE,
             CONFIGURATION_ID_ATTRIBUTE,
+            S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE,
             SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,
             SOURCE_LOCATION_FILE_ID_ATTRIBUTE,
             ARCHIVE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE,

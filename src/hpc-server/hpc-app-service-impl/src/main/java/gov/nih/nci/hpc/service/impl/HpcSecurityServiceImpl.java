@@ -277,6 +277,18 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
         nciUserId, firstNamePattern, lastNamePattern, doc, defaultConfigurationId, active);
   }
 
+
+  @Override
+  public List<HpcUser> getUsersByRole(
+      String role,
+      String doc,
+      String defaultConfigurationId,
+      boolean active)
+      throws HpcException {
+	  	return userDAO.getUsersByRole(role, doc, defaultConfigurationId, active);
+  }
+
+
   @Override
   public HpcUserRole getUserRole(String nciUserId) throws HpcException {
     // Input validation.

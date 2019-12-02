@@ -16,24 +16,35 @@
 	xmlns:hpc-domain-datamanagement="http://hpc.nci.nih.gov/domain/datamanagement"
 	xmlns:hpc-domain-metadata="http://hpc.nci.nih.gov/domain/metadata"
 	xmlns:hpc-domain-datatransfer="http://hpc.nci.nih.gov/domain/datatransfer"
+	xmlns:hpc-domain-user="http://hpc.nci.nih.gov/domain/user"
 	xmlns:hpc-domain-model="http://hpc.nci.nih.gov/domain/model"
 	targetNamespace="http://hpc.nci.nih.gov/domain/model"
 	elementFormDefault="unqualified">
 
-	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datamanagement"
+	<xsd:import
+		namespace="http://hpc.nci.nih.gov/domain/datamanagement"
 		schemaLocation="HpcDataManagementTypes.xsd" />
-	<xsd:import namespace="http://hpc.nci.nih.gov/domain/metadata"
+	<xsd:import
+		namespace="http://hpc.nci.nih.gov/domain/metadata"
 		schemaLocation="HpcMetadataTypes.xsd" />
-	<xsd:import namespace="http://hpc.nci.nih.gov/domain/datatransfer"
+	<xsd:import
+		namespace="http://hpc.nci.nih.gov/domain/datatransfer"
 		schemaLocation="HpcDataTransferTypes.xsd" />
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/user"
+		schemaLocation="HpcUserTypes.xsd" />
 
 	<xsd:complexType name="HpcDataTransferConfiguration">
 		<xsd:sequence>
-			<xsd:element name="url" type="xsd:string" />
-			<xsd:element name="baseArchiveDestination" type="hpc-domain-datatransfer:HpcArchive" />
-			<xsd:element name="baseDownloadSource" type="hpc-domain-datatransfer:HpcArchive" />
-			<xsd:element name="uploadRequestURLExpiration" type="xsd:int"
-				minOccurs="0" />
+			<xsd:element name="id" type="xsd:string" />
+			<xsd:element name="urlOrRegion" type="xsd:string" />
+			<xsd:element name="archiveProvider"
+				type="hpc-domain-user:HpcIntegratedSystem" />
+			<xsd:element name="baseArchiveDestination"
+				type="hpc-domain-datatransfer:HpcArchive" />
+			<xsd:element name="baseDownloadSource"
+				type="hpc-domain-datatransfer:HpcArchive" />
+			<xsd:element name="uploadRequestURLExpiration"
+				type="xsd:int" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -45,8 +56,8 @@
 				<xsd:element name="basePath" type="xsd:string" />
 				<xsd:element name="archiveDataTransferType"
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="s3Configuration"
-					type="hpc-domain-model:HpcDataTransferConfiguration" />
+				<xsd:element name="s3UploadConfigurationId" type="xsd:string" />
+				<xsd:element name="s3DefaultDownloadConfigurationId" type="xsd:string" />
 				<xsd:element name="globusConfiguration"
 					type="hpc-domain-model:HpcDataTransferConfiguration" />
 				<xsd:element name="collectionMetadataValidationRules"
@@ -61,23 +72,25 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:complexType name="HpcDataObjectRegistrationRequest">
+	<xsd:complexType
+		name="HpcDataObjectRegistrationRequest">
 		<xsd:sequence>
 			<xsd:element name="globusUploadSource"
-					type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
+				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
 			<xsd:element name="s3UploadSource"
-					type="hpc-domain-datatransfer:HpcS3UploadSource" />
+				type="hpc-domain-datatransfer:HpcS3UploadSource" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
-			<xsd:element name="metadataEntries" type="hpc-domain-metadata:HpcMetadataEntry"
-				maxOccurs="unbounded" />
-			<xsd:element name="createParentCollections" type="xsd:boolean"
-				minOccurs="0" />
+			<xsd:element name="metadataEntries"
+				type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
+			<xsd:element name="createParentCollections"
+				type="xsd:boolean" minOccurs="0" />
 			<xsd:element name="parentCollectionsBulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcBulkDataObjectRegistrationItem">
+	<xsd:complexType
+		name="HpcBulkDataObjectRegistrationItem">
 		<xsd:sequence>
 			<xsd:element name="task"
 				type="hpc-domain-datamanagement:HpcDataObjectRegistrationTaskItem" />
@@ -86,7 +99,8 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcBulkDataObjectRegistrationTask">
+	<xsd:complexType
+		name="HpcBulkDataObjectRegistrationTask">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
@@ -95,12 +109,13 @@
 				type="hpc-domain-datamanagement:HpcBulkDataObjectRegistrationTaskStatus" />
 			<xsd:element name="created" type="xsd:dateTime" />
 			<xsd:element name="items"
-				type="hpc-domain-model:HpcBulkDataObjectRegistrationItem" minOccurs="0"
-				maxOccurs="unbounded" />
+				type="hpc-domain-model:HpcBulkDataObjectRegistrationItem"
+				minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcBulkDataObjectRegistrationResult">
+	<xsd:complexType
+		name="HpcBulkDataObjectRegistrationResult">
 		<xsd:sequence>
 			<xsd:element name="id" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
@@ -111,12 +126,13 @@
 			<xsd:element name="effectiveTransferSpeed" type="xsd:int"
 				minOccurs="0" />
 			<xsd:element name="items"
-				type="hpc-domain-model:HpcBulkDataObjectRegistrationItem" minOccurs="0"
-				maxOccurs="unbounded" />
+				type="hpc-domain-model:HpcBulkDataObjectRegistrationItem"
+				minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcBulkDataObjectRegistrationStatus">
+	<xsd:complexType
+		name="HpcBulkDataObjectRegistrationStatus">
 		<xsd:sequence>
 			<xsd:element name="inProgress" type="xsd:boolean" />
 			<xsd:element name="task"

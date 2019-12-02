@@ -1,13 +1,18 @@
 /**
  * HpcMetadataService.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.service;
 
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
@@ -16,10 +21,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
 
 /**
  * HPC Metadata Application Service Interface.
@@ -33,12 +34,11 @@ public interface HpcMetadataService {
    * @param path The collection path.
    * @param metadataEntries The metadata entries to add.
    * @param configurationId The configuration to apply validation rules. Metadata validation rules
-   *     are configuration specific.
+   *        are configuration specific.
    * @throws HpcException on service failure.
    */
-  public void addMetadataToCollection(
-      String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
-      throws HpcException;
+  public void addMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries,
+      String configurationId) throws HpcException;
 
   /**
    * Update a collection's metadata.
@@ -46,12 +46,11 @@ public interface HpcMetadataService {
    * @param path The collection path.
    * @param metadataEntries The metadata entries to update.
    * @param configurationId The configuration to apply validation rules. Metadata validation rules
-   *     are configuration specific.
+   *        are configuration specific.
    * @throws HpcException on service failure.
    */
-  public void updateCollectionMetadata(
-      String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
-      throws HpcException;
+  public void updateCollectionMetadata(String path, List<HpcMetadataEntry> metadataEntries,
+      String configurationId) throws HpcException;
 
   /**
    * Generate system metadata and attach to a collection. System generated metadata is: 1. UUID. 2.
@@ -64,8 +63,8 @@ public interface HpcMetadataService {
    * @return The system generated metadata.
    * @throws HpcException on service failure.
    */
-  public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToCollection(
-      String path, String userId, String userName, String configurationId) throws HpcException;
+  public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToCollection(String path,
+      String userId, String userName, String configurationId) throws HpcException;
 
   /**
    * Get the system generated metadata of a collection.
@@ -125,16 +124,12 @@ public interface HpcMetadataService {
    * @param path The data object path.
    * @param metadataEntries The metadata entries to add.
    * @param configurationId The configuration to apply validation rules. Metadata validation rules
-   *     are configuration specific.
+   *        are configuration specific.
    * @param collectionType The collection type containing the data object.
    * @throws HpcException on service failure.
    */
-  public void addMetadataToDataObject(
-      String path,
-      List<HpcMetadataEntry> metadataEntries,
-      String configurationId,
-      String collectionType)
-      throws HpcException;
+  public void addMetadataToDataObject(String path, List<HpcMetadataEntry> metadataEntries,
+      String configurationId, String collectionType) throws HpcException;
 
   /**
    * Generate system metadata and attach to the data object. System generated metadata is: 1. UUID.
@@ -158,27 +153,18 @@ public interface HpcMetadataService {
    * @param userId The user ID.
    * @param userName The user name.
    * @param configurationId The data management configuration ID.
+   * @param s3ArchiveConfigurationId (Optional) The S3 archive configuration ID.
    * @param registrationCompletionEvent If set to true, an event will be generated when registration
-   *     is completed or failed.
+   *        is completed or failed.
    * @return The system generated metadata.
    * @throws HpcException on service failure.
    */
-  public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToDataObject(
-      String path,
-      HpcFileLocation archiveLocation,
-      HpcFileLocation sourceLocation,
-      String dataTransferRequestId,
-      HpcDataTransferUploadStatus dataTransferStatus,
-      HpcDataTransferType dataTransferType,
-      Calendar dataTransferStarted,
-      Calendar dataTransferCompleted,
-      Long sourceSize,
-      String sourceURL,
-      String callerObjectId,
-      String userId,
-      String userName,
-      String configurationId,
-      boolean registrationCompletionEvent)
+  public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToDataObject(String path,
+      HpcFileLocation archiveLocation, HpcFileLocation sourceLocation, String dataTransferRequestId,
+      HpcDataTransferUploadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
+      Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize,
+      String sourceURL, String callerObjectId, String userId, String userName,
+      String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
       throws HpcException;
 
   /**
@@ -205,17 +191,10 @@ public interface HpcMetadataService {
    * @param sourceSize (Optional) The data source size in bytes.
    * @throws HpcException on service failure.
    */
-  public void updateDataObjectSystemGeneratedMetadata(
-      String path,
-      HpcFileLocation archiveLocation,
-      String dataTransferRequestId,
-      String checksum,
-      HpcDataTransferUploadStatus dataTransferStatus,
-      HpcDataTransferType dataTransferType,
-      Calendar dataTransferStarted,
-      Calendar dataTransferCompleted,
-      Long sourceSize)
-      throws HpcException;
+  public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
+      String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
+      HpcDataTransferType dataTransferType, Calendar dataTransferStarted,
+      Calendar dataTransferCompleted, Long sourceSize) throws HpcException;
 
   /**
    * Update a data object's metadata.
@@ -223,16 +202,12 @@ public interface HpcMetadataService {
    * @param path The data object path.
    * @param metadataEntries The metadata entries to update.
    * @param configurationId The configuration to apply validation rules. Metadata validation rules
-   *     are configuration specific.
+   *        are configuration specific.
    * @param collectionType The collection type containing the data object.
    * @throws HpcException on service failure.
    */
-  public void updateDataObjectMetadata(
-      String path,
-      List<HpcMetadataEntry> metadataEntries,
-      String configurationId,
-      String collectionType)
-      throws HpcException;
+  public void updateDataObjectMetadata(String path, List<HpcMetadataEntry> metadataEntries,
+      String configurationId, String collectionType) throws HpcException;
 
   /**
    * Get metadata of a data object.
