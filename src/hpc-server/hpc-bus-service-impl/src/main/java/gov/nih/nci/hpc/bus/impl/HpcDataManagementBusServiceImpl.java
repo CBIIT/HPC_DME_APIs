@@ -357,17 +357,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     // Validate collection exists.
-    if (dataManagementService.getCollection(path, true) == null) {
+    HpcCollection collection = dataManagementService.getCollection(path, true);
+    if (collection == null) {
       throw new HpcException("Collection doesn't exist: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Verify data objects found under this collection.
-    /*if (dataManagementService.countDataObjectsUnderPath(path) == 0) {
+    if (!hasDataObjectsUnderPath(collection)) {
       // No data objects found under this collection.
       throw new HpcException(
           "No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
-    }*/
+    }
     
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
@@ -440,26 +441,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       // Submit a request to download a list of collections.
 
       // Validate all data object paths requested exist.
+      boolean dataObjectExist = false;
       for (String path : downloadRequest.getCollectionPaths()) {
-        if (dataManagementService.getCollection(path, false) == null) {
+        HpcCollection collection = dataManagementService.getCollection(path, true);
+        if (collection == null) {
           throw new HpcException("Collection doesn't exist: " + path,
               HpcErrorType.INVALID_REQUEST_INPUT);
         }
-      }
-
-      // Verify at least one data object found under these collection.
-      /*boolean dataObjectExist = false;
-      for (String path : downloadRequest.getCollectionPaths()) {
-        if (dataManagementService.countDataObjectsUnderPath(path) > 0) {
+        // Verify at least one data object found under these collection.
+        if (!dataObjectExist && hasDataObjectsUnderPath(collection)) {
           dataObjectExist = true;
-          break;
         }
       }
+
       if (!dataObjectExist) {
-        // No data objects found under this collection.
+        // No data objects found under the list of collection.
         throw new HpcException(
             "No data objects found under collections", HpcErrorType.INVALID_REQUEST_INPUT);
-      }*/
+      }
       
       // Get configuration ID of the first collection. It will be used to validate
       // the download destination.
@@ -2482,6 +2481,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     resultHpcPermForColl.setCollectionPath(path);
     resultHpcPermForColl.setPermission(hsPerm.getPermission());
     return resultHpcPermForColl;
+  }
+
+  private boolean hasDataObjectsUnderPath(HpcCollection collection) throws HpcException {
+
+    if (!CollectionUtils.isEmpty(collection.getDataObjects())) return true;
+
+    for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
+      HpcCollection childCollection =
+          dataManagementService.getCollection(subCollection.getPath(), true);
+      if (hasDataObjectsUnderPath(childCollection)) return true;
+    }
+    return false;
   }
 
 }
