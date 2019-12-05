@@ -23,6 +23,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.apache.commons.io.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -661,6 +662,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // and update the download task accordingly.
       HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadTask);
       progressListener = secondHopDownload;
+
+      // Validate that the 2-hop download can be performed at this time.
+      if (!canPerfom2HopDownload(secondHopDownload)) {
+        return;
+      }
 
       // Set the first hop transfer to be from Cleversafe to the server's Globus
       // mounted file system.
@@ -1796,17 +1802,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Set the first hop file destination to be the source file of the second hop.
     downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 
+    // Populate the response object.
+    response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
+    response.setDestinationLocation(secondHopDownload.getDownloadTask()
+        .getGlobusDownloadDestination().getDestinationLocation());
+
     // Perform the first hop download (From Cleversafe to local file system).
     try {
-      dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
-          getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-              downloadRequest.getS3ArchiveConfigurationId()),
-          downloadRequest, baseArchiveDestination, secondHopDownload);
-
-      // Populate the response object.
-      response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
-      response.setDestinationLocation(secondHopDownload.getDownloadTask()
-          .getGlobusDownloadDestination().getDestinationLocation());
+      if (canPerfom2HopDownload(secondHopDownload)) {
+        dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
+            getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+                downloadRequest.getS3ArchiveConfigurationId()),
+            downloadRequest, baseArchiveDestination, secondHopDownload);
+      } else {
+        // Can't perform the 2-hop download at this time. Reset the task
+        resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+      }
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
@@ -1815,6 +1826,39 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       throw (e);
     }
+  }
+
+  /*
+   * Check if 2-hop download request can be started. It confirms that the server has enough disk
+   * space to store the file. If there is not enough space, the download task is reset and will be
+   * attempted in the next run of the scheduled task.
+   *
+   * @param secondHopDownload The second hop download instance to validate.
+   * 
+   * @return True if there is enough disk space to start the 2-hop download.
+   */
+  private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) {
+    try {
+      long freeSpace =
+          1000 * FileSystemUtils.freeSpaceKb(secondHopDownload.getSourceFile().getAbsolutePath());
+      if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+        // Not enough space disk space to perform the first hop download. Log an error and reset the
+        // task.
+        logger.error(
+            "Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
+            secondHopDownload.getDownloadTask().getPath(), freeSpace,
+            secondHopDownload.getDownloadTask().getSize());
+        return false;
+      }
+
+      logger.error("ERAN download OK: freeSpace={}  file-size={}", freeSpace,
+          secondHopDownload.getDownloadTask().getSize());
+    } catch (IOException e) {
+      // Failed to check free disk space. We'll try the download.
+      logger.error("Failed to determine free space", e);
+    }
+
+    return true;
   }
 
   /*
