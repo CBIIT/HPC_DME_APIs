@@ -1851,8 +1851,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         return false;
       }
 
-      logger.error("ERAN download OK: freeSpace={}  file-size={}", freeSpace,
-          secondHopDownload.getDownloadTask().getSize());
     } catch (IOException e) {
       // Failed to check free disk space. We'll try the download.
       logger.error("Failed to determine free space", e);
