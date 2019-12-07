@@ -1106,6 +1106,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           .setDestinationType(taskStatus.getDataObjectDownloadTask().getDestinationType());
       downloadStatus
           .setPercentComplete(taskStatus.getDataObjectDownloadTask().getPercentComplete());
+      downloadStatus.setSize(taskStatus.getDataObjectDownloadTask().getSize());
 
     } else {
       // Download completed or failed. Populate the DTO accordingly.
@@ -1122,6 +1123,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           .setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
               ? taskStatus.getResult().getEffectiveTransferSpeed()
               : null);
+      downloadStatus.setSize(taskStatus.getResult().getSize());
     }
 
     return downloadStatus;

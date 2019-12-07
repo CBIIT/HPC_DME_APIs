@@ -111,8 +111,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( "
           + "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", \"RESULT\", "
-          + "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"EFFECTIVE_TRANSFER_SPEED\", \"SIZE\", \"CREATED\", \"COMPLETED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict on constraint \"HPC_DOWNLOAD_TASK_RESULT_pkey\" do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", "
@@ -124,6 +124,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"MESSAGE\"=excluded.\"MESSAGE\", " + "\"ITEMS\"=excluded.\"ITEMS\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
           + "\"EFFECTIVE_TRANSFER_SPEED\"=excluded.\"EFFECTIVE_TRANSFER_SPEED\", "
+          + "\"SIZE\"=excluded.\"SIZE\", "
           + "\"CREATED\"=excluded.\"CREATED\", " + "\"COMPLETED\"=excluded.\"COMPLETED\"";
 
   public static final String GET_DOWNLOAD_TASK_RESULT_SQL =
@@ -288,6 +289,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     downloadTaskResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
     downloadTaskResult.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
     downloadTaskResult.setEffectiveTransferSpeed(rs.getInt("EFFECTIVE_TRANSFER_SPEED"));
+    long size = rs.getLong("SIZE");
+    downloadTaskResult.setSize(size > 0 ? size : null);
 
     Calendar created = Calendar.getInstance();
     created.setTime(rs.getTimestamp("CREATED"));
@@ -538,7 +541,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           taskResult.getDestinationLocation().getFileId(), taskResult.getDestinationType().value(),
           taskResult.getResult(), taskResult.getType().value(), taskResult.getMessage(),
           toJSON(taskResult.getItems()), taskResult.getCompletionEvent(),
-          taskResult.getEffectiveTransferSpeed(), taskResult.getCreated(),
+          taskResult.getEffectiveTransferSpeed(), taskResult.getSize(), taskResult.getCreated(),
           taskResult.getCompleted());
 
     } catch (DataAccessException e) {

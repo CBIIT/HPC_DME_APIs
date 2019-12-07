@@ -615,6 +615,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setMessage(message);
     taskResult.setCompletionEvent(downloadTask.getCompletionEvent());
     taskResult.setCreated(downloadTask.getCreated());
+    taskResult.setSize(downloadTask.getSize());
     taskResult.setCompleted(completed);
 
     // Calculate the effective transfer speed (Bytes per second).
