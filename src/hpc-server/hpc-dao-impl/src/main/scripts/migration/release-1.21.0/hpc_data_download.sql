@@ -12,5 +12,8 @@
 --
                   
 ALTER TABLE public."HPC_DOWNLOAD_TASK_RESULT" ADD COLUMN "SIZE" bigint;                  
-COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."SIZE" IS 'The data object size';   
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."SIZE" IS 'The data object size';  
+
+ALTER TABLE public."HPC_DOWNLOAD_TASK_RESULT" ADD COLUMN "DESTINATION_LOCATION_FILE_CONTAINER_NAME" text;                  
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_CONTAINER_NAME" IS 'The download destination container name';    
                   

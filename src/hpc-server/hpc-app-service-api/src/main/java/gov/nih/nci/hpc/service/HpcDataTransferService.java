@@ -465,7 +465,7 @@ public interface HpcDataTransferService {
   public int getDownloadResultsPageSize();
 
   /**
-   * Get a file-container0name from a file-container-id
+   * Get a file-container-name from a file-container-id
    *
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
