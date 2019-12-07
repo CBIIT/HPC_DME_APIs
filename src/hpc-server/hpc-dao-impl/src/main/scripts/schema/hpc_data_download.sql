@@ -171,6 +171,7 @@ CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"
   "ITEMS" text,
   "COMPLETION_EVENT" boolean,
   "EFFECTIVE_TRANSFER_SPEED" integer,
+  "SIZE" bigint,
   "CREATED" timestamp NOT NULL,
   "COMPLETED" timestamp NOT NULL
 )
@@ -207,7 +208,9 @@ COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."ITEMS" IS
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."COMPLETION_EVENT" IS 
                   'An indicator whether a completion event was generated when the task completed'; 
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."EFFECTIVE_TRANSFER_SPEED" IS 
-                  'The download effective transfer speed in bytes per second';                  
+                  'The download effective transfer speed in bytes per second';   
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."SIZE" IS 
+                  'The data object size';                                 
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."CREATED" IS 
                   'The date and time the task was created';
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."COMPLETED" IS 
