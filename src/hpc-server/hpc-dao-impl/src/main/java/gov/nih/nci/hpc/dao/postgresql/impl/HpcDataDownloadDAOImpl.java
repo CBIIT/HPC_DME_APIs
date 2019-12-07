@@ -87,8 +87,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"S3_ACCOUNT_REGION\"=excluded.\"S3_ACCOUNT_REGION\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
           + "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", " + "\"SIZE\"=excluded.\"SIZE\", "
-          + "\"CREATED\"=excluded.\"CREATED\", "
-          + "\"PROCESSED\"=excluded.\"PROCESSED\"";
+          + "\"CREATED\"=excluded.\"CREATED\", " + "\"PROCESSED\"=excluded.\"PROCESSED\"";
 
   public static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL =
       "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
@@ -106,26 +105,28 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   public static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL =
       "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"DATA_TRANSFER_STATUS\" = ? and \"DATA_TRANSFER_TYPE\" = ? "
           + "and (\"PROCESSED\" < ? or \"PROCESSED\" is null) and \"CREATED\" < ? order by \"PRIORITY\", \"CREATED\" limit 1";
-    
+
   public static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL =
       "insert into public.\"HPC_DOWNLOAD_TASK_RESULT\" ( "
           + "\"ID\", \"USER_ID\", \"PATH\", \"DATA_TRANSFER_REQUEST_ID\", \"DATA_TRANSFER_TYPE\", "
-          + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", \"RESULT\", "
-          + "\"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"EFFECTIVE_TRANSFER_SPEED\", \"SIZE\", \"CREATED\", \"COMPLETED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_CONTAINER_NAME\", \"DESTINATION_LOCATION_FILE_ID\", "
+          + "\"DESTINATION_TYPE\", \"RESULT\", \"TYPE\", \"MESSAGE\", \"ITEMS\", \"COMPLETION_EVENT\", \"EFFECTIVE_TRANSFER_SPEED\", "
+          + "\"SIZE\", \"CREATED\", \"COMPLETED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict on constraint \"HPC_DOWNLOAD_TASK_RESULT_pkey\" do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", "
           + "\"DATA_TRANSFER_REQUEST_ID\"=excluded.\"DATA_TRANSFER_REQUEST_ID\", "
           + "\"DATA_TRANSFER_TYPE\"=excluded.\"DATA_TRANSFER_TYPE\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
+          + "\"DESTINATION_LOCATION_FILE_CONTAINER_NAME\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_NAME\", "
           + "\"DESTINATION_LOCATION_FILE_ID\"=excluded.\"DESTINATION_LOCATION_FILE_ID\", "
           + "\"DESTINATION_TYPE\"=excluded.\"DESTINATION_TYPE\", "
           + "\"RESULT\"=excluded.\"RESULT\", " + "\"TYPE\"=excluded.\"TYPE\", "
           + "\"MESSAGE\"=excluded.\"MESSAGE\", " + "\"ITEMS\"=excluded.\"ITEMS\", "
           + "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
           + "\"EFFECTIVE_TRANSFER_SPEED\"=excluded.\"EFFECTIVE_TRANSFER_SPEED\", "
-          + "\"SIZE\"=excluded.\"SIZE\", "
-          + "\"CREATED\"=excluded.\"CREATED\", " + "\"COMPLETED\"=excluded.\"COMPLETED\"";
+          + "\"SIZE\"=excluded.\"SIZE\", " + "\"CREATED\"=excluded.\"CREATED\", "
+          + "\"COMPLETED\"=excluded.\"COMPLETED\"";
 
   public static final String GET_DOWNLOAD_TASK_RESULT_SQL =
       "select * from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"ID\" = ? and \"TYPE\" = ?";
@@ -274,10 +275,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         dataTransferType != null ? HpcDataTransferType.fromValue(dataTransferType) : null);
     String destinationLocationFileContainerId =
         rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_ID");
+    String destinationLocationFileContainerName =
+        rs.getString("DESTINATION_LOCATION_FILE_CONTAINER_NAME");
     String destinationLocationFileId = rs.getString("DESTINATION_LOCATION_FILE_ID");
+
     if (destinationLocationFileContainerId != null && destinationLocationFileId != null) {
       HpcFileLocation destinationLocation = new HpcFileLocation();
       destinationLocation.setFileContainerId(destinationLocationFileContainerId);
+      destinationLocation.setFileContainerName(destinationLocationFileContainerName);
       destinationLocation.setFileId(destinationLocationFileId);
       downloadTaskResult.setDestinationLocation(destinationLocation);
     }
@@ -506,30 +511,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     try {
       Timestamp timestamp = new Timestamp(processed.getTime());
       if (dataTransferType != null) {
-        return jdbcTemplate.query(
-            GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL,
-            dataObjectDownloadTaskRowMapper,
-            dataTransferStatus.value(),
-            dataTransferType.value(),
-            timestamp,
-            timestamp);
+        return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL,
+            dataObjectDownloadTaskRowMapper, dataTransferStatus.value(), dataTransferType.value(),
+            timestamp, timestamp);
       }
-      return jdbcTemplate.query(
-          GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL,
-          dataObjectDownloadTaskRowMapper,
-          dataTransferStatus.value(),
-          timestamp,
-          timestamp);
+      return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL,
+          dataObjectDownloadTaskRowMapper, dataTransferStatus.value(), timestamp, timestamp);
 
     } catch (DataAccessException e) {
-      throw new HpcException(
-          "Failed to get data object download tasks: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR,
-          HpcIntegratedSystem.POSTGRESQL,
-          e);
+      throw new HpcException("Failed to get data object download tasks: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
-  
+
   @Override
   public void upsertDownloadTaskResult(HpcDownloadTaskResult taskResult) throws HpcException {
     try {
@@ -538,6 +532,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           taskResult.getDataTransferType() != null ? taskResult.getDataTransferType().value()
               : null,
           taskResult.getDestinationLocation().getFileContainerId(),
+          taskResult.getDestinationLocation().getFileContainerName(),
           taskResult.getDestinationLocation().getFileId(), taskResult.getDestinationType().value(),
           taskResult.getResult(), taskResult.getType().value(), taskResult.getMessage(),
           toJSON(taskResult.getItems()), taskResult.getCompletionEvent(),

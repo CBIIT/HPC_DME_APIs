@@ -623,6 +623,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         Math.toIntExact(bytesTransferred * 1000 / (taskResult.getCompleted().getTimeInMillis()
             - taskResult.getCreated().getTimeInMillis())));
 
+    // Get the file container name.
+    try {
+      taskResult.getDestinationLocation()
+          .setFileContainerName(getFileContainerName(taskResult.getDestinationType(),
+              downloadTask.getConfigurationId(),
+              taskResult.getDestinationLocation().getFileContainerId()));
+
+    } catch (HpcException e) {
+      logger.error("Failed to get file container name: "
+          + taskResult.getDestinationLocation().getFileContainerId(), e);
+    }
+
     // Persist to the DB.
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);
   }
