@@ -1,0 +1,7 @@
+{
+ "doc" : "CCR_SBL",
+ "basePath" : "/CCR_SBL_Admin_Archive",
+ "page" : 1,
+ "pageSize" : 100,
+ "totalCount" : true
+}
