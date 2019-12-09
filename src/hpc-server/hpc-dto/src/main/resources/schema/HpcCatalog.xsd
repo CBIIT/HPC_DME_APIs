@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * HpcCatalog.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+ * @version $Id$
+ -->
+
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-catalog="http://hpc.nci.nih.gov/domain/catalog"
+	xmlns:hpc-dto-catalog="http://hpc.nci.nih.gov/dto/catalog"
+	targetNamespace="http://hpc.nci.nih.gov/dto/catalog" 
+	elementFormDefault="unqualified">
+
+	<xsd:import namespace="http://hpc.nci.nih.gov/domain/catalog"
+		        schemaLocation="HpcCatalogTypes.xsd" />
+
+	<!-- Catalog Meta data DTO -->
+	<xsd:element name="HpcCatalogRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="doc" type="xsd:string" minOccurs="0" />
+				<xsd:element name="basePath" type="xsd:string" minOccurs="0" />
+				<xsd:element name="page" type="xsd:int" minOccurs="0" />
+				<xsd:element name="pageSize" type="xsd:int" minOccurs="0" />
+				<xsd:element name="totalCount" type="xsd:boolean" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="HpcCatalogsDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="catalogs"
+				             type="hpc-domain-catalog:HpcCatalog"
+					         minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="page" type="xsd:int" />
+				<xsd:element name="pageSize" type="xsd:int" />
+				<xsd:element name="totalCount" type="xsd:int" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	
+</xsd:schema>

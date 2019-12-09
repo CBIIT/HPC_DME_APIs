@@ -93,6 +93,7 @@
 		<prop key="hpc.ws.rs.auth.data-search.delete-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.data-search.get-query">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-search.get-queries">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
+		<prop key="hpc.ws.rs.auth.data-search.query-catalog">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-search.get-metadata-attributes">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-search.refresh-metadata-views">SYSTEM_ADMIN</prop>
 		
