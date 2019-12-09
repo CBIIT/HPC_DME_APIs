@@ -115,6 +115,15 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>${basedir}/src/main/resources/schema/HpcCatalogTypes.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.catalog</packagename>
+									<bindingFile>${basedir}/src/main/resources/schema/hpc-domain-types-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:simple</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
@@ -137,7 +146,8 @@
 							gov.nih.nci.hpc.domain.datatransfer,
 							gov.nih.nci.hpc.domain.databrowse,
 							gov.nih.nci.hpc.domain.notification,
-							gov.nih.nci.hpc.domain.report
+							gov.nih.nci.hpc.domain.report,
+							gov.nih.nci.hpc.domain.catalog
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>

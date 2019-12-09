@@ -18,6 +18,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import gov.nih.nci.hpc.dto.catalog.HpcCatalogRequestDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 
 /**
@@ -180,6 +181,18 @@ public interface HpcDataSearchRestService {
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getMetadataAttributes(@QueryParam("levelLabel") String levelLabel);
 
+  /**
+   * Query catalog metadata.
+   *
+   * @param catalogRequest A catalog request DTO.
+   * @return The REST service response w/ HpcCatalogsDTO entity.
+   */
+  @POST
+  @Path("/catalog/query")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response queryCatalog(HpcCatalogRequestDTO catalogRequest);
+  
   /**
    * Refresh the metadata views.
    *

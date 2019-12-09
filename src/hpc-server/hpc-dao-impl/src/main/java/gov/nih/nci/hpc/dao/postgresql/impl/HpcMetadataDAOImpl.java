@@ -483,6 +483,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_metamap");
 			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_main");
 			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_data_hierarchy_meta_attr_name");
+			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_catalog_meta_main");
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),

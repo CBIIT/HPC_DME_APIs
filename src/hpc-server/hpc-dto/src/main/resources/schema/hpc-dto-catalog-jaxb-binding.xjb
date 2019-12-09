@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-dto-catalog-jaxb-binding.xjb
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
+ * @version $Id: $
+ -->
+<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
+			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<jxb:globalBindings>
+		<jxb:serializable uid="1"/>
+		
+		<!-- use Calendar instead of XMLGregorianCalendar -->
+        <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
+            parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
+            printMethod="javax.xml.bind.DatatypeConverter.printDateTime"/>
+
+        <jxb:javaType name="java.util.Calendar" xmlType="xsd:date"
+            parseMethod="javax.xml.bind.DatatypeConverter.parseDate"
+            printMethod="javax.xml.bind.DatatypeConverter.printDate"/>
+
+        <jxb:javaType name="java.util.Calendar" xmlType="xsd:time"
+            parseMethod="javax.xml.bind.DatatypeConverter.parseTime"
+            printMethod="javax.xml.bind.DatatypeConverter.printTime"/>
+            
+		<jxb:javaType name="java.lang.String" xmlType="xsd:ID" 
+			parseMethod="javax.xml.bind.DatatypeConverter.parseString"
+            printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+	</jxb:globalBindings>
+	
+	<jxb:bindings schemaLocation="HpcCatalogTypes.xsd">
+            <jxb:bindings node="//xsd:complexType[@name='HpcCatalogCriteria']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.catalog.HpcCatalogCriteria"/>
+            </jxb:bindings>
+		    <jxb:bindings node="//xsd:complexType[@name='HpcCatalog']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.catalog.HpcCatalog"/>
+            </jxb:bindings>
+            <jxb:bindings node="//xsd:complexType[@name='HpcCatalogEntry']">
+                <jxb:class ref="gov.nih.nci.hpc.domain.catalog.HpcCatalogEntry"/>
+            </jxb:bindings>
+    </jxb:bindings>
+    
+</jxb:bindings>
