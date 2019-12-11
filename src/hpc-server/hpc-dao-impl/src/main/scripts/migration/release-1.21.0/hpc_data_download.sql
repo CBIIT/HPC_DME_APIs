@@ -25,3 +25,6 @@ where task."TYPE" = 'DATA_OBJECT' and task."SIZE" is null
       and substring(data.data_path from length('/var/lib/irods/iRODS/Vault/home') + 1) = task."PATH"
       and map.object_id = data.data_id
       and meta.meta_id = map.meta_id and meta.meta_attr_name = 'source_file_size';
+      
+-- HPCDATAMGM-1192 Populate destination type for retrospective data in Download Task Table
+update "HPC_DOWNLOAD_TASK_RESULT" set "DESTINATION_TYPE"="DATA_TRANSFER_TYPE" where "DESTINATION_TYPE" is null and "RESULT"=true and "TYPE"='DATA_OBJECT';
