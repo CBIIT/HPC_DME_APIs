@@ -1119,7 +1119,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setDestinationType(taskStatus.getResult().getDestinationType());
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
       downloadStatus.setMessage(taskStatus.getResult().getMessage());
-      downloadStatus.setResult(taskStatus.getResult().getResult().equals(HpcDownloadResult.SUCCEEDED));
+      downloadStatus.setResult(taskStatus.getResult().getResult());
       downloadStatus
           .setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
               ? taskStatus.getResult().getEffectiveTransferSpeed()
@@ -1844,7 +1844,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setDestinationType(taskStatus.getResult().getDestinationType());
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
       downloadStatus.setMessage(taskStatus.getResult().getMessage());
-      downloadStatus.setResult(taskStatus.getResult().getResult().equals(HpcDownloadResult.SUCCEEDED));
+      downloadStatus.setResult(taskStatus.getResult().getResult());
       downloadStatus
           .setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
               ? taskStatus.getResult().getEffectiveTransferSpeed()

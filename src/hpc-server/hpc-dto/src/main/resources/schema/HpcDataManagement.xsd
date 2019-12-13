@@ -392,7 +392,7 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationType"
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="result" type="xsd:boolean"
+				<xsd:element name="result" type="hpc-domain-datatransfer:HpcDownloadResult"
 					minOccurs="0" />
 				<xsd:element name="message" type="xsd:string" />
 				<xsd:element name="effectiveTrasnsferSpeed"
@@ -429,7 +429,7 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationType"
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="result" type="xsd:boolean"
+				<xsd:element name="result" type="hpc-domain-datatransfer:HpcDownloadResult"
 					minOccurs="0" />
 				<xsd:element name="completedItems"
 					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
