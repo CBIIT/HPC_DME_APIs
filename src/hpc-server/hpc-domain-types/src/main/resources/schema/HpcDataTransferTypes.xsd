@@ -243,6 +243,14 @@
 			<xsd:enumeration value="TGZ" />
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcDownloadResult">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="SUCCEEDED" />
+			<xsd:enumeration value="FAILED" />
+			<xsd:enumeration value="CANCELED" />
+		</xsd:restriction>
+	</xsd:simpleType>
 
 	<xsd:complexType name="HpcDataObjectDownloadRequest">
 		<xsd:sequence>
@@ -327,7 +335,7 @@
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
-			<xsd:element name="result" type="xsd:boolean" />
+			<xsd:element name="result" type="hpc-domain-datatransfer:HpcDownloadResult" />
 			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
@@ -377,7 +385,7 @@
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="destinationLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
-			<xsd:element name="result" type="xsd:boolean"
+			<xsd:element name="result" type="hpc-domain-datatransfer:HpcDownloadResult"
 				minOccurs="0" />
 			<xsd:element name="message" type="xsd:string" />
 			<xsd:element name="effectiveTransferSpeed" type="xsd:int"
