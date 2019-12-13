@@ -28,3 +28,8 @@ where task."TYPE" = 'DATA_OBJECT' and task."SIZE" is null
       
 -- HPCDATAMGM-1192 Populate destination type for retrospective data in Download Task Table
 update "HPC_DOWNLOAD_TASK_RESULT" set "DESTINATION_TYPE"="DATA_TRANSFER_TYPE" where "DESTINATION_TYPE" is null and "RESULT"=true and "TYPE"='DATA_OBJECT';
+
+-- HPCDATAMGM-1168 modified download task result to have the option to capture canceled tasks.
+ALTER TABLE public."HPC_DOWNLOAD_TASK_RESULT" ALTER COLUMN "RESULT" TYPE text;
+update public."HPC_DOWNLOAD_TASK_RESULT" set "RESULT" = 'SUCCEEDED' where "RESULT" = 'true';
+update public."HPC_DOWNLOAD_TASK_RESULT" set "RESULT" = 'FAILED' where "RESULT" = 'false';
