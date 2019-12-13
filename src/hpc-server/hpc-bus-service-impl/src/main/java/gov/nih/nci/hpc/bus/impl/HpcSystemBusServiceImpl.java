@@ -1261,7 +1261,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED)
               ? HpcDownloadResult.SUCCEEDED
               : HpcDownloadResult.FAILED;
-      String message = result.equals(HpcDataTransferDownloadStatus.COMPLETED) ? null
+      String message = result.equals(HpcDownloadResult.SUCCEEDED) ? null
           : downloadTask.getDataTransferType() + " transfer failed ["
               + dataTransferDownloadReport.getMessage() + "].";
       Calendar completed = Calendar.getInstance();
