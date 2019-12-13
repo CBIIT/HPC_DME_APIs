@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -289,7 +290,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     String destinationType = rs.getString("DESTINATION_TYPE");
     downloadTaskResult.setDestinationType(
         destinationType != null ? HpcDataTransferType.fromValue(destinationType) : null);
-    downloadTaskResult.setResult(rs.getBoolean("RESULT"));
+    downloadTaskResult.setResult(HpcDownloadResult.fromValue(rs.getString("RESULT")));
     downloadTaskResult.setMessage(rs.getString("MESSAGE"));
     downloadTaskResult.getItems().addAll(fromJSON(rs.getString("ITEMS")));
     downloadTaskResult.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
@@ -534,7 +535,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           taskResult.getDestinationLocation().getFileContainerId(),
           taskResult.getDestinationLocation().getFileContainerName(),
           taskResult.getDestinationLocation().getFileId(), taskResult.getDestinationType().value(),
-          taskResult.getResult(), taskResult.getType().value(), taskResult.getMessage(),
+          taskResult.getResult().value(), taskResult.getType().value(), taskResult.getMessage(),
           toJSON(taskResult.getItems()), taskResult.getCompletionEvent(),
           taskResult.getEffectiveTransferSpeed(), taskResult.getSize(), taskResult.getCreated(),
           taskResult.getCompleted());
@@ -743,7 +744,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
         jsonDownloadItem.put("message", downloadItem.getMessage());
       }
       if (downloadItem.getResult() != null) {
-        jsonDownloadItem.put("result", downloadItem.getResult());
+        jsonDownloadItem.put("result", downloadItem.getResult().value());
       }
       jsonDownloadItem.put("destinationLocationFileContainerId",
           downloadItem.getDestinationLocation().getFileContainerId());
@@ -811,7 +812,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
         Object result = jsonDownloadItem.get("result");
         if (result != null) {
-          downloadItem.setResult(Boolean.valueOf(result.toString()));
+          downloadItem.setResult(HpcDownloadResult.fromValue(result.toString()));
         }
 
         HpcFileLocation destinationLocation = new HpcFileLocation();

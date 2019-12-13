@@ -48,6 +48,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -582,8 +583,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean result,
-      String message, Calendar completed, long bytesTransferred) throws HpcException {
+  public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+      HpcDownloadResult result, String message, Calendar completed, long bytesTransferred)
+      throws HpcException {
     // Input validation
     if (downloadTask == null) {
       throw new HpcException("Invalid data object download task",
@@ -593,7 +595,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Delete the staged download file.
     if (downloadTask.getDownloadFilePath() != null
         && !FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
-      logger.error("Failed to delete file: " + downloadTask.getDownloadFilePath());
+      logger.error("Failed to delete file: {}", downloadTask.getDownloadFilePath());
     }
 
     // Cleanup the DB record.
@@ -705,8 +707,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     } catch (HpcException e) {
       // Failed to submit a transfer request. Cleanup the download task.
-      completeDataObjectDownloadTask(downloadTask, false, e.getMessage(), Calendar.getInstance(),
-          0);
+      completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage(),
+          Calendar.getInstance(), 0);
       return;
     }
 
@@ -864,8 +866,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask, boolean result,
-      String message, Calendar completed) throws HpcException {
+  public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
+      HpcDownloadResult result, String message, Calendar completed) throws HpcException {
     // Input validation
     if (downloadTask == null) {
       throw new HpcException("Invalid collection download task",
@@ -903,7 +905,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
     for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-      if (item.getResult() != null && item.getResult()
+      if (item.getResult() != null && item.getResult().equals(HpcDownloadResult.SUCCEEDED)
           && item.getEffectiveTransferSpeed() != null) {
         effectiveTransferSpeed += item.getEffectiveTransferSpeed();
         completedItems++;
@@ -1749,8 +1751,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
-      completeDataObjectDownloadTask(s3Download.getDownloadTask(), false, e.getMessage(),
-          Calendar.getInstance(), 0);
+      completeDataObjectDownloadTask(s3Download.getDownloadTask(), HpcDownloadResult.FAILED,
+          e.getMessage(), Calendar.getInstance(), 0);
 
       throw (e);
     }
@@ -1788,8 +1790,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
-      completeDataObjectDownloadTask(s3Download.getDownloadTask(), false, e.getMessage(),
-          Calendar.getInstance(), 0);
+      completeDataObjectDownloadTask(s3Download.getDownloadTask(), HpcDownloadResult.FAILED,
+          e.getMessage(), Calendar.getInstance(), 0);
 
       throw (e);
     }
@@ -1834,8 +1836,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
-      completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), false, e.getMessage(),
-          Calendar.getInstance(), 0);
+      completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), HpcDownloadResult.FAILED,
+          e.getMessage(), Calendar.getInstance(), 0);
 
       throw (e);
     }
@@ -2204,7 +2206,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       // Cleanup the download task.
       try {
-        completeDataObjectDownloadTask(downloadTask, false, message, transferFailedTimestamp, 0);
+        completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, message,
+            transferFailedTimestamp, 0);
 
       } catch (HpcException ex) {
         logger.error("Failed to cleanup download task", ex);
@@ -2299,13 +2302,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     @Override
     public void transferCompleted(Long bytesTransferred) {
       // This callback method is called when the S3 download completed.
-      completeDownloadTask(true, null, bytesTransferred);
+      completeDownloadTask(HpcDownloadResult.SUCCEEDED, null, bytesTransferred);
     }
 
     @Override
     public void transferFailed(String message) {
       // This callback method is called when the first hop download failed.
-      completeDownloadTask(false, message, 0);
+      completeDownloadTask(HpcDownloadResult.FAILED, message, 0);
     }
 
     // ---------------------------------------------------------------------//
@@ -2367,18 +2370,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     /**
      * Complete this S3 download task, and send event.
      *
-     * @param result The download task result - true means success.
+     * @param result The download task result.
      * @param message The message to include in the download failed event.
      * @param bytesTransferred Total bytes transfered in this download task.
      */
-    private void completeDownloadTask(boolean result, String message, long bytesTransferred) {
+    private void completeDownloadTask(HpcDownloadResult result, String message,
+        long bytesTransferred) {
       try {
         Calendar completed = Calendar.getInstance();
         completeDataObjectDownloadTask(downloadTask, result, message, completed, bytesTransferred);
 
         // Send a download completion or failed event (if requested to).
         if (downloadTask.getCompletionEvent()) {
-          if (result) {
+          if (result.equals(HpcDownloadResult.SUCCEEDED)) {
             eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(),
                 downloadTask.getPath(), HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
                 downloadTask.getS3DownloadDestination().getDestinationLocation(), completed);

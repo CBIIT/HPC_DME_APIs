@@ -54,6 +54,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -1118,7 +1119,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setDestinationType(taskStatus.getResult().getDestinationType());
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
       downloadStatus.setMessage(taskStatus.getResult().getMessage());
-      downloadStatus.setResult(taskStatus.getResult().getResult());
+      downloadStatus.setResult(taskStatus.getResult().getResult().equals(HpcDownloadResult.SUCCEEDED));
       downloadStatus
           .setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
               ? taskStatus.getResult().getEffectiveTransferSpeed()
@@ -1843,7 +1844,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setDestinationType(taskStatus.getResult().getDestinationType());
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
       downloadStatus.setMessage(taskStatus.getResult().getMessage());
-      downloadStatus.setResult(taskStatus.getResult().getResult());
+      downloadStatus.setResult(taskStatus.getResult().getResult().equals(HpcDownloadResult.SUCCEEDED));
       downloadStatus
           .setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
               ? taskStatus.getResult().getEffectiveTransferSpeed()
@@ -1864,10 +1865,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       List<HpcCollectionDownloadTaskItem> items) {
     for (HpcCollectionDownloadTaskItem item : items) {
       item.setSize(null);
-      Boolean result = item.getResult();
+      HpcDownloadResult result = item.getResult();
       if (result == null) {
         downloadStatus.getInProgressItems().add(item);
-      } else if (result) {
+      } else if (result.equals(HpcDownloadResult.SUCCEEDED)) {
         item.setPercentComplete(null);
         downloadStatus.getCompletedItems().add(item);
       } else {

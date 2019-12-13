@@ -40,6 +40,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -445,8 +446,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @HpcExecuteAsSystemAccount
   public void startGlobusDataObjectDownloadTasks() throws HpcException {
     // Iterate through all the data object download tasks that are received and type is GLOBUS.
-    processDataObjectDownloadTasks(
-        HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GLOBUS);
+    processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED,
+        HpcDataTransferType.GLOBUS);
   }
 
   @Override
@@ -541,7 +542,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
       } catch (HpcException e) {
         logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
-        completeCollectionDownloadTask(downloadTask, false, e.getMessage());
+        completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
       }
     }
   }
@@ -574,7 +575,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               // This download item is now complete. Update the result.
               downloadItem.setResult(downloadItemStatus.getResult().getResult());
               downloadItem.setMessage(downloadItemStatus.getResult().getMessage());
-              downloadItem.setPercentComplete(downloadItemStatus.getResult().getResult() ? 100 : 0);
+              downloadItem.setPercentComplete(
+                  downloadItemStatus.getResult().getResult().equals(HpcDownloadResult.SUCCEEDED)
+                      ? 100
+                      : 0);
               downloadItem.setEffectiveTransferSpeed(
                   downloadItemStatus.getResult().getEffectiveTransferSpeed() > 0
                       ? downloadItemStatus.getResult().getEffectiveTransferSpeed()
@@ -592,7 +596,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         } catch (HpcException e) {
           logger.error("Failed to check collection download item status", e);
-          downloadItem.setResult(false);
+          downloadItem.setResult(HpcDownloadResult.FAILED);
           downloadItem.setMessage(e.getMessage());
         }
       }
@@ -605,15 +609,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // were completed successfully.
         int completedItemsCount = 0;
         for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
-          if (downloadItem.getResult()) {
+          if (downloadItem.getResult().equals(HpcDownloadResult.SUCCEEDED)) {
             completedItemsCount++;
           }
         }
 
         int itemsCount = downloadTask.getItems().size();
-        boolean result = completedItemsCount == itemsCount;
-        completeCollectionDownloadTask(downloadTask, result, result ? null
-            : completedItemsCount + " items downloaded successfully out of " + itemsCount);
+        HpcDownloadResult result = (completedItemsCount == itemsCount) ? HpcDownloadResult.SUCCEEDED
+            : HpcDownloadResult.FAILED;
+        completeCollectionDownloadTask(downloadTask, result,
+            result.equals(HpcDownloadResult.SUCCEEDED) ? null
+                : completedItemsCount + " items downloaded successfully out of " + itemsCount);
 
       } else {
         dataTransferService.updateCollectionDownloadTask(downloadTask);
@@ -841,20 +847,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param dataTransferType The data transfer type to process from the download task
    * @throws HpcException on service failure.
    */
-  private void processDataObjectDownloadTasks(
-      HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType)
-      throws HpcException {
+  private void processDataObjectDownloadTasks(HpcDataTransferDownloadStatus dataTransferStatus,
+      HpcDataTransferType dataTransferType) throws HpcException {
     // Iterate through all the data object download tasks that are in-progress.
     List<HpcDataObjectDownloadTask> downloadTasks = null;
     Date runTimestamp = new Date();
     do {
-      downloadTasks =
-          dataTransferService.getNextDataObjectDownloadTask(
-              dataTransferStatus, dataTransferType, runTimestamp);
+      downloadTasks = dataTransferService.getNextDataObjectDownloadTask(dataTransferStatus,
+          dataTransferType, runTimestamp);
       if (!CollectionUtils.isEmpty(downloadTasks)) {
         HpcDataObjectDownloadTask downloadTask = downloadTasks.get(0);
         try {
-          //First mark the task as picked up in this run so we don't pick up the same record.
+          // First mark the task as picked up in this run so we don't pick up the same record.
           dataTransferService.markProcessedDataObjectDownloadTask(downloadTask);
           switch (downloadTask.getDataTransferStatus()) {
             case RECEIVED:
@@ -868,11 +872,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               break;
 
             default:
-              throw new HpcException(
-                  "Unexpected data transfer download status ["
-                      + downloadTask.getDataTransferStatus()
-                      + "] for task: "
-                      + downloadTask.getId(),
+              throw new HpcException("Unexpected data transfer download status ["
+                  + downloadTask.getDataTransferStatus() + "] for task: " + downloadTask.getId(),
                   HpcErrorType.UNEXPECTED_ERROR);
           }
 
@@ -983,18 +984,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param downloadTaskId The download task ID.
    * @param dataTransferType The data transfer type,
    * @param configurationId The data management configuration ID.
-   * @param result The download result.
+   * @param result The download result (succeeded, failed or canceled).
    * @param message A failure message.
    * @param destinationLocation The download destination location.
    * @param dataTransferCompleted The download completion time.
    */
   private void addDataTransferDownloadEvent(String userId, String path,
       HpcDownloadTaskType downloadTaskType, String downloadTaskId,
-      HpcDataTransferType dataTransferType, String configurationId, boolean result, String message,
-      HpcFileLocation destinationLocation, Calendar dataTransferCompleted) {
+      HpcDataTransferType dataTransferType, String configurationId, HpcDownloadResult result,
+      String message, HpcFileLocation destinationLocation, Calendar dataTransferCompleted) {
     setFileContainerName(dataTransferType, configurationId, destinationLocation);
     try {
-      if (result) {
+      if (result.equals(HpcDownloadResult.SUCCEEDED)) {
         eventService.addDataTransferDownloadCompletedEvent(userId, path, downloadTaskType,
             downloadTaskId, destinationLocation, dataTransferCompleted);
       } else {
@@ -1116,7 +1117,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       // Data object download failed.
       logger.error("Failed to download data object in a collection", e);
 
-      downloadItem.setResult(false);
+      downloadItem.setResult(HpcDownloadResult.FAILED);
       downloadItem.setDestinationLocation(
           globusDownloadDestination != null ? globusDownloadDestination.getDestinationLocation()
               : s3DownloadDestination.getDestinationLocation());
@@ -1199,12 +1200,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * event.
    *
    * @param downloadTask The download task to complete.
-   * @param result The result of the task (true is successful, false is failed).
+   * @param result The result of the task (succeeded, failed or canceled).
    * @param message (Optional) If the task failed, a message describing the failure.
    * @throws HpcException on service failure.
    */
   private void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
-      boolean result, String message) throws HpcException {
+      HpcDownloadResult result, String message) throws HpcException {
     Calendar completed = Calendar.getInstance();
     dataTransferService.completeCollectionDownloadTask(downloadTask, result, message, completed);
 
@@ -1256,8 +1257,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         dataTransferDownloadReport.getStatus();
     if (!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
       // This download task is no longer in-progress - complete it.
-      boolean result = dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED);
-      String message = result ? null
+      HpcDownloadResult result =
+          dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED)
+              ? HpcDownloadResult.SUCCEEDED
+              : HpcDownloadResult.FAILED;
+      String message = result.equals(HpcDataTransferDownloadStatus.COMPLETED) ? null
           : downloadTask.getDataTransferType() + " transfer failed ["
               + dataTransferDownloadReport.getMessage() + "].";
       Calendar completed = Calendar.getInstance();
