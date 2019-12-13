@@ -810,9 +810,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           downloadItem.setMessage(message.toString());
         }
 
+        // Result was captured as boolean before changed to HpcDownloadResult enum.
+        // Need to account for both options.
         Object result = jsonDownloadItem.get("result");
         if (result != null) {
-          downloadItem.setResult(HpcDownloadResult.fromValue(result.toString()));
+          if (result.toString().equals("true")) {
+            downloadItem.setResult(HpcDownloadResult.SUCCEEDED);
+          } else if (result.toString().equals("false")) {
+            downloadItem.setResult(HpcDownloadResult.FAILED);
+          } else {
+            downloadItem.setResult(HpcDownloadResult.fromValue(result.toString()));
+          }
         }
 
         HpcFileLocation destinationLocation = new HpcFileLocation();
