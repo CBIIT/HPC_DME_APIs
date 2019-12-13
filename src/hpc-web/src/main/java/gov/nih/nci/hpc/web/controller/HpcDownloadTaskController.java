@@ -29,6 +29,7 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonView;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
@@ -209,7 +210,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil
             .getDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
         String serviceURL = dataObjectServiceURL + downloadTask.getPath() + "/download";
-        if (!downloadTask.getResult()) {
+        if (!downloadTask.getResult().equals(HpcDownloadResult.SUCCEEDED)) {
           HpcDownloadRequestDTO downloadDTO = new HpcDownloadRequestDTO();
           HpcGlobusDownloadDestination destination = new HpcGlobusDownloadDestination();
 		  HpcFileLocation location = downloadTask.getDestinationLocation();
@@ -241,7 +242,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
 	boolean retry = true;
-	if(downloadTask.getResult() != null && downloadTask.getResult() == false)
+	if(downloadTask.getResult() != null && !downloadTask.getResult().equals(HpcDownloadResult.SUCCEEDED))
 	{
 		if(downloadTask != null && downloadTask.getDestinationType() != null)
 		{
