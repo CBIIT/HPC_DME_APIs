@@ -357,6 +357,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       // Download failed.
       statusReport.setStatus(HpcDataTransferDownloadStatus.FAILED);
       if (report.niceStatus.equals(PERMISSION_DENIED_STATUS)) {
+        statusReport.setPermissionDenied(true);
         statusReport.setMessage(report.niceStatusDescription
             + ". Check HPC-DM system-account granted write access to the destination endpoint");
       }

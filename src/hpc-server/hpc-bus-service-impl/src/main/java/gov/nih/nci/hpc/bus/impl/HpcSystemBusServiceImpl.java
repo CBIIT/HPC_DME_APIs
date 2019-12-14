@@ -1257,10 +1257,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         dataTransferDownloadReport.getStatus();
     if (!dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
       // This download task is no longer in-progress - complete it.
-      HpcDownloadResult result =
-          dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED)
-              ? HpcDownloadResult.SUCCEEDED
-              : HpcDownloadResult.FAILED;
+
+      // Determine the download result.
+      HpcDownloadResult result = null;
+      if (dataTransferDownloadStatus.equals(HpcDataTransferDownloadStatus.COMPLETED)) {
+        result = HpcDownloadResult.SUCCEEDED;
+      } else {
+        if (Boolean.TRUE.equals(dataTransferDownloadReport.getPermissionDenied())) {
+          result = HpcDownloadResult.FAILED_PERMISSION_DENIED;
+        } else {
+          result = HpcDownloadResult.FAILED;
+        }
+      }
+
       String message = result.equals(HpcDownloadResult.SUCCEEDED) ? null
           : downloadTask.getDataTransferType() + " transfer failed ["
               + dataTransferDownloadReport.getMessage() + "].";
