@@ -503,7 +503,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     try {
 
       return (jdbcTemplate.update(UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_SQL, toStatus.value(),
-          dataObjectDownloadTaskId, toStatus.value()) > 0);
+          dataObjectDownloadTaskId, fromStatus.value()) > 0);
 
     } catch (DataAccessException e) {
       throw new HpcException(
