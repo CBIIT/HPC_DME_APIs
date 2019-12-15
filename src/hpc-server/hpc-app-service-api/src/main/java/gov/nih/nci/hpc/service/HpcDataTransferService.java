@@ -296,7 +296,7 @@ public interface HpcDataTransferService {
    * download. 2. Update task info in DB with results info.
    *
    * @param downloadTask The download task to complete.
-   * @param result The result of the task (succeeded, failed or canceled).
+   * @param result The result of the task (completed, failed or canceled).
    * @param message (Optional) If the task failed, a message describing the failure.
    * @param completed (Optional) The download task completion timestamp.
    * @param bytesTransferred The total bytes transfered.
@@ -409,6 +409,17 @@ public interface HpcDataTransferService {
    */
   public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException;
+  
+  /**
+   * Cancel a collection download task. This will mark any pending download items (i.e. items in RECEIVED state)
+   * in this collection download task for cancellation. 
+   *
+   * @param downloadTask The collection download task to update.
+   * return The number of download items that got canceled.
+   * @throws HpcException on service failure.
+   */
+  public int cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
+      throws HpcException;
 
   /**
    * Get collection download tasks.
@@ -424,7 +435,7 @@ public interface HpcDataTransferService {
    * Complete a collection download task: 1. Update task info in DB with results info.
    *
    * @param downloadTask The download task to complete.
-   * @param result The result of the task (succeeded, failed or canceled).
+   * @param result The result of the task (completed, failed or canceled).
    * @param message (Optional) If the task failed, a message describing the failure.
    * @param completed (Optional) The download task completion timestamp.
    * @throws HpcException on service failure.

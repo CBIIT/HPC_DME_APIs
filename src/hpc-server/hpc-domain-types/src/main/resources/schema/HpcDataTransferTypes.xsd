@@ -49,6 +49,7 @@
 			<xsd:enumeration value="IN_PROGRESS" />
 			<xsd:enumeration value="COMPLETED" />
 			<xsd:enumeration value="FAILED" />
+			<xsd:enumeration value="CANCELED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -247,7 +248,7 @@
 	
 	<xsd:simpleType name="HpcDownloadResult">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="SUCCEEDED" />
+			<xsd:enumeration value="COMPLETED" />
 			<xsd:enumeration value="FAILED" />
 			<xsd:enumeration value="FAILED_PERMISSION_DENIED" />
 			<xsd:enumeration value="CANCELED" />

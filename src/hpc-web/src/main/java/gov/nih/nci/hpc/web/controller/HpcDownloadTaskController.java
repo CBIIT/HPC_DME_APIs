@@ -210,7 +210,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil
             .getDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
         String serviceURL = dataObjectServiceURL + downloadTask.getPath() + "/download";
-        if (!downloadTask.getResult().equals(HpcDownloadResult.SUCCEEDED)) {
+        if (!downloadTask.getResult().equals(HpcDownloadResult.COMPLETED)) {
           HpcDownloadRequestDTO downloadDTO = new HpcDownloadRequestDTO();
           HpcGlobusDownloadDestination destination = new HpcGlobusDownloadDestination();
 		  HpcFileLocation location = downloadTask.getDestinationLocation();
@@ -242,7 +242,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
 	boolean retry = true;
-	if(downloadTask.getResult() != null && !downloadTask.getResult().equals(HpcDownloadResult.SUCCEEDED))
+	if(downloadTask.getResult() != null && !downloadTask.getResult().equals(HpcDownloadResult.COMPLETED))
 	{
 		if(downloadTask != null && downloadTask.getDestinationType() != null)
 		{
