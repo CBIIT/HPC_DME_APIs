@@ -31,5 +31,5 @@ update "HPC_DOWNLOAD_TASK_RESULT" set "DESTINATION_TYPE"="DATA_TRANSFER_TYPE" wh
 
 -- HPCDATAMGM-1168 modified download task result to have the option to capture canceled tasks.
 ALTER TABLE public."HPC_DOWNLOAD_TASK_RESULT" ALTER COLUMN "RESULT" TYPE text;
-update public."HPC_DOWNLOAD_TASK_RESULT" set "RESULT" = 'SUCCEEDED' where "RESULT" = 'true';
+update public."HPC_DOWNLOAD_TASK_RESULT" set "RESULT" = 'COMPLETED' where "RESULT" = 'true';
 update public."HPC_DOWNLOAD_TASK_RESULT" set "RESULT" = 'FAILED' where "RESULT" = 'false';

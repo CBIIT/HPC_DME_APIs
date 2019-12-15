@@ -860,6 +860,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
+  public int cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
+      throws HpcException {
+    int canceledItemsCount = 0;
+    for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+      if (dataDownloadDAO.updateDataObjectDownloadTaskStatus(
+          downloadItem.getDataObjectDownloadTaskId(), HpcDataTransferDownloadStatus.RECEIVED,
+          HpcDataTransferDownloadStatus.CANCELED)) {
+        canceledItemsCount++;
+      }
+    }
+    return canceledItemsCount;
+  }
+
+  @Override
   public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
       HpcCollectionDownloadTaskStatus status) throws HpcException {
     return dataDownloadDAO.getCollectionDownloadTasks(status);
@@ -905,7 +919,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
     for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-      if (item.getResult() != null && item.getResult().equals(HpcDownloadResult.SUCCEEDED)
+      if (item.getResult() != null && item.getResult().equals(HpcDownloadResult.COMPLETED)
           && item.getEffectiveTransferSpeed() != null) {
         effectiveTransferSpeed += item.getEffectiveTransferSpeed();
         completedItems++;
@@ -2302,7 +2316,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     @Override
     public void transferCompleted(Long bytesTransferred) {
       // This callback method is called when the S3 download completed.
-      completeDownloadTask(HpcDownloadResult.SUCCEEDED, null, bytesTransferred);
+      completeDownloadTask(HpcDownloadResult.COMPLETED, null, bytesTransferred);
     }
 
     @Override
@@ -2382,7 +2396,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
         // Send a download completion or failed event (if requested to).
         if (downloadTask.getCompletionEvent()) {
-          if (result.equals(HpcDownloadResult.SUCCEEDED)) {
+          if (result.equals(HpcDownloadResult.COMPLETED)) {
             eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(),
                 downloadTask.getPath(), HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
                 downloadTask.getS3DownloadDestination().getDestinationLocation(), completed);

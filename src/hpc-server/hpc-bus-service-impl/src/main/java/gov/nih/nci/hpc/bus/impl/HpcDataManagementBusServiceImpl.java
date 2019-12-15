@@ -1868,7 +1868,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcDownloadResult result = item.getResult();
       if (result == null) {
         downloadStatus.getInProgressItems().add(item);
-      } else if (result.equals(HpcDownloadResult.SUCCEEDED)) {
+      } else if (result.equals(HpcDownloadResult.COMPLETED)) {
         item.setPercentComplete(null);
         downloadStatus.getCompletedItems().add(item);
       } else {
@@ -1882,7 +1882,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * Delete a data object from the archive.
    *
    * @param path The data object path.
-   * @param systemGeneratedMetadata The system generetaed metadata.
+   * @param systemGeneratedMetadata The system generated metadata.
    * @param dataObjectDeleteResponse The deletion response DTO.
    */
   private void deleteDataObjectFromArchive(String path,

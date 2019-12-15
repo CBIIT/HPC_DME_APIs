@@ -1,9 +1,11 @@
 /**
  * HpcDataDownloadDAO.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.dao;
@@ -55,6 +57,19 @@ public interface HpcDataDownloadDAO {
   public void deleteDataObjectDownloadTask(String id) throws HpcException;
 
   /**
+   * Update data object download task status.
+   *
+   * @param dataObjectDownloadTaskId The data object download task ID to update.
+   * @param fromStatus The current status.
+   * @param toStatus The new status.
+   * @return true if the status was updated.
+   * @throws HpcException on database error.
+   */
+  public boolean updateDataObjectDownloadTaskStatus(String dataObjectDownloadTaskId,
+      HpcDataTransferDownloadStatus fromStatus, HpcDataTransferDownloadStatus toStatus)
+      throws HpcException;
+  
+  /**
    * Get data object download tasks.
    *
    * @return A list of data object download tasks.
@@ -67,7 +82,8 @@ public interface HpcDataDownloadDAO {
    *
    * @param dataTransferStatus The data object download task data transfer status.
    * @param dataTransferType The data object download task data transfer type.
-   * @param processed The processed date to pick up only records that have not yet been processed in this run.
+   * @param processed The processed date to pick up only records that have not yet been processed in
+   *        this run.
    * @return A data object download tasks.
    * @throws HpcException on database error.
    */
