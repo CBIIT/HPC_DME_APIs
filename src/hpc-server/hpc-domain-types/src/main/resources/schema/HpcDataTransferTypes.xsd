@@ -252,6 +252,7 @@
 			<xsd:enumeration value="FAILED" />
 			<xsd:enumeration value="FAILED_PERMISSION_DENIED" />
 			<xsd:enumeration value="CANCELED" />
+			<xsd:enumeration value="SUCCEEDED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
