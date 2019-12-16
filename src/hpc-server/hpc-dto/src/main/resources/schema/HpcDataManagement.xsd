@@ -437,6 +437,9 @@
 				<xsd:element name="failedItems"
 					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="canceledItems"
+					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
+					minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="inProgressItems"
 					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 					minOccurs="0" maxOccurs="unbounded" />
