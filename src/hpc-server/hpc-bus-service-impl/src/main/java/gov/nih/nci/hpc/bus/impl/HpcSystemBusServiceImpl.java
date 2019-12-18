@@ -500,6 +500,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         .getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
       try {
         List<HpcCollectionDownloadTaskItem> downloadItems = null;
+        HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker();
 
         if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
           // Get the collection to be downloaded.
@@ -512,12 +513,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           // Download all files under this collection.
           downloadItems = downloadCollection(collection,
               downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
-              downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
+              downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
+              collectionDownloadBreaker);
 
         } else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
           downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
               downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
-              downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
+              downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
+              collectionDownloadBreaker);
 
         } else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
           downloadItems = new ArrayList<>();
@@ -529,7 +532,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             downloadItems
                 .addAll(downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
                     downloadTask.getS3DownloadDestination(),
-                    downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId()));
+                    downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
+                    collectionDownloadBreaker));
           }
         }
 
@@ -1052,6 +1056,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param appendPathToDownloadDestination If true, the (full) object path will be used in the
    *        destination path, otherwise just the object name will be used.
    * @param userId The user ID who requested the collection download.
+   * @param collectionDownloadBreaker A collection download breaker instance.
    * @return The download task items (each item represent a data-object download under the
    *         collection).
    * @throws HpcException on service failure.
@@ -1059,13 +1064,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   private List<HpcCollectionDownloadTaskItem> downloadCollection(HpcCollection collection,
       HpcGlobusDownloadDestination globusDownloadDestination,
       HpcS3DownloadDestination s3DownloadDestination, boolean appendPathToDownloadDestination,
-      String userId) throws HpcException {
+      String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker) throws HpcException {
     List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
     // Iterate through the data objects in the collection and download them.
     for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-      downloadItems.add(downloadDataObject(dataObjectEntry.getPath(), globusDownloadDestination,
-          s3DownloadDestination, appendPathToDownloadDestination, userId));
+      HpcCollectionDownloadTaskItem downloadItem =
+          downloadDataObject(dataObjectEntry.getPath(), globusDownloadDestination,
+              s3DownloadDestination, appendPathToDownloadDestination, userId);
+      downloadItems.add(downloadItem);
+      if (collectionDownloadBreaker.abortDownload(downloadItem)) {
+        // Need to abort collection download processing. Return the items processed so far.
+        logger.info("Processing collection download task [{}] aborted",
+            collection.getAbsolutePath());
+        return downloadItems;
+      }
     }
 
     // Iterate through the sub-collections and download them.
@@ -1079,7 +1092,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                 appendPathToDownloadDestination ? null : false),
             calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath,
                 appendPathToDownloadDestination ? null : false),
-            appendPathToDownloadDestination, userId));
+            appendPathToDownloadDestination, userId, collectionDownloadBreaker));
       }
     }
 
@@ -1096,19 +1109,28 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    *        destination path, otherwise just the object name will be used.
    * @param userId The user ID who requested the collection download.
    * @param userId The user ID who requested the collection download.
+   * @param collectionDownloadBreaker A collection download breaker instance.
    * @return The download task items (each item represent a data-object download from the requested
    *         list).
+   * @throws HpcException on service failure.
    */
   private List<HpcCollectionDownloadTaskItem> downloadDataObjects(List<String> dataObjectPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
       HpcS3DownloadDestination s3DownloadDestination, boolean appendPathToDownloadDestination,
-      String userId) {
+      String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker) throws HpcException {
     List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
     // Iterate through the data objects in the collection and download them.
     for (String dataObjectPath : dataObjectPaths) {
-      downloadItems.add(downloadDataObject(dataObjectPath, globusDownloadDestination,
-          s3DownloadDestination, appendPathToDownloadDestination, userId));
+      HpcCollectionDownloadTaskItem downloadItem =
+          downloadDataObject(dataObjectPath, globusDownloadDestination, s3DownloadDestination,
+              appendPathToDownloadDestination, userId);
+      downloadItems.add(downloadItem);
+      if (collectionDownloadBreaker.abortDownload(downloadItem)) {
+        // Need to abort data object list download processing. Return the items processed so far.
+        logger.info("Processing data-object-list download task [{}] aborted", dataObjectPaths);
+        return downloadItems;
+      }
     }
 
     return downloadItems;
@@ -1609,5 +1631,63 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     }
 
     return false;
+  }
+
+  // Collection download breaker. This class is used to determine if processing
+  // of collection download should be aborted because the first item in the collection had
+  // permission denied
+  // to download.
+  private class HpcCollectionDownloadBreaker {
+    // ---------------------------------------------------------------------//
+    // Instance members
+    // ---------------------------------------------------------------------//
+
+    // The first download task ID.
+    private String firstDownloadTaskId = null;
+
+    // The download items (processed) count.
+    private int downloadItemsCount = 0;
+
+    // The collection abort indicator.
+    private Boolean abortCollection = null;
+
+    // ---------------------------------------------------------------------//
+    // Methods
+    // ---------------------------------------------------------------------//
+
+    /**
+     * Check if processing a collection download task needs to be aborted.
+     *
+     * @param downloadItem The last download item processed by the collection download task
+     * @return true if collection download task needs to be aborted.
+     * @throws HpcException If failed to check first download item status.
+     */
+    public boolean abortDownload(HpcCollectionDownloadTaskItem downloadItem) throws HpcException {
+      if (abortCollection != null) {
+        // The decision to abort or not was made.
+        return abortCollection;
+      }
+
+      if (firstDownloadTaskId == null) {
+        // Keep track of the first item in the collection download.
+        // If this item faces permission denied, we'll abort the entire collection download
+        // processing.
+        firstDownloadTaskId = downloadItem.getDataObjectDownloadTaskId();
+      }
+
+      if (firstDownloadTaskId != null && ++downloadItemsCount % 10 == 0) {
+        // We check on the first download task item every 10 items, until confirmed.
+        HpcDownloadTaskStatus downloadItemStatus = dataTransferService.getDownloadTaskStatus(
+            downloadItem.getDataObjectDownloadTaskId(), HpcDownloadTaskType.DATA_OBJECT);
+        if (!downloadItemStatus.getInProgress()) {
+          // First download item completed. Set the abort indicator.
+          abortCollection = downloadItemStatus.getResult().getResult()
+              .equals(HpcDownloadResult.FAILED_PERMISSION_DENIED);
+          return abortCollection;
+        }
+      }
+
+      return false;
+    }
   }
 }
