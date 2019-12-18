@@ -1674,14 +1674,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // processing.
         firstDownloadTaskId = downloadItem.getDataObjectDownloadTaskId();
       }
-      
+
       downloadItemsCount++;
       logger.info("ERAN: {} - {}", firstDownloadTaskId, downloadItemsCount);
 
       if (downloadItemsCount % 10 == 0) {
         // We check on the first download task item every 10 items, until confirmed.
         HpcDownloadTaskStatus downloadItemStatus = dataTransferService.getDownloadTaskStatus(
-            downloadItem.getDataObjectDownloadTaskId(), HpcDownloadTaskType.DATA_OBJECT);
+            firstDownloadTaskId, HpcDownloadTaskType.DATA_OBJECT);
         if (!downloadItemStatus.getInProgress()) {
           // First download item completed. Set the abort indicator.
           abortCollection = downloadItemStatus.getResult().getResult()
