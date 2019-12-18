@@ -1675,9 +1675,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         firstDownloadTaskId = downloadItem.getDataObjectDownloadTaskId();
       }
       
+      downloadItemsCount++;
       logger.info("ERAN: {} - {}", firstDownloadTaskId, downloadItemsCount);
 
-      if (firstDownloadTaskId != null && ++downloadItemsCount % 10 == 0) {
+      if (downloadItemsCount % 10 == 0) {
         // We check on the first download task item every 10 items, until confirmed.
         HpcDownloadTaskStatus downloadItemStatus = dataTransferService.getDownloadTaskStatus(
             downloadItem.getDataObjectDownloadTaskId(), HpcDownloadTaskType.DATA_OBJECT);
@@ -1685,9 +1686,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           // First download item completed. Set the abort indicator.
           abortCollection = downloadItemStatus.getResult().getResult()
               .equals(HpcDownloadResult.FAILED_PERMISSION_DENIED);
-          logger.info("ERAN: {}", downloadItemStatus.getResult().getResult());
+          logger.info("ERAN: abort result {}", downloadItemStatus.getResult().getResult());
           return abortCollection;
         }
+      } else {
+        logger.info("ERAN: mod {}", downloadItemsCount % 10);
       }
 
       return false;
