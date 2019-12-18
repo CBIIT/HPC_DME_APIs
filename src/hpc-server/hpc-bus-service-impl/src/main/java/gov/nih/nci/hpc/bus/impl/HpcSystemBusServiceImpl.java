@@ -1688,6 +1688,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               .equals(HpcDownloadResult.FAILED_PERMISSION_DENIED);
           logger.info("ERAN: abort result {}", downloadItemStatus.getResult().getResult());
           return abortCollection;
+        } else {
+          logger.info("ERAN: first task in progress");
         }
       } else {
         logger.info("ERAN: mod {}", downloadItemsCount % 10);
