@@ -174,11 +174,14 @@ public class HpcLdapAuthenticationProxyImpl implements HpcLdapAuthenticationProx
 			 NamingEnumeration<SearchResult> searchEnum = 
 					                         dirContext.search(base, searchFilter, searchControls);
 			 HpcNciAccount account = null;
-			 if(searchEnum.hasMore()) {
+			 while(searchEnum.hasMore()) {
 				 account = new HpcNciAccount();
 				 Attributes attrs = searchEnum.next().getAttributes();
-				 account.setLastName(attrs.get(lastNameFilter).toString().substring(lastNameFilter.length() + 1).trim());
-				 account.setFirstName(attrs.get(firstNameFilter).toString().substring(firstNameFilter.length() + 1).trim());
+				 if(attrs.get(lastNameFilter) != null && attrs.get(firstNameFilter) != null) {
+    				 account.setLastName(attrs.get(lastNameFilter).toString().substring(lastNameFilter.length() + 1).trim());
+    				 account.setFirstName(attrs.get(firstNameFilter).toString().substring(firstNameFilter.length() + 1).trim());
+    				 break;
+				 }
 			 }
 			 return account;
 
