@@ -394,7 +394,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     userDownloadRequest.setType(HpcDownloadTaskType.fromValue(rs.getString(("TYPE"))));
 
     if (rs.getObject("RESULT") != null) {
-      userDownloadRequest.setResult(rs.getBoolean("RESULT"));
+      userDownloadRequest.setResult(HpcDownloadResult.fromValue(rs.getString("RESULT")));
     }
     Calendar created = Calendar.getInstance();
     created.setTime(rs.getTimestamp("CREATED"));
