@@ -1008,7 +1008,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     return "0";
   }
 
-  private static final String[] SI_UNITS = {"B", "kB", "MB", "GB", "TB", "PB", "EB"};
+  private static final String[] SI_UNITS = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
   private static final String[] BINARY_UNITS = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"};
 
   public static String humanReadableByteCount(final double bytes, final boolean useSIUnits) {
