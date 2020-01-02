@@ -424,13 +424,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       Object value3 = values.next();
       if (value1 != null)
         totalSize = new Double(value1.toString());
-      returnVal[0] = humanReadableByteCount(totalSize, false);
+      returnVal[0] = humanReadableByteCount(totalSize, true);
       if (value2 != null)
         maxSize = new Double(value2.toString());
-      returnVal[1] = humanReadableByteCount(maxSize, false);
+      returnVal[1] = humanReadableByteCount(maxSize, true);
       if (value3 != null)
         avgSize = new Double(value3.toString());
-      returnVal[2] = humanReadableByteCount(avgSize, false);
+      returnVal[2] = humanReadableByteCount(avgSize, true);
 
     }
     return returnVal;
@@ -1008,7 +1008,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
     return "0";
   }
 
-  private static final String[] SI_UNITS = {"B", "kB", "MB", "GB", "TB", "PB", "EB"};
+  private static final String[] SI_UNITS = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
   private static final String[] BINARY_UNITS = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"};
 
   public static String humanReadableByteCount(final double bytes, final boolean useSIUnits) {
