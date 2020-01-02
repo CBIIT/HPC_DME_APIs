@@ -247,11 +247,7 @@ public interface HpcDataManagementBusService {
 	 * @param path                        The data object's path.
 	 * @param dataObjectRegistration      A DTO contains the metadata and data
 	 *                                    transfer locations.
-	 * @param dataObjectFile              (Optional) The data object file. 2 options
-	 *                                    are available to upload the data - Specify
-	 *                                    a source in 'dataObjectRegistrationDTO' or
-	 *                                    provide this file. The caller is expected
-	 *                                    to provide one and only one option.
+	 * @param dataObjectFile              (Optional) The data object file attachment
 	 * @param userId                      The registrar user-id.
 	 * @param userName                    The registrar name.
 	 * @param configurationId             The data management configuration ID.
