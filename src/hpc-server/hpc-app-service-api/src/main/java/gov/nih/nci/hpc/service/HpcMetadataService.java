@@ -87,6 +87,15 @@ public interface HpcMetadataService {
       List<HpcMetadataEntry> systemGeneratedMetadataEntries) throws HpcException;
 
   /**
+   * Filter out system generated metadata from a list of metadata entries
+   *
+   * @param metadataEntries The list of metadata entries.
+   * @return A list of metadata entries that contains no system generated metadata
+   */
+  public List<HpcMetadataEntry> toUserProvidedMetadataEntries(
+      List<HpcMetadataEntry> metadataEntries);
+
+  /**
    * convert a list of metadata entries to Map&lt;attribute, value&gt;
    *
    * @param metadataEntries The list of metadata entries
@@ -132,12 +141,7 @@ public interface HpcMetadataService {
       String configurationId, String collectionType) throws HpcException;
 
   /**
-   * Generate system metadata and attach to the data object. System generated metadata is: 1. UUID.
-   * 2. Registrar user ID. 3. Registrar name. 4. Configuration ID. 5. Source location
-   * (file-container-id and file-id). (Optional). 6. Archive location (file-container-id and
-   * file-id). 7. Data Transfer Request ID. (Optional) 8. Data Transfer Status. 9. Data Transfer
-   * Type. 10. Data Transfer Started. 11. Data Transfer Completed (Optional). 12. Data Object File
-   * size. (Optional). 13. Caller Object ID (Optional). 14. Registration Completion Event Indicator.
+   * Generate system metadata and attach to the data object.
    *
    * @param path The data object path.
    * @param archiveLocation The physical file archive location.
@@ -165,6 +169,21 @@ public interface HpcMetadataService {
       Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize,
       String sourceURL, String callerObjectId, String userId, String userName,
       String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
+      throws HpcException;
+
+  /**
+   * Generate system metadata and attach to the data object in a registration w/ link to another
+   * data object
+   *
+   * @param path The data object path.
+   * @param userId The user ID.
+   * @param userName The user name.
+   * @param configurationId The data management configuration ID.
+   * @param linkSourcePath The link source path.
+   * @throws HpcException on service failure.
+   */
+  public void addSystemGeneratedMetadataToDataObject(String path,
+      String userId, String userName, String configurationId, String linkSourcePath)
       throws HpcException;
 
   /**
