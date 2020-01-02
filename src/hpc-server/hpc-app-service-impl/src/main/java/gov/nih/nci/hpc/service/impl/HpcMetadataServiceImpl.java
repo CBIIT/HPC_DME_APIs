@@ -32,6 +32,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,6 +41,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,7 +217,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
     systemGeneratedMetadata.setRegistrarName(metadataMap.get(REGISTRAR_NAME_ATTRIBUTE));
     systemGeneratedMetadata.setConfigurationId(metadataMap.get(CONFIGURATION_ID_ATTRIBUTE));
-    systemGeneratedMetadata.setS3ArchiveConfigurationId(metadataMap.get(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE));
+    systemGeneratedMetadata
+        .setS3ArchiveConfigurationId(metadataMap.get(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE));
+    systemGeneratedMetadata.setLinkSourcePath(metadataMap.get(LINK_SOURCE_PATH_ATTRIBUTE));
 
     HpcFileLocation archiveLocation = new HpcFileLocation();
     archiveLocation
@@ -285,6 +289,22 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     }
 
     return systemGeneratedMetadata;
+  }
+
+  @Override
+  public List<HpcMetadataEntry> toUserProvidedMetadataEntries(
+      List<HpcMetadataEntry> metadataEntries) {
+    List<HpcMetadataEntry> userProdivedMetadataEntries = new ArrayList<>();
+    if (metadataEntries != null) {
+      Set<String> systemGeneratedMetadataAttributes =
+          metadataValidator.getSystemGeneratedMetadataAttributes();
+      metadataEntries.forEach(metadataEntry -> {
+        if (!systemGeneratedMetadataAttributes.contains(metadataEntry.getAttribute())) {
+          userProdivedMetadataEntries.add(metadataEntry);
+        }
+      });
+    }
+    return userProdivedMetadataEntries;
   }
 
   @Override
@@ -434,6 +454,34 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
         path, metadataEntries);
 
     return toSystemGeneratedMetadata(metadataEntries);
+  }
+
+  @Override
+  public void addSystemGeneratedMetadataToDataObject(String path, String userId, String userName,
+      String configurationId, String linkSourcePath) throws HpcException {
+    // Input validation.
+    if (path == null || configurationId == null || linkSourcePath == null) {
+      throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+
+    // Generate a data-object ID and add it as metadata.
+    metadataEntries.add(generateIdMetadata());
+
+    // Create the Metadata-Updated metadata.
+    metadataEntries.add(generateMetadataUpdatedMetadata());
+
+    // Create and add the registrar ID, name and data management configuration
+    // metadata.
+    metadataEntries.addAll(generateRegistrarMetadata(userId, userName, configurationId));
+
+    // Create the link source path metadata..
+    addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
+
+    // Add Metadata to the DM system.
+    dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
+        path, metadataEntries);
   }
 
   @Override
