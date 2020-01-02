@@ -2316,6 +2316,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcSystemGeneratedMetadata metadata =
         metadataService.getDataObjectSystemGeneratedMetadata(path);
 
+    // If this is a link, we will used the link source system-generated-metadata.
+    if (metadata.getLinkSourcePath() != null) {
+      return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), s3DownloadDestination,
+          googleDriveDownloadDestination);
+    }
+
     // Download to S3 destination is supported only from Cleversafe archive.
     if (s3DownloadDestination && (metadata.getDataTransferType() == null
         || !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
