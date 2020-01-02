@@ -1607,20 +1607,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcBulkMetadataEntries parentCollectionsBulkMetadataEntries, String userId, String userName,
       String configurationId) throws HpcException {
     // Create parent collections if requested and needed to.
-    if (createParentCollections != null && createParentCollections
-        && !dataManagementService.isPathParentDirectory(path)) {
-      // Create a parent collection registration request DTO.
+    if (createParentCollections != null && createParentCollections) {
       String parentCollectionPath = path.substring(0, path.lastIndexOf('/'));
-      HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
-      collectionRegistration.getMetadataEntries().addAll(getParentCollectionMetadataEntries(
-          parentCollectionPath, parentCollectionsBulkMetadataEntries));
-      collectionRegistration
-          .setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
-      collectionRegistration.setCreateParentCollections(true);
+      if (!dataManagementService.isPathParentDirectory(path)) {
+        // Create a parent collection registration request DTO.
+        HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
+        collectionRegistration.getMetadataEntries().addAll(getParentCollectionMetadataEntries(
+            parentCollectionPath, parentCollectionsBulkMetadataEntries));
+        collectionRegistration
+            .setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
+        collectionRegistration.setCreateParentCollections(true);
 
-      // Register the parent collection.
-      registerCollection(parentCollectionPath, collectionRegistration, userId, userName,
-          configurationId);
+        // Register the parent collection.
+        registerCollection(parentCollectionPath, collectionRegistration, userId, userName,
+            configurationId);
+      } else {
+        // The parent collection exists, but in case its registration still in-progress, we wait for
+        // its completion.
+        Lock lock = pathLocks.get(parentCollectionPath);
+        lock.lock();
+        lock.unlock();
+      }
     }
   }
 
