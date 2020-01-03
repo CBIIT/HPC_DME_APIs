@@ -412,6 +412,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
               "accountSecretKey", Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getSecretKey())));
           jsonS3UploadSource.put("region", s3Account.getRegion());
         }
+        if (request.getLinkSourcePath() != null) {
+          jsonRequest.put("linkSourcePath", request.getLinkSourcePath());
+        }
         jsonRequest.put("s3UploadSource", jsonS3UploadSource);
       }
 
@@ -717,6 +720,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         logger.error("ERAN dec " + s3Account);
       }
       request.setS3UploadSource(s3UploadSource);
+    }
+    
+    Object linkSourcePath = jsonRequest.get("linkSourcePath");
+    if (linkSourcePath != null) {
+      request.setLinkSourcePath(linkSourcePath.toString());
     }
 
     Object metadataEntries = jsonRequest.get("metadataEntries");
