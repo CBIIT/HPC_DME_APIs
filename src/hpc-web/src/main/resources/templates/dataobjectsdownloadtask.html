@@ -224,8 +224,8 @@
 								</h2>
 								</div>
 							</div>
-							<div class="panel-body"
-								th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
+							<div class="panel-body">
+							  <div th:if="${hpcDataObjectsDownloadStatusDTO.getFailedItems() != null and hpcDataObjectsDownloadStatusDTO.getFailedItems().size() > 0}">
 								<div class="panel panel-default"
 									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getFailedItems()}"  style="margin-top:5px">
 									<div class="col-md-12 form-group" style="word-break: break-all;">
@@ -241,6 +241,24 @@
 											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
 									</div>
 								</div>
+							  </div>
+							  <div 
+								th:if="${hpcDataObjectsDownloadStatusDTO.getCanceledItems() != null and hpcDataObjectsDownloadStatusDTO.getCanceledItems().size() > 0}">
+								<div class="panel panel-default"
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getCanceledItems()}"  style="margin-top:5px">
+									<div class="col-md-12 form-group" style="word-break: break-all;">
+										<label for="Name">Path:</label> 
+										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
+                      					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
+                     					  </label>
+                    					</a>
+									</div>
+									<div class="col-md-12 form-group">
+										<label for="Name">Message:</label> <label
+											th:text="Cancelled"></label>
+									</div>
+								</div>
+							  </div>
 							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getCompletedItems() != null and hpcDataObjectsDownloadStatusDTO.getCompletedItems().size() > 0}">
 								<h2>
