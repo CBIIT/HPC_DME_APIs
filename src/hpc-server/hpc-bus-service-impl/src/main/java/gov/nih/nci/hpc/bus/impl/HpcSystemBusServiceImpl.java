@@ -519,8 +519,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         } else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
           downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
               downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
-              downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
-              collectionDownloadBreaker);
+              downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
 
         } else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
           downloadItems = new ArrayList<>();
@@ -1117,7 +1116,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   private List<HpcCollectionDownloadTaskItem> downloadDataObjects(List<String> dataObjectPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
       HpcS3DownloadDestination s3DownloadDestination, boolean appendPathToDownloadDestination,
-      String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker) throws HpcException {
+      String userId) throws HpcException {
     List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
     // Iterate through the data objects in the collection and download them.
@@ -1126,11 +1125,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           downloadDataObject(dataObjectPath, globusDownloadDestination, s3DownloadDestination,
               appendPathToDownloadDestination, userId);
       downloadItems.add(downloadItem);
-      if (collectionDownloadBreaker.abortDownload(downloadItem)) {
-        // Need to abort data object list download processing. Return the items processed so far.
-        logger.info("Processing data-object-list download task [{}] aborted", dataObjectPaths);
-        return downloadItems;
-      }
     }
 
     return downloadItems;
