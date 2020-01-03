@@ -895,15 +895,23 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    */
   private void validateDataObjectRegistrationRequest(
       HpcDataObjectRegistrationRequest registrationRequest, String path) throws HpcException {
-    if (registrationRequest.getGlobusUploadSource() != null
-        && registrationRequest.getS3UploadSource() != null) {
-      throw new HpcException("Both Globus and S3 upload source provided for: " + path,
+    // Validate exactly one upload source provided - Globus, S3 or a link.
+    int uploadSourceCount = 0;
+    if (registrationRequest.getGlobusUploadSource() != null) {
+      uploadSourceCount++;
+    }
+    if(registrationRequest.getS3UploadSource() != null) {
+      uploadSourceCount++;
+    }
+    if(registrationRequest.getLinkSourcePath() != null) {
+      uploadSourceCount++;
+    }
+    if(uploadSourceCount > 1) {
+      throw new HpcException("Multiple (Globus/S3/Link) upload source provided for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-
-    if (registrationRequest.getGlobusUploadSource() == null
-        && registrationRequest.getS3UploadSource() == null) {
-      throw new HpcException("No Globus/S3 upload source provided for: " + path,
+    if (uploadSourceCount == 0) {
+      throw new HpcException("No Globus/S3/Link upload source provided for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
