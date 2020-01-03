@@ -911,6 +911,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           .setGlobusUploadSource(dataObjectRegistrationItem.getGlobusUploadSource());
       dataObjectRegistrationRequest
           .setS3UploadSource(dataObjectRegistrationItem.getS3UploadSource());
+      dataObjectRegistrationRequest
+          .setLinkSourcePath(dataObjectRegistrationItem.getLinkSourcePath());
       dataObjectRegistrationRequest.getMetadataEntries()
           .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
       dataObjectRegistrationRequest.setParentCollectionsBulkMetadataEntries(
