@@ -20,8 +20,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -102,7 +100,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
-  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
   // Encryptor.
   @Autowired
   HpcEncryptor encryptor = null;
