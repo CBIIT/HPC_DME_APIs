@@ -155,8 +155,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    *        registration status. This URL need to have a {taks_id} placeholder to plug-in the task
    *        ID to be displayed.
    */
-  private HpcDataManagementServiceImpl(String systemAdminSubjects,
-      String defaultBaseUiURL,
+  private HpcDataManagementServiceImpl(String systemAdminSubjects, String defaultBaseUiURL,
       String defaultBulkRegistrationStatusUiDeepLink) {
     // Prepare the query to get data objects in data transfer status of received.
     dataTransferReceivedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
@@ -197,7 +196,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     // allowed for these subjects.
     this.systemAdminSubjects.addAll(Arrays.asList(systemAdminSubjects.split("\\s+")));
 
-    defaultBulkRegistrationStatusUiURL = defaultBaseUiURL + '/' + defaultBulkRegistrationStatusUiDeepLink;
+    defaultBulkRegistrationStatusUiURL =
+        defaultBaseUiURL + '/' + defaultBulkRegistrationStatusUiDeepLink;
   }
 
   /**
@@ -465,14 +465,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     return dataManagementProxy
         .getDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
   }
-  
+
   @Override
   public HpcSubjectPermission acquireDataObjectPermission(String path, String userId)
       throws HpcException {
     return dataManagementProxy.acquireDataObjectPermission(
         dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
   }
-  
+
 
   @Override
   public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException {
@@ -719,7 +719,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
     for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
-      if (item.getTask().getResult()) {
+      if (Boolean.TRUE.equals(item.getTask().getResult())
+          && item.getRequest().getLinkSourcePath() == null) {
         effectiveTransferSpeed += item.getTask().getEffectiveTransferSpeed();
         completedItems++;
       }
@@ -838,7 +839,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   public HpcDataManagementConfiguration getDataManagementConfiguration(String id) {
     return dataManagementConfigurationLocator.get(id);
   }
-  
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -900,13 +901,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     if (registrationRequest.getGlobusUploadSource() != null) {
       uploadSourceCount++;
     }
-    if(registrationRequest.getS3UploadSource() != null) {
+    if (registrationRequest.getS3UploadSource() != null) {
       uploadSourceCount++;
     }
-    if(registrationRequest.getLinkSourcePath() != null) {
+    if (registrationRequest.getLinkSourcePath() != null) {
       uploadSourceCount++;
     }
-    if(uploadSourceCount > 1) {
+    if (uploadSourceCount > 1) {
       throw new HpcException("Multiple (Globus/S3/Link) upload source provided for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
