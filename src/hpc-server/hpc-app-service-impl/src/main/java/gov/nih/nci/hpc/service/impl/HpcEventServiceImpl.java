@@ -687,12 +687,19 @@ public class HpcEventServiceImpl implements HpcEventService {
     StringBuilder registrationItemsStr = new StringBuilder();
     registrationItems.forEach(
         registrationItem -> {
+          String source = null;
+          if(registrationItem.getRequest().getLinkSourcePath() != null) {
+            source = registrationItem.getRequest().getLinkSourcePath();
+          } else {
           HpcFileLocation sourceLocation =
               registrationItem.getRequest().getGlobusUploadSource() != null
                   ? registrationItem.getRequest().getGlobusUploadSource().getSourceLocation()
                   : registrationItem.getRequest().getS3UploadSource().getSourceLocation();
+          source = toString(sourceLocation);
+          }
+          
           registrationItemsStr.append(
-              "\n\t" + toString(sourceLocation) + " -> " + registrationItem.getTask().getPath());
+              "\n\t" + source + " -> " + registrationItem.getTask().getPath());
         });
 
     return registrationItemsStr.toString();
