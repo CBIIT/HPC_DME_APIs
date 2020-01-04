@@ -994,10 +994,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         registrationTask.getItems().forEach(item -> {
           String configurationId =
               dataManagementService.findDataManagementConfigurationId(item.getTask().getPath());
-          setFileContainerName(HpcDataTransferType.GLOBUS, configurationId,
-              item.getRequest().getGlobusUploadSource() != null
-                  ? item.getRequest().getGlobusUploadSource().getSourceLocation()
-                  : item.getRequest().getS3UploadSource().getSourceLocation());
+          HpcFileLocation fileLocation = null;
+          HpcDataTransferType dataTransferType = null;
+          if (item.getRequest().getGlobusUploadSource() != null) {
+            fileLocation = item.getRequest().getGlobusUploadSource().getSourceLocation();
+            dataTransferType = HpcDataTransferType.GLOBUS;
+          } else if (item.getRequest().getS3UploadSource() != null) {
+            fileLocation = item.getRequest().getS3UploadSource().getSourceLocation();
+            dataTransferType = HpcDataTransferType.S_3;
+          }
+          setFileContainerName(dataTransferType, configurationId, fileLocation);
         });
 
         eventService.addBulkDataObjectRegistrationCompletedEvent(registrationTask.getUserId(),
