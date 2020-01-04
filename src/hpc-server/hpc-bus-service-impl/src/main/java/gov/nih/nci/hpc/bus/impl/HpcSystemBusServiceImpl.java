@@ -1528,17 +1528,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         registrationTask.setSize(metadata.getSourceSize());
 
         // Check the upload status.
-        if (metadata.getLinkSourcePath() != null
-            || metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+        if (metadata.getLinkSourcePath() != null) {
+          // Registration w/ link completed.
+          registrationTask.setResult(true);
+
+        } else if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
           // Registration completed successfully for this item.
           registrationTask.setResult(true);
           registrationTask.setCompleted(metadata.getDataTransferCompleted());
           registrationTask.setPercentComplete(100);
 
-          // Calculate the effective transfer speed.
+          // Calculate the effective transfer speed. Note: there is no transfer in registration w/
+          // link
           registrationTask.setEffectiveTransferSpeed(Math.toIntExact(metadata.getSourceSize() * 1000
               / (metadata.getDataTransferCompleted().getTimeInMillis()
                   - metadata.getDataTransferStarted().getTimeInMillis())));
+
         } else {
           // Registration still in progress. Update % complete.
           registrationTask.setPercentComplete(
