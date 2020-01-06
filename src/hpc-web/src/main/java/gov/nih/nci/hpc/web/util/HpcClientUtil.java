@@ -104,6 +104,7 @@ import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -115,6 +116,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.integration.http.converter.MultipartAwareFormHttpMessageConverter;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -136,8 +138,13 @@ public class HpcClientUtil {
   public static WebClient getWebClient(String url, String hpcCertPath,
     String hpcCertPassword) {
 
+    org.codehaus.jackson.map.ObjectMapper mapper = new org.codehaus.jackson.map.ObjectMapper();
+    SerializationConfig config = mapper.getSerializationConfig();
+    config.set(SerializationConfig.Feature.WRITE_NULL_PROPERTIES, false);
+    mapper.setSerializationConfig(config);
+    
     WebClient client = WebClient.create(url, Collections.singletonList(
-      new JacksonJsonProvider()));
+      new JacksonJsonProvider(mapper)));
 
     ClientConfiguration clientConfig = WebClient.getConfig(client);
     clientConfig.getRequestContext().put("support.type.as.multipart", "true");
@@ -1187,6 +1194,96 @@ public class HpcClientUtil {
     }
   }
 
+  public static AjaxResponseBody linkDatafile(String token, String hpcDatafileURL, String hpcV2DatafileURL, 
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO datafileDTO, String path,
+      String hpcCertPath, String hpcCertPassword) {
+    AjaxResponseBody result = new AjaxResponseBody();
+    try {
+      try {
+        HpcDataObjectListDTO datafile =
+            getDatafiles(token, hpcDatafileURL, path, false, hpcCertPath, hpcCertPassword);
+        if (datafile != null && !CollectionUtils.isEmpty(datafile.getDataObjects())) {
+          result.setMessage("Failed to link. Data file already exists: " + path);
+          return result;
+        }
+      } catch (HpcWebException e) {
+        // data file does not exist
+      }
+
+      WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
+        .fromHttpUrl(hpcV2DatafileURL).path("/{dme-archive-path}").buildAndExpand(
+        path).encode().toUri().toURL().toExternalForm(), hpcCertPath,
+        hpcCertPassword);
+      client.type(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.APPLICATION_JSON_VALUE);
+      
+      List<Attachment> atts = new LinkedList<Attachment>();
+      atts.add(new org.apache.cxf.jaxrs.ext.multipart.Attachment("dataObjectRegistration",
+          "application/json", datafileDTO));
+
+      client.header("Authorization", "Bearer " + token);
+
+      Response restResponse = client.put(new MultipartBody(atts));
+      if (restResponse.getStatus() == 201) {
+        result.setMessage(
+            "Link has been created successfully.");
+        return result;
+      } else {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+        throw new HpcWebException(exception.getMessage());
+      }
+    } catch (HpcWebException e) {
+      result.setMessage("Link request is not successful: " + e.getMessage());
+      return result;
+    } catch (Exception e) {
+      e.printStackTrace();
+      result.setMessage("Link request is not successful.");
+      return result;
+    }
+  }
+  
+  public static gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO linkDatafiles(String token,
+      String hpcDatafileURL, gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
+      String hpcCertPath, String hpcCertPassword) {
+    try {
+      WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL, hpcCertPath, hpcCertPassword);
+      client.header("Authorization", "Bearer " + token);
+
+      Response restResponse = client.invoke("PUT", datafileDTO);
+      if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
+        return (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil.getObject(restResponse,
+            gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO.class);
+      } else {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+            new JacksonAnnotationIntrospector());
+        mapper.setAnnotationIntrospector(intr);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+        throw new HpcWebException("Failed to link data files: " + exception.getMessage());
+      }
+    } catch (HpcWebException e) {
+      throw e;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new HpcWebException("Failed to link data files due to: " + e.getMessage());
+    }
+  }
+  
   public static boolean updateUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO,
       String userId, String hpcCertPath, String hpcCertPassword) {
     try {
