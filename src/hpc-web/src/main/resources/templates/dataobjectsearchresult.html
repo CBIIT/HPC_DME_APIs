@@ -125,6 +125,15 @@
               cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a class="btn btn-link btn-sm" href="../permissions?assignType=User&amp;type=dataObject&amp;path={{COL_FIELD CUSTOM_FILTERS}}"><i class="fa fa-users" aria-hidden="true"></i></a></div>',
               exporterSuppressExport: true,
               enableSorting: false
+            },
+            {
+                field : 'link',
+                width : 150,
+                displayName : 'Link',
+                cellFilter : 'dmePathEncoding',
+                cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" href="../link?type=datafile&amp;linkFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source={{grid.appScope.source}}"><i class="fa fa-link" aria-hidden="true"></i></a></div>',
+                exporterSuppressExport: true,
+                enableSorting: false
             }
           ],
           onRegisterApi : function(gridApi) {
@@ -296,9 +305,9 @@
           }
           document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
           if(source == "criteria")
-            document.getElementById("searchType").value = "criteria";
+        	document.getElementById("downloadFilesform").elements.namedItem("searchType").value = "criteria";
           else
-            document.getElementById("searchType").value = "search";
+        	document.getElementById("downloadFilesform").elements.namedItem("searchType").value = "search";
           document.getElementById("downloadFilesform").elements.namedItem("pageNumber").value =  currentPage;
           document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
           document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
@@ -306,6 +315,48 @@
           document.getElementById("downloadFilesform").submit();
         };
 
+        $scope.linkSelectedRows = function() {
+            console.log('$scope.selectedRows: ', $scope.selectedRows);
+            console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
+            var updatedList = [];
+            if($scope.selectedRows != null)
+              {
+                if(hpcSelectedDatafileList != null)
+                {
+                  for(var i=hpcSelectedDatafileList.length-1;i>=0;i--)
+                  {
+                      var row = hpcSelectedDatafileList[i];
+                    var pageRow = row.substring(0,row.lastIndexOf(":"));
+                    var page = pageRow.substring(0,pageRow.indexOf(":"));
+                    if(page != $scope.currentPage)
+                      updatedList.push(row)
+                  }
+                }
+
+                for(var i=0;i<selectedRowsData.length;i++)
+                  {
+                  if(!updatedList.contains(selectedRowsData[i]))
+                    updatedList.push(selectedRowsData[i]);
+                }
+              }
+            console.log(' after updatedList: ', updatedList);
+
+            if(updatedList == null || updatedList.length == 0)
+            {
+              alert("Select at least one data file to link");
+              return false;
+            }
+            document.getElementById("linkFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
+            if(source == "criteria")
+              document.getElementById("linkFilesform").elements.namedItem("searchType").value = "criteria";
+            else
+              document.getElementById("linkFilesform").elements.namedItem("searchType").value = "search";
+            document.getElementById("linkFilesform").elements.namedItem("pageNumber").value =  currentPage;
+            document.getElementById("linkFilesform").elements.namedItem("pageSize").value =  currentPageSize;
+            document.getElementById("linkFilesform").elements.namedItem("queryName").value = queryName;
+            document.getElementById("linkFilesform").submit();
+          };
+          
         $scope.clearAll = function() {
           $scope.gridApi.selection.clearSelectedRows();
         };
@@ -368,6 +419,9 @@
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" ng-click="downloadSelectedRows()"
 										>Download Selected Files</a>
+									<a data-toggle="modal" id="linksearchlink"
+										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
+										>Link Selected Files</a>
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" href="/savesearch"
 										data-target="#saveModal">Save Search Criteria</a>
@@ -434,6 +488,15 @@
 						method="post" enctype="multipart/form-data">
 						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="downloadType" name="downloadType" value=""/>
+						<input type="hidden" id="searchType" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber" name="pageNumber"/>
+						<input type="hidden" id="pageSize" name="pageSize"/>
+						<input type="hidden" id="queryName" name="queryName"/>
+					</form> 
+					<form class="form-horizontal" id="linkFilesform" action="#"
+						role="form" th:action="@{/linkfiles}" 
+						method="post" enctype="multipart/form-data">
+						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="searchType" name="searchType" value=""/>
 						<input type="hidden" id="pageNumber" name="pageNumber"/>
 						<input type="hidden" id="pageSize" name="pageSize"/>

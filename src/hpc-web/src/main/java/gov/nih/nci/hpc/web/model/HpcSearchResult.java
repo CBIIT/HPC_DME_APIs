@@ -5,6 +5,7 @@ public class HpcSearchResult {
 	private String path;
 	private String download;
 	private String permission;
+	private String link;
 
 	public String getPermission() {
 		return permission;
@@ -29,4 +30,12 @@ public class HpcSearchResult {
 	public void setDownload(String download) {
 		this.download = download;
 	}
+
+  public String getLink() {
+    return link;
+  }
+
+  public void setLink(String link) {
+    this.link = link;
+  }
 }

@@ -331,6 +331,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				HpcSearchResult returnResult = new HpcSearchResult();
 				returnResult.setPath(result);
 				returnResult.setPermission(result);
+				returnResult.setLink(result);
 				returnResult.setDownload(result);
 				returnResults.add(returnResult);
 
@@ -349,6 +350,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				returnResult.setPath(result.getDataObject().getAbsolutePath());
 				returnResult.setDownload(result.getDataObject().getAbsolutePath());
 				returnResult.setPermission(result.getDataObject().getAbsolutePath());
+				returnResult.setLink(result.getDataObject().getAbsolutePath());
 				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
 				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
 				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
