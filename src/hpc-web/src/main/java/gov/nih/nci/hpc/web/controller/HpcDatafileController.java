@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -248,7 +248,10 @@ public class HpcDatafileController extends AbstractHpcController {
 		for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries()) {
 			HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 			attrEntry.setAttrName(entry.getAttribute());
-			attrEntry.setAttrValue(entry.getValue());
+			if(entry.getAttribute().equalsIgnoreCase("source_file_size"))
+			  attrEntry.setAttrValue(addHumanReadableSize(entry.getValue()));
+			else
+			  attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
 			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
 				attrEntry.setSystemAttr(true);
@@ -271,7 +274,7 @@ public class HpcDatafileController extends AbstractHpcController {
 		return model;
 	}
 
-	private HpcDataObjectRegistrationRequestDTO constructRequest(HttpServletRequest request, HttpSession session,
+    private HpcDataObjectRegistrationRequestDTO constructRequest(HttpServletRequest request, HttpSession session,
 			String path) {
 		Enumeration<String> params = request.getParameterNames();
 		HpcDataObjectRegistrationRequestDTO dto = new HpcDataObjectRegistrationRequestDTO();
@@ -307,4 +310,8 @@ public class HpcDatafileController extends AbstractHpcController {
 		return dto;
 	}
 
+    private String addHumanReadableSize(String value) {
+        String humanReadableSize = FileUtils.byteCountToDisplaySize(Long.parseLong(value));
+        return value + " (" + humanReadableSize + ")";
+    }
 }
