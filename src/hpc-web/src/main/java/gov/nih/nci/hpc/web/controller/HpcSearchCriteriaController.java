@@ -411,6 +411,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			String attrName = search.getAttrName()[i];
 			String attrValue = search.getAttrValue()[i];
 			String operator = search.getOperator()[i];
+			boolean selfOnly = search.getSelfAttributeOnly()[i];
 			String level = search.getLevel()[i];
 			if (!attrName.isEmpty() && !attrValue.isEmpty() && !operator.isEmpty()) {
 				HpcMetadataQuery criteria = new HpcMetadataQuery();
@@ -431,7 +432,11 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 				}
 				if (level != null) {
 					HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-					if (level.equals("ANY")) {
+					if (selfOnly) {
+					    levelFilter.setLevel(1);
+					    levelFilter.setOperator(HpcMetadataQueryOperator.EQUAL);
+					}
+					else if (level.equals("ANY")) {
 						levelFilter.setLevel(1);
 						levelFilter.setOperator(HpcMetadataQueryOperator.NUM_GREATER_OR_EQUAL);
 					} else {
