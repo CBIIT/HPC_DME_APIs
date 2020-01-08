@@ -5,6 +5,7 @@ public class HpcSearch {
 	private String[] rowId;
 	private String[] level;
 	private String[] levelOperator;
+	private boolean[] selfAttributeOnly;
 	private String[] attrName;
 	private String[] operator;
 	private String[] attrValue;
@@ -118,5 +119,13 @@ public class HpcSearch {
 
     public void setPageSize(int pageSize) {
       this.pageSize = pageSize;
+    }
+
+    public boolean[] getSelfAttributeOnly() {
+      return selfAttributeOnly;
+    }
+
+    public void setSelfAttributeOnly(boolean[] selfAttributeOnly) {
+      this.selfAttributeOnly = selfAttributeOnly;
     }
 }
