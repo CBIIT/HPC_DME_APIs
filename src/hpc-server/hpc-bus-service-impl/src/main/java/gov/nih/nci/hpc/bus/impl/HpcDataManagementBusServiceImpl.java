@@ -1183,7 +1183,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
     HpcSystemGeneratedMetadata systemGeneratedMetadata =
         metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
-    if (systemGeneratedMetadata.getDataTransferStatus() == null) {
+    boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
+    if (!registeredLink && systemGeneratedMetadata.getDataTransferStatus() == null) {
       throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
     }
 
@@ -1219,47 +1220,63 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     // Instantiate a response DTO
     HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
-    dataObjectDeleteResponse.setArchiveDeleteStatus(true);
-    dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+    boolean abort = false;
 
-    // Delete the file from the archive (if it's archived).
-    switch (systemGeneratedMetadata.getDataTransferStatus()) {
-      case ARCHIVED:
-      case DELETE_REQUESTED:
-      case DELETE_FAILED:
-        deleteDataObjectFromArchive(path, systemGeneratedMetadata, dataObjectDeleteResponse);
-        break;
+    // Delete all the links to this data object.
+    List<HpcDataObject> links = dataManagementService.getDataObjectLinks(path);
+    if (!links.isEmpty()) {
+      for (HpcDataObject link : links) {
+        try {
+          dataManagementService.delete(link.getAbsolutePath(), false);
 
-      case RECEIVED:
-      case IN_PROGRESS_TO_TEMPORARY_ARCHIVE:
-      case IN_TEMPORARY_ARCHIVE:
-      case IN_PROGRESS_TO_ARCHIVE:
-      case URL_GENERATED:
-        // Data transfer still in progress.
-        throw new HpcException(
-            "Object is not in archived state yet. It is in "
-                + systemGeneratedMetadata.getDataTransferStatus().value() + " state",
-            HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-
-      default:
-        // The file is not in archive (data transfer failed, URL expired or it was
-        // deleted).
-        break;
+        } catch (HpcException e) {
+          logger.error("Failed to delete file from datamanagement", e);
+          dataObjectDeleteResponse.setLinksDeleteStatus(false);
+          dataObjectDeleteResponse.setMessage(e.getMessage());
+          abort = true;
+          break;
+        }
+      }
+      dataObjectDeleteResponse.setLinksDeleteStatus(true);
     }
 
-    // If the archive removal was successful, then remove the file from data
-    // management.
-    try {
-      if (dataObjectDeleteResponse.getArchiveDeleteStatus()) {
-        dataManagementService.delete(path, false);
-      } else {
-        dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-      }
+    // Delete the file from the archive (if it's archived and not a link).
+    if (!registeredLink) {
+      if (!abort) {
+        switch (systemGeneratedMetadata.getDataTransferStatus()) {
+          case ARCHIVED:
+          case DELETE_REQUESTED:
+          case DELETE_FAILED:
+            deleteDataObjectFromArchive(path, systemGeneratedMetadata, dataObjectDeleteResponse);
+            break;
 
-    } catch (HpcException e) {
-      logger.error("Failed to delete file from datamanagement", e);
+          default:
+            dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+            dataObjectDeleteResponse.setMessage("Object is not in archived state. It is in "
+                + systemGeneratedMetadata.getDataTransferStatus().value() + " state");
+            break;
+        }
+        abort = Boolean.FALSE.equals(dataObjectDeleteResponse.getArchiveDeleteStatus());
+
+      } else {
+        dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+      }
+    }
+
+
+    // Remove the file from data management.
+    if (!abort) {
+      try {
+        dataManagementService.delete(path, false);
+        dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+
+      } catch (HpcException e) {
+        logger.error("Failed to delete file from datamanagement", e);
+        dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+        dataObjectDeleteResponse.setMessage(e.getMessage());
+      }
+    } else {
       dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-      dataObjectDeleteResponse.setMessage(e.getMessage());
     }
 
     // Add an audit record of this deletion attempt.
@@ -1929,6 +1946,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectDeleteResponse.setMessage(e.getMessage());
     }
 
+    dataObjectDeleteResponse.setArchiveDeleteStatus(true);
     updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETED);
   }
 
