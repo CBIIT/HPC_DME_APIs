@@ -838,13 +838,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   public HpcDataManagementConfiguration getDataManagementConfiguration(String id) {
     return dataManagementConfigurationLocator.get(id);
   }
-
-  @Override
-  public int countDataObjectsUnderPath(String path) throws HpcException {
-    // Get the count of data objects under the path
-    return dataManagementProxy.countDataObjectsUnderPath(
-        dataManagementAuthenticator.getAuthenticatedToken(), path);
-  }
   
   // ---------------------------------------------------------------------//
   // Helper Methods

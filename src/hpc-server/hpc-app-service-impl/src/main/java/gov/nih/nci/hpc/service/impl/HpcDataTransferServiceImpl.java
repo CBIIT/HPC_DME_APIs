@@ -23,6 +23,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.apache.commons.io.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -581,8 +583,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean result,
-      String message, Calendar completed, long bytesTransferred) throws HpcException {
+  public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+      HpcDownloadResult result, String message, Calendar completed, long bytesTransferred)
+      throws HpcException {
     // Input validation
     if (downloadTask == null) {
       throw new HpcException("Invalid data object download task",
@@ -592,7 +595,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Delete the staged download file.
     if (downloadTask.getDownloadFilePath() != null
         && !FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
-      logger.error("Failed to delete file: " + downloadTask.getDownloadFilePath());
+      logger.error("Failed to delete file: {}", downloadTask.getDownloadFilePath());
     }
 
     // Cleanup the DB record.
@@ -614,12 +617,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setMessage(message);
     taskResult.setCompletionEvent(downloadTask.getCompletionEvent());
     taskResult.setCreated(downloadTask.getCreated());
+    taskResult.setSize(downloadTask.getSize());
     taskResult.setCompleted(completed);
 
     // Calculate the effective transfer speed (Bytes per second).
     taskResult.setEffectiveTransferSpeed(
         Math.toIntExact(bytesTransferred * 1000 / (taskResult.getCompleted().getTimeInMillis()
             - taskResult.getCreated().getTimeInMillis())));
+
+    // Get the file container name.
+    try {
+      taskResult.getDestinationLocation()
+          .setFileContainerName(getFileContainerName(taskResult.getDestinationType(),
+              downloadTask.getConfigurationId(),
+              taskResult.getDestinationLocation().getFileContainerId()));
+
+    } catch (HpcException e) {
+      logger.error("Failed to get file container name: "
+          + taskResult.getDestinationLocation().getFileContainerId(), e);
+    }
 
     // Persist to the DB.
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);
@@ -662,6 +678,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcSecondHopDownload secondHopDownload = new HpcSecondHopDownload(downloadTask);
       progressListener = secondHopDownload;
 
+      // Validate that the 2-hop download can be performed at this time.
+      if (!canPerfom2HopDownload(secondHopDownload)) {
+        return;
+      }
+
       // Set the first hop transfer to be from Cleversafe to the server's Globus
       // mounted file system.
       downloadRequest.setArchiveLocation(metadataService
@@ -686,8 +707,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     } catch (HpcException e) {
       // Failed to submit a transfer request. Cleanup the download task.
-      completeDataObjectDownloadTask(downloadTask, false, e.getMessage(), Calendar.getInstance(),
-          0);
+      completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage(),
+          Calendar.getInstance(), 0);
       return;
     }
 
@@ -839,14 +860,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
+  public int cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
+      throws HpcException {
+    int canceledItemsCount = 0;
+    for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
+      if (dataDownloadDAO.updateDataObjectDownloadTaskStatus(
+          downloadItem.getDataObjectDownloadTaskId(), HpcDataTransferDownloadStatus.RECEIVED,
+          HpcDataTransferDownloadStatus.CANCELED)) {
+        canceledItemsCount++;
+      }
+    }
+    return canceledItemsCount;
+  }
+
+  @Override
   public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
       HpcCollectionDownloadTaskStatus status) throws HpcException {
     return dataDownloadDAO.getCollectionDownloadTasks(status);
   }
 
   @Override
-  public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask, boolean result,
-      String message, Calendar completed) throws HpcException {
+  public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
+      HpcDownloadResult result, String message, Calendar completed) throws HpcException {
     // Input validation
     if (downloadTask == null) {
       throw new HpcException("Invalid collection download task",
@@ -884,7 +919,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
     for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
-      if (item.getResult() != null && item.getResult()
+      if (item.getResult() != null && item.getResult().equals(HpcDownloadResult.COMPLETED)
           && item.getEffectiveTransferSpeed() != null) {
         effectiveTransferSpeed += item.getEffectiveTransferSpeed();
         completedItems++;
@@ -1730,8 +1765,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
-      completeDataObjectDownloadTask(s3Download.getDownloadTask(), false, e.getMessage(),
-          Calendar.getInstance(), 0);
+      completeDataObjectDownloadTask(s3Download.getDownloadTask(), HpcDownloadResult.FAILED,
+          e.getMessage(), Calendar.getInstance(), 0);
 
       throw (e);
     }
@@ -1769,8 +1804,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
-      completeDataObjectDownloadTask(s3Download.getDownloadTask(), false, e.getMessage(),
-          Calendar.getInstance(), 0);
+      completeDataObjectDownloadTask(s3Download.getDownloadTask(), HpcDownloadResult.FAILED,
+          e.getMessage(), Calendar.getInstance(), 0);
 
       throw (e);
     }
@@ -1796,25 +1831,61 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Set the first hop file destination to be the source file of the second hop.
     downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 
+    // Populate the response object.
+    response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
+    response.setDestinationLocation(secondHopDownload.getDownloadTask()
+        .getGlobusDownloadDestination().getDestinationLocation());
+
     // Perform the first hop download (From Cleversafe to local file system).
     try {
-      dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
-          getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
-              downloadRequest.getS3ArchiveConfigurationId()),
-          downloadRequest, baseArchiveDestination, secondHopDownload);
-
-      // Populate the response object.
-      response.setDownloadTaskId(secondHopDownload.getDownloadTask().getId());
-      response.setDestinationLocation(secondHopDownload.getDownloadTask()
-          .getGlobusDownloadDestination().getDestinationLocation());
+      if (canPerfom2HopDownload(secondHopDownload)) {
+        dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
+            getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
+                downloadRequest.getS3ArchiveConfigurationId()),
+            downloadRequest, baseArchiveDestination, secondHopDownload);
+      } else {
+        // Can't perform the 2-hop download at this time. Reset the task
+        resetDataObjectDownloadTask(secondHopDownload.getDownloadTask());
+      }
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
-      completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), false, e.getMessage(),
-          Calendar.getInstance(), 0);
+      completeDataObjectDownloadTask(secondHopDownload.getDownloadTask(), HpcDownloadResult.FAILED,
+          e.getMessage(), Calendar.getInstance(), 0);
 
       throw (e);
     }
+  }
+
+  /*
+   * Check if 2-hop download request can be started. It confirms that the server has enough disk
+   * space to store the file. If there is not enough space, the download task is reset and will be
+   * attempted in the next run of the scheduled task.
+   *
+   * @param secondHopDownload The second hop download instance to validate.
+   * 
+   * @return True if there is enough disk space to start the 2-hop download.
+   */
+  private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) {
+    try {
+      long freeSpace =
+          1000 * FileSystemUtils.freeSpaceKb(secondHopDownload.getSourceFile().getAbsolutePath());
+      if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
+        // Not enough space disk space to perform the first hop download. Log an error and reset the
+        // task.
+        logger.error(
+            "Insufficient disk space to download {}. Free Space: {} bytes. File size: {} bytes",
+            secondHopDownload.getDownloadTask().getPath(), freeSpace,
+            secondHopDownload.getDownloadTask().getSize());
+        return false;
+      }
+
+    } catch (IOException e) {
+      // Failed to check free disk space. We'll try the download.
+      logger.error("Failed to determine free space", e);
+    }
+
+    return true;
   }
 
   /*
@@ -2149,7 +2220,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
       // Cleanup the download task.
       try {
-        completeDataObjectDownloadTask(downloadTask, false, message, transferFailedTimestamp, 0);
+        completeDataObjectDownloadTask(downloadTask, HpcDownloadResult.FAILED, message,
+            transferFailedTimestamp, 0);
 
       } catch (HpcException ex) {
         logger.error("Failed to cleanup download task", ex);
@@ -2244,13 +2316,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     @Override
     public void transferCompleted(Long bytesTransferred) {
       // This callback method is called when the S3 download completed.
-      completeDownloadTask(true, null, bytesTransferred);
+      completeDownloadTask(HpcDownloadResult.COMPLETED, null, bytesTransferred);
     }
 
     @Override
     public void transferFailed(String message) {
       // This callback method is called when the first hop download failed.
-      completeDownloadTask(false, message, 0);
+      completeDownloadTask(HpcDownloadResult.FAILED, message, 0);
     }
 
     // ---------------------------------------------------------------------//
@@ -2312,18 +2384,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     /**
      * Complete this S3 download task, and send event.
      *
-     * @param result The download task result - true means success.
+     * @param result The download task result.
      * @param message The message to include in the download failed event.
      * @param bytesTransferred Total bytes transfered in this download task.
      */
-    private void completeDownloadTask(boolean result, String message, long bytesTransferred) {
+    private void completeDownloadTask(HpcDownloadResult result, String message,
+        long bytesTransferred) {
       try {
         Calendar completed = Calendar.getInstance();
         completeDataObjectDownloadTask(downloadTask, result, message, completed, bytesTransferred);
 
         // Send a download completion or failed event (if requested to).
         if (downloadTask.getCompletionEvent()) {
-          if (result) {
+          if (result.equals(HpcDownloadResult.COMPLETED)) {
             eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(),
                 downloadTask.getPath(), HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
                 downloadTask.getS3DownloadDestination().getDestinationLocation(), completed);

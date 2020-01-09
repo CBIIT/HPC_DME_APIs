@@ -10,6 +10,8 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
+import gov.nih.nci.hpc.domain.catalog.HpcCatalog;
+import gov.nih.nci.hpc.domain.catalog.HpcCatalogCriteria;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -18,6 +20,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcSearchMetadataEntryForCollection;
+import gov.nih.nci.hpc.dto.catalog.HpcCatalogRequestDTO;
+import gov.nih.nci.hpc.dto.catalog.HpcCatalogsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -27,6 +31,7 @@ import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryListDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcCatalogService;
 import gov.nih.nci.hpc.service.HpcDataSearchService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
@@ -50,6 +55,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 
   // Data Search Application Service instance.
   @Autowired private HpcDataSearchService dataSearchService = null;
+  
+  //Catalog Application Service instance.
+  @Autowired private HpcCatalogService catalogService = null;
 
   // Security Application Service instance.
   @Autowired private HpcSecurityService securityService = null;
@@ -314,6 +322,50 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
     return metadataAttributes;
   }
 
+  @Override
+  public HpcCatalogsDTO getCatalog(HpcCatalogRequestDTO catalogRequestDTO)
+      throws HpcException {
+    // Input validation.
+    if (catalogRequestDTO == null) {
+      throw new HpcException("Null catalog request query", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    
+    if(catalogRequestDTO.getPage() == null)
+      catalogRequestDTO.setPage(1);
+    if(catalogRequestDTO.getPageSize() == null)
+      catalogRequestDTO.setPageSize(0);
+    boolean totalCount =
+        catalogRequestDTO.getTotalCount() != null
+            && catalogRequestDTO.getTotalCount();
+
+    HpcCatalogCriteria criteria = new HpcCatalogCriteria();
+    BeanUtils.copyProperties(catalogRequestDTO, criteria);
+
+    // Execute the query and package the results into a DTO.
+    int count = 0;
+    HpcCatalogsDTO catalogsDTO = new HpcCatalogsDTO();
+    List<HpcCatalog> hpcCatalogs = catalogService.getCatalog(criteria);
+    count = hpcCatalogs.size();
+    
+
+    // Set page, limit and total count.
+    catalogsDTO.setPage(catalogRequestDTO.getPage());
+    int limit = dataSearchService.getSearchResultsPageSize(catalogRequestDTO.getPageSize());
+    catalogsDTO.setPageSize(limit);
+
+    if (totalCount) {
+      catalogsDTO.setTotalCount(
+          (catalogRequestDTO.getPage() == 1 && count < limit)
+              ? count
+              : catalogService.getCatalogCount(criteria));
+    }
+
+    catalogsDTO.getCatalogs().addAll(hpcCatalogs);
+    
+    return catalogsDTO;
+
+  }
+  
   //---------------------------------------------------------------------//
   // Helper Methods
   //---------------------------------------------------------------------//

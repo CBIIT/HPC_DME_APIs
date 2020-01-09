@@ -68,5 +68,7 @@
 		            interface="gov.nih.nci.hpc.service.HpcEventService" />
 	<osgi:reference id="hpcReportService"
 		            interface="gov.nih.nci.hpc.service.HpcReportService" />
+	<osgi:reference id="hpcCatalogService"
+		            interface="gov.nih.nci.hpc.service.HpcCatalogService" />
 
 </beans>

@@ -70,7 +70,7 @@ public interface HpcSystemBusService {
   public void processTemporaryArchive() throws HpcException;
 
   /**
-   * Check status of all received data objects download tasks for Globus and process to make them in
+   * Start all received data objects download tasks for Globus and process to make them in
    * progress.
    *
    * @throws HpcException on service failure.
@@ -78,7 +78,7 @@ public interface HpcSystemBusService {
   public void startGlobusDataObjectDownloadTasks() throws HpcException;
   
   /**
-   * Check status of all received data objects download tasks for S3 and process to make them in
+   * Start all received data objects download tasks for S3 and process to make them in
    * progress.
    *
    * @throws HpcException on service failure.
@@ -91,7 +91,14 @@ public interface HpcSystemBusService {
    *
    * @throws HpcException on service failure.
    */
-  public void completeDataObjectDownloadTasks() throws HpcException;
+  public void completeInProgressDataObjectDownloadTasks() throws HpcException;
+  
+  /**
+   * Complete all data object download tasks that are marked canceled.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void completeCanceledDataObjectDownloadTasks() throws HpcException;
   
   /**
    * Restart data object download tasks that are in progress using S3 data transfer.

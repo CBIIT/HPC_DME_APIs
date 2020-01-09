@@ -14,6 +14,8 @@ import gov.nih.nci.hpc.bus.HpcDataSearchBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
+import gov.nih.nci.hpc.dto.catalog.HpcCatalogRequestDTO;
+import gov.nih.nci.hpc.dto.catalog.HpcCatalogsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
@@ -31,6 +33,7 @@ import java.net.URLDecoder;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 /**
  * <p>
@@ -243,6 +246,20 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 		return  okResponse(!metadataAttributes.getCollectionMetadataAttributes().isEmpty() || 
 				           !metadataAttributes.getDataObjectMetadataAttributes().isEmpty() ? 
 				           metadataAttributes : null, true);
+    }
+    
+    @Override
+    public Response queryCatalog(HpcCatalogRequestDTO catalogRequest)
+    {
+        HpcCatalogsDTO catalogs = null;
+        try {
+            catalogs = dataSearchBusService.getCatalog(catalogRequest);
+             
+        } catch(HpcException e) {
+                return errorResponse(e);
+        }
+        
+        return okResponse(!CollectionUtils.isEmpty(catalogs.getCatalogs()) ? catalogs : null, true);
     }
     
     @Override

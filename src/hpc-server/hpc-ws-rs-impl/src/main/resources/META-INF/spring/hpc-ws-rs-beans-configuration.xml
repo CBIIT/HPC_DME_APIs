@@ -150,6 +150,7 @@
 		<entry key="http://hpc.nci.nih.gov/dto/databrowse" value="gov.nih.nci.hpc.dto.databrowse" />
 		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
 		<entry key="http://hpc.nci.nih.gov/dto/report" value="gov.nih.nci.hpc.dto.report" />
+		<entry key="http://hpc.nci.nih.gov/dto/catalog" value="gov.nih.nci.hpc.dto.catalog" />
 		<entry key="http://hpc.nci.nih.gov/domain/error" value="gov.nih.nci.hpc.domain.error" />
 		<entry key="http://hpc.nci.nih.gov/domain/metadata" value="gov.nih.nci.hpc.domain.metadata" />
 		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
@@ -157,6 +158,7 @@
 		<entry key="http://hpc.nci.nih.gov/domain/notification" value="gov.nih.nci.hpc.domain.notification" />
 		<entry key="http://hpc.nci.nih.gov/domain/report" value="gov.nih.nci.hpc.domain.report" />
 		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
+		<entry key="http://hpc.nci.nih.gov/domain/catalog" value="gov.nih.nci.hpc.domain.catalog" />
 	</util:map>
 
 	<!-- Multipart Provider -->
@@ -265,6 +267,7 @@
 				<entry key="deleteQuery" value="${hpc.ws.rs.auth.data-search.delete-query}" />
 				<entry key="getQuery" value="${hpc.ws.rs.auth.data-search.get-query}" />
 				<entry key="getQueries" value="${hpc.ws.rs.auth.data-search.get-queries}" />
+				<entry key="queryCatalog" value="${hpc.ws.rs.auth.data-search.query-catalog}" />
 				<entry key="getMetadataAttributes"
 					value="${hpc.ws.rs.auth.data-search.get-metadata-attributes}" />
 				<entry key="refreshMetadataViews"

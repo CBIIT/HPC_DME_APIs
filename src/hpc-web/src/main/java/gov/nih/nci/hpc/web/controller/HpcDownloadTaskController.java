@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +30,7 @@ import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.annotation.JsonView;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
@@ -183,6 +185,15 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		  globusDownloadDestination.setDestinationOverwrite(true);
           dto.setGlobusDownloadDestination(globusDownloadDestination);
         }
+        if (downloadTask.getCanceledItems() != null && !downloadTask.getCanceledItems().isEmpty()) {
+          for (HpcCollectionDownloadTaskItem item : downloadTask.getCanceledItems())
+            dto.getDataObjectPaths().add(item.getPath());
+          HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
+          HpcFileLocation location = downloadTask.getDestinationLocation();
+          globusDownloadDestination.setDestinationLocation(location);
+          globusDownloadDestination.setDestinationOverwrite(true);
+          dto.setGlobusDownloadDestination(globusDownloadDestination);
+        }
         try {
           HpcBulkDataObjectDownloadResponseDTO downloadDTO =
               (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil.downloadFiles(authToken,
@@ -209,7 +220,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil
             .getDataObjectDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
         String serviceURL = dataObjectServiceURL + downloadTask.getPath() + "/download";
-        if (!downloadTask.getResult()) {
+        if (!downloadTask.getResult().equals(HpcDownloadResult.COMPLETED)) {
           HpcDownloadRequestDTO downloadDTO = new HpcDownloadRequestDTO();
           HpcGlobusDownloadDestination destination = new HpcGlobusDownloadDestination();
 		  HpcFileLocation location = downloadTask.getDestinationLocation();
@@ -241,7 +252,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         queryServiceURL, sslCertPath, sslCertPassword);
     model.addAttribute("hpcDataObjectDownloadStatusDTO", downloadTask);
 	boolean retry = true;
-	if(downloadTask.getResult() != null && downloadTask.getResult() == false)
+	if(downloadTask.getResult() != null && !downloadTask.getResult().equals(HpcDownloadResult.COMPLETED))
 	{
 		if(downloadTask != null && downloadTask.getDestinationType() != null)
 		{
@@ -261,10 +272,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
         .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
 	boolean retry = true;
-	if(downloadTask != null && downloadTask.getFailedItems() != null && downloadTask.getFailedItems().size() > 0)
+	if(downloadTask != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
 	{
 		if(downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.S_3))
-				retry = false;
+		   retry = false;
+		if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
+		   retry = false;
 	}
 	model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
     model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);
@@ -276,7 +289,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
         .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
 	boolean retry = true;
-	if(downloadTask != null && downloadTask.getFailedItems() != null && downloadTask.getFailedItems().size() > 0)
+	if(downloadTask != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
 	{
 		if(downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.S_3))
 				retry = false;
@@ -291,10 +304,12 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 	    HpcCollectionDownloadStatusDTO downloadTask = HpcClientUtil
 	        .getDataObjectsDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
 		boolean retry = true;
-		if(downloadTask != null && downloadTask.getFailedItems() != null && downloadTask.getFailedItems().size() > 0)
+		if(downloadTask != null && (!CollectionUtils.isEmpty(downloadTask.getFailedItems()) || !CollectionUtils.isEmpty(downloadTask.getCanceledItems())))
 		{
 			if(downloadTask.getDestinationType() != null && downloadTask.getDestinationType().equals(HpcDataTransferType.S_3))
-					retry = false;
+			   retry = false;
+			if(downloadTask.getResult() != null && downloadTask.getResult().equals(HpcDownloadResult.CANCELED))
+	           retry = false;
 		}
 		model.addAttribute("hpcBulkDataObjectDownloadRetry", retry);
 	    model.addAttribute("hpcDataObjectsDownloadStatusDTO", downloadTask);

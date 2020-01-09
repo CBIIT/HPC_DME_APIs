@@ -9,3 +9,4 @@
 \i hpc_hierarchical_metadata.sql
 \i hpc_notification.sql
 \i hpc_report_views.sql
+\i hpc_catalog_metadata.sql

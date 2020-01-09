@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -263,11 +264,13 @@ public interface HpcDataTransferService {
   public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
 
   /**
-   * Get next data object download task to process given data transfer status and data transfer type.
+   * Get next data object download task to process given data transfer status and data transfer
+   * type.
    *
    * @param dataTransferStatus The data object download task data transfer status.
    * @param dataTransferType The data object download task data transfer type.
-   * @param processed The processed date to pick up only records that have not yet been processed in this run.
+   * @param processed The processed date to pick up only records that have not yet been processed in
+   *        this run.
    * @return Data object download task.
    * @throws HpcException on service failure.
    */
@@ -293,14 +296,15 @@ public interface HpcDataTransferService {
    * download. 2. Update task info in DB with results info.
    *
    * @param downloadTask The download task to complete.
-   * @param result The result of the task (true is successful, false is failed).
+   * @param result The result of the task (completed, failed or canceled).
    * @param message (Optional) If the task failed, a message describing the failure.
    * @param completed (Optional) The download task completion timestamp.
    * @param bytesTransferred The total bytes transfered.
    * @throws HpcException on service failure.
    */
-  public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean result,
-      String message, Calendar completed, long bytesTransferred) throws HpcException;
+  public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+      HpcDownloadResult result, String message, Calendar completed, long bytesTransferred)
+      throws HpcException;
 
   /**
    * Continue a data object download task that was queued.
@@ -405,6 +409,17 @@ public interface HpcDataTransferService {
    */
   public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException;
+  
+  /**
+   * Cancel a collection download task. This will mark any pending download items (i.e. items in RECEIVED state)
+   * in this collection download task for cancellation. 
+   *
+   * @param downloadTask The collection download task to update.
+   * return The number of download items that got canceled.
+   * @throws HpcException on service failure.
+   */
+  public int cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
+      throws HpcException;
 
   /**
    * Get collection download tasks.
@@ -420,13 +435,13 @@ public interface HpcDataTransferService {
    * Complete a collection download task: 1. Update task info in DB with results info.
    *
    * @param downloadTask The download task to complete.
-   * @param result The result of the task (true is successful, false is failed).
+   * @param result The result of the task (completed, failed or canceled).
    * @param message (Optional) If the task failed, a message describing the failure.
    * @param completed (Optional) The download task completion timestamp.
    * @throws HpcException on service failure.
    */
-  public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask, boolean result,
-      String message, Calendar completed) throws HpcException;
+  public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask,
+      HpcDownloadResult result, String message, Calendar completed) throws HpcException;
 
   /**
    * Get active download requests for a user.
@@ -465,7 +480,7 @@ public interface HpcDataTransferService {
   public int getDownloadResultsPageSize();
 
   /**
-   * Get a file-container0name from a file-container-id
+   * Get a file-container-name from a file-container-id
    *
    * @param dataTransferType The data transfer type.
    * @param configurationId The configuration ID (needed to determine the archive connection
