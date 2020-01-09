@@ -470,17 +470,6 @@ public interface HpcDataManagementProxy {
    */
   public List<String> getGroupMembers(Object authenticatedToken, String groupName)
       throws HpcException;
-
-  /**
-   * Count the number of data objects (files) under a collection path.
-   *
-   * @param authenticatedToken An authenticated token.
-   * @param path The collection path.
-   * @return The count of data objects under a given path.
-   * @throws HpcException 
-   */
-  public int countDataObjectsUnderPath(Object authenticatedToken, String path) 
-      throws HpcException;
   
   /**
    * Get absolute path (append the iRODs base path, to the user provided path).

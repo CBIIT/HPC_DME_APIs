@@ -177,6 +177,9 @@
       <jxb:bindings node="//xsd:simpleType[@name='HpcCompressedArchiveType']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcCompressedArchiveType" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDownloadResult']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcSynchronousDownloadFilter']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter" />
       </jxb:bindings>

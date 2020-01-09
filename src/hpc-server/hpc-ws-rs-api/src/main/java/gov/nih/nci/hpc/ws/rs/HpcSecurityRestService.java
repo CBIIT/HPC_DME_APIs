@@ -101,7 +101,7 @@ public interface HpcSecurityRestService {
 
   /**
    * Get users by their role. Note: only active users are returned.
-   * @param role The role
+   * @param roleName The role
    * @param doc (optional) The DOC.
    * @param defaultBasePath (optional) The default base path.
    * @return The REST service response w/ HpcUserListDTO entity.
