@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -611,6 +612,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException {
     return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
         dataTransferInTemporaryArchiveQuery);
+  }
+
+  @Override
+  public List<HpcDataObject> getDataObjectLinks(String path) throws HpcException {
+    List<HpcMetadataQuery> dataObjectLinksQuery = new ArrayList<>();
+    dataObjectLinksQuery
+        .add(toMetadataQuery(LINK_SOURCE_PATH_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL, path));
+
+    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+        dataObjectLinksQuery);
   }
 
   @Override
