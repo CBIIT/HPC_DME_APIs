@@ -12,10 +12,8 @@ package gov.nih.nci.hpc.web.controller;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -26,16 +24,12 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.fasterxml.jackson.annotation.JsonView;
-
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcTask;
-import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
@@ -111,14 +105,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 							download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
 					task.setCompleted(
 							download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
-					String transferResult = "In Process";
-					if (download.getResult() != null) {
-						if (download.getResult())
-							transferResult = "Completed";
-						else
-							transferResult = "Failed";
-					}
-					task.setResult(transferResult);
+					task.setResult(getResultDisplayText(download.getResult()));
 					result.add(task);
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
@@ -129,14 +116,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				task.setCreated(download.getCreated() != null ? format.format(download.getCreated().getTime()) : "");
 				task.setCompleted(
 						download.getCompleted() != null ? format.format(download.getCompleted().getTime()) : "");
-				String transferResult = "In Process";
-				if (download.getResult() != null) {
-					if (download.getResult())
-						transferResult = "Completed";
-					else
-						transferResult = "Failed";
-				}
-				task.setResult(transferResult);
+				task.setResult(getResultDisplayText(download.getResult()));
 				result.add(task);
 			}
 			model.addAttribute("currentPage", Integer.toString(page));
@@ -148,5 +128,22 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 			model.addAttribute("error", "Failed to get download tasks: "+e.getMessage());
 		}
 		return "downloadtaskboard";
+	}
+	
+	private String getResultDisplayText(HpcDownloadResult result) {
+	  if(result == null) {
+	    return "In Process";
+	  }
+	  
+      switch(result) {
+        case COMPLETED:
+          return "Completed";
+        
+        case CANCELED:
+          return "Canceled";
+          
+        default:
+          return "Failed";
+      }
 	}
 }

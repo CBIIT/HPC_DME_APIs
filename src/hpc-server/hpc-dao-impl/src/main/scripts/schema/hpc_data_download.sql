@@ -164,13 +164,15 @@ CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"
   "DATA_TRANSFER_REQUEST_ID" text,
   "DATA_TRANSFER_TYPE" text,
   "DESTINATION_LOCATION_FILE_CONTAINER_ID" text NOT NULL,
+  "DESTINATION_LOCATION_FILE_CONTAINER_NAME" text,
   "DESTINATION_LOCATION_FILE_ID" text NOT NULL,
   "DESTINATION_TYPE" text,
-  "RESULT" boolean NOT NULL,
+  "RESULT" text NOT NULL,
   "MESSAGE" text,
   "ITEMS" text,
   "COMPLETION_EVENT" boolean,
   "EFFECTIVE_TRANSFER_SPEED" integer,
+  "SIZE" bigint,
   "CREATED" timestamp NOT NULL,
   "COMPLETED" timestamp NOT NULL
 )
@@ -194,12 +196,14 @@ COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DATA_TRANSFER_TYPE" IS
                   'The data transfer (S3 or Globus) that was last used';
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_CONTAINER_ID" IS 
                   'The download destination container ID';
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_CONTAINER_NAME" IS 
+                  'The download destination container name';
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_ID" IS 
                   'The download destination file ID';   
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_TYPE" IS 
                   'The download destination type - either Globus or S3';                     
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."RESULT" IS 
-                  'The download task success/fail indicator';   
+                  'The download task success/fail/canceled indicator';   
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."MESSAGE" IS 
                   'An error message in case the task failed';                     
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."ITEMS" IS 
@@ -207,7 +211,9 @@ COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."ITEMS" IS
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."COMPLETION_EVENT" IS 
                   'An indicator whether a completion event was generated when the task completed'; 
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."EFFECTIVE_TRANSFER_SPEED" IS 
-                  'The download effective transfer speed in bytes per second';                  
+                  'The download effective transfer speed in bytes per second';   
+COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."SIZE" IS 
+                  'The data object size';                                 
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."CREATED" IS 
                   'The date and time the task was created';
 COMMENT ON COLUMN public."HPC_DOWNLOAD_TASK_RESULT"."COMPLETED" IS 

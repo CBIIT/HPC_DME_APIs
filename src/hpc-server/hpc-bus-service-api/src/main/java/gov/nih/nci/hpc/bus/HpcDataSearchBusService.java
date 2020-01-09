@@ -8,6 +8,8 @@
  */
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.dto.catalog.HpcCatalogRequestDTO;
+import gov.nih.nci.hpc.dto.catalog.HpcCatalogsDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
@@ -129,5 +131,15 @@ public interface HpcDataSearchBusService {
    * @throws HpcException on service failure.
    */
   public HpcMetadataAttributesListDTO getMetadataAttributes(String levelLabel) throws HpcException;
+  
+  /**
+   * Get data objects by compound metadata query.
+   *
+   * @param catalogRequestDTO The catalog request DTO.
+   * @return The catalog list DTO.
+   * @throws HpcException on service failure.
+   */
+  public HpcCatalogsDTO getCatalog(HpcCatalogRequestDTO catalogRequestDTO)
+      throws HpcException;
 
 }

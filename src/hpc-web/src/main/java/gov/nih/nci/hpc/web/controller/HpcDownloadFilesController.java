@@ -127,7 +127,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			hpcSaveSearch.setQueryName(request.getParameter("queryName"));
 			hpcSaveSearch.setSearchType(request.getParameter("searchType"));
 			model.addAttribute("hpcSearch", hpcSaveSearch);
-			session.setAttribute("hpcSaveSearch", hpcSaveSearch);
+			session.setAttribute("hpcSavedSearch", hpcSaveSearch);
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get selected data file: " + e.getMessage());
 			e.printStackTrace();
@@ -182,7 +182,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		}
 		model.addAttribute("endPointLocation", endPointLocation);
 
-		HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSaveSearch");
+		HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
 		model.addAttribute("hpcSearch", hpcSaveSearch);
 
 		HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
