@@ -392,8 +392,8 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationType"
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="result" type="hpc-domain-datatransfer:HpcDownloadResult"
-					minOccurs="0" />
+				<xsd:element name="result"
+					type="hpc-domain-datatransfer:HpcDownloadResult" minOccurs="0" />
 				<xsd:element name="message" type="xsd:string" />
 				<xsd:element name="effectiveTrasnsferSpeed"
 					type="xsd:int" minOccurs="0" />
@@ -429,8 +429,8 @@
 					type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="destinationType"
 					type="hpc-domain-datatransfer:HpcDataTransferType" />
-				<xsd:element name="result" type="hpc-domain-datatransfer:HpcDownloadResult"
-					minOccurs="0" />
+				<xsd:element name="result"
+					type="hpc-domain-datatransfer:HpcDownloadResult" minOccurs="0" />
 				<xsd:element name="completedItems"
 					type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 					minOccurs="0" maxOccurs="unbounded" />
@@ -503,7 +503,8 @@
 				<xsd:element name="dataManagementDeleteStatus"
 					type="xsd:boolean" />
 				<xsd:element name="archiveDeleteStatus"
-					type="xsd:boolean" />
+					type="xsd:boolean" minOccurs="0" maxOccurs="1" />
+				<xsd:element name="linksDeleteStatus" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
 				<xsd:element name="message" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
