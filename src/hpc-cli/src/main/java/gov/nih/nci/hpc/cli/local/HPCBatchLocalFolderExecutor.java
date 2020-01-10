@@ -54,14 +54,18 @@ public class HPCBatchLocalFolderExecutor {
   private String logFile;
   Map<String, String> criteriaMap;
   private HpcServerConnection connection;
+  private int maxAttempts;
+  private long backOffPeriod;
 
   public HPCBatchLocalFolderExecutor(Map<String, String> criteriaMap,
       HpcServerConnection connection, String logFile,
-      String errorRecordsFile, String authToken) {
+      String errorRecordsFile, String authToken, int maxAttempts, long backOffPeriod) {
     this.logFile = logFile;
     this.errorRecordsFile = errorRecordsFile;
     this.criteriaMap = criteriaMap;
     this.connection = connection;
+    this.maxAttempts = maxAttempts;
+    this.backOffPeriod = backOffPeriod;
   }
 
   public String processData() throws HpcBatchException {
@@ -218,7 +222,9 @@ public class HPCBatchLocalFolderExecutor {
           .reader(new HPCBatchLocalRecordReader(files))
           .mapper(new HPCBatchLocalFileRecordMapper(HPCDataObject.class, criteriaMap, connection,
               logFile,
-              errorRecordsFile))
+              errorRecordsFile,
+              maxAttempts,
+              backOffPeriod))
           .dispatcher(roundRobinRecordDispatcher)
           .jobListener(new PoisonRecordBroadcaster<>(queueList))
           .build();
