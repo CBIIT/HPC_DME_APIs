@@ -48,7 +48,7 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 			logger.debug("pathAttr " + pathAttr.toString());
 			if (!pathAttr.getIsDirectory()) {
 				HpcLocalFileProcessor fileProcess;
-				fileProcess = new HpcLocalFileProcessor(dataObject.getConnection());
+				fileProcess = new HpcLocalFileProcessor(dataObject.getConnection(), dataObject.getMaxAttempts(), dataObject.getBackOffPeriod());
 				fileProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
 						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum);
 			} else {

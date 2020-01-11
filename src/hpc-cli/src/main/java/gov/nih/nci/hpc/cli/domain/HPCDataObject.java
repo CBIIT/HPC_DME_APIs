@@ -36,6 +36,8 @@ public class HPCDataObject {
 	private Map<String, String> criteriaMap;
 	private CSVRecord csvRecord;
 	private HpcServerConnection connection;
+	private int maxAttempts;
+    private long backOffPeriod;
 
 	public HpcServerConnection getConnection() {
 		return connection;
@@ -183,6 +185,22 @@ public class HPCDataObject {
 	public void setCriteriaMap(Map<String, String> criteriaMap) {
 		this.criteriaMap = criteriaMap;
 	}
+
+    public int getMaxAttempts() {
+      return maxAttempts;
+    }
+  
+    public void setMaxAttempts(int maxAttempts) {
+      this.maxAttempts = maxAttempts;
+    }
+  
+    public long getBackOffPeriod() {
+      return backOffPeriod;
+    }
+  
+    public void setBackOffPeriod(long backOffPeriod) {
+      this.backOffPeriod = backOffPeriod;
+    }
 
   @Override
   public String toString() {
