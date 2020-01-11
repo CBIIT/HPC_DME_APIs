@@ -489,6 +489,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       throws HpcException {
     return getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION);
   }
+  
+  @Override
+  public void cancelCollectionDownloadTask(String taskId)
+      throws HpcException {
+    // Input validation.
+    HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.COLLECTION);
+    if (taskStatus == null) {
+      throw new HpcException("Collection download task not found: " + taskId, HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    if(!taskStatus.getInProgress()) {
+      throw new HpcException("Collection download task not in-progress: " + taskId, HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    
+    dataTransferService.cancelCollectionDownloadTask(taskStatus.getCollectionDownloadTask());
+  }
 
   @Override
   public void deleteCollection(String path, Boolean recursive) throws HpcException {

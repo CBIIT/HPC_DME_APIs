@@ -184,6 +184,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   private static final String GET_DOWNLOAD_RESULTS_COUNT_SQL =
       "select count(*) from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"USER_ID\" = ? and "
           + "\"COMPLETION_EVENT\" = true";
+  
+  private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL =
+      "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"CANCELLATION_REQUESTED\" = ? where \"ID\" = ?";
+  
+  private static final String GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL =
+      "select \"CANCELLATION_REQUESTED\" from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"ID\" = ?";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -686,6 +692,30 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to get collection download tasks: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+  
+  @Override
+  public void setCollectionDownloadTaskCancellationRequested(String id, boolean cancellationRequest) throws HpcException
+  {
+    try {
+      jdbcTemplate.update(SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL, cancellationRequest, id);
+
+    } catch (DataAccessException e) {
+      throw new HpcException("Failed to set a collection download task w/ cancellation request: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+  
+  @Override
+  public boolean getCollectionDownloadTaskCancellationRequested(String id) throws HpcException
+  {
+    try {
+      return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL, Boolean.class, id);
+
+    } catch (DataAccessException e) {
+      throw new HpcException("Failed to get cancellation request of: " + id + " " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }

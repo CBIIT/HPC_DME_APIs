@@ -126,11 +126,34 @@ public interface HpcDataManagementRestService {
 	 * @param taskId The collection download task ID.
 	 * @return The REST service response w/ HpcCollectionDownloadStatusDTO entity.
 	 */
+	@Deprecated
 	@GET
 	@Path("/collection/download")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getCollectionDownloadStatus(@QueryParam("taskId") String taskId);
+	public Response getCollectionDownloadStatusV1(@QueryParam("taskId") String taskId);
 
+	/**
+     * Get collection download task status.
+     *
+     * @param taskId The collection download task ID.
+     * @return The REST service response w/ HpcCollectionDownloadStatusDTO entity.
+     */
+    @GET
+    @Path("/collection/download/{taskId}")
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+    public Response getCollectionDownloadStatus(@PathParam("taskId") String taskId);
+    
+    /**
+     * Cancel a collection download task status.
+     *
+     * @param taskId The collection download task ID.
+     * @return The REST service response w/o entity.
+     */
+    @POST
+    @Path("/collection/download/{taskId}/cancel")
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+    public Response cancelCollectionDownloadTask(@PathParam("taskId") String taskId);
+    
 	/**
 	 * Delete a collection.
 	 *
@@ -409,10 +432,22 @@ public interface HpcDataManagementRestService {
 	 * @param taskId The data object download task ID.
 	 * @return The REST service response w/ HpcDataObjectDownloadStatusDTO entity.
 	 */
+	@Deprecated
 	@GET
 	@Path("/dataObject/download")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-	public Response getDataObjectDownloadStatus(@QueryParam("taskId") String taskId);
+	public Response getDataObjectDownloadStatusV1(@QueryParam("taskId") String taskId);
+	
+	/**
+     * Get Data object download task status.
+     *
+     * @param taskId The data object download task ID.
+     * @return The REST service response w/ HpcDataObjectDownloadStatusDTO entity.
+     */
+    @GET
+    @Path("/dataObject/download/{taskId}")
+    @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+    public Response getDataObjectDownloadStatus(@PathParam("taskId") String taskId);
 
 	/**
 	 * Delete a data object.

@@ -500,7 +500,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         .getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
       try {
         List<HpcCollectionDownloadTaskItem> downloadItems = null;
-        HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker();
+        HpcCollectionDownloadBreaker collectionDownloadBreaker =
+            new HpcCollectionDownloadBreaker(downloadTask.getId());
 
         if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
           // Get the collection to be downloaded.
@@ -1646,11 +1647,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   // to download.
   private class HpcCollectionDownloadBreaker {
     // ---------------------------------------------------------------------//
+    // Constructors
+    // ---------------------------------------------------------------------//
+
+    public HpcCollectionDownloadBreaker(String taskId) {
+      this.taskId = taskId;
+    }
+
+    // ---------------------------------------------------------------------//
     // Instance members
     // ---------------------------------------------------------------------//
 
-    // The first download task ID.
-    private String firstDownloadTaskId = null;
+    // The collection download task ID.
+    private String taskId = null;
+
+    // The first download item task ID.
+    private String firstDownloadItemTaskId = null;
 
     // The download items (processed) count.
     private int downloadItemsCount = 0;
@@ -1670,23 +1682,29 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
      * @throws HpcException If failed to check first download item status.
      */
     public boolean abortDownload(HpcCollectionDownloadTaskItem downloadItem) throws HpcException {
+      if ((abortCollection == null || !abortCollection)
+          && dataTransferService.getCollectionDownloadTaskCancellationRequested(taskId)) {
+        // A user request to cancel the collection download was received.
+        abortCollection = true;
+      }
+
       if (abortCollection != null) {
         // The decision to abort or not was made.
         return abortCollection;
       }
 
-      if (firstDownloadTaskId == null) {
+      if (firstDownloadItemTaskId == null) {
         // Keep track of the first item in the collection download.
         // If this item faces permission denied, we'll abort the entire collection download
         // processing.
-        firstDownloadTaskId = downloadItem.getDataObjectDownloadTaskId();
+        firstDownloadItemTaskId = downloadItem.getDataObjectDownloadTaskId();
       }
 
       downloadItemsCount++;
       if (downloadItemsCount % 10 == 0) {
         // We check on the first download task item every 10 items, until confirmed.
         HpcDownloadTaskStatus downloadItemStatus = dataTransferService
-            .getDownloadTaskStatus(firstDownloadTaskId, HpcDownloadTaskType.DATA_OBJECT);
+            .getDownloadTaskStatus(firstDownloadItemTaskId, HpcDownloadTaskType.DATA_OBJECT);
         if (downloadItemStatus != null && !downloadItemStatus.getInProgress()) {
           // First download item completed. Set the abort indicator.
           abortCollection = downloadItemStatus.getResult().getResult()
