@@ -583,6 +583,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
+  public boolean getCollectionDownloadTaskCancellationRequested(String taskId) {
+    try {
+      return dataDownloadDAO.getCollectionDownloadTaskCancellationRequested(taskId);
+
+    } catch (HpcException e) {
+      logger.error("Failed to get cancellation request for task ID: " + taskId, e);
+      return false;
+    }
+  }
+
+  @Override
   public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
       HpcDownloadResult result, String message, Calendar completed, long bytesTransferred)
       throws HpcException {
@@ -862,6 +873,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public int cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException {
+    if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.RECEIVED)) {
+      dataDownloadDAO.setCollectionDownloadTaskCancellationRequested(downloadTask.getId(), true);
+    }
+
     int canceledItemsCount = 0;
     for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
       if (dataDownloadDAO.updateDataObjectDownloadTaskStatus(
