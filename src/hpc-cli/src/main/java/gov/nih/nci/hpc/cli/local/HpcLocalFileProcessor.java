@@ -47,16 +47,44 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 
 public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 
+    private RetryTemplate retryTemplate;
 	String logFile;
 	String recordFile;
 	protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	public HpcLocalFileProcessor(HpcServerConnection connection) throws IOException, FileNotFoundException {
 		super(connection);
+		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+        retryPolicy.setMaxAttempts(1);
+  
+        FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
+        backOffPolicy.setBackOffPeriod(0L);
+  
+        retryTemplate = new RetryTemplate();
+        retryTemplate.setRetryPolicy(retryPolicy);
+        retryTemplate.setBackOffPolicy(backOffPolicy);
 	}
+	
+	public HpcLocalFileProcessor(HpcServerConnection connection, int maxAttempts, long backOffPeriod) throws IOException, FileNotFoundException {
+        super(connection);
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+        retryPolicy.setMaxAttempts(maxAttempts);
+  
+        FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
+        backOffPolicy.setBackOffPeriod(backOffPeriod);
+  
+        retryTemplate = new RetryTemplate();
+        retryTemplate.setRetryPolicy(retryPolicy);
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+    }
 
   @Override
   public boolean process(HpcPathAttributes entity, String filePath, String filePathBaseName,
@@ -130,11 +158,23 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     }
     logger.debug("directUpload " + directUpload);
     if (directUpload && !metadataOnly) {
-      processS3Record(entity, dataObject, filePath, destinationBasePath, objectPath, metadataOnly,
-          checksum);
+      retryTemplate.execute(new RetryCallback<Void, RecordProcessingException>() {
+        @Override
+        public Void doWithRetry(RetryContext context) throws RecordProcessingException {
+            processS3Record(entity, dataObject, filePath, destinationBasePath, objectPath, metadataOnly,
+            checksum);
+            return null;
+        }
+      });
     } else {
-      processRecord(entity, dataObject, filePath, destinationBasePath, objectPath, metadataOnly,
-          checksum);
+      retryTemplate.execute(new RetryCallback<Void, RecordProcessingException>() {
+        @Override
+        public Void doWithRetry(RetryContext context) throws RecordProcessingException {
+            processRecord(entity, dataObject, filePath, destinationBasePath, objectPath, metadataOnly,
+            checksum);
+            return null;
+        }
+      });
     }
     return true;
   }
