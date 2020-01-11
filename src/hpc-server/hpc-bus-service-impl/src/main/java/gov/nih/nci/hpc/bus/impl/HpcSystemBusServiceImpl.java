@@ -642,10 +642,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Determine the collection download result.
         int itemsCount = downloadTask.getItems().size();
         HpcDownloadResult result = null;
-        if (completedItemsCount == itemsCount) {
-          result = HpcDownloadResult.COMPLETED;
-        } else if (canceledItemsCount > 0) {
+        if (canceledItemsCount > 0 || dataTransferService
+            .getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
           result = HpcDownloadResult.CANCELED;
+        } else if (completedItemsCount == itemsCount) {
+          result = HpcDownloadResult.COMPLETED;
         } else {
           result = HpcDownloadResult.FAILED;
         }
