@@ -498,6 +498,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     // processed yet).
     for (HpcCollectionDownloadTask downloadTask : dataTransferService
         .getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
+
+      if (dataTransferService
+          .getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
+        // User requested to cancel this collection download task.
+        completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED,
+            "Download request canceled");
+        continue;
+      }
+
       try {
         List<HpcCollectionDownloadTaskItem> downloadItems = null;
         HpcCollectionDownloadBreaker collectionDownloadBreaker =
@@ -642,18 +651,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Determine the collection download result.
         int itemsCount = downloadTask.getItems().size();
         HpcDownloadResult result = null;
+        String message = null;
+
         if (canceledItemsCount > 0 || dataTransferService
             .getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
           result = HpcDownloadResult.CANCELED;
+          message = "Download request canceled. " + completedItemsCount
+              + " items downloaded successfully out of " + itemsCount;
         } else if (completedItemsCount == itemsCount) {
           result = HpcDownloadResult.COMPLETED;
         } else {
           result = HpcDownloadResult.FAILED;
+          message = completedItemsCount + " items downloaded successfully out of " + itemsCount;
         }
 
-        completeCollectionDownloadTask(downloadTask, result,
-            result.equals(HpcDownloadResult.COMPLETED) ? null
-                : completedItemsCount + " items downloaded successfully out of " + itemsCount);
+        completeCollectionDownloadTask(downloadTask, result, message);
 
       } else {
         dataTransferService.updateCollectionDownloadTask(downloadTask);
