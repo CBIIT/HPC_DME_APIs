@@ -68,7 +68,7 @@ public interface HpcDataDownloadDAO {
   public boolean updateDataObjectDownloadTaskStatus(String dataObjectDownloadTaskId,
       HpcDataTransferDownloadStatus fromStatus, HpcDataTransferDownloadStatus toStatus)
       throws HpcException;
-  
+
   /**
    * Get data object download tasks.
    *
@@ -148,6 +148,25 @@ public interface HpcDataDownloadDAO {
    */
   public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
       HpcCollectionDownloadTaskStatus status) throws HpcException;
+
+  /**
+   * Set a collection download task cancellation request.
+   *
+   * @param id The collection download task ID.
+   * @param cancellationRequest The value to set.
+   * @throws HpcException on database error.
+   */
+  public void setCollectionDownloadTaskCancellationRequested(String id, boolean cancellationRequest)
+      throws HpcException;
+
+  /**
+   * Get a collection download task cancellation request.
+   *
+   * @param id The collection download task ID.
+   * @return The value of 'cancellation requested' column for this collection download task.
+   * @throws HpcException on database error.
+   */
+  public boolean getCollectionDownloadTaskCancellationRequested(String id) throws HpcException;
 
   /**
    * Get data object download requests for a user.

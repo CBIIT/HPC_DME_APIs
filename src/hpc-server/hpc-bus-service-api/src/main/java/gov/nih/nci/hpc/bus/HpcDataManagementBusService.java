@@ -133,8 +133,17 @@ public interface HpcDataManagementBusService {
 	 * @param taskId The collection download task ID.
 	 * @return A collection download status DTO. Null if the task could not be
 	 *         found.
+	 * @throws HpcException on service failure.
 	 */
 	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) throws HpcException;
+	
+	/**
+     * Cancel a collection download task.
+     *
+     * @param taskId The collection download task ID.
+     * @throws HpcException on service failure.
+     */
+    public void cancelCollectionDownloadTask(String taskId) throws HpcException;
 
 	/**
 	 * Delete collection.
