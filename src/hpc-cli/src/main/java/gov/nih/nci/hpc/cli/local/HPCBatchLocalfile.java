@@ -59,7 +59,7 @@ public class HPCBatchLocalfile extends HPCBatchClient {
 		HpcServerConnection connection = new HpcServerConnection(hpcServerURL, hpcServerProxyURL,
 				hpcServerProxyPort, authToken, hpcCertPath, hpcCertPassword);
 		connection.setBufferSize(bufferSize);
-		return new HPCBatchLocalFolderExecutor(criteriaMap, connection, logFile, logRecordsFile, authToken)
+		return new HPCBatchLocalFolderExecutor(criteriaMap, connection, logFile, logRecordsFile, authToken, maxAttempts, backOffPeriod)
 				.processData();
 	}
 }
