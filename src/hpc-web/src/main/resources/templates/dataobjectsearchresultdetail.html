@@ -275,25 +275,29 @@
 	      for(var i=0; i<$scope.gridOptions1.data.length; i++){
 	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries.length; j++){
 		    	  attribute = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].attribute;
-		    	  if(!metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "checksum") {
+		    	  if(attribute != null && !metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "checksum") {
 		    	  	$scope.gridOptions1.columnDefs.push({
 		    			field: attribute,
 		    			width : 200
 		    	  	});
 		    	  	metaSet.add(attribute)
 		    	  }
-		          $scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].value;
+		    	  if(attribute != null) {
+		          	$scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.selfMetadataEntries[j].value;
+		    	  }
 	    	  }
 	    	  for(var j=0; j<$scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries.length; j++){
 		    	  attribute = $scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries[j].attribute;
-		    	  if(!metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "collection_type") {
+		    	  if(attribute != null && !metaSet.has(attribute) && attribute != "uuid" && attribute != "registered_by" && attribute != "collection_type") {
 		    	  	$scope.gridOptions1.columnDefs.push({
 		    			field: attribute,
 		    			width : 200
 		    	  	});
 		    	  	metaSet.add(attribute)
 		    	  }
-		          $scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries[j].value;
+		    	  if(attribute != null) {
+		          	$scope.gridOptions1.data[i][attribute] = $scope.gridOptions1.data[i].metadataEntries.parentMetadataEntries[j].value;
+		    	  }
 	    	  }
 	      }
         };
@@ -526,21 +530,21 @@
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
 						method="post" enctype="multipart/form-data">
-						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="selectedFilePaths1" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="downloadType" name="downloadType" value=""/>
 						<input type="hidden" id="searchType" name="searchType" value=""/>
-						<input type="hidden" id="pageNumber" name="pageNumber"/>
-						<input type="hidden" id="pageSize" name="pageSize"/>
-						<input type="hidden" id="queryName" name="queryName"/>
+						<input type="hidden" id="pageNumber1" name="pageNumber"/>
+						<input type="hidden" id="pageSize1" name="pageSize"/>
+						<input type="hidden" id="queryName1" name="queryName"/>
 					</form> 
 					<form class="form-horizontal" id="linkFilesform" action="#"
 						role="form" th:action="@{/linkfiles}" 
 						method="post" enctype="multipart/form-data">
-						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
-						<input type="hidden" id="searchType" name="searchType" value=""/>
-						<input type="hidden" id="pageNumber" name="pageNumber"/>
-						<input type="hidden" id="pageSize" name="pageSize"/>
-						<input type="hidden" id="queryName" name="queryName"/>
+						<input type="hidden" id="selectedFilePaths2" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="searchType2" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber2" name="pageNumber"/>
+						<input type="hidden" id="pageSize2" name="pageSize"/>
+						<input type="hidden" id="queryName2" name="queryName"/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
