@@ -1212,14 +1212,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     }
 
     // If this is a GroupAdmin, then ensure that:
-    // 1. The file is less than 60 days old
+    // 1. The file is less than 90 days old
     // 2. The invoker uploaded the data originally
 
     HpcRequestInvoker invoker = securityService.getRequestInvoker();
     if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
 
       Calendar cutOffDate = Calendar.getInstance();
-      cutOffDate.add(Calendar.DAY_OF_YEAR, -60);
+      cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
       if (dataObject.getCreatedAt().before(cutOffDate)) {
         String message = "The data object at " + path + " is not eligible for deletion";
         logger.error(message);
