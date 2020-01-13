@@ -92,7 +92,7 @@ public abstract class HpcLocalEntityProcessor {
 	protected List<HpcMetadataEntry> getParentCollectionMetadata(HpcPathAttributes file, boolean metadataOnly) {
 		List<HpcMetadataEntry> parentCollectionMetadataEntries = new ArrayList<HpcMetadataEntry>();
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
-		String filePath = file.getPath().replace("\\", "/");
+		String filePath = file.getAbsolutePath().replace("\\", "/");
 
 		int pathIndex = filePath.lastIndexOf("/");
 
