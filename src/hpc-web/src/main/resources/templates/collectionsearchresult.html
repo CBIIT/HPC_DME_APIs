@@ -413,12 +413,12 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
 						method="post" enctype="multipart/form-data">
-						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="selectedFilePaths1" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="downloadType" name="downloadType" value=""/>
 						<input type="hidden" id="searchType" name="searchType" value=""/>
-						<input type="hidden" id="pageNumber" name="pageNumber"/>
-						<input type="hidden" id="pageSize" name="pageSize"/>
-						<input type="hidden" id="queryName" name="queryName"/>
+						<input type="hidden" id="pageNumber1" name="pageNumber"/>
+						<input type="hidden" id="pageSize1" name="pageSize"/>
+						<input type="hidden" id="queryName1" name="queryName"/>
 					</form>
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
