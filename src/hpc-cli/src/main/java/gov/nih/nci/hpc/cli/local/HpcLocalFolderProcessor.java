@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import javax.ws.rs.core.Response;
 
@@ -128,17 +130,13 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
   private String getCollectionPath(String localPath, String collectionPathBaseName,
       String collectionPath) {
     String fullFilePathName = null;
-    File fullFile = new File(localPath);
+    Path fullFile = Paths.get(localPath);
 //    File fullFile = new File(Paths.generateFileSystemResourceUri(localPath));
     String fullLocalPathName = null;
-    File fullLocalFile = new File(collectionPath);
-//    File fullLocalFile = new File(Paths.generateFileSystemResourceUri(collectionPath));
-    try {
-      fullFilePathName = fullFile.getCanonicalPath();
-      fullLocalPathName = fullLocalFile.getCanonicalPath();
-    } catch (IOException e) {
-      System.out.println("Failed to read file path: " + localPath);
-    }
+    Path fullLocalFile = Paths.get(collectionPath);
+    
+    fullFilePathName = fullFile.normalize().toString();
+    fullLocalPathName = fullLocalFile.toAbsolutePath().normalize().toString();
 
     collectionPath = collectionPath.replace("\\", "/");
     localPath = localPath.replace("\\", "/");
