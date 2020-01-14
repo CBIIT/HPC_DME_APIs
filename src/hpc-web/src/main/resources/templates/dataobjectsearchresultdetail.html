@@ -143,7 +143,7 @@
 					},{
 						field : 'link',
 						width : 100,
-						displayName : 'Link',
+						displayName : 'Create Link',
 						cellFilter : 'dmePathEncoding',
 						cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" href="../link?type=datafile&amp;linkFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source={{grid.appScope.source}}"><i class="fa fa-link" aria-hidden="true"></i></a></div>',
 						exporterSuppressExport : true,
@@ -387,7 +387,7 @@
 
             if(updatedList == null || updatedList.length == 0)
             {
-              alert("Select at least one data file to link");
+              alert("Select at least one data file to create link");
               return false;
             }
             document.getElementById("linkFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
@@ -462,10 +462,10 @@
 								<div class="pull-right">
 									<a data-toggle="modal" id="downloadselectedlink"
 										class="btn btn-link btn-sm" ng-click="downloadSelectedRows()"
-										>Download Selected Files</a>
+										>Download Files</a>
 									<a data-toggle="modal" id="linkselectedlink"
 										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
-										>Link Selected Files</a>
+										>Create Links</a>
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" href="/savesearch"
 										data-target="#myModal">Save Search Criteria</a>
