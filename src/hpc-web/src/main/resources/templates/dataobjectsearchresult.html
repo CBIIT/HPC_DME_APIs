@@ -129,7 +129,7 @@
             {
                 field : 'link',
                 width : 150,
-                displayName : 'Link',
+                displayName : 'Create Link',
                 cellFilter : 'dmePathEncoding',
                 cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" href="../link?type=datafile&amp;linkFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source={{grid.appScope.source}}"><i class="fa fa-link" aria-hidden="true"></i></a></div>',
                 exporterSuppressExport: true,
@@ -343,7 +343,7 @@
 
             if(updatedList == null || updatedList.length == 0)
             {
-              alert("Select at least one data file to link");
+              alert("Select at least one data file to create link");
               return false;
             }
             document.getElementById("linkFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
@@ -418,10 +418,10 @@
 								<div class="pull-right">
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" ng-click="downloadSelectedRows()"
-										>Download Selected Files</a>
+										>Download Files</a>
 									<a data-toggle="modal" id="linksearchlink"
 										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
-										>Link Selected Files</a>
+										>Create Links</a>
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" href="/savesearch"
 										data-target="#saveModal">Save Search Criteria</a>
@@ -486,21 +486,21 @@
 					<form class="form-horizontal" id="downloadFilesform" action="#"
 						role="form" th:action="@{/downloadfiles}" 
 						method="post" enctype="multipart/form-data">
-						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="selectedFilePaths1" name="selectedFilePaths" value=""/>
 						<input type="hidden" id="downloadType" name="downloadType" value=""/>
 						<input type="hidden" id="searchType" name="searchType" value=""/>
-						<input type="hidden" id="pageNumber" name="pageNumber"/>
-						<input type="hidden" id="pageSize" name="pageSize"/>
-						<input type="hidden" id="queryName" name="queryName"/>
+						<input type="hidden" id="pageNumber1" name="pageNumber"/>
+						<input type="hidden" id="pageSize1" name="pageSize"/>
+						<input type="hidden" id="queryName1" name="queryName"/>
 					</form> 
 					<form class="form-horizontal" id="linkFilesform" action="#"
 						role="form" th:action="@{/linkfiles}" 
 						method="post" enctype="multipart/form-data">
-						<input type="hidden" id="selectedFilePaths" name="selectedFilePaths" value=""/>
-						<input type="hidden" id="searchType" name="searchType" value=""/>
-						<input type="hidden" id="pageNumber" name="pageNumber"/>
-						<input type="hidden" id="pageSize" name="pageSize"/>
-						<input type="hidden" id="queryName" name="queryName"/>
+						<input type="hidden" id="selectedFilePaths2" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="searchType2" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber2" name="pageNumber"/>
+						<input type="hidden" id="pageSize2" name="pageSize"/>
+						<input type="hidden" id="queryName2" name="queryName"/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"
