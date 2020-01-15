@@ -135,13 +135,13 @@ public class HpcLinkController extends AbstractHpcController {
 			String destFile = linkFile.getDestinationPath() + "/" + sourcePath.getFileName().toString();
 			return HpcClientUtil.linkDatafile(authToken, dataObjectServiceURL, v2dataObjectServiceURL, dto, destFile, sslCertPath, sslCertPassword);
 		} catch (HttpStatusCodeException e) {
-			result.setMessage("Link request is not successful: " + e.getMessage());
+			result.setMessage("Link creation was not successful: " + e.getMessage());
 			return result;
 		} catch (RestClientException e) {
-			result.setMessage("Link request is not successful: " + e.getMessage());
+			result.setMessage("Link creation was not successful: " + e.getMessage());
 			return result;
 		} catch (Exception e) {
-			result.setMessage("Link request is not successful: " + e.getMessage());
+			result.setMessage("Link creation was not successful: " + e.getMessage());
 			return result;
 		}
 	}
