@@ -489,19 +489,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       throws HpcException {
     return getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION);
   }
-  
+
   @Override
-  public void cancelCollectionDownloadTask(String taskId)
-      throws HpcException {
+  public void cancelCollectionDownloadTask(String taskId) throws HpcException {
     // Input validation.
-    HpcDownloadTaskStatus taskStatus = dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.COLLECTION);
+    HpcDownloadTaskStatus taskStatus =
+        dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.COLLECTION);
     if (taskStatus == null) {
-      throw new HpcException("Collection download task not found: " + taskId, HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Collection download task not found: " + taskId,
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    if(!taskStatus.getInProgress()) {
-      throw new HpcException("Collection download task not in-progress: " + taskId, HpcErrorType.INVALID_REQUEST_INPUT);
+    if (!taskStatus.getInProgress()) {
+      throw new HpcException("Collection download task not in-progress: " + taskId,
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    
+
     dataTransferService.cancelCollectionDownloadTask(taskStatus.getCollectionDownloadTask());
   }
 
@@ -1512,6 +1514,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     });
 
     return bulkMoveResponse;
+  }
+
+  // TODO - Remove HPCDATAMGM-1189 code
+  @Override
+  public void updateFileContainerName(String configurationId) throws HpcException {
+    dataTransferService.updateFileContainerName(configurationId);
   }
 
   // ---------------------------------------------------------------------//
