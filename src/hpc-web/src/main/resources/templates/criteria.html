@@ -127,7 +127,7 @@
 												<input type="hidden" id="rowId0" name="rowId" value="A1" />
 											</td>
 											<td style="white-space: nowrap">
-												<input type="checkbox" id="selfAttributeOnly1" name="selfAttributeOnly"/>
+												<input type="checkbox" id="selfAttributeOnly1" name="selfAttribute"/>
 												<input type="hidden" id="selfAttributeOnlyHidden1" name="selfAttributeOnly" value="false"/>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
@@ -536,7 +536,7 @@ function addRow() {
     var cell5 = row.insertCell(5);
     var cell6 = row.insertCell(6);
     cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
-    cell1.innerHTML = '<input id="selfAttributeOnly'+(rows+1)+'" type="checkbox" name="selfAttributeOnly"/><input id="selfAttributeOnlyHidden'+(rows+1)+'" type="hidden" name="selfAttributeOnly" value="false"/>';
+    cell1.innerHTML = '<input id="selfAttributeOnly'+(rows+1)+'" type="checkbox" name="selfAttribute"/><input id="selfAttributeOnlyHidden'+(rows+1)+'" type="hidden" name="selfAttributeOnly" value="false"/>';
     cell2.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
     cell3.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
     cell4.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control operator" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
@@ -633,11 +633,11 @@ function validateAndSubmit()
 		alert("Invalid criteria");
 		return false;
 	}
-	var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+	var rows = document.getElementById("metaAttrTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
 	for(var i=1;i<rows;i++)
     {
 		if(document.getElementById("selfAttributeOnly" + i).checked) {
-		    document.getElementById("selfAttributeOnlyHidden" + i).disabled = true;
+		    document.getElementById("selfAttributeOnlyHidden" + i).value = "true";
 		}
     }
 	document.getElementById("simplesearchform").submit();
