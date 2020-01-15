@@ -1225,7 +1225,7 @@ public class HpcClientUtil {
       Response restResponse = client.put(new MultipartBody(atts));
       if (restResponse.getStatus() == 201) {
         result.setMessage(
-            "Link has been created successfully.");
+            "Link creation was successful.");
         return result;
       } else {
         ObjectMapper mapper = new ObjectMapper();
@@ -1242,11 +1242,11 @@ public class HpcClientUtil {
         throw new HpcWebException(exception.getMessage());
       }
     } catch (HpcWebException e) {
-      result.setMessage("Link request is not successful: " + e.getMessage());
+      result.setMessage(e.getMessage());
       return result;
     } catch (Exception e) {
       e.printStackTrace();
-      result.setMessage("Link request is not successful.");
+      result.setMessage("Link creation failed.");
       return result;
     }
   }

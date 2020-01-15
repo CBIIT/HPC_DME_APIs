@@ -113,12 +113,6 @@
 							</td>
 						</tr>
 						<tr><td>&nbsp;</td></tr>
-						<tr><td>Selected Files:<br/>
-						<div class="display: block;" th:each="selectedPath : ${hpcLinkDatafile.getSelectedPaths()}">
-							<label th:text="${selectedPath}"></label> 
-						</div>
-						</td></tr>
-						<tr><td>&nbsp;</td></tr>
 						<tr>
 							<td>
 								<div class="pull-left" id="message"
@@ -131,6 +125,12 @@
 								</div>
 							</td>
 						</tr>
+						<tr><td>Selected Files:<br/>
+						<div class="display: block;" th:each="selectedPath : ${hpcLinkDatafile.getSelectedPaths()}">
+							<label th:text="${selectedPath}"></label> 
+						</div>
+						</td></tr>
+						<tr><td>&nbsp;</td></tr>
 						<tr>
 							<td>
                                 
@@ -142,7 +142,7 @@
 											placeholder="Enter Parent Collection Path" />
 									</div>
 								</div>
-								<div class="modal-footer">
+								<div>
 									<button class="btn btn-primary" id="submit"
 										onClick="return validateAndSubmit()">Submit</button>
 									<button type="button" class="btn btn-primary"
