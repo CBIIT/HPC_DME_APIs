@@ -164,21 +164,21 @@ public class HpcLinkFilesController extends AbstractHpcController {
 				downloadDTO = (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil
 					.linkDatafiles(authToken, v2bulkRegistrationURL, registrationDTO, sslCertPath, sslCertPassword);
 				if (downloadDTO != null) {
-					result.setMessage("Link request is successful.");
+					result.setMessage("Link creation was successful.");
 				}
 				return result;
 			} catch (Exception e) {
-				result.setMessage("Link request is not successful: " + e.getMessage());
+				result.setMessage("Link creation was not successful: " + e.getMessage());
 				return result;
 			}
 		} catch (HttpStatusCodeException e) {
-			result.setMessage("Link request is not successful: " + e.getMessage());
+			result.setMessage("Link creation was not successful: " + e.getMessage());
 			return result;
 		} catch (RestClientException e) {
-			result.setMessage("Link request is not successful: " + e.getMessage());
+			result.setMessage("Link creation was not successful: " + e.getMessage());
 			return result;
 		} catch (Exception e) {
-			result.setMessage("Link request is not successful: " + e.getMessage());
+			result.setMessage("Link creation was not successful: " + e.getMessage());
 			return result;
 		}
 	}
