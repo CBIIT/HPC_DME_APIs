@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -468,12 +468,12 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 		List<HpcMetadataEntry> selfEntries = entries.getSelfMetadataEntries();
 		for (HpcMetadataEntry entry : selfEntries) {
-			if (entry.getAttribute().equals(attrName))
+			if (StringUtils.equals(entry.getAttribute(), attrName))
 				return entry.getValue();
 		}
 		List<HpcMetadataEntry> parentEntries = entries.getParentMetadataEntries();
 		for (HpcMetadataEntry entry : parentEntries) {
-			if (entry.getAttribute().equals(attrName))
+			if (StringUtils.equals(entry.getAttribute(), attrName))
 				return entry.getValue();
 		}
 		return null;
