@@ -208,4 +208,14 @@ public interface HpcDataDownloadDAO {
    * @throws HpcException on database error.
    */
   public int getDownloadResultsCount(String userId) throws HpcException;
+
+  /**
+   * TODO - Remove HPCDATAMGM-1189 code
+   */
+  public List<HpcDownloadTaskResult> updateFileContainerName() throws HpcException;
+
+  /**
+   * TODO - Remove HPCDATAMGM-1189 code
+   */
+  public void updateFileContainerName(String taskId, String containerName) throws HpcException;
 }

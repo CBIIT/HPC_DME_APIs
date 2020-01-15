@@ -1082,6 +1082,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     return expiration.before(new Date());
   }
 
+  // TODO - Remove HPCDATAMGM-1189 code
+  @Override
+  public void updateFileContainerName(String configurationId) throws HpcException {
+    List<HpcDownloadTaskResult> taskResults = dataDownloadDAO.updateFileContainerName();
+    logger.info("Updating endpoint name for download task results: {} tasks", taskResults.size());
+    taskResults.forEach(taskResult -> {
+      String containerName = taskResult.getDestinationLocation().getFileContainerId();
+      try {
+        containerName = getFileContainerName(taskResult.getDestinationType(),
+            configurationId, taskResult.getDestinationLocation().getFileContainerId());
+      } catch (HpcException e) {
+        logger.error("Failed to get container name for task[{}]: {}", taskResult.getId());
+      }
+      
+      try {
+        dataDownloadDAO.updateFileContainerName(taskResult.getId(), containerName);
+        logger.info("Updated endpoint name for for task [{}]: {}", taskResult.getId(),
+            containerName);
+
+      } catch (HpcException e) {
+        logger.error("Failed to updated endpoint name for task[{}]: {}", taskResult.getId(), e.getMessage());
+      }
+    });
+
+  }
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//

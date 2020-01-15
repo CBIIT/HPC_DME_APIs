@@ -762,12 +762,45 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     }
   }
 
+  @Override
   public int getDownloadResultsCount(String userId) throws HpcException {
     try {
       return jdbcTemplate.queryForObject(GET_DOWNLOAD_RESULTS_COUNT_SQL, Integer.class, userId);
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to count download results: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  /**
+   * TODO - Remove HPCDATAMGM-1189 code
+   */
+  public List<HpcDownloadTaskResult> updateFileContainerName() throws HpcException {
+    try {
+      return jdbcTemplate.query(
+          "select * from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"DESTINATION_TYPE\" is not null and \"DESTINATION_LOCATION_FILE_CONTAINER_NAME\" is null and \"DESTINATION_LOCATION_FILE_CONTAINER_ID\" is not null",
+          downloadTaskResultRowMapper);
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to get download results for container name update: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  /**
+   * TODO - Remove HPCDATAMGM-1189 code
+   */
+  public void updateFileContainerName(String taskId, String containerName) throws HpcException {
+    try {
+      jdbcTemplate.update(
+          "update \"HPC_DOWNLOAD_TASK_RESULT\" set \"DESTINATION_LOCATION_FILE_CONTAINER_NAME\" = ? where \"ID\" = ?",
+          containerName, taskId);
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to update download result w/ container name: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
