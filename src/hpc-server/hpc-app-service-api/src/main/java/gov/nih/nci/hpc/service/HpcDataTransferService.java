@@ -527,5 +527,5 @@ public interface HpcDataTransferService {
   /**
    * TODO - Remove HPCDATAMGM-1189 code
    */
-  public void updateFileContainerName(String configurationId) throws HpcException;
+  public void updateFileContainerName() throws HpcException;
 }
