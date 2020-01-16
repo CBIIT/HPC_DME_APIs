@@ -1518,8 +1518,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
   // TODO - Remove HPCDATAMGM-1189 code
   @Override
-  public void updateFileContainerName(String configurationId) throws HpcException {
-    dataTransferService.updateFileContainerName(configurationId);
+  public void updateFileContainerName() throws HpcException {
+    dataTransferService.updateFileContainerName();
   }
 
   // ---------------------------------------------------------------------//

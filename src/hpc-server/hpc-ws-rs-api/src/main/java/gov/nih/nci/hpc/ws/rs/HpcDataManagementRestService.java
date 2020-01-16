@@ -599,8 +599,8 @@ public interface HpcDataManagementRestService {
    * TODO - Remove HPCDATAMGM-1189 code
    */
   @POST
-  @Path("/update-file-container-name/{configurationId}")
+  @Path("/update-file-container-name")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-  public Response updateFileContainerName(@PathParam("configurationId") String configurationId);
+  public Response updateFileContainerName();
 }

@@ -74,6 +74,7 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -120,6 +121,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   // Metadata service.
   @Autowired
   private HpcMetadataService metadataService = null;
+
+  // TODO - Remove HPCDATAMGM-1189 code
+  @Autowired
+  private HpcDataManagementService dataManagementService = null;
 
   // Data management configuration locator.
   @Autowired
@@ -1084,28 +1089,39 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   // TODO - Remove HPCDATAMGM-1189 code
   @Override
-  public void updateFileContainerName(String configurationId) throws HpcException {
+  public void updateFileContainerName() throws HpcException {
     List<HpcDownloadTaskResult> taskResults = dataDownloadDAO.updateFileContainerName();
     logger.info("Updating endpoint name for download task results: {} tasks", taskResults.size());
     taskResults.forEach(taskResult -> {
-      String containerName = taskResult.getDestinationLocation().getFileContainerId();
-      try {
-        containerName = getFileContainerName(taskResult.getDestinationType(),
-            configurationId, taskResult.getDestinationLocation().getFileContainerId());
-      } catch (HpcException e) {
-        logger.error("Failed to get container name for task[{}]: {}", taskResult.getId());
+      String path = taskResult.getPath();
+      if (StringUtils.isEmpty(path) && !taskResult.getItems().isEmpty()) {
+        path = taskResult.getItems().get(0).getPath();
       }
-      
+      String containerName = taskResult.getDestinationLocation().getFileContainerId();
+      String configurationId = dataManagementService.findDataManagementConfigurationId(path);
+      if (StringUtils.isEmpty(configurationId)) {
+        logger.error("HPCDATAMGM-1189: Failed to get configuration ID for task[{}]",
+            taskResult.getId());
+      } else {
+        try {
+          containerName = getFileContainerName(taskResult.getDestinationType(), configurationId,
+              taskResult.getDestinationLocation().getFileContainerId());
+        } catch (HpcException e) {
+          logger.error("HPCDATAMGM-1189: Failed to get container name for task[{}]",
+              taskResult.getId());
+        }
+      }
+
       try {
         dataDownloadDAO.updateFileContainerName(taskResult.getId(), containerName);
-        logger.info("Updated endpoint name for for task [{}]: {}", taskResult.getId(),
-            containerName);
+        logger.info("HPCDATAMGM-1189: Updated endpoint name for for task [{}]: {}",
+            taskResult.getId(), containerName);
 
       } catch (HpcException e) {
-        logger.error("Failed to updated endpoint name for task[{}]: {}", taskResult.getId(), e.getMessage());
+        logger.error("HPCDATAMGM-1189: Failed to updated endpoint name for task[{}]: {}",
+            taskResult.getId(), e.getMessage());
       }
     });
-
   }
 
   // ---------------------------------------------------------------------//
