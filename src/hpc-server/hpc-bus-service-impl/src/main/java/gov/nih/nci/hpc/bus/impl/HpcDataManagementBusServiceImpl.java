@@ -1218,8 +1218,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // 2. The invoker uploaded the data originally
 
     HpcRequestInvoker invoker = securityService.getRequestInvoker();
-    if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
-
+    if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
       Calendar cutOffDate = Calendar.getInstance();
       cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
       if (dataObject.getCreatedAt().before(cutOffDate)) {
