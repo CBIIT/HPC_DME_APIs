@@ -707,9 +707,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
   // TODO - Remove HPCDATAMGM-1189 code
   @Override
-  public Response updateFileContainerName(String configurationId) {
+  public Response updateFileContainerName() {
     try {
-      dataManagementBusService.updateFileContainerName(configurationId);
+      dataManagementBusService.updateFileContainerName();
     } catch (HpcException e) {
       return errorResponse(e);
     }
