@@ -295,7 +295,7 @@ function dm_register_dataobject_presigned {
     rm -f $response_header $response_msg 2>/dev/null
     response_header=presignedURL-registration-response-header.tmp
     response_msg=presignedURL-registration-response-message.tmp
-    curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${source_file}" "${presigned_url}" -D $response_header -o $response_msg -s
+    curl -X PUT  -H "Content-Type: multipart/form-data" --data-binary @${source_file} "${presigned_url}" -D $response_header -o $response_msg 
     if [ "$?" -ne 0 ]
     then
       echo "ERROR during presigned URL registration for $destination_path" >&2
