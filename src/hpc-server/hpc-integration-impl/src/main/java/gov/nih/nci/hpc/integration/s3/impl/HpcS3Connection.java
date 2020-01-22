@@ -10,6 +10,8 @@
  */
 package gov.nih.nci.hpc.integration.s3.impl;
 
+import java.util.HashSet;
+import java.util.Set;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -30,11 +32,27 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public class HpcS3Connection {
   // ---------------------------------------------------------------------//
+  // Instance members
+  // ---------------------------------------------------------------------//
+
+  // A list of S3 3rd party providers that require connection w/ path-style enabled.
+  private Set<HpcIntegratedSystem> pathStyleAccessEnabledProviders = new HashSet<>();
+
+  // ---------------------------------------------------------------------//
   // Constructors
   // ---------------------------------------------------------------------//
 
-  /** Constructor for Spring Dependency Injection. */
-  private HpcS3Connection() {}
+  /**
+   * Constructor for Spring Dependency Injection.
+   * 
+   * @param pathStyleAccessEnabledProviders A list of S3 3rd party providers that require connection
+   *        w/ path-style enabled.
+   */
+  private HpcS3Connection(String pathStyleAccessEnabledProviders) {
+    for (String s3Provider : pathStyleAccessEnabledProviders.split(",")) {
+      this.pathStyleAccessEnabledProviders.add(HpcIntegratedSystem.fromValue(s3Provider));
+    }
+  }
 
   // ---------------------------------------------------------------------//
   // Methods
@@ -71,12 +89,14 @@ public class HpcS3Connection {
     // Setup the endpoint configuration.
     EndpointConfiguration endpointConfiguration = new EndpointConfiguration(s3URLorRegion, null);
 
+    // Determine if this S3 provider require path-style enabled.
+    boolean pathStyleEnabled =
+        pathStyleAccessEnabledProviders.contains(dataTransferAccount.getIntegratedSystem());
+
     // Create and return the transfer manager.
-    return TransferManagerBuilder.standard()
-        .withS3Client(
-            AmazonS3ClientBuilder.standard().withCredentials(cleversafeCredentialsProvider)
-                .withEndpointConfiguration(endpointConfiguration).build())
-        .build();
+    return TransferManagerBuilder.standard().withS3Client(AmazonS3ClientBuilder.standard()
+        .withCredentials(cleversafeCredentialsProvider).withPathStyleAccessEnabled(pathStyleEnabled)
+        .withEndpointConfiguration(endpointConfiguration).build()).build();
   }
 
   /**
