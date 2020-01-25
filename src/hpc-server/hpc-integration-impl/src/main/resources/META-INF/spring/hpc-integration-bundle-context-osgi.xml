@@ -41,6 +41,7 @@
 		  <prop key="hpc.integration.globus.retry.maxInterval">10000</prop>
 		  
 		  <prop key="hpc.integration.s3.downloadExecutorThreadPoolSize">100</prop>
+		  <prop key="hpc.integration.s3.pathStyleAccessEnabledProviders">CLOUDIAN</prop>
 		  
 	      <prop key="hpc.integration.ldap.URL">ldaps://nihdcadhub2.nih.gov</prop>
 	      <prop key="hpc.integration.ldap.username">Configure Me</prop>
