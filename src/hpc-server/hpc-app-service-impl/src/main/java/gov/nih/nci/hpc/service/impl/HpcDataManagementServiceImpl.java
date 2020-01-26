@@ -55,6 +55,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
 /**
@@ -86,6 +87,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // Data Management configuration locator.
   @Autowired
   private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
+
+  // The Metadata service.
+  @Autowired
+  private HpcMetadataService metadataService = null;
 
   // Data Management Audit DAO.
   @Autowired
@@ -384,6 +389,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       dataManagementProxy.move(authenticatedToken, destinationPath, sourcePath);
       throw (e);
     }
+
+    // Update the links to this data object to point to the new path.
+    getDataObjectLinks(sourcePath).forEach(link -> {
+      try {
+        metadataService.updateDataObjectSystemGeneratedMetadata(link.getAbsolutePath(), null, null,
+            null, null, null, null, null, null, destinationPath);
+      } catch (HpcException e) {
+        logger.error("Failed to point link[{}] to {}", link.getAbsolutePath(), destinationPath);
+      }
+    });
+
   }
 
   @Override

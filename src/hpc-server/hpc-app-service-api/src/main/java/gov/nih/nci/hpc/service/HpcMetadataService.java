@@ -179,7 +179,7 @@ public interface HpcMetadataService {
    * @param userId The user ID.
    * @param userName The user name.
    * @param configurationId The data management configuration ID.
-   * @param linkSourcePath The link source path.
+   * @param linkSourcePath linkSourcePath.
    * @throws HpcException on service failure.
    */
   public void addSystemGeneratedMetadataToDataObject(String path,
@@ -208,12 +208,13 @@ public interface HpcMetadataService {
    * @param dataTransferStarted (Optional) The time data transfer started.
    * @param dataTransferCompleted (Optional) The time data transfer completed.
    * @param sourceSize (Optional) The data source size in bytes.
+   * @param linkSourcePath (Optional) linkSourcePath.
    * @throws HpcException on service failure.
    */
   public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
       String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
       HpcDataTransferType dataTransferType, Calendar dataTransferStarted,
-      Calendar dataTransferCompleted, Long sourceSize) throws HpcException;
+      Calendar dataTransferCompleted, Long sourceSize, String linkSourcePath) throws HpcException;
 
   /**
    * Update a data object's metadata.
