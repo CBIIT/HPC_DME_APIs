@@ -156,7 +156,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         metadataService.updateDataObjectSystemGeneratedMetadata(path,
             uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferRequestId(), null,
             uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(), null,
-            uploadResponse.getDataTransferCompleted(), null);
+            uploadResponse.getDataTransferCompleted(), null, null);
 
       } catch (HpcException e) {
         logger.error("Failed to process queued data transfer upload :" + path, e);
@@ -205,7 +205,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             // Update data management w/ data transfer status, checksum and completion time.
             dataTransferCompleted = Calendar.getInstance();
             metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
-                dataTransferStatus, null, null, dataTransferCompleted, null);
+                dataTransferStatus, null, null, dataTransferCompleted, null, null);
             break;
 
           case IN_TEMPORARY_ARCHIVE:
@@ -217,7 +217,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
             // Update data transfer status.
             metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-                dataTransferStatus, null, null, null, null);
+                dataTransferStatus, null, null, null, null, null);
             break;
 
           case FAILED:
@@ -322,7 +322,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           // Streaming stopped (server shutdown). We just update the status accordingly.
           logger.info("Upload streaming stopped for: {}", path);
           metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-              HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null);
+              HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null, null);
         }
 
       } catch (HpcException e) {
@@ -366,7 +366,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Update the transfer status and request id.
         metadataService.updateDataObjectSystemGeneratedMetadata(path, null,
             uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(),
-            null, null, null, null);
+            null, null, null, null, null);
 
       } catch (HpcException e) {
         logger.error("Failed to process restart upload streaming for data object:" + path, e);
@@ -422,7 +422,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         metadataService.updateDataObjectSystemGeneratedMetadata(path,
             uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferRequestId(),
             checksum, uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(),
-            null, uploadResponse.getDataTransferCompleted(), null);
+            null, uploadResponse.getDataTransferCompleted(), null, null);
 
         // Data transfer upload completed (successfully or failed). Add an event if
         // needed.
@@ -1416,7 +1416,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
     try {
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-          HpcDataTransferUploadStatus.FAILED, null, null, null, null);
+          HpcDataTransferUploadStatus.FAILED, null, null, null, null, null);
 
       systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
@@ -1638,7 +1638,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       Calendar dataTransferCompleted = Calendar.getInstance();
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
           HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
-          archivePathAttributes.getSize());
+          archivePathAttributes.getSize(), null);
 
       // Add an event if needed.
       if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {

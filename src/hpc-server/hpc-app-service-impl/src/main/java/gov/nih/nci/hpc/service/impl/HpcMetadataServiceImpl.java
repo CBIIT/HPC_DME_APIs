@@ -500,7 +500,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
   public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
       String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
       HpcDataTransferType dataTransferType, Calendar dataTransferStarted,
-      Calendar dataTransferCompleted, Long sourceSize) throws HpcException {
+      Calendar dataTransferCompleted, Long sourceSize, String linkSourcePath) throws HpcException {
     // Input validation.
     if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
       throw new HpcException("Invalid updated system generated metadata for data object",
@@ -557,6 +557,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     if (sourceSize != null) {
       // Update the Source File Size metadata.
       addMetadataEntry(metadataEntries, toMetadataEntry(SOURCE_FILE_SIZE_ATTRIBUTE, sourceSize));
+    }
+
+    if (linkSourcePath != null) {
+      // Update the link source path metadata.
+      addMetadataEntry(metadataEntries,
+          toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
     }
 
     if (!metadataEntries.isEmpty()) {
