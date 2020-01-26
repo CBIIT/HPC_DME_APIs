@@ -1,4 +1,2 @@
-400
-REQUEST_REJECTED
-FILE_NOT_ARCHIVED
-Object is not in archived state yet.
+200
+Object is not in archived state. It is in IN_TEMPORARY_ARCHIVE state
