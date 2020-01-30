@@ -593,6 +593,9 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			httpConnection.setConnectTimeout(99999999);
 			httpConnection.setReadTimeout(99999999);
 			
+			// Add 'x-amz-decoded-content-length' header parameter.
+			httpConnection.addRequestProperty("x-amz-decoded-content-length", String.valueOf(file.length()));
+			
 			if(checksum != null)
 				httpConnection.addRequestProperty("md5chksum", checksum);
 			OutputStream out = httpConnection.getOutputStream();
