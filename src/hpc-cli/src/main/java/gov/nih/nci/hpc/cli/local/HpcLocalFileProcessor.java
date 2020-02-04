@@ -595,7 +595,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			
 			// Add required header parameters.
 			httpConnection.addRequestProperty("x-amz-decoded-content-length", String.valueOf(file.length()));
-			httpConnection.addRequestProperty("x-amz-content-sha256", "AWS4-HMAC-SHA256-PAYLOAD");
+			httpConnection.addRequestProperty("x-amz-content-sha256", "STREAMING-AWS4-HMAC-SHA256-PAYLOAD");
 			
 			if(checksum != null)
 				httpConnection.addRequestProperty("md5chksum", checksum);
