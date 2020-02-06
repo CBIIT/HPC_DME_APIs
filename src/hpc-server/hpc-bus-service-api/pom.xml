@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc-server</artifactId>
-		<version>1.21.1</version>
+		<version>1.22.0</version>
 	</parent>
 	<artifactId>hpc-bus-service-api</artifactId>
 	<packaging>bundle</packaging>

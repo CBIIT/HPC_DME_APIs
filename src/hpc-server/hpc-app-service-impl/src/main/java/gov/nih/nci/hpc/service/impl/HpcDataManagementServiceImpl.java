@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -54,6 +55,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
 /**
@@ -85,6 +87,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // Data Management configuration locator.
   @Autowired
   private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
+
+  // The Metadata service.
+  @Autowired
+  private HpcMetadataService metadataService = null;
 
   // Data Management Audit DAO.
   @Autowired
@@ -155,8 +161,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    *        registration status. This URL need to have a {taks_id} placeholder to plug-in the task
    *        ID to be displayed.
    */
-  private HpcDataManagementServiceImpl(String systemAdminSubjects,
-      String defaultBaseUiURL,
+  private HpcDataManagementServiceImpl(String systemAdminSubjects, String defaultBaseUiURL,
       String defaultBulkRegistrationStatusUiDeepLink) {
     // Prepare the query to get data objects in data transfer status of received.
     dataTransferReceivedQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
@@ -197,7 +202,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     // allowed for these subjects.
     this.systemAdminSubjects.addAll(Arrays.asList(systemAdminSubjects.split("\\s+")));
 
-    defaultBulkRegistrationStatusUiURL = defaultBaseUiURL + '/' + defaultBulkRegistrationStatusUiDeepLink;
+    defaultBulkRegistrationStatusUiURL =
+        defaultBaseUiURL + '/' + defaultBulkRegistrationStatusUiDeepLink;
   }
 
   /**
@@ -383,6 +389,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       dataManagementProxy.move(authenticatedToken, destinationPath, sourcePath);
       throw (e);
     }
+
+    // Update the links to this data object to point to the new path.
+    getDataObjectLinks(sourcePath).forEach(link -> {
+      try {
+        metadataService.updateDataObjectSystemGeneratedMetadata(link.getAbsolutePath(), null, null,
+            null, null, null, null, null, null, destinationPath);
+      } catch (HpcException e) {
+        logger.error("Failed to point link[{}] to {}", link.getAbsolutePath(), destinationPath);
+      }
+    });
+
   }
 
   @Override
@@ -465,14 +482,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     return dataManagementProxy
         .getDataObjectPermission(dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
   }
-  
+
   @Override
   public HpcSubjectPermission acquireDataObjectPermission(String path, String userId)
       throws HpcException {
     return dataManagementProxy.acquireDataObjectPermission(
         dataManagementAuthenticator.getAuthenticatedToken(), path, userId);
   }
-  
+
 
   @Override
   public HpcSubjectPermission getDataObjectPermission(String path) throws HpcException {
@@ -614,6 +631,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   }
 
   @Override
+  public List<HpcDataObject> getDataObjectLinks(String path) throws HpcException {
+    List<HpcMetadataQuery> dataObjectLinksQuery = new ArrayList<>();
+    dataObjectLinksQuery
+        .add(toMetadataQuery(LINK_SOURCE_PATH_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL, path));
+
+    return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+        dataObjectLinksQuery);
+  }
+
+  @Override
   public void closeConnection() {
     try {
       if (dataManagementAuthenticator.isAuthenticated()) {
@@ -719,7 +746,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     int effectiveTransferSpeed = 0;
     int completedItems = 0;
     for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
-      if (item.getTask().getResult()) {
+      if (Boolean.TRUE.equals(item.getTask().getResult())
+          && item.getRequest().getLinkSourcePath() == null) {
         effectiveTransferSpeed += item.getTask().getEffectiveTransferSpeed();
         completedItems++;
       }
@@ -838,7 +866,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   public HpcDataManagementConfiguration getDataManagementConfiguration(String id) {
     return dataManagementConfigurationLocator.get(id);
   }
-  
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -895,15 +923,23 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
    */
   private void validateDataObjectRegistrationRequest(
       HpcDataObjectRegistrationRequest registrationRequest, String path) throws HpcException {
-    if (registrationRequest.getGlobusUploadSource() != null
-        && registrationRequest.getS3UploadSource() != null) {
-      throw new HpcException("Both Globus and S3 upload source provided for: " + path,
+    // Validate exactly one upload source provided - Globus, S3 or a link.
+    int uploadSourceCount = 0;
+    if (registrationRequest.getGlobusUploadSource() != null) {
+      uploadSourceCount++;
+    }
+    if (registrationRequest.getS3UploadSource() != null) {
+      uploadSourceCount++;
+    }
+    if (registrationRequest.getLinkSourcePath() != null) {
+      uploadSourceCount++;
+    }
+    if (uploadSourceCount > 1) {
+      throw new HpcException("Multiple (Globus/S3/Link) upload source provided for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-
-    if (registrationRequest.getGlobusUploadSource() == null
-        && registrationRequest.getS3UploadSource() == null) {
-      throw new HpcException("No Globus/S3 upload source provided for: " + path,
+    if (uploadSourceCount == 0) {
+      throw new HpcException("No Globus/S3/Link upload source provided for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 

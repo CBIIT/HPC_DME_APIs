@@ -491,6 +491,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   @Override
+  public void cancelCollectionDownloadTask(String taskId) throws HpcException {
+    // Input validation.
+    HpcDownloadTaskStatus taskStatus =
+        dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.COLLECTION);
+    if (taskStatus == null) {
+      throw new HpcException("Collection download task not found: " + taskId,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    if (!taskStatus.getInProgress()) {
+      throw new HpcException("Collection download task not in-progress: " + taskId,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    dataTransferService.cancelCollectionDownloadTask(taskStatus.getCollectionDownloadTask());
+  }
+
+  @Override
   public void deleteCollection(String path, Boolean recursive) throws HpcException {
     // Input validation.
     if (StringUtils.isEmpty(path)) {
@@ -769,47 +786,58 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         securityService.executeAsSystemAccount(Optional.empty(),
             () -> dataManagementService.validateHierarchy(collectionPath, configurationId, true));
 
-        // Attach the user provided metadata.
-        metadataService.addMetadataToDataObject(path, dataObjectRegistration.getMetadataEntries(),
-            configurationId, collectionType);
+        if (!StringUtils.isEmpty(dataObjectRegistration.getLinkSourcePath())) {
+          // This is a registration request w/ link to an existing data object. no data upload is
+          // performed.
+          linkDataObject(path, dataObjectRegistration, dataObjectFile, userId, userName,
+              configurationId, collectionType);
 
-        // Transfer the data file.
-        HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
-            dataObjectRegistration.getGlobusUploadSource(),
-            dataObjectRegistration.getS3UploadSource(), dataObjectFile, generateUploadRequestURL,
-            generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path, userId,
-            dataObjectRegistration.getCallerObjectId(), configurationId);
+        } else {
+          // This is a registration request w/ data upload.
 
-        // Set the upload request URL (if one was generated).
-        responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
+          // Attach the user provided metadata.
+          metadataService.addMetadataToDataObject(path, dataObjectRegistration.getMetadataEntries(),
+              configurationId, collectionType);
 
-        // Generate data management (iRODS) system metadata and attach to the data
-        // object.
-        HpcSystemGeneratedMetadata systemGeneratedMetadata =
-            metadataService.addSystemGeneratedMetadataToDataObject(path,
-                uploadResponse.getArchiveLocation(), uploadResponse.getUploadSource(),
-                uploadResponse.getDataTransferRequestId(), uploadResponse.getDataTransferStatus(),
-                uploadResponse.getDataTransferType(), uploadResponse.getDataTransferStarted(),
-                uploadResponse.getDataTransferCompleted(), uploadResponse.getSourceSize(),
-                uploadResponse.getSourceURL(), dataObjectRegistration.getCallerObjectId(), userId,
-                userName, configurationId, dataManagementService
-                    .getDataManagementConfiguration(configurationId).getS3UploadConfigurationId(),
-                registrationCompletionEvent);
+          // Transfer the data file.
+          HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
+              dataObjectRegistration.getGlobusUploadSource(),
+              dataObjectRegistration.getS3UploadSource(), dataObjectFile, generateUploadRequestURL,
+              generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path, userId,
+              dataObjectRegistration.getCallerObjectId(), configurationId);
 
-        // Generate archive (Cleversafe) system generated metadata. Note: This is only
-        // performed for synchronous data registration.
-        if (dataObjectFile != null) {
-          // transfered to the archive (Cleversafe), i.e. it is a synchronous data
-          // registration.
-          String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
-              systemGeneratedMetadata.getArchiveLocation(),
-              systemGeneratedMetadata.getDataTransferType(),
-              systemGeneratedMetadata.getConfigurationId(),
-              systemGeneratedMetadata.getS3ArchiveConfigurationId(),
-              systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
+          // Set the upload request URL (if one was generated).
+          responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 
-          metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum, null,
-              null, null, null, null);
+          // Generate data management (iRODS) system metadata and attach to the data
+          // object.
+          HpcSystemGeneratedMetadata systemGeneratedMetadata =
+              metadataService.addSystemGeneratedMetadataToDataObject(path,
+                  uploadResponse.getArchiveLocation(), uploadResponse.getUploadSource(),
+                  uploadResponse.getDataTransferRequestId(), uploadResponse.getDataTransferStatus(),
+                  uploadResponse.getDataTransferType(), uploadResponse.getDataTransferStarted(),
+                  uploadResponse.getDataTransferCompleted(), uploadResponse.getSourceSize(),
+                  uploadResponse.getSourceURL(), dataObjectRegistration.getCallerObjectId(), userId,
+                  userName, configurationId, dataManagementService
+                      .getDataManagementConfiguration(configurationId).getS3UploadConfigurationId(),
+                  registrationCompletionEvent);
+
+          // Generate archive (Cleversafe) system generated metadata. Note: This is only
+          // performed for synchronous data registration.
+          if (dataObjectFile != null) {
+            // transfered to the archive (Cleversafe), i.e. it is a synchronous data
+            // registration.
+            String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+                systemGeneratedMetadata.getArchiveLocation(),
+                systemGeneratedMetadata.getDataTransferType(),
+                systemGeneratedMetadata.getConfigurationId(),
+                systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+                systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
+
+            metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
+                null, null, null, null, null, null);
+          }
+
         }
 
         // Add collection update event.
@@ -828,7 +856,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       // The data object is already registered. Validate that data or data endpoint
       // is not attached to the request.
       if (dataObjectFile != null || dataObjectRegistration.getGlobusUploadSource() != null
-          || dataObjectRegistration.getS3UploadSource() != null) {
+          || dataObjectRegistration.getS3UploadSource() != null
+          || dataObjectRegistration.getLinkSourcePath() != null) {
         throw new HpcException(
             "A data file by that name already exists in this collection. Only updating metadata is allowed.",
             HpcErrorType.REQUEST_REJECTED);
@@ -900,6 +929,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           .setGlobusUploadSource(dataObjectRegistrationItem.getGlobusUploadSource());
       dataObjectRegistrationRequest
           .setS3UploadSource(dataObjectRegistrationItem.getS3UploadSource());
+      dataObjectRegistrationRequest
+          .setLinkSourcePath(dataObjectRegistrationItem.getLinkSourcePath());
       dataObjectRegistrationRequest.getMetadataEntries()
           .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
       dataObjectRegistrationRequest.setParentCollectionsBulkMetadataEntries(
@@ -1169,7 +1200,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path);
     HpcSystemGeneratedMetadata systemGeneratedMetadata =
         metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
-    if (systemGeneratedMetadata.getDataTransferStatus() == null) {
+    boolean registeredLink = systemGeneratedMetadata.getLinkSourcePath() != null;
+    if (!registeredLink && systemGeneratedMetadata.getDataTransferStatus() == null) {
       throw new HpcException("Unknown data transfer status", HpcErrorType.UNEXPECTED_ERROR);
     }
 
@@ -1186,8 +1218,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // 2. The invoker uploaded the data originally
 
     HpcRequestInvoker invoker = securityService.getRequestInvoker();
-    if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
-
+    if (!registeredLink && HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())) {
       Calendar cutOffDate = Calendar.getInstance();
       cutOffDate.add(Calendar.DAY_OF_YEAR, -90);
       if (dataObject.getCreatedAt().before(cutOffDate)) {
@@ -1205,47 +1236,63 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     // Instantiate a response DTO
     HpcDataObjectDeleteResponseDTO dataObjectDeleteResponse = new HpcDataObjectDeleteResponseDTO();
-    dataObjectDeleteResponse.setArchiveDeleteStatus(true);
-    dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+    boolean abort = false;
 
-    // Delete the file from the archive (if it's archived).
-    switch (systemGeneratedMetadata.getDataTransferStatus()) {
-      case ARCHIVED:
-      case DELETE_REQUESTED:
-      case DELETE_FAILED:
-        deleteDataObjectFromArchive(path, systemGeneratedMetadata, dataObjectDeleteResponse);
-        break;
+    // Delete all the links to this data object.
+    List<HpcDataObject> links = dataManagementService.getDataObjectLinks(path);
+    if (!links.isEmpty()) {
+      for (HpcDataObject link : links) {
+        try {
+          dataManagementService.delete(link.getAbsolutePath(), false);
 
-      case RECEIVED:
-      case IN_PROGRESS_TO_TEMPORARY_ARCHIVE:
-      case IN_TEMPORARY_ARCHIVE:
-      case IN_PROGRESS_TO_ARCHIVE:
-      case URL_GENERATED:
-        // Data transfer still in progress.
-        throw new HpcException(
-            "Object is not in archived state yet. It is in "
-                + systemGeneratedMetadata.getDataTransferStatus().value() + " state",
-            HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-
-      default:
-        // The file is not in archive (data transfer failed, URL expired or it was
-        // deleted).
-        break;
+        } catch (HpcException e) {
+          logger.error("Failed to delete file from datamanagement", e);
+          dataObjectDeleteResponse.setLinksDeleteStatus(false);
+          dataObjectDeleteResponse.setMessage(e.getMessage());
+          abort = true;
+          break;
+        }
+      }
+      dataObjectDeleteResponse.setLinksDeleteStatus(true);
     }
 
-    // If the archive removal was successful, then remove the file from data
-    // management.
-    try {
-      if (dataObjectDeleteResponse.getArchiveDeleteStatus()) {
-        dataManagementService.delete(path, false);
-      } else {
-        dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-      }
+    // Delete the file from the archive (if it's archived and not a link).
+    if (!registeredLink) {
+      if (!abort) {
+        switch (systemGeneratedMetadata.getDataTransferStatus()) {
+          case ARCHIVED:
+          case DELETE_REQUESTED:
+          case DELETE_FAILED:
+            deleteDataObjectFromArchive(path, systemGeneratedMetadata, dataObjectDeleteResponse);
+            break;
 
-    } catch (HpcException e) {
-      logger.error("Failed to delete file from datamanagement", e);
+          default:
+            dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+            dataObjectDeleteResponse.setMessage("Object is not in archived state. It is in "
+                + systemGeneratedMetadata.getDataTransferStatus().value() + " state");
+            break;
+        }
+        abort = Boolean.FALSE.equals(dataObjectDeleteResponse.getArchiveDeleteStatus());
+
+      } else {
+        dataObjectDeleteResponse.setArchiveDeleteStatus(false);
+      }
+    }
+
+
+    // Remove the file from data management.
+    if (!abort) {
+      try {
+        dataManagementService.delete(path, false);
+        dataObjectDeleteResponse.setDataManagementDeleteStatus(true);
+
+      } catch (HpcException e) {
+        logger.error("Failed to delete file from datamanagement", e);
+        dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
+        dataObjectDeleteResponse.setMessage(e.getMessage());
+      }
+    } else {
       dataObjectDeleteResponse.setDataManagementDeleteStatus(false);
-      dataObjectDeleteResponse.setMessage(e.getMessage());
     }
 
     // Add an audit record of this deletion attempt.
@@ -1466,6 +1513,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     });
 
     return bulkMoveResponse;
+  }
+
+  // TODO - Remove HPCDATAMGM-1189 code
+  @Override
+  public void updateFileContainerName() throws HpcException {
+    dataTransferService.updateFileContainerName();
   }
 
   // ---------------------------------------------------------------------//
@@ -1915,6 +1968,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectDeleteResponse.setMessage(e.getMessage());
     }
 
+    dataObjectDeleteResponse.setArchiveDeleteStatus(true);
     updateDataTransferUploadStatus(path, HpcDataTransferUploadStatus.DELETED);
   }
 
@@ -1928,7 +1982,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcDataTransferUploadStatus dataTransferStatus) {
     try {
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-          dataTransferStatus, null, null, null, null);
+          dataTransferStatus, null, null, null, null, null);
 
     } catch (HpcException e) {
       logger.error("Failed to update system metadata: " + path + ". Data transfer status: "
@@ -2206,7 +2260,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       // Update data-transfer-status system metadata accordingly.
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
           HpcDataTransferUploadStatus.URL_GENERATED, null, uploadResponse.getDataTransferStarted(),
-          null, null);
+          null, null, null);
 
       return uploadResponse.getUploadRequestURL();
     }
@@ -2304,6 +2358,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Get the System generated metadata.
     HpcSystemGeneratedMetadata metadata =
         metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+    // If this is a link, we will used the link source system-generated-metadata.
+    if (metadata.getLinkSourcePath() != null) {
+      return validateDataObjectDownloadRequest(metadata.getLinkSourcePath(), s3DownloadDestination,
+          googleDriveDownloadDestination);
+    }
 
     // Download to S3 destination is supported only from Cleversafe archive.
     if (s3DownloadDestination && (metadata.getDataTransferType() == null
@@ -2478,6 +2538,78 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dto.setParentCollectionsBulkMetadataEntries(request.getParentCollectionsBulkMetadataEntries());
     return dto;
   }
+
+  /**
+   * Link an existing data object to a new path.
+   *
+   * @param path The data object's path.
+   * @param dataObjectRegistration A DTO contains the metadata and data transfer locations.
+   * @param dataObjectFile (Optional) The data object file attachment
+   * @param userId The registrar user-id.
+   * @param userName The registrar name.
+   * @param configurationId The data management configuration ID.
+   * @param collectionType The collection type to contain the registered data object.
+   * @throws HpcException on service failure.
+   */
+  private void linkDataObject(String path,
+      HpcDataObjectRegistrationRequestDTO dataObjectRegistration, File dataObjectFile,
+      String userId, String userName, String configurationId, String collectionType)
+      throws HpcException {
+    // Input validation
+
+    // Validate that no upload source of any kind provided w/ the link request
+    if (dataObjectFile != null || dataObjectRegistration.getGenerateUploadRequestURL() != null
+        || dataObjectRegistration.getGlobusUploadSource() != null
+        || dataObjectRegistration.getS3UploadSource() != null
+        || dataObjectRegistration.getCallerObjectId() != null) {
+      throw new HpcException(
+          "S3 / Globus / Generate Upload URL / data attachment provided with link registration request",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the link source data object exist.
+    String linkSourcePath = toNormalizedPath(dataObjectRegistration.getLinkSourcePath());
+    if (dataManagementService.getDataObject(linkSourcePath) == null) {
+      throw new HpcException("link source doesn't exist: " + linkSourcePath,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the link source is not a link itself. Linking to a link is not allowed.
+    List<HpcMetadataEntry> linkSourceMetadataEntries =
+        metadataService.getDataObjectMetadataEntries(linkSourcePath).getSelfMetadataEntries();
+    HpcSystemGeneratedMetadata linkSourceSystemGeneratedMetadata =
+        metadataService.toSystemGeneratedMetadata(linkSourceMetadataEntries);
+    if (linkSourceSystemGeneratedMetadata.getLinkSourcePath() != null) {
+      throw new HpcException("link source can't be a link: " + linkSourcePath,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the link source is archived.
+    HpcDataTransferUploadStatus linkSourceDataTransferUploadStatus =
+        linkSourceSystemGeneratedMetadata.getDataTransferStatus();
+    if (linkSourceDataTransferUploadStatus == null
+        || !linkSourceDataTransferUploadStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+      throw new HpcException("link source is not archived yet: " + linkSourcePath,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Attach user provided metadata. We combine the user provided metadata from the link source w/
+    // what
+    // the user provided in the registration request.
+    Map<String, HpcMetadataEntry> metadataEntries = new HashMap<>();
+    metadataService.toUserProvidedMetadataEntries(linkSourceMetadataEntries)
+        .forEach(metadataEntry -> metadataEntries.put(metadataEntry.getAttribute(), metadataEntry));
+    dataObjectRegistration.getMetadataEntries()
+        .forEach(metadataEntry -> metadataEntries.put(metadataEntry.getAttribute(), metadataEntry));
+    metadataService.addMetadataToDataObject(path,
+        new ArrayList<HpcMetadataEntry>(metadataEntries.values()), configurationId, collectionType);
+
+    // Generate data management (iRODS) system metadata and attach to the data
+    // object.
+    metadataService.addSystemGeneratedMetadataToDataObject(path, userId, userName, configurationId,
+        linkSourcePath);
+  }
+
 
   private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
       throws HpcException {

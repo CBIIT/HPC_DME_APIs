@@ -1,9 +1,11 @@
 /**
  * HpcDataManagementRestServiceImpl.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.ws.rs.impl;
@@ -61,6 +63,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermsForCollectionsDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.ws.rs.HpcDataManagementRestService;
 import gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider;
+
 /**
  * HPC Data Management REST Service Implementation.
  *
@@ -81,10 +84,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   // ---------------------------------------------------------------------//
 
   // The Data Management Business Service instance.
-  @Autowired private HpcDataManagementBusService dataManagementBusService = null;
+  @Autowired
+  private HpcDataManagementBusService dataManagementBusService = null;
 
   // The multipart provider.
-  @Autowired private HpcMultipartProvider multipartProvider = null;
+  @Autowired
+  private HpcMultipartProvider multipartProvider = null;
 
   // ---------------------------------------------------------------------//
   // constructors
@@ -124,13 +129,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response registerCollection(
-      String path, HpcCollectionRegistrationDTO collectionRegistration) {
+  public Response registerCollection(String path,
+      HpcCollectionRegistrationDTO collectionRegistration) {
     boolean collectionCreated = true;
     try {
-      collectionCreated =
-          dataManagementBusService.registerCollection(
-              toNormalizedPath(path), collectionRegistration);
+      collectionCreated = dataManagementBusService.registerCollection(toNormalizedPath(path),
+          collectionRegistration);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -143,9 +147,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response getCollection(String path, Boolean list, Boolean includeAcl) {
     HpcCollectionListDTO collections = new HpcCollectionListDTO();
     try {
-      HpcCollectionDTO collection =
-          dataManagementBusService.getCollection(toNormalizedPath(path), list, 
-        		  includeAcl != null ? includeAcl : false);
+      HpcCollectionDTO collection = dataManagementBusService.getCollection(toNormalizedPath(path),
+          list, includeAcl != null ? includeAcl : false);
       if (collection != null) {
         collections.getCollections().add(collection);
       }
@@ -156,7 +159,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(!collections.getCollections().isEmpty() ? collections : null, true);
   }
-  
+
 
   @Override
   public Response getCollectionChildren(String path) {
@@ -178,13 +181,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Deprecated
   @Override
   public Response downloadCollection(String path, HpcDownloadRequestDTO downloadRequest) {
-    // This API is deprecated and replaced by a new download API (which supports additional S3 download destination). This API should be removed in the future.
+    // This API is deprecated and replaced by a new download API (which supports additional S3
+    // download destination). This API should be removed in the future.
     return downloadCollection(path, toV2(downloadRequest));
   }
 
   @Override
-  public Response downloadCollection(
-      String path, gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest) {
+  public Response downloadCollection(String path,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest) {
     HpcCollectionDownloadResponseDTO downloadResponse = null;
     try {
       downloadResponse =
@@ -195,6 +199,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
 
     return okResponse(downloadResponse, false);
+  }
+
+  @Deprecated
+  @Override
+  public Response getCollectionDownloadStatusV1(String taskId) {
+    return getCollectionDownloadStatus(taskId);
   }
 
   @Override
@@ -208,6 +218,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
 
     return okResponse(downloadStatus, true);
+  }
+
+  @Override
+  public Response cancelCollectionDownloadTask(String taskId) {
+    try {
+      dataManagementBusService.cancelCollectionDownloadTask(taskId);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
   }
 
   @Override
@@ -226,8 +248,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response moveCollection(String path, String destinationPath) {
     try {
-      dataManagementBusService.movePath(
-          toNormalizedPath(path), true, toNormalizedPath(destinationPath));
+      dataManagementBusService.movePath(toNormalizedPath(path), true,
+          toNormalizedPath(destinationPath));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -237,13 +259,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response setCollectionPermissions(
-      String path, HpcEntityPermissionsDTO collectionPermissionsRequest) {
+  public Response setCollectionPermissions(String path,
+      HpcEntityPermissionsDTO collectionPermissionsRequest) {
     HpcEntityPermissionsResponseDTO permissionsResponse = null;
     try {
-      permissionsResponse =
-          dataManagementBusService.setCollectionPermissions(
-              toNormalizedPath(path), collectionPermissionsRequest);
+      permissionsResponse = dataManagementBusService
+          .setCollectionPermissions(toNormalizedPath(path), collectionPermissionsRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -306,26 +327,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
   @Deprecated
   @Override
-  public Response registerDataObject(
-      String path,
+  public Response registerDataObject(String path,
       HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
       InputStream dataObjectInputStream) {
     return registerDataObject(path, toV2(dataObjectRegistration), dataObjectInputStream);
   }
 
   @Override
-  public Response registerDataObject(
-      String path,
-      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
-          dataObjectRegistration,
+  public Response registerDataObject(String path,
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
       InputStream dataObjectInputStream) {
     File dataObjectFile = null;
     HpcDataObjectRegistrationResponseDTO responseDTO = null;
     try {
       dataObjectFile = toFile(dataObjectInputStream);
-      responseDTO =
-          dataManagementBusService.registerDataObject(
-              toNormalizedPath(path), dataObjectRegistration, dataObjectFile);
+      responseDTO = dataManagementBusService.registerDataObject(toNormalizedPath(path),
+          dataObjectRegistration, dataObjectFile);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -344,8 +361,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     if (registered) {
       // Data object was registered. Return a 'created' response.
-      return responseDTO.getUploadRequestURL() != null
-          ? createdResponse(null, responseDTO)
+      return responseDTO.getUploadRequestURL() != null ? createdResponse(null, responseDTO)
           : createdResponse(null);
     } else {
       // Data object metadata was updated. Return 'ok' response.
@@ -357,10 +373,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response registerDataObjects(
       HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) {
-    HpcBulkDataObjectRegistrationResponseDTO registrationResponse =
-        toV1(
-            (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO)
-                registerDataObjects(toV2(bulkDataObjectRegistrationRequest)).getEntity());
+    HpcBulkDataObjectRegistrationResponseDTO registrationResponse = toV1(
+        (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO) registerDataObjects(
+            toV2(bulkDataObjectRegistrationRequest)).getEntity());
 
     return !StringUtils.isEmpty(registrationResponse.getTaskId())
         ? createdResponse(registrationResponse.getTaskId(), registrationResponse)
@@ -369,10 +384,9 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
   @Override
   public Response registerDataObjects(
-      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO
-          bulkDataObjectRegistrationRequest) {
-    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO
-        registrationResponse = null;
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) {
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO registrationResponse =
+        null;
     try {
       registrationResponse =
           dataManagementBusService.registerDataObjects(bulkDataObjectRegistrationRequest);
@@ -395,16 +409,15 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
 
     return okResponse(
-        toV1(
-            (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO)
-                response.getEntity()),
+        toV1((gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO) response
+            .getEntity()),
         true);
   }
 
   @Override
   public Response getDataObjectsRegistrationStatus(String taskId) {
-    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO
-        registrationStatus = null;
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO registrationStatus =
+        null;
     try {
       registrationStatus = dataManagementBusService.getDataObjectsRegistrationStatus(taskId);
 
@@ -433,9 +446,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response getRegistrationSummary(Integer page, Boolean totalCount) {
     gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO registrationSummary = null;
     try {
-      registrationSummary =
-          dataManagementBusService.getRegistrationSummary(
-              page != null ? page : 1, totalCount != null ? totalCount : false);
+      registrationSummary = dataManagementBusService.getRegistrationSummary(page != null ? page : 1,
+          totalCount != null ? totalCount : false);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -443,9 +455,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(
         registrationSummary.getActiveTasks().isEmpty()
-                && registrationSummary.getCompletedTasks().isEmpty()
-            ? null
-            : registrationSummary,
+            && registrationSummary.getCompletedTasks().isEmpty() ? null : registrationSummary,
         true);
   }
 
@@ -453,8 +463,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response getDataObject(String path, Boolean includeAcl) {
     HpcDataObjectListDTO dataObjects = new HpcDataObjectListDTO();
     try {
-      HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path), 
-    		  includeAcl != null ? includeAcl : false);
+      HpcDataObjectDTO dataObject = dataManagementBusService.getDataObject(toNormalizedPath(path),
+          includeAcl != null ? includeAcl : false);
       if (dataObject != null) {
         dataObjects.getDataObjects().add(dataObject);
       }
@@ -465,23 +475,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(!dataObjects.getDataObjects().isEmpty() ? dataObjects : null, true);
   }
-  
+
 
   @Deprecated
   @Override
-  public Response downloadDataObject(
-      String path, HpcDownloadRequestDTO downloadRequest, MessageContext messageContext) {
-    // This API is deprecated and replaced by a new download API (which supports additional S3 download destination) and
+  public Response downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
+      MessageContext messageContext) {
+    // This API is deprecated and replaced by a new download API (which supports additional S3
+    // download destination) and
     // a dedicated API to generate download URL. This API should be removed in the future.
-    if (downloadRequest != null
-        && downloadRequest.getGenerateDownloadRequestURL() != null
+    if (downloadRequest != null && downloadRequest.getGenerateDownloadRequestURL() != null
         && downloadRequest.getGenerateDownloadRequestURL()) {
       if (downloadRequest.getDestination() != null
           || downloadRequest.getDestinationOverwrite() != null) {
-        return errorResponse(
-            new HpcException(
-                "Invalid download request. Request must have a destination or generateDownloadRequestURL",
-                HpcErrorType.INVALID_REQUEST_INPUT));
+        return errorResponse(new HpcException(
+            "Invalid download request. Request must have a destination or generateDownloadRequestURL",
+            HpcErrorType.INVALID_REQUEST_INPUT));
       }
       return generateDownloadRequestURL(path);
     }
@@ -503,8 +512,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response downloadDataObject(
-      String path,
+  public Response downloadDataObject(String path,
       gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest,
       MessageContext messageContext) {
     HpcDataObjectDownloadResponseDTO downloadResponse = null;
@@ -517,6 +525,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     }
 
     return downloadResponse(downloadResponse, messageContext);
+  }
+
+  @Deprecated
+  @Override
+  public Response getDataObjectDownloadStatusV1(String taskId) {
+    return getDataObjectDownloadStatus(taskId);
   }
 
   @Override
@@ -548,8 +562,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response moveDataObject(String path, String destinationPath) {
     try {
-      dataManagementBusService.movePath(
-          toNormalizedPath(path), false, toNormalizedPath(destinationPath));
+      dataManagementBusService.movePath(toNormalizedPath(path), false,
+          toNormalizedPath(destinationPath));
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -559,13 +573,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
-  public Response setDataObjectPermissions(
-      String path, HpcEntityPermissionsDTO dataObjectPermissionsRequest) {
+  public Response setDataObjectPermissions(String path,
+      HpcEntityPermissionsDTO dataObjectPermissionsRequest) {
     HpcEntityPermissionsResponseDTO permissionsResponse = null;
     try {
-      permissionsResponse =
-          dataManagementBusService.setDataObjectPermissions(
-              toNormalizedPath(path), dataObjectPermissionsRequest);
+      permissionsResponse = dataManagementBusService
+          .setDataObjectPermissions(toNormalizedPath(path), dataObjectPermissionsRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -638,9 +651,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   public Response getDownloadSummary(Integer page, Boolean totalCount) {
     HpcDownloadSummaryDTO downloadSummary = null;
     try {
-      downloadSummary =
-          dataManagementBusService.getDownloadSummary(
-              page != null ? page : 1, totalCount != null ? totalCount : false);
+      downloadSummary = dataManagementBusService.getDownloadSummary(page != null ? page : 1,
+          totalCount != null ? totalCount : false);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -665,7 +677,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     return okResponse(docModel, true);
   }
-  
+
   @Override
   public Response getDataManagementModel(String basePath) {
     HpcDataManagementModelDTO docModel = null;
@@ -689,14 +701,25 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       return errorResponse(e);
     }
 
-    return bulkMoveResponse.getResult()
-        ? okResponse(bulkMoveResponse, true)
+    return bulkMoveResponse.getResult() ? okResponse(bulkMoveResponse, true)
         : errorResponse(bulkMoveResponse);
   }
 
-  //---------------------------------------------------------------------//
+  // TODO - Remove HPCDATAMGM-1189 code
+  @Override
+  public Response updateFileContainerName() {
+    try {
+      dataManagementBusService.updateFileContainerName();
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+    return okResponse(null, false);
+
+  }
+
+  // ---------------------------------------------------------------------//
   // Helper Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * Copy input stream to File and close the input stream.
@@ -730,8 +753,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @param messageContext The message context.
    * @return an OK response.
    */
-  private Response downloadResponse(
-      HpcDataObjectDownloadResponseDTO downloadResponse, MessageContext messageContext) {
+  private Response downloadResponse(HpcDataObjectDownloadResponseDTO downloadResponse,
+      MessageContext messageContext) {
     if (downloadResponse == null) {
       return okResponse(null, false);
     }
@@ -739,11 +762,10 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     if (downloadResponse.getDestinationFile() != null) {
       // Put the download file on the message context, so the cleanup interceptor can
       // delete it after the file was received by the caller.
-      messageContext.put(
-          DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE, downloadResponse.getDestinationFile());
-      response =
-          okResponse(
-              downloadResponse.getDestinationFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE);
+      messageContext.put(DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE,
+          downloadResponse.getDestinationFile());
+      response = okResponse(downloadResponse.getDestinationFile(),
+          MediaType.APPLICATION_OCTET_STREAM_TYPE);
     } else {
       response = okResponse(downloadResponse, false);
     }
@@ -811,19 +833,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       return null;
     }
 
-    gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
-        v2DataObjectRegistration =
-            new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO();
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO v2DataObjectRegistration =
+        new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO();
     v2DataObjectRegistration.setCallerObjectId(dataObjectRegistration.getCallerObjectId());
     v2DataObjectRegistration.setChecksum(dataObjectRegistration.getChecksum());
-    v2DataObjectRegistration.setCreateParentCollections(
-        dataObjectRegistration.getCreateParentCollections());
+    v2DataObjectRegistration
+        .setCreateParentCollections(dataObjectRegistration.getCreateParentCollections());
     v2DataObjectRegistration.setParentCollectionsBulkMetadataEntries(
         dataObjectRegistration.getParentCollectionsBulkMetadataEntries());
-    v2DataObjectRegistration.setGenerateUploadRequestURL(
-        dataObjectRegistration.getGenerateUploadRequestURL());
     v2DataObjectRegistration
-        .getMetadataEntries()
+        .setGenerateUploadRequestURL(dataObjectRegistration.getGenerateUploadRequestURL());
+    v2DataObjectRegistration.getMetadataEntries()
         .addAll(dataObjectRegistration.getMetadataEntries());
 
     if (dataObjectRegistration.getSource() != null
@@ -849,69 +869,54 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       return null;
     }
 
-    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO
-        v2BulkDataObjectRegistrationRequest =
-            new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO();
+    gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO v2BulkDataObjectRegistrationRequest =
+        new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO();
     v2BulkDataObjectRegistrationRequest.setDryRun(bulkDataObjectRegistrationRequest.getDryRun());
     v2BulkDataObjectRegistrationRequest.setUiURL(bulkDataObjectRegistrationRequest.getUiURL());
 
-    bulkDataObjectRegistrationRequest
-        .getDataObjectRegistrationItems()
-        .forEach(
-            dataObjectRegistrationItem -> {
-              gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO
-                  v2DataObjectRegistrationItem =
-                      new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
-              v2DataObjectRegistrationItem.setCallerObjectId(
-                  dataObjectRegistrationItem.getCallerObjectId());
-              v2DataObjectRegistrationItem.setCreateParentCollections(
-                  dataObjectRegistrationItem.getCreateParentCollections());
-              v2DataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
-                  dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
-              v2DataObjectRegistrationItem.setPath(dataObjectRegistrationItem.getPath());
-              v2DataObjectRegistrationItem
-                  .getDataObjectMetadataEntries()
-                  .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
-              HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
-              globusUploadSource.setSourceLocation(dataObjectRegistrationItem.getSource());
-              v2DataObjectRegistrationItem.setGlobusUploadSource(globusUploadSource);
-              v2BulkDataObjectRegistrationRequest
-                  .getDataObjectRegistrationItems()
-                  .add(v2DataObjectRegistrationItem);
-            });
+    bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems()
+        .forEach(dataObjectRegistrationItem -> {
+          gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO v2DataObjectRegistrationItem =
+              new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
+          v2DataObjectRegistrationItem
+              .setCallerObjectId(dataObjectRegistrationItem.getCallerObjectId());
+          v2DataObjectRegistrationItem
+              .setCreateParentCollections(dataObjectRegistrationItem.getCreateParentCollections());
+          v2DataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
+              dataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
+          v2DataObjectRegistrationItem.setPath(dataObjectRegistrationItem.getPath());
+          v2DataObjectRegistrationItem.getDataObjectMetadataEntries()
+              .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
+          HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+          globusUploadSource.setSourceLocation(dataObjectRegistrationItem.getSource());
+          v2DataObjectRegistrationItem.setGlobusUploadSource(globusUploadSource);
+          v2BulkDataObjectRegistrationRequest.getDataObjectRegistrationItems()
+              .add(v2DataObjectRegistrationItem);
+        });
 
-    bulkDataObjectRegistrationRequest
-        .getDirectoryScanRegistrationItems()
-        .forEach(
-            directoryScanRegistrationItem -> {
-              gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO
-                  v2DirectoryScanRegistrationItem =
-                      new gov.nih.nci.hpc.dto.datamanagement.v2
-                          .HpcDirectoryScanRegistrationItemDTO();
-              v2DirectoryScanRegistrationItem.setBasePath(
-                  directoryScanRegistrationItem.getBasePath());
-              v2DirectoryScanRegistrationItem.setBulkMetadataEntries(
-                  directoryScanRegistrationItem.getBulkMetadataEntries());
-              v2DirectoryScanRegistrationItem.setCallerObjectId(
-                  directoryScanRegistrationItem.getCallerObjectId());
-              v2DirectoryScanRegistrationItem.setPathMap(
-                  directoryScanRegistrationItem.getPathMap());
-              v2DirectoryScanRegistrationItem.setPatternType(
-                  directoryScanRegistrationItem.getPatternType());
-              v2DirectoryScanRegistrationItem
-                  .getExcludePatterns()
-                  .addAll(directoryScanRegistrationItem.getExcludePatterns());
-              v2DirectoryScanRegistrationItem
-                  .getIncludePatterns()
-                  .addAll(directoryScanRegistrationItem.getIncludePatterns());
-              HpcGlobusScanDirectory globusScanDirectory = new HpcGlobusScanDirectory();
-              globusScanDirectory.setDirectoryLocation(
-                  directoryScanRegistrationItem.getScanDirectoryLocation());
-              v2DirectoryScanRegistrationItem.setGlobusScanDirectory(globusScanDirectory);
-              v2BulkDataObjectRegistrationRequest
-                  .getDirectoryScanRegistrationItems()
-                  .add(v2DirectoryScanRegistrationItem);
-            });
+    bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()
+        .forEach(directoryScanRegistrationItem -> {
+          gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO v2DirectoryScanRegistrationItem =
+              new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
+          v2DirectoryScanRegistrationItem.setBasePath(directoryScanRegistrationItem.getBasePath());
+          v2DirectoryScanRegistrationItem
+              .setBulkMetadataEntries(directoryScanRegistrationItem.getBulkMetadataEntries());
+          v2DirectoryScanRegistrationItem
+              .setCallerObjectId(directoryScanRegistrationItem.getCallerObjectId());
+          v2DirectoryScanRegistrationItem.setPathMap(directoryScanRegistrationItem.getPathMap());
+          v2DirectoryScanRegistrationItem
+              .setPatternType(directoryScanRegistrationItem.getPatternType());
+          v2DirectoryScanRegistrationItem.getExcludePatterns()
+              .addAll(directoryScanRegistrationItem.getExcludePatterns());
+          v2DirectoryScanRegistrationItem.getIncludePatterns()
+              .addAll(directoryScanRegistrationItem.getIncludePatterns());
+          HpcGlobusScanDirectory globusScanDirectory = new HpcGlobusScanDirectory();
+          globusScanDirectory
+              .setDirectoryLocation(directoryScanRegistrationItem.getScanDirectoryLocation());
+          v2DirectoryScanRegistrationItem.setGlobusScanDirectory(globusScanDirectory);
+          v2BulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()
+              .add(v2DirectoryScanRegistrationItem);
+        });
 
     return v2BulkDataObjectRegistrationRequest;
   }
@@ -923,8 +928,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @return The bulk registration in v1 form.
    */
   private HpcBulkDataObjectRegistrationResponseDTO toV1(
-      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO
-          v2BulkDataObjectRegistrationResponse) {
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO v2BulkDataObjectRegistrationResponse) {
     if (v2BulkDataObjectRegistrationResponse == null) {
       return null;
     }
@@ -933,30 +937,26 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
         new HpcBulkDataObjectRegistrationResponseDTO();
 
     bulkDataObjectRegistrationResponse.setTaskId(v2BulkDataObjectRegistrationResponse.getTaskId());
-    v2BulkDataObjectRegistrationResponse
-        .getDataObjectRegistrationItems()
-        .forEach(
-            v2DataObjectRegistrationItem -> {
-              HpcDataObjectRegistrationItemDTO dataObjectRegistrationItem =
-                  new HpcDataObjectRegistrationItemDTO();
-              dataObjectRegistrationItem.setCallerObjectId(
-                  v2DataObjectRegistrationItem.getCallerObjectId());
-              dataObjectRegistrationItem.setCreateParentCollections(
-                  v2DataObjectRegistrationItem.getCreateParentCollections());
-              dataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
-                  v2DataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
-              dataObjectRegistrationItem.setPath(v2DataObjectRegistrationItem.getPath());
-              dataObjectRegistrationItem
-                  .getDataObjectMetadataEntries()
-                  .addAll(v2DataObjectRegistrationItem.getDataObjectMetadataEntries());
-              if (v2DataObjectRegistrationItem.getGlobusUploadSource() != null) {
-                dataObjectRegistrationItem.setSource(
-                    v2DataObjectRegistrationItem.getGlobusUploadSource().getSourceLocation());
-              }
-              bulkDataObjectRegistrationResponse
-                  .getDataObjectRegistrationItems()
-                  .add(dataObjectRegistrationItem);
-            });
+    v2BulkDataObjectRegistrationResponse.getDataObjectRegistrationItems()
+        .forEach(v2DataObjectRegistrationItem -> {
+          HpcDataObjectRegistrationItemDTO dataObjectRegistrationItem =
+              new HpcDataObjectRegistrationItemDTO();
+          dataObjectRegistrationItem
+              .setCallerObjectId(v2DataObjectRegistrationItem.getCallerObjectId());
+          dataObjectRegistrationItem.setCreateParentCollections(
+              v2DataObjectRegistrationItem.getCreateParentCollections());
+          dataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
+              v2DataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
+          dataObjectRegistrationItem.setPath(v2DataObjectRegistrationItem.getPath());
+          dataObjectRegistrationItem.getDataObjectMetadataEntries()
+              .addAll(v2DataObjectRegistrationItem.getDataObjectMetadataEntries());
+          if (v2DataObjectRegistrationItem.getGlobusUploadSource() != null) {
+            dataObjectRegistrationItem.setSource(
+                v2DataObjectRegistrationItem.getGlobusUploadSource().getSourceLocation());
+          }
+          bulkDataObjectRegistrationResponse.getDataObjectRegistrationItems()
+              .add(dataObjectRegistrationItem);
+        });
 
     return bulkDataObjectRegistrationResponse;
   }
@@ -968,8 +968,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @return The bulk registration status in v1 form.
    */
   private HpcBulkDataObjectRegistrationStatusDTO toV1(
-      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO
-          v2BulkDataObjectRegistrationStatus) {
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO v2BulkDataObjectRegistrationStatus) {
     if (v2BulkDataObjectRegistrationStatus == null) {
       return null;
     }
@@ -977,8 +976,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     HpcBulkDataObjectRegistrationStatusDTO bulkDataObjectRegistrationStatus =
         new HpcBulkDataObjectRegistrationStatusDTO();
 
-    bulkDataObjectRegistrationStatus.setInProgress(
-        v2BulkDataObjectRegistrationStatus.getInProgress());
+    bulkDataObjectRegistrationStatus
+        .setInProgress(v2BulkDataObjectRegistrationStatus.getInProgress());
     bulkDataObjectRegistrationStatus.setTask(toV1(v2BulkDataObjectRegistrationStatus.getTask()));
 
     return bulkDataObjectRegistrationStatus;
@@ -991,8 +990,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
    * @return The bulk registration task in v1 form.
    */
   private HpcBulkDataObjectRegistrationTaskDTO toV1(
-      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO
-          v2BulkDataObjectRegistrationTask) {
+      gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO v2BulkDataObjectRegistrationTask) {
     if (v2BulkDataObjectRegistrationTask == null) {
       return null;
     }
@@ -1003,46 +1001,38 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     bulkDataObjectRegistrationTask.setTaskId(v2BulkDataObjectRegistrationTask.getTaskId());
     bulkDataObjectRegistrationTask.setTaskStatus(v2BulkDataObjectRegistrationTask.getTaskStatus());
     bulkDataObjectRegistrationTask.setResult(v2BulkDataObjectRegistrationTask.getResult());
-    bulkDataObjectRegistrationTask
-        .getCompletedItems()
+    bulkDataObjectRegistrationTask.getCompletedItems()
         .addAll(v2BulkDataObjectRegistrationTask.getCompletedItems());
-    bulkDataObjectRegistrationTask
-        .getFailedItems()
+    bulkDataObjectRegistrationTask.getFailedItems()
         .addAll(v2BulkDataObjectRegistrationTask.getFailedItems());
-    bulkDataObjectRegistrationTask
-        .getInProgressItems()
+    bulkDataObjectRegistrationTask.getInProgressItems()
         .addAll(v2BulkDataObjectRegistrationTask.getInProgressItems());
     bulkDataObjectRegistrationTask.setMessage(v2BulkDataObjectRegistrationTask.getMessage());
-    bulkDataObjectRegistrationTask.setEffectiveTransferSpeed(
-        v2BulkDataObjectRegistrationTask.getEffectiveTransferSpeed());
-    bulkDataObjectRegistrationTask.setPercentComplete(
-        v2BulkDataObjectRegistrationTask.getPercentComplete());
+    bulkDataObjectRegistrationTask
+        .setEffectiveTransferSpeed(v2BulkDataObjectRegistrationTask.getEffectiveTransferSpeed());
+    bulkDataObjectRegistrationTask
+        .setPercentComplete(v2BulkDataObjectRegistrationTask.getPercentComplete());
     bulkDataObjectRegistrationTask.setCreated(v2BulkDataObjectRegistrationTask.getCreated());
     bulkDataObjectRegistrationTask.setCompleted(v2BulkDataObjectRegistrationTask.getCompleted());
-    v2BulkDataObjectRegistrationTask
-        .getFailedItemsRequest()
-        .forEach(
-            v2DataObjectRegistrationItem -> {
-              HpcDataObjectRegistrationItemDTO dataObjectRegistrationItem =
-                  new HpcDataObjectRegistrationItemDTO();
-              dataObjectRegistrationItem.setCallerObjectId(
-                  v2DataObjectRegistrationItem.getCallerObjectId());
-              dataObjectRegistrationItem.setCreateParentCollections(
-                  v2DataObjectRegistrationItem.getCreateParentCollections());
-              dataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
-                  v2DataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
-              dataObjectRegistrationItem.setPath(v2DataObjectRegistrationItem.getPath());
-              dataObjectRegistrationItem
-                  .getDataObjectMetadataEntries()
-                  .addAll(v2DataObjectRegistrationItem.getDataObjectMetadataEntries());
-              dataObjectRegistrationItem.setSource(
-                  v2DataObjectRegistrationItem.getGlobusUploadSource() != null
-                      ? v2DataObjectRegistrationItem.getGlobusUploadSource().getSourceLocation()
-                      : null);
-              bulkDataObjectRegistrationTask
-                  .getFailedItemsRequest()
-                  .add(dataObjectRegistrationItem);
-            });
+    v2BulkDataObjectRegistrationTask.getFailedItemsRequest()
+        .forEach(v2DataObjectRegistrationItem -> {
+          HpcDataObjectRegistrationItemDTO dataObjectRegistrationItem =
+              new HpcDataObjectRegistrationItemDTO();
+          dataObjectRegistrationItem
+              .setCallerObjectId(v2DataObjectRegistrationItem.getCallerObjectId());
+          dataObjectRegistrationItem.setCreateParentCollections(
+              v2DataObjectRegistrationItem.getCreateParentCollections());
+          dataObjectRegistrationItem.setParentCollectionsBulkMetadataEntries(
+              v2DataObjectRegistrationItem.getParentCollectionsBulkMetadataEntries());
+          dataObjectRegistrationItem.setPath(v2DataObjectRegistrationItem.getPath());
+          dataObjectRegistrationItem.getDataObjectMetadataEntries()
+              .addAll(v2DataObjectRegistrationItem.getDataObjectMetadataEntries());
+          dataObjectRegistrationItem
+              .setSource(v2DataObjectRegistrationItem.getGlobusUploadSource() != null
+                  ? v2DataObjectRegistrationItem.getGlobusUploadSource().getSourceLocation()
+                  : null);
+          bulkDataObjectRegistrationTask.getFailedItemsRequest().add(dataObjectRegistrationItem);
+        });
 
     return bulkDataObjectRegistrationTask;
   }
@@ -1063,18 +1053,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
     registrationSummary.setLimit(v2RegistrationSummary.getLimit());
     registrationSummary.setPage(v2RegistrationSummary.getPage());
     registrationSummary.setTotalCount(v2RegistrationSummary.getTotalCount());
-    v2RegistrationSummary
-        .getActiveTasks()
-        .forEach(
-            v2BulkDataObjectRegistrationTask ->
-                registrationSummary.getActiveTasks().add(toV1(v2BulkDataObjectRegistrationTask)));
-    v2RegistrationSummary
-        .getCompletedTasks()
-        .forEach(
-            v2BulkDataObjectRegistrationTask ->
-                registrationSummary
-                    .getCompletedTasks()
-                    .add(toV1(v2BulkDataObjectRegistrationTask)));
+    v2RegistrationSummary.getActiveTasks()
+        .forEach(v2BulkDataObjectRegistrationTask -> registrationSummary.getActiveTasks()
+            .add(toV1(v2BulkDataObjectRegistrationTask)));
+    v2RegistrationSummary.getCompletedTasks()
+        .forEach(v2BulkDataObjectRegistrationTask -> registrationSummary.getCompletedTasks()
+            .add(toV1(v2BulkDataObjectRegistrationTask)));
 
     return registrationSummary;
   }

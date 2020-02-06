@@ -156,7 +156,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         metadataService.updateDataObjectSystemGeneratedMetadata(path,
             uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferRequestId(), null,
             uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(), null,
-            uploadResponse.getDataTransferCompleted(), null);
+            uploadResponse.getDataTransferCompleted(), null, null);
 
       } catch (HpcException e) {
         logger.error("Failed to process queued data transfer upload :" + path, e);
@@ -205,7 +205,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             // Update data management w/ data transfer status, checksum and completion time.
             dataTransferCompleted = Calendar.getInstance();
             metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
-                dataTransferStatus, null, null, dataTransferCompleted, null);
+                dataTransferStatus, null, null, dataTransferCompleted, null, null);
             break;
 
           case IN_TEMPORARY_ARCHIVE:
@@ -217,7 +217,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
             // Update data transfer status.
             metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-                dataTransferStatus, null, null, null, null);
+                dataTransferStatus, null, null, null, null, null);
             break;
 
           case FAILED:
@@ -322,7 +322,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           // Streaming stopped (server shutdown). We just update the status accordingly.
           logger.info("Upload streaming stopped for: {}", path);
           metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-              HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null);
+              HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null, null);
         }
 
       } catch (HpcException e) {
@@ -366,7 +366,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Update the transfer status and request id.
         metadataService.updateDataObjectSystemGeneratedMetadata(path, null,
             uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(),
-            null, null, null, null);
+            null, null, null, null, null);
 
       } catch (HpcException e) {
         logger.error("Failed to process restart upload streaming for data object:" + path, e);
@@ -422,7 +422,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         metadataService.updateDataObjectSystemGeneratedMetadata(path,
             uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferRequestId(),
             checksum, uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(),
-            null, uploadResponse.getDataTransferCompleted(), null);
+            null, uploadResponse.getDataTransferCompleted(), null, null);
 
         // Data transfer upload completed (successfully or failed). Add an event if
         // needed.
@@ -498,9 +498,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     // processed yet).
     for (HpcCollectionDownloadTask downloadTask : dataTransferService
         .getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
+
+      if (dataTransferService
+          .getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
+        // User requested to cancel this collection download task.
+        completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED,
+            "Download request canceled");
+        continue;
+      }
+
       try {
         List<HpcCollectionDownloadTaskItem> downloadItems = null;
-        HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker();
+        HpcCollectionDownloadBreaker collectionDownloadBreaker =
+            new HpcCollectionDownloadBreaker(downloadTask.getId());
 
         if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
           // Get the collection to be downloaded.
@@ -641,17 +651,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Determine the collection download result.
         int itemsCount = downloadTask.getItems().size();
         HpcDownloadResult result = null;
-        if (completedItemsCount == itemsCount) {
-          result = HpcDownloadResult.COMPLETED;
-        } else if (canceledItemsCount > 0) {
+        String message = null;
+
+        if (canceledItemsCount > 0 || dataTransferService
+            .getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
           result = HpcDownloadResult.CANCELED;
+          message = "Download request canceled. " + completedItemsCount
+              + " items downloaded successfully out of " + itemsCount;
+        } else if (completedItemsCount == itemsCount) {
+          result = HpcDownloadResult.COMPLETED;
         } else {
           result = HpcDownloadResult.FAILED;
+          message = completedItemsCount + " items downloaded successfully out of " + itemsCount;
         }
 
-        completeCollectionDownloadTask(downloadTask, result,
-            result.equals(HpcDownloadResult.COMPLETED) ? null
-                : completedItemsCount + " items downloaded successfully out of " + itemsCount);
+        completeCollectionDownloadTask(downloadTask, result, message);
 
       } else {
         dataTransferService.updateCollectionDownloadTask(downloadTask);
@@ -994,10 +1008,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         registrationTask.getItems().forEach(item -> {
           String configurationId =
               dataManagementService.findDataManagementConfigurationId(item.getTask().getPath());
-          setFileContainerName(HpcDataTransferType.GLOBUS, configurationId,
-              item.getRequest().getGlobusUploadSource() != null
-                  ? item.getRequest().getGlobusUploadSource().getSourceLocation()
-                  : item.getRequest().getS3UploadSource().getSourceLocation());
+          HpcFileLocation fileLocation = null;
+          HpcDataTransferType dataTransferType = null;
+          if (item.getRequest().getGlobusUploadSource() != null) {
+            fileLocation = item.getRequest().getGlobusUploadSource().getSourceLocation();
+            dataTransferType = HpcDataTransferType.GLOBUS;
+          } else if (item.getRequest().getS3UploadSource() != null) {
+            fileLocation = item.getRequest().getS3UploadSource().getSourceLocation();
+            dataTransferType = HpcDataTransferType.S_3;
+          }
+          setFileContainerName(dataTransferType, configurationId, fileLocation);
         });
 
         eventService.addBulkDataObjectRegistrationCompletedEvent(registrationTask.getUserId(),
@@ -1396,7 +1416,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
     try {
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-          HpcDataTransferUploadStatus.FAILED, null, null, null, null);
+          HpcDataTransferUploadStatus.FAILED, null, null, null, null, null);
 
       systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
@@ -1453,6 +1473,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     registrationDTO.setCreateParentCollections(registrationRequest.getCreateParentCollections());
     registrationDTO.setGlobusUploadSource(registrationRequest.getGlobusUploadSource());
     registrationDTO.setS3UploadSource(registrationRequest.getS3UploadSource());
+    registrationDTO.setLinkSourcePath(registrationRequest.getLinkSourcePath());
     registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
     registrationDTO.setParentCollectionsBulkMetadataEntries(
         registrationRequest.getParentCollectionsBulkMetadataEntries());
@@ -1527,16 +1548,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         registrationTask.setSize(metadata.getSourceSize());
 
         // Check the upload status.
-        if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+        if (metadata.getLinkSourcePath() != null) {
+          // Registration w/ link completed.
+          registrationTask.setResult(true);
+
+        } else if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
           // Registration completed successfully for this item.
           registrationTask.setResult(true);
           registrationTask.setCompleted(metadata.getDataTransferCompleted());
           registrationTask.setPercentComplete(100);
 
-          // Calculate the effective transfer speed.
+          // Calculate the effective transfer speed. Note: there is no transfer in registration w/
+          // link
           registrationTask.setEffectiveTransferSpeed(Math.toIntExact(metadata.getSourceSize() * 1000
               / (metadata.getDataTransferCompleted().getTimeInMillis()
                   - metadata.getDataTransferStarted().getTimeInMillis())));
+
         } else {
           // Registration still in progress. Update % complete.
           registrationTask.setPercentComplete(
@@ -1611,7 +1638,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       Calendar dataTransferCompleted = Calendar.getInstance();
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
           HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
-          archivePathAttributes.getSize());
+          archivePathAttributes.getSize(), null);
 
       // Add an event if needed.
       if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
@@ -1633,11 +1660,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   // to download.
   private class HpcCollectionDownloadBreaker {
     // ---------------------------------------------------------------------//
+    // Constructors
+    // ---------------------------------------------------------------------//
+
+    public HpcCollectionDownloadBreaker(String taskId) {
+      this.taskId = taskId;
+    }
+
+    // ---------------------------------------------------------------------//
     // Instance members
     // ---------------------------------------------------------------------//
 
-    // The first download task ID.
-    private String firstDownloadTaskId = null;
+    // The collection download task ID.
+    private String taskId = null;
+
+    // The first download item task ID.
+    private String firstDownloadItemTaskId = null;
 
     // The download items (processed) count.
     private int downloadItemsCount = 0;
@@ -1657,23 +1695,29 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
      * @throws HpcException If failed to check first download item status.
      */
     public boolean abortDownload(HpcCollectionDownloadTaskItem downloadItem) throws HpcException {
+      if ((abortCollection == null || !abortCollection)
+          && dataTransferService.getCollectionDownloadTaskCancellationRequested(taskId)) {
+        // A user request to cancel the collection download was received.
+        abortCollection = true;
+      }
+
       if (abortCollection != null) {
         // The decision to abort or not was made.
         return abortCollection;
       }
 
-      if (firstDownloadTaskId == null) {
+      if (firstDownloadItemTaskId == null) {
         // Keep track of the first item in the collection download.
         // If this item faces permission denied, we'll abort the entire collection download
         // processing.
-        firstDownloadTaskId = downloadItem.getDataObjectDownloadTaskId();
+        firstDownloadItemTaskId = downloadItem.getDataObjectDownloadTaskId();
       }
 
       downloadItemsCount++;
       if (downloadItemsCount % 10 == 0) {
         // We check on the first download task item every 10 items, until confirmed.
         HpcDownloadTaskStatus downloadItemStatus = dataTransferService
-            .getDownloadTaskStatus(firstDownloadTaskId, HpcDownloadTaskType.DATA_OBJECT);
+            .getDownloadTaskStatus(firstDownloadItemTaskId, HpcDownloadTaskType.DATA_OBJECT);
         if (downloadItemStatus != null && !downloadItemStatus.getInProgress()) {
           // First download item completed. Set the abort indicator.
           abortCollection = downloadItemStatus.getResult().getResult()

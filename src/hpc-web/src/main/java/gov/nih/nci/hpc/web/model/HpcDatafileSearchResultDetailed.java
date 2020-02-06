@@ -11,6 +11,7 @@ public class HpcDatafileSearchResultDetailed {
 	private String checksum;
 	private String download;
 	private String permission;
+	private String link;
 	HpcMetadataEntries metadataEntries;
 
 	public String getPermission() {
@@ -84,5 +85,13 @@ public class HpcDatafileSearchResultDetailed {
 	public void setMetadataEntries(HpcMetadataEntries metadataEntries) {
 		this.metadataEntries = metadataEntries;
 	}
+
+  public String getLink() {
+    return link;
+  }
+
+  public void setLink(String link) {
+    this.link = link;
+  }
 
 }

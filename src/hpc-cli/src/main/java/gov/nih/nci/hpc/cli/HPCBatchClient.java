@@ -53,6 +53,8 @@ public abstract class HPCBatchClient {
 	protected boolean inputCredentials = true;
 	protected int bufferSize = 0;
 	protected int threadCount = 1;
+	protected int maxAttempts = 0;
+	protected long backOffPeriod = 0;
     protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	public HPCBatchClient() {
@@ -126,6 +128,23 @@ public abstract class HPCBatchClient {
 		hpcCertPath = basePath + File.separator + hpcCertPath;
 		logger.debug("hpcCertPath "+hpcCertPath);
 		
+		String maxAttemptsStr = configProperties.getProperty("hpc.retry.max.attempts");
+        logger.debug("hpc.retry.max.attempts "+maxAttemptsStr);
+        try {
+            maxAttempts = Integer.parseInt(maxAttemptsStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.retry.max.attempts value. Setting it to 3");
+            maxAttempts = 3;
+        }
+        String backOffPeriodStr = configProperties.getProperty("hpc.retry.backoff.period");
+        logger.debug("hpc.retry.backoff.period "+backOffPeriodStr);
+        try {
+          backOffPeriod = Long.parseLong(maxAttemptsStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.retry.backoff.period value. Setting it to 1500");
+            backOffPeriod = 1500;
+        }
+        
 		initializeLog();
 		
 	}

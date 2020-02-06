@@ -109,10 +109,11 @@
 							<label class="control-label col-sm-2" for="metadata">Metadata</label>
 							<div class="col-sm-10 column">
 								<table class="table table-bordered table-hover"
-									id="metaAttrTable">
+									id="metaAttrTable" style="text-align: center;">
 									<thead>
 										<tr>
 											<th class="text-center">ID</th>
+											<th class="text-center" style="width: 10%;">Exclude Parent Metadata</th>
 											<th class="text-center">Level</th>
 											<th class="text-center">Attribute Name</th>
 											<th class="text-center">Operator</th>
@@ -124,6 +125,10 @@
 										<tr id='attrRow0'>
 											<td style="white-space: nowrap"><label id="rowId0">A1</label>
 												<input type="hidden" id="rowId0" name="rowId" value="A1" />
+											</td>
+											<td style="white-space: nowrap">
+												<input type="checkbox" id="selfAttributeOnly1" name="selfAttribute"/>
+												<input type="hidden" id="selfAttributeOnlyHidden1" name="selfAttributeOnly" value="false"/>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
 												id="level1" name="level" class="form-control"
@@ -510,6 +515,9 @@ function resetRows()
     	var valueEle = document.getElementById('attrValue'+i);
     	if (valueEle != null)
     		valueEle.value = null;
+    	var valueSelfAttributeOnly = document.getElementById('selfAttributeOnly'+i);
+    	if (valueSelfAttributeOnly != null)
+    		valueSelfAttributeOnly.checked = false;
     }
 }
 
@@ -526,12 +534,14 @@ function addRow() {
     var cell3 = row.insertCell(3);
     var cell4 = row.insertCell(4);
     var cell5 = row.insertCell(5);
+    var cell6 = row.insertCell(6);
     cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
-    cell1.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
-    cell2.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
-    cell3.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control operator" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
-    cell4.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/><div class="input-group date" data-provide="datepicker" style="display: none;"><input type="text" class="form-control" id="attrValue'+(rows+1)+'X" name="attrValueX"><div class="input-group-addon"><span class="glyphicon glyphicon-th"></span></div></div>';
-   	cell5.innerHTML = '<a id="deleteAttr" onClick="deleteRow(\''+(row.id)+'\')" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>';
+    cell1.innerHTML = '<input id="selfAttributeOnly'+(rows+1)+'" type="checkbox" name="selfAttribute"/><input id="selfAttributeOnlyHidden'+(rows+1)+'" type="hidden" name="selfAttributeOnly" value="false"/>';
+    cell2.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
+    cell3.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
+    cell4.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control operator" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
+    cell5.innerHTML = '<input type="text" id="attrValue'+(rows+1)+'" name="attrValue" placeholder="Value" class="form-control"/><div class="input-group date" data-provide="datepicker" style="display: none;"><input type="text" class="form-control" id="attrValue'+(rows+1)+'X" name="attrValueX"><div class="input-group-addon"><span class="glyphicon glyphicon-th"></span></div></div>';
+   	cell6.innerHTML = '<a id="deleteAttr" onClick="deleteRow(\''+(row.id)+'\')" class="pull-right btn btn-default"><i class="fa fa-times" aria-hidden="true"></i></a>';
 
    	var levelsEle = document.getElementById('level1');
    	var $leveloptions = $("#level1 > option").clone();
@@ -623,6 +633,13 @@ function validateAndSubmit()
 		alert("Invalid criteria");
 		return false;
 	}
+	var rows = document.getElementById("metaAttrTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+	for(var i=1;i<rows;i++)
+    {
+		if(document.getElementById("selfAttributeOnly" + i).checked) {
+		    document.getElementById("selfAttributeOnlyHidden" + i).value = "true";
+		}
+    }
 	document.getElementById("simplesearchform").submit();
 }
 
@@ -670,6 +687,8 @@ if(advancedCriteriaExist) {
 		$('#level' + row_id).val(searchCriteria.level[i]).change();
 		$('#attrName' + row_id).val(searchCriteria.attrName[i]);
 		$('#operator' + row_id).val(searchCriteria.operator[i]);
+		if(searchCriteria.selfAttributeOnly[i])
+			$('#selfAttributeOnly' + row_id).prop('checked', true);
 		if(searchCriteria.operator[i].startsWith('TIMESTAMP')) {
 			$('#attrValue' + row_id + 'X').val(searchCriteria.attrValue[i].split(' ')[0].replace(/-/g, "/"));
 		}

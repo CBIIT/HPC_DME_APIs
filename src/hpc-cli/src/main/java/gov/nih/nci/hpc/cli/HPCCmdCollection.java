@@ -410,6 +410,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 	private int getDataObjectsPaths(String serviceURL, String path, String authToken, 
 			boolean printFilePath, int fileCount) 
 	throws JsonParseException, IOException {
+	System.out.println("\n" + path);
 	  String servicePath = UriComponentsBuilder.fromHttpUrl(serviceURL).path(
       "/{dme-archive-path}/children").buildAndExpand(path).encode().toUri()
       .toURL().toExternalForm();
@@ -424,7 +425,6 @@ public class HPCCmdCollection extends HPCCmdClient {
 			HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
 			HpcCollectionDTO collectionDto = collections.getCollections().get(0);
 			HpcCollection collection = collectionDto.getCollection();
-			System.out.println(collection.getAbsolutePath());
 			if(CollectionUtils.isNotEmpty(collection.getDataObjects())) {
 				fileCount = fileCount + collection.getDataObjects().size();
 				if(printFilePath) {
@@ -435,8 +435,7 @@ public class HPCCmdCollection extends HPCCmdClient {
 			}
 			if(CollectionUtils.isNotEmpty(collection.getSubCollections())) {
 				for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
-					System.out.println(subCollection.getPath());
-					fileCount = fileCount + getDataObjectsPaths(serviceURL, subCollection.getPath(), authToken, printFilePath, fileCount);
+					fileCount = getDataObjectsPaths(serviceURL, subCollection.getPath(), authToken, printFilePath, fileCount);
 				}
 			}
 			return fileCount;

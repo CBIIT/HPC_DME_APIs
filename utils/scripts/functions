@@ -283,6 +283,12 @@ function dm_register_dataobject_presigned {
       return 1
     fi
 
+    checksum_val=`openssl md5 -binary ${source_file} | base64`
+    if [ -z "$checksum_val" ]
+    then
+     echo "cannot extract checksum of source file" >&2
+     return 1
+    fi
 
     #verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
     presigned_url=`get_json_value $RESPONSE_MSG uploadRequestURL`
@@ -295,7 +301,7 @@ function dm_register_dataobject_presigned {
     rm -f $response_header $response_msg 2>/dev/null
     response_header=presignedURL-registration-response-header.tmp
     response_msg=presignedURL-registration-response-message.tmp
-    curl -i -X PUT -F 'Content-Type=application/octet-stream' -F "file=@${source_file}" "${presigned_url}" -D $response_header -o $response_msg -s
+    curl -X PUT  -H "Content-Type: application/octet-stream" -H "content-md5: ${checksum_val}" --upload-file ${source_file} "${presigned_url}" -D $response_header -o $response_msg 
     if [ "$?" -ne 0 ]
     then
       echo "ERROR during presigned URL registration for $destination_path" >&2

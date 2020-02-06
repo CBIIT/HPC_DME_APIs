@@ -27,6 +27,7 @@
         <property name="url" value="${hpc.dao.postgresql.url}" />
         <property name="username" value="${hpc.dao.postgresql.username}" />
         <property name="password" value="${hpc.dao.postgresql.password}" />
+        <property name="maxActive" value="${hpc.dao.postgresql.maxActive}" />
     </bean>
     
     <!-- HPC PostgreSQL Encryptor -->
