@@ -164,7 +164,7 @@ public class HpcLinkFilesController extends AbstractHpcController {
 				downloadDTO = (HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil
 					.linkDatafiles(authToken, v2bulkRegistrationURL, registrationDTO, sslCertPath, sslCertPassword);
 				if (downloadDTO != null) {
-					result.setMessage("Link creation was successful.");
+					result.setMessage("Link creation request submitted.");
 				}
 				return result;
 			} catch (Exception e) {
