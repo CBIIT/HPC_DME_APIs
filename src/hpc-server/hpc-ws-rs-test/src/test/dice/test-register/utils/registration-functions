@@ -208,7 +208,7 @@ function get_system_added_metadata {
 
     METADATA_ARRAY=$(get_json_array_value "$ONE_LINE" "$METADATA_TYPE")
 
-    echo "$METADATA_ARRAY" | tr "," "\n" |  tr -d " \""  > $OUTPUT_FILE
+    echo "$METADATA_ARRAY" | tr "," "\n" |  tr -d " \"" | sed "s/link_source_path//g"  > $OUTPUT_FILE
 #
 
 }

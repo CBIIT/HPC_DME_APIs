@@ -185,6 +185,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       "select count(*) from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"USER_ID\" = ? and "
           + "\"COMPLETION_EVENT\" = true";
 
+  private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL =
+      "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"CANCELLATION_REQUESTED\" = ? where \"ID\" = ?";
+
+  private static final String GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL =
+      "select \"CANCELLATION_REQUESTED\" from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"ID\" = ?";
+
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
@@ -691,6 +697,33 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   }
 
   @Override
+  public void setCollectionDownloadTaskCancellationRequested(String id, boolean cancellationRequest)
+      throws HpcException {
+    try {
+      jdbcTemplate.update(SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL,
+          cancellationRequest, id);
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to set a collection download task w/ cancellation request: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  @Override
+  public boolean getCollectionDownloadTaskCancellationRequested(String id) throws HpcException {
+    try {
+      Boolean cancellationRequested = jdbcTemplate
+          .queryForObject(GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL, Boolean.class, id);
+      return cancellationRequested != null ? cancellationRequested : false;
+
+    } catch (DataAccessException e) {
+      throw new HpcException("Failed to get cancellation request of: " + id + " " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  @Override
   public List<HpcUserDownloadRequest> getDataObjectDownloadRequests(String userId)
       throws HpcException {
     try {
@@ -729,12 +762,45 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     }
   }
 
+  @Override
   public int getDownloadResultsCount(String userId) throws HpcException {
     try {
       return jdbcTemplate.queryForObject(GET_DOWNLOAD_RESULTS_COUNT_SQL, Integer.class, userId);
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to count download results: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  /**
+   * TODO - Remove HPCDATAMGM-1189 code
+   */
+  public List<HpcDownloadTaskResult> updateFileContainerName() throws HpcException {
+    try {
+      return jdbcTemplate.query(
+          "select * from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"DESTINATION_TYPE\" is not null and \"DESTINATION_LOCATION_FILE_CONTAINER_NAME\" is null and \"DESTINATION_LOCATION_FILE_CONTAINER_ID\" is not null",
+          downloadTaskResultRowMapper);
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to get download results for container name update: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  /**
+   * TODO - Remove HPCDATAMGM-1189 code
+   */
+  public void updateFileContainerName(String taskId, String containerName) throws HpcException {
+    try {
+      jdbcTemplate.update(
+          "update \"HPC_DOWNLOAD_TASK_RESULT\" set \"DESTINATION_LOCATION_FILE_CONTAINER_NAME\" = ? where \"ID\" = ?",
+          containerName, taskId);
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to update download result w/ container name: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }

@@ -292,6 +292,15 @@ public interface HpcDataTransferService {
       throws HpcException;
 
   /**
+   * Get a collection download task cancellation request.
+   *
+   * @param taskId The collection download task ID.
+   * @return The value of 'cancellation requested' column for this collection download task. False
+   *         on any error (task doesn't exist, etc)
+   */
+  public boolean getCollectionDownloadTaskCancellationRequested(String taskId);
+
+  /**
    * Complete a data object download task: 1. Cleanup any files staged in the file system for
    * download. 2. Update task info in DB with results info.
    *
@@ -409,13 +418,13 @@ public interface HpcDataTransferService {
    */
   public void updateCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException;
-  
+
   /**
-   * Cancel a collection download task. This will mark any pending download items (i.e. items in RECEIVED state)
-   * in this collection download task for cancellation. 
+   * Cancel a collection download task. This will mark any pending download items (i.e. items in
+   * RECEIVED state) in this collection download task for cancellation.
    *
-   * @param downloadTask The collection download task to update.
-   * return The number of download items that got canceled.
+   * @param downloadTask The collection download task to update. return The number of download items
+   *        that got canceled.
    * @throws HpcException on service failure.
    */
   public int cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
@@ -514,4 +523,9 @@ public interface HpcDataTransferService {
    */
   public boolean uploadURLExpired(Calendar urlCreated, String configurationId,
       String s3ArchiveConfigurationId);
+
+  /**
+   * TODO - Remove HPCDATAMGM-1189 code
+   */
+  public void updateFileContainerName() throws HpcException;
 }

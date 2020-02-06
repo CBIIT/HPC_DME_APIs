@@ -19,7 +19,7 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
@@ -270,9 +271,22 @@ public class HpcEditSearchController extends AbstractHpcController {
 		List<String> attrList = new ArrayList<>();
 		List<String> operatorList = new ArrayList<>();
 		List<String> attrValueList = new ArrayList<>();
+		List<Boolean> selfAttributeOnlyList = new ArrayList<>();
 		for (Map.Entry<String, HpcMetadataQuery> query : compoundQuery.getQueries().entrySet()) {
 			rowIdList.add(query.getKey());
-			levelList.add(query.getValue().getLevelFilter() == null ? "ANY" : query.getValue().getLevelFilter().getLabel());
+			if(query.getValue().getLevelFilter() != null) {
+			  if(StringUtils.isNotBlank(query.getValue().getLevelFilter().getLabel())) {
+			    levelList.add(query.getValue().getLevelFilter().getLabel());
+			    selfAttributeOnlyList.add(false);
+			  }
+			  else {
+			    levelList.add("ANY");
+			    if(query.getValue().getLevelFilter().getLevel() != null && query.getValue().getLevelFilter().getLevel() == 1)
+			      selfAttributeOnlyList.add(query.getValue().getLevelFilter().getOperator().equals(HpcMetadataQueryOperator.EQUAL));
+			    else
+			      selfAttributeOnlyList.add(false);
+			  }
+			}
 			attrList.add(query.getValue().getAttribute());
 			operatorList.add(query.getValue().getOperator().value());
 			attrValueList.add(query.getValue().getValue());
@@ -282,6 +296,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 		hpcSearch.setAttrName(attrList.toArray(new String[attrList.size()]));
 		hpcSearch.setOperator(operatorList.toArray(new String[operatorList.size()]));
 		hpcSearch.setAttrValue(attrValueList.toArray(new String[attrValueList.size()]));
+		hpcSearch.setSelfAttributeOnly(ArrayUtils.toPrimitive(selfAttributeOnlyList.toArray(new Boolean[attrValueList.size()])));
 		if (compoundQuery.getCriteria().contains("OR"))
 			hpcSearch.setAdvancedCriteria(compoundQuery.getCriteria());
 		return hpcSearch;

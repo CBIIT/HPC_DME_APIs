@@ -28,6 +28,7 @@
 		<prop key="hpc.dao.postgresql.username">postgres</prop>
 		<prop key="hpc.dao.postgresql.password">pwd</prop>
 		<prop key="hpc.dao.postgresql.url">jdbc:postgresql://${hpc.dao.postgresql.host}:${hpc.dao.postgresql.port}/${hpc.dao.postgresql.dbName}</prop>
+		<prop key="hpc.dao.postgresql.maxActive">8</prop>
 		<prop key="hpc.dao.postgresql.encryptor.key">***128-bit-key**</prop>
 		<prop key="hpc.integration.irods.basePath">/tempZone/home</prop>
 	</osgix:cm-properties>
