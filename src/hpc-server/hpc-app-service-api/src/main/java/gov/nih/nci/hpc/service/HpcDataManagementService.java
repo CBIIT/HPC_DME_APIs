@@ -318,6 +318,15 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure.
    */
   public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException;
+  
+  /**
+   * Get all the links to a data object path.
+   *
+   * @param path The data object path to get links to.
+   * @return A list of data objects linked to the path
+   * @throws HpcException on service failure.
+   */
+  public List<HpcDataObject> getDataObjectLinks(String path) throws HpcException;
 
   /** Close connection to Data Management system for the current service call. */
   public void closeConnection();

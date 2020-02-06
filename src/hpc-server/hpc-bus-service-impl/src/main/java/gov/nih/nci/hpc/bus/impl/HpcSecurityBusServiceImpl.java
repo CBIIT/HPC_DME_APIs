@@ -143,7 +143,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
     // Obtain user's first and last name from AD if LDAP account exists
     HpcNciAccount ldapNciAccount = securityService.getUserFirstLastNameFromAD(nciUserId);
-    if (ldapNciAccount != null) {
+    if (ldapNciAccount != null && ldapNciAccount.getFirstName() != null && ldapNciAccount.getLastName() != null) {
       nciAccount.setFirstName(ldapNciAccount.getFirstName());
       nciAccount.setLastName(ldapNciAccount.getLastName());
 	} else {

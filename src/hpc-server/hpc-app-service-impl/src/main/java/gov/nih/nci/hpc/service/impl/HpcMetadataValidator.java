@@ -63,19 +63,21 @@ public class HpcMetadataValidator {
   public static final String METADATA_UPDATED_ATTRIBUTE = "metadata_updated";
   public static final String REGISTRATION_COMPLETION_EVENT_ATTRIBUTE =
       "registration_completion_event";
+  public static final String LINK_SOURCE_PATH_ATTRIBUTE =
+      "link_source_path";
 
   //---------------------------------------------------------------------//
   // Instance members
   //---------------------------------------------------------------------//
 
-  // DOC configuration locator.
+  // Data managfement configuration locator.
   @Autowired
   private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 
   // Set of system generated metadata attributes.
-  Set<String> systemGeneratedMetadataAttributes = new HashSet<>();
-  List<String> collectionSystemGeneratedMetadataAttributeNames = new ArrayList<>();
-  List<String> dataObjectSystemGeneratedMetadataAttributeNames = new ArrayList<>();
+  private Set<String> systemGeneratedMetadataAttributes = new HashSet<>();
+  private List<String> collectionSystemGeneratedMetadataAttributeNames = new ArrayList<>();
+  private List<String> dataObjectSystemGeneratedMetadataAttributeNames = new ArrayList<>();
 
   //---------------------------------------------------------------------//
   // Constructors
@@ -103,7 +105,8 @@ public class HpcMetadataValidator {
             CALLER_OBJECT_ID_ATTRIBUTE,
             CHECKSUM_ATTRIBUTE,
             METADATA_UPDATED_ATTRIBUTE,
-            REGISTRATION_COMPLETION_EVENT_ATTRIBUTE);
+            REGISTRATION_COMPLETION_EVENT_ATTRIBUTE,
+            LINK_SOURCE_PATH_ATTRIBUTE);
     List<String> collectionAttributes =
         Arrays.asList(
             ID_ATTRIBUTE,
