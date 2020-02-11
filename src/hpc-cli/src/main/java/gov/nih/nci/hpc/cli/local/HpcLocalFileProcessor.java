@@ -587,7 +587,8 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
           httpConnection.setRequestProperty("Content-Type", "multipart/form-data");
 
        */
-			httpConnection.setChunkedStreamingMode(bufferSize);
+			httpConnection.setFixedLengthStreamingMode(file.length());
+			//httpConnection.setChunkedStreamingMode(bufferSize);
 			httpConnection.setDoInput(true);
 			httpConnection.setDoOutput(true);
 			httpConnection.setConnectTimeout(99999999);
