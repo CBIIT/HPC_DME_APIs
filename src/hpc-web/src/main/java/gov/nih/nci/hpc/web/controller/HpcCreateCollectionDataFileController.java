@@ -9,6 +9,8 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.ui.Model;
@@ -28,7 +31,11 @@ import org.springframework.validation.ObjectError;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -94,6 +101,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		session.removeAttribute("includeCriteria");
 		session.removeAttribute("excludeCriteria");
 		session.removeAttribute("dryRun");
+		session.removeAttribute("bulkType");
 	}
 
 	protected void populateBasePaths(HttpServletRequest request, HttpSession session, Model model, String path)
@@ -283,6 +291,146 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		return dto;
 	}
 
+	protected gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO constructV2BulkRequest(HttpServletRequest request,
+			HttpSession session, String path) {
+		gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO dto = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO();
+		String datafilePath = (String) session.getAttribute("datafilePath");
+		String globusEndpoint = (String) session.getAttribute("GlobusEndpoint");
+		String globusEndpointPath = (String) session.getAttribute("GlobusEndpointPath");
+		String includeCriteria = (String) session.getAttribute("includeCriteria");
+		String excludeCriteria = (String) session.getAttribute("excludeCriteria");
+		String dryRun = (String) request.getParameter("dryrun");
+		String criteriaType = (String)request.getParameter("criteriaType");
+		List<String> globusEndpointFiles = (List<String>) session.getAttribute("GlobusEndpointFiles");
+		List<String> globusEndpointFolders = (List<String>) session.getAttribute("GlobusEndpointFolders");
+		
+		String bulkType = (String)request.getParameter("bulkType");
+		String bucketName = (String)request.getParameter("bucketName");
+		String s3Path = (String)request.getParameter("s3Path");
+		String accessKey = (String)request.getParameter("accessKey");
+		String secretKey = (String)request.getParameter("secretKey");
+		String region = (String)request.getParameter("region");
+		String s3File = (String)request.getParameter("s3File");
+		boolean isS3File = s3File != null && s3File.equals("on");	
+		
+		
+		if (StringUtils.equals(bulkType, "globus") && globusEndpointFiles != null) {
+			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
+			for (String fileName : globusEndpointFiles) {
+				gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
+				HpcFileLocation source = new HpcFileLocation();
+				source.setFileContainerId(globusEndpoint);
+				source.setFileId(globusEndpointPath + fileName);
+				HpcGlobusScanDirectory globusDirectory = new HpcGlobusScanDirectory();
+				globusDirectory.setDirectoryLocation(source);
+				file.setCreateParentCollections(true);
+				file.setPath(path + "/" + fileName);
+				System.out.println(path + "/" + fileName);
+				files.add(file);
+			}
+			dto.getDataObjectRegistrationItems().addAll(files);
+		}
+
+		List<String> include = new ArrayList<String>();
+		if(includeCriteria != null && !includeCriteria.isEmpty())
+		{
+			StringTokenizer tokens = new StringTokenizer(includeCriteria, "\r\n");
+			while(tokens.hasMoreTokens())
+				include.add(tokens.nextToken());
+		}
+		
+		List<String> exclude = new ArrayList<String>();
+		if(excludeCriteria != null && !excludeCriteria.isEmpty())
+		{
+			StringTokenizer tokens = new StringTokenizer(excludeCriteria, "\r\n");
+			while(tokens.hasMoreTokens())
+				exclude.add(tokens.nextToken());
+		}
+
+		if (StringUtils.equals(bulkType, "globus") && globusEndpointFolders != null) {
+			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();
+			for (String folderName : globusEndpointFolders) {
+				gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
+				HpcFileLocation source = new HpcFileLocation();
+				source.setFileContainerId(globusEndpoint);
+				String fromPath = globusEndpointPath.endsWith("/") ?  globusEndpointPath + folderName : globusEndpointPath + "/" + folderName;
+				String toPath = "/" + folderName;
+				source.setFileId(fromPath);
+				folder.setBasePath(datafilePath);
+				HpcGlobusScanDirectory globusDirectory = new HpcGlobusScanDirectory();
+				globusDirectory.setDirectoryLocation(source);
+				folder.setGlobusScanDirectory(globusDirectory);
+				folders.add(folder);
+				if(!fromPath.equals(toPath)) {
+					HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
+					pathDTO.setFromPath(fromPath);
+					pathDTO.setToPath(toPath);
+					folder.setPathMap(pathDTO);
+				}
+				if(criteriaType != null && criteriaType.equals("Simple"))
+					folder.setPatternType(HpcPatternType.SIMPLE);
+				else
+					folder.setPatternType(HpcPatternType.REGEX);
+				if(exclude.size() > 0)
+					folder.getExcludePatterns().addAll(exclude);
+				if(include.size() > 0)
+					folder.getIncludePatterns().addAll(include);
+			}
+			dto.getDirectoryScanRegistrationItems().addAll(folders);
+		}
+		if (StringUtils.equals(bulkType, "s3") && s3Path != null && isS3File) {
+			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO> files = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO>();
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO file = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO();
+			HpcFileLocation source = new HpcFileLocation();
+			source.setFileContainerId(bucketName);
+			source.setFileId(s3Path);
+			HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+			HpcS3Account s3Account = new HpcS3Account();
+			s3Account.setAccessKey(accessKey);
+			s3Account.setSecretKey(secretKey);
+			s3Account.setRegion(region);
+			s3UploadSource.setAccount(s3Account);
+			s3UploadSource.setSourceLocation(source);
+			file.setS3UploadSource(s3UploadSource);
+			file.setCreateParentCollections(true);
+			Path s3FilePath = Paths.get(s3Path);
+			file.setPath(path + "/" + s3FilePath.getFileName());
+			System.out.println(path + "/" + s3FilePath.getFileName());
+			files.add(file);
+			dto.getDataObjectRegistrationItems().addAll(files);
+		}
+		else if (StringUtils.equals(bulkType, "s3") && s3Path != null) {
+			List<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO> folders = new ArrayList<gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO>();
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
+			HpcFileLocation source = new HpcFileLocation();
+			source.setFileContainerId(bucketName);
+			source.setFileId(s3Path);
+			folder.setBasePath(datafilePath);
+			HpcS3ScanDirectory s3Directory = new HpcS3ScanDirectory();
+			s3Directory.setDirectoryLocation(source);
+			HpcS3Account s3Account = new HpcS3Account();
+			s3Account.setAccessKey(accessKey);
+			s3Account.setSecretKey(secretKey);
+			s3Account.setRegion(region);
+			s3Directory.setAccount(s3Account);
+			folder.setS3ScanDirectory(s3Directory);
+			folders.add(folder);
+			if(criteriaType != null && criteriaType.equals("Simple"))
+				folder.setPatternType(HpcPatternType.SIMPLE);
+			else
+				folder.setPatternType(HpcPatternType.REGEX);
+			if(exclude.size() > 0)
+				folder.getExcludePatterns().addAll(exclude);
+			if(include.size() > 0)
+				folder.getIncludePatterns().addAll(include);
+
+			dto.getDirectoryScanRegistrationItems().addAll(folders);
+		}
+		
+		dto.setDryRun(dryRun != null && dryRun.equals("on"));
+		return dto;
+	}
+	
 	protected List<HpcMetadataEntry> getMetadataEntries(HttpServletRequest request, HttpSession session, String path) {
 		Enumeration<String> params = request.getParameterNames();
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();

@@ -1120,6 +1120,39 @@ public class HpcClientUtil {
       throw new HpcWebException("Failed to bulk register data files due to: " + e.getMessage());
     }
   }
+  
+  public static gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO registerBulkDatafiles(String token,
+	      String hpcDatafileURL, gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO datafileDTO,
+	      String hpcCertPath, String hpcCertPassword) {
+	    try {
+	      WebClient client = HpcClientUtil.getWebClient(hpcDatafileURL, hpcCertPath, hpcCertPassword);
+	      client.header("Authorization", "Bearer " + token);
+
+	      Response restResponse = client.invoke("PUT", datafileDTO);
+	      if (restResponse.getStatus() == 201 || restResponse.getStatus() == 200) {
+	        return (gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO) HpcClientUtil.getObject(restResponse,
+	        		gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO.class);
+	      } else {
+	        ObjectMapper mapper = new ObjectMapper();
+	        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+	            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+	            new JacksonAnnotationIntrospector());
+	        mapper.setAnnotationIntrospector(intr);
+	        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+	        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+	        throw new HpcWebException("Failed to bulk register data files: " + exception.getMessage());
+	      }
+	    } catch (HpcWebException e) {
+	      throw e;
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	      throw new HpcWebException("Failed to bulk register data files due to: " + e.getMessage());
+	    }
+	  }
 
   public static boolean updateDatafile(String token, String hpcDatafileURL,
       HpcDataObjectRegistrationRequestDTO datafileDTO, String path, String hpcCertPath,
