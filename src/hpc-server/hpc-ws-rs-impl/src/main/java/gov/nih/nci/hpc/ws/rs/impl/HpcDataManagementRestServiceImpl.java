@@ -648,6 +648,18 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
+  public Response cancelDataObjectsOrCollectionsDownloadTask(String taskId) {
+    try {
+      dataManagementBusService.cancelDataObjectsOrCollectionsDownloadTask(taskId);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
+  }
+
+  @Override
   public Response getDownloadSummary(Integer page, Boolean totalCount) {
     HpcDownloadSummaryDTO downloadSummary = null;
     try {
