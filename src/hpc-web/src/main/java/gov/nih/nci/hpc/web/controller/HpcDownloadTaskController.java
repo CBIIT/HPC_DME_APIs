@@ -21,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -70,8 +71,11 @@ public class HpcDownloadTaskController extends AbstractHpcController {
   @Value("${gov.nih.nci.hpc.server.v2.dataObject}")
   private String dataObjectServiceURL;
 
-  @Value("${gov.nih.nci.hpc.server.v2.download}")
+  @Value("${gov.nih.nci.hpc.server.download}")
   private String downloadServiceURL;
+  
+  @Value("${gov.nih.nci.hpc.server.v2.download}")
+  private String downloadServiceURL2;
 
   /**
    * Get operation to display download task details and its metadata
@@ -197,7 +201,7 @@ public class HpcDownloadTaskController extends AbstractHpcController {
         try {
           HpcBulkDataObjectDownloadResponseDTO downloadDTO =
               (HpcBulkDataObjectDownloadResponseDTO) HpcClientUtil.downloadFiles(authToken,
-            		  downloadServiceURL, dto, sslCertPath, sslCertPassword);
+            		  downloadServiceURL2, dto, sslCertPath, sslCertPassword);
           if (downloadDTO != null)
           {
             result.setMessage(
@@ -246,6 +250,87 @@ public class HpcDownloadTaskController extends AbstractHpcController {
     return "redirect:/downloadtasks";
   }
 
+  /**
+   * POST action to cancel download files.
+   * @param body
+   * @param taskId
+   * @param taskType
+   * @param model
+   * @param bindingResult
+   * @param session
+   * @param request
+   * @return
+   */
+@JsonView(Views.Public.class)
+  @PostMapping(value = "/cancel")
+  public String cancelDownload(@RequestBody(required = false) String body,
+      @RequestParam String taskId, @RequestParam String taskType, Model model,
+      BindingResult bindingResult, HttpSession session, HttpServletRequest request) {
+    AjaxResponseBody result = new AjaxResponseBody();
+    try {
+      String authToken = (String) session.getAttribute("hpcUserToken");
+      if (authToken == null) {
+        result.setMessage("Invalid user session, expired. Please login again.");
+        final Map<String, String> qParams = new HashMap<>();
+        qParams.put("returnPath", "downloadtask");
+        qParams.put("taskId", taskId);
+        qParams.put("type", taskType);
+        return "redirect:/login?".concat(MiscUtil.generateEncodedQueryString(
+          qParams));
+      }
+
+      model.addAttribute("taskId", taskId);
+      model.addAttribute("taskType", taskType);
+      if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())
+          || taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name())
+          || taskType.equals(HpcDownloadTaskType.COLLECTION_LIST.name())) {
+        
+        String queryServiceURL = "";
+        if(taskType.equals(HpcDownloadTaskType.COLLECTION.name()))
+        	queryServiceURL = collectionDownloadServiceURL + "/" + taskId + "/cancel";
+        else
+        	queryServiceURL = downloadServiceURL + "/" + taskId + "/cancel";
+
+        try {
+          boolean cancelled = HpcClientUtil
+            .cancelDownloadTask(authToken, queryServiceURL, sslCertPath, sslCertPassword);
+          if (cancelled)
+          {
+            result.setMessage(
+                "Cancel request successful. Task Id: " + taskId);
+            model.addAttribute("message",
+            		"Cancel request successful. Task Id: " + taskId);
+          }
+
+        } catch (Exception e) {
+          result.setMessage("Cancel request is not successful: " + e.getMessage());
+          model.addAttribute("message",
+          		"Cancel request is not successful. Task Id: " + taskId);
+        }
+
+      }
+      if (taskType.equals(HpcDownloadTaskType.COLLECTION.name()))
+          return displayCollectionTask(authToken, taskId, model);
+        else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT.name()))
+          return displayDataObjectTask(authToken, taskId, model);
+        else if (taskType.equals(HpcDownloadTaskType.DATA_OBJECT_LIST.name()))
+          return diplayDataObjectListTask(authToken, taskId, model);
+        else if (taskType.equals(HpcDownloadTaskType.COLLECTION_LIST.name()))
+            return displayCollectionListTask(authToken, taskId, model);
+      
+    } catch (HttpStatusCodeException e) {
+      result.setMessage("Cancel request is not successful: " + e.getMessage());
+      return "redirect:/downloadtasks";
+    } catch (RestClientException e) {
+      result.setMessage("Cancel request is not successful: " + e.getMessage());
+      return "redirect:/downloadtasks";
+    } catch (Exception e) {
+      result.setMessage("Cancel request is not successful: " + e.getMessage());
+      return "redirect:/downloadtasks";
+    }
+    return "redirect:/downloadtasks";
+  }
+  
   private String displayDataObjectTask(String authToken, String taskId, Model model) {
     String queryServiceURL = dataObjectDownloadServiceURL + "?taskId=" + taskId;
     HpcDataObjectDownloadStatusDTO downloadTask = HpcClientUtil.getDataObjectDownloadTask(authToken,
