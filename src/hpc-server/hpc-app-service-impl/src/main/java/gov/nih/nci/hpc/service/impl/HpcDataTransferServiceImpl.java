@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -145,6 +146,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   // The download directory.
   private String downloadDirectory = null;
+  
+  // The max sync download file size.
+  @Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
+  Long maxSyncDownloadFileSize = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -1714,6 +1719,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcDataTransferType dataTransferType, HpcDataObjectDownloadResponse response,
       HpcArchive baseArchiveDestination, HpcSynchronousDownloadFilter synchronousDownloadFilter)
       throws HpcException {
+    // Validate max file size not exceeded.
+    if(maxSyncDownloadFileSize != null && downloadRequest.getSize() > maxSyncDownloadFileSize) {
+      throw new HpcException("File size exceeds the sync download limit", 
+          HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST); 
+    }
+    
     // Create a destination file on the local file system for the synchronous
     // download.
     downloadRequest.setFileDestination(createDownloadFile());

@@ -55,6 +55,7 @@
 			<xsd:enumeration value="INVALID_DOC" />
 			<xsd:enumeration value="FILE_NOT_FOUND" />
 			<xsd:enumeration value="FILE_NOT_ARCHIVED" />
+			<xsd:enumeration value="INVALID_DOWNLOAD_REQUEST" />
 			
 			<!-- Security Reject Reasons -->
 			<xsd:enumeration value="NOT_AUTHORIZED" />
