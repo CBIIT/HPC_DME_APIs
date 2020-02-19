@@ -115,10 +115,9 @@
 									th:value="${bulkType}" />
 								<!--panel-body start-->
 								<div class="panel-body">
-									<p>Use this form to bulk register folders/file from Globus
-										Endpoint (Source) or S3 bucket to HPC DME Data Archive 
-										(Destination) asynchronously.
-									</p>
+									<p>This page allows you to bulk register folders/files from
+										a Globus endpoint (source) or S3 bucket (source) to a DME
+										collection (destination) asynchronously.</p>
 									<div class="form-group" id="radioset">
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
@@ -132,9 +131,13 @@
 										</div>
 									</div>
 									<div id="globus-help-links" style="display: none;">
-										<p>Source Globus Endpoint must be shared with
-											HPC DME Globus Group with READ permission to enable data
-											registration. Please refer to User Guide with Globus group account details.</p>
+										<p>
+											To upload from Globus, share the source Globus endpoint with
+											the DME Globus group and select read permission for that
+											group. For details, refer to <a
+												href="https://wiki.nci.nih.gov/x/cAyKFg">Preparing to
+												Use Globus with DME</a> in the User Guide.
+										</p>
 									</div>
 									<div class="panel-heading hidden">
 										<div class="col-md-3">
