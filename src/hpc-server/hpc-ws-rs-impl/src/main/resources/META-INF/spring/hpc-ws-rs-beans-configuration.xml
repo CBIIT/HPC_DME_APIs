@@ -297,8 +297,9 @@
 	<bean id="hpcAPIVersionInterceptor"
 		class="gov.nih.nci.hpc.ws.rs.interceptor.HpcAPIVersionInterceptor" />
 
-	<!-- Cleanup Interceptor -->
+	<!-- Cleanup Interceptors -->
 	<bean id="hpcCleanupInterceptor" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcCleanupInterceptor" />
+	<bean id="hpcCleanupFaultInterceptor" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcCleanupFaultInterceptor" />
 
 	<!-- Service Profiling Interceptors -->
 	<bean id="hpcProfileInInterceptor" class="gov.nih.nci.hpc.ws.rs.interceptor.HpcProfileInterceptor">
@@ -345,6 +346,7 @@
 		<jaxrs:outInterceptors>
 			<ref bean="hpcAPIVersionInterceptor" />
 			<ref bean="hpcCleanupInterceptor" />
+			<ref bean="hpcCleanupFaultInterceptor" />
 			<ref bean="hpcProfileOutInterceptor" />
 		</jaxrs:outInterceptors>
 	</jaxrs:server>
@@ -376,6 +378,7 @@
 		<jaxrs:outInterceptors>
 			<ref bean="hpcAPIVersionInterceptor" />
 			<ref bean="hpcCleanupInterceptor" />
+			<ref bean="hpcCleanupFaultInterceptor" />
 			<ref bean="hpcProfileOutInterceptor" />
 		</jaxrs:outInterceptors>
 	</jaxrs:server>
