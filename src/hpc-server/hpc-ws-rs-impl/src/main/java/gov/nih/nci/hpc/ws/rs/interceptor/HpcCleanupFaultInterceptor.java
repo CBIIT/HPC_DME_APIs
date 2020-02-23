@@ -62,7 +62,7 @@ public class HpcCleanupFaultInterceptor extends AbstractPhaseInterceptor<Message
 
   @Override
   public void handleFault(Message message) {
-    logger.error("ERAN: Fault interceptor - out - " + message.toString());
+    logger.error("ERAN: Fault interceptor - out - " + message.getExchange().toString());
     cleanupHelper.cleanup(message, true);
   }
 }
