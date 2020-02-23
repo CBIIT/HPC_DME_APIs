@@ -79,10 +79,8 @@ public class HpcCleanupHelper {
         HpcDataManagementRestServiceImpl.DATA_OBJECT_DOWNLOAD_TASK_ID_MC_ATTRIBUTE);
     if (taskId != null) {
       try {
-        Object messageObj = message.get(Message.ERROR_MESSAGE);
         systemBusService.completeSynchronousDataObjectDownloadTask(taskId.toString(),
-            fault ? HpcDownloadResult.FAILED : HpcDownloadResult.COMPLETED,
-            messageObj != null ? messageObj.toString() : null);
+            fault ? HpcDownloadResult.FAILED : HpcDownloadResult.COMPLETED);
       } catch (HpcException e) {
         logger.error("Failed to complete a sync download task", e);
       }

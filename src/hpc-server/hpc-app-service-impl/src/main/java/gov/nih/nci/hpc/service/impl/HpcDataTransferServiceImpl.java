@@ -664,7 +664,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public void completeSynchronousDataObjectDownloadTask(HpcDownloadTaskResult taskResult,
-      HpcDownloadResult result, String message, Calendar completed) throws HpcException {
+      HpcDownloadResult result, Calendar completed) throws HpcException {
     if (taskResult == null || taskResult.getDestinationType() != null) {
       throw new HpcException("Invalid sync download task-id: " + taskResult.getId(),
           HpcErrorType.INVALID_REQUEST_INPUT);
@@ -678,8 +678,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       taskResult.setEffectiveTransferSpeed(
           Math.toIntExact(taskResult.getSize() * 1000 / (taskResult.getCompleted().getTimeInMillis()
               - taskResult.getCreated().getTimeInMillis())));
-    } else {
-      taskResult.setMessage(message);
     }
 
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);

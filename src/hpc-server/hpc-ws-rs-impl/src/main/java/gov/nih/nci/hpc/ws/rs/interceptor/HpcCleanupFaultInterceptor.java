@@ -12,8 +12,6 @@ package gov.nih.nci.hpc.ws.rs.interceptor;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -33,8 +31,6 @@ public class HpcCleanupFaultInterceptor extends AbstractPhaseInterceptor<Message
   @Autowired
   private HpcCleanupHelper cleanupHelper = null;
 
-  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-  
   // ---------------------------------------------------------------------//
   // Constructors
   // ---------------------------------------------------------------------//
@@ -62,7 +58,6 @@ public class HpcCleanupFaultInterceptor extends AbstractPhaseInterceptor<Message
 
   @Override
   public void handleFault(Message message) {
-    logger.error("ERAN: Fault interceptor - out - " + message.getExchange().toString());
     cleanupHelper.cleanup(message, true);
   }
 }

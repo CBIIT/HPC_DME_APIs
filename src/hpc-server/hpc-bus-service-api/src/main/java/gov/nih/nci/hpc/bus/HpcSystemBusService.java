@@ -144,11 +144,10 @@ public interface HpcSystemBusService {
    *
    * @param taskId The download task ID.
    * @param result The result of the task (completed or failed).
-   * @param message (Optional) If the task failed, a message describing the failure.
    * @throws HpcException on service failure.
    */
-  public void completeSynchronousDataObjectDownloadTask(String taskId, HpcDownloadResult result,
-      String message) throws HpcException;
+  public void completeSynchronousDataObjectDownloadTask(String taskId, HpcDownloadResult result)
+      throws HpcException;
 
   /**
    * Process all (active) events.
