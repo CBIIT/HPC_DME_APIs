@@ -741,8 +741,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   }
 
   @Override
-  public void completeSynchronousDataObjectDownloadTask(String taskId, HpcDownloadResult result,
-      String message) throws HpcException {
+  public void completeSynchronousDataObjectDownloadTask(String taskId, HpcDownloadResult result)
+      throws HpcException {
     HpcDownloadTaskStatus taskStatus =
         dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.DATA_OBJECT);
     if (taskStatus == null || taskStatus.getInProgress()) {
@@ -751,7 +751,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     }
 
     dataTransferService.completeSynchronousDataObjectDownloadTask(taskStatus.getResult(), result,
-        message, Calendar.getInstance());
+        Calendar.getInstance());
   }
 
   @Override
@@ -1141,8 +1141,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param appendPathToDownloadDestination If true, the (full) object path will be used in the
    *        destination path, otherwise just the object name will be used.
    * @param userId The user ID who requested the collection download.
-   * @param userId The user ID who requested the collection download.
-   * @param collectionDownloadBreaker A collection download breaker instance.
    * @return The download task items (each item represent a data-object download from the requested
    *         list).
    * @throws HpcException on service failure.
