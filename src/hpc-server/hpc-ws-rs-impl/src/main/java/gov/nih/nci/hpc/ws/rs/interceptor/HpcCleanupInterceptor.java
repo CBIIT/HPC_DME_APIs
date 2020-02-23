@@ -9,16 +9,10 @@
 
 package gov.nih.nci.hpc.ws.rs.interceptor;
 
-import java.io.File;
-import org.apache.commons.io.FileUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import gov.nih.nci.hpc.bus.HpcSystemBusService;
-import gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl;
 
 /**
  * <p>
@@ -33,12 +27,9 @@ public class HpcCleanupInterceptor extends AbstractPhaseInterceptor<Message> {
   // Instance members
   // ---------------------------------------------------------------------//
 
-  // The System Business Service instance.
+  // The Cleanup helper instance
   @Autowired
-  private HpcSystemBusService systemBusService = null;
-
-  // The logger instance.
-  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+  private HpcCleanupHelper cleanupHelper = null;
 
   // ---------------------------------------------------------------------//
   // Constructors
@@ -56,32 +47,12 @@ public class HpcCleanupInterceptor extends AbstractPhaseInterceptor<Message> {
   // Methods
   // ---------------------------------------------------------------------//
 
-  /**
-   * Delete the file staged for synchronous download.
-   *
-   * @param fileObj The file to delete
-   * @param logger Logger to log error if deletion failed.
-   */
-  static public void deleteSynchronousDownloadFile(Object fileObj, Logger logger) {
-    if (fileObj != null && fileObj instanceof File) {
-      File file = (File) fileObj;
-      if (!FileUtils.deleteQuietly(file)) {
-        logger.error("Failed to delete a file: " + file.getAbsolutePath());
-      }
-    }
-  }
-
   // ---------------------------------------------------------------------//
   // AbstractPhaseInterceptor<Message> Interface Implementation
   // ---------------------------------------------------------------------//
 
   @Override
   public void handleMessage(Message message) {
-    // Close the connection to Data Management.
-    systemBusService.closeConnection();
-
-    // Clean up files returned by the data object download service.
-    deleteSynchronousDownloadFile(message.getContextualProperty(
-        HpcDataManagementRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE), logger);
+    cleanupHelper.cleanup(message, false);
   }
 }

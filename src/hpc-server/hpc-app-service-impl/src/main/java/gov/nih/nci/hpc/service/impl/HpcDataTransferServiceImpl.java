@@ -663,6 +663,29 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
+  public void completeSynchronousDataObjectDownloadTask(HpcDownloadTaskResult taskResult,
+      HpcDownloadResult result, String message, Calendar completed) throws HpcException {
+    if (taskResult == null || taskResult.getDestinationType() != null) {
+      throw new HpcException("Invalid sync download task-id: " + taskResult.getId(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    taskResult.setResult(result);
+    taskResult.setCompleted(completed);
+
+    if (result.equals(HpcDownloadResult.COMPLETED)) {
+      // Calculate the effective transfer speed (Bytes per second).
+      taskResult.setEffectiveTransferSpeed(
+          Math.toIntExact(taskResult.getSize() * 1000 / (taskResult.getCompleted().getTimeInMillis()
+              - taskResult.getCreated().getTimeInMillis())));
+    } else {
+      taskResult.setMessage(message);
+    }
+
+    dataDownloadDAO.upsertDownloadTaskResult(taskResult);
+  }
+
+  @Override
   public void continueDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask)
       throws HpcException {
     // Check if transfer requests can be acceptable at this time.
@@ -1770,24 +1793,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setId(response.getDownloadTaskId());
     taskResult.setUserId(downloadRequest.getUserId());
     taskResult.setPath(downloadRequest.getPath());
-    // taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
-    // taskResult.setDataTransferType(downloadRequest.getDataTransferType());
     HpcFileLocation destinationLocation = new HpcFileLocation();
     destinationLocation.setFileContainerId("Synchronous Download");
     destinationLocation.setFileId("");
     taskResult.setDestinationLocation(destinationLocation);
     taskResult.setResult(HpcDownloadResult.COMPLETED);
     taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
-    // taskResult.setMessage(message);
     taskResult.setCompletionEvent(false);
     taskResult.setCreated(created);
     taskResult.setSize(downloadRequest.getSize());
     taskResult.setCompleted(Calendar.getInstance());
-
-    // Calculate the effective transfer speed (Bytes per second).
-    taskResult.setEffectiveTransferSpeed(Math
-        .toIntExact(downloadRequest.getSize() * 1000 / (taskResult.getCompleted().getTimeInMillis()
-            - taskResult.getCreated().getTimeInMillis())));
 
     // Persist to the DB.
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);

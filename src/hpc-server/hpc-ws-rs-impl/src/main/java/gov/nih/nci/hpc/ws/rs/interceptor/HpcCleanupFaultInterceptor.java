@@ -15,8 +15,6 @@ import org.apache.cxf.phase.Phase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import gov.nih.nci.hpc.bus.HpcSystemBusService;
-import gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl;
 
 /**
  * <p>
@@ -31,13 +29,12 @@ public class HpcCleanupFaultInterceptor extends AbstractPhaseInterceptor<Message
   // Instance members
   // ---------------------------------------------------------------------//
 
-  // The System Business Service instance.
+  // The Cleanup helper instance
   @Autowired
-  private HpcSystemBusService systemBusService = null;
+  private HpcCleanupHelper cleanupHelper = null;
 
-  // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-
+  
   // ---------------------------------------------------------------------//
   // Constructors
   // ---------------------------------------------------------------------//
@@ -61,15 +58,12 @@ public class HpcCleanupFaultInterceptor extends AbstractPhaseInterceptor<Message
   @Override
   public void handleMessage(Message message) {
     // Intentionally left empty.
+    logger.error("ERAN: Fault interceptor - in");
   }
 
   @Override
   public void handleFault(Message message) {
-    // Close the connection to Data Management.
-    systemBusService.closeConnection();
-
-    // Clean up files returned by the data object download service.
-    HpcCleanupInterceptor.deleteSynchronousDownloadFile(message.getContextualProperty(
-        HpcDataManagementRestServiceImpl.DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE), logger);
+    logger.error("ERAN: Fault interceptor - out");
+    cleanupHelper.cleanup(message, true);
   }
 }

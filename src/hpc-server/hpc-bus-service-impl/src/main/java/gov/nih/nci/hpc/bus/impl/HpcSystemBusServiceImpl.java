@@ -741,6 +741,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   }
 
   @Override
+  public void completeSynchronousDataObjectDownloadTask(String taskId, HpcDownloadResult result,
+      String message) throws HpcException {
+    HpcDownloadTaskStatus taskStatus =
+        dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.DATA_OBJECT);
+    if (taskStatus == null || taskStatus.getInProgress()) {
+      throw new HpcException("Invalid sync download task-id / status: " + taskId,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    dataTransferService.completeSynchronousDataObjectDownloadTask(taskStatus.getResult(), result,
+        message, Calendar.getInstance());
+  }
+
+  @Override
   @HpcExecuteAsSystemAccount
   public void processEvents() throws HpcException {
     // Get and process the pending notification events.

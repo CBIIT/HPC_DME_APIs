@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -301,8 +302,8 @@ public interface HpcDataTransferService {
   public boolean getCollectionDownloadTaskCancellationRequested(String taskId);
 
   /**
-   * Complete a data object download task: 1. Cleanup any files staged in the file system for
-   * download. 2. Update task info in DB with results info.
+   * Complete an async (Globus / S3 / Google Drive) data object download task : 1. Cleanup any files
+   * staged in the file system for download. 2. Update task info in DB with results info.
    *
    * @param downloadTask The download task to complete.
    * @param result The result of the task (completed, failed or canceled).
@@ -314,6 +315,18 @@ public interface HpcDataTransferService {
   public void completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
       HpcDownloadResult result, String message, Calendar completed, long bytesTransferred)
       throws HpcException;
+
+  /**
+   * Complete a synchronous data object download task.
+   *
+   * @param taskResult The download task result object.
+   * @param result The result of the task (completed or failed).
+   * @param message (Optional) If the task failed, a message describing the failure.
+   * @param completed The download task completion timestamp.
+   * @throws HpcException on service failure.
+   */
+  public void completeSynchronousDataObjectDownloadTask(HpcDownloadTaskResult taskResult,
+      HpcDownloadResult result, String message, Calendar completed) throws HpcException;
 
   /**
    * Continue a data object download task that was queued.
