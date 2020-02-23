@@ -321,12 +321,11 @@ public interface HpcDataTransferService {
    *
    * @param taskResult The download task result object.
    * @param result The result of the task (completed or failed).
-   * @param message (Optional) If the task failed, a message describing the failure.
    * @param completed The download task completion timestamp.
    * @throws HpcException on service failure.
    */
   public void completeSynchronousDataObjectDownloadTask(HpcDownloadTaskResult taskResult,
-      HpcDownloadResult result, String message, Calendar completed) throws HpcException;
+      HpcDownloadResult result, Calendar completed) throws HpcException;
 
   /**
    * Continue a data object download task that was queued.
