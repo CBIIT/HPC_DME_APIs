@@ -103,6 +103,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			if (init != null) {
 				clearSessionAttrs(session);
 				model.addAttribute("create", false);
+				session.setAttribute("bulkType", "globus");
 			} else
 				model.addAttribute("create", true);
 			String path = request.getParameter("path");
