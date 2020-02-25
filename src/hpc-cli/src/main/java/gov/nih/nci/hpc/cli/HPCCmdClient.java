@@ -142,14 +142,14 @@ public abstract class HPCCmdClient {
 			}
 			else
 			{
-				System.out.println("Cmd process is not Successful. Please error log for details.");
+				System.out.println("Cmd process is not Successful. Please refer to error log for details.");
 				return returnCode;
 			}
 			}
 			catch(HpcException e)
 			{
 				addErrorToLog("Faile to process: " +e.getMessage(), cmd);
-				System.out.println("Cmd process is not Successful. Please error log for details.");
+				System.out.println("Cmd process is not Successful. Please refer to error log for details.");
 				return Constants.CLI_1;
 			}
 		} catch (IOException e) {
