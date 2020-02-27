@@ -18,6 +18,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
@@ -164,14 +165,13 @@ public interface HpcDataManagementBusService {
    */
   public HpcCollectionDownloadStatusDTO getDataObjectsOrCollectionsDownloadStatus(String taskId)
       throws HpcException;
-  
+
   /**
    * Cancel download task of a list of data objects or a list of collections.
    *
    * @param taskId The download task ID.
    */
-  public void cancelDataObjectsOrCollectionsDownloadTask(String taskId)
-      throws HpcException;
+  public void cancelDataObjectsOrCollectionsDownloadTask(String taskId) throws HpcException;
 
   /**
    * Get download summary. Note: the summary is for the request invoker.
@@ -279,6 +279,16 @@ public interface HpcDataManagementBusService {
       throws HpcException;
 
   /**
+   * Complete S3 multipart upload for a Data Object.
+   *
+   * @param path The data object path.
+   * @param completeMultipartUploadRequest The multipart upload completion request DTO.
+   * @throws HpcException on service failure.
+   */
+  public void completeMultipartUpload(String path,
+      HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) throws HpcException;
+
+  /**
    * Bulk Data object registration.
    *
    * @param bulkDataObjectRegistrationRequest The bulk registration request.
@@ -312,7 +322,8 @@ public interface HpcDataManagementBusService {
   /**
    * Get Data Object.
    *
-   * @param path The data object's path. * @param includeAcl An indicator to obtain user permission.
+   * @param path The data object's path.
+   * @param includeAcl An indicator to obtain user permission.
    * @return A Data Object DTO.
    * @throws HpcException on service failure.
    */

@@ -62,6 +62,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -284,6 +285,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Upload the data object file.
     return uploadDataObject(uploadRequest, configurationId);
+  }
+
+  @Override
+  public void completeMultipartUpload(HpcFileLocation archiveLocation,
+      HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
+      String multipartUploadId, List<HpcUploadPartETag> uploadPartETags) throws HpcException {
+    // Input Validation.
+    if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
+      throw new HpcException("Invalid archive location or data-transfer-type",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    if (StringUtils.isEmpty(multipartUploadId) || uploadPartETags.size() < 2) {
+      throw new HpcException("Empty multipartUploadId or less than 2 part ETags provided",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Complete the multipart upload.
+    dataTransferProxies.get(dataTransferType).completeMultipartUpload(
+        getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+        archiveLocation, multipartUploadId, uploadPartETags);
   }
 
   @Override

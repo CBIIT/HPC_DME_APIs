@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
@@ -284,6 +285,19 @@ public interface HpcDataManagementRestService {
       type = "application/json") gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO dataObjectRegistration,
       @Multipart(value = "dataObject", type = "application/octet-stream",
           required = false) InputStream dataObjectInputStream);
+
+  /**
+   * Complete S3 multipart upload for a data object.
+   *
+   * @param path The data object path to complete the multipart upload for for.
+   * @param completeMultipartUploadRequest The multipart upload completion request.
+   * @return The REST service response w/o entity.
+   */
+  @POST
+  @Path("/dataObject/{path:.*}/completeMultipartUpload")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response completeMultipartUpload(@PathParam("path") String path,
+      HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest);
 
   /**
    * Data objects registration.

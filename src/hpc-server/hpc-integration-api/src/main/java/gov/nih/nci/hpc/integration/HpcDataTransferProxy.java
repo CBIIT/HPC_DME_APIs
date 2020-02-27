@@ -23,6 +23,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -219,6 +220,23 @@ public interface HpcDataTransferProxy {
   public default String getFileContainerName(Object authenticatedToken, String fileContainerId)
       throws HpcException {
     return fileContainerId;
+  }
+
+  /**
+   * Complete a multipart upload.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveLocation The archive location.
+   * @param multipartUploadId The multipart upload ID generated when the multipart upload was
+   *        initiated.
+   * @param uploadPartETags A list of ETag for each part uploaded.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default void completeMultipartUpload(Object authenticatedToken,
+      HpcFileLocation archiveLocation, String multipartUploadId,
+      List<HpcUploadPartETag> uploadPartETags) throws HpcException {
+    throw new HpcException("completeMultipartUpload() not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
   }
 
   /**

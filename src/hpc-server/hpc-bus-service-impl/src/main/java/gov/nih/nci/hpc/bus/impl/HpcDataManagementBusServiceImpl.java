@@ -85,6 +85,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -890,15 +891,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
       // Update metadata and optionally re-generate upload URL (if data was not
       // uploaded yet).
-      HpcDataObjectUploadResponse uploadResponse = Optional.ofNullable(updateDataObject(path,
-          dataObjectRegistration.getMetadataEntries(), collectionType, generateUploadRequestURL,
-          dataObjectRegistration.getUploadParts(), dataObjectRegistration.getChecksum(), userId,
-          dataObjectRegistration.getCallerObjectId())).orElse(new HpcDataObjectUploadResponse());
+      HpcDataObjectUploadResponse uploadResponse = Optional
+          .ofNullable(updateDataObject(path, dataObjectRegistration.getMetadataEntries(),
+              collectionType, generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
+              dataObjectRegistration.getChecksum(), userId,
+              dataObjectRegistration.getCallerObjectId()))
+          .orElse(new HpcDataObjectUploadResponse());
       responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
       responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
     }
 
     return responseDTO;
+  }
+
+  @Override
+  public void completeMultipartUpload(String path,
+      HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) throws HpcException {
+    // input validation.
+    if (completeMultipartUploadRequest == null) {
+      throw new HpcException("Invalid / Empty multipart completion request" + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the data object exists.
+    if (dataManagementService.getDataObject(path) == null) {
+      throw new HpcException("Data object doesn't exist: " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Get the System generated metadata.
+    HpcSystemGeneratedMetadata metadata =
+        metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+    // Complete the multipart upload.
+    dataTransferService.completeMultipartUpload(metadata.getArchiveLocation(),
+        metadata.getDataTransferType(), metadata.getConfigurationId(),
+        metadata.getS3ArchiveConfigurationId(),
+        completeMultipartUploadRequest.getMultipartUploadId(),
+        completeMultipartUploadRequest.getUploadPartETags());
   }
 
   @Override
