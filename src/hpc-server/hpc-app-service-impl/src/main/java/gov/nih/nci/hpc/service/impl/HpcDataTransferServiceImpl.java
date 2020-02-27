@@ -146,7 +146,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   // The download directory.
   private String downloadDirectory = null;
-  
+
   // The max sync download file size.
   @Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
   Long maxSyncDownloadFileSize = null;
@@ -199,8 +199,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
       HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
-      String uploadRequestURLChecksum, String path, String userId, String callerObjectId,
-      String configurationId) throws HpcException {
+      Integer uploadParts, String uploadRequestURLChecksum, String path, String userId,
+      String callerObjectId, String configurationId) throws HpcException {
     // Input Validation. One and only one of the first 4 parameters is expected to
     // be provided.
 
@@ -251,9 +251,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Validate generate upload request URL.
-    if (generateUploadRequestURL
-        && (globusUploadSource != null || s3UploadSource != null || sourceFile != null)) {
-      throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE,
+    if (generateUploadRequestURL) {
+      if (globusUploadSource != null || s3UploadSource != null || sourceFile != null) {
+        throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (uploadParts != null && uploadParts < 1) {
+        throw new HpcException("Invalid upload parts: " + uploadParts,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    } else if (uploadParts != null) {
+      throw new HpcException("Upload parts provided w/o request to generate upload URL",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
@@ -271,6 +279,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     uploadRequest.setSourceFile(sourceFile);
     uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
     uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
+    uploadRequest.setUploadParts(uploadParts);
     uploadRequest.setSourceSize(sourceSize);
 
     // Upload the data object file.
@@ -1720,11 +1729,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcArchive baseArchiveDestination, HpcSynchronousDownloadFilter synchronousDownloadFilter)
       throws HpcException {
     // Validate max file size not exceeded.
-    if(maxSyncDownloadFileSize != null && downloadRequest.getSize() > maxSyncDownloadFileSize) {
-      throw new HpcException("File size exceeds the sync download limit", 
-          HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST); 
+    if (maxSyncDownloadFileSize != null && downloadRequest.getSize() > maxSyncDownloadFileSize) {
+      throw new HpcException("File size exceeds the sync download limit",
+          HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
     }
-    
+
     // Create a destination file on the local file system for the synchronous
     // download.
     downloadRequest.setFileDestination(createDownloadFile());

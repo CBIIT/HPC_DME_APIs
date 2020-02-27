@@ -57,6 +57,15 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadResponse']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcMultipartUpload']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcUploadPartURL']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcUploadPartETag']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcGlobusDownloadDestination']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination" />
       </jxb:bindings>
