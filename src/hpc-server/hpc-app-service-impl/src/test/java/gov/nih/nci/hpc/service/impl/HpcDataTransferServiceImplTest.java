@@ -89,7 +89,8 @@ public class HpcDataTransferServiceImplTest {
     expectedException.expectMessage(
         "No data transfer source or data attachment provided or upload URL requested");
 
-    dataTransferService.uploadDataObject(null, null, null, false, null, null, null, null, null);
+    dataTransferService.uploadDataObject(null, null, null, false, null, null, null, null, null,
+        null);
   }
 
   /**
@@ -105,7 +106,7 @@ public class HpcDataTransferServiceImplTest {
 
     HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
     dataTransferService.uploadDataObject(null, s3UploadSource, null, false, null, null, null, null,
-        null);
+        null, null);
   }
 
   /**
@@ -154,8 +155,8 @@ public class HpcDataTransferServiceImplTest {
     when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dmc);
 
     // Run the test.
-    dataTransferService.uploadDataObject(null, s3UploadSource, null, false, null, "/test/path",
-        "testUserId", "testCallerId", "testConfigId");
+    dataTransferService.uploadDataObject(null, s3UploadSource, null, false, null, null,
+        "/test/path", "testUserId", "testCallerId", "testConfigId");
   }
 
   /**

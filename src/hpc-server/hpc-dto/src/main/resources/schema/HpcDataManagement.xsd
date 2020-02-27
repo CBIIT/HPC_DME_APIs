@@ -99,6 +99,8 @@
 				<xsd:element name="registered" type="xsd:boolean"
 					minOccurs="0" />
 				<xsd:element name="uploadRequestURL" type="xsd:string" />
+				<xsd:element name="multipartUpload" 
+					type="hpc-domain-datatransfer:HpcMultipartUpload" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

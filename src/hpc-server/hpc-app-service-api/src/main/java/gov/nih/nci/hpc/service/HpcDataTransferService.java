@@ -56,6 +56,7 @@ public interface HpcDataTransferService {
    * @param sourceFile (Optional) The source file.
    * @param generateUploadRequestURL Generate an upload URL (so caller can directly upload file into
    *        archive).
+   * @param uploadParts (Optional) The number of parts when generating upload request URL.
    * @param uploadRequestURLChecksum A checksum provided by the caller to be attached to the upload
    *        request URL.
    * @param path The data object registration path.
@@ -68,8 +69,8 @@ public interface HpcDataTransferService {
    */
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
       HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
-      String uploadRequestURLChecksum, String path, String userId, String callerObjectId,
-      String configurationId) throws HpcException;
+      Integer uploadParts, String uploadRequestURLChecksum, String path, String userId,
+      String callerObjectId, String configurationId) throws HpcException;
 
   /**
    * Download a data object file.
