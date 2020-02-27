@@ -171,6 +171,8 @@
 				type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="generateUploadRequestURL"
 				type="xsd:boolean" />
+			<xsd:element name="uploadParts"
+				type="xsd:int" minOccurs="0" />
 			<xsd:element name="uploadRequestURLChecksum"
 				type="xsd:string" />
 			<xsd:element name="sourceSize" type="xsd:long"
@@ -183,6 +185,8 @@
 			<xsd:element name="dataTransferRequestId"
 				type="xsd:string" />
 			<xsd:element name="uploadRequestURL" type="xsd:string" />
+			<xsd:element name="multipartUpload" 
+				type="hpc-domain-datatransfer:HpcMultipartUpload" />
 			<xsd:element name="uploadSource"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="archiveLocation"
@@ -198,6 +202,28 @@
 			<xsd:element name="sourceSize" type="xsd:long"
 				minOccurs="0" />
 			<xsd:element name="sourceURL" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcMultipartUpload">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:string" />
+			<xsd:element name="parts" type="hpc-domain-datatransfer:HpcUploadPartURL" 
+				minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcUploadPartURL">
+		<xsd:sequence>
+			<xsd:element name="partNumber" type="xsd:int" />
+			<xsd:element name="partUploadRequestURL" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcUploadPartETag">
+		<xsd:sequence>
+			<xsd:element name="partNumber" type="xsd:int" />
+			<xsd:element name="eTag" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
