@@ -37,6 +37,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -71,6 +72,25 @@ public interface HpcDataTransferService {
       HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
       Integer uploadParts, String uploadRequestURLChecksum, String path, String userId,
       String callerObjectId, String configurationId) throws HpcException;
+
+  /**
+   * Complete a multipart upload.
+   *
+   * @param archiveLocation The archive location.
+   * @param dataTransferType The data transfer type.
+   * @param configurationId The configuration ID (needed to determine the archive connection
+   *        config).
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
+   * @param multipartUploadId The multipart upload ID generated when the multipart upload was
+   *        initiated.
+   * @param uploadPartETags A list of ETag for each part uploaded.
+   * @throws HpcException on service failure.
+   */
+  public void completeMultipartUpload(HpcFileLocation archiveLocation,
+      HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
+      String multipartUploadId, List<HpcUploadPartETag> uploadPartETags) throws HpcException;
 
   /**
    * Download a data object file.

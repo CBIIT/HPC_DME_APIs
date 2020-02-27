@@ -43,6 +43,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
@@ -372,6 +373,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
               : null,
           false);
     }
+  }
+
+  @Override
+  public Response completeMultipartUpload(String path,
+      HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) {
+    try {
+      dataManagementBusService.completeMultipartUpload(toNormalizedPath(path),
+          completeMultipartUploadRequest);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
   }
 
   @Deprecated

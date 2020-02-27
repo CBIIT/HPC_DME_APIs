@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
+import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
@@ -31,6 +32,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
@@ -48,6 +50,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -326,6 +329,27 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
   }
 
+  @Override
+  public void completeMultipartUpload(Object authenticatedToken, HpcFileLocation archiveLocation,
+      String multipartUploadId, List<HpcUploadPartETag> uploadPartETags) throws HpcException {
+    // Create AWS part ETags from the HPC model.
+    List<PartETag> partETags = new ArrayList<PartETag>();
+    uploadPartETags.forEach(uploadPartETag -> partETags
+        .add(new PartETag(uploadPartETag.getPartNumber(), uploadPartETag.getETag())));
+
+    CompleteMultipartUploadRequest completeMultipartUploadRequest =
+        new CompleteMultipartUploadRequest(archiveLocation.getFileContainerId(),
+            archiveLocation.getFileId(), multipartUploadId, partETags);
+    try {
+      s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+          .completeMultipartUpload(completeMultipartUploadRequest);
+    } catch (AmazonClientException e) {
+      throw new HpcException(
+          "[S3] Failed to complete a multipart upload: " + e.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, e);
+    }
+  }
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -577,12 +601,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       generatePresignedUrlRequest.addRequestParameter("uploadId", multipartUpload.getId());
 
       try {
-      uploadPartURL.setPartUploadRequestURL(s3Connection.getTransferManager(authenticatedToken)
-          .getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest).toString());
-      
+        uploadPartURL.setPartUploadRequestURL(s3Connection.getTransferManager(authenticatedToken)
+            .getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest).toString());
+
       } catch (AmazonClientException e) {
-        throw new HpcException(
-            "[S3] Failed to create a pre-signed URL for part: " + partNumber,
+        throw new HpcException("[S3] Failed to create a pre-signed URL for part: " + partNumber,
             HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, e);
       }
 
@@ -595,7 +618,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
     uploadResponse.setDataTransferStarted(Calendar.getInstance());
     uploadResponse.setDataTransferCompleted(null);
-    uploadResponse.setDataTransferRequestId(String.valueOf(initiateMultipartUploadRequest.hashCode()));
+    uploadResponse
+        .setDataTransferRequestId(String.valueOf(initiateMultipartUploadRequest.hashCode()));
     uploadResponse.setMultipartUpload(multipartUpload);
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
 
