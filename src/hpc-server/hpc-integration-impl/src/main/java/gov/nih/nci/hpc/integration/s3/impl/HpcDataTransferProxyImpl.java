@@ -596,7 +596,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       GeneratePresignedUrlRequest generatePresignedUrlRequest =
           new GeneratePresignedUrlRequest(archiveDestinationLocation.getFileContainerId(),
               archiveDestinationLocation.getFileId()).withMethod(HttpMethod.PUT)
-                  .withExpiration(expiration);;
+                  .withExpiration(expiration);
       generatePresignedUrlRequest.addRequestParameter("partNumber", String.valueOf(partNumber));
       generatePresignedUrlRequest.addRequestParameter("uploadId", multipartUpload.getId());
 
