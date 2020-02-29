@@ -300,6 +300,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Empty multipartUploadId or less than 2 part ETags provided",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
+    for (HpcUploadPartETag uploadPartETag : uploadPartETags) {
+      if (StringUtils.isEmpty(uploadPartETag.getETag())) {
+        throw new HpcException(
+            "Empty / null eTag for part number " + uploadPartETag.getPartNumber(),
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
 
     // Complete the multipart upload.
     dataTransferProxies.get(dataTransferType).completeMultipartUpload(
