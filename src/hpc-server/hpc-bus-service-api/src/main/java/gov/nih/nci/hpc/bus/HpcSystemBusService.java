@@ -1,13 +1,16 @@
 /**
  * HpcSystemBusService.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.bus;
 
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -44,15 +47,15 @@ public interface HpcSystemBusService {
    * Update the data transfer upload status of all data objects that are currently streamed (S3).
    *
    * @param streamingStopped If true, S3 streaming stopped (because API server shutdown). In this
-   *     case we set the upload status to STREAMING_STOPPED. Otherwise, we check if the upload
-   *     completed and update status accordingly.
+   *        case we set the upload status to STREAMING_STOPPED. Otherwise, we check if the upload
+   *        completed and update status accordingly.
    * @throws HpcException on service failure.
    */
   public void processDataTranferUploadStreamingInProgress(boolean streamingStopped)
       throws HpcException;
 
   public void processDataTranferUploadStreamingInProgress() throws HpcException;
-  
+
   /**
    * Restart data transfer upload for all streaming from AWS S3 that has stopped (because of prior
    * server shutdown)
@@ -70,36 +73,34 @@ public interface HpcSystemBusService {
   public void processTemporaryArchive() throws HpcException;
 
   /**
-   * Start all received data objects download tasks for Globus and process to make them in
-   * progress.
+   * Start all received data objects download tasks for Globus and process to make them in progress.
    *
    * @throws HpcException on service failure.
    */
   public void startGlobusDataObjectDownloadTasks() throws HpcException;
-  
+
   /**
-   * Start all received data objects download tasks for S3 and process to make them in
-   * progress.
+   * Start all received data objects download tasks for S3 and process to make them in progress.
    *
    * @throws HpcException on service failure.
    */
   public void startS3DataObjectDownloadTasks() throws HpcException;
-  
+
   /**
-   * Check status of all in-progress data objects download tasks and complete these that are no longer in
-   * progress.
+   * Check status of all in-progress data objects download tasks and complete these that are no
+   * longer in progress.
    *
    * @throws HpcException on service failure.
    */
   public void completeInProgressDataObjectDownloadTasks() throws HpcException;
-  
+
   /**
    * Complete all data object download tasks that are marked canceled.
    *
    * @throws HpcException on service failure.
    */
   public void completeCanceledDataObjectDownloadTasks() throws HpcException;
-  
+
   /**
    * Restart data object download tasks that are in progress using S3 data transfer.
    *
@@ -137,6 +138,16 @@ public interface HpcSystemBusService {
    * @throws HpcException on service failure.
    */
   public void completeBulkDataObjectRegistrationTasks() throws HpcException;
+
+  /**
+   * Complete a synchronous data object download task
+   *
+   * @param taskId The download task ID.
+   * @param result The result of the task (completed or failed).
+   * @throws HpcException on service failure.
+   */
+  public void completeSynchronousDataObjectDownloadTask(String taskId, HpcDownloadResult result)
+      throws HpcException;
 
   /**
    * Process all (active) events.
