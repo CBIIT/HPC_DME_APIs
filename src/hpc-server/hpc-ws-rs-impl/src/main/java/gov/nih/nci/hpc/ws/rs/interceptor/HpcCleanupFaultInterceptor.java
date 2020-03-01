@@ -1,5 +1,5 @@
 /**
- * HpcCleanupInterceptor.java
+ * HpcCleanupFaultInterceptor.java
  *
  * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  * 
@@ -16,13 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
- * HPC Cleanup Interceptor.
+ * HPC Cleanup Fault Interceptor.
  * </p>
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 
-public class HpcCleanupInterceptor extends AbstractPhaseInterceptor<Message> {
+public class HpcCleanupFaultInterceptor extends AbstractPhaseInterceptor<Message> {
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
@@ -39,8 +39,8 @@ public class HpcCleanupInterceptor extends AbstractPhaseInterceptor<Message> {
    * Default Constructor.
    * 
    */
-  private HpcCleanupInterceptor() {
-    super(Phase.SEND_ENDING);
+  private HpcCleanupFaultInterceptor() {
+    super(Phase.PREPARE_SEND);
   }
 
   // ---------------------------------------------------------------------//
@@ -53,6 +53,11 @@ public class HpcCleanupInterceptor extends AbstractPhaseInterceptor<Message> {
 
   @Override
   public void handleMessage(Message message) {
-    cleanupHelper.cleanup(message, false);
+    // Intentionally left empty.
+  }
+
+  @Override
+  public void handleFault(Message message) {
+    cleanupHelper.cleanup(message, true);
   }
 }
