@@ -365,8 +365,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     if (globusDownloadDestination == null && s3DownloadDestination == null
         && googleDriveDownloadDestination == null) {
       // This is a synchronous download request.
-      performSynchronousDownload(downloadRequest, dataTransferType, response,
-          baseArchiveDestination, synchronousDownloadFilter);
+      performSynchronousDownload(downloadRequest, response, baseArchiveDestination,
+          synchronousDownloadFilter);
 
     } else if (dataTransferType.equals(HpcDataTransferType.GLOBUS)
         && globusDownloadDestination != null) {
@@ -696,6 +696,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Persist to the DB.
+    dataDownloadDAO.upsertDownloadTaskResult(taskResult);
+  }
+
+  @Override
+  public void completeSynchronousDataObjectDownloadTask(HpcDownloadTaskResult taskResult,
+      HpcDownloadResult result, Calendar completed) throws HpcException {
+    if (taskResult == null || taskResult.getDestinationType() != null) {
+      throw new HpcException("Invalid sync download task-id: " + taskResult.getId(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    taskResult.setResult(result);
+    taskResult.setCompleted(completed);
+
+    if (result.equals(HpcDownloadResult.COMPLETED)) {
+      // Calculate the effective transfer speed (Bytes per second).
+      taskResult.setEffectiveTransferSpeed(
+          Math.toIntExact(taskResult.getSize() * 1000 / (taskResult.getCompleted().getTimeInMillis()
+              - taskResult.getCreated().getTimeInMillis())));
+    }
+
     dataDownloadDAO.upsertDownloadTaskResult(taskResult);
   }
 
@@ -1744,7 +1765,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * Perform a synchronous download from either a Cleversafe or POSIX archive.
    *
    * @param downloadRequest The data object download request.
-   * @param dataTransferType The data transfer type to use.
    * @param response The download response object. This method sets download task id and destination
    *        location on the response.
    * @param baseArchiveDestination The base archive destination of the requested data object.
@@ -1753,25 +1773,30 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   private void performSynchronousDownload(HpcDataObjectDownloadRequest downloadRequest,
-      HpcDataTransferType dataTransferType, HpcDataObjectDownloadResponse response,
-      HpcArchive baseArchiveDestination, HpcSynchronousDownloadFilter synchronousDownloadFilter)
-      throws HpcException {
+      HpcDataObjectDownloadResponse response, HpcArchive baseArchiveDestination,
+      HpcSynchronousDownloadFilter synchronousDownloadFilter) throws HpcException {
     // Validate max file size not exceeded.
     if (maxSyncDownloadFileSize != null && downloadRequest.getSize() > maxSyncDownloadFileSize) {
       throw new HpcException("File size exceeds the sync download limit",
           HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
     }
 
+    // Capture the time download started.
+    Calendar created = Calendar.getInstance();
+
     // Create a destination file on the local file system for the synchronous
     // download.
     downloadRequest.setFileDestination(createDownloadFile());
     response.setDestinationFile(downloadRequest.getFileDestination());
 
+    // Create a task ID for this download request.
+    response.setDownloadTaskId(UUID.randomUUID().toString());
+
     // Perform the synchronous download.
-    dataTransferProxies.get(dataTransferType).downloadDataObject(
-        getAuthenticatedToken(dataTransferType, downloadRequest.getConfigurationId(),
-            downloadRequest.getS3ArchiveConfigurationId()),
-        downloadRequest, baseArchiveDestination, null);
+    dataTransferProxies.get(downloadRequest.getDataTransferType())
+        .downloadDataObject(getAuthenticatedToken(downloadRequest.getDataTransferType(),
+            downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()),
+            downloadRequest, baseArchiveDestination, null);
 
     // If a filter was requested, the data object is expected to be a compressed
     // archive file (ZIP, TAR, TGZ).
@@ -1796,8 +1821,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       } finally {
         FileUtils.deleteQuietly(downloadRequest.getFileDestination());
       }
-
     }
+
+    // Create a task result object.
+    HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
+    taskResult.setId(response.getDownloadTaskId());
+    taskResult.setUserId(downloadRequest.getUserId());
+    taskResult.setPath(downloadRequest.getPath());
+    HpcFileLocation destinationLocation = new HpcFileLocation();
+    destinationLocation.setFileContainerId("Synchronous Download");
+    destinationLocation.setFileId("");
+    taskResult.setDestinationLocation(destinationLocation);
+    taskResult.setResult(HpcDownloadResult.COMPLETED);
+    taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
+    taskResult.setCompletionEvent(false);
+    taskResult.setCreated(created);
+    taskResult.setSize(downloadRequest.getSize());
+    taskResult.setCompleted(Calendar.getInstance());
+
+    // Persist to the DB.
+    dataDownloadDAO.upsertDownloadTaskResult(taskResult);
   }
 
   /**
