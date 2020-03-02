@@ -55,6 +55,7 @@
     var dataattributes = [[${hierarchy.getDataobjectAttrsSet()}]];
     var collectionLevels = [[${hierarchy.getCollectionLevels()}]];
     var dataobjectLevels = [[${hierarchy.getDataobjectLevels()}]];
+    var userInSecGroup = [[${userInSecGroup}]];
 /*]]>*/
 </script>
 
@@ -114,6 +115,7 @@
 										<tr>
 											<th class="text-center">ID</th>
 											<th class="text-center" style="width: 10%;">Exclude Parent Metadata</th>
+											<th th:if="${userInSecGroup}" class="text-center">Encrypted</th>
 											<th class="text-center">Level</th>
 											<th class="text-center">Attribute Name</th>
 											<th class="text-center">Operator</th>
@@ -129,6 +131,14 @@
 											<td style="white-space: nowrap">
 												<input type="checkbox" id="selfAttributeOnly1" name="selfAttribute"/>
 												<input type="hidden" id="selfAttributeOnlyHidden1" name="selfAttributeOnly" value="false"/>
+											</td>
+											<td th:if="${userInSecGroup}" style="white-space: nowrap">
+											  <div class="row">
+											   <div class="col-xs-2 col-sm-2">
+												<input type="checkbox" class="encrypted" id="attributeEncrypted1" name="attributeEncrypted"/>
+												<input type="hidden" id="attributeEncryptedHidden1" name="encrypted" value="false"/>
+											   </div>
+											  </div>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
 												id="level1" name="level" class="form-control"
@@ -518,6 +528,13 @@ function resetRows()
     	var valueSelfAttributeOnly = document.getElementById('selfAttributeOnly'+i);
     	if (valueSelfAttributeOnly != null)
     		valueSelfAttributeOnly.checked = false;
+    	if(userInSecGroup) {
+	    	var attributeEncrypted = document.getElementById('attributeEncrypted'+i);
+	    	if (attributeEncrypted != null) {
+	    		attributeEncrypted.checked = false;
+	    		$('#attributeEncrypted'+i).parent('div').next('div').remove();
+	    	}
+    	}
     }
 }
 
@@ -528,15 +545,21 @@ function addRow() {
     rows = rows - 1;
     var row = table.insertRow(rows+1);
     row.id = "attrRow"+(rows+1);
-    var cell0 = row.insertCell(0);
-    var cell1 = row.insertCell(1);
-    var cell2 = row.insertCell(2);
-    var cell3 = row.insertCell(3);
-    var cell4 = row.insertCell(4);
-    var cell5 = row.insertCell(5);
-    var cell6 = row.insertCell(6);
+    var cell = 0;
+    var cell0 = row.insertCell(cell++);
+    var cell1 = row.insertCell(cell++);
+    var cell1_a = row.insertCell(cell++);
+    var cell2 = row.insertCell(cell++);
+    var cell3 = row.insertCell(cell++);
+    var cell4 = row.insertCell(cell++);
+    var cell5 = row.insertCell(cell++);
+    var cell6 = row.insertCell(cell++);
     cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
     cell1.innerHTML = '<input id="selfAttributeOnly'+(rows+1)+'" type="checkbox" name="selfAttribute"/><input id="selfAttributeOnlyHidden'+(rows+1)+'" type="hidden" name="selfAttributeOnly" value="false"/>';
+    if(userInSecGroup) {
+    	cell1_a.innerHTML = '<div class="row"><div class="col-xs-2 col-sm-2"><input id="attributeEncrypted'+(rows+1)+'" type="checkbox" name="attributeEncrypted" class="encrypted" />'+
+    						'<input id="attributeEncryptedHidden'+(rows+1)+'" type="hidden" name="encrypted" value="false"/></div></div>';
+    }
     cell2.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
     cell3.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
     cell4.innerHTML = '<select id="operator'+(rows+1)+'" name="operator" class="form-control operator" th:required="required"> <option value="-1">----Select----</option> <option value="1">=</option><option value="2">!=</option><option value="3">&lt;</option><option value="4">&gt;</option></select>';
@@ -626,6 +649,13 @@ function validateAndSubmit()
 				}
 				valid = true;
 			}
+			if(userInSecGroup && document.getElementById("attributeEncrypted" + suffix).checked) {
+				var userKey = document.getElementById("key"+suffix).value;	
+				if(userKey == null || userKey.trim().length == 0) {
+					alert("Invalid key. Please enter the key");
+					return false;
+				}
+			}
 		}
 	}
 	if(!valid)
@@ -638,6 +668,14 @@ function validateAndSubmit()
     {
 		if(document.getElementById("selfAttributeOnly" + i).checked) {
 		    document.getElementById("selfAttributeOnlyHidden" + i).value = "true";
+		}
+		if(userInSecGroup && document.getElementById("attributeEncrypted" + i).checked) {
+		    document.getElementById("attributeEncryptedHidden" + i).value = "true";
+		} else {
+			var htmlString = '<div class="col-xs-10 col-sm-10" style="padding-left: 0;"><input type="hidden" id="key'
+							+ i +'" name="userKey"/></div>';
+	        $('#attributeEncrypted' + i).parent('div').parent('div').append(htmlString);
+	        $('#key' + row_id).val("");
 		}
     }
 	document.getElementById("simplesearchform").submit();
@@ -675,6 +713,7 @@ if(advancedCriteriaExist) {
 
 	resetRows();
 	// Process the hpcSearch object and restore the level criteria
+if(searchCriteria.level) {
 	for(var i = 0; i < searchCriteria.level.length; i++) {
 		
 		// The first row always exists.  Don't add it a second time.
@@ -689,6 +728,13 @@ if(advancedCriteriaExist) {
 		$('#operator' + row_id).val(searchCriteria.operator[i]);
 		if(searchCriteria.selfAttributeOnly[i])
 			$('#selfAttributeOnly' + row_id).prop('checked', true);
+		if(searchCriteria.encrypted[i]) {
+			$('#attributeEncrypted' + row_id).prop('checked', true);
+			var htmlString = '<div class="col-xs-10 col-sm-10" style="padding-left: 0;"><input type="password" id="key'
+							+ row_id +'" placeholder="Enter Key" class="form-control" name="userKey" autocomplete="key"/></div>';
+	        $('#attributeEncrypted' + row_id).parent('div').parent('div').append(htmlString);
+	        $('#key' + row_id).val(searchCriteria.userKey[i]);
+		}
 		if(searchCriteria.operator[i].startsWith('TIMESTAMP')) {
 			$('#attrValue' + row_id + 'X').val(searchCriteria.attrValue[i].split(' ')[0].replace(/-/g, "/"));
 		}
@@ -696,9 +742,21 @@ if(advancedCriteriaExist) {
 			$('#attrValue' + row_id).val(searchCriteria.attrValue[i]);
 		}
 	}
+}
 
 	$(document).ready(function() {
 		$('select.operator').change();
+	});
+	
+	$(document).on('click', '.encrypted', function(){
+		if($(this). is(":checked")){
+			var index = this.id.split('attributeEncrypted')[1];
+			var htmlString = '<div class="col-xs-10 col-sm-10" style="padding-left: 0;"><input type="password" id="key'
+							+ index +'" placeholder="Enter Key" class="form-control" name="userKey" autocomplete="key"/></div>';
+	        $(this).parent('div').parent('div').append(htmlString);
+		} else {
+			$(this).parent('div').next('div').remove();
+		}
 	});
 //]]>
 </script>
