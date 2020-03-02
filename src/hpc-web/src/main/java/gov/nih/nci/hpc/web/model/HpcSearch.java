@@ -6,6 +6,8 @@ public class HpcSearch {
 	private String[] level;
 	private String[] levelOperator;
 	private boolean[] selfAttributeOnly;
+	private boolean[] encrypted;
+	private String[] userKey;
 	private String[] attrName;
 	private String[] operator;
 	private String[] attrValue;
@@ -127,5 +129,21 @@ public class HpcSearch {
 
     public void setSelfAttributeOnly(boolean[] selfAttributeOnly) {
       this.selfAttributeOnly = selfAttributeOnly;
+    }
+
+    public boolean[] getEncrypted() {
+      return encrypted;
+    }
+
+    public void setEncrypted(boolean[] encrypted) {
+      this.encrypted = encrypted;
+    }
+
+    public String[] getUserKey() {
+      return userKey;
+    }
+
+    public void setUserKey(String[] userKey) {
+      this.userKey = userKey;
     }
 }
