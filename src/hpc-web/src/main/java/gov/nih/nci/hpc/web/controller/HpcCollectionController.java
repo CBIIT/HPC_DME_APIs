@@ -18,7 +18,10 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import gov.nih.nci.hpc.web.util.HpcCollectionUtil;
+import gov.nih.nci.hpc.web.util.HpcEncryptionUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -31,21 +34,29 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
-
+import com.fasterxml.jackson.annotation.JsonView;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
+import gov.nih.nci.hpc.web.model.HpcSecuredRequest;
+import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 /**
@@ -73,6 +84,8 @@ public class HpcCollectionController extends AbstractHpcController {
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
+	@Value("${gov.nih.nci.hpc.server.group}")
+    private String groupServiceURL;
 
 
 	/**
@@ -130,13 +143,43 @@ public class HpcCollectionController extends AbstractHpcController {
 					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 					session.setAttribute("userDOCModel", modelDTO);
 				}
+				//Find out if user belongs to the SEC_GROUP for this DOC
+				HpcGroupListDTO groups = (HpcGroupListDTO) session.getAttribute("hpcSecGroup");
+                if (groups == null) {
+                    groups = HpcClientUtil.getGroups(authToken, groupServiceURL, "%_SEC_GROUP%", sslCertPath, sslCertPassword);
+                    if(groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
+                      Iterator<HpcGroup> it = groups.getGroups().iterator();
+                      HpcGroup group = null;
+                      while (it.hasNext()) {
+                        group = (HpcGroup) it.next();
+                       if (!CollectionUtils.containsAny(group.getUserIds(), userId)) {
+                          it.remove();
+                       }
+                      }
+                    }
+                    session.setAttribute("hpcSecGroup", groups);
+                }
+				
+		        HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2)));
+		        
+		        String doc = HpcClientUtil.getDocByBasePath(modelDTO, path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2)));
+		        boolean userInSecGroup = false;
+		        if(groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
+		          for (HpcGroup group : groups.getGroups()) {
+		            if (group.getGroupName().equalsIgnoreCase(doc + "_SEC_GROUP")) {
+		              userInSecGroup = true;
+		              break;
+		            }
+		          }
+		        }
+		        
 				// Get collection permissions to enable Edit, Permission icons
 				// on the UI
 				//HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
 				//		serviceURL, sslCertPath, sslCertPassword);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
 				HpcCollectionModel hpcCollection = buildHpcCollection(collection,
-						modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
+						modelDTO.getCollectionSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules(), userInSecGroup);
 				model.addAttribute("collection", hpcCollection);
 				model.addAttribute("userpermission", (collection.getPermission() != null)
 						? collection.getPermission().toString() : "null");
@@ -253,9 +296,12 @@ public class HpcCollectionController extends AbstractHpcController {
       paramsMap));
 	}
 
-	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs) {
+	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs, List<HpcMetadataValidationRule> rules, boolean userInSecGroup) {
 		HpcCollectionModel model = new HpcCollectionModel();
 		systemAttrs.add("collection_type");
+		
+		String collectionType = getCollectionType(collection);
+		
 		model.setCollection(collection.getCollection());
 		if (collection.getMetadataEntries() == null)
 			return model;
@@ -269,7 +315,12 @@ public class HpcCollectionController extends AbstractHpcController {
 				attrEntry.setSystemAttr(true);
 			else
 				attrEntry.setSystemAttr(false);
-			model.getSelfMetadataEntries().add(attrEntry);
+			if(isEncryptedAttribute(entry.getAttribute(), collectionType, rules))
+			   attrEntry.setEncrypted(true);
+            else
+                attrEntry.setEncrypted(false);
+			if(!attrEntry.isEncrypted() || userInSecGroup)
+			  model.getSelfMetadataEntries().add(attrEntry);
 		}
 
 		for (HpcMetadataEntry entry : collection.getMetadataEntries().getParentMetadataEntries()) {
@@ -284,6 +335,22 @@ public class HpcCollectionController extends AbstractHpcController {
 			model.getParentMetadataEntries().add(attrEntry);
 		}
 		return model;
+	}
+	
+    private boolean isEncryptedAttribute(String attribute, String collectionType, List<HpcMetadataValidationRule> rules) {
+      for(HpcMetadataValidationRule rule: rules) {
+        if (StringUtils.equals(rule.getAttribute(), attribute) && rule.getCollectionTypes().contains(collectionType))
+          return rule.getEncrypted();
+      }
+      return false;
+    }
+    
+    private String getCollectionType(HpcCollectionDTO collection) {
+	  for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
+	    if (StringUtils.equals(entry.getAttribute(), "collection_type"))
+	      return entry.getValue();
+	  }
+	  return null;
 	}
 
 	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session, String path)
@@ -396,7 +463,43 @@ public class HpcCollectionController extends AbstractHpcController {
         return retNavOutcome;
     }
 
+    /**
+     * Decrypt an encrypted attribute Ajax POST
+     * 
+     * @param hpcWebUser
+     * @param model
+     * @param bindingResult
+     * @param session
+     * @param request
+     * @param response
+     * @return
+     */
+    @JsonView(Views.Public.class)
+    @RequestMapping(path = "/show", method = RequestMethod.POST)
+    @ResponseBody
+    public AjaxResponseBody decrypt(@Valid @ModelAttribute("hpcSecuredRequest") HpcSecuredRequest hpcSecuredRequest, Model model,
+            BindingResult bindingResult, HttpSession session, HttpServletRequest request,
+            HttpServletResponse response) {
+        AjaxResponseBody result = new AjaxResponseBody();
 
+        try {
+            if (StringUtils.isEmpty(hpcSecuredRequest.getUserKey()) || StringUtils.isEmpty(hpcSecuredRequest.getTextString())) {
+              String errMsg = "error: Invalid user input";
+              result.setCode(errMsg);
+            } else {
+                String decryptedString = HpcEncryptionUtil.decrypt(hpcSecuredRequest.getUserKey(), Base64.getDecoder().decode(hpcSecuredRequest.getTextString()));
+                if (decryptedString != null) {
+                    result.setCode("success");
+                    result.setMessage(decryptedString);
+                }
+            }
+        } catch (Exception e) {
+            String errMsg = "error: " + e.getMessage();
+            result.setCode(errMsg);
+        }
+        return result;
+    }
+    
     private boolean copyInputFlashMap2Model(
       HttpServletRequest req, Model model, String attrNmPrefix)
     {
@@ -595,8 +698,9 @@ public class HpcCollectionController extends AbstractHpcController {
             theCollectionDto = collections.getCollections().get(0);
             final HpcDataManagementModelDTO modelDTO =
               (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+            HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, collectionPath.substring(0, StringUtils.ordinalIndexOf(collectionPath, "/", 2)));
             retHpcCollObj = buildHpcCollection(theCollectionDto,
-              modelDTO.getCollectionSystemGeneratedMetadataAttributeNames());
+              modelDTO.getCollectionSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules(), false);
         }
 
         return new Object[] { retHpcCollObj, theCollectionDto };

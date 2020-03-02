@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.web.controller;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -19,6 +20,7 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,6 +50,8 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcNamedCompoundMetadataQueryDTO;
+import gov.nih.nci.hpc.dto.security.HpcGroup;
+import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcCompoundQuery;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -76,9 +80,10 @@ public class HpcEditSearchController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String modelServiceURL;
 	@Value("${gov.nih.nci.hpc.server.metadataattributes}")
-
 	private String hpcMetadataAttrsURL;
-
+	@Value("${gov.nih.nci.hpc.server.group}")
+    private String groupServiceURL;
+	
 	/**
 	 * GET action to edit a saved search
 	 * 
@@ -99,6 +104,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		String userId = (String) session.getAttribute("hpcUserId");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
@@ -134,7 +140,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 			populateMetadata(model, authToken, user, "collection", session);
 			populateOperators(model);
 			populateLevelOperators(model);
-
+			checkSecGroup(userId, session, model, authToken);
 			return "criteria";
 
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
@@ -189,6 +195,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		String userId = (String) session.getAttribute("hpcUserId");
 		if (user == null) {
 			ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 			bindingResult.addError(error);
@@ -223,6 +230,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 			populateMetadata(model, authToken, user, "collection", session);
 			populateOperators(model);
 			populateLevelOperators(model);
+			checkSecGroup(userId, session, model, authToken);
 			return "criteria";
 
 		} catch (com.fasterxml.jackson.databind.JsonMappingException e) {
@@ -272,6 +280,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 		List<String> operatorList = new ArrayList<>();
 		List<String> attrValueList = new ArrayList<>();
 		List<Boolean> selfAttributeOnlyList = new ArrayList<>();
+		List<Boolean> attributeEncryptedList = new ArrayList<>();
 		for (Map.Entry<String, HpcMetadataQuery> query : compoundQuery.getQueries().entrySet()) {
 			rowIdList.add(query.getKey());
 			if(query.getValue().getLevelFilter() != null) {
@@ -290,6 +299,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 			attrList.add(query.getValue().getAttribute());
 			operatorList.add(query.getValue().getOperator().value());
 			attrValueList.add(query.getValue().getValue());
+			attributeEncryptedList.add(false);
 		}
 		hpcSearch.setRowId(rowIdList.toArray(new String[rowIdList.size()]));
 		hpcSearch.setLevel(levelList.toArray(new String[levelList.size()]));
@@ -297,6 +307,7 @@ public class HpcEditSearchController extends AbstractHpcController {
 		hpcSearch.setOperator(operatorList.toArray(new String[operatorList.size()]));
 		hpcSearch.setAttrValue(attrValueList.toArray(new String[attrValueList.size()]));
 		hpcSearch.setSelfAttributeOnly(ArrayUtils.toPrimitive(selfAttributeOnlyList.toArray(new Boolean[attrValueList.size()])));
+		hpcSearch.setEncrypted(ArrayUtils.toPrimitive(attributeEncryptedList.toArray(new Boolean[attrValueList.size()])));
 		if (compoundQuery.getCriteria().contains("OR"))
 			hpcSearch.setAdvancedCriteria(compoundQuery.getCriteria());
 		return hpcSearch;
@@ -436,4 +447,35 @@ public class HpcEditSearchController extends AbstractHpcController {
 		}
 		return null;
 	}
+	
+    private void checkSecGroup(String userId, HttpSession session, Model model, String authToken) {
+      //Find out if user belongs to any SEC_GROUP
+      HpcGroupListDTO groups = (HpcGroupListDTO) session.getAttribute("hpcSecGroup");
+      if (groups == null) {
+        groups =
+            HpcClientUtil.getGroups(
+                authToken, groupServiceURL, "%_SEC_GROUP%", sslCertPath, sslCertPassword);
+        if (groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
+          Iterator<HpcGroup> it = groups.getGroups().iterator();
+          HpcGroup group = null;
+          while (it.hasNext()) {
+            group = (HpcGroup) it.next();
+            if (!CollectionUtils.containsAny(group.getUserIds(), userId)) {
+              it.remove();
+            }
+          }
+        }
+        session.setAttribute("hpcSecGroup", groups);
+      }
+      boolean userInSecGroup = false;
+      if (groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
+        for (HpcGroup group : groups.getGroups()) {
+          if (group.getGroupName().contains("_SEC_GROUP")) {
+            userInSecGroup = true;
+            break;
+          }
+        }
+      }
+      model.addAttribute("userInSecGroup", userInSecGroup);
+    }
 }

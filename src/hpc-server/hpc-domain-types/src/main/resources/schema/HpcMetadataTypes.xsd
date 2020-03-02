@@ -187,6 +187,7 @@
 			             minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="ruleEnabled" type="xsd:boolean" />
 			<xsd:element name="description" type="xsd:string" />
+			<xsd:element name="encrypted" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
