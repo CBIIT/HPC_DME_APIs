@@ -313,7 +313,10 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
           .setDefaultValue((String) jsonMetadataValidationRule.get("defaultValue"));
       metadataValidationRule.setDefaultUnit((String) jsonMetadataValidationRule.get("defaultUnit"));
       metadataValidationRule.setDescription((String) jsonMetadataValidationRule.get("description"));
-
+      if(jsonMetadataValidationRule.get("encrypted") != null)
+        metadataValidationRule
+        .setEncrypted((Boolean) jsonMetadataValidationRule.get("encrypted"));
+      
       JSONArray jsonCollectionTypes = (JSONArray) jsonMetadataValidationRule.get("collectionTypes");
       if (jsonCollectionTypes != null) {
         Iterator<String> collectionTypeIterator = jsonCollectionTypes.iterator();

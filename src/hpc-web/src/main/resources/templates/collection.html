@@ -255,8 +255,8 @@
 									<table class="table table-bordered  col-md-12" id="metaAttrTable">
 										<thead>
 											<tr>
-												<th>Attribute Name</th>
-												<th>Value</th>
+												<th class="col-md-2">Attribute Name</th>
+												<th class="col-md-4">Value</th>
 											</tr>
 										</thead>
 										<tbody th:if="${collection.getSelfMetadataEntries() != null}">
@@ -265,23 +265,38 @@
 										    <input type="hidden" name="action" id="action" value="edit"/>
 											<input type="hidden" name="path" id="action" th:value="${collection.getCollection().getCollectionName()}"/>
 											<tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
-											  <div th:unless="${metadataItem.isSystemAttr() == true}">
-											    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-											    <td>
-											      <input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" 
-												  th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
-												  th:value="${metadataItem.getAttrValue()}"></input></td>
-											  </div>
+											  <div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == false}">
+												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												    <td>
+												      <input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" 
+													  th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+													  th:value="${metadataItem.getAttrValue()}"></input></td>
+												</div>
+												<div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == true}">
+												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												    <td><label for="${metadataItem.getAttrName()}"
+														th:text="${metadataItem.getAttrValue()}"></label></td>
+												</div>
 											</tr>
 										  </div>
 										  
 										  <div th:if="${action != 'edit'}">
 										    <tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
-										      <div th:unless="${metadataItem.isSystemAttr() == true}">
-											    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-											    <td><label for="${metadataItem.getAttrName()}"
-													th:text="${metadataItem.getAttrValue()}"></label></td>	
-											  </div>									  
+										     <div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == false}">
+												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												    <td><label for="${metadataItem.getAttrName()}"
+														th:text="${metadataItem.getAttrValue()}"></label></td>	
+												</div>
+												<div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == true}">
+												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+															<td><input type="password" disabled="disabled"
+																th:for="${metadataItem.getAttrName()}"
+																autocomplete="secured" style="border: none;background-color: white;"
+																th:value="${metadataItem.getAttrValue()}"></input>
+															<button type="button"
+																	th:id="'showButton'+${metadataItem.getAttrName()}"
+																	class="btn btn-outline-secondary btn-sm showButton">Show</button></td>
+														</div>
 											</tr>
 										  </div>
 										  
@@ -316,8 +331,8 @@
 									<table class="table table-bordered  col-md-12" id="sysMetaAttrTable">
 										<thead>
 											<tr>
-												<th>Attribute Name</th>
-												<th>Value</th>
+												<th class="col-md-2">Attribute Name</th>
+												<th class="col-md-4">Value</th>
 											</tr>
 										</thead>
 										<tbody th:if="${collection.getSelfMetadataEntries() != null}">
@@ -376,6 +391,16 @@
 							   name="action4Delete" th:value="${action}" />
                     </form>
                 </div>
+            <div id="keyPopover" class="hidden">
+              <form id="keyForm" role="form" class="form">
+      			  <div class="input-group">
+				    <input id="key" class="form-control" type="password" placeholder="Enter Key" name="userKey" autocomplete="key"/>
+				    <input id="textString" type="hidden" name="textString"/>	
+				    <input id="textId" type="hidden" name="textId"/>			
+				    <span id="decryptButton" class="btn btn-outline-secondary btn-sm input-group-addon" onClick="decrypt()">Decrypt</span>
+				  </div>
+			  </form>
+			</div>
 			</section>
 		</section>
 		<!--main content end-->
@@ -490,6 +515,52 @@
         */
     	}
     }
+    
+    function decrypt() {
+    	
+    	var serviceUri = "/collection/show";
+        $.ajax({
+            type : "POST",
+            url : serviceUri,
+            data : $(".popover #keyForm").serialize(),
+			success : function(msg) {
+				if(msg.code=="success") {
+					var decrypted=msg.message;
+			    	var id = "#"+$(".popover #textId").val();
+			    	$(id).prev("input").replaceWith('<label>'+decrypted+'</label>');
+			    	$(id).addClass("hidden");
+				    $(id).click();
+				} else {
+					var errMsg='<div class="alert alert-error"><a class="close" data-dismiss="alert">×</a><label>'+msg.code+'</label></div>';
+					$("#errorsFeedback").html(errMsg);
+					
+					var id = "#"+$(".popover #textId").val();
+					$(id).click();
+				}
+			},
+			error : function(e) {
+				console.log('ERROR: ', e);
+				$('#message').html(e.message);
+			}
+        });
+    	
+    	
+    }
+    
+    $(document).ready(function () {
+    	$(".showButton").popover({
+   	        container: 'body',
+   	        placement:"right",
+   	        html: true,
+   	        content: function() {
+   	          return $("#keyPopover").html();
+   	        }
+   	    });
+    	$('body').on('click', '.showButton', function() {
+    		$(".popover #textString").val($(this).prev("input").val());
+    		$(".popover #textId").val(this.id);
+    	});
+    });
 
 	/*]]>*/
 </script>

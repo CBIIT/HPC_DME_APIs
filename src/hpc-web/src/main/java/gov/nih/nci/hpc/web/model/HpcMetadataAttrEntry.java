@@ -7,6 +7,7 @@ public class HpcMetadataAttrEntry {
 	private String attrValue;
 	private String attrUnit;
 	private boolean systemAttr;
+	private boolean encrypted;
 	private List<String> validValues = null;
 	private String defaultValue = null;
 	private String description;
@@ -67,5 +68,13 @@ public class HpcMetadataAttrEntry {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+  public boolean isEncrypted() {
+    return encrypted;
+  }
+
+  public void setEncrypted(boolean encrypted) {
+    this.encrypted = encrypted;
+  }
 
 }

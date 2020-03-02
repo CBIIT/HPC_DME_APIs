@@ -303,7 +303,21 @@ public class HpcClientUtil {
     }
     return null;
   }
+  
+  public static String getDocByBasePath(
+      HpcDataManagementModelDTO docModelDto, String basePath) {
+    if (docModelDto == null || docModelDto.getDocRules() == null || basePath == null)
+      return null;
 
+    for (HpcDocDataManagementRulesDTO docDTO : docModelDto.getDocRules()) {
+      for (HpcDataManagementRulesDTO rules : docDTO.getRules()) {
+        if (rules.getBasePath().equals(basePath))
+          return docDTO.getDoc();
+      }
+    }
+    return null;
+  }
+  
   public static HpcDataManagementModelDTO getDOCModel(String token, String hpcModelURL,
       String hpcCertPath, String hpcCertPassword) {
 
