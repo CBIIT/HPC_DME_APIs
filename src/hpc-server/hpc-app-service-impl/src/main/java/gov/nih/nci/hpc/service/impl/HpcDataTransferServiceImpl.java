@@ -146,7 +146,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   // The download directory.
   private String downloadDirectory = null;
-  
+
   // The max sync download file size.
   @Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
   Long maxSyncDownloadFileSize = null;
@@ -881,21 +881,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public int cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
+  public void cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException {
     if (downloadTask.getStatus().equals(HpcCollectionDownloadTaskStatus.RECEIVED)) {
       dataDownloadDAO.setCollectionDownloadTaskCancellationRequested(downloadTask.getId(), true);
     }
 
-    int canceledItemsCount = 0;
-    for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
-      if (dataDownloadDAO.updateDataObjectDownloadTaskStatus(
-          downloadItem.getDataObjectDownloadTaskId(), HpcDataTransferDownloadStatus.RECEIVED,
-          HpcDataTransferDownloadStatus.CANCELED)) {
-        canceledItemsCount++;
-      }
+    cancelCollectionDownloadTaskItems(downloadTask.getItems());
+  }
+
+  @Override
+  public void cancelCollectionDownloadTaskItems(List<HpcCollectionDownloadTaskItem> downloadItems)
+      throws HpcException {
+    for (HpcCollectionDownloadTaskItem downloadItem : downloadItems) {
+      dataDownloadDAO.updateDataObjectDownloadTaskStatus(downloadItem.getDataObjectDownloadTaskId(),
+          HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferDownloadStatus.CANCELED);
     }
-    return canceledItemsCount;
   }
 
   @Override
@@ -1720,11 +1721,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcArchive baseArchiveDestination, HpcSynchronousDownloadFilter synchronousDownloadFilter)
       throws HpcException {
     // Validate max file size not exceeded.
-    if(maxSyncDownloadFileSize != null && downloadRequest.getSize() > maxSyncDownloadFileSize) {
-      throw new HpcException("File size exceeds the sync download limit", 
-          HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST); 
+    if (maxSyncDownloadFileSize != null && downloadRequest.getSize() > maxSyncDownloadFileSize) {
+      throw new HpcException("File size exceeds the sync download limit",
+          HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
     }
-    
+
     // Create a destination file on the local file system for the synchronous
     // download.
     downloadRequest.setFileDestination(createDownloadFile());
