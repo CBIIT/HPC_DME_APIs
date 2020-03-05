@@ -234,12 +234,27 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       HpcFileLocation fileLocation, boolean getSize) throws HpcException {
     HpcPathAttributes pathAttributes = new HpcPathAttributes();
     GetObjectMetadataRequest request = null;
+    ObjectMetadata metadata = null;
+    
+    try {
+        metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+            .getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
+        logger.error("ERAN: File found");
+    
+    } catch (AmazonServiceException ase) {
+      if (ase.getStatusCode() == 404) {
+        logger.error("ERAN: File doesn't exist");
+      } else {
+        throw new HpcException("[S3] Failed to get object or metadata: " + ase.getMessage(),
+            HpcErrorType.DATA_TRANSFER_ERROR, ase);
+      }
+
+    } catch (AmazonClientException ace) {
+      throw new HpcException("[S3] Failed to get object or metadata: " + ace.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, ace);
+    }
 
     try {
-      logger.error(
-          "ERAN omd: " + s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-              .getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId()));
-      
       boolean fileExists = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
           .doesObjectExist(fileLocation.getFileContainerId(), fileLocation.getFileId());
 
