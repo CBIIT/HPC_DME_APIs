@@ -257,7 +257,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           HpcErrorType.DATA_TRANSFER_ERROR, ace);
     }
 
-
     if (fileExists) {
       // This is a file.
       pathAttributes.setIsDirectory(false);
@@ -283,7 +282,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     // Optionally get the file size. We currently don't support getting file size for a directory.
     if (getSize && fileExists) {
-      // Create a S3 metadata request.
       pathAttributes.setSize(metadata.getContentLength());
     }
 
