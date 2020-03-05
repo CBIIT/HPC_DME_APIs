@@ -220,11 +220,19 @@
 														<a href="#" data-toggle="tooltip" data-html="true" data-placement="right" th:if="${!#strings.isEmpty(hpcMetadataAttrEntry.getDescription())}" th:title="${hpcMetadataAttrEntry.getDescription()}">
 														<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 													<td
-														th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input
+														th:if="${hpcMetadataAttrEntry.getValidValues() == null and hpcMetadataAttrEntry.isMandatory()}">
+														<input type="text" class="form-control"
+														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}" placeholder="Required"></input></td>
+														
+													<td
+														th:if="${hpcMetadataAttrEntry.getValidValues() == null and not hpcMetadataAttrEntry.isMandatory()}"><input
 														type="text" class="form-control"
 														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:value="${hpcMetadataAttrEntry.getAttrValue()}"></input></td>
+															
 													<td
 														th:unless="${hpcMetadataAttrEntry.getValidValues() == null}">
 														<select size="1"
