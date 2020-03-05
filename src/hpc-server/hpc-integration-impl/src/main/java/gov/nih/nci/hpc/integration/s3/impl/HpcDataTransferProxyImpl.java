@@ -25,7 +25,6 @@ import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -233,41 +232,42 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   public HpcPathAttributes getPathAttributes(Object authenticatedToken,
       HpcFileLocation fileLocation, boolean getSize) throws HpcException {
     HpcPathAttributes pathAttributes = new HpcPathAttributes();
-    GetObjectMetadataRequest request = null;
     ObjectMetadata metadata = null;
-    
+    Boolean fileExists = null;
+
+    // Look for the file.
     try {
-        metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-            .getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
-        logger.error("ERAN: File found");
-    
+      pathAttributes.setIsAccessible(true);
+      metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+          .getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
+      fileExists = true;
+
     } catch (AmazonServiceException ase) {
       if (ase.getStatusCode() == 404) {
-        logger.error("ERAN: File doesn't exist");
+        fileExists = false;
+      } else if (ase.getStatusCode() == 403) {
+        pathAttributes.setIsAccessible(false);
       } else {
-        throw new HpcException("[S3] Failed to get object or metadata: " + ase.getMessage(),
+        throw new HpcException("[S3] Failed to get object metadata: " + ase.getMessage(),
             HpcErrorType.DATA_TRANSFER_ERROR, ase);
       }
 
     } catch (AmazonClientException ace) {
-      throw new HpcException("[S3] Failed to get object or metadata: " + ace.getMessage(),
+      throw new HpcException("[S3] Failed to get object metadata: " + ace.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR, ace);
     }
 
-    try {
-      boolean fileExists = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-          .doesObjectExist(fileLocation.getFileContainerId(), fileLocation.getFileId());
 
-      pathAttributes.setIsAccessible(true);
+    if (fileExists) {
+      // This is a file.
+      pathAttributes.setIsDirectory(false);
+      pathAttributes.setExists(true);
+      pathAttributes.setIsFile(true);
 
-      if (fileExists) {
-        // This is a file.
-        pathAttributes.setIsDirectory(false);
-        pathAttributes.setExists(true);
-        pathAttributes.setIsFile(true);
-      } else {
-        pathAttributes.setIsFile(false);
+    } else {
+      pathAttributes.setIsFile(false);
 
+      try {
         // Check if this is a directory.
         ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
             .withBucketName(fileLocation.getFileContainerId()).withPrefix(fileLocation.getFileId());
@@ -275,28 +275,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             .getAmazonS3Client().listObjectsV2(listObjectsRequest).getKeyCount() > 0;
         pathAttributes.setIsDirectory(directoryExists);
         pathAttributes.setExists(directoryExists);
+      } catch (AmazonClientException ace) {
+        throw new HpcException("[S3] Failed to list object: " + ace.getMessage(),
+            HpcErrorType.DATA_TRANSFER_ERROR, ace);
       }
+    }
 
-      // Optionally get the file size. We currently don't support getting file size for a directory.
-      if (getSize && fileExists) {
-        // Create a S3 metadata request.
-        request = new GetObjectMetadataRequest(fileLocation.getFileContainerId(),
-            fileLocation.getFileId());
-        pathAttributes.setSize(s3Connection.getTransferManager(authenticatedToken)
-            .getAmazonS3Client().getObjectMetadata(request).getContentLength());
-      }
-
-    } catch (AmazonServiceException ase) {
-      if (ase.getStatusCode() == 403) {
-        pathAttributes.setIsAccessible(false);
-      } else {
-        throw new HpcException("[S3] Failed to get object or metadata: " + ase.getMessage(),
-            HpcErrorType.DATA_TRANSFER_ERROR, ase);
-      }
-
-    } catch (AmazonClientException ace) {
-      throw new HpcException("[S3] Failed to get object or metadata: " + ace.getMessage(),
-          HpcErrorType.DATA_TRANSFER_ERROR, ace);
+    // Optionally get the file size. We currently don't support getting file size for a directory.
+    if (getSize && fileExists) {
+      // Create a S3 metadata request.
+      pathAttributes.setSize(metadata.getContentLength());
     }
 
     return pathAttributes;
