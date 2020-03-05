@@ -236,6 +236,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     GetObjectMetadataRequest request = null;
 
     try {
+      logger.error(
+          "ERAN omd: " + s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+              .getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId()));
+      
       boolean fileExists = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
           .doesObjectExist(fileLocation.getFileContainerId(), fileLocation.getFileId());
 
