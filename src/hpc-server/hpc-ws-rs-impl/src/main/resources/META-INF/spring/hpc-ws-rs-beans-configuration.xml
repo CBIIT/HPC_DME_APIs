@@ -180,6 +180,10 @@
 		class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthorizationExceptionMapper">
 		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
+	<bean id="hpcWebApplicationExceptionMapper"
+		class="gov.nih.nci.hpc.ws.rs.provider.HpcWebApplicationExceptionMapper">
+		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+	</bean>
 
 	<!-- Authentication Interceptor -->
 	<bean id="hpcAuthenticationInterceptor"
@@ -335,6 +339,7 @@
 			<ref bean="hpcMultipartProvider" />
 			<ref bean="hpcAuthenticationExceptionMapper" />
 			<ref bean="hpcAuthorizationExceptionMapper" />
+			<ref bean="hpcWebApplicationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
 			<ref bean="hpcProfileInInterceptor" />
@@ -366,6 +371,7 @@
 			<ref bean="hpcMultipartProvider" />
 			<ref bean="hpcAuthenticationExceptionMapper" />
 			<ref bean="hpcAuthorizationExceptionMapper" />
+			<ref bean="hpcWebApplicationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
 			<ref bean="hpcProfileInInterceptor" />
