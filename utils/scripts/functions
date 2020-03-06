@@ -2883,7 +2883,7 @@ function dm_show_register_user_usage {
   [-D REST-respsonse]         Optionally specify the filename to capture rest response
   [-o status-file]            Optionally specify the filename to capture the error response. This is empty if the command is successful
   userId                      NIH user Id of the user.
-  description-json            Path to the JSON file containing the metadata for the new user
+  description.json            Path to the JSON file containing input data for registration.
 
 For detailed information on this command for group administrators, refer to the following page: 
 https://wiki.nci.nih.gov/x/xh5GFw
@@ -2999,7 +2999,10 @@ function dm_show_update_user_usage {
   [-D REST-respsonse]         Optionally specify the filename to capture rest response
   [-o status-file]            Optionally specify the filename to capture the error response. This is empty if the command is successful
   userId                      NIH user Id of the user.
-  description-json            Path to the JSON file containing the metadata for the new user
+  description-json            Path to the JSON file containing additional command parameters.
+
+For detailed information on this command for system administrators, refer to the following page: 
+https://wiki.nci.nih.gov/x/yB5GFw
 
 EOF
   echo "$usage"
