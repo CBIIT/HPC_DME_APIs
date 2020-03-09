@@ -537,7 +537,7 @@ public interface HpcDataManagementRestService {
       gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest);
 
   /**
-   * Get download task status of a list of data objects or a list of collections..
+   * Get download task status of a list of data objects or a list of collections.
    *
    * @param taskId The download task ID.
    * @return The REST service response w/ HpcCollectionDownloadStatusDTO entity.
@@ -546,6 +546,17 @@ public interface HpcDataManagementRestService {
   @Path("/download/{taskId}")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getDataObjectsOrCollectionsDownloadStatus(@PathParam("taskId") String taskId);
+
+  /**
+   * Cancel download task of a list of data objects or a list of collections.
+   *
+   * @param taskId The download task ID.
+   * @return The REST service response w/o entity.
+   */
+  @POST
+  @Path("/download/{taskId}/cancel")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response cancelDataObjectsOrCollectionsDownloadTask(@PathParam("taskId") String taskId);
 
   /**
    * Get download summary (for the request invoker).

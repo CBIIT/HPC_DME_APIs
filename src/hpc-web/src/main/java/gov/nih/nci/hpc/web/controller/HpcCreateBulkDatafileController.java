@@ -12,11 +12,8 @@ package gov.nih.nci.hpc.web.controller;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,8 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -42,13 +38,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDirectoryScanRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
@@ -77,7 +73,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 	private String hpcModelURL;
 	@Value("${gov.nih.nci.hpc.server}")
 	private String serverURL;
-	@Value("${gov.nih.nci.hpc.server.bulkregistration}")
+	@Value("${gov.nih.nci.hpc.server.v2.bulkregistration}")
 	private String bulkRegistrationURL;
 	@Value("${gov.nih.nci.hpc.web.server}")
 	private String webServerName;
@@ -107,6 +103,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			if (init != null) {
 				clearSessionAttrs(session);
 				model.addAttribute("create", false);
+				session.setAttribute("bulkType", "globus");
 			} else
 				model.addAttribute("create", true);
 			String path = request.getParameter("path");
@@ -157,6 +154,11 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			else
 				session.setAttribute("basePathSelected", basePath);
 
+			String bulkType = request.getParameter("bulkType");
+			if (StringUtils.isBlank(bulkType))
+				bulkType = (String) session.getAttribute("bulkType");
+			model.addAttribute("bulkType", bulkType);
+			
 			if (parent == null || basePath == null)
 				populateBasePaths(request, session, model, path);
 			else
@@ -244,6 +246,20 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		String[] action = request.getParameterValues("actionType");
 		String parent = request.getParameter("parent");
 		String basePath = HpcClientUtil.getBasePath(request);
+		String bulkType = request.getParameter("bulkType");
+		model.addAttribute("bulkType", bulkType);
+		String bucketName = (String)request.getParameter("bucketName");
+		model.addAttribute("bucketName", bucketName);
+		String s3Path = (String)request.getParameter("s3Path");
+		model.addAttribute("s3Path", s3Path);
+		String accessKey = (String)request.getParameter("accessKey");
+		model.addAttribute("accessKey", accessKey);
+		String secretKey = (String)request.getParameter("secretKey");
+		model.addAttribute("secretKey", secretKey);
+		String region = (String)request.getParameter("region");
+		model.addAttribute("region", region);
+		String s3File = (String)request.getParameter("s3File");
+		model.addAttribute("s3File", s3File != null && s3File.equals("on"));	
 		if (basePath == null)
 			basePath = (String) session.getAttribute("basePathSelected");
 
@@ -277,6 +293,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			session.setAttribute("datafilePath", hpcDataModel.getPath());
 			session.setAttribute("basePathSelected", basePath);
 			model.addAttribute("useraction", "globus");
+			session.setAttribute("bulkType", "globus");
 			session.removeAttribute("GlobusEndpoint");
 			session.removeAttribute("GlobusEndpointPath");
 			session.removeAttribute("GlobusEndpointFiles");
@@ -298,7 +315,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			// Validate parent path
 			String parentPath = null;
 			hpcDataModel.setPath(hpcDataModel.getPath().trim());
-			HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructBulkRequest(request, session,
+			HpcBulkDataObjectRegistrationRequestDTO registrationDTO = constructV2BulkRequest(request, session,
 					hpcDataModel.getPath().trim());
 			
 			HpcBulkMetadataEntries hpcBulkMetadataEntries = HpcExcelUtil.parseBulkMatadataEntries(hpcMetaDatafile, hpcDataModel.getPath().trim());
