@@ -53,8 +53,10 @@ function dm_generate_token () {
     then
       curl -k -u $USERNAME  ${SERVER}/authenticate >  $LOG_FILE
     else
-      account_password="$1"
-      curl -k -u $USERNAME:$account_password  ${SERVER}/authenticate >  $LOG_FILE
+      #account_password="$1"
+      #curl -k -u $USERNAME:$account_password  ${SERVER}/authenticate >  $LOG_FILE
+      dm_show_generate_token_usage >&2
+      exit 1
     fi
 
     local TOKEN=$(get_json_value $LOG_FILE token)
