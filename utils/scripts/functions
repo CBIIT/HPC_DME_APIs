@@ -1070,7 +1070,7 @@ function dm_show_delete_datafile_usage {
 
   Delete the file at the specified path.
 
-For detailed information on this command for system administrators, refer to the following page: 
+For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/_xpGFw
 
 EOF
@@ -1163,7 +1163,7 @@ function dm_show_delete_collection_usage {
   OPTIONS:
   -r                      Recursive delete. This will delete all the files and sub-collections under the specified collection recursively. 
 
-For detailed information on this command for group administrators, refer to the following page: 
+For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/zR5GFw
 
 EOF
@@ -2885,7 +2885,7 @@ function dm_show_register_user_usage {
   userId                      NIH user Id of the user.
   description.json            Path to the JSON file containing input data for registration.
 
-For detailed information on this command for group administrators, refer to the following page: 
+For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/xh5GFw
 
 EOF
@@ -3001,7 +3001,7 @@ function dm_show_update_user_usage {
   userId                      NIH user Id of the user.
   description-json            Path to the JSON file containing additional command parameters.
 
-For detailed information on this command for system administrators, refer to the following page: 
+For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/yB5GFw
 
 EOF
