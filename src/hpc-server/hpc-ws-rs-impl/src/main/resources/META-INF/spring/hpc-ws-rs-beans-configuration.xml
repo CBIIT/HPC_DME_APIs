@@ -165,6 +165,7 @@
 	<bean id="hpcMultipartProvider" class="gov.nih.nci.hpc.ws.rs.provider.HpcMultipartProvider">
 		<property name="attachmentDirectory" value="${hpc.ws.rs.attachment-tmp-directory}" />
 		<property name="attachmentThreshold" value="${hpc.ws.rs.attachment-memory-threshold}" />
+		<property name="attachmentMaxSize" value="${hpc.ws.rs.attachment-max-size}" />
 	</bean>
 
 	<!-- Exception Mapper Providers -->
@@ -177,6 +178,10 @@
 	</bean>
 	<bean id="hpcAuthorizationExceptionMapper"
 		class="gov.nih.nci.hpc.ws.rs.provider.HpcAuthorizationExceptionMapper">
+		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
+	</bean>
+	<bean id="hpcWebApplicationExceptionMapper"
+		class="gov.nih.nci.hpc.ws.rs.provider.HpcWebApplicationExceptionMapper">
 		<constructor-arg value="${hpc.ws.rs.stackTraceEnabled}" />
 	</bean>
 
@@ -334,6 +339,7 @@
 			<ref bean="hpcMultipartProvider" />
 			<ref bean="hpcAuthenticationExceptionMapper" />
 			<ref bean="hpcAuthorizationExceptionMapper" />
+			<ref bean="hpcWebApplicationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
 			<ref bean="hpcProfileInInterceptor" />
@@ -365,6 +371,7 @@
 			<ref bean="hpcMultipartProvider" />
 			<ref bean="hpcAuthenticationExceptionMapper" />
 			<ref bean="hpcAuthorizationExceptionMapper" />
+			<ref bean="hpcWebApplicationExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:inInterceptors>
 			<ref bean="hpcProfileInInterceptor" />

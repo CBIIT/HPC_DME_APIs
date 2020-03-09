@@ -420,7 +420,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
     // Authenticate w/ LDAP (optionally).
     if (ldapAuthentication && !securityService.authenticate(nciUserId, password)) {
-      throw new HpcException("LDAP authentidaction failed", HpcErrorType.UNAUTHORIZED_REQUEST);
+      throw new HpcException("LDAP authentication failed", HpcErrorType.UNAUTHORIZED_REQUEST);
     }
 
     // Set the request invoker (in thread local).

@@ -7,6 +7,7 @@ public class HpcMetadataAttrEntry {
 	private String attrValue;
 	private String attrUnit;
 	private boolean systemAttr;
+	private boolean mandatory;
 	private List<String> validValues = null;
 	private String defaultValue = null;
 	private String description;
@@ -66,6 +67,20 @@ public class HpcMetadataAttrEntry {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	/**
+	 * @return the mandatory
+	 */
+	public boolean isMandatory() {
+		return mandatory;
+	}
+
+	/**
+	 * @param mandatory the mandatory to set
+	 */
+	public void setMandatory(boolean mandatory) {
+		this.mandatory = mandatory;
 	}
 
 }

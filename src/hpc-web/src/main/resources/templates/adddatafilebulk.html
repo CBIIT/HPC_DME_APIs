@@ -111,14 +111,35 @@
 									type="hidden" name="parent" id="parent" th:value="${parent}" />
 								<input type="hidden" name="source" id="source"
 									th:value="${source}" />
+								<input type="hidden" name="bulkTypeHidden" id="bulkType"
+									th:value="${bulkType}" />
 								<!--panel-body start-->
 								<div class="panel-body">
-									<p>Use this form to bulk register folders/file from Globus
-										Endpoint (Source) to HPC DME Data Archive (Destination).
-										Source Globus Endpoint must be shared with
-										HPC DME Globus Group with READ permission to enable data
-										registration. Please refer to User Guide with Globus group account details.</p>
-									<div class="panel-heading">
+									<p>This page allows you to bulk register folders/files from
+										a Globus endpoint (source) or S3 bucket (source) to a DME
+										collection (destination) asynchronously.</p>
+									<div class="form-group" id="radioset">
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="bulkType"  id="bulkTypeGlobus" value="globus"
+										onChange="display('globus')"/>Globus</label>
+										</div>
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="bulkType" id="bulkTypeS3" value="s3"
+										onChange="display('s3')"/>S3</label>
+										</div>
+									</div>
+									<div id="globus-help-links" style="display: none;">
+										<p>
+											To upload from Globus, share the source Globus endpoint with
+											the DME Globus group and select read permission for that
+											group. For details, refer to <a
+												href="https://wiki.nci.nih.gov/x/cAyKFg">Preparing to
+												Use Globus with DME</a> in the User Guide.
+										</p>
+									</div>
+									<div class="panel-heading hidden">
 										<div class="col-md-3">
 											<h2>
 												<i class="fa fa-list-alt red"></i><strong>Data
@@ -126,18 +147,65 @@
 											</h2>
 										</div>
 									</div>
-									<div class="panel-body">
+									<div class="panel-body hidden">
 										<div class="form-group">
 											<table border="0">
-												<tr>
+												<tr class="globus">
 													<td colspan="2">
-															<div class="col-sm-12 column">
+															<div class="col-sm-12 column" id="globusDiv">
 																<button type="submit" class="btn btn-md btn-link"
 																	id="primaryGlobusButton"
 																	onClick="return refreshAttributes('Globus')">Select
 																	Data from Globus Endpoint</button>
 															</div>
 															</td></tr>
+															<tr class="s3"><td>
+																<label for="bucketName">S3 Bucket:</label></td>
+																<td><input
+																	type="text" class="form-control" name="bucketName" th:value="${bucketName}"
+																	id="bucketName" placeholder="Enter S3 Bucket Name" />
+															</td></tr>
+															<tr class="s3"><td>
+																<label for="s3Path">S3 (Source) Path:</label></td>
+																<td><input
+																	type="text" class="form-control"
+																	th:value="${s3Path}"
+																	name="s3Path" id="s3Path"
+																	placeholder="Enter S3 (Source) Path" size="40" />
+															</td></tr>
+															<tr class="s3">
+																<td><label>&nbsp;</label></td>
+																<td th:if="${s3File == true}"><input type="checkbox" name="s3File" id="s3File" checked="checked"> Check this if the source path is a file and not a folder.</input>
+																</td>
+																<td th:if="${s3File != true}"><input type="checkbox" name="s3File" id="s3File"> Check this if the source path is a file and not a folder.</input>
+																</td>
+															</tr>
+															<tr class="s3"><td>
+																<label for="accessKey">Access Key:</label></td>
+																<td><input
+																	type="text" class="form-control"
+																	th:value="${accessKey}"
+																	name="accessKey" id="accessKey"
+																	placeholder="Enter Access Key" size="40" />
+															</td></tr>
+															<tr class="s3"><td>
+																<label for="secretKey">Secret Access Key:</label></td>
+																<td><input
+																	type="password" autocomplete="secret-access-key" class="form-control"
+																	th:value="${secretKey}"
+																	name="secretKey" id="secretKey"
+																	placeholder="Enter Secret Access Key" size="40" />
+															</td></tr>
+															<tr class="s3"><td>
+																<label for="region">Region:</label></td>
+																<td><input
+																	type="text" class="form-control"
+																	th:value="${region}"
+																	name="region" id="region"
+																	placeholder="Enter Region (for Example us-east-1)" size="40" />
+															</td></tr>
+															<tr><td colspan="2">&nbsp;</td></tr>
+															
 															<tr>
 																<td><label>Include Criteria: </label></td>
 																<td><textarea name="includeCriteria" id="includeCriteria" placeholder="Enter Include criteria" rows="4" cols="50" th:inline="text">[[${includeCriteria}]]</textarea>
@@ -215,7 +283,7 @@
 											<td>&nbsp;</td>
 										</tr>
 									</table>
-									<div class="panel-heading">
+									<div class="panel-heading hidden">
 										<div class="col-md-3">
 											<h2>
 												<i class="fa fa-list-alt red"></i><strong>Data
@@ -223,7 +291,7 @@
 											</h2>
 										</div>
 									</div>
-									<div class="panel-body">
+									<div class="panel-body hidden">
 										<div class="form-group">
 											<table border="0">
 												<tr>
@@ -274,7 +342,7 @@
 										</div>
 									</div>
 								</div>
-								<div class="panel-heading">
+								<div class="panel-heading hidden">
 									<div class="col-md-3">
 										<h2>
 											<i class="fa fa-list-alt red"></i><strong>Collection
@@ -291,7 +359,7 @@
 										</h2>
 									</div>
 								</div>
-								<div class="panel-body">
+								<div class="panel-body hidden">
 									<div class="form-group">
 										<table class="table table-bordered  col-md-12"
 											id="metaAttrTable">
@@ -370,7 +438,7 @@
 										</table>
 									</div>
 								</div>
-								<div class="panel-footer">
+								<div class="panel-footer hidden">
 									<button type="submit" class="btn btn-md btn-primary"
 										id="primaryCreateButton" onClick="return validate()"
 										th:disabled="${create == true} ?'false' : 'disabled'">Register</button>
@@ -626,6 +694,32 @@
    	 		$("#includeCriteria").focus();
    	});
    	
+   	var toggle = true;
+	function display(value) {
+		var globusHelpLinksDiv = document.getElementById("globus-help-links");
+		$(".hidden").removeClass("hidden");
+		if (value == "globus") {
+			$(".globus").removeClass("hidden");
+			$(".s3").addClass("hidden");
+			globusDiv.style.display = "block";
+			globusHelpLinksDiv.style.display = "block";
+		} else {
+			$(".s3").removeClass("hidden");
+			$(".globus").addClass("hidden");
+			globusHelpLinksDiv.style.display = "none";
+			$("#primaryCreateButton").prop("disabled", false);
+		}
+	}
+	$(document).ready(function(){
+        if($('#bulkType').val() == 'globus') {
+            $("#bulkTypeGlobus").prop("checked", true);
+            display('globus');
+	    } else if($('#bulkType').val() == 's3') {
+	    	$("#bulkTypeS3").prop("checked", true);
+            display('s3');
+		}
+	});
+	
 //]]>	
 </script>
 

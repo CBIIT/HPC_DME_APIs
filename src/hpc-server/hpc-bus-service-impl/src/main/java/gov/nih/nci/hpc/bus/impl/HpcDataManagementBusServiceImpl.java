@@ -598,6 +598,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return downloadStatus != null ? downloadStatus
         : getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION_LIST);
   }
+  
+  @Override
+  public void cancelDataObjectsOrCollectionsDownloadTask(String taskId) throws HpcException {
+    // Input validation.
+    HpcDownloadTaskStatus taskStatus =
+        dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.COLLECTION_LIST);
+    if (taskStatus == null) {
+      taskStatus =
+          dataTransferService.getDownloadTaskStatus(taskId, HpcDownloadTaskType.DATA_OBJECT_LIST);
+    }
+    if (taskStatus == null) {
+      throw new HpcException("Collection / data-object list download task not found: " + taskId,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    if (!taskStatus.getInProgress()) {
+      throw new HpcException("Collection / data-object list download task not in-progress: " + taskId,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    dataTransferService.cancelCollectionDownloadTask(taskStatus.getCollectionDownloadTask());
+  }
 
   @Override
   public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount)

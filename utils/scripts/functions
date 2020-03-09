@@ -11,9 +11,36 @@
 
 source $HPC_DM_UTILS/scripts/utilities
 
+#Print Usage of dm_generate_token function
+function dm_show_generate_token_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_generate_token 
+
+  Generates the token for use by CLU commands.  
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/345eFw
+
+EOF
+  echo "$usage"
+}
+
+
+
 #Generate a DM API authentication token
 #Arguments: [password]
 function dm_generate_token () {
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          dm_show_generate_token_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
 
     local LOG_FILE=$HPC_DM_UTILS/temp/log
     local CONFIG_PATH=$HPC_DM_UTILS/tokens/curl-conf
@@ -26,8 +53,10 @@ function dm_generate_token () {
     then
       curl -k -u $USERNAME  ${SERVER}/authenticate >  $LOG_FILE
     else
-      account_password="$1"
-      curl -k -u $USERNAME:$account_password  ${SERVER}/authenticate >  $LOG_FILE
+      #account_password="$1"
+      #curl -k -u $USERNAME:$account_password  ${SERVER}/authenticate >  $LOG_FILE
+      dm_show_generate_token_usage >&2
+      exit 1
     fi
 
     local TOKEN=$(get_json_value $LOG_FILE token)
@@ -58,7 +87,7 @@ function dm_generate_token () {
 #         [data-object-file] : For synchronous dataObject registration only
 function dm_register () {
 
-    local USAGE="usage: dm_register [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
+    local USAGE="usage: dm_register [-D REST-response] [-o output-json-file] <description.json> <destination-path> <colleciton|dataObject> [data-object-file]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -161,14 +190,32 @@ function dm_register () {
     check_connection $RESPONSE_HEADER
 }
 
+
+#Print Usage of dm_register_collection function
+function dm_show_register_collection_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_register_collection [-D REST-response] [-o output-file] <description.json> <archive-path>
+
+  Register an empty collection
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  [description-json]          Path to the JSON file containing the metadata for the new collection. Omit this parameter if the source is a Globus endpoint or S3 bucket
+  [archive-path]              Destination path in the archive
+
+For detailed information on creating a collection, refer to the following page: 
+https://wiki.nci.nih.gov/x/g4JeFw
+
+EOF
+  echo "$usage"
+}
+
+
 #Register a collection 
 #Inputs:  [-o output-json-file]
 #         [-D REST-response]
 #         <description.json>: The metadata json file for the collection 
 #         <destinaton-path>: The destination logical path
 function dm_register_collection {
-
-    local USAGE="usage: dm_register_collection [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -180,7 +227,7 @@ function dm_register_collection {
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_register_collection_usage >&2
                     return 1
                 fi
             ;;
@@ -189,7 +236,7 @@ function dm_register_collection {
                     RESPONSE_MSG="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_register_collection_usage >&2
                     return 1
                 fi
             ;;
@@ -200,9 +247,10 @@ function dm_register_collection {
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "$USAGE" >&2
+        dm_show_register_collection_usage >&2
         return
     fi
+
 
     local DESCRIPTION="$1"
     local DESTINATION_PATH="$2"
@@ -221,15 +269,35 @@ function dm_register_collection {
 
 }
 
-#Register a dataObject using presigned S3 URL
+
+
+#Print Usage of dm_register_dataobject_presigned function
+function dm_show_register_dataobject_presigned_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_register_dataobject_presigned [-D REST-response] [-o output-file] <description.json> <archive-path> [source-file]
+
+  Register a dataobject with pre-signed URL
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  description-json            Path to the JSON file containing the metadata for the new dataobject
+  archive-path                Destination path in the archive
+  [source-file]               Path of the file to upload
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/KohzFw
+
+EOF
+  echo "$usage"
+}
+
+
+#Register a dataObject using pre-signed URL
 #Inputs:  [-o output-json-file]
 #         [-D REST-response]
 #         <description.json>: The metadata json file for the dataObject 
 #         <destinaton-path>: The destination logical path
 #         <source-file>: The source file for synchronous registration.
 function dm_register_dataobject_presigned {
-
-    local USAGE="usage: dm_register_dataobject_presigned [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> <source-file>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -241,7 +309,7 @@ function dm_register_dataobject_presigned {
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_register_dataobject_presigned_usage >&2
                     return 1
                 fi
             ;;
@@ -250,7 +318,7 @@ function dm_register_dataobject_presigned {
                     RESPONSE_MSG="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_register_dataobject_presigned_usage >&2
                     return 1
                 fi
             ;;
@@ -261,7 +329,7 @@ function dm_register_dataobject_presigned {
 
     if [ "$#" -lt 3 ]
     then
-        echo "$USAGE" >&2
+        dm_show_register_dataobject_presigned_usage >&2
         return
     fi
 
@@ -314,6 +382,26 @@ function dm_register_dataobject_presigned {
 
 
 
+#Print Usage of dm_register_dataobject function
+function dm_show_register_dataobject_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_register_dataobject [-D REST-response] [-o output-file] <description.json> <archive-path> [source-file]
+
+  Register a dataobject
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  [description-json]          Path to the JSON file containing the metadata and source info for the new dataobject 
+  [archive-path]              Destination path in the archive
+  [source-file]               Path to the source file for synchronous uploads. Omit the parameter for asynchronous upload (Globus and S3).
+
+For detailed information on registering a data file, refer to the following page: 
+https://wiki.nci.nih.gov/x/ARtGFw
+
+EOF
+  echo "$usage"
+}
+
+
 #Register a dataObject 
 #Inputs:  [-o output-json-file]
 #         [-D REST-response]
@@ -321,8 +409,6 @@ function dm_register_dataobject_presigned {
 #         <destinaton-path>: The destination logical path
 #         [source-file]: The source file for synchronous registration.
 function dm_register_dataobject {
-
-    local USAGE="usage: dm_register_dataobject [-D REST-respsonse] [-o output-json-file] <description.json> <destination-path> [source-file]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -334,7 +420,7 @@ function dm_register_dataobject {
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_register_dataobject_usage >&2
                     return 1
                 fi
             ;;
@@ -343,7 +429,7 @@ function dm_register_dataobject {
                     RESPONSE_MSG="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_register_dataobject_usage >&2
                     return 1
                 fi
             ;;
@@ -354,7 +440,7 @@ function dm_register_dataobject {
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "$USAGE" >&2
+        dm_show_register_dataobject_usage >&2
         return
     fi
 
@@ -431,7 +517,7 @@ function dm_sync_globus_endpoint  {
 #      : [REST-response] (for backward compatibility)
 function dm_get_item {
 
-    local USAGE="usage: dm_get_item [-D REST-respsonse] [-o metadata-file] <item-path>"
+    local USAGE="usage: dm_get_item [-D REST-response] [-o metadata-file] <item-path>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -497,6 +583,25 @@ function dm_get_item {
 }
 
 
+
+#Print Usage of dm_get_dataobject function
+function dm_show_get_dataobject_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_get_dataobject [-D REST-response] [-o metadata-file] <dataobject_path>
+
+  Get the metadata of a dataobject
+  [-D REST-response]          Optionally specify the filename to capture the REST response.
+  [-o metadata-file]          Optionally specify the filename to capture the dataobject metadata. If this is not specified, metadata is printed to standard output
+  object_path                 Full path of the dataobject in the archive.
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/4A1GFw
+
+EOF
+  echo "$usage"
+}
+
+
 #Get the metadata of a dataobject from the archive
 #Inputs: [-o metadata-file]
 #        [-D REST-response]
@@ -505,8 +610,6 @@ function dm_get_item {
 #      : [REST-response] (for backward compatibility)
 function dm_get_dataobject {
 
-    local USAGE="usage: dm_get_dataobject [-D REST-respsonse] [-o metadata-file] <dataobject-path>"
-    
     local RESPONSE_MSG
     local RESPONSE_HEADER
 	local SHOW_OUTPUT=1
@@ -518,17 +621,17 @@ function dm_get_dataobject {
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_get_dataobject_usage >&2
                     return 1
                 fi
             ;;
             -o|--output)
                 if [ "$2" ]; then
                     RESPONSE_MSG="$2"
-					SHOW_OUTPUT=0
+                    SHOW_OUTPUT=0
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_get_dataobject_usage >&2
                     return 1
                 fi
             ;;
@@ -541,7 +644,7 @@ function dm_get_dataobject {
     do
       case "${option}" in
         *)
-          echo "$USAGE" >&2
+          dm_show_get_dataobject_usage >&2
           exit 1
           ;;
       esac
@@ -549,7 +652,7 @@ function dm_get_dataobject {
 
     if [ "$#" -lt 1 ] 
     then
-        echo "$USAGE" >&2
+        dm_show_get_dataobject_usage >&2
         return
     fi
     local ITEM_PATH="$1"
@@ -592,6 +695,23 @@ function dm_get_dataobject {
     fi
 }
 
+#Print Usage of dm_get_collection function
+function dm_show_get_collection_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_get_collection [-D REST-response] [-o metadata-file] <collection_path>
+
+  Get the metadata of a collection
+  [-D REST-response]          Optionally specify the filename to capture the REST response.
+  [-o metadata-file]          Optionally specify the filename to capture the collection metadata. If this is not specified, metadata is printed to standard output
+  collection_path             Full path of the collection in the archive.
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/ShdGFw
+
+EOF
+  echo "$usage"
+}
+
 
 #Get the metadata of a collection from the archive
 #Inputs: [-o metadata-file]
@@ -601,7 +721,7 @@ function dm_get_dataobject {
 #      : [REST-response] (for backward compatibility)
 function dm_get_collection {
 
-    local USAGE="usage: dm_get_collection [-D REST-respsonse] [-o metadata-file] <collection-path>"
+    #local USAGE="usage: dm_get_collection [-D REST-response] [-o metadata-file] <collection-path>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -614,17 +734,17 @@ function dm_get_collection {
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_get_collection_usage >&2
                     return 1
                 fi
             ;;
             -o|--output)
                 if [ "$2" ]; then
                     RESPONSE_MSG="$2"
-					SHOW_OUTPUT=0
+	            SHOW_OUTPUT=0
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_get_collection_usage >&2
                     return 1
                 fi
             ;;
@@ -637,7 +757,7 @@ function dm_get_collection {
     do
       case "${option}" in
         *)
-          echo "$USAGE" >&2
+          dm_show_get_collection_usage >&2
           exit 1
           ;;
       esac
@@ -646,7 +766,7 @@ function dm_get_collection {
 
     if [ "$#" -lt 1 ] 
     then
-        echo "$USAGE" >&2
+        dm_show_get_collection_usage >&2
         return
     fi
     local ITEM_PATH="$1"
@@ -691,14 +811,18 @@ function dm_get_collection {
 #Print Usage of dm_query_dataobject function
 function dm_show_query_dataobject_usage {
 read -d  '' usage <<- EOF
-usage: dm_query_dataobject [-D REST-respsonse] [-o output-json-file] <description.json> [search-path]
+usage: dm_query_dataobject [-D REST-response] [-o output-file] <description.json> [search-path]
 
 Search for dataobjects based on the given compound query and optional search path.
 OPTIONS:
-[-D REST-respsonse]         Optionally specify the filename to capture REST response
-[-o output-json-file]       Optionally specify the filename to capture the JSON response
+[-D REST-response]          Optionally specify the filename to capture the REST response
+[-o output-file]            Optionally specify the filename to capture the query output
 <criteria.json>             JSON file containing the compound query for the search
 [search-path]               Optionally specify the collection path to search in
+
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/7QRuG
 
 EOF
 echo "$usage"
@@ -814,12 +938,16 @@ case $1 in
 #Print Usage of dm_download_dataobject_sync function
 function dm_show_download_dataobject_sync_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_dataobject_sync [-D REST-respsonse] [-p] <logic-path> <destination-file>
+  usage: dm_download_dataobject_sync [-D REST-response] [-p] <logic-path> <destination-file>
 
   Download the specified dataobject to the local machine.
   OPTIONS:
-  -D REST-respsonse       Specify the filename to capture rest response
-  -p                     Use S3-presigned URL for downloading.
+  -D REST-response       Specify the filename to capture the REST response
+  -p                     Use S3-presigned URL for downloading
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/uh5GFw
+
 EOF
   echo "$usage"
 }
@@ -832,7 +960,7 @@ EOF
 #        logic-path 
 #        destination-file
 function dm_download_dataobject_sync {
-  #local USAGE="usage: dm_download_dataobject_sync [-D REST-respsonse] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
+  #local USAGE="usage: dm_download_dataobject_sync [-D REST-response] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
 
   #Set the default parameters
   local APPLY_PRESIGNED=0
@@ -964,13 +1092,27 @@ function dm_download_dataobject_sync {
   fi
 }
 
+#Print Usage of dm_delete_datafile function
+function dm_show_delete_datafile_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_delete_datafile <file-path>
+
+  Delete the file at the specified path.
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/_xpGFw
+
+EOF
+  echo "$usage"
+}
+
 
 #Delete a datafile from the archive using the cmd line client.
 #Inputs:  <file-path>: The path on the file system 
 
 function dm_delete_datafile {
 
-    local USAGE="usage: dm_delete_datafile <file-path>"
+    #local USAGE="usage: dm_delete_datafile <file-path>"
 
     check_java
     if [ "$?" -ne 0 ]
@@ -982,7 +1124,7 @@ function dm_delete_datafile {
     do
       case "${option}" in
         *)
-          echo "$USAGE" >&2
+          dm_show_delete_datafile_usage >&2
           exit 1
           ;;
       esac
@@ -990,7 +1132,7 @@ function dm_delete_datafile {
 
     if [ -z "$1" ] 
     then
-        echo "$USAGE" >&2
+        dm_show_delete_datafile_usage >&2
         exit 1 
     fi
     
@@ -1041,7 +1183,7 @@ function dm_delete_datafile {
 
 }
 
-#Print Usage of dm_register_directory function
+#Print Usage of dm_delete_collection function
 function dm_show_delete_collection_usage {
   read -d  '' usage <<- EOF
   usage: dm_delete_collection [OPTIONS] <collection-path> 
@@ -1049,6 +1191,10 @@ function dm_show_delete_collection_usage {
   Delete the collection at the specified path. 
   OPTIONS:
   -r                      Recursive delete. This will delete all the files and sub-collections under the specified collection recursively. 
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/zR5GFw
+
 EOF
   echo "$usage"
 }
@@ -1152,7 +1298,7 @@ function dm_show_register_directory_usage {
   usage: dm_register_directory [OPTIONS]  <source-path> <destination-path> 
 
   Recursively copy all files in the <source-path> to the archive's <destination-path>. 
-  Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example the metadata for the file data.txt should be data.txt.metadata.json
+  Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example, the metadata for the file data.txt should be data.txt.metadata.json
   OPTIONS:
   -a[ARCHIVE_TYPE]        The type of the archive. Valid options are "S3" and "POSIX".
   -c                      Turn off checksum calculation. 
@@ -1165,6 +1311,11 @@ function dm_show_register_directory_usage {
   -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
   -t[NUM_THREADS]         The number of threads to use while uploading files to the archive. This number should be between [1, 32].
+
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/-xpGFw
+
 EOF
   echo "$usage"
 }
@@ -1404,11 +1555,11 @@ EOF
 
 
 
-#Register a directory from a globus endpoint using the cmd line client.
+#Register a directory from a Globus endpoint using the cmd line client.
 #By default the endpoint specified in hpcdme.properties will be used
-#Inputs:  <source-path>: The path on the globus endpoint 
+#Inputs:  <source-path>: The path on the Globus endpoint 
 #         <destinaton-path>: The destination logical path on the archive
-#         [globus-endpoint]: The endpoint to use other that default
+#         [globus-endpoint]: The Globus endpoint to use other that default
 function dm_register_globus_directory {
 
     local OPTIND
@@ -1488,7 +1639,7 @@ function dm_register_globus_directory {
     local globus_endpoint
     if [ -z "$3" ]
     then
-      #echo "Using the default globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
+      #echo "Using the default Globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
       globus_endpoint=$(get_globus_endpoint)
       if [ "$?" -ne 0 ]
       then
@@ -1561,6 +1712,28 @@ function dm_register_globus_directory {
 
 }
 
+
+#Print Usage of dm_download_collection_globus function
+function dm_show_download_collection_globus_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_collection_globus [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <globus-destination_path> [globus-endpoint]
+
+  Download the specified collection or list of collections to the Globus endpoint
+  [-D REST-response]          Optionally specify the filename to capture the REST response status
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  [-f paths-file]             New line delimited file which contains the collection paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
+  globus-destination_path     Full path of the destination folder at the Globus endpoint
+  [globus-endpoint]           The UUID of the Globus endpoint that you want to use. If this is not specified, then the one specified in the hpcdme.properties file is used.
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/JYlNG
+
+EOF
+  echo "$usage"
+}
+
+
 #Download a collection to Globus 
 #Inputs: [-o output-json-file]
 #        [-D REST-response]
@@ -1568,9 +1741,6 @@ function dm_register_globus_directory {
 #        [collection-path]
 #        destination-file
 function dm_download_collection_globus {
-
-
-    local USAGE="usage: dm_download_collection_globus [-D REST-respsonse] [-o output-json-file] [-f paths-file] [collection-logical-path] <globus-destination-path> [globus-endpoint]"
 
     local response_msg
     local response_hdr
@@ -1583,7 +1753,7 @@ function dm_download_collection_globus {
                     response_hdr="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_collection_globus_usage >&2
                     return 1
                 fi
             ;;
@@ -1592,7 +1762,7 @@ function dm_download_collection_globus {
                     response_msg="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_collection_globus_usage >&2
                     return 1
                 fi
             ;;
@@ -1600,8 +1770,8 @@ function dm_download_collection_globus {
                 if [ "$2" ]; then
                     path_file="$2"
                 else
-                    echo "$USAGE" >&2
-                    return 1
+                    dm_show_download_collection_globus_usage >&2
+                    exit 1
                 fi
             ;;
             *) break
@@ -1611,7 +1781,7 @@ function dm_download_collection_globus {
 
     if [ "$#" -lt 2 ] || [ "$#" -gt 3 ] || [[ "$3" =~ "/" ]]
     then
-        echo "$USAGE" >&2
+        dm_show_download_collection_globus_usage >&2
         return 1
     fi
 
@@ -1621,7 +1791,7 @@ function dm_download_collection_globus {
     local globus_endpoint
     if [ -z "$3" ]
     then
-      #echo "Using the default globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
+      #echo "Using the default Globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
       globus_endpoint=$(get_globus_endpoint)
       if [ "$?" -ne 0 ]
       then
@@ -1696,7 +1866,7 @@ function dm_download_collection_globus {
 	
 	local request_file=$HPC_DM_UTILS/temp/async-download.json.tmp
      
-    #Update the globus endpoint
+    #Update the Globus endpoint
     updated_endpoint=$(cat $template_file | sed "s@$container@$globus_endpoint@")
 
     #Update the file name 
@@ -1752,6 +1922,27 @@ function dm_download_async {
 	dm_download_dataobject_globus $@
 }
 
+
+#Print Usage of dm_download_dataobject_globus function
+function dm_show_download_dataobject_globus_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_dataobject_globus [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <globus-destination_path> [globus-endpoint]
+
+  Download the specified dataobject or list of dataobjects to the Globus endpoint
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  [-f paths-file]             New line delimited file which contains the file paths in DME to be downloaded
+  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
+  globus-destination_path     Full path of the destination file in the Globus endpoint
+  [globus-endpoint]           The UUID of the Globus endpoint that you want to use. If this is not specified, then the one specified in the hpcdme.properties file is used.
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/awRuG
+
+EOF
+  echo "$usage"
+}
+
 #Download to Globus 
 #Inputs: [-o output-json-file]
 #        [-D REST-response]
@@ -1759,9 +1950,6 @@ function dm_download_async {
 #        [item-path] path on archive
 #        <destination-path> path on Globus
 function dm_download_dataobject_globus {
-
-
-    local USAGE="usage: dm_download_dataobject_globus [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <globus-destination-path> [globus-endpoint]"
 
     local response_msg
     local response_hdr
@@ -1774,7 +1962,7 @@ function dm_download_dataobject_globus {
                     response_hdr="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_dataobject_globus_usage >&2
                     return 1
                 fi
             ;;
@@ -1783,7 +1971,7 @@ function dm_download_dataobject_globus {
                     response_msg="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_dataobject_globus_usage >&2
                     return 1
                 fi
             ;;
@@ -1791,7 +1979,7 @@ function dm_download_dataobject_globus {
                 if [ "$2" ]; then
                     path_file="$2"
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_dataobject_globus_usage >&2
                     return 1
                 fi
             ;;
@@ -1802,7 +1990,7 @@ function dm_download_dataobject_globus {
 
     if [ "$#" -lt 2 ] || [ "$#" -gt 3 ] || [[ "$3" =~ "/" ]]
     then
-        echo "$USAGE" >&2
+        dm_show_download_dataobject_globus_usage >&2
         return 1
     fi
 
@@ -1811,7 +1999,7 @@ function dm_download_dataobject_globus {
 
     if [ -z "$3" ]
     then
-      #echo "Using the default globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
+      #echo "Using the default Globus endpoint in $HPC_DM_UTILS/hpcdme.properties" 
       globus_endpoint=$(get_globus_endpoint) || exit 1
     else
       globus_endpoint="$3"
@@ -1888,7 +2076,7 @@ function dm_download_dataobject_globus {
 	
     local request_file=$HPC_DM_UTILS/temp/async-download.json.tmp
      
-    #Update the globus endpoint
+    #Update the Globus endpoint
     updated_endpoint=$(cat $template_file | sed "s@$container@$globus_endpoint@")
 
     #Update the file name 
@@ -1951,7 +2139,7 @@ function dm_download_dataobject_globus {
 }
 
 
-#Download to s3 bucke/description.json
+#Download to S3 bucke/description.json
 #Inputs: <archive-path> path on archive
 #        <description.json> JSON file containing dextination S3 bucket information
 function dm_download_s3_deprecated {
@@ -2013,18 +2201,22 @@ function dm_download_s3_deprecated {
     fi
 }
 
-#Print Usage of dm_download_s3 function
-function dm_show_download_s3_usage {
+#Print Usage of dm_download_dataobject_s3 function
+function dm_show_download_dataobject_s3_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_dataobject_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
-  Download the specified dataobject or collection to the s3 bucket
-  [-D REST-respsonse]         Optionally specify the filename to capture rest response
-  [-o output-json-file]       Optionally specify the filename to capture the json response
+  usage: dm_download_dataobject_s3 [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
+  Download the specified dataobject or list of dataobjects to an S3 bucket
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
   [-f paths-file]             New line delimited file which contains the data object paths in DME to be downloaded
   [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
   destination-bucket          Destination S3 bucket to transfer data to
   destination_path            Full path of the destination file/folder in the S3 bucket
   [aws_credentials_file_path] Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/bQRuG
+
 EOF
   echo "$usage"
 }
@@ -2050,7 +2242,7 @@ function dm_download_dataobject_s3 {
                     response_hdr="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_dataobject_s3_usage >&2
                     return 1
                 fi
             ;;
@@ -2059,7 +2251,7 @@ function dm_download_dataobject_s3 {
                     response_msg="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_dataobject_s3_usage >&2
                     return 1
                 fi
             ;;
@@ -2067,7 +2259,7 @@ function dm_download_dataobject_s3 {
                 if [ "$2" ]; then
                     path_file="$2"
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_dataobject_s3_usage >&2
                     return 1
                 fi
             ;;
@@ -2078,7 +2270,7 @@ function dm_download_dataobject_s3 {
 
     if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]
     then
-        dm_show_download_s3_usage >&2
+        dm_show_download_dataobject_s3_usage >&2
         exit 1
     fi
 
@@ -2200,15 +2392,19 @@ function dm_download_dataobject_s3 {
 #Print Usage of dm_download_collection_s3 function
 function dm_show_download_collection_s3_usage {
   read -d  '' usage <<- EOF
-  usage: dm_download_collection_s3 [-D REST-respsonse] [-o output-json-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
-  Download the specified dataobject or collection to the s3 bucket
-  [-D REST-respsonse]         Optionally specify the filename to capture rest response
-  [-o output-json-file]       Optionally specify the filename to capture the json response
+  usage: dm_download_collection_s3 [-D REST-response] [-o output-file] [-f paths-file] [archive-path] <destination_bucket> <destination_path> [aws_credentials_file_path]
+  Download the specified collection or list of collections to an S3 bucket
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This will be empty if the command is successful
   [-f paths-file]             New line delimited file which contains the collection paths in DME to be downloaded
   [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
-  destination-bucket          Destination S3 bucket to transfer data to
-  destination_path            Full path of the destination file/folder in the S3 bucket
+  destination-bucket          Destination S3 bucket to transfer the data to
+  destination_path            Full path of the destination folder in the S3 bucket
   [aws_credentials_file_path] Full path of the AWS credentials file on the local machine. If this is not specified, then the default file located at ~/.aws/credentials will be used.
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/q4tbG
+
 EOF
   echo "$usage"
 }
@@ -2382,7 +2578,7 @@ function dm_download_collection_s3 {
 function dm_get_download_status {
 
  
-    local USAGE="usage: dm_get_download_status [-D REST-respsonse] [-o download-status-file] <download-taskId> <request-type>"
+    local USAGE="usage: dm_get_download_status [-D REST-response] [-o download-status-file] <download-taskId> <request-type>"
 
     local RESPONSE_MSG
     local response_hdr
@@ -2473,6 +2669,24 @@ function dm_get_download_status {
 }
 
 
+#Print Usage of dm_rename function
+function dm_show_rename_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_rename [-D REST-response] [-o output-file] <description.json> 
+
+  Move a file or collection
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  [description-json]          Path to the JSON file containing the source and destination path in the archive
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/Lg5GFw
+
+EOF
+  echo "$usage"
+}
+
+
 #Rename a collection or a dataObject
 #Inputs: [-o rename-status-file]
 #        [-D REST-response]
@@ -2480,8 +2694,6 @@ function dm_get_download_status {
 #      : [rename-status-file] (for backward compatibility)
 #      : [REST-response] (for backward compatibility)
 function dm_rename() {
-
-    local USAGE="usage: dm_rename [-D REST-respsonse] [-o rename-status-file] <description.json>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -2494,17 +2706,17 @@ function dm_rename() {
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_rename_usage >&2
                     return 1
                 fi
             ;;
             -o|--output)
                 if [ "$2" ]; then
                     RESPONSE_MSG="$2"
-					SHOW_OUTPUT=0
+                    SHOW_OUTPUT=0
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_rename_usage >&2
                     return 1
                 fi
             ;;
@@ -2515,7 +2727,7 @@ function dm_rename() {
 
     if [ -z "$1" ]
     then
-        echo "$USAGE" >&2
+        dm_show_rename_usage >&2
         return 1
     fi
 
@@ -2574,6 +2786,25 @@ function dm_rename() {
 
 
 
+#Print Usage of dm_add_bookmark function
+function dm_show_add_bookmark_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_add_bookmark [-D REST-response] [-o output-file] <bookmark_name> <description.json>
+
+  Create a bookmark for a user 
+  [-D REST-response]          Optionally specify the filename to capture the REST response.
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  bookmark_name               Display name for the bookmark 
+  description-json            Path to the JSON file containing the bookmark path in the archive
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/ooheFw
+
+EOF
+  echo "$usage"
+}
+
+
 #Add a bookmark for a user
 #Inputs:  [-o status-file]
 #         [-D REST-response]
@@ -2582,8 +2813,6 @@ function dm_rename() {
 #      : [status-file] (for backward compatibility)
 #      : [REST-response] (for backward compatibility)
 function dm_add_bookmark () {
-
-    local USAGE="usage: dm_add_bookmark [-D REST-respsonse] [-o status-file] <bookmark_name> <description.json>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -2595,7 +2824,7 @@ function dm_add_bookmark () {
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_add_bookmark_usage >&2
                     return 1
                 fi
             ;;
@@ -2604,7 +2833,7 @@ function dm_add_bookmark () {
                     RESPONSE_MSG="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_add_bookmark_usage >&2
                     return 1
                 fi
             ;;
@@ -2615,7 +2844,7 @@ function dm_add_bookmark () {
 
     if [ -z "$1" ] || [ -z "$2" ] 
     then
-        echo "$USAGE" >&2
+        dm_show_add_bookmark_usage >&2
         return 1
     fi
 
@@ -2670,10 +2899,28 @@ function dm_add_bookmark () {
       exit 1
     fi
 
-
-
-
 }
+
+
+
+#Print Usage of dm_register_user function
+function dm_show_register_user_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_register_user [-D REST-response] [-o output-file] <user_id> <description.json> 
+
+  Register a user
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  user_id                     NIH user ID of the user
+  description.json            Path to the JSON file containing input data for registration
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/xh5GFw
+
+EOF
+  echo "$usage"
+}
+
 
 #Register a user
 #Inputs:  [-o status-file]
@@ -2683,8 +2930,6 @@ function dm_add_bookmark () {
 #      : [status-file] (for backward compatibility)
 #      : [REST-response] (for backward compatibility)
 function dm_register_user () {
-
-local USAGE="usage: dm_register_user [-D REST-respsonse] [-o status-file] <userId> <description.json> [REST-response]"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -2696,7 +2941,7 @@ local USAGE="usage: dm_register_user [-D REST-respsonse] [-o status-file] <userI
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_register_user_usage >&2
                     return 1
                 fi
             ;;
@@ -2705,7 +2950,7 @@ local USAGE="usage: dm_register_user [-D REST-respsonse] [-o status-file] <userI
                     RESPONSE_MSG="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_register_user_usage >&2
                     return 1
                 fi
             ;;
@@ -2716,7 +2961,7 @@ local USAGE="usage: dm_register_user [-D REST-respsonse] [-o status-file] <userI
 
     if [ -z "$1" ] || [ -z "$2" ]
     then
-        echo "$USAGE" >&2
+        dm_show_register_user_usage >&2
         return 1
     fi
 
@@ -2773,6 +3018,26 @@ local USAGE="usage: dm_register_user [-D REST-respsonse] [-o status-file] <userI
 }
 
 
+
+#Print Usage of dm_update_user function
+function dm_show_update_user_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_update_user [-D REST-response] [-o output-file] <user_id> <description.json>
+
+  Update a registered user
+  [-D REST-response]          Optionally specify the filename to capture the REST response
+  [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
+  user_id                     NIH user ID of the user
+  description-json            Path to the JSON file containing additional command parameters
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/yB5GFw
+
+EOF
+  echo "$usage"
+}
+
+
 #Update an existing user
 #Inputs:  [-o status-file]
 #         [-D REST-response]
@@ -2781,8 +3046,6 @@ local USAGE="usage: dm_register_user [-D REST-respsonse] [-o status-file] <userI
 #      : [status-file] (for backward compatibility)
 #      : [REST-response] (for backward compatibility)
 function dm_update_user () {
-
-local USAGE="usage: dm_update_user [-D REST-respsonse] [-o status-file] <userId> <description.json>"
 
     local RESPONSE_MSG
     local RESPONSE_HEADER
@@ -2794,7 +3057,7 @@ local USAGE="usage: dm_update_user [-D REST-respsonse] [-o status-file] <userId>
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_update_user_usage >&2
                     return 1
                 fi
             ;;
@@ -2803,7 +3066,7 @@ local USAGE="usage: dm_update_user [-D REST-respsonse] [-o status-file] <userId>
                     RESPONSE_MSG="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_update_user_usage >&2
                     return 1
                 fi
             ;;
@@ -2814,7 +3077,7 @@ local USAGE="usage: dm_update_user [-D REST-respsonse] [-o status-file] <userId>
 
     if [ -z "$1" ] || [ -z "$2" ]
     then
-        echo "$USAGE" >&2
+        dm_show_update_user_usage >&2
         return 1
     fi
 
