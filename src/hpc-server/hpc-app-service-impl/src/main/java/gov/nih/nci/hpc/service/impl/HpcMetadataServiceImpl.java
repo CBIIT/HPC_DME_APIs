@@ -737,7 +737,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     for (HpcMetadataEntry metadataEntry : metadataEntries) {
       if (metadataEntry.getAttribute().equals(HpcMetadataValidator.COLLECTION_TYPE_ATTRIBUTE)) {
         if (!metadataEntry.getValue().equals(collectionType)) {
-          throw new HpcException("Collection type can't updated",
+          throw new HpcException("Collection type can't be updated",
               HpcErrorType.INVALID_REQUEST_INPUT);
         }
         break;

@@ -32,6 +32,7 @@
 		<prop key="hpc.ws.rs.api-version">1.0.0</prop>
 		<prop key="hpc.ws.rs.attachment-tmp-directory">/tmp/hpc-attachment</prop>
 		<prop key="hpc.ws.rs.attachment-memory-threshold">104857600</prop>
+		<prop key="hpc.ws.rs.attachment-max-size"></prop>
 		
 		<prop key="hpc.ws.rs.ssl.keystore.path">${karaf.base}/etc/hpc-server/keystore.jks</prop>
 		<prop key="hpc.ws.rs.ssl.keystore.type">JKS</prop>

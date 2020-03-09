@@ -164,6 +164,14 @@ public interface HpcDataManagementBusService {
    */
   public HpcCollectionDownloadStatusDTO getDataObjectsOrCollectionsDownloadStatus(String taskId)
       throws HpcException;
+  
+  /**
+   * Cancel download task of a list of data objects or a list of collections.
+   *
+   * @param taskId The download task ID.
+   */
+  public void cancelDataObjectsOrCollectionsDownloadTask(String taskId)
+      throws HpcException;
 
   /**
    * Get download summary. Note: the summary is for the request invoker.
