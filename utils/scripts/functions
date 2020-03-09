@@ -11,9 +11,36 @@
 
 source $HPC_DM_UTILS/scripts/utilities
 
+#Print Usage of dm_generate_token function
+function dm_show_generate_token_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_generate_token 
+
+  Generates the token for use by CLU commands.  
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/345eFw
+
+EOF
+  echo "$usage"
+}
+
+
+
 #Generate a DM API authentication token
 #Arguments: [password]
 function dm_generate_token () {
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          dm_show_generate_token_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
 
     local LOG_FILE=$HPC_DM_UTILS/temp/log
     local CONFIG_PATH=$HPC_DM_UTILS/tokens/curl-conf
