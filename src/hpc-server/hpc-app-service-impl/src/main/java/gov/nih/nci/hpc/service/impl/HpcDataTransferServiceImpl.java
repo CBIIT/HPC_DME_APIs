@@ -62,6 +62,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -199,8 +200,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
       HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
-      String uploadRequestURLChecksum, String path, String userId, String callerObjectId,
-      String configurationId) throws HpcException {
+      Integer uploadParts, String uploadRequestURLChecksum, String path, String userId,
+      String callerObjectId, String configurationId) throws HpcException {
     // Input Validation. One and only one of the first 4 parameters is expected to
     // be provided.
 
@@ -251,9 +252,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Validate generate upload request URL.
-    if (generateUploadRequestURL
-        && (globusUploadSource != null || s3UploadSource != null || sourceFile != null)) {
-      throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE,
+    if (generateUploadRequestURL) {
+      if (globusUploadSource != null || s3UploadSource != null || sourceFile != null) {
+        throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (uploadParts != null && uploadParts < 1) {
+        throw new HpcException("Invalid upload parts: " + uploadParts,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    } else if (uploadParts != null) {
+      throw new HpcException("Upload parts provided w/o request to generate upload URL",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
@@ -271,10 +280,38 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     uploadRequest.setSourceFile(sourceFile);
     uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
     uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
+    uploadRequest.setUploadParts(uploadParts);
     uploadRequest.setSourceSize(sourceSize);
 
     // Upload the data object file.
     return uploadDataObject(uploadRequest, configurationId);
+  }
+
+  @Override
+  public void completeMultipartUpload(HpcFileLocation archiveLocation,
+      HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
+      String multipartUploadId, List<HpcUploadPartETag> uploadPartETags) throws HpcException {
+    // Input Validation.
+    if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
+      throw new HpcException("Invalid archive location or data-transfer-type",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    if (StringUtils.isEmpty(multipartUploadId) || uploadPartETags.size() < 2) {
+      throw new HpcException("Empty multipartUploadId or less than 2 part ETags provided",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    for (HpcUploadPartETag uploadPartETag : uploadPartETags) {
+      if (StringUtils.isEmpty(uploadPartETag.getETag())) {
+        throw new HpcException(
+            "Empty / null eTag for part number " + uploadPartETag.getPartNumber(),
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
+    // Complete the multipart upload.
+    dataTransferProxies.get(dataTransferType).completeMultipartUpload(
+        getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+        archiveLocation, multipartUploadId, uploadPartETags);
   }
 
   @Override

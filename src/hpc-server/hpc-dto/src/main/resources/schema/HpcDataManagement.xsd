@@ -99,6 +99,18 @@
 				<xsd:element name="registered" type="xsd:boolean"
 					minOccurs="0" />
 				<xsd:element name="uploadRequestURL" type="xsd:string" />
+				<xsd:element name="multipartUpload" 
+					type="hpc-domain-datatransfer:HpcMultipartUpload" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcCompleteMultipartUploadRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="multipartUploadId" type="xsd:string" />
+				<xsd:element name="uploadPartETags" type="hpc-domain-datatransfer:HpcUploadPartETag"
+					minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

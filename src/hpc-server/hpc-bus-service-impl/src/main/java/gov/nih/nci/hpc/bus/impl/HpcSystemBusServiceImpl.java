@@ -148,7 +148,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Transfer the data file.
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
             toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, false,
-            null, path, systemGeneratedMetadata.getRegistrarId(),
+            null, null, path, systemGeneratedMetadata.getRegistrarId(),
             systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
 
@@ -359,7 +359,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null,
             toS3UploadSource(systemGeneratedMetadata.getSourceLocation(),
                 systemGeneratedMetadata.getSourceURL(), systemGeneratedMetadata.getSourceSize()),
-            null, false, null, path, systemGeneratedMetadata.getRegistrarId(),
+            null, false, null, null, path, systemGeneratedMetadata.getRegistrarId(),
             systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
 
@@ -401,7 +401,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         // Transfer the data file from the temporary archive into the archive.
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null,
-            null, file, false, null, path, systemGeneratedMetadata.getRegistrarId(),
+            null, file, false, null, null, path, systemGeneratedMetadata.getRegistrarId(),
             systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
 
