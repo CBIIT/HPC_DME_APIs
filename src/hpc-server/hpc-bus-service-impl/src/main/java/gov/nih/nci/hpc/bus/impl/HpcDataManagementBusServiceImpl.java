@@ -85,6 +85,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -598,7 +599,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return downloadStatus != null ? downloadStatus
         : getCollectionDownloadStatus(taskId, HpcDownloadTaskType.COLLECTION_LIST);
   }
-  
+
   @Override
   public void cancelDataObjectsOrCollectionsDownloadTask(String taskId) throws HpcException {
     // Input validation.
@@ -613,7 +614,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
     if (!taskStatus.getInProgress()) {
-      throw new HpcException("Collection / data-object list download task not in-progress: " + taskId,
+      throw new HpcException(
+          "Collection / data-object list download task not in-progress: " + taskId,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
@@ -793,7 +795,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     String collectionPath = path.substring(0, path.lastIndexOf('/'));
     String collectionType = dataManagementService.getCollectionType(collectionPath);
 
-    // Generate upload URL is defaulted to false.
+    // Generate upload URL is defaulted to false. Parts are defaulted to 1 (i.e. no multipart
+    // upload)
     boolean generateUploadRequestURL =
         Optional.ofNullable(dataObjectRegistration.getGenerateUploadRequestURL()).orElse(false);
 
@@ -821,14 +824,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               configurationId, collectionType);
 
           // Transfer the data file.
-          HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
-              dataObjectRegistration.getGlobusUploadSource(),
-              dataObjectRegistration.getS3UploadSource(), dataObjectFile, generateUploadRequestURL,
-              generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path, userId,
-              dataObjectRegistration.getCallerObjectId(), configurationId);
+          HpcDataObjectUploadResponse uploadResponse =
+              dataTransferService.uploadDataObject(dataObjectRegistration.getGlobusUploadSource(),
+                  dataObjectRegistration.getS3UploadSource(), dataObjectFile,
+                  generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
+                  generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
+                  userId, dataObjectRegistration.getCallerObjectId(), configurationId);
 
-          // Set the upload request URL (if one was generated).
+          // Set the upload request URL / Multipart upload URLs (if one was generated).
           responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
+          responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
 
           // Generate data management (iRODS) system metadata and attach to the data
           // object.
@@ -886,13 +891,44 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
       // Update metadata and optionally re-generate upload URL (if data was not
       // uploaded yet).
-      responseDTO
-          .setUploadRequestURL(updateDataObject(path, dataObjectRegistration.getMetadataEntries(),
-              collectionType, generateUploadRequestURL, dataObjectRegistration.getChecksum(),
-              userId, dataObjectRegistration.getCallerObjectId()));
+      HpcDataObjectUploadResponse uploadResponse = Optional
+          .ofNullable(updateDataObject(path, dataObjectRegistration.getMetadataEntries(),
+              collectionType, generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
+              dataObjectRegistration.getChecksum(), userId,
+              dataObjectRegistration.getCallerObjectId()))
+          .orElse(new HpcDataObjectUploadResponse());
+      responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
+      responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
     }
 
     return responseDTO;
+  }
+
+  @Override
+  public void completeMultipartUpload(String path,
+      HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) throws HpcException {
+    // input validation.
+    if (completeMultipartUploadRequest == null) {
+      throw new HpcException("Invalid / Empty multipart completion request" + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Validate the data object exists.
+    if (dataManagementService.getDataObject(path) == null) {
+      throw new HpcException("Data object doesn't exist: " + path,
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Get the System generated metadata.
+    HpcSystemGeneratedMetadata metadata =
+        metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+    // Complete the multipart upload.
+    dataTransferService.completeMultipartUpload(metadata.getArchiveLocation(),
+        metadata.getDataTransferType(), metadata.getConfigurationId(),
+        metadata.getS3ArchiveConfigurationId(),
+        completeMultipartUploadRequest.getMultipartUploadId(),
+        completeMultipartUploadRequest.getUploadPartETags());
   }
 
   @Override
@@ -2229,14 +2265,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param metadataEntries The list of metadata entries to update.
    * @param collectionType The type of collection containing the data object.
    * @param generateUploadRequestURL Indicator whether to re-generate the request upload URL.
+   * @param (Optional) The number of parts when generating upload request URL.
    * @param checksum The data object checksum provided to check upload integrity.
    * @param userId The userId updating the data object.
    * @param callerObjectId The caller's object ID.
-   * @return Upload URL if one was requested, otherwise null.
+   * @return HpcDataObjectUploadResponse w/generated URL or multipart upload URLs if such generated,
+   *         otherwise null.
    * @throws HpcException on service failure.
    */
-  private String updateDataObject(String path, List<HpcMetadataEntry> metadataEntries,
-      String collectionType, boolean generateUploadRequestURL, String checksum, String userId,
+  private HpcDataObjectUploadResponse updateDataObject(String path,
+      List<HpcMetadataEntry> metadataEntries, String collectionType,
+      boolean generateUploadRequestURL, Integer uploadParts, String checksum, String userId,
       String callerObjectId) throws HpcException {
     // Get the metadata for this data object.
     HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(path);
@@ -2275,15 +2314,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
       // Re-generate the upload request URL.
       HpcDataObjectUploadResponse uploadResponse =
-          dataTransferService.uploadDataObject(null, null, null, true, checksum, path, userId,
-              callerObjectId, systemGeneratedMetadata.getConfigurationId());
+          dataTransferService.uploadDataObject(null, null, null, true, uploadParts, checksum, path,
+              userId, callerObjectId, systemGeneratedMetadata.getConfigurationId());
 
       // Update data-transfer-status system metadata accordingly.
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
           HpcDataTransferUploadStatus.URL_GENERATED, null, uploadResponse.getDataTransferStarted(),
           null, null, null);
 
-      return uploadResponse.getUploadRequestURL();
+      return uploadResponse;
     }
 
     return null;

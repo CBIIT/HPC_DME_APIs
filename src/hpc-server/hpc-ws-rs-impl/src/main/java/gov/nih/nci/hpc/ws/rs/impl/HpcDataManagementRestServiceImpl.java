@@ -43,6 +43,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
@@ -365,12 +366,31 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
 
     if (registered) {
       // Data object was registered. Return a 'created' response.
-      return responseDTO.getUploadRequestURL() != null ? createdResponse(null, responseDTO)
+      return responseDTO.getUploadRequestURL() != null || responseDTO.getMultipartUpload() != null
+          ? createdResponse(null, responseDTO)
           : createdResponse(null);
     } else {
       // Data object metadata was updated. Return 'ok' response.
-      return okResponse(responseDTO.getUploadRequestURL() != null ? responseDTO : null, false);
+      return okResponse(
+          responseDTO.getUploadRequestURL() != null || responseDTO.getMultipartUpload() != null
+              ? responseDTO
+              : null,
+          false);
     }
+  }
+
+  @Override
+  public Response completeMultipartUpload(String path,
+      HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) {
+    try {
+      dataManagementBusService.completeMultipartUpload(toNormalizedPath(path),
+          completeMultipartUploadRequest);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(null, false);
   }
 
   @Deprecated
