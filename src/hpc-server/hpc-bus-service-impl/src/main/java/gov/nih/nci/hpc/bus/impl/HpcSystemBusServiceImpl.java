@@ -607,11 +607,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_PERMISSION_DENIED)) {
                 // This item failed because of permission denied.
                 // Cancel any pending download items (i.e. items in RECEIVED state).
-                int canceledItemsCount =
-                    dataTransferService.cancelCollectionDownloadTask(downloadTask);
-                logger.info(
-                    "Detected permission denied in collection download task [{}]. Canceled {} items out of {}",
-                    downloadTask.getId(), canceledItemsCount, downloadTask.getItems().size());
+                dataTransferService.cancelCollectionDownloadTask(downloadTask);
+                logger.info("Detected permission denied in collection download task: {}",
+                    downloadTask.getId());
               }
 
             } else {
@@ -1107,7 +1105,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               s3DownloadDestination, appendPathToDownloadDestination, userId);
       downloadItems.add(downloadItem);
       if (collectionDownloadBreaker.abortDownload(downloadItem)) {
-        // Need to abort collection download processing. Return the items processed so far.
+        // Need to abort collection download processing. Cancel and return the items processed so
+        // far.
+        dataTransferService.cancelCollectionDownloadTaskItems(downloadItems);
         logger.info("Processing collection download task [{}] aborted",
             collection.getAbsolutePath());
         return downloadItems;

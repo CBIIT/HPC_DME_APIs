@@ -220,6 +220,7 @@ def register_collection(filepath, type, tarfile_name, has_parent, sf_audit, dryr
 def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit, dryrun, ext = None):
 
     global files_registered, bytes_stored
+
     #Build metadata for the object
     object_to_register = SFObject(filepath, tarfile_name, ext, has_parent, type)
     object_metadata = object_to_register.get_metadata()
@@ -236,14 +237,28 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
     archive_path = archive_path + '/' + file_name
     command = "dm_register_dataobject_presigned " + json_file_name + " " + archive_path + " " + fullpath
 
+
     #Audit the command
     sf_audit.audit_command(command)
 
     #Run the command
     if not dryrun:
-        response_header = "presignedURL-registration-response-header.tmp"
-        os.system("rm - f " + response_header + " 2>/dev/null")
-        os.system(command)
+
+        filesize = 0
+        if os.path.exists(fullpath):
+            filesize = os.path.getsize(fullpath)
+
+        #Proceed to register only if the file to upload exists
+        if (filesize != 0):
+            deleted_file = 1
+            logging.info("Deleting file " + archive_path)
+            deleted_file = os.system("dm_delete_datafile " + archive_path)
+            if deleted_file > 0:
+                logging.info("Could not delete archived file: " + archive_path)
+
+            response_header = "presignedURL-registration-response-header.tmp"
+            os.system("rm - f " + response_header + " 2>/dev/null")
+            os.system(command)
 
     #Audit the result
     sf_audit.audit_upload(tarfile_name, filepath, fullpath, archive_path, dryrun, ext)

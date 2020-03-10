@@ -78,7 +78,7 @@ class SFAudit(object):
     def audit_command(self, command):
         logging.info(command)
         includes = open(self.includes_path, "a")
-        includes.write(command)
+        includes.write("\n" + command)
         includes.close()
 
 
@@ -89,6 +89,7 @@ class SFAudit(object):
         archived = False
         result = 'Fail'
         includes = open(self.includes_path, "a")
+        includes.write("\ntarfile: " + tarfile_name)
 
         # Get size of file in bytes
         # if(fullpath.endswith("tar") or fullpath.endswith("tar.gz")):
@@ -103,14 +104,20 @@ class SFAudit(object):
 
         if not dryrun:
 
-            # Record the result
-            response_header = "presignedURL-registration-response-header.tmp"
-            with open(response_header) as f:
-                for line in f:
-                    logging.info(line)
-                    if ('200 OK' in line or '201 Created' in line):
-                        archived = True
-                        result = 'Pass'
+            if(filesize == 0):
+                #We did not attempt download
+                logging.info('Error uploading file, empty file or file does not exist')
+                includes.write("\nError upploading file, Filesize is 0")
+
+            else:
+                # Record the result
+                response_header = "presignedURL-registration-response-header.tmp"
+                with open(response_header) as f:
+                    for line in f:
+                        logging.info(line)
+                        if ('200 OK' in line or '201 Created' in line):
+                            archived = True
+                            result = 'Pass'
 
         else:
             #filesize = 0
@@ -121,9 +128,8 @@ class SFAudit(object):
         if archived:
             self.inc_file()
             self.inc_bytes(filesize)
-            includes.write("\ntarfile: " + tarfile_name)
             includes.write("\nFile size = {0}".format(filesize))
-            includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n\n".format(self.file_count, self.byte_count))
+            includes.write("\nFiles registered = {0}, Bytes_stored = {1} \n".format(self.file_count, self.byte_count))
 
         else:
             includes.write("\nError registering file \n\n")

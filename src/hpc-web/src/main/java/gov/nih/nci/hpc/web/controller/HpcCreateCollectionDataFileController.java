@@ -443,6 +443,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				HpcMetadataEntry entry = new HpcMetadataEntry();
 				String attrName = paramName.substring("zAttrStr_".length());
 				String[] attrValue = request.getParameterValues(paramName);
+				if (attrValue.length == 0 || attrValue[0].isEmpty())
+					continue;
+				entry.setValue(attrValue[0]);
 				entry.setAttribute(attrName);
 				entry.setValue(attrValue[0]);
 				metadataEntries.add(entry);
@@ -637,8 +640,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		List<String> attributeNames = new ArrayList<String>();
 		if (rules != null && !rules.isEmpty()) {
 			for (HpcMetadataValidationRule rule : rules) {
-				if ((rule.getMandatory()
-						&& (rule.getCollectionTypes().contains(collectionType) || rule.getCollectionTypes().isEmpty()))
+				if ((rule.getCollectionTypes().contains(collectionType) || rule.getCollectionTypes().isEmpty()) 
 						&& !rule.getAttribute().equals("collection_type")) {
 					HpcMetadataAttrEntry entry = new HpcMetadataAttrEntry();
 					entry.setAttrName(rule.getAttribute());
@@ -658,6 +660,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 						entry.setValidValues(validValues);
 					}
 					entry.setDescription(rule.getDescription());
+					entry.setMandatory(rule.getMandatory());
 					metadataEntries.add(entry);
 				}
 			}
@@ -763,6 +766,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 				String attrName = paramName.substring("zAttrStr_".length());
 				String[] attrValue = request.getParameterValues(paramName);
+				if (attrValue.length == 0 || attrValue[0].isEmpty())
+					continue;
+				entry.setValue(attrValue[0]);
 				entry.setAttribute(attrName);
 				entry.setValue(attrValue[0]);
 				metadataEntries.add(entry);
