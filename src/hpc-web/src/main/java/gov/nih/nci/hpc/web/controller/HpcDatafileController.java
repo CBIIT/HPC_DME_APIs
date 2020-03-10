@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -39,11 +40,12 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -115,10 +117,13 @@ public class HpcDatafileController extends AbstractHpcController {
 					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
 					session.setAttribute("userDOCModel", modelDTO);
 				}
+				String basePath = path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2) < 0 ? path.length() : StringUtils.ordinalIndexOf(path, "/", 2));
+                HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
+                
 				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
 				
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
-						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames());
+						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules());
 				hpcDatafile.setPath(path);
 				model.addAttribute("hpcDatafile", hpcDatafile);
 				model.addAttribute("attributeNames", getMetadataAttributeNames(dataFile));
@@ -241,7 +246,7 @@ public class HpcDatafileController extends AbstractHpcController {
 		return result;
 	}
 
-	private HpcDatafileModel buildHpcDataObject(HpcDataObjectDTO datafile, List<String> systemAttrs) {
+	private HpcDatafileModel buildHpcDataObject(HpcDataObjectDTO datafile, List<String> systemAttrs, List<HpcMetadataValidationRule> rules) {
 		HpcDatafileModel model = new HpcDatafileModel();
 		systemAttrs.add("collection_type");
 		model.setDataObject(datafile.getDataObject());
@@ -269,7 +274,12 @@ public class HpcDatafileController extends AbstractHpcController {
 				attrEntry.setSystemAttr(true);
 			else
 				attrEntry.setSystemAttr(false);
-			model.getParentMetadataEntries().add(attrEntry);
+			if(isEncryptedAttribute(entry.getAttribute(), null, rules))
+                attrEntry.setEncrypted(true);
+            else
+                attrEntry.setEncrypted(false);
+			if(!attrEntry.isEncrypted())
+			    model.getParentMetadataEntries().add(attrEntry);
 		}
 		return model;
 	}
@@ -313,5 +323,15 @@ public class HpcDatafileController extends AbstractHpcController {
     private String addHumanReadableSize(String value) {
         String humanReadableSize = FileUtils.byteCountToDisplaySize(Long.parseLong(value));
         return value + " (" + humanReadableSize + ")";
+    }
+    
+    private boolean isEncryptedAttribute(String attribute, String collectionType, List<HpcMetadataValidationRule> rules) {
+      for(HpcMetadataValidationRule rule: rules) {
+        if (StringUtils.equals(rule.getAttribute(), attribute) && collectionType != null && rule.getCollectionTypes().contains(collectionType))
+          return rule.getEncrypted();
+        if (StringUtils.equals(rule.getAttribute(), attribute) && collectionType == null)
+          return rule.getEncrypted();
+      }
+      return false;
     }
 }
