@@ -160,9 +160,10 @@ public class HpcCollectionController extends AbstractHpcController {
                     session.setAttribute("hpcSecGroup", groups);
                 }
 				
-		        HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2)));
+                String basePath = path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2) < 0 ? path.length() : StringUtils.ordinalIndexOf(path, "/", 2));
+		        HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		        
-		        String doc = HpcClientUtil.getDocByBasePath(modelDTO, path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2)));
+		        String doc = HpcClientUtil.getDocByBasePath(modelDTO, basePath);
 		        boolean userInSecGroup = false;
 		        if(groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
 		          for (HpcGroup group : groups.getGroups()) {
@@ -332,24 +333,33 @@ public class HpcCollectionController extends AbstractHpcController {
 				attrEntry.setSystemAttr(true);
 			else
 				attrEntry.setSystemAttr(false);
-			model.getParentMetadataEntries().add(attrEntry);
+			if(isEncryptedAttribute(entry.getAttribute(), null, rules))
+                attrEntry.setEncrypted(true);
+            else
+                attrEntry.setEncrypted(false);
+			if(!attrEntry.isEncrypted())
+			    model.getParentMetadataEntries().add(attrEntry);
 		}
 		return model;
 	}
 	
     private boolean isEncryptedAttribute(String attribute, String collectionType, List<HpcMetadataValidationRule> rules) {
       for(HpcMetadataValidationRule rule: rules) {
-        if (StringUtils.equals(rule.getAttribute(), attribute) && rule.getCollectionTypes().contains(collectionType))
+        if (StringUtils.equals(rule.getAttribute(), attribute) && collectionType != null && rule.getCollectionTypes().contains(collectionType))
+          return rule.getEncrypted();
+        if (StringUtils.equals(rule.getAttribute(), attribute) && collectionType == null)
           return rule.getEncrypted();
       }
       return false;
     }
     
     private String getCollectionType(HpcCollectionDTO collection) {
-	  for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
-	    if (StringUtils.equals(entry.getAttribute(), "collection_type"))
-	      return entry.getValue();
-	  }
+      if(collection.getMetadataEntries() != null) {
+    	  for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
+    	    if (StringUtils.equals(entry.getAttribute(), "collection_type"))
+    	      return entry.getValue();
+    	  }
+      }
 	  return null;
 	}
 
@@ -698,7 +708,8 @@ public class HpcCollectionController extends AbstractHpcController {
             theCollectionDto = collections.getCollections().get(0);
             final HpcDataManagementModelDTO modelDTO =
               (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
-            HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, collectionPath.substring(0, StringUtils.ordinalIndexOf(collectionPath, "/", 2)));
+            String basePath = collectionPath.substring(0, StringUtils.ordinalIndexOf(collectionPath, "/", 2) < 0 ? collectionPath.length() : StringUtils.ordinalIndexOf(collectionPath, "/", 2));
+            HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
             retHpcCollObj = buildHpcCollection(theCollectionDto,
               modelDTO.getCollectionSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules(), false);
         }
