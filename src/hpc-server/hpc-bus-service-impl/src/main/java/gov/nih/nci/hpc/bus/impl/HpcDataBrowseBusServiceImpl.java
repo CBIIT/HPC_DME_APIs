@@ -100,6 +100,10 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     	            "Not authorized to add bookmark for user " + nciUserId + ". Please contact system administrator",
     	            HpcRequestRejectReason.NOT_AUTHORIZED);
     	}
+    	//If the given userId is not a group and the user is not present in DME
+	    if (!dataManagementSecurityService.groupExists(nciUserId) && securityService.getUser(nciUserId) == null) {
+	    	createUser(invoker, nciUserId);
+	    }
     }
     
     
@@ -121,10 +125,7 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
     if(bookmarkRequest.getPermission() != null) {
 
       try {
-	      //If the given userId is not a group and the user is not present in DME
-	      if (!dataManagementSecurityService.groupExists(nciUserId) && securityService.getUser(nciUserId) == null) {
-	    	  createUser(invoker, nciUserId);
-	      }
+	      
 	
 	      HpcSubjectPermission subjectPermission = new HpcSubjectPermission();
 	      subjectPermission.setPermission(bookmarkRequest.getPermission());
