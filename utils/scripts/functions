@@ -199,7 +199,7 @@ function dm_show_register_collection_usage {
   Register an empty collection
   [-D REST-response]          Optionally specify the filename to capture the REST response
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
-  [description-json]          Path to the JSON file containing the metadata for the new collection. Omit this parameter if the source is a Globus endpoint or S3 bucket
+  [description.json]          Path to the JSON file containing the metadata for the new collection. Omit this parameter if the source is a Globus endpoint or S3 bucket
   [archive-path]              Destination path in the archive
 
 For detailed information on creating a collection, refer to the following page: 
@@ -587,12 +587,12 @@ function dm_get_item {
 #Print Usage of dm_get_dataobject function
 function dm_show_get_dataobject_usage {
   read -d  '' usage <<- EOF
-  usage: dm_get_dataobject [-D REST-response] [-o metadata-file] <dataobject_path>
+  usage: dm_get_dataobject [-D REST-response] [-o metadata-file] <dataobject-path>
 
   Get the metadata of a dataobject
   [-D REST-response]          Optionally specify the filename to capture the REST response.
   [-o metadata-file]          Optionally specify the filename to capture the dataobject metadata. If this is not specified, metadata is printed to standard output
-  object_path                 Full path of the dataobject in the archive.
+  dataobject-path             Full path of the dataobject in the archive.
 
 For detailed information on this command, refer to the following page: 
 https://wiki.nci.nih.gov/x/4A1GFw
@@ -811,7 +811,7 @@ function dm_get_collection {
 #Print Usage of dm_query_dataobject function
 function dm_show_query_dataobject_usage {
 read -d  '' usage <<- EOF
-usage: dm_query_dataobject [-D REST-response] [-o output-file] <description.json> [search-path]
+usage: dm_query_dataobject [-D REST-response] [-o output-file] <criteria.json> [search-path]
 
 Search for dataobjects based on the given compound query and optional search path.
 OPTIONS:
