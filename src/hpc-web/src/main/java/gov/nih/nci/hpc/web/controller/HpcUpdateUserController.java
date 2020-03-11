@@ -173,16 +173,7 @@ public class HpcUpdateUserController extends AbstractHpcController {
 		return userDTO;
 	}
 
-	private void populateDOCs(Model model, String authToken, HpcUserDTO user, HttpSession session) {
-		List<String> userDOCs = new ArrayList<String>();
-		if (user.getUserRole().equals(SYSTEM_ADMIN)) {
-			List<String> docs = HpcClientUtil.getDOCs(authToken, hpcModelURL, sslCertPath, sslCertPassword, session);
-			model.addAttribute("docs", docs);
-		} else {
-			userDOCs.add(user.getDoc());
-			model.addAttribute("docs", userDOCs);
-		}
-	}
+	
 
 	private void populateRoles(Model model, HpcUserDTO user) {
 		List<String> roles = new ArrayList<String>();
