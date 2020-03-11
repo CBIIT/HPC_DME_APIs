@@ -38,4 +38,4 @@ upload.buffer.size=10000000
 hpc.log.level=ERROR
 hpc.log.file=/tmp/hpc-cli.log
 ###HPC CLI Logging END####
-hpc.jar.version=hpc-cli-1.23.0.jar
+hpc.jar.version=hpc-cli-1.23.1.jar
