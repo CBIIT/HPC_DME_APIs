@@ -9,6 +9,9 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -47,6 +50,7 @@ public class HpcUserController extends AbstractHpcController {
 	private String allUsersServiceURL;
 	@Value("${gov.nih.nci.hpc.server.user.active}")
 	private String activeUsersServiceURL;
+	
 
 	/**
 	 * Get Action to prepare Manage User page
@@ -71,6 +75,9 @@ public class HpcUserController extends AbstractHpcController {
 		}
 		HpcWebUser webUser = new HpcWebUser();
 		model.addAttribute("hpcWebUser", webUser);
+		String authToken = (String) session.getAttribute("hpcUserToken");
+		populateDOCs(model, authToken, user, session);
+		
 		return "manageuser";
 	}
 
@@ -88,20 +95,25 @@ public class HpcUserController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.POST)
 	public String findUsers(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcWebUser, BindingResult bindingResult,
 			Model model, HttpSession session, HttpServletRequest request) {
+		
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		String authToken = (String) session.getAttribute("hpcUserToken");
 		try {
 
 			String userId = null;
 			String firstName = null;
 			String lastName = null;
+			String doc = null;
 			if (hpcWebUser.getNciUserId() != null && hpcWebUser.getNciUserId().trim().length() > 0)
 				userId = hpcWebUser.getNciUserId();
 			if (hpcWebUser.getFirstName() != null && hpcWebUser.getFirstName().trim().length() > 0)
 				firstName = hpcWebUser.getFirstName();
 			if (hpcWebUser.getLastName() != null && hpcWebUser.getLastName().trim().length() > 0)
 				lastName = hpcWebUser.getLastName();
+			if (hpcWebUser.getDoc() != null && hpcWebUser.getDoc().trim().length() > 0)
+				doc = hpcWebUser.getDoc();
 
-			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-			String authToken = (String) session.getAttribute("hpcUserToken");
+			
 			String serviceUrl = null;
 			// System Admin can view all Users including inactive users
 			if (user.getUserRole().equals(SYSTEM_ADMIN))
@@ -109,7 +121,7 @@ public class HpcUserController extends AbstractHpcController {
 			else
 				serviceUrl = activeUsersServiceURL;
 
-			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, userId, firstName, lastName, null,
+			HpcUserListDTO users = HpcClientUtil.getUsers(authToken, serviceUrl, userId, firstName, lastName, doc,
 					sslCertPath, sslCertPassword);
 			if (users != null && users.getUsers() != null && users.getUsers().size() > 0)
 				model.addAttribute("searchresults", users.getUsers());
@@ -118,8 +130,10 @@ public class HpcUserController extends AbstractHpcController {
 			bindingResult.addError(error);
 			model.addAttribute("error", "Failed to search by name: " + e.getMessage());
 			return "manageuser";
+		} finally {
+			model.addAttribute("hpcWebUser", hpcWebUser);
+			populateDOCs(model, authToken, user, session);
 		}
-		model.addAttribute("hpcWebUser", hpcWebUser);
 		return "manageuser";
 	}
 }
