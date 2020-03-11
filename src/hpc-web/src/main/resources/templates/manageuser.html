@@ -218,6 +218,17 @@
 																				th:field="*{lastName}" placeholder="Enter Last Name"
 																				size="40" />
 																		</div>
+																		<div class="col-sm-12 column">
+																			<label for="doc">DOC:</label> 
+																			<select size="1"
+																			id="doc" name="doc" class="form-control">									
+																			<option  value=""></option>
+																			<option
+																				th:each="attrName : ${docs}"
+																				th:value="${attrName}" th:text="${attrName}">
+																				Wireframe</option>
+																			</select>																			
+																		</div>
 																	</div>
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
