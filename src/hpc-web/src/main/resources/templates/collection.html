@@ -274,8 +274,7 @@
 												</div>
 												<div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == true}">
 												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												    <td><label for="${metadataItem.getAttrName()}"
-														th:text="${metadataItem.getAttrValue()}"></label></td>
+												    <td><label for="${metadataItem.getAttrName()}">************************</label></td>
 												</div>
 											</tr>
 										  </div>
