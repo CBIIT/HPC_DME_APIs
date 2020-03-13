@@ -32,9 +32,13 @@ public class HPCBatchLocalFileRecordMapper extends AbstractRecordMapper
 	private Map<String, String> criteriaMap;
 	private int maxAttempts;
 	private long backOffPeriod;
+	protected int multipartPoolSize;
+	protected long multipartThreshold;
+	protected long multipartChunksize;
 	  
 	public HPCBatchLocalFileRecordMapper(Class recordClass, Map<String, String> criteriaMap,
-			HpcServerConnection connection, String logFile, String errorRecordsFile, int maxAttempts, long backOffPeriod) {
+			HpcServerConnection connection, String logFile, String errorRecordsFile, int maxAttempts,
+			long backOffPeriod, int multipartPoolSize, long multipartThreshold, long multipartChunksize) {
 		super(recordClass);
 		this.logFile = logFile;
 		this.connection = connection;
@@ -42,6 +46,9 @@ public class HPCBatchLocalFileRecordMapper extends AbstractRecordMapper
 		this.criteriaMap = criteriaMap;
 		this.maxAttempts = maxAttempts;
 	    this.backOffPeriod = backOffPeriod;
+	    this.multipartPoolSize = multipartPoolSize;
+	    this.multipartThreshold = multipartThreshold;
+	    this.multipartChunksize = multipartChunksize;
 	}
 
 	@Override
@@ -57,6 +64,9 @@ public class HPCBatchLocalFileRecordMapper extends AbstractRecordMapper
 		dataObject.setConnection(connection);
 		dataObject.setMaxAttempts(maxAttempts);
 		dataObject.setBackOffPeriod(backOffPeriod);
+		dataObject.setMultipartPoolSize(multipartPoolSize);
+		dataObject.setMultipartThreshold(multipartThreshold);
+		dataObject.setMultipartChunksize(multipartChunksize);
 		org.easybatch.core.record.Header header = new org.easybatch.core.record.Header(record.getRecordNumber(),
 				pathAttr.getAbsolutePath(), new Date());
 		return new GenericRecord(header, dataObject);
