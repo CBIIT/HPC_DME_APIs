@@ -55,6 +55,9 @@ public abstract class HPCBatchClient {
 	protected int threadCount = 1;
 	protected int maxAttempts = 0;
 	protected long backOffPeriod = 0;
+	protected int multipartPoolSize = 0;
+	protected long multipartThreshold = 0;
+	protected long multipartChunksize = 0;
     protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	public HPCBatchClient() {
@@ -143,6 +146,30 @@ public abstract class HPCBatchClient {
         } catch (Exception e) {
             logger.info("Defaulting hpc.retry.backoff.period value. Setting it to 1500");
             backOffPeriod = 1500;
+        }
+        String multipartPoolSizeStr = configProperties.getProperty("hpc.multipart.threadpoolsize");
+        logger.debug("hpc.multipart.threadpoolsize "+multipartPoolSizeStr);
+        try {
+        	multipartPoolSize = Integer.parseInt(multipartPoolSizeStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.multipart.threadpoolsize value. Setting it to 1");
+            multipartPoolSize = 1;
+        }
+        String multipartThresholdStr = configProperties.getProperty("hpc.multipart.threshold");
+        logger.debug("hpc.multipart.threshold "+multipartThresholdStr);
+        try {
+        	multipartThreshold = Long.parseLong(multipartThresholdStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.multipart.threshold value. Setting it to 5373952000 (> 5GB)");
+            multipartThreshold = 5373952000L;
+        }
+        String multipartChunksizeStr = configProperties.getProperty("hpc.multipart.chunksize");
+        logger.debug("hpc.multipart.chunksize "+multipartChunksizeStr);
+        try {
+        	multipartChunksize = Long.parseLong(multipartChunksizeStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.multipart.chunksize value. Setting it to 5368709120 (5GB)");
+            multipartChunksize = 5368709120L;
         }
         
 		initializeLog();
