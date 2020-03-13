@@ -38,7 +38,10 @@ public class HPCDataObject {
 	private HpcServerConnection connection;
 	private int maxAttempts;
     private long backOffPeriod;
-
+    protected int multipartPoolSize;
+	protected long multipartThreshold;
+	protected long multipartChunksize;
+	
 	public HpcServerConnection getConnection() {
 		return connection;
 	}
@@ -202,7 +205,31 @@ public class HPCDataObject {
       this.backOffPeriod = backOffPeriod;
     }
 
-  @Override
+  public int getMultipartPoolSize() {
+		return multipartPoolSize;
+	}
+
+	public void setMultipartPoolSize(int multipartPoolSize) {
+		this.multipartPoolSize = multipartPoolSize;
+	}
+
+	public long getMultipartThreshold() {
+		return multipartThreshold;
+	}
+
+	public void setMultipartThreshold(long multipartThreshold) {
+		this.multipartThreshold = multipartThreshold;
+	}
+
+	public long getMultipartChunksize() {
+		return multipartChunksize;
+	}
+
+	public void setMultipartChunksize(long multipartChunksize) {
+		this.multipartChunksize = multipartChunksize;
+	}
+
+@Override
   public String toString() {
     return "HPCDataObject [objectPath=" + objectPath + ", dto=" + dto + ", basePath=" + basePath
         + ", dataFilePathAttrs=" + dataFilePathAttrs + ", proxyURL=" + proxyURL + ", proxyPort="
