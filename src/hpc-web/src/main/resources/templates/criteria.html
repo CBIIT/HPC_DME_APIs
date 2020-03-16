@@ -548,7 +548,9 @@ function addRow() {
     var cell = 0;
     var cell0 = row.insertCell(cell++);
     var cell1 = row.insertCell(cell++);
-    var cell1_a = row.insertCell(cell++);
+    if(userInSecGroup) {
+    	var cell1_a = row.insertCell(cell++);
+    }
     var cell2 = row.insertCell(cell++);
     var cell3 = row.insertCell(cell++);
     var cell4 = row.insertCell(cell++);
@@ -728,7 +730,7 @@ if(searchCriteria.level) {
 		$('#operator' + row_id).val(searchCriteria.operator[i]);
 		if(searchCriteria.selfAttributeOnly[i])
 			$('#selfAttributeOnly' + row_id).prop('checked', true);
-		if(searchCriteria.encrypted[i]) {
+		if(userInSecGroup && searchCriteria.encrypted[i]) {
 			$('#attributeEncrypted' + row_id).prop('checked', true);
 			var htmlString = '<div class="col-xs-10 col-sm-10" style="padding-left: 0;"><input type="password" id="key'
 							+ row_id +'" placeholder="Enter Key" class="form-control" name="userKey" autocomplete="key"/></div>';
