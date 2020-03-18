@@ -9,7 +9,7 @@ public class HpcMetadataAttrEntry {
 	private boolean systemAttr;
 	private boolean encrypted;
 	private boolean mandatory;
-
+	
 	private List<String> validValues = null;
 	private String defaultValue = null;
 	private String description;
@@ -72,13 +72,14 @@ public class HpcMetadataAttrEntry {
 	}
 
 
-  public boolean isEncrypted() {
-    return encrypted;
-  }
+    public boolean isEncrypted() {
+        return encrypted;
+    }
 
-  public void setEncrypted(boolean encrypted) {
-    this.encrypted = encrypted;
-  }
+    public void setEncrypted(boolean encrypted) {
+        this.encrypted = encrypted;
+    }
+
 
 	/**
 	 * @return the mandatory
@@ -93,6 +94,6 @@ public class HpcMetadataAttrEntry {
 	public void setMandatory(boolean mandatory) {
 		this.mandatory = mandatory;
 	}
-
+ 
 
 }
