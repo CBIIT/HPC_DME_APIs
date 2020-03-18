@@ -133,12 +133,8 @@
 												<input type="hidden" id="selfAttributeOnlyHidden1" name="selfAttributeOnly" value="false"/>
 											</td>
 											<td th:if="${userInSecGroup}" style="white-space: nowrap">
-											  <div class="row">
-											   <div class="col-xs-2 col-sm-2">
 												<input type="checkbox" class="encrypted" id="attributeEncrypted1" name="attributeEncrypted"/>
 												<input type="hidden" id="attributeEncryptedHidden1" name="encrypted" value="false"/>
-											   </div>
-											  </div>
 											</td>
 											<td style="white-space: nowrap"><select size="1"
 												id="level1" name="level" class="form-control"
@@ -217,6 +213,20 @@
 							<div class="col-sm-offset-2 col-sm-10">
 								<label><input type="checkbox" th:field="*{detailed}"
 									id="detailed" />&nbsp;&nbsp;Detailed Results</label>
+							</div>
+						</div>
+						
+						<div th:if="${userInSecGroup}" class="form-group row">
+							<div class="col-sm-offset-2 col-sm-6">
+								<div class="row">
+									<div class="col-xs-5 col-sm-5">
+										<input type="checkbox" class="encrypted" id="encryptedMetadata" />
+										<label for="decrypt" id="encryptedMetadataLabel">&nbsp;Decrypted Results</label>
+									</div>
+									<div class="col-xs-6 col-sm-6" style="padding-left: 0;">
+										<input type="password" id="key" placeholder="Enter Key" class="form-control" name="userKey" autocomplete="key" style="display:none"/>
+									</div>
+								</div>
 							</div>
 						</div>
 
@@ -532,8 +542,10 @@ function resetRows()
 	    	var attributeEncrypted = document.getElementById('attributeEncrypted'+i);
 	    	if (attributeEncrypted != null) {
 	    		attributeEncrypted.checked = false;
-	    		$('#attributeEncrypted'+i).parent('div').next('div').remove();
 	    	}
+	    	$("#key").hide();
+	    	$("#key").val("");
+	    	$('#encryptedMetadata').prop('checked', false);
     	}
     }
 }
@@ -559,8 +571,8 @@ function addRow() {
     cell0.innerHTML = '<label id="rowId'+ (rowId) +'">A'+ (rowId) + '</label><input type="hidden" id="rowId'+ (rowId) +'" name="rowId" value="A'+ (rowId) +'"/>';
     cell1.innerHTML = '<input id="selfAttributeOnly'+(rows+1)+'" type="checkbox" name="selfAttribute"/><input id="selfAttributeOnlyHidden'+(rows+1)+'" type="hidden" name="selfAttributeOnly" value="false"/>';
     if(userInSecGroup) {
-    	cell1_a.innerHTML = '<div class="row"><div class="col-xs-2 col-sm-2"><input id="attributeEncrypted'+(rows+1)+'" type="checkbox" name="attributeEncrypted" class="encrypted" />'+
-    						'<input id="attributeEncryptedHidden'+(rows+1)+'" type="hidden" name="encrypted" value="false"/></div></div>';
+    	cell1_a.innerHTML = '<input id="attributeEncrypted'+(rows+1)+'" type="checkbox" name="attributeEncrypted" class="encrypted" />'+
+    						'<input id="attributeEncryptedHidden'+(rows+1)+'" type="hidden" name="encrypted" value="false"/>';
     }
     cell2.innerHTML = '<select id="level'+(rows+1)+'" name="level" class="form-control" th:required="required" onChange="populateLevelAttributes(this.value, this.id)"></select>';
     cell3.innerHTML = '<select id="attrName'+(rows+1)+'" name="attrName" class="form-control" th:required="required"> <option value="ANY">ANY</option></select>';
@@ -651,8 +663,8 @@ function validateAndSubmit()
 				}
 				valid = true;
 			}
-			if(userInSecGroup && document.getElementById("attributeEncrypted" + suffix).checked) {
-				var userKey = document.getElementById("key"+suffix).value;	
+			if(userInSecGroup && document.getElementById("encryptedMetadata").checked) {
+				var userKey = document.getElementById("key").value;	
 				if(userKey == null || userKey.trim().length == 0) {
 					alert("Invalid key. Please enter the key");
 					return false;
@@ -673,11 +685,6 @@ function validateAndSubmit()
 		}
 		if(userInSecGroup && document.getElementById("attributeEncrypted" + i).checked) {
 		    document.getElementById("attributeEncryptedHidden" + i).value = "true";
-		} else {
-			var htmlString = '<div class="col-xs-10 col-sm-10" style="padding-left: 0;"><input type="hidden" id="key'
-							+ i +'" name="userKey"/></div>';
-	        $('#attributeEncrypted' + i).parent('div').parent('div').append(htmlString);
-	        $('#key' + row_id).val("");
 		}
     }
 	document.getElementById("simplesearchform").submit();
@@ -732,10 +739,9 @@ if(searchCriteria.level) {
 			$('#selfAttributeOnly' + row_id).prop('checked', true);
 		if(userInSecGroup && searchCriteria.encrypted[i]) {
 			$('#attributeEncrypted' + row_id).prop('checked', true);
-			var htmlString = '<div class="col-xs-10 col-sm-10" style="padding-left: 0;"><input type="password" id="key'
-							+ row_id +'" placeholder="Enter Key" class="form-control" name="userKey" autocomplete="key"/></div>';
-	        $('#attributeEncrypted' + row_id).parent('div').parent('div').append(htmlString);
-	        $('#key' + row_id).val(searchCriteria.userKey[i]);
+			$("#key").show();
+			$('#encryptedMetadata').prop('checked', true);
+			$('#key').val(searchCriteria.userKey);
 		}
 		if(searchCriteria.operator[i].startsWith('TIMESTAMP')) {
 			$('#attrValue' + row_id + 'X').val(searchCriteria.attrValue[i].split(' ')[0].replace(/-/g, "/"));
@@ -750,16 +756,43 @@ if(searchCriteria.level) {
 		$('select.operator').change();
 	});
 	
-	$(document).on('click', '.encrypted', function(){
-		if($(this). is(":checked")){
-			var index = this.id.split('attributeEncrypted')[1];
-			var htmlString = '<div class="col-xs-10 col-sm-10" style="padding-left: 0;"><input type="password" id="key'
-							+ index +'" placeholder="Enter Key" class="form-control" name="userKey" autocomplete="key"/></div>';
-			if( $('#key'+index).length ) 
-				$('#key'+index).parent('div').remove();
-			$(this).parent('div').parent('div').append(htmlString);
+	var labelClicked = false;
+	$(document).on('click', '#encryptedMetadataLabel', function(e){
+		if($("#encryptedMetadata").is(":checked")){
+			$("#encryptedMetadata").prop("checked", false);
 		} else {
-			$(this).parent('div').next('div').remove();
+			$("#encryptedMetadata").prop("checked", true);
+		}
+		labelClicked = true;
+		$('#encryptedMetadata').click();
+	});
+	
+	$(document).on('click', '.encrypted', function(e){
+		if(labelClicked) {
+			e.preventDefault();
+			labelClicked = false;
+		}
+		if($(this). is(":checked")){
+	        $("#key").show();
+	        $('#encryptedMetadata').prop('checked', true);
+	        $(this).prop('checked', true);
+		} else {
+			$(this).prop('checked', false);
+			var rows = document.getElementById("metaAttrTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+			var checked = false;
+			for(var i=1;i<rows;i++)
+		    {
+				if(document.getElementById("attributeEncrypted" + i).checked) {
+					checked = true;
+				}
+		    }
+			if(!checked) {
+				$("#key").hide();
+				$('#encryptedMetadata').prop('checked', false);
+			} else if (this.id == "encryptedMetadata") {
+				$('#encryptedMetadata').prop('checked', true);
+				e.preventDefault();
+			}
 		}
 	});
 //]]>
