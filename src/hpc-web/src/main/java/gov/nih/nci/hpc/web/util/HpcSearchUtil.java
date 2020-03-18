@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.ui.Model;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -19,10 +21,14 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
+import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcCollectionSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
@@ -31,18 +37,21 @@ import gov.nih.nci.hpc.web.model.HpcSearchResult;
 
 public class HpcSearchUtil {
 
-	public static void processResponseResults(HpcSearch search, Response restResponse, Model model)
+	public static void processResponseResults(HpcSearch search, Response restResponse, Model model, HttpSession session)
 			throws JsonParseException, IOException {
 		if (search.getSearchType().equalsIgnoreCase("collection"))
-			processCollectionResults(search, restResponse, model);
+			processCollectionResults(search, restResponse, model, session);
 		else
-			processDataObjectResults(search, restResponse, model);
+			processDataObjectResults(search, restResponse, model, session);
 	}
 
-	private static void processCollectionResults(HpcSearch search, Response restResponse, Model model)
+	private static void processCollectionResults(HpcSearch search, Response restResponse, Model model, HttpSession session)
 			throws JsonParseException, IOException {
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, user.getDefaultBasePath());
 		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
 		if (!search.isDetailed()) {
 			List<String> searchResults = collections.getCollectionPaths();
@@ -75,8 +84,8 @@ public class HpcSearchUtil {
 				returnResult.setDownload(result.getCollection().getAbsolutePath());
 				returnResult.setPermission(result.getCollection().getAbsolutePath());
 				returnResult.setMetadataEntries(new HpcMetadataEntries());
-				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
-				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
+				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(filterEncryptedMetadata(user, basePathRules, search, result.getCollection().getCollectionName(), result.getMetadataEntries().getSelfMetadataEntries())));
+				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(filterEncryptedMetadata(user, basePathRules, search, result.getCollection().getCollectionName(), result.getMetadataEntries().getParentMetadataEntries())));
 				returnResults.add(returnResult);
 
 			}
@@ -100,11 +109,14 @@ public class HpcSearchUtil {
 		return total;
 	}
 	
-	private static void processDataObjectResults(HpcSearch search, Response restResponse, Model model)
+	private static void processDataObjectResults(HpcSearch search, Response restResponse, Model model, HttpSession session)
 			throws JsonParseException, IOException {
 		MappingJsonFactory factory = new MappingJsonFactory();
 		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 		HpcDataObjectListDTO dataObjects = parser.readValueAs(HpcDataObjectListDTO.class);
+		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
+		HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, user.getDefaultBasePath());
 		if (!search.isDetailed()) {
 			List<String> searchResults = dataObjects.getDataObjectPaths();
 			List<HpcSearchResult> returnResults = new ArrayList<HpcSearchResult>();
@@ -137,8 +149,8 @@ public class HpcSearchUtil {
 				returnResult.setPermission(result.getDataObject().getAbsolutePath());
 				returnResult.setLink(result.getDataObject().getAbsolutePath());
 				returnResult.setMetadataEntries(new HpcMetadataEntries());
-				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
-				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
+				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(filterEncryptedMetadata(user, basePathRules, search, result.getDataObject().getAbsolutePath(), result.getMetadataEntries().getSelfMetadataEntries())));
+				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(filterEncryptedMetadata(user, basePathRules, search, result.getDataObject().getAbsolutePath(), result.getMetadataEntries().getParentMetadataEntries())));
 				returnResults.add(returnResult);
 
 			}
@@ -150,6 +162,39 @@ public class HpcSearchUtil {
 			model.addAttribute("totalPages", getTotalPages(dataObjects.getTotalCount(), dataObjects.getLimit()));
 		}
 	}
+
+	private static List<HpcMetadataEntry> filterEncryptedMetadata(HpcUserDTO user, HpcDataManagementRulesDTO basePathRules, HpcSearch search, String path, List<HpcMetadataEntry> entries) {
+		if (entries == null)
+			return new ArrayList<>();
+
+		//If userKey is not provided or basePath is not user's basePath, no action
+		if(StringUtils.isBlank(search.getUserKey()) || !StringUtils.startsWith(path, user.getDefaultBasePath()))
+			return entries;
+		
+		//Check for encrypted fields for this base path and decrypt	
+		for (HpcMetadataEntry entry : entries) {
+			if(isEncryptedAttribute(entry.getAttribute(), null, basePathRules.getCollectionMetadataValidationRules())) {
+			   try {
+				   entry.setValue(HpcEncryptionUtil.decrypt(search.getUserKey(), Base64.getDecoder().decode(entry.getValue())));
+			   } catch (Exception e) {
+				   //It could not be decrypted using the supplied key, leave it.
+			   }
+			   
+			}
+		}
+		
+		return entries;
+	}
+	
+	private static boolean isEncryptedAttribute(String attribute, String collectionType, List<HpcMetadataValidationRule> rules) {
+      for(HpcMetadataValidationRule rule: rules) {
+        if (StringUtils.equals(rule.getAttribute(), attribute) && collectionType != null && rule.getCollectionTypes().contains(collectionType))
+          return rule.getEncrypted();
+        if (StringUtils.equals(rule.getAttribute(), attribute) && collectionType == null)
+          return rule.getEncrypted();
+      }
+      return false;
+    }
 
 	private static String getAttributeValue(String attrName, HpcMetadataEntries entries) {
 		if (entries == null)
