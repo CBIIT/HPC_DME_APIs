@@ -255,7 +255,7 @@ public class HpcSearchController extends AbstractHpcController {
 		if (restResponse.getStatus() == 200) {
 			search.setSearchType(query.getNamedCompoundQuery().getCompoundQueryType().value());
 			search.setDetailed(query.getNamedCompoundQuery().getDetailedResponse());
-			HpcSearchUtil.processResponseResults(search, restResponse, model);
+			HpcSearchUtil.processResponseResults(search, restResponse, model, session);
 		} else {
 			String message = "No matching results!";
 			ObjectError error = new ObjectError("hpcSearch", message);

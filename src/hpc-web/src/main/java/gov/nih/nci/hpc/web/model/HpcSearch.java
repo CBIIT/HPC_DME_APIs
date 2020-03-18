@@ -7,7 +7,7 @@ public class HpcSearch {
 	private String[] levelOperator;
 	private boolean[] selfAttributeOnly;
 	private boolean[] encrypted;
-	private String[] userKey;
+	private String userKey;
 	private String[] attrName;
 	private String[] operator;
 	private String[] attrValue;
@@ -139,11 +139,11 @@ public class HpcSearch {
       this.encrypted = encrypted;
     }
 
-    public String[] getUserKey() {
+    public String getUserKey() {
       return userKey;
     }
 
-    public void setUserKey(String[] userKey) {
+    public void setUserKey(String userKey) {
       this.userKey = userKey;
     }
 }

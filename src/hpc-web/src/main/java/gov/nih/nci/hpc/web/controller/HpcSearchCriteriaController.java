@@ -222,7 +222,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 
 			Response restResponse = client.invoke("POST", compoundQuery);
 			if (restResponse.getStatus() == 200) {
-				processResponseResults(hpcSearch != null ? hpcSearch : search, restResponse, model, redirectAttrs);
+				HpcSearchUtil.processResponseResults(hpcSearch != null ? hpcSearch : search, restResponse, model, session);
 				success = true;
 				session.setAttribute("compoundQuery", compoundQuery);
 				session.setAttribute("hpcSearch", hpcSearch != null ? hpcSearch : search);
@@ -277,114 +277,6 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			return search.isDetailed() ? "dataobjectsearchresultdetail" : "dataobjectsearchresult";
 	}
 
-	private void processResponseResults(HpcSearch search, Response restResponse, Model model,
-			RedirectAttributes redirectAttrs) throws JsonParseException, IOException {
-		if (search.getSearchType().equals("collection"))
-			processCollectionResults(search, restResponse, model, redirectAttrs);
-		else
-			processDataObjectResults(search, restResponse, model, redirectAttrs);
-	}
-
-	private void processCollectionResults(HpcSearch search, Response restResponse, Model model,
-			RedirectAttributes redirectAttrs) throws JsonParseException, IOException {
-		MappingJsonFactory factory = new MappingJsonFactory();
-		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-		HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
-		if (!search.isDetailed()) {
-			List<String> searchResults = collections.getCollectionPaths();
-			List<HpcSearchResult> returnResults = new ArrayList<HpcSearchResult>();
-			for (String result : searchResults) {
-				HpcSearchResult returnResult = new HpcSearchResult();
-				returnResult.setPath(result);
-				returnResult.setPermission(result);
-				returnResult.setDownload(result);
-				returnResults.add(returnResult);
-
-			}
-			model.addAttribute("searchresults", returnResults);
-			model.addAttribute("searchType", "collection");
-			model.addAttribute("totalCount", collections.getTotalCount());
-			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(collections.getTotalCount(), collections.getLimit()));
-			model.addAttribute("currentPageSize", search.getPageSize());
-		} else {
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
-			List<HpcCollectionDTO> searchResults = collections.getCollections();
-			List<HpcCollectionSearchResultDetailed> returnResults = new ArrayList<HpcCollectionSearchResultDetailed>();
-			for (HpcCollectionDTO result : searchResults) {
-				HpcCollectionSearchResultDetailed returnResult = new HpcCollectionSearchResultDetailed();
-				returnResult.setPath(result.getCollection().getCollectionName());
-				returnResult.setPermission(result.getCollection().getCollectionName());
-				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
-				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
-				returnResult.setCreatedOn(format.format(result.getCollection().getCreatedAt().getTime()));
-				returnResult.setDownload(result.getCollection().getAbsolutePath());
-				returnResult.setCollectionType(getAttributeValue("collection_type", result.getMetadataEntries()));
-				returnResult.setMetadataEntries(new HpcMetadataEntries());
-				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
-				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
-				returnResults.add(returnResult);
-
-			}
-			model.addAttribute("searchresults", returnResults);
-			model.addAttribute("detailed", "yes");
-			model.addAttribute("searchType", "collection");
-			model.addAttribute("totalCount", collections.getTotalCount());
-			model.addAttribute("currentPageSize", search.getPageSize());
-			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(collections.getTotalCount(), collections.getLimit()));
-		}
-	}
-
-	private void processDataObjectResults(HpcSearch search, Response restResponse, Model model,
-			RedirectAttributes redirectAttrs) throws JsonParseException, IOException {
-		MappingJsonFactory factory = new MappingJsonFactory();
-		JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
-		HpcDataObjectListDTO dataObjects = parser.readValueAs(HpcDataObjectListDTO.class);
-		if (!search.isDetailed()) {
-			List<String> searchResults = dataObjects.getDataObjectPaths();
-			List<HpcSearchResult> returnResults = new ArrayList<HpcSearchResult>();
-			for (String result : searchResults) {
-				HpcSearchResult returnResult = new HpcSearchResult();
-				returnResult.setPath(result);
-				returnResult.setPermission(result);
-				returnResult.setLink(result);
-				returnResult.setDownload(result);
-				returnResults.add(returnResult);
-
-			}
-			model.addAttribute("searchresults", returnResults);
-			model.addAttribute("searchType", "datafile");
-			model.addAttribute("totalCount", dataObjects.getTotalCount());
-			model.addAttribute("currentPageSize", search.getPageSize());
-			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(dataObjects.getTotalCount(), dataObjects.getLimit()));
-		} else {
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
-			List<HpcDataObjectDTO> searchResults = dataObjects.getDataObjects();
-			List<HpcDatafileSearchResultDetailed> returnResults = new ArrayList<HpcDatafileSearchResultDetailed>();
-			for (HpcDataObjectDTO result : searchResults) {
-				HpcDatafileSearchResultDetailed returnResult = new HpcDatafileSearchResultDetailed();
-				returnResult.setPath(result.getDataObject().getAbsolutePath());
-				returnResult.setDownload(result.getDataObject().getAbsolutePath());
-				returnResult.setPermission(result.getDataObject().getAbsolutePath());
-				returnResult.setLink(result.getDataObject().getAbsolutePath());
-				returnResult.setUuid(getAttributeValue("uuid", result.getMetadataEntries()));
-				returnResult.setRegisteredBy(getAttributeValue("registered_by", result.getMetadataEntries()));
-				returnResult.setCreatedOn(format.format(result.getDataObject().getCreatedAt().getTime()));
-				returnResult.setChecksum(getAttributeValue("checksum", result.getMetadataEntries()));
-				returnResult.setMetadataEntries(new HpcMetadataEntries());
-				returnResult.getMetadataEntries().getSelfMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getSelfMetadataEntries()));
-				returnResult.getMetadataEntries().getParentMetadataEntries().addAll(new ArrayList<HpcMetadataEntry>(result.getMetadataEntries().getParentMetadataEntries()));
-				returnResults.add(returnResult);
-
-			}
-			model.addAttribute("searchresults", returnResults);
-			model.addAttribute("detailed", "yes");
-			model.addAttribute("searchType", "datafile");
-			model.addAttribute("totalCount", dataObjects.getTotalCount());
-			model.addAttribute("currentPageSize", search.getPageSize());
-			model.addAttribute("totalPages", HpcSearchUtil.getTotalPages(dataObjects.getTotalCount(), dataObjects.getLimit()));
-		}
-	}
-
 	private HpcCompoundMetadataQueryDTO constructCriteria(Map<String, String> hierarchy, HpcSearch search) {
 		HpcCompoundMetadataQueryDTO dto = new HpcCompoundMetadataQueryDTO();
 		dto.setTotalCount(true);
@@ -430,7 +322,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			boolean encrypted = (search.getEncrypted() != null && search.getEncrypted().length > 0 ? search.getEncrypted()[i] : false);
 			if(encrypted) {
 			    try {
-			      attrValue = Base64.getEncoder().encodeToString(HpcEncryptionUtil.encrypt(search.getUserKey()[i], attrValue));
+			      attrValue = Base64.getEncoder().encodeToString(HpcEncryptionUtil.encrypt(search.getUserKey(), attrValue));
                 } catch (Exception e) {
                   // To user, it will indicate no results found.
                   logger.error("Search with encrypted field failed due to ", e);
