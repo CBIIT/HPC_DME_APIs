@@ -17,6 +17,7 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -150,7 +151,7 @@ public class HpcSaveSearchController extends AbstractHpcController {
 
 			String authToken = (String) session.getAttribute("hpcUserToken");
 			//If previous criteria name is provided, delete the saved criteria to re-save the new query
-			if(hpcPrevSaveSearch != null && hpcPrevSaveSearch.getCriteriaName().equals(search.getCriteriaName())) {
+			if(hpcPrevSaveSearch != null && StringUtils.equals(hpcPrevSaveSearch.getCriteriaName(), search.getCriteriaName())) {
 				boolean deleted = HpcClientUtil.deleteSearch(authToken, queryServiceURL, search.getCriteriaName(), sslCertPath,
 						sslCertPassword);
 				if (!deleted) {
@@ -169,6 +170,9 @@ public class HpcSaveSearchController extends AbstractHpcController {
 			if (restResponse.getStatus() == 201) {
 				result.setCode("201");
 				result.setMessage("Saved criteria successfully!");
+				HpcSaveSearch hpcSaveSearch = new HpcSaveSearch();
+				hpcSaveSearch.setCriteriaName(search.getCriteriaName());
+				session.setAttribute("hpcSaveSearch", hpcSaveSearch);
 				return result;
 			} else {
 				ObjectMapper mapper = new ObjectMapper();
