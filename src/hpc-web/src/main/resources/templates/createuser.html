@@ -217,6 +217,7 @@
 		$(function() {
 			if($('#doc option').length == 1)
 				$("#doc").val($("#doc option:first").val()).change();
+				refreshBasePath($("#doc option:first").val());
 		});
 	//]]>		
 	</script>
