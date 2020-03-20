@@ -573,7 +573,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 
 			byte[] buf = new byte[1024];
 			int count;
-			int total = 0;
+			long total = 0;
 			long fileSize = file.length();
 
 			while ((count = inputStream.read(buf)) != -1) {
