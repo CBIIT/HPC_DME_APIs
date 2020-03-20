@@ -105,7 +105,7 @@ public class HPCLocalFileMultipartUploadProcessor implements Callable<HpcUploadP
 			// Copy data from source to destination.
 			byte[] buf = new byte[1024];
 			int count;
-			int total = 0;
+			long total = 0;
 
 			long offset = (uploadPartUrl.getPartNumber() - 1) * partSize;
 			inputStream.getChannel().position(offset);
