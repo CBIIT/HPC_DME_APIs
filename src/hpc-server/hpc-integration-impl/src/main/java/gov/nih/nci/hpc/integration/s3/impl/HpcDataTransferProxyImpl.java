@@ -119,8 +119,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
       HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
-      Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener)
-      throws HpcException {
+      Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
+      List<HpcMetadataEntry> metadataEntries) throws HpcException {
     if (uploadRequest.getGlobusUploadSource() != null) {
       throw new HpcException("Invalid upload source", HpcErrorType.UNEXPECTED_ERROR);
     }
@@ -145,7 +145,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
             uploadRequestURLExpiration, uploadRequest.getUploadRequestURLChecksum());
       } else {
         return generateMultipartUploadRequestURLs(authenticatedToken, archiveDestinationLocation,
-            uploadRequestURLExpiration, uploadParts);
+            uploadRequestURLExpiration, uploadParts, metadataEntries);
       }
     } else if (uploadRequest.getSourceFile() != null) {
       // Upload a file
@@ -196,13 +196,38 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
-      HpcFileLocation destinationFile, HpcArchive baseArchiveDestination,
-      List<HpcMetadataEntry> metadataEntries) throws HpcException {
+  public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
+      HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries)
+      throws HpcException {
 
-    // Create a S3 update request w/ new metadata. Copy the file to itself.
-    CopyObjectRequest copyRequest = new CopyObjectRequest(sourceFile.getFileContainerId(),
-        sourceFile.getFileId(), destinationFile.getFileContainerId(), destinationFile.getFileId())
+    // Check if the metadata was already set on the data-object in the S3 archive.
+    try {
+      ObjectMetadata s3Metadata =
+          s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+              .getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
+      boolean metadataAlreadySet = true;
+      for (HpcMetadataEntry metadataEntry : metadataEntries) {
+        if (s3Metadata.getUserMetaDataOf(metadataEntry.getAttribute()) == null) {
+          metadataAlreadySet = false;
+          break;
+        }
+      }
+
+      if (metadataAlreadySet) {
+        logger.info(
+            "System metadata in S3 archive already set for [{}]. No need to copy-object for",
+            fileLocation.getFileId());
+        return s3Metadata.getETag();
+      }
+
+    } catch (AmazonClientException ace) {
+      throw new HpcException("[S3] Failed to get object metadata: " + ace.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, ace);
+    }
+
+    // We set S3 metadata by copying the data-object to itself w/ attached metadata.
+    CopyObjectRequest copyRequest = new CopyObjectRequest(fileLocation.getFileContainerId(),
+        fileLocation.getFileId(), fileLocation.getFileContainerId(), fileLocation.getFileId())
             .withNewObjectMetadata(toS3Metadata(metadataEntries));
 
     try {
@@ -349,8 +374,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
           .completeMultipartUpload(completeMultipartUploadRequest);
     } catch (AmazonClientException e) {
-      throw new HpcException(
-          "[S3] Failed to complete a multipart upload: " + e.getMessage(),
+      throw new HpcException("[S3] Failed to complete a multipart upload: " + e.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, e);
     }
   }
@@ -568,17 +592,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param archiveDestinationLocation The archive destination location.
    * @param uploadRequestURLExpiration The URL expiration (in hours).
    * @param uploadParts How many parts to generate upload URLs for.
+   * @param metadataEntries The metadata entries to attach to the data-object in S3 archive.
    * @return A data object upload response containing the upload request URL.
    * @throws HpcException on data transfer system failure.
    */
   private HpcDataObjectUploadResponse generateMultipartUploadRequestURLs(Object authenticatedToken,
-      HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration, int uploadParts)
-      throws HpcException {
+      HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration, int uploadParts,
+      List<HpcMetadataEntry> metadataEntries) throws HpcException {
     // Initiate the multipart upload.
     HpcMultipartUpload multipartUpload = new HpcMultipartUpload();
     InitiateMultipartUploadRequest initiateMultipartUploadRequest =
         new InitiateMultipartUploadRequest(archiveDestinationLocation.getFileContainerId(),
-            archiveDestinationLocation.getFileId());
+            archiveDestinationLocation.getFileId(), this.toS3Metadata(metadataEntries));
 
     try {
       multipartUpload.setId(s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()

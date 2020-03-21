@@ -148,8 +148,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         // Transfer the data file.
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
             toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, false,
-            null, null, path, systemGeneratedMetadata.getRegistrarId(),
-            systemGeneratedMetadata.getCallerObjectId(),
+            null, null, path, systemGeneratedMetadata.getObjectId(),
+            systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
 
         // Update system metadata of the data object.
@@ -359,8 +359,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null,
             toS3UploadSource(systemGeneratedMetadata.getSourceLocation(),
                 systemGeneratedMetadata.getSourceURL(), systemGeneratedMetadata.getSourceSize()),
-            null, false, null, null, path, systemGeneratedMetadata.getRegistrarId(),
-            systemGeneratedMetadata.getCallerObjectId(),
+            null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+            systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
 
         // Update the transfer status and request id.
@@ -401,8 +401,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         // Transfer the data file from the temporary archive into the archive.
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null,
-            null, file, false, null, null, path, systemGeneratedMetadata.getRegistrarId(),
-            systemGeneratedMetadata.getCallerObjectId(),
+            null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+            systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
 
         // Generate archive (Cleversafe) system generated metadata.
@@ -1631,7 +1631,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   private boolean updateS3UploadStatus(String path,
       HpcSystemGeneratedMetadata systemGeneratedMetadata) throws HpcException {
     logger.info("Before updateS3UploadStatus(): {}", path);
-    
+
     // Lookup the archive for this data object.
     logger.info("Before getPathAttributes(): {}", path);
     HpcPathAttributes archivePathAttributes = dataTransferService.getPathAttributes(
@@ -1639,7 +1639,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         true, systemGeneratedMetadata.getConfigurationId(),
         systemGeneratedMetadata.getS3ArchiveConfigurationId());
     logger.info("After getPathAttributes(): {}", path);
-    
+
     if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
       // The data object is found in archive. i.e. upload was completed successfully.
 
@@ -1652,10 +1652,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           systemGeneratedMetadata.getS3ArchiveConfigurationId(),
           systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
       logger.info("After addSystemGeneratedMetadataToDataObject(): {}", path);
-      
+
       // Update the data management (iRODS) data object's system-metadata.
       Calendar dataTransferCompleted = Calendar.getInstance();
-      
+
       logger.info("Before updateDataObjectSystemGeneratedMetadata(): {}", path);
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
           HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
