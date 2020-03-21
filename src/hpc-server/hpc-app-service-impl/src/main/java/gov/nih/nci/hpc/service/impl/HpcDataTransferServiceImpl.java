@@ -200,10 +200,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
       HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
-      Integer uploadParts, String uploadRequestURLChecksum, String path, String userId,
-      String callerObjectId, String configurationId) throws HpcException {
+      Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId,
+      String userId, String callerObjectId, String configurationId) throws HpcException {
     // Input Validation. One and only one of the first 4 parameters is expected to
     // be provided.
+
+    // Validate data-object-id provided.
+    if (StringUtils.isEmpty(dataObjectId)) {
+      throw new HpcException("No data object ID in upload request", HpcErrorType.UNEXPECTED_ERROR);
+    }
 
     // Validate an upload source was provided.
     if (globusUploadSource == null && s3UploadSource == null && sourceFile == null
@@ -273,6 +278,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Create an upload request.
     HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
     uploadRequest.setPath(path);
+    uploadRequest.setDataObjectId(dataObjectId);
     uploadRequest.setUserId(userId);
     uploadRequest.setCallerObjectId(callerObjectId);
     uploadRequest.setGlobusUploadSource(globusUploadSource);
@@ -429,10 +435,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     boolean globusSyncUpload =
         dataTransferType.equals(HpcDataTransferType.GLOBUS) && fileLocation != null;
 
-    return dataTransferProxies.get(dataTransferType).copyDataObject(
-        !globusSyncUpload ? getAuthenticatedToken(
-            dataTransferType, configurationId, s3ArchiveConfigurationId) : null,
-        fileLocation, fileLocation,
+    return dataTransferProxies.get(dataTransferType).setDataObjectMetadata(
+        !globusSyncUpload
+            ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
+            : null,
+        fileLocation,
         dataManagementConfigurationLocator.getDataTransferConfiguration(configurationId,
             s3ArchiveConfigurationId, dataTransferType).getBaseArchiveDestination(),
         generateMetadata(objectId, registrarId));
@@ -1376,7 +1383,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
             ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
             : null,
         uploadRequest, dataTransferConfiguration.getBaseArchiveDestination(),
-        dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener);
+        dataTransferConfiguration.getUploadRequestURLExpiration(), progressListener,
+        generateMetadata(uploadRequest.getDataObjectId(), uploadRequest.getUserId()));
   }
 
   /**

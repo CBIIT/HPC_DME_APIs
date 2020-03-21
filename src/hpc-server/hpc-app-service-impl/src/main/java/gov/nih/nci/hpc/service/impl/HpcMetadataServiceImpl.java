@@ -346,8 +346,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
   }
 
   @Override
-  public void addMetadataToDataObject(String path, List<HpcMetadataEntry> metadataEntries,
-      String configurationId, String collectionType) throws HpcException {
+  public HpcMetadataEntry addMetadataToDataObject(String path,
+      List<HpcMetadataEntry> metadataEntries, String configurationId, String collectionType)
+      throws HpcException {
     // Input validation.
     if (path == null || !isValidMetadataEntries(metadataEntries)) {
       throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -360,11 +361,14 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     // Add Metadata to the DM system.
     dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
         path, metadataEntries);
+
+    return generateIdMetadata();
   }
 
   @Override
   public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToDataObject(String path,
-      HpcFileLocation archiveLocation, HpcFileLocation sourceLocation, String dataTransferRequestId,
+      HpcMetadataEntry dataObjectIdMetadataEntry, HpcFileLocation archiveLocation,
+      HpcFileLocation sourceLocation, String dataTransferRequestId,
       HpcDataTransferUploadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
       Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize,
       String sourceURL, String callerObjectId, String userId, String userName,
@@ -372,7 +376,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
       throws HpcException {
     // Input validation.
     if (path == null || dataTransferStatus == null || dataTransferType == null
-        || dataTransferStarted == null) {
+        || dataTransferStarted == null || dataObjectIdMetadataEntry == null) {
       throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
     }
     if ((archiveLocation != null && !isValidFileLocation(archiveLocation))
@@ -383,7 +387,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
     // Generate a data-object ID and add it as metadata.
-    metadataEntries.add(generateIdMetadata());
+    metadataEntries.add(dataObjectIdMetadataEntry);
 
     // Create the Metadata-Updated metadata.
     metadataEntries.add(generateMetadataUpdatedMetadata());
@@ -457,17 +461,19 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
   }
 
   @Override
-  public void addSystemGeneratedMetadataToDataObject(String path, String userId, String userName,
+  public void addSystemGeneratedMetadataToDataObject(String path,
+      HpcMetadataEntry dataObjectIdMetadataEntry, String userId, String userName,
       String configurationId, String linkSourcePath) throws HpcException {
     // Input validation.
-    if (path == null || configurationId == null || linkSourcePath == null) {
+    if (path == null || configurationId == null || linkSourcePath == null
+        || dataObjectIdMetadataEntry == null) {
       throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
     // Generate a data-object ID and add it as metadata.
-    metadataEntries.add(generateIdMetadata());
+    metadataEntries.add(dataObjectIdMetadataEntry);
 
     // Create the Metadata-Updated metadata.
     metadataEntries.add(generateMetadataUpdatedMetadata());

@@ -161,6 +161,7 @@
 	<xsd:complexType name="HpcDataObjectUploadRequest">
 		<xsd:sequence>
 			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="dataObjectId" type="xsd:string" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="globusUploadSource"

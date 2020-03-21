@@ -820,8 +820,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           // This is a registration request w/ data upload.
 
           // Attach the user provided metadata.
-          metadataService.addMetadataToDataObject(path, dataObjectRegistration.getMetadataEntries(),
-              configurationId, collectionType);
+          HpcMetadataEntry dataObjectMetadataEntry = metadataService.addMetadataToDataObject(path,
+              dataObjectRegistration.getMetadataEntries(), configurationId, collectionType);
 
           // Transfer the data file.
           HpcDataObjectUploadResponse uploadResponse =
@@ -829,7 +829,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                   dataObjectRegistration.getS3UploadSource(), dataObjectFile,
                   generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
                   generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
-                  userId, dataObjectRegistration.getCallerObjectId(), configurationId);
+                  dataObjectMetadataEntry.getValue(), userId,
+                  dataObjectRegistration.getCallerObjectId(), configurationId);
 
           // Set the upload request URL / Multipart upload URLs (if one was generated).
           responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
@@ -838,7 +839,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           // Generate data management (iRODS) system metadata and attach to the data
           // object.
           HpcSystemGeneratedMetadata systemGeneratedMetadata =
-              metadataService.addSystemGeneratedMetadataToDataObject(path,
+              metadataService.addSystemGeneratedMetadataToDataObject(path, dataObjectMetadataEntry,
                   uploadResponse.getArchiveLocation(), uploadResponse.getUploadSource(),
                   uploadResponse.getDataTransferRequestId(), uploadResponse.getDataTransferStatus(),
                   uploadResponse.getDataTransferType(), uploadResponse.getDataTransferStarted(),
@@ -2202,8 +2203,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcDirectoryScanItem scanItem, String basePath, String sourceFileContainerId,
       String callerObjectId, HpcBulkMetadataEntries bulkMetadataEntries,
       HpcDirectoryScanPathMap pathMap, HpcS3Account s3Account) {
-    // If pathMap provided - use the map to replace scanned path with user provided
-    // path (or part of
+    // If pathMap provided - use the map to replace scanned path with user provided path (or part of
     // path).
     String scanItemFilePath = scanItem.getFilePath();
     if (pathMap != null) {
@@ -2313,9 +2313,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
 
       // Re-generate the upload request URL.
-      HpcDataObjectUploadResponse uploadResponse =
-          dataTransferService.uploadDataObject(null, null, null, true, uploadParts, checksum, path,
-              userId, callerObjectId, systemGeneratedMetadata.getConfigurationId());
+      HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null,
+          null, true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(), userId,
+          callerObjectId, systemGeneratedMetadata.getConfigurationId());
 
       // Update data-transfer-status system metadata accordingly.
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
@@ -2661,13 +2661,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         .forEach(metadataEntry -> metadataEntries.put(metadataEntry.getAttribute(), metadataEntry));
     dataObjectRegistration.getMetadataEntries()
         .forEach(metadataEntry -> metadataEntries.put(metadataEntry.getAttribute(), metadataEntry));
-    metadataService.addMetadataToDataObject(path,
+    HpcMetadataEntry dataObjectIdMetadataEntry = metadataService.addMetadataToDataObject(path,
         new ArrayList<HpcMetadataEntry>(metadataEntries.values()), configurationId, collectionType);
 
     // Generate data management (iRODS) system metadata and attach to the data
     // object.
-    metadataService.addSystemGeneratedMetadataToDataObject(path, userId, userName, configurationId,
-        linkSourcePath);
+    metadataService.addSystemGeneratedMetadataToDataObject(path, dataObjectIdMetadataEntry, userId,
+        userName, configurationId, linkSourcePath);
   }
 
 

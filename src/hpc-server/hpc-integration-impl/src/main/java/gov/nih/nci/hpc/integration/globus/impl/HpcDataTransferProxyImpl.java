@@ -1,7 +1,6 @@
 package gov.nih.nci.hpc.integration.globus.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
-import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,6 +43,7 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
+import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 
 /**
  * HPC Data Transfer Proxy Globus Implementation.
@@ -168,8 +168,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
       HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
-      Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener)
-      throws HpcException {
+      Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
+      List<HpcMetadataEntry> metadataEntries) throws HpcException {
     // Progress listener not supported.
     if (progressListener != null) {
       throw new HpcException("Globus data transfer doesn't support progress listener",
@@ -261,34 +261,26 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
-      HpcFileLocation destinationFile, HpcArchive baseArchiveDestination,
-      List<HpcMetadataEntry> metadataEntries) throws HpcException {
-    if (sourceFile.getFileContainerId().equals(destinationFile.getFileContainerId())
-        && sourceFile.getFileId().equals(destinationFile.getFileId())) {
-      // We currently support a 'copy of file to itself', in which don't copy the file but rather
-      // generate and store
-      // metadata and return a calculated checksum.
-      String archiveFilePath = destinationFile.getFileId().replaceFirst(
-          baseArchiveDestination.getFileLocation().getFileId(),
-          baseArchiveDestination.getDirectory());
+  public String setDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation,
+      HpcArchive baseArchiveDestination, List<HpcMetadataEntry> metadataEntries)
+      throws HpcException {
+    String archiveFilePath =
+        fileLocation.getFileId().replaceFirst(baseArchiveDestination.getFileLocation().getFileId(),
+            baseArchiveDestination.getDirectory());
 
-      try {
-        // Creating the metadata file.
-        List<String> metadata = new ArrayList<>();
-        metadataEntries.forEach(metadataEntry -> metadata
-            .add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
-        FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
+    try {
+      // Creating the metadata file.
+      List<String> metadata = new ArrayList<>();
+      metadataEntries.forEach(metadataEntry -> metadata
+          .add(metadataEntry.getAttribute() + "=" + metadataEntry.getValue()));
+      FileUtils.writeLines(getMetadataFile(archiveFilePath), metadata);
 
-        // Returning a calculated checksum.
-        return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
+      // Returning a calculated checksum.
+      return Files.hash(new File(archiveFilePath), Hashing.md5()).toString();
 
-      } catch (IOException e) {
-        throw new HpcException("Failed calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
-      }
+    } catch (IOException e) {
+      throw new HpcException("Failed to calculate checksum", HpcErrorType.UNEXPECTED_ERROR, e);
     }
-
-    throw new HpcException("Copy data object not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
 
   @Override
@@ -720,9 +712,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       try {
         cancelTransferRequest(authenticatedToken, dataTransferRequestId,
             "HPC-DME deemed task failed");
-        logger.info(
-            "Globus transfer successfully canceled: globus-task-id: {}",  dataTransferRequestId);
-        
+        logger.info("Globus transfer successfully canceled: globus-task-id: {}",
+            dataTransferRequestId);
+
       } catch (HpcException e) {
         logger.error("Failed to cancel task", e);
       }
@@ -750,8 +742,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         JSONObject cancel = new JSONObject();
         cancel.put("task_id_list", Arrays.asList(dataTransferRequestId));
         cancel.put("message", message);
-        client.postResult("/endpoint_manager/admin_cancel", cancel, null);        
-        //client.postResult("/task/" + dataTransferRequestId + "/cancel", null);
+        client.postResult("/endpoint_manager/admin_cancel", cancel, null);
+        // client.postResult("/task/" + dataTransferRequestId + "/cancel", null);
         return null;
 
       } catch (Exception e) {

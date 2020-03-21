@@ -63,6 +63,7 @@ public interface HpcDataTransferService {
    * @param uploadRequestURLChecksum A checksum provided by the caller to be attached to the upload
    *        request URL.
    * @param path The data object registration path.
+   * @param dataObjectId The data object ID.
    * @param userId The user-id who requested the data upload.
    * @param callerObjectId The caller's provided data object ID.
    * @param configurationId The configuration ID (needed to determine the archive connection
@@ -72,8 +73,8 @@ public interface HpcDataTransferService {
    */
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
       HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
-      Integer uploadParts, String uploadRequestURLChecksum, String path, String userId,
-      String callerObjectId, String configurationId) throws HpcException;
+      Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId,
+      String userId, String callerObjectId, String configurationId) throws HpcException;
 
   /**
    * Complete a multipart upload.
@@ -462,10 +463,10 @@ public interface HpcDataTransferService {
    */
   public void cancelCollectionDownloadTask(HpcCollectionDownloadTask downloadTask)
       throws HpcException;
-  
+
   /**
-   * Cancel a collection download task items. This will mark any pending download items (i.e. items in
-   * RECEIVED state) in this collection download task for cancellation.
+   * Cancel a collection download task items. This will mark any pending download items (i.e. items
+   * in RECEIVED state) in this collection download task for cancellation.
    *
    * @param downloadItems The collection download task items to cancel.
    * @throws HpcException on service failure.

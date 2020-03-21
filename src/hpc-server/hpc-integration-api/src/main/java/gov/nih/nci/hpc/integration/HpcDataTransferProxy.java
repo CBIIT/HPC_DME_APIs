@@ -88,13 +88,14 @@ public interface HpcDataTransferProxy {
    *        URL.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *        completion.
+   * @param metadataEntries The metadata entries to attach to the data-object in the archive.
    * @return A data object upload response.
    * @throws HpcException on data transfer system failure.
    */
   public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
       HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
-      Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener)
-      throws HpcException;
+      Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
+      List<HpcMetadataEntry> metadataEntries) throws HpcException;
 
   /**
    * Download a data object file.
@@ -128,20 +129,20 @@ public interface HpcDataTransferProxy {
   }
 
   /**
-   * Copy a data object file.
+   * Set metadata for object file in the archive.
    *
    * @param authenticatedToken An authenticated token.
-   * @param sourceFile The source file.
-   * @param destinationFile The destination file.
+   * @param fileLocation The file location.
    * @param baseArchiveDestination The archive's base destination location.
-   * @param metadataEntries The metadata to attach.
+   * @param metadataEntries The metadata to set.
    * @return The copied object checksum.
    * @throws HpcException on data transfer system failure.
    */
-  public default String copyDataObject(Object authenticatedToken, HpcFileLocation sourceFile,
-      HpcFileLocation destinationFile, HpcArchive baseArchiveDestination,
+  public default String setDataObjectMetadata(Object authenticatedToken,
+      HpcFileLocation fileLocation, HpcArchive baseArchiveDestination,
       List<HpcMetadataEntry> metadataEntries) throws HpcException {
-    throw new HpcException("copyDataObject() is not supported", HpcErrorType.UNEXPECTED_ERROR);
+    throw new HpcException("setDataObjectMetadata() is not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
   }
 
   /**
