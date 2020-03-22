@@ -433,6 +433,8 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 				String attrName = paramName.substring("zAttrStr_".length());
 				String[] attrValue = request.getParameterValues(paramName);
+				if (attrValue.length == 0 || attrValue[0].isEmpty())
+					continue;
 				entry.setAttribute(attrName);
 				entry.setValue(attrValue[0]);
 				metadataEntries.add(entry);
