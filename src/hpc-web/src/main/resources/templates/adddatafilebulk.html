@@ -153,7 +153,7 @@
 												<tr class="globus">
 													<td colspan="2">
 															<div class="col-sm-12 column" id="globusDiv">
-																<button type="submit" class="btn btn-md btn-link"
+																<button type="button" class="btn btn-md btn-link"
 																	id="primaryGlobusButton"
 																	onClick="return refreshAttributes('Globus')">Select
 																	Data from Globus Endpoint</button>
@@ -377,7 +377,13 @@
 														<a href="#" data-toggle="tooltip" data-placement="right" th:if="${!#strings.isEmpty(hpcMetadataAttrEntry.getDescription())}" th:title="${hpcMetadataAttrEntry.getDescription()}">
 														<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 													<td
-														th:if="${hpcMetadataAttrEntry.getValidValues() == null}"><input
+														th:if="${hpcMetadataAttrEntry.getValidValues() == null and hpcMetadataAttrEntry.isMandatory()}"><input
+														type="text" class="form-control"
+														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
+														th:value="${hpcMetadataAttrEntry.getAttrValue()}" th:required="required" placeholder="Required"></input></td>
+													<td
+														th:if="${hpcMetadataAttrEntry.getValidValues() == null and not hpcMetadataAttrEntry.isMandatory()}"><input
 														type="text" class="form-control"
 														th:id="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
 														th:name="@{'zAttrStr_'+${hpcMetadataAttrEntry.getAttrName()}}"
@@ -442,7 +448,7 @@
 									<button type="submit" class="btn btn-md btn-primary"
 										id="primaryCreateButton" onClick="return validate()"
 										th:disabled="${create == true} ?'false' : 'disabled'">Register</button>
-									<button type="submit" class="btn btn-primary" id="cancel"
+									<button type="button" class="btn btn-primary" id="cancel"
 										onClick="cancelEdit()">Cancel</button>
 								</div>
 							</form>
@@ -555,7 +561,8 @@
 			{
 				var attrName = attributeNames[i];
 				var defaultValue = "";
-				if((!document.getElementById("zAttrStr_"+attrName).value) || (document.getElementById("zAttrStr_"+attrName).value=="_select_null"))
+				if(document.getElementById("zAttrStr_"+attrName).required=="required" &&
+				 (!document.getElementById("zAttrStr_"+attrName).value) || (document.getElementById("zAttrStr_"+attrName).value=="_select_null"))
 				{
 					alert("Attribute " + attrName + " value is missing!")
 					return false;
