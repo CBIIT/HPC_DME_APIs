@@ -294,7 +294,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public void completeMultipartUpload(HpcFileLocation archiveLocation,
+  public String completeMultipartUpload(HpcFileLocation archiveLocation,
       HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
       String multipartUploadId, List<HpcUploadPartETag> uploadPartETags) throws HpcException {
     // Input Validation.
@@ -315,7 +315,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Complete the multipart upload.
-    dataTransferProxies.get(dataTransferType).completeMultipartUpload(
+    return dataTransferProxies.get(dataTransferType).completeMultipartUpload(
         getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
         archiveLocation, multipartUploadId, uploadPartETags);
   }

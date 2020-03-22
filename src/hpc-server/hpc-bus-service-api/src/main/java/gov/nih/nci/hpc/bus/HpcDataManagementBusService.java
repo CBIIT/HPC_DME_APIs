@@ -19,6 +19,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
@@ -283,9 +284,10 @@ public interface HpcDataManagementBusService {
    *
    * @param path The data object path.
    * @param completeMultipartUploadRequest The multipart upload completion request DTO.
+   * @return A DTO w/ checksum of the uploaded data object
    * @throws HpcException on service failure.
    */
-  public void completeMultipartUpload(String path,
+  public HpcCompleteMultipartUploadResponseDTO completeMultipartUpload(String path,
       HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) throws HpcException;
 
   /**

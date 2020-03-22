@@ -89,9 +89,10 @@ public interface HpcDataTransferService {
    * @param multipartUploadId The multipart upload ID generated when the multipart upload was
    *        initiated.
    * @param uploadPartETags A list of ETag for each part uploaded.
+   * @return The checksum of the data object as upload completed.
    * @throws HpcException on service failure.
    */
-  public void completeMultipartUpload(HpcFileLocation archiveLocation,
+  public String completeMultipartUpload(HpcFileLocation archiveLocation,
       HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
       String multipartUploadId, List<HpcUploadPartETag> uploadPartETags) throws HpcException;
 

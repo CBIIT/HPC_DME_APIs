@@ -86,6 +86,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
@@ -906,7 +907,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   }
 
   @Override
-  public void completeMultipartUpload(String path,
+  public HpcCompleteMultipartUploadResponseDTO completeMultipartUpload(String path,
       HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) throws HpcException {
     // input validation.
     if (completeMultipartUploadRequest == null) {
@@ -925,11 +926,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         metadataService.getDataObjectSystemGeneratedMetadata(path);
 
     // Complete the multipart upload.
-    dataTransferService.completeMultipartUpload(metadata.getArchiveLocation(),
-        metadata.getDataTransferType(), metadata.getConfigurationId(),
-        metadata.getS3ArchiveConfigurationId(),
+    HpcCompleteMultipartUploadResponseDTO responseDTO = new HpcCompleteMultipartUploadResponseDTO();
+    responseDTO.setChecksum(dataTransferService.completeMultipartUpload(
+        metadata.getArchiveLocation(), metadata.getDataTransferType(),
+        metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
         completeMultipartUploadRequest.getMultipartUploadId(),
-        completeMultipartUploadRequest.getUploadPartETags());
+        completeMultipartUploadRequest.getUploadPartETags()));
+
+    return responseDTO;
   }
 
   @Override

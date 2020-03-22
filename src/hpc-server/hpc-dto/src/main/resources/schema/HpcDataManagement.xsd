@@ -114,6 +114,14 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:element name="HpcCompleteMultipartUploadResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="checksum" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 	<xsd:complexType
 		name="HpcDataObjectRegistrationItemDTO">

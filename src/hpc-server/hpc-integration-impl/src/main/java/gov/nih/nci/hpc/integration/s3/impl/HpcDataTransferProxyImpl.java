@@ -150,11 +150,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     } else if (uploadRequest.getSourceFile() != null) {
       // Upload a file
       return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(),
-          archiveDestinationLocation, progressListener, baseArchiveDestination.getType(), metadataEntries);
+          archiveDestinationLocation, progressListener, baseArchiveDestination.getType(),
+          metadataEntries);
     } else {
       // Upload from AWS S3 source.
       return uploadDataObject(authenticatedToken, uploadRequest.getS3UploadSource(),
-          archiveDestinationLocation, uploadRequest.getSourceSize(), progressListener, metadataEntries);
+          archiveDestinationLocation, uploadRequest.getSourceSize(), progressListener,
+          metadataEntries);
     }
   }
 
@@ -360,7 +362,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   @Override
-  public void completeMultipartUpload(Object authenticatedToken, HpcFileLocation archiveLocation,
+  public String completeMultipartUpload(Object authenticatedToken, HpcFileLocation archiveLocation,
       String multipartUploadId, List<HpcUploadPartETag> uploadPartETags) throws HpcException {
     // Create AWS part ETags from the HPC model.
     List<PartETag> partETags = new ArrayList<PartETag>();
@@ -371,8 +373,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         new CompleteMultipartUploadRequest(archiveLocation.getFileContainerId(),
             archiveLocation.getFileId(), multipartUploadId, partETags);
     try {
-      s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
-          .completeMultipartUpload(completeMultipartUploadRequest);
+      return s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
+          .completeMultipartUpload(completeMultipartUploadRequest).getETag();
+
     } catch (AmazonClientException e) {
       throw new HpcException("[S3] Failed to complete a multipart upload: " + e.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, e);
@@ -401,7 +404,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       HpcArchiveType archiveType, List<HpcMetadataEntry> metadataEntries) throws HpcException {
     // Create a S3 upload request.
     PutObjectRequest request = new PutObjectRequest(archiveDestinationLocation.getFileContainerId(),
-        archiveDestinationLocation.getFileId(), sourceFile).withMetadata(toS3Metadata(metadataEntries));
+        archiveDestinationLocation.getFileId(), sourceFile)
+            .withMetadata(toS3Metadata(metadataEntries));
 
     // Upload the data.
     Upload s3Upload = null;
@@ -460,7 +464,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    */
   private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
       HpcS3UploadSource s3UploadSource, HpcFileLocation archiveDestinationLocation, Long size,
-      HpcDataTransferProgressListener progressListener, List<HpcMetadataEntry> metadataEntries) throws HpcException {
+      HpcDataTransferProgressListener progressListener, List<HpcMetadataEntry> metadataEntries)
+      throws HpcException {
     if (progressListener == null) {
       throw new HpcException(
           "[S3] No progress listener provided for a upload from AWS S3 destination",
