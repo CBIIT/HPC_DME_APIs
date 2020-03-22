@@ -44,6 +44,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDeleteResponseDTO;
@@ -382,15 +383,17 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response completeMultipartUpload(String path,
       HpcCompleteMultipartUploadRequestDTO completeMultipartUploadRequest) {
+    HpcCompleteMultipartUploadResponseDTO responseDTO = null;
+
     try {
-      dataManagementBusService.completeMultipartUpload(toNormalizedPath(path),
+      responseDTO = dataManagementBusService.completeMultipartUpload(toNormalizedPath(path),
           completeMultipartUploadRequest);
 
     } catch (HpcException e) {
       return errorResponse(e);
     }
 
-    return okResponse(null, false);
+    return okResponse(responseDTO, true);
   }
 
   @Deprecated
@@ -800,8 +803,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl
       // delete it after the file was received by the caller.
       messageContext.put(DATA_OBJECT_DOWNLOAD_FILE_MC_ATTRIBUTE,
           downloadResponse.getDestinationFile());
-      messageContext.put(DATA_OBJECT_DOWNLOAD_TASK_ID_MC_ATTRIBUTE,
-          downloadResponse.getTaskId());
+      messageContext.put(DATA_OBJECT_DOWNLOAD_TASK_ID_MC_ATTRIBUTE, downloadResponse.getTaskId());
       response = okResponse(downloadResponse.getDestinationFile(),
           MediaType.APPLICATION_OCTET_STREAM_TYPE);
     } else {

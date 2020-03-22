@@ -231,9 +231,10 @@ public interface HpcDataTransferProxy {
    * @param multipartUploadId The multipart upload ID generated when the multipart upload was
    *        initiated.
    * @param uploadPartETags A list of ETag for each part uploaded.
+   * @return The checksum of the object at upload completion.
    * @throws HpcException on data transfer system failure.
    */
-  public default void completeMultipartUpload(Object authenticatedToken,
+  public default String completeMultipartUpload(Object authenticatedToken,
       HpcFileLocation archiveLocation, String multipartUploadId,
       List<HpcUploadPartETag> uploadPartETags) throws HpcException {
     throw new HpcException("completeMultipartUpload() not supported",
