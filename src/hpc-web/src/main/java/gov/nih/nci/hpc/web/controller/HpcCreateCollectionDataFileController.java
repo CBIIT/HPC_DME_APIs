@@ -575,7 +575,8 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		} else {
 			List<HpcDataHierarchy> subs = dataHierarchy.getSubCollectionsHierarchies();
 			for (HpcDataHierarchy sub : subs)
-				return getSubCollectionTypes(collectionType, sub);
+				if(types.isEmpty())
+					types.addAll(getSubCollectionTypes(collectionType, sub));
 		}
 
 		return types;
