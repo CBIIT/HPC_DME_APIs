@@ -191,6 +191,32 @@ public class HpcSecurityRestServiceImpl extends HpcRestServiceImpl
   }
 
   @Override
+  public Response getUserGroups(String nciUserId) {
+	HpcGroupListDTO group = null;
+    try {
+    	group = securityBusService.getUserGroups(nciUserId);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(group, true);
+  }
+
+  @Override
+  public Response getInvokerGroups() {
+	HpcGroupListDTO group = null;
+    try {
+    	group = securityBusService.getUserGroups(null);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return okResponse(group, true);
+  }
+  
+  @Override
   public Response authenticate() {
     HpcAuthenticationResponseDTO authenticationResponse = null;
     try {
