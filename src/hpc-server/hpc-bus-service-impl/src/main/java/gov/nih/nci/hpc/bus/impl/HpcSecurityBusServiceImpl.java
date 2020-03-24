@@ -410,6 +410,43 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     return users;
   }
 
+  @Override
+  public HpcGroupListDTO getUserGroups(String nciUserId) throws HpcException {
+	  
+	HpcRequestInvoker invoker = securityService.getRequestInvoker();
+	if(nciUserId != null) {
+	  HpcUser user = securityService.getUser(nciUserId);
+	  if (user == null) {
+	    throw new HpcException(
+	        "User does not exists: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+	  }
+	  // If the invoker is a GroupAdmin, then user being created must belong to their DOC
+	  if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) && !StringUtils.equals(invoker.getNciAccount().getDoc(), user.getNciAccount().getDoc())) {
+	    String message = "Group Admins can only retrive groups that a user belongs to for their DOC";
+	    logger.error(message);
+	    throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
+	  }
+	} else {
+	  nciUserId = invoker.getNciAccount().getUserId();
+	}
+	
+    // Get user's group.
+    List<String> groupNames =
+    		dataManagementSecurityService.getUserGroups(nciUserId);
+    if (groupNames == null || groupNames.isEmpty()) {
+      return null;
+    }
+
+    // Construct the DTO to return.
+    HpcGroupListDTO groups = new HpcGroupListDTO();
+    for (String groupName : groupNames) {
+      HpcGroup group = new HpcGroup();
+      group.setGroupName(groupName);
+      groups.getGroups().add(group);
+    }
+
+    return groups;
+  }
 
   @Override
   public void authenticate(String nciUserId, String password) throws HpcException {
