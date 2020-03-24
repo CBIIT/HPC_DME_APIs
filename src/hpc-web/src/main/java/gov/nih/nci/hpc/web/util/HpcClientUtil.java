@@ -1399,6 +1399,35 @@ public class HpcClientUtil {
     return null;
   }
 
+  public static HpcGroupListDTO getUserGroup(String token, String hpcUserGroupURL,
+	      String hpcCertPath, String hpcCertPassword) {
+	    try {
+	      WebClient client = HpcClientUtil.getWebClient(hpcUserGroupURL, hpcCertPath, hpcCertPassword);
+	      client.header("Authorization", "Bearer " + token);
+
+	      Response restResponse = client.invoke("GET", null);
+	      if (restResponse.getStatus() == 200) {
+	        ObjectMapper mapper = new ObjectMapper();
+	        AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+	            new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+	            new JacksonAnnotationIntrospector());
+	        mapper.setAnnotationIntrospector(intr);
+	        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
+	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+	        HpcGroupListDTO groups = parser.readValueAs(HpcGroupListDTO.class);
+	        return groups;
+	      }
+
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	      throw new HpcWebException("Failed to get User's group due to: " + e.getMessage());
+	    }
+	    return null;
+	  }
+  
   public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL,
       String queryName, String hpcCertPath, String hpcCertPassword) {
     HpcNamedCompoundMetadataQueryDTO retVal = null;
