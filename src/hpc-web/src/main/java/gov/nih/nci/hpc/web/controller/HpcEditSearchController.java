@@ -81,8 +81,8 @@ public class HpcEditSearchController extends AbstractHpcController {
 	private String modelServiceURL;
 	@Value("${gov.nih.nci.hpc.server.metadataattributes}")
 	private String hpcMetadataAttrsURL;
-	@Value("${gov.nih.nci.hpc.server.group}")
-    private String groupServiceURL;
+	@Value("${gov.nih.nci.hpc.server.user.group}")
+    private String userGroupServiceURL;
 	
 	/**
 	 * GET action to edit a saved search
@@ -453,18 +453,8 @@ public class HpcEditSearchController extends AbstractHpcController {
       HpcGroupListDTO groups = (HpcGroupListDTO) session.getAttribute("hpcSecGroup");
       if (groups == null) {
         groups =
-            HpcClientUtil.getGroups(
-                authToken, groupServiceURL, "%_SEC_GROUP%", sslCertPath, sslCertPassword);
-        if (groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
-          Iterator<HpcGroup> it = groups.getGroups().iterator();
-          HpcGroup group = null;
-          while (it.hasNext()) {
-            group = (HpcGroup) it.next();
-            if (!CollectionUtils.containsAny(group.getUserIds(), userId)) {
-              it.remove();
-            }
-          }
-        }
+            HpcClientUtil.getUserGroup(
+                authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
         session.setAttribute("hpcSecGroup", groups);
       }
       boolean userInSecGroup = false;
