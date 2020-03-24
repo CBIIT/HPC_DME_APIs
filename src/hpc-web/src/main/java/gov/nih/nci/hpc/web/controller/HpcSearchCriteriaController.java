@@ -109,8 +109,8 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	private String modelServiceURL;
 	@Value("${gov.nih.nci.hpc.server.metadataattributes}")
 	private String hpcMetadataAttrsURL;
-	@Value("${gov.nih.nci.hpc.server.group}")
-    private String groupServiceURL;
+	@Value("${gov.nih.nci.hpc.server.user.group}")
+    private String userGroupServiceURL;
 	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -534,17 +534,7 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 	//Find out if user belongs to any SEC_GROUP
       HpcGroupListDTO groups = (HpcGroupListDTO) session.getAttribute("hpcSecGroup");
       if (groups == null) {
-          groups = HpcClientUtil.getGroups(authToken, groupServiceURL, "%_SEC_GROUP%", sslCertPath, sslCertPassword);
-          if(groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
-            Iterator<HpcGroup> it = groups.getGroups().iterator();
-            HpcGroup group = null;
-            while (it.hasNext()) {
-              group = (HpcGroup) it.next();
-             if (!CollectionUtils.containsAny(group.getUserIds(), userId)) {
-                it.remove();
-             }
-            }
-          }
+          groups = HpcClientUtil.getUserGroup(authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
           session.setAttribute("hpcSecGroup", groups);
       }
       boolean userInSecGroup = false;

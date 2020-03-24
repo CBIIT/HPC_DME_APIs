@@ -84,8 +84,8 @@ public class HpcCollectionController extends AbstractHpcController {
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
 	private String hpcModelURL;
-	@Value("${gov.nih.nci.hpc.server.group}")
-    private String groupServiceURL;
+	@Value("${gov.nih.nci.hpc.server.user.group}")
+    private String userGroupServiceURL;
 
 
 	/**
@@ -146,17 +146,7 @@ public class HpcCollectionController extends AbstractHpcController {
 				//Find out if user belongs to the SEC_GROUP for this DOC
 				HpcGroupListDTO groups = (HpcGroupListDTO) session.getAttribute("hpcSecGroup");
                 if (groups == null) {
-                    groups = HpcClientUtil.getGroups(authToken, groupServiceURL, "%_SEC_GROUP%", sslCertPath, sslCertPassword);
-                    if(groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
-                      Iterator<HpcGroup> it = groups.getGroups().iterator();
-                      HpcGroup group = null;
-                      while (it.hasNext()) {
-                        group = (HpcGroup) it.next();
-                       if (!CollectionUtils.containsAny(group.getUserIds(), userId)) {
-                          it.remove();
-                       }
-                      }
-                    }
+                    groups = HpcClientUtil.getUserGroup(authToken, userGroupServiceURL, sslCertPath, sslCertPassword);
                     session.setAttribute("hpcSecGroup", groups);
                 }
 				
