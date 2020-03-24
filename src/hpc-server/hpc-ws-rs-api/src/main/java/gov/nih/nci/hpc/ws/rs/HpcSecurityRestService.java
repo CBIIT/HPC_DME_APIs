@@ -162,6 +162,27 @@ public interface HpcSecurityRestService {
       @QueryParam("defaultBasePath") String defaultBasePath);
 
   /**
+   * Get a list of groups the user belongs to.
+   *
+   * @param nciUserId The registered user ID.
+   * @return The REST service response w/ HpcUserDTO entity.
+   */
+  @GET
+  @Path("/user/group/{nciUserId}")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response getUserGroups(@PathParam("nciUserId") String nciUserId);
+
+  /**
+   * Get a list of groups the invoker user belongs to.
+   *
+   * @return The REST service response w/ HpcUserDTO entity.
+   */
+  @GET
+  @Path("/user/group")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response getInvokerGroups();
+  
+  /**
    * Authenticate a user.
    *
    * @return The REST service response w/ HpcAuthenticationResponseDTO entity.

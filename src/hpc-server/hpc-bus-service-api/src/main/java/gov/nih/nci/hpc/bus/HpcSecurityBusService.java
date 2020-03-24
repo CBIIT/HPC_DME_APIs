@@ -101,6 +101,15 @@ public interface HpcSecurityBusService {
         throws HpcException;
 
   /**
+   * Get a user's group by its NCI user id.
+   *
+   * @param nciUserId (Optional) The user's NCI user id. If null, then the invoker user is returned.
+   * @return The group list DTO or null if not found.
+   * @throws HpcException on service failure.
+   */
+  public HpcGroupListDTO getUserGroups(String nciUserId) throws HpcException;
+  
+  /**
    * Authenticate user.
    *
    * @param nciUserId The user's ID.
