@@ -48,7 +48,7 @@
 		
 		<prop key="hpc.ws.rs.auth.security.register-user">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.security.update-user">SYSTEM_ADMIN</prop>
-		<prop key="hpc.ws.rs.auth.security.get-user">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.security.get-user">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.security.get-invoker">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.security.get-active-users">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.security.query-users">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
