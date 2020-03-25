@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcCompleteMultipartUploadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.error.HpcExceptionDTO;
 import java.io.BufferedInputStream;
@@ -664,7 +665,22 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 			restResponse = client.post(dto);
 
 			if (restResponse.getStatus() == 200) {
-				logger.info("Complete multipart upload successful");
+				MappingJsonFactory factory = new MappingJsonFactory();
+				HpcCompleteMultipartUploadResponseDTO response = null;
+				try (JsonParser parser = factory.createParser((InputStream) restResponse.getEntity())){
+					
+					response = parser.readValueAs(HpcCompleteMultipartUploadResponseDTO.class);
+					if (response != null) {
+					  //We will not compute the final eTag to compare against the returned eTag since checksum of each part is verified.
+					  logger.info("Complete multipart upload successful: eTag {}", response.getChecksum());
+					}
+				} catch (Exception e) {
+					HpcLogWriter.getInstance().WriteLog(logFile, destinationPath + "|"
+							+ "Unable to process complete multipart upload response: response status is: " + restResponse.getStatus());
+					throw new HpcBatchException(
+							"Unable to process complete multipart upload response: response status is: " + restResponse.getStatus());
+				}
+				
 			} else {
 				MappingJsonFactory factory = new MappingJsonFactory();
 				HpcExceptionDTO response = null;
