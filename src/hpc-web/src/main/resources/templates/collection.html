@@ -559,6 +559,13 @@
     		$(".popover #textString").val($(this).prev("input").val());
     		$(".popover #textId").val(this.id);
     	});
+    	$('body').on('keypress', '#keyForm', function(e) {
+    		//Enter key
+    		if (e.which == 13) {
+    			decrypt();
+    			return false;
+    		} 
+      	});
     });
 
 	/*]]>*/
