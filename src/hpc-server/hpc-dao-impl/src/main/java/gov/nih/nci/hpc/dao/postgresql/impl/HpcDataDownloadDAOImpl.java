@@ -533,6 +533,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     }
     
     logger.error("ERAN: cancel-query - {}" , sqlQueryBuilder.toString());
+    logger.error("ERAN: cancel-query - {}" , args.toArray());
 
     // Execute the query.
     try {
