@@ -80,6 +80,7 @@ import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
+import javafx.util.Pair;
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -152,6 +153,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
   Long maxSyncDownloadFileSize = null;
 
+  // cancelCollectionDownloadTaskItems query filter
+  List<Pair<HpcDataTransferDownloadStatus, HpcDataTransferType>> cancelCollectionDownloadTaskItemsFilter =
+      new ArrayList<>();
+
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -177,6 +182,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     this.dataTransferProxies.putAll(dataTransferProxies);
     this.downloadDirectory = downloadDirectory;
+
+    // Instantiate the cancel collection download items query filter.
+    // We cancel any collection task item that is in RTECEIVED state, or a task that is IN_PROGRESS
+    // to GLOBUS destination.
+    cancelCollectionDownloadTaskItemsFilter
+        .add(new Pair<>(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GLOBUS));
+    cancelCollectionDownloadTaskItemsFilter
+        .add(new Pair<>(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GOOGLE_DRIVE));
+    cancelCollectionDownloadTaskItemsFilter
+        .add(new Pair<>(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3));
+    cancelCollectionDownloadTaskItemsFilter
+        .add(new Pair<>(HpcDataTransferDownloadStatus.IN_PROGRESS, HpcDataTransferType.GLOBUS));
   }
 
   /**
@@ -960,7 +977,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throws HpcException {
     for (HpcCollectionDownloadTaskItem downloadItem : downloadItems) {
       dataDownloadDAO.updateDataObjectDownloadTaskStatus(downloadItem.getDataObjectDownloadTaskId(),
-          HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferDownloadStatus.CANCELED);
+          cancelCollectionDownloadTaskItemsFilter, HpcDataTransferDownloadStatus.CANCELED);
     }
   }
 
