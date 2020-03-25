@@ -8,8 +8,11 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Callable;
-
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.retry.RetryCallback;
@@ -101,7 +104,13 @@ public class HPCLocalFileMultipartUploadProcessor implements Callable<HpcUploadP
 			httpConnection.setReadTimeout(99999999);
 
 			OutputStream out = httpConnection.getOutputStream();
-
+			MessageDigest md = null;
+            try {
+              md = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+              throw new IOException();
+            }
+            
 			// Copy data from source to destination.
 			byte[] buf = new byte[1024];
 			int count;
@@ -114,14 +123,18 @@ public class HPCLocalFileMultipartUploadProcessor implements Callable<HpcUploadP
 					throw new IOException();
 				}
 				out.write(buf, 0, count);
+				md.update(buf, 0, count);
 				total += count;
 				if (total >= partialFileSize)
 					break;
 			}
 
 			int responseCode = httpConnection.getResponseCode();
+            byte[] md5 = md.digest();
+            String hash = new String(Hex.encodeHex(md5));
+            String eTag = httpConnection.getHeaderField("ETag").replace("\"", "");
 			// Set part number and eTag returned.
-			if (responseCode == 200) {
+			if (responseCode == 200 && StringUtils.equals(hash, eTag)) {
 				uploadPartETag.setPartNumber(uploadPartUrl.getPartNumber());
 				uploadPartETag.setETag(httpConnection.getHeaderField("ETag"));
 			}
