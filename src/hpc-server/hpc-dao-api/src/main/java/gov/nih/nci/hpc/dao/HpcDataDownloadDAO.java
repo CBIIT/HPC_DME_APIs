@@ -60,14 +60,24 @@ public interface HpcDataDownloadDAO {
   /**
    * Update data object download task status.
    *
-   * @param dataObjectDownloadTaskId The data object download task ID to update.
+   * @param id The data object download task ID to update.
    * @param statusDestinationPairs Pairs of 'status' and 'download destination' values to filter by.
    * @return true if the status was updated.
    * @throws HpcException on database error.
    */
-  public boolean updateDataObjectDownloadTaskStatus(String dataObjectDownloadTaskId,
+  public boolean updateDataObjectDownloadTaskStatus(String id,
       List<Pair<HpcDataTransferDownloadStatus, HpcDataTransferType>> statusDestinationPairs,
       HpcDataTransferDownloadStatus toStatus) throws HpcException;
+
+  /**
+   * Get data object download task status.
+   *
+   * @param id The data object download task ID to get status for.
+   * @return The task status or null if not found.
+   * @throws HpcException on database error.
+   */
+  public HpcDataTransferDownloadStatus getDataObjectDownloadTaskStatus(String id)
+      throws HpcException;
 
   /**
    * Get data object download tasks.
