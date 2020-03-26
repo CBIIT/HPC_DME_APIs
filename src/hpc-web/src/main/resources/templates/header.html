@@ -206,7 +206,7 @@
 						<ul class="sub" >
 							<li><a class="" th:href="@{/user}">User</a></li>
 							<li><a class="" th:href="@{/group}">Group</a></li>
-							<li><a class="" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'">DOC</a></li>
+							<li><a class="" th:href="@{/doc}" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'">DOC</a></li>
 						</ul>
 					</li>
 					<li><a href="/logout"><i

@@ -3,6 +3,7 @@ package gov.nih.nci.hpc.web.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -18,15 +19,26 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 
 @Component
 public class HpcModelBuilder {
-	
+
 	protected Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Cacheable(value="model", key="#hpcModelURL")
 	public HpcDataManagementModelDTO getDOCModel(String token, String hpcModelURL,
-			String hpcCertPath, String hpcCertPassword) {
+		String hpcCertPath, String hpcCertPassword) {
 
-			log.info("Getting DOCModels");
-		    return HpcClientUtil.getDOCModel(token, hpcModelURL, hpcCertPath, hpcCertPassword);
+		log.info("Getting DOCModels");
+		   return HpcClientUtil.getDOCModel(token, hpcModelURL, hpcCertPath, hpcCertPassword);
 	}
+
+
+
+	@CachePut(value="model", key="#hpcModelURL")
+	public HpcDataManagementModelDTO updateDOCModel(String token, String hpcModelURL,
+		String hpcCertPath, String hpcCertPassword) {
+
+		log.info("Upgating DOCModels");
+		return HpcClientUtil.getDOCModel(token, hpcModelURL, hpcCertPath, hpcCertPassword);
+	}
+
 
 }
