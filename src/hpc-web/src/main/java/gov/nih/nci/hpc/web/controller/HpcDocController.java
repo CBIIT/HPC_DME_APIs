@@ -15,6 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -27,9 +30,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
+import gov.nih.nci.hpc.web.model.HpcBrowserEntry;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
+import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 
 /**
  * <p>
@@ -48,6 +58,16 @@ public class HpcDocController extends AbstractHpcController {
 	private String serverURL;
 	@Value("${gov.nih.nci.hpc.server.user}")
 	private String serviceUserURL;
+	@Value("${gov.nih.nci.hpc.server.model}")
+	private String hpcModelURL;
+	@Value("${gov.nih.nci.hpc.server.refresh.model}")
+	private String hpcRefreshModelURL;
+
+	@Autowired
+	private HpcModelBuilder hpcModelBuilder;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
@@ -59,24 +79,42 @@ public class HpcDocController extends AbstractHpcController {
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
 		}
+        final String authToken = (String) session.getAttribute("hpcUserToken");
+	    final String userId = (String) session.getAttribute("hpcUserId");
+	    log.info("userId: " + userId);
+
+	    HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO)
+	        session.getAttribute("userDOCModel");
+	      if (modelDTO == null) {
+	          modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
+	            this.sslCertPath, this.sslCertPassword);
+	          session.setAttribute("userDOCModel", modelDTO);
+	      }
+	      model.addAttribute("userDOCModel", modelDTO);
+
 		return "doc";
 	}
 
+
 	@RequestMapping(method = RequestMethod.POST)
-	public String register(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcUser, BindingResult bindingResult,
-			Model model) {
-		RestTemplate restTemplate = new RestTemplate();
+	public String update(@Valid @ModelAttribute("hpcUser") HpcWebUser hpcUser,
+			Model model, BindingResult bindingResult, HttpSession session) {
+		final String authToken = (String) session.getAttribute("hpcUserToken");
+		session.setAttribute("hpcUserToken", authToken);
+		final String userId = (String) session.getAttribute("hpcUserId");
+		logger.info("Upgdating DOCModel for user: " + userId);
 
-		try {
+		//Refresh DOC Models on the server
+		HpcClientUtil.refreshDOCModels(authToken, this.hpcRefreshModelURL,
+	            this.sslCertPath, this.sslCertPassword);
+		//Reload DOC Models
+		HpcDataManagementModelDTO modelDTO =
+            hpcModelBuilder.updateDOCModel(authToken, this.hpcModelURL, this.sslCertPath, this.sslCertPassword);
+		session.setAttribute("userDOCModel", modelDTO);
 
-			URI uri = new URI(serviceUserURL + "/" + hpcUser.getNciUserId());
-			model.addAttribute("registrationStatus", true);
-			model.addAttribute("hpcUser", hpcUser);
-		} catch (Exception e) {
-			ObjectError error = new ObjectError("nciUserId", "Failed to enroll: " + e.getMessage());
-			bindingResult.addError(error);
-			return "enroll";
-		}
-		return "enrollresult";
+		model.addAttribute("userDOCModel", modelDTO);
+		return "doc";
+
 	}
+
 }

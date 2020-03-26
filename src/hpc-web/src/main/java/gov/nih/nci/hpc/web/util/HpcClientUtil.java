@@ -1046,6 +1046,39 @@ public class HpcClientUtil {
     }
   }
 
+
+  public static boolean refreshDOCModels(String token, String hpcRefreshModelURL,
+	      String hpcCertPath, String hpcCertPassword) {
+
+	  WebClient client = HpcClientUtil.getWebClient(hpcRefreshModelURL, hpcCertPath, hpcCertPassword);
+	    client.header("Authorization", "Bearer " + token);
+
+	  Response restResponse = client.invoke("POST", "{}");
+	  if (restResponse.getStatus() == 200) {
+		  return true;
+	  } else {
+		  try {
+			  ObjectMapper mapper = new ObjectMapper();
+			  AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+				new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+				new JacksonAnnotationIntrospector());
+			  mapper.setAnnotationIntrospector(intr);
+			  mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			  MappingJsonFactory factory = new MappingJsonFactory(mapper);
+			  JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+			  HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
+			  logger.error("Failed to refresh models: " + exception.getMessage(), exception);
+			  throw new HpcWebException("Failed to refresh models: " + exception.getMessage());
+		  } catch (IOException e) {
+			  logger.error("Failed to refresh models: " + e.getMessage(), e);
+			  throw new HpcWebException("Failed to refresh models: " + e.getMessage());
+		  }
+	  }
+  }
+
+
+
   public static boolean registerDatafile(String token, MultipartFile hpcDatafile,
       String hpcDatafileURL, HpcDataObjectRegistrationRequestDTO datafileDTO, String path,
       String hpcCertPath, String hpcCertPassword) {
