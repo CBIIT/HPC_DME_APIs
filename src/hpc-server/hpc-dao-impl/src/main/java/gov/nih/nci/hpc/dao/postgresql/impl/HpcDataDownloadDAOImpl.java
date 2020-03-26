@@ -48,7 +48,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
-import javafx.util.Pair;
 
 /**
  * HPC Data Download DAO Implementation.
@@ -506,7 +505,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
-
+/*
   @Override
   public boolean updateDataObjectDownloadTaskStatus(String id,
       List<Pair<HpcDataTransferDownloadStatus, HpcDataTransferType>> statusDestinationPairs,
@@ -540,7 +539,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
-
+*/
   @Override
   public HpcDataTransferDownloadStatus getDataObjectDownloadTaskStatus(String id)
       throws HpcException {

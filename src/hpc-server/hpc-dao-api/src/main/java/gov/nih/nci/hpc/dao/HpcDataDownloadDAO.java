@@ -21,7 +21,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.exception.HpcException;
-import javafx.util.Pair;
 
 /**
  * HPC Data Download DAO Interface.
@@ -65,9 +64,10 @@ public interface HpcDataDownloadDAO {
    * @return true if the status was updated.
    * @throws HpcException on database error.
    */
+  /*
   public boolean updateDataObjectDownloadTaskStatus(String id,
       List<Pair<HpcDataTransferDownloadStatus, HpcDataTransferType>> statusDestinationPairs,
-      HpcDataTransferDownloadStatus toStatus) throws HpcException;
+      HpcDataTransferDownloadStatus toStatus) throws HpcException;*/
 
   /**
    * Get data object download task status.
