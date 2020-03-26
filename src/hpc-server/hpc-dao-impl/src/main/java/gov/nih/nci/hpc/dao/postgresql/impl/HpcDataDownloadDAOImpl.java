@@ -20,13 +20,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -103,6 +100,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
   private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_SQL =
       "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
+
+  private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_STATUS_SQL =
+      "select \"DATA_TRANSFER_STATUS\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
 
   private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL =
       "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" order by \"PRIORITY\", \"CREATED\"";
@@ -207,8 +207,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   // Encryptor.
   @Autowired
   HpcEncryptor encryptor = null;
-  
-  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
   // HpcDataObjectDownloadTask table to object mapper.
   private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> {
@@ -510,7 +508,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
   }
 
   @Override
-  public boolean updateDataObjectDownloadTaskStatus(String dataObjectDownloadTaskId,
+  public boolean updateDataObjectDownloadTaskStatus(String id,
       List<Pair<HpcDataTransferDownloadStatus, HpcDataTransferType>> statusDestinationPairs,
       HpcDataTransferDownloadStatus toStatus) throws HpcException {
     StringBuilder sqlQueryBuilder = new StringBuilder();
@@ -519,7 +517,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     // Add the task-id and to-status values to the query.
     sqlQueryBuilder.append(UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_SQL);
     args.add(toStatus.value());
-    args.add(dataObjectDownloadTaskId);
+    args.add(id);
 
     // Add each pair of the from-status and destination-type as a filter to the query.
     if (!statusDestinationPairs.isEmpty()) {
@@ -531,9 +529,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       });
       sqlQueryBuilder.append(")");
     }
-    
-    logger.error("ERAN: cancel-query - {}" , sqlQueryBuilder.toString());
-    logger.error("ERAN: cancel-query - {}" , args.toArray());
 
     // Execute the query.
     try {
@@ -542,6 +537,23 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     } catch (DataAccessException e) {
       throw new HpcException(
           "Failed to update a data object download task status: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  @Override
+  public HpcDataTransferDownloadStatus getDataObjectDownloadTaskStatus(String id)
+      throws HpcException {
+    try {
+      String taskStatusStr =
+          jdbcTemplate.queryForObject(GET_DATA_OBJECT_DOWNLOAD_TASK_STATUS_SQL, String.class, id);
+      return taskStatusStr != null ? HpcDataTransferDownloadStatus.fromValue(taskStatusStr) : null;
+
+    } catch (IncorrectResultSizeDataAccessException irse) {
+      return null;
+
+    } catch (DataAccessException e) {
+      throw new HpcException("Failed to get a data object download task status : " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }

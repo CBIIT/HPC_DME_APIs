@@ -21,6 +21,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FileSystemUtils;
@@ -816,8 +817,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Persist the download task. Note: In case we used a progress listener - it
-    // took care of that already.
-    if (progressListener == null) {
+    // took care of that already. If the task was cancelled (by another task), we don't persist.
+    if (progressListener == null && !Optional
+        .ofNullable(dataDownloadDAO.getDataObjectDownloadTaskStatus(downloadTask.getId()))
+        .orElse(HpcDataTransferDownloadStatus.CANCELED)
+        .equals(HpcDataTransferDownloadStatus.CANCELED)) {
       downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
       dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
     }
@@ -2285,14 +2289,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // This callback method is called when the first hop (S3) download completed.
 
       try {
-        // Update the download task to reflect 1st hop transfer completed, and second
-        // received.
-        downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
-        downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+        // Check if the task was cancelled while the first-hop download was performed.
+        if (Optional
+            .ofNullable(dataDownloadDAO.getDataObjectDownloadTaskStatus(downloadTask.getId()))
+            .orElse(HpcDataTransferDownloadStatus.CANCELED)
+            .equals(HpcDataTransferDownloadStatus.CANCELED)) {
+          // The task was cancelled. Do some cleanup.
+          FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 
-        // Persist the download task.
-        dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+        } else {
+          // Update the download task to reflect 1st hop transfer completed, and second
+          // received.
+          downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
+          downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
 
+          // Persist the download task.
+          dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+        }
       } catch (HpcException e) {
         logger.error("Failed to update download task", e);
         downloadFailed(e.getMessage());
