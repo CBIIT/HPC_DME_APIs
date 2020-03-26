@@ -87,9 +87,22 @@
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading">
+							  <div class="col-md-3">
 								<h2>
 									<i class="fa fa-list-alt red"></i><strong>Manage DOC</strong>
 								</h2>
+							  </div>
+							  <div class="col-md-1 col-md-offset-8">
+								<h2>
+								<!-- 	<strong> <a id="refresh" class="btn btn-link btn-sm" th:href="@{/doc?update}">
+									  <i class="fa fa-repeat" title="Refresh models" aria-hidden="true"></i></a>
+									</strong> -->
+								<!--  <button> type="submit" <i class="fa fa-repeat" title="Refresh models" aria-hidden="true"></i></button>-->
+								<strong> <a id="refresh" class="btn btn-link btn-sm" onClick="document.getElementById('docForm').submit();">
+									  <i class="fa fa-repeat" title="Refresh models" aria-hidden="true"></i></a>
+									</strong>
+								</h2>
+							  </div>
 							</div>
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
@@ -100,12 +113,21 @@
 							<div th:if="${error == null}">
 								<!--panel-body start-->
 								<div class="panel-body">
-									<div class="form-group">
-										<div class="col-md-6 form-group">
-											<label for="Name">Coming Soon</label>
-										</div>
-									</div>
-								</div>
+                            	  <table>
+                                	<tr>
+                                      <th>DOC</th>
+                                      <th>Basepath</th>
+                                	</tr>
+                                	  <th:block th:each="docRule: ${userDOCModel.docRules}">
+                                	    <th:block th:each="rule: ${docRule.rules}">
+                                    	  <tr>
+                                            <td th:text="${docRule.doc}"></td>
+                                            <td th:text="${rule.basePath}"></td>
+                                    	  </tr>  
+                                	  </th:block>
+                                	</th:block>
+                            	  </table>
+                        		</div>
 							</div>
 
 						</div>
@@ -118,6 +140,10 @@
 		</section>
 		<!--main content end-->
 	</section>
+	<form class="form-horizontal" id="docForm"
+	    th:action="@{/doc}"
+		method="POST">
+	</form>
 	<!-- container section start -->
 
 	<!-- javascripts -->
