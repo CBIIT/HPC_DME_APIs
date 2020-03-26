@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatusFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
@@ -153,10 +154,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
   Long maxSyncDownloadFileSize = null;
 
-  // cancelCollectionDownloadTaskItems query filter
-  // List<Pair<HpcDataTransferDownloadStatus, HpcDataTransferType>>
-  // cancelCollectionDownloadTaskItemsFilter =
-  // new ArrayList<>();
+  // cancelCollectionDownloadTaskItems() query filter
+  List<HpcDataObjectDownloadTaskStatusFilter> cancelCollectionDownloadTaskItemsFilter =
+      new ArrayList<>();
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -187,16 +187,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Instantiate the cancel collection download items query filter.
     // We cancel any collection task item that is in RTECEIVED state, or a task that is IN_PROGRESS
     // to GLOBUS destination.
-    /*
-     * cancelCollectionDownloadTaskItemsFilter .add(new
-     * Pair<>(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GLOBUS));
-     * cancelCollectionDownloadTaskItemsFilter .add(new
-     * Pair<>(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.GOOGLE_DRIVE));
-     * cancelCollectionDownloadTaskItemsFilter .add(new
-     * Pair<>(HpcDataTransferDownloadStatus.RECEIVED, HpcDataTransferType.S_3));
-     * cancelCollectionDownloadTaskItemsFilter .add(new
-     * Pair<>(HpcDataTransferDownloadStatus.IN_PROGRESS, HpcDataTransferType.GLOBUS));
-     */
+    HpcDataObjectDownloadTaskStatusFilter filter = new HpcDataObjectDownloadTaskStatusFilter();
+    filter.setStatus(HpcDataTransferDownloadStatus.RECEIVED);
+    filter.setDestination(HpcDataTransferType.GLOBUS);
+    cancelCollectionDownloadTaskItemsFilter.add(filter);
+
+    filter = new HpcDataObjectDownloadTaskStatusFilter();
+    filter.setStatus(HpcDataTransferDownloadStatus.RECEIVED);
+    filter.setDestination(HpcDataTransferType.GOOGLE_DRIVE);
+    cancelCollectionDownloadTaskItemsFilter.add(filter);
+
+    filter = new HpcDataObjectDownloadTaskStatusFilter();
+    filter.setStatus(HpcDataTransferDownloadStatus.RECEIVED);
+    filter.setDestination(HpcDataTransferType.S_3);
+    cancelCollectionDownloadTaskItemsFilter.add(filter);
+
+    filter = new HpcDataObjectDownloadTaskStatusFilter();
+    filter.setStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
+    filter.setDestination(HpcDataTransferType.GLOBUS);
+    cancelCollectionDownloadTaskItemsFilter.add(filter);
   }
 
   /**
@@ -982,8 +991,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   public void cancelCollectionDownloadTaskItems(List<HpcCollectionDownloadTaskItem> downloadItems)
       throws HpcException {
     for (HpcCollectionDownloadTaskItem downloadItem : downloadItems) {
-      // dataDownloadDAO.updateDataObjectDownloadTaskStatus(downloadItem.getDataObjectDownloadTaskId(),
-      // cancelCollectionDownloadTaskItemsFilter, HpcDataTransferDownloadStatus.CANCELED);
+      dataDownloadDAO.updateDataObjectDownloadTaskStatus(downloadItem.getDataObjectDownloadTaskId(),
+          cancelCollectionDownloadTaskItemsFilter, HpcDataTransferDownloadStatus.CANCELED);
     }
   }
 
@@ -1812,7 +1821,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("File size exceeds the sync download limit",
           HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
     }
-
 
     // Capture the time download started.
     Calendar created = Calendar.getInstance();
