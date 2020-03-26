@@ -35,6 +35,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatusFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
@@ -505,10 +506,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
-/*
+
   @Override
   public boolean updateDataObjectDownloadTaskStatus(String id,
-      List<Pair<HpcDataTransferDownloadStatus, HpcDataTransferType>> statusDestinationPairs,
+      List<HpcDataObjectDownloadTaskStatusFilter> filters,
       HpcDataTransferDownloadStatus toStatus) throws HpcException {
     StringBuilder sqlQueryBuilder = new StringBuilder();
     List<Object> args = new ArrayList<>();
@@ -519,12 +520,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
     args.add(id);
 
     // Add each pair of the from-status and destination-type as a filter to the query.
-    if (!statusDestinationPairs.isEmpty()) {
+    if (filters != null && !filters.isEmpty()) {
       sqlQueryBuilder.append(" and (false");
-      statusDestinationPairs.forEach(statusDestinationPair -> {
+      filters.forEach(filter -> {
         sqlQueryBuilder.append(UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER);
-        args.add(statusDestinationPair.getKey().value());
-        args.add(statusDestinationPair.getValue().value());
+        args.add(filter.getStatus().value());
+        args.add(filter.getDestination().value());
       });
       sqlQueryBuilder.append(")");
     }
@@ -539,7 +540,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
-*/
+
   @Override
   public HpcDataTransferDownloadStatus getDataObjectDownloadTaskStatus(String id)
       throws HpcException {
