@@ -151,25 +151,27 @@ public abstract class HPCBatchClient {
         logger.debug("hpc.multipart.threadpoolsize "+multipartPoolSizeStr);
         try {
         	multipartPoolSize = Integer.parseInt(multipartPoolSizeStr);
+        	if(multipartPoolSize > 10)
+        		multipartPoolSize = 10;
         } catch (Exception e) {
-            logger.info("Defaulting hpc.multipart.threadpoolsize value. Setting it to 1");
-            multipartPoolSize = 1;
+            logger.info("Defaulting hpc.multipart.threadpoolsize value. Setting it to 10");
+            multipartPoolSize = 10;
         }
         String multipartThresholdStr = configProperties.getProperty("hpc.multipart.threshold");
         logger.debug("hpc.multipart.threshold "+multipartThresholdStr);
         try {
         	multipartThreshold = Long.parseLong(multipartThresholdStr);
         } catch (Exception e) {
-            logger.info("Defaulting hpc.multipart.threshold value. Setting it to 5373952000 (> 5GB)");
-            multipartThreshold = 5373952000L;
+            logger.info("Defaulting hpc.multipart.threshold value. Setting it to 1074790400 (> 1GB)");
+            multipartThreshold = 1074790400L;
         }
         String multipartChunksizeStr = configProperties.getProperty("hpc.multipart.chunksize");
         logger.debug("hpc.multipart.chunksize "+multipartChunksizeStr);
         try {
         	multipartChunksize = Long.parseLong(multipartChunksizeStr);
         } catch (Exception e) {
-            logger.info("Defaulting hpc.multipart.chunksize value. Setting it to 5368709120 (5GB)");
-            multipartChunksize = 5368709120L;
+            logger.info("Defaulting hpc.multipart.chunksize value. Setting it to 1073741824 (1GB)");
+            multipartChunksize = 1073741824L;
         }
         
 		initializeLog();

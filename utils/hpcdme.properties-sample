@@ -33,9 +33,9 @@ hpc.login.token=tokens/hpcdme-auth.txt
 validate.md5.checksum=false
 upload.buffer.size=10000000
 #Multi-part upload thread pool, threshold and part size configuration
-#hpc.multipart.threadpoolsize=1
-#hpc.multipart.threshold=5373952000
-#hpc.multipart.chunksize=5368709120
+#hpc.multipart.threadpoolsize=10
+#hpc.multipart.threshold=1074790400
+#hpc.multipart.chunksize=1073741824
 # JAR version
 ###HPC CLI Logging START####
 #ERROR, WARN, INFO, DEBUG
