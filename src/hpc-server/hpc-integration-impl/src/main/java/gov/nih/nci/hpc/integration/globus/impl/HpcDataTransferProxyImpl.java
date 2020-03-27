@@ -407,6 +407,26 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     });
   }
 
+  @Override
+  public void cancelTransferRequest(Object authenticatedToken, String dataTransferRequestId,
+      String message) throws HpcException {
+    JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
+
+    retryTemplate.execute(arg0 -> {
+      try {
+        JSONObject cancel = new JSONObject();
+        cancel.put("task_id_list", Arrays.asList(dataTransferRequestId));
+        cancel.put("message", message);
+        client.postResult("/endpoint_manager/admin_cancel", cancel, null);
+        return null;
+
+      } catch (Exception e) {
+        throw new HpcException("[GLOBUS] Failed to cancel transfer task: " + dataTransferRequestId,
+            HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
+      }
+    });
+  }
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -723,34 +743,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     return false;
-  }
-
-  /**
-   * Cancel a transfer request.
-   *
-   * @param authenticatedToken An authenticated token.
-   * @param dataTransferRequestId The globus task ID.
-   * @param message The message to attach to the cancellation request.
-   * @throws HpcException on data transfer system failure.
-   */
-  private void cancelTransferRequest(Object authenticatedToken, String dataTransferRequestId,
-      String message) throws HpcException {
-    JSONTransferAPIClient client = globusConnection.getTransferClient(authenticatedToken);
-
-    retryTemplate.execute(arg0 -> {
-      try {
-        JSONObject cancel = new JSONObject();
-        cancel.put("task_id_list", Arrays.asList(dataTransferRequestId));
-        cancel.put("message", message);
-        client.postResult("/endpoint_manager/admin_cancel", cancel, null);
-        // client.postResult("/task/" + dataTransferRequestId + "/cancel", null);
-        return null;
-
-      } catch (Exception e) {
-        throw new HpcException("[GLOBUS] Failed to cancel transfer task: " + dataTransferRequestId,
-            HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.GLOBUS, e);
-      }
-    });
   }
 
   /**

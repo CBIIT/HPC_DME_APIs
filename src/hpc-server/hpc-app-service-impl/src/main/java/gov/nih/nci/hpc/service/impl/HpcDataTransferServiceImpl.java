@@ -686,6 +686,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    // If it's a cancelled data-object download task to a Globus destination, request Globus to
+    // cancel.
+    if (result.equals(HpcDownloadResult.CANCELED)
+        && downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
+        && !StringUtils.isEmpty(downloadTask.getDataTransferRequestId())) {
+      try {
+        dataTransferProxies.get(downloadTask.getDataTransferType()).cancelTransferRequest(
+            getAuthenticatedToken(downloadTask.getDataTransferType(),
+                downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId()),
+            downloadTask.getDataTransferRequestId(), "HPC-DME user requested cancellation");
+        logger.info("Cancelled Globus task for user[{}], path: {}", downloadTask.getUserId(),
+            downloadTask.getPath());
+
+      } catch (HpcException e) {
+        logger.error("Failed to cancel Globus task for user[{}], path: {}", e,
+            downloadTask.getUserId(), downloadTask.getPath());
+      }
+    }
+
     // Delete the staged download file.
     if (downloadTask.getDownloadFilePath() != null
         && !FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()))) {
