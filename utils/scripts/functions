@@ -934,26 +934,16 @@ case $1 in
 
 }
 
-
+#THIS COMMAND IS NO LONGER SUPPORTED
 #Print Usage of dm_download_dataobject_sync function
 function dm_show_download_dataobject_sync_usage {
-  read -d  '' usage <<- EOF
-  usage: dm_download_dataobject_sync [-D REST-response] [-p] <logic-path> <destination-file>
-
-  Download the specified dataobject to the local machine.
-  OPTIONS:
-  -D REST-response       Specify the filename to capture the REST response
-  -p                     Use S3-presigned URL for downloading
-
-For detailed information on this command, refer to the following page: 
-https://wiki.nci.nih.gov/x/uh5GFw
-
-EOF
-  echo "$usage"
+  
+  echo "dm_download_dataobject_sync has been deprecated. Use dm_download_dataobject_presigned." >&2
+        dm_download_dataobject_presigned $@
 }
 
 
-
+#THIS COMMAND IS NO LONGER SUPPORTED
 #Download a dataObject synchronously 
 #Inputs: [-D REST-response]
 #        [-p]
@@ -1091,6 +1081,140 @@ function dm_download_dataobject_sync {
     fi
   fi
 }
+
+
+#Print Usage of dm_download_dataobject_presigned function
+function dm_show_download_dataobject_presigned_usage {
+  read -d  '' usage <<- EOF
+  
+  usage: dm_download_dataobject_presigned [-D REST-response] <source-path> <destination-file>
+
+  Download the specified dataobject to the local machine using presigned URL.
+  [-D REST-response]     Optionally specify the filename to capture the REST response
+  source_path            Full path to the source file in the archive
+  destination-file       The location for the destination file
+
+For detailed information on this command, refer to the following page:
+https://wiki.nci.nih.gov/x/uh5GFw
+
+EOF
+  echo "$usage"
+}
+
+
+#Download a dataObject using presigned URL
+#Inputs: [-D REST-response]
+#        [-p]
+#        logic-path
+#        destination-file
+function dm_download_dataobject_presigned {
+
+  #Set the default parameters
+  local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template-internal.json"
+  local RESPONSE_HEADER
+
+  while :; do
+        case $1 in
+            -D|--dump-header)
+                if [ "$2" ]; then
+                    RESPONSE_HEADER="$2"
+                    shift
+                else
+                    dm_show_download_dataobject_presigned_usage >&2
+                    return 1
+                fi
+            ;;
+            *) break
+        esac
+        shift
+  done
+
+  if [ "$#" -lt 2 ] || [ "$#" -gt 4 ]
+  then
+    dm_show_download_dataobject_presigned_usage >&2
+    return 1
+  fi
+  local OBJECT_PATH="$1"
+  local DESTINATION_PATH="$2"
+  if [ -d "$DESTINATION_PATH"  ]
+  then
+    #Download the file with the same file name
+    local FILE_NAME=$(basename "$OBJECT_PATH")
+    if [ "$?" -ne 0 ]
+    then
+      echo "ERROR:Can not retrieve the file name from \"$OBJECT_PATH\"" >&2
+      return 1
+    fi
+    local DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
+  fi
+  local CONFIG=$(get_config)
+  local SERVER=$(get_server)
+  local CODE=0
+  if [ -z "$RESPONSE_HEADER" ]
+    then
+      RESPONSE_HEADER=download-dataobject-response-header.tmp
+  fi
+ 
+  local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header.tmp
+  local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=obtain-presigned-url-response-message.tmp
+
+  curl -H "Content-Type: application/json" -H "Accept: application/json" \
+      $CONFIG -d @$TEMPLATE \
+      -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download \
+      -D $RESPONSE_HEADER_OBTAIN_PRESIGNED \
+      -o $RESPONSE_MESSAGE_OBTAIN_PRESIGNED \
+      -s 2> $HPC_DM_UTILS/temp/curl-status
+
+  check_connection $RESPONSE_HEADER_OBTAIN_PRESIGNED
+
+  CODE=$(get_http_code "$RESPONSE_HEADER_OBTAIN_PRESIGNED")
+  if [ "$CODE" -ne 200 ]
+  then
+    if [ "$CODE" -eq 400 ]
+    then
+      print_error_message $RESPONSE_MESSAGE_OBTAIN_PRESIGNED 400
+    else
+      >&2 echo "Request to obtain presigned URL failed.  See response data below."
+      >&2 echo "( Response data is also available in the following 2 files: "
+      >&2 echo "  1. $(pwd)/$RESPONSE_HEADER_OBTAIN_PRESIGNED"
+      >&2 echo "  2. $(pwd)/$RESPONSE_MESSAGE_OBTAIN_PRESIGNED"
+      >&2 echo ")"
+      >&2 echo ""
+      >&2 cat $RESPONSE_HEADER_OBTAIN_PRESIGNED
+      >&2 cat $RESPONSE_MESSAGE_OBTAIN_PRESIGNED
+    fi
+  else
+    local PRESIGNED_URL=$(get_json_value  $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  downloadRequestURL)
+    if [ -z "$PRESIGNED_URL" ]
+    then
+      >&2 echo "Request to obtain presigned URL was successfully processed, but response is missing the URL.  See response data below."
+      >&2 echo "( Response data is also available in the following 2 files: "
+      >&2 echo "  1. $(pwd)/$RESPONSE_HEADER_OBTAIN_PRESIGNED"
+      >&2 echo "  2. $(pwd)/$RESPONSE_MESSAGE_OBTAIN_PRESIGNED"
+      >&2 echo ")"
+      >&2 echo ""
+      >&2 cat $RESPONSE_HEADER_OBTAIN_PRESIGNED
+      >&2 cat $RESPONSE_MESSAGE_OBTAIN_PRESIGNED
+    else
+      curl -X GET $PRESIGNED_URL -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status
+      check_connection $RESPONSE_HEADER
+
+      CODE=$(get_http_code "$RESPONSE_HEADER")
+      if [ "$CODE" -ne 200 ]
+      then 
+        >&2 echo "Failed to download file from obtained presigned URL.  See response data below."
+        >&2 echo "  ( Response data from request available in file $DESTINATION_PATH. )"
+        >&2 echo ""
+        >&2 cat $RESPONSE_HEADER
+        >&2 cat $DESTINATION_PATH
+      fi
+    fi
+  fi
+}
+
+
+
+
 
 #Print Usage of dm_delete_datafile function
 function dm_show_delete_datafile_usage {
@@ -1721,8 +1845,8 @@ function dm_show_download_collection_globus_usage {
   Download the specified collection or list of collections to the Globus endpoint
   [-D REST-response]          Optionally specify the filename to capture the REST response status
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
-  [-f paths-file]             New line delimited file which contains the collection paths in DME to be downloaded
-  [archive-path]              Source path in the archive (Not needed if the paths-file parameter is specified.)
+  [-f paths-file]             Optionally specify newline delimited file which contains the collection paths in DME to be downloaded
+  [archive-path]              Optionally specify source path in the archive (Not needed if the paths-file parameter is specified.)
   globus-destination_path     Full path of the destination folder at the Globus endpoint
   [globus-endpoint]           The UUID of the Globus endpoint that you want to use. If this is not specified, then the one specified in the hpcdme.properties file is used.
 
@@ -1766,7 +1890,7 @@ function dm_download_collection_globus {
                     return 1
                 fi
             ;;
-			-f|--file)
+            -f|--file)
                 if [ "$2" ]; then
                     path_file="$2"
                 else
