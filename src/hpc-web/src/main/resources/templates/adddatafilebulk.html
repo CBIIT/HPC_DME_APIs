@@ -574,31 +574,31 @@
 		var inputs = form.getElementsByTagName("input");
 		var selects = form.getElementsByTagName("select");
 		var attrs = getAttributeNames();
+		var attrValues = getAttributeValues();
+
 		for(var j=0;j<attrs.length;j++)
 		{
-			if(attrs[j] == "")
+			if(attrs[j] == "" && attrValues[j] != "")
 			{
 				alert("Attribute name is missing!")
 				return false;
-			}					
+			}
+
 			if(duplicate(attrs, attrs[j]))
 			{
 				alert("Duplicate attribute name: "+attrs[j]);
 				return false;
 			}
-		}
-		var attrValues = getAttributeValues();
-		for(var j=0;j<attrValues.length;j++)
-		{
-			if(attrValues[j] == "")
+
+			if(attrs[j] != "" && attrValues[j] == "")
 			{
 				alert("Attribute value is missing!")
 				return false;
-			}					
+			}
 		}
-		
 	}
-	
+
+
 	function getAttributeNames()
 	{
 		var form = document.getElementById("dataFileForm");
