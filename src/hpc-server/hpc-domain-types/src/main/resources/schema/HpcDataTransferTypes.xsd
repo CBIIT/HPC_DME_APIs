@@ -470,5 +470,12 @@
 			<xsd:enumeration value="REGEX" />
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+	<xsd:complexType name="HpcDataObjectDownloadTaskStatusFilter">
+		<xsd:sequence>
+			<xsd:element name="status" type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
+			<xsd:element name="destination" type="hpc-domain-datatransfer:HpcDataTransferType" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 </xsd:schema>
