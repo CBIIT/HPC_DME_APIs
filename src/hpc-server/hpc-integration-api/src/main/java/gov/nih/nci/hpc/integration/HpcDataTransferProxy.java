@@ -242,6 +242,19 @@ public interface HpcDataTransferProxy {
   }
 
   /**
+   * Cancel a transfer request.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param dataTransferRequestId The globus task ID.
+   * @param message The message to attach to the cancellation request.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default void cancelTransferRequest(Object authenticatedToken,
+      String dataTransferRequestId, String message) throws HpcException {
+    throw new HpcException("cancelTransferRequest() not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
    * Calculate data transfer destination to deposit a data object.
    *
    * @param baseArchiveDestination The base (archive specific) destination.
