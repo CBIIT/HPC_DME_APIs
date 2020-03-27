@@ -454,14 +454,20 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				String attrId = paramName.substring("_addAttrName".length());
 				String[] attrName = request.getParameterValues(paramName);
 				String[] attrValue = request.getParameterValues("_addAttrValue" + attrId);
-				if (attrName.length > 0 && !attrName[0].isEmpty())
+				if (attrName.length > 0 && !attrName[0].isEmpty()) {
 					entry.setAttribute(attrName[0]);
-				else
+					if (attrValue.length > 0 && !attrValue[0].isEmpty())
+						entry.setValue(attrValue[0]);
+					else
+						throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+				} else if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
 					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
-				if (attrValue.length > 0 && !attrValue[0].isEmpty())
-					entry.setValue(attrValue[0]);
-				else
-					throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+				} else {
+					//If both attrName and attrValue are empty, then we just
+					//ignore it and move to the next element
+					continue;
+				}
+
 				metadataEntries.add(entry);
 			}
 		}
@@ -782,14 +788,20 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				String attrId = paramName.substring("_addAttrName".length());
 				String[] attrName = request.getParameterValues(paramName);
 				String[] attrValue = request.getParameterValues("_addAttrValue" + attrId);
-				if (attrName.length > 0 && !attrName[0].isEmpty())
+				if (attrName.length > 0 && !attrName[0].isEmpty()) {
 					entry.setAttribute(attrName[0]);
-				else
+					if (attrValue.length > 0 && !attrValue[0].isEmpty())
+						entry.setValue(attrValue[0]);
+					else
+						throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+				} else if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
 					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
-				if (attrValue.length > 0 && !attrValue[0].isEmpty())
-					entry.setValue(attrValue[0]);
-				else
-					throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+				} else {
+					//If both attrName and attrValue are empty, then we just
+					//ignore it and move to the next element
+					continue;
+				}
+
 				metadataEntries.add(entry);
 				HpcMetadataAttrEntry attrEntry = new HpcMetadataAttrEntry();
 				attrEntry.setAttrName(attrName[0]);
