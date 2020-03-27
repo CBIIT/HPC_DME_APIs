@@ -231,6 +231,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcDirectoryScanItem']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTaskStatusFilter']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatusFilter" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:simpleType[@name='HpcPatternType']">
          <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcPatternType" />
       </jxb:bindings>
