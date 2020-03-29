@@ -28,9 +28,9 @@ import java.util.List;
 public interface HpcSystemAccountDAO 
 {    
     /**
-     * Store a new system account or update it if it exists.
+     * Store a new system account.
      *
-     * @param account The system account to be added/updated.
+     * @param account The system account to be added.
      * @param dataTransferType The data transfer type to associate with the system account.
      * @param classifier The classifier to offer finer grained detail than system or transfer type
      * @throws HpcException on database error.
@@ -39,6 +39,22 @@ public interface HpcSystemAccountDAO
     		           HpcDataTransferType dataTransferType,
                    String classifier)
     		          throws HpcException;
+
+
+
+    /**
+     * Update a system account if it exists.
+     *
+     * @param account The system account to be updated.
+     * @param dataTransferType The data transfer type to associate with the system account.
+     * @param classifier The classifier to offer finer grained detail than system or transfer type
+     * @throws HpcException on database error.
+     */
+    public void update(HpcIntegratedSystemAccount account,
+    		           HpcDataTransferType dataTransferType,
+                   String classifier)
+    		          throws HpcException;
+
     
     /**
      * Get system accounts.
