@@ -40,6 +40,15 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
           + "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\", \"CLASSIFIER\") "
           + "values (?, ?, ?, ?, ?)";
 
+
+
+  private static final String UPDATE_SQL =
+    "update public.\"HPC_SYSTEM_ACCOUNT\" set "
+        + "\"USERNAME\" = ?, \"PASSWORD\" = ?, \"DATA_TRANSFER_TYPE\" = ?, \"CLASSIFIER\" = ? "
+        + " where \"SYSTEM\" = ?";
+
+
+
   private static final String GET_BY_SYSTEM_SQL =
       "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = ?";
   private static final String GET_BY_DATA_TRANSFER_TYPE_SQL =
@@ -88,6 +97,29 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
   //---------------------------------------------------------------------//
 
   @Override
+  public void update(
+      HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType, String classifier)
+      throws HpcException {
+    try {
+      jdbcTemplate.update(
+          UPDATE_SQL,
+          account.getUsername(),
+          encryptor.encrypt(account.getPassword()),
+          dataTransferType != null ? dataTransferType.value() : null,
+          classifier != null ? classifier : null,
+          account.getIntegratedSystem().value());
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to update a system account: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR,
+          HpcIntegratedSystem.POSTGRESQL,
+          e);
+    }
+  }
+
+
+  @Override
   public void upsert(
       HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType, String classifier)
       throws HpcException {
@@ -108,6 +140,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
           e);
     }
   }
+
 
   @Override
   public List<HpcIntegratedSystemAccount> getSystemAccount(HpcIntegratedSystem system)
