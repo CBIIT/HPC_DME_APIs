@@ -403,12 +403,12 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
       throw new HpcException("Invalid system account input", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    if(account.getIntegratedSystem().equals(HpcIntegratedSystem.GLOBUS) ||
-    	systemAccountDAO.getSystemAccount(account.getIntegratedSystem()) == null ||
-    	systemAccountDAO.getSystemAccount(account.getIntegratedSystem()).isEmpty()) {
-    	systemAccountDAO.upsert(account, dataTransferType, classifier);
-    } else {
+    if(!account.getIntegratedSystem().equals(HpcIntegratedSystem.GLOBUS) &&
+    	systemAccountDAO.getSystemAccount(account.getIntegratedSystem()) != null &&
+    	!systemAccountDAO.getSystemAccount(account.getIntegratedSystem()).isEmpty()) {
     	systemAccountDAO.update(account, dataTransferType, classifier);
+    } else {
+    	systemAccountDAO.upsert(account, dataTransferType, classifier);
     }
 
     // Refresh the system accounts cache.
