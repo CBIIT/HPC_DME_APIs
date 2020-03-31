@@ -353,7 +353,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
       objectPath = "/" + objectPath;
     }
     String md5Checksum = null;
-    if (checksum) {
+    if (checksum && !multipartUpload) {
       HashCode hash;
       try {
         logger.debug("entity.getAbsolutePath() {}", entity.getAbsolutePath());
@@ -414,7 +414,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
               connection.getBufferSize(), md5Checksum);
         } else if (multipartUpload && responseDTO != null && responseDTO.getMultipartUpload() != null) {
             uploadToUrls(HpcClientUtil.constructPathString(basePath, objectPath), responseDTO.getMultipartUpload(), new File(entity.getAbsolutePath()),
-                connection.getBufferSize(), md5Checksum, partSize);
+                partSize);
          } else {
           System.out.println("Failed to get signed URL for: " + basePath + objectPath);
         }
@@ -612,7 +612,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		}
 	}
 	
-	private int uploadToUrls(String destinationPath, HpcMultipartUpload multipartUpload, File file, int bufferSize, String checksum, long partSize) throws InterruptedException {
+	private int uploadToUrls(String destinationPath, HpcMultipartUpload multipartUpload, File file, long partSize) throws InterruptedException {
 		
 		HpcCompleteMultipartUploadRequestDTO dto = new HpcCompleteMultipartUploadRequestDTO();
 		dto.setMultipartUploadId(multipartUpload.getId());
