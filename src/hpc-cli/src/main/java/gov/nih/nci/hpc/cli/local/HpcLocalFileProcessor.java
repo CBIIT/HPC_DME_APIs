@@ -328,6 +328,8 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     long contentLength = file.length();
     
     partSize = partSize < (5 * 1024 * 1024) ? (5 * 1024 * 1024) : partSize;
+    partSize = partSize > (5 * 1024 * 1024 * 1024) ? (5 * 1024 * 1024 * 1024) : partSize;
+    
 	//Adjust part size to be a multiple of 1024
 	partSize = (new Double(round((double) partSize, 1024))).longValue();
     parts = (int) Math.ceil((double) contentLength / partSize);
