@@ -1425,7 +1425,6 @@ function dm_show_register_directory_usage {
   Metadata can be provided for every directory and file in a specific metadata file called <[directory,filename]>.metadata.json. The metadata file should exist in the same path in its corresponding directory/file. For example, the metadata for the file data.txt should be data.txt.metadata.json
   OPTIONS:
   -a[ARCHIVE_TYPE]        The type of the archive. Valid options are "S3" and "POSIX".
-  -c                      Turn off checksum calculation. 
   -d                      Print the files to be included in registration and exit 
   -e[EXCLUDE_FILE_PATH]   Exclude the files that match the patterns specified in the file EXCLUDE_FILE_PATH
   -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
