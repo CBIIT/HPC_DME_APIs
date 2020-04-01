@@ -30,7 +30,6 @@ hpc.error-log.dir=/tmp
 hpc.job.thread.count=1
 #HPC DME Login token file location
 hpc.login.token=tokens/hpcdme-auth.txt
-validate.md5.checksum=false
 upload.buffer.size=10000000
 #Retry count and backoff period for registerFromFilePath (Fixed backoff)
 #hpc.retry.max.attempts=3

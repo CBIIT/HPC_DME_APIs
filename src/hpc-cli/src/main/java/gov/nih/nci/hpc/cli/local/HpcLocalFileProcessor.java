@@ -174,11 +174,11 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("directUpload {}", directUpload);
     boolean multipartUpload = false;
     if (directUpload && !metadataOnly) {
-    	//Check whether it requires multi-part upload (default > 5GB)
+    	//Check whether it requires multi-part upload (default > 1GB)
         
         long multipartThresholdSize = this.multipartThreshold;
-    	multipartThresholdSize = multipartThresholdSize < (5 * 1024 * 1025) ? (5 * 1024 * 1025) : multipartThresholdSize;
-    	multipartThresholdSize = multipartThresholdSize > (5 * 1024 * 1024 * 1025) ? (5 * 1024 * 1024 * 1025) : multipartThresholdSize;
+    	multipartThresholdSize = multipartThresholdSize < (5L * 1024 * 1025) ? (5L * 1024 * 1025) : multipartThresholdSize;
+    	multipartThresholdSize = multipartThresholdSize > (5L * 1024 * 1024 * 1025) ? (5L * 1024 * 1024 * 1025) : multipartThresholdSize;
         if(file.length() > multipartThresholdSize) {
         	multipartUpload = true;
         	
@@ -328,8 +328,8 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	int parts = 0;
     long contentLength = file.length();
     
-    partSize = partSize < (5 * 1024 * 1024) ? (5 * 1024 * 1024) : partSize;
-    partSize = partSize > (5 * 1024 * 1024 * 1024) ? (5 * 1024 * 1024 * 1024) : partSize;
+    partSize = partSize < (5L * 1024 * 1024) ? (5L * 1024 * 1024) : partSize;
+    partSize = partSize > (5L * 1024 * 1024 * 1024) ? (5L * 1024 * 1024 * 1024) : partSize;
     
 	//Adjust part size to be a multiple of 1024
 	partSize = (new Double(round((double) partSize, 1024))).longValue();
