@@ -178,6 +178,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
         
         long multipartThresholdSize = this.multipartThreshold;
     	multipartThresholdSize = multipartThresholdSize < (5 * 1024 * 1025) ? (5 * 1024 * 1025) : multipartThresholdSize;
+    	multipartThresholdSize = multipartThresholdSize > (5 * 1024 * 1024 * 1025) ? (5 * 1024 * 1024 * 1025) : multipartThresholdSize;
         if(file.length() > multipartThresholdSize) {
         	multipartUpload = true;
         	
