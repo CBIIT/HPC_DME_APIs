@@ -1111,13 +1111,13 @@ function dm_download_dataobject_presigned {
 
   #Set the default parameters
   local TEMPLATE="$HPC_DM_UTILS/templates/download-sync-presigned-template-internal.json"
-  local RESPONSE_HEADER
+  local RESPONSE_STATUS
 
   while :; do
         case $1 in
             -D|--dump-header)
                 if [ "$2" ]; then
-                    RESPONSE_HEADER="$2"
+                    RESPONSE_STATUS="$2"
                     shift
                 else
                     dm_show_download_dataobject_presigned_usage >&2
@@ -1150,9 +1150,9 @@ function dm_download_dataobject_presigned {
   local CONFIG=$(get_config)
   local SERVER=$(get_server)
   local CODE=0
-  if [ -z "$RESPONSE_HEADER" ]
+  if [ -z "$RESPONSE_STATUS" ]
     then
-      RESPONSE_HEADER=download-dataobject-response-header.tmp
+      RESPONSE_STATUS=download-dataobject-response-header.tmp
   fi
  
   local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header.tmp
@@ -1196,17 +1196,19 @@ function dm_download_dataobject_presigned {
       >&2 cat $RESPONSE_HEADER_OBTAIN_PRESIGNED
       >&2 cat $RESPONSE_MESSAGE_OBTAIN_PRESIGNED
     else
-      curl -X GET $PRESIGNED_URL -D $RESPONSE_HEADER -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status
-      check_connection $RESPONSE_HEADER
+      curl -X GET $PRESIGNED_URL -D $RESPONSE_STATUS -o $DESTINATION_PATH -s 2> $HPC_DM_UTILS/temp/curl-status
+      check_connection $RESPONSE_STATUS
 
-      CODE=$(get_http_code "$RESPONSE_HEADER")
+      CODE=$(get_http_code "$RESPONSE_STATUS")
       if [ "$CODE" -ne 200 ]
       then 
         >&2 echo "Failed to download file from obtained presigned URL.  See response data below."
         >&2 echo "  ( Response data from request available in file $DESTINATION_PATH. )"
         >&2 echo ""
-        >&2 cat $RESPONSE_HEADER
+        >&2 cat $RESPONSE_STATUS
         >&2 cat $DESTINATION_PATH
+      else
+        rm -f $RESPONSE_HEADER_OBTAIN_PRESIGNED $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  2>/dev/null
       fi
     fi
   fi
