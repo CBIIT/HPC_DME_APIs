@@ -1095,7 +1095,7 @@ function dm_show_download_dataobject_presigned_usage {
   destination-file       The location for the destination file
 
 For detailed information on this command, refer to the following page:
-https://wiki.nci.nih.gov/x/uh5GFw
+https://wiki.nci.nih.gov/x/owRlGQ
 
 EOF
   echo "$usage"
