@@ -71,7 +71,6 @@ public class HpcLocalDirectoryListGenerator {
 	String hpcServerURL;
 	String hpcServerProxyURL;
 	String hpcServerProxyPort;
-	boolean validateMD5 = false;
 
 	public HpcLocalDirectoryListGenerator(String configProps) throws IOException, FileNotFoundException {
 		InputStream input = new FileInputStream(configProps);
@@ -79,7 +78,7 @@ public class HpcLocalDirectoryListGenerator {
 	}
 
 	public HpcLocalDirectoryListGenerator(String hpcServerURL, String hpcServerProxyURL, String hpcServerProxyPort,
-			String authToken, String hpcCertPath, String hpcCertPassword, boolean validateMD5)
+			String authToken, String hpcCertPath, String hpcCertPassword)
 			throws IOException, FileNotFoundException {
 		this.hpcCertPath = hpcCertPath;
 		this.hpcCertPassword = hpcCertPassword;
@@ -87,7 +86,6 @@ public class HpcLocalDirectoryListGenerator {
 		this.hpcServerURL = hpcServerURL;
 		this.hpcServerProxyPort = hpcServerProxyPort;
 		this.hpcServerProxyURL = hpcServerProxyURL;
-		this.validateMD5 = validateMD5;
 	}
 
 	public boolean run(String filePath, String excludePatternFile, String includePatternFile, String filePathBaseName,
