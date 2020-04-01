@@ -34,7 +34,7 @@ validate.md5.checksum=false
 upload.buffer.size=10000000
 #Retry count and backoff period for registerFromFilePath (Fixed backoff)
 #hpc.retry.max.attempts=3
-#hpc.retry.backoff.period=1500
+#hpc.retry.backoff.period=5000
 #Multi-part upload thread pool, threshold and part size configuration
 #hpc.multipart.threadpoolsize=10
 #hpc.multipart.threshold=1074790400

@@ -144,8 +144,8 @@ public abstract class HPCBatchClient {
         try {
           backOffPeriod = Long.parseLong(maxAttemptsStr);
         } catch (Exception e) {
-            logger.info("Defaulting hpc.retry.backoff.period value. Setting it to 1500");
-            backOffPeriod = 1500;
+            logger.info("Defaulting hpc.retry.backoff.period value. Setting it to 5000");
+            backOffPeriod = 5000;
         }
         String multipartPoolSizeStr = configProperties.getProperty("hpc.multipart.threadpoolsize");
         logger.debug("hpc.multipart.threadpoolsize "+multipartPoolSizeStr);
