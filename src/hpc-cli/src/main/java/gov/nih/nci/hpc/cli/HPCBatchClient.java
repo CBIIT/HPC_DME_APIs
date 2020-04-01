@@ -49,7 +49,6 @@ public abstract class HPCBatchClient {
 	protected String tokenFile = null;
 	protected String logRecordsFile = null;
 	protected boolean headerAdded = false;
-	protected boolean validateMD5 = false;
 	protected boolean inputCredentials = true;
 	protected int bufferSize = 0;
 	protected int threadCount = 1;
@@ -83,10 +82,6 @@ public abstract class HPCBatchClient {
 		logger.debug("hpc.server.proxy.port "+hpcServerProxyPort);
 		globusNexusURL = configProperties.getProperty("globus.nexus.url");
 		logger.debug("globus.nexus.url "+globusNexusURL);
-		String checkMD5 = configProperties.getProperty("validate.md5.checksum");
-		logger.debug("validate.md5.checksum "+checkMD5);
-		if(checkMD5 != null && checkMD5.equalsIgnoreCase("true"))
-			validateMD5 = true;	
 		globusURL = configProperties.getProperty("globus.url");
 		logger.debug("globus.url "+globusURL);
 		hpcDataService = configProperties.getProperty("hpc.dataobject.service");
@@ -144,8 +139,8 @@ public abstract class HPCBatchClient {
         try {
           backOffPeriod = Long.parseLong(maxAttemptsStr);
         } catch (Exception e) {
-            logger.info("Defaulting hpc.retry.backoff.period value. Setting it to 1500");
-            backOffPeriod = 1500;
+            logger.info("Defaulting hpc.retry.backoff.period value. Setting it to 5000");
+            backOffPeriod = 5000;
         }
         String multipartPoolSizeStr = configProperties.getProperty("hpc.multipart.threadpoolsize");
         logger.debug("hpc.multipart.threadpoolsize "+multipartPoolSizeStr);
