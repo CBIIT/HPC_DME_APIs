@@ -2269,7 +2269,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param metadataEntries The list of metadata entries to update.
    * @param collectionType The type of collection containing the data object.
    * @param generateUploadRequestURL Indicator whether to re-generate the request upload URL.
-   * @param (Optional) The number of parts when generating upload request URL.
+   * @param uploadParts(Optional) The number of parts when generating upload request URL.
    * @param checksum The data object checksum provided to check upload integrity.
    * @param userId The userId updating the data object.
    * @param callerObjectId The caller's object ID.
