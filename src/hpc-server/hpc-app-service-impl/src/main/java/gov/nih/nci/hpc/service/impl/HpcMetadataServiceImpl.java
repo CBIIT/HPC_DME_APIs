@@ -21,6 +21,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_CO
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_METHOD_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -249,6 +251,18 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
         systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferUploadStatus.FAILED);
       }
     }
+    
+    if (metadataMap.get(DATA_TRANSFER_METHOD_ATTRIBUTE) != null) {
+      try {
+        systemGeneratedMetadata.setDataTransferMethod(
+            HpcDataTransferUploadMethod.fromValue(metadataMap.get(DATA_TRANSFER_METHOD_ATTRIBUTE)));
+
+      } catch (Exception e) {
+        logger.error("Unable to determine data transfer method: "
+            + metadataMap.get(DATA_TRANSFER_METHOD_ATTRIBUTE), e);
+        systemGeneratedMetadata.setDataTransferMethod(null);
+      }
+    }
 
     if (metadataMap.get(DATA_TRANSFER_TYPE_ATTRIBUTE) != null) {
       try {
@@ -369,13 +383,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
   public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToDataObject(String path,
       HpcMetadataEntry dataObjectIdMetadataEntry, HpcFileLocation archiveLocation,
       HpcFileLocation sourceLocation, String dataTransferRequestId,
-      HpcDataTransferUploadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
+      HpcDataTransferUploadStatus dataTransferStatus, HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
       Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize,
       String sourceURL, String callerObjectId, String userId, String userName,
       String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
       throws HpcException {
     // Input validation.
-    if (path == null || dataTransferStatus == null || dataTransferType == null
+    if (path == null || dataTransferStatus == null || dataTransferType == null || dataTransferMethod == null
         || dataTransferStarted == null || dataObjectIdMetadataEntry == null) {
       throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
     }
@@ -423,6 +437,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     // Create the Data Transfer Status metadata.
     addMetadataEntry(metadataEntries,
         toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
+    
+    // Create the Data Transfer Method metadata.
+    addMetadataEntry(metadataEntries,
+        toMetadataEntry(DATA_TRANSFER_METHOD_ATTRIBUTE, dataTransferMethod.value()));
 
     // Create the Data Transfer Type metadata.
     addMetadataEntry(metadataEntries,

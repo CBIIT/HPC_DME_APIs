@@ -843,7 +843,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
               metadataService.addSystemGeneratedMetadataToDataObject(path, dataObjectMetadataEntry,
                   uploadResponse.getArchiveLocation(), uploadResponse.getUploadSource(),
                   uploadResponse.getDataTransferRequestId(), uploadResponse.getDataTransferStatus(),
-                  uploadResponse.getDataTransferType(), uploadResponse.getDataTransferStarted(),
+                  uploadResponse.getDataTransferMethod(), uploadResponse.getDataTransferType(),
+                  uploadResponse.getDataTransferStarted(),
                   uploadResponse.getDataTransferCompleted(), uploadResponse.getSourceSize(),
                   uploadResponse.getSourceURL(), dataObjectRegistration.getCallerObjectId(), userId,
                   userName, configurationId, dataManagementService
