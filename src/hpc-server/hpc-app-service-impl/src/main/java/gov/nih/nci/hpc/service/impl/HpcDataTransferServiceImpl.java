@@ -48,6 +48,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
@@ -1406,6 +1407,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       uploadResponse.setUploadSource(uploadRequest.getGlobusUploadSource().getSourceLocation());
       uploadResponse.setDataTransferStarted(Calendar.getInstance());
       uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.RECEIVED);
+      uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.GLOBUS);
       return uploadResponse;
     }
 

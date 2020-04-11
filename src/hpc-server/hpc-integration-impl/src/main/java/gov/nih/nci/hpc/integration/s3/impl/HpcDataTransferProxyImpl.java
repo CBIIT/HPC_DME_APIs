@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -440,6 +441,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferCompleted(dataTransferCompleted);
     uploadResponse.setDataTransferRequestId(String.valueOf(s3Upload.hashCode()));
     uploadResponse.setSourceSize(sourceFile.length());
+    uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.SYNC);
     if (archiveType.equals(HpcArchiveType.ARCHIVE)) {
       uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
     } else {
@@ -541,6 +543,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS);
     uploadResponse.setSourceURL(sourceURL);
     uploadResponse.setSourceSize(size);
+    uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.S_3);
 
     return uploadResponse;
   }
@@ -588,6 +591,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferRequestId(String.valueOf(generatePresignedUrlRequest.hashCode()));
     uploadResponse.setUploadRequestURL(url.toString());
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
+    uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.URL_SINGLE_PART);
 
     return uploadResponse;
   }
@@ -659,6 +663,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         .setDataTransferRequestId(String.valueOf(initiateMultipartUploadRequest.hashCode()));
     uploadResponse.setMultipartUpload(multipartUpload);
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.URL_GENERATED);
+    uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.URL_MULTI_PART);
 
     return uploadResponse;
   }
