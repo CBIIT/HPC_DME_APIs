@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -154,6 +155,7 @@ public interface HpcMetadataService {
    * @param sourceLocation (Optional) The source location of the file.
    * @param dataTransferRequestId (Optional) The data transfer request ID.
    * @param dataTransferStatus The data transfer upload status.
+   * @param dataTransferMethod The data transfer upload method.
    * @param dataTransferType The data transfer type.
    * @param dataTransferStarted The time data transfer started.
    * @param dataTransferCompleted (Optional) The time data transfer completed.
@@ -172,7 +174,8 @@ public interface HpcMetadataService {
   public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToDataObject(String path,
       HpcMetadataEntry dataObjectIdMetadataEntry, HpcFileLocation archiveLocation,
       HpcFileLocation sourceLocation, String dataTransferRequestId,
-      HpcDataTransferUploadStatus dataTransferStatus, HpcDataTransferType dataTransferType,
+      HpcDataTransferUploadStatus dataTransferStatus,
+      HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
       Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize,
       String sourceURL, String callerObjectId, String userId, String userName,
       String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)

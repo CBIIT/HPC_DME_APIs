@@ -33,6 +33,17 @@
 			<xsd:enumeration value="STREAMING_STOPPED" />
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcDataTransferUploadMethod">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="GLOBUS" />
+			<xsd:enumeration value="S_3" />
+			<xsd:enumeration value="GOOGLE_DRIVE" />
+			<xsd:enumeration value="SYNC" />
+			<xsd:enumeration value="URL_SINGLE_PART" />
+			<xsd:enumeration value="URL_MULTI_PART" />
+		</xsd:restriction>
+	</xsd:simpleType>
 
 	<xsd:complexType name="HpcDataTransferUploadReport">
 		<xsd:sequence>
@@ -194,6 +205,8 @@
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="dataTransferStatus"
 				type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
+			<xsd:element name="dataTransferMethod"
+				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
 			<xsd:element name="dataTransferType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="dataTransferStarted"
