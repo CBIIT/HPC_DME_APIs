@@ -43,7 +43,8 @@ def main(args):
     sf_audit = SFAudit(audit_dir, extract_path, bytes_stored, files_registered)
     sf_audit.prep_for_audit()
 
-    for line_dirname in open(pi_dir_list).readlines():
+    pi_dir_list_path = base_dir + "/" + pi_dir_list
+    for line_dirname in open(pi_dir_list_path).readlines():
 
         pi_dir_path = base_dir + '/' + line_dirname.rstrip()
         destDir = dest_base_dir + "/" + line_dirname.rstrip()
