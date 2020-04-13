@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration.s3.impl;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Value;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -37,6 +38,14 @@ public class HpcS3Connection {
 
   // A list of S3 3rd party providers that require connection w/ path-style enabled.
   private Set<HpcIntegratedSystem> pathStyleAccessEnabledProviders = new HashSet<>();
+
+  // The multipart upload minimum part size.
+  @Value("${hpc.integration.s3.minimumUploadPartSize}")
+  Long minimumUploadPartSize = null;
+
+  // The multipart upload threshold.
+  @Value("${hpc.integration.s3.multipartUploadThreshold}")
+  Long multipartUploadThreshold = null;
 
   // ---------------------------------------------------------------------//
   // Constructors
@@ -96,7 +105,9 @@ public class HpcS3Connection {
     // Create and return the transfer manager.
     return TransferManagerBuilder.standard().withS3Client(AmazonS3ClientBuilder.standard()
         .withCredentials(cleversafeCredentialsProvider).withPathStyleAccessEnabled(pathStyleEnabled)
-        .withEndpointConfiguration(endpointConfiguration).build()).build();
+        .withEndpointConfiguration(endpointConfiguration).build())
+        .withMinimumUploadPartSize(minimumUploadPartSize)
+        .withMultipartUploadThreshold(multipartUploadThreshold).build();
   }
 
   /**
