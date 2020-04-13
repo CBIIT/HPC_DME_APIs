@@ -154,7 +154,7 @@
 								</div>
 							</div>
 							<div th:if="${error != null}">
-								<div class="alert alert-error">
+								<div class="alert alert-danger">
 									<a class="close" data-dismiss="alert">×</a> <label
 										for="${error}" th:text="${error}"></label>
 								</div>
@@ -175,7 +175,7 @@
 									</div>
 									<!-- /.modal-dialog -->
 								</div>								
-							<div th:if="${error == null}">
+							<div>
 								<!--panel-body start-->
 								<div class="panel-body">
 									<div class="form-group">
