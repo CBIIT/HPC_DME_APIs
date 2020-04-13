@@ -32,6 +32,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
@@ -218,6 +219,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferCompleted(null);
     uploadResponse.setUploadSource(uploadRequest.getGlobusUploadSource().getSourceLocation());
     uploadResponse.setSourceSize(uploadRequest.getSourceSize());
+    uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.GLOBUS);
     if (baseArchiveDestination.getType().equals(HpcArchiveType.TEMPORARY_ARCHIVE)) {
       uploadResponse
           .setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_TEMPORARY_ARCHIVE);
@@ -777,7 +779,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setDataTransferCompleted(Calendar.getInstance());
     uploadResponse.setSourceSize(sourceFile.length());
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.ARCHIVED);
-
+    uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.SYNC);
+    
     return uploadResponse;
   }
 
