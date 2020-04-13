@@ -35,6 +35,7 @@
 				<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />
 				<xsd:element name="dataTransferRequestId" type="xsd:string" />
 				<xsd:element name="dataTransferStatus" type="hpc-domain-datatransfer:HpcDataTransferUploadStatus" />
+				<xsd:element name="dataTransferMethod" type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
 				<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />
 				<xsd:element name="dataTransferStarted" type="xsd:dateTime" />
 				<xsd:element name="dataTransferCompleted" type="xsd:dateTime" />
