@@ -80,7 +80,7 @@ class SFUtils(object):
         # Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
         filepath = line.rstrip().split("../")[-1]
         filepath = filepath.split(" ")[-1]
-        filepath = filepath.lstrip('/')
+        #filepath = filepath.lstrip('/')
 
         filepath = extract_path + filepath
 
@@ -89,7 +89,7 @@ class SFUtils(object):
 
 
     @staticmethod
-    def get_tarball_contents(tarfile_name, tarfile_dir, sf_audit):
+    def get_tarball_contents(tarfile_name, tarfile_dir, sf_audit, extract_path):
 
         logging.info("Getting contents for: " + tarfile_name)
         tarfile_name = tarfile_name.rstrip()
@@ -97,42 +97,15 @@ class SFUtils(object):
 
 
         if not tarfile_name.endswith('tar.gz') and not tarfile_name.endswith('tar'):
-
-            # If this is not a .list, _archive.list, or .md5 file also, then record exclusion. Else
-            # just ignore, do not record because we may find the associated tar later
-            if (not tarfile_name.endswith('.list') and
-                    not tarfile_name.endswith('list.txt') and
-                    not tarfile_name.endswith('.md5')):
-                excludes_str = ': Invalid file format - not tar.gz or tar.gz.md5 or acceptable content list format'
-                sf_audit.record_exclusion(tarfile_name, "All files", tarfile_path, excludes_str)
-            else:
-                logging.info(tarfile_name + ': No contents to extract')
+            logging.info(tarfile_name + ': No contents to extract')
             return
 
-
-        contentFiles = ['tar_contents/' + tarfile_name + '.list.txt', 'tar_contents/' + tarfile_name + '.list',
-                        tarfile_path + '.list', tarfile_path + '_archive.list',
-                        tarfile_path.split('.gz')[0] + '.list', tarfile_path.split('.tar')[0] + '.list',
-                        tarfile_path.split('.tar')[0] + '_archive.list',
-                        tarfile_path.split('.tar')[0] + '.archive.list',
-                        tarfile_path.split('.gz')[0] + '.list.txt', tarfile_path.split('.tar')[0] + '.list.txt',
-                        tarfile_path.split('.gz')[0] + '_list.txt', tarfile_path.split('.tar')[0] + '_list.txt',
-                        tarfile_path.split('.tar')[0] + '_file_list.txt']
-
-        tarfile_contents = None
-
-        for filename in contentFiles:
-            if os.path.exists(filename):
-                logging.info("Located contents file: " + filename)
-                tarfile_contents = open(filename)
-                break
-
-        if tarfile_contents is None:
-            command = "tar tvf " + tarfile_path + " > " + tarfile_name + ".list"
-            # os.system(command)
-            subprocess.call(command, shell=True)
-            logging.info("Created contents file: " + command)
-            tarfile_contents = open(tarfile_name + '.list')
+        tarfile_list_path = extract_path + "/" + tarfile_name + ".list"
+        command = "tar tvf " + tarfile_path + " > " + tarfile_list_path
+        os.system(command)
+        subprocess.call(command, shell=True)
+        logging.info("Created contents file: " + command)
+        tarfile_contents = open(tarfile_list_path)
 
         logging.info("Obtained contents for: " + tarfile_name)
         return tarfile_contents

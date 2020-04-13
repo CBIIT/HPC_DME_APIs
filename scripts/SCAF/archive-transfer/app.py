@@ -64,7 +64,7 @@ def main(args):
                     tarPath = dirName + "/" + fileName
 
                     # Get or create list file (if not present)
-                    tarfile_contents = SFUtils.get_tarball_contents(fileName, dirName, sf_audit)
+                    tarfile_contents = SFUtils.get_tarball_contents(fileName, dirName, sf_audit, extract_path)
                     if tarfile_contents is None:
                         continue
 
