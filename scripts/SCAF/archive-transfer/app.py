@@ -19,23 +19,23 @@ from common.sf_audit import SFAudit
 
 def main(args):
     if len(sys.argv) <> 5:
-        print("\n Usage: python app.py src_dir pi_dir_list_path dest_dir work_dir")
+        print("\n Usage: python app.py src_base_dir dest_base_dir work_dir pi_dir_list")
         return
 
     # The root dir of the source
-    src_dir = args[1]
-
-    # The file containing the PI directory
-    pi_dir_list_path = args[2]
+    src_base_dir = args[1]
 
     # path containing the extracted file
-    dest_dir = args[3]
+    dest_base_dir = args[2]
 
     # path containing the extracted file
-    extract_path = args[4]
+    extract_path = args[3]
 
     # sub-directory to hold the log and audit files
-    audit_dir = args[4]
+    audit_dir = args[3]
+
+    # The file containing the PI directory
+    pi_dir_list = args[4]
 
     bytes_stored = 0
     files_registered = 0
@@ -43,9 +43,12 @@ def main(args):
     sf_audit = SFAudit(audit_dir, extract_path, bytes_stored, files_registered)
     sf_audit.prep_for_audit()
 
-    for line_dirname in open(pi_dir_list_path).readlines():
+    for line_dirname in open(pi_dir_list).readlines():
 
-        pi_dir_path = src_dir + '/' + line_dirname.rstrip()
+        pi_dir_path = src_base_dir + '/' + line_dirname.rstrip()
+        destDir = dest_base_dir + "/" + line_dirname.rstrip()
+        if not os.path.exists(destDir):
+            os.mkdir(destDir)
 
         # This is a valid pi directory, so process
         logging.info("Processing pi dir: " + pi_dir_path)
@@ -85,13 +88,13 @@ def main(args):
                         if filePath.endswith('fastq') or filePath.endswith('fastq.gz') \
                                 or filePath.endswith('fastq.gz.md5') \
                                 or (filePath.endswith('laneBarcode.html') and '/all/' in filePath):
-                           copy_file(tarPath, filePath, dest_dir, sf_audit)
+                           copy_file(tarPath, filePath, destDir, sf_audit)
 
                     os.system("rm -rf " + extract_path + "*")
 
                 elif fileName.endswith('bam'):
                     filePath = dirName + "/" + fileName
-                    copy_file(None, filePath, dest_dir, sf_audit)
+                    copy_file(None, filePath, destDir, sf_audit)
 
 
         logging.info('Done processing directory: ' + pi_dir_path)
@@ -99,7 +102,7 @@ def main(args):
     sf_audit.audit_summary()
 
 
-def copy_file(tarFile, filePath, dest_dir, sf_audit):
+def copy_file(tarFile, filePath, destDir, sf_audit):
 
     # Extract the info for PI metadata
     # path = SFUtils.get_meta_path(filepath)
@@ -115,7 +118,7 @@ def copy_file(tarFile, filePath, dest_dir, sf_audit):
             logging.info("MRN Number = %s" + mrnNumber)
             print "MRN Number = " + mrnNumber
             # Create Patient folder using that MRN number if the folder does not already exist
-            mrnDir = dest_dir + '/Patient_' + mrnNumber
+            mrnDir = destDir + '/Patient_' + mrnNumber
             print "mrnDir = " + mrnDir
             if not os.path.exists(mrnDir):
                 os.mkdir(mrnDir)
