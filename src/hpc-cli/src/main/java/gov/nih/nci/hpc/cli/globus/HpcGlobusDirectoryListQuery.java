@@ -206,7 +206,7 @@ public class HpcGlobusDirectoryListQuery {
 			client.postResult(resource, null, null);
 
 		} catch (Exception e) {
-			throw new HpcException("[GLOBUS] Endpoint doesn't exist or inactive. Make sure the endpoint name "
+			throw new HpcException("[GLOBUS] Endpoint doesn't exist or is inactive. Make sure the endpoint UUID "
 					+ "is correct and active: " + endpointName, HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
 	}
