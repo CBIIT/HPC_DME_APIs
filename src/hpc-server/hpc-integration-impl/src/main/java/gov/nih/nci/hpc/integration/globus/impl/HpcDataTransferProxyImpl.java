@@ -521,7 +521,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         String message = "";
         switch (error.statusCode) {
           case 404:
-            message = "[GLOBUS] Endpoint doesn't exist. Make sure the endpoint name "
+            message = "[GLOBUS] Endpoint doesn't exist or is inactive. Make sure the endpoint UUID "
                 + "is correct and active: " + endpointName;
             break;
 
