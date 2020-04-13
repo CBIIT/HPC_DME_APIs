@@ -53,6 +53,7 @@ public class HpcMetadataValidator {
   public static final String ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE = "archive_file_id";
   public static final String DATA_TRANSFER_REQUEST_ID_ATTRIBUTE = "data_transfer_request_id";
   public static final String DATA_TRANSFER_STATUS_ATTRIBUTE = "data_transfer_status";
+  public static final String DATA_TRANSFER_METHOD_ATTRIBUTE = "data_transfer_method";
   public static final String DATA_TRANSFER_TYPE_ATTRIBUTE = "data_transfer_type";
   public static final String DATA_TRANSFER_STARTED_ATTRIBUTE = "data_transfer_started";
   public static final String DATA_TRANSFER_COMPLETED_ATTRIBUTE = "data_transfer_completed";
@@ -98,6 +99,7 @@ public class HpcMetadataValidator {
             ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE,
             DATA_TRANSFER_REQUEST_ID_ATTRIBUTE,
             DATA_TRANSFER_STATUS_ATTRIBUTE,
+            DATA_TRANSFER_METHOD_ATTRIBUTE,
             DATA_TRANSFER_TYPE_ATTRIBUTE,
             DATA_TRANSFER_STARTED_ATTRIBUTE,
             DATA_TRANSFER_COMPLETED_ATTRIBUTE,
