@@ -177,7 +177,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		model.addAttribute("endPointName", endPointName);
 		String endPointLocation = request.getParameter("path");
 		//Remove the last trailing slash if the path ends with that
-		if(endPointLocation.lastIndexOf('/') == endPointLocation.length() - 1) {
+		if(endPointLocation.lastIndexOf('/') == endPointLocation.length() - 1 && endPointLocation.lastIndexOf('/') != 0) {
 			endPointLocation = endPointLocation.substring(0, endPointLocation.length()-1);
 		}
 		model.addAttribute("endPointLocation", endPointLocation);

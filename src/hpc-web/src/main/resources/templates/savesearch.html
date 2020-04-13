@@ -87,9 +87,13 @@
 	 e.preventDefault();
 	 var ele = document.getElementById("message");
 	 var searchName = document.getElementById("criteriaName").value;
-	 if(checkForSpecialChar(searchName))
+	 if(searchName.indexOf(' ') >= 0) {
+		 alert ("The space character is not allowed.");
+		 	return false;
+	 }
+	 else if(checkForSpecialChar(searchName))
 		 {
-		 	alert ("Name has special characters. Only _ and - are allowed.");
+		 	alert ("The only special characters allowed are underscore (_) and dash (-).");
 		 	return false;
 		 }
 		 	

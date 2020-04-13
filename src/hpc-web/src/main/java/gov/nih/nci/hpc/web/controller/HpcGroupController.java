@@ -103,7 +103,8 @@ public class HpcGroupController extends AbstractHpcController {
 			if (groups != null && groups.getGroups() != null && groups.getGroups().size() > 0) {
 				session.setAttribute("groupName", hpcWebGroup.getGroupName());
 				model.addAttribute("searchresults", groups.getGroups());
-			}
+			} else
+				model.addAttribute("error", "No matching results!");
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcDatasetSearch", "Failed to search by name: " + e.getMessage());
 			bindingResult.addError(error);
