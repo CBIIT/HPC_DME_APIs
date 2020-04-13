@@ -18,24 +18,24 @@ from common.sf_audit import SFAudit
 
 
 def main(args):
-    if len(sys.argv) <> 5:
-        print("\n Usage: python app.py src_base_dir dest_base_dir work_dir pi_dir_list")
+    if len(sys.argv) <> 3:
+        print("\n Usage: python app.py base_dir pi_dir_list")
         return
 
     # The root dir of the source
-    src_base_dir = args[1]
-
-    # path containing the extracted file
-    dest_base_dir = args[2]
-
-    # path containing the extracted file
-    extract_path = args[3]
-
-    # sub-directory to hold the log and audit files
-    audit_dir = args[3]
+    base_dir = args[1]
 
     # The file containing the PI directory
-    pi_dir_list = args[4]
+    pi_dir_list = args[2]
+
+    # path containing the extracted file
+    dest_base_dir = base_dir + "/staged"
+
+    # path containing the extracted file
+    extract_path = base_dir + "/work"
+
+    # sub-directory to hold the log and audit files
+    audit_dir = base_dir + "/work"
 
     bytes_stored = 0
     files_registered = 0
@@ -45,7 +45,7 @@ def main(args):
 
     for line_dirname in open(pi_dir_list).readlines():
 
-        pi_dir_path = src_base_dir + '/' + line_dirname.rstrip()
+        pi_dir_path = base_dir + '/' + line_dirname.rstrip()
         destDir = dest_base_dir + "/" + line_dirname.rstrip()
         if not os.path.exists(destDir):
             os.mkdir(destDir)
