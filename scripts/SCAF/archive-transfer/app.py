@@ -130,8 +130,8 @@ def copy_file(tarFile, filePath, destDir, sf_audit):
             # copy to that Patient directory
             destPath = mrnDir + '/' + fileName
             shutil.copy(filePath, destPath)
-            logging.info("copied file: %s", destPath)
-            print "copied file " + destPath
+            logging.info("copied file to: %s", destPath)
+            print "copied file to " + destPath
             sf_audit.audit_copy(tarFile, filePath, destPath)
 
 
