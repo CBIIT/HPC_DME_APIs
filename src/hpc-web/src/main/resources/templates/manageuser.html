@@ -225,7 +225,7 @@
 																			<option  value=""></option>
 																			<option
 																				th:each="attrName : ${docs}"
-																				th:value="${attrName}" th:text="${attrName}">
+																				th:value="${attrName}" th:text="${attrName}" th:selected="${attrName} == *{doc}">
 																				Wireframe</option>
 																			</select>																			
 																		</div>
@@ -233,8 +233,8 @@
 																	<div class="modal-footer">
 																		<button type="submit" class="btn btn-md btn-primary"
 																			id="primaryButton" onClick="prepareAndSubmit()">Search</button>
-																		<button type="reset" class="btn btn-md btn-primary"
-																			id="cancelButton">Clear</button>
+																		<button type="button" class="btn btn-md btn-primary"
+																			id="cancelButton" onClick="clearForm()">Clear</button>
 																	</div>
 																</td>
 															</tr>
@@ -294,6 +294,14 @@
 			$("#spinner").show();
             $("#dimmer").show();
 			document.getElementById("actionType").value = "search";
+		}
+		
+		function clearForm()
+		{
+			$("#nciUserId").val('');
+			$("#firstName").val('');
+			$("#lastName").val('');
+			$("#doc").val('');
 		}
 		
 		/*]]>*/
