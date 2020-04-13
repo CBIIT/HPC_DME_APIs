@@ -245,7 +245,7 @@
 															<tr>
 															<td><label>Bulk Metadata File: </label></td>
 																	<td><input type="file" name="hpcMetaDatafile"
-																		id="hpcMetaDatafile" /></td>
+																		id="hpcMetaDatafile" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/></td>
 															</tr>
 															<tr><td colspan="2">&nbsp;</td></tr>
 															<tr th:if="${endpoint_id != null}"><td colspan="2"><strong>Selected Data:</strong>
@@ -725,6 +725,16 @@
 	    	$("#bulkTypeS3").prop("checked", true);
             display('s3');
 		}
+        $('#hpcMetaDatafile').change(function(){
+  		  var ext = this.value.match(/\.([^\.]+)$/)[1];
+  		  switch (ext) {
+  		    case 'xlsx':
+  		      break;
+  		    default:
+  		      alert('Selected file type is not allowed');
+  		      this.value = '';
+  		  }
+  		});
 	});
 	
 //]]>	

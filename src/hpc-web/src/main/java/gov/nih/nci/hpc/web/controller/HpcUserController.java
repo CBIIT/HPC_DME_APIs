@@ -125,6 +125,8 @@ public class HpcUserController extends AbstractHpcController {
 					sslCertPath, sslCertPassword);
 			if (users != null && users.getUsers() != null && users.getUsers().size() > 0)
 				model.addAttribute("searchresults", users.getUsers());
+			else
+				model.addAttribute("error", "No matching results!");
 		} catch (Exception e) {
 			ObjectError error = new ObjectError("hpcDatasetSearch", "Failed to search by name: " + e.getMessage());
 			bindingResult.addError(error);
