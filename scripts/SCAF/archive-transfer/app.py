@@ -48,6 +48,7 @@ def main(args):
 
         pi_dir_path = base_dir + '/' + line_dirname.rstrip()
         destDir = dest_base_dir + "/" + line_dirname.rstrip()
+        print "destDir = " + destDir
         if not os.path.exists(destDir):
             os.mkdir(destDir)
 
@@ -130,7 +131,7 @@ def copy_file(tarFile, filePath, destDir, sf_audit):
             destPath = mrnDir + '/' + fileName
             shutil.copy(filePath, destPath)
             logging.info("copied file: %s", destPath)
-            print "copied file " + filePath
+            print "copied file " + destPath
             sf_audit.audit_copy(tarFile, filePath, destPath)
 
 

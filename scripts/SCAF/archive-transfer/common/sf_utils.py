@@ -80,9 +80,9 @@ class SFUtils(object):
         # Remove the ../ from the path in the list - TBD - Confirm that all content list files have it like that ?
         filepath = line.rstrip().split("../")[-1]
         filepath = filepath.split(" ")[-1]
-        #filepath = filepath.lstrip('/')
+        filepath = filepath.lstrip('/')
 
-        filepath = extract_path + filepath
+        filepath = extract_path + "/" + filepath
 
         logging.info("file to archive: " + filepath)
         return filepath
