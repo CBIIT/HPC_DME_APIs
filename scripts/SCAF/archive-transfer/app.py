@@ -92,7 +92,7 @@ def main(args):
                                 or (filePath.endswith('laneBarcode.html') and '/all/' in filePath):
                            copy_file(tarPath, filePath, destDir, sf_audit)
 
-                    os.system("rm -rf " + extract_path + "*")
+                    os.system("rm -rf " + extract_path + "/" + fileName.split(".tar")[0])
 
                 elif fileName.endswith('bam'):
                     filePath = dirName + "/" + fileName
@@ -117,7 +117,7 @@ def copy_file(tarFile, filePath, destDir, sf_audit):
         print "mrnSubPath = " + mrnSubPath
         if not mrnSubPath.startswith('/'):
             mrnNumber = mrnSubPath.split('_')[1][0:4]
-            logging.info("MRN Number = %s" + mrnNumber)
+            logging.info("MRN Number = %s", mrnNumber)
             print "MRN Number = " + mrnNumber
             # Create Patient folder using that MRN number if the folder does not already exist
             mrnDir = destDir + '/Patient_' + mrnNumber
