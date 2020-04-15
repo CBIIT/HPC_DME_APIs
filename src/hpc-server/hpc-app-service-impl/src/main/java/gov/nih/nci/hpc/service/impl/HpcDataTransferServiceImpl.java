@@ -1805,7 +1805,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         dataTransferType, destinationLocation, false, !destinationOverwrite, configurationId);
 
     // Calculate the destination.
-    if (pathAttributes.getIsDirectory()) {
+    if (pathAttributes.getIsDirectory() || destinationLocation.getFileId().endsWith("/")) {
       // Caller requested to download to a directory. Append the source file name.
       HpcFileLocation calcDestination = new HpcFileLocation();
       calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
