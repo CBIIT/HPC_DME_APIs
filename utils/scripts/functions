@@ -1483,7 +1483,7 @@ function dm_register_directory {
           exclude_file="${OPTARG}"
           if [ ! -e "$exclude_file" ]
           then
-            echo "ERROR: The exclude file $exclude_file does not exists" >&2
+            echo "ERROR: The exclude file $exclude_file does not exist" >&2
             exit 1
           fi
           ;;
@@ -1492,7 +1492,7 @@ function dm_register_directory {
           include_file="${OPTARG}"
           if [ ! -e "$include_file" ]
           then
-            echo "ERROR: The include file $include_file does not exists" >&2
+            echo "ERROR: The include file $include_file does not exist" >&2
             exit 1
           fi
           ;;
@@ -1501,7 +1501,7 @@ function dm_register_directory {
           list_of_files="${OPTARG}"
           if [ ! -e "$list_of_files" ]
           then
-            echo "ERROR: The FILES_LIST $list_of_files does not exists" >&2
+            echo "ERROR: The FILES_LIST $list_of_files does not exist" >&2
             exit 1
           fi
           ;;
@@ -1704,7 +1704,7 @@ function dm_register_globus_directory {
           exclude_file="${OPTARG}"
           if [ ! -e "$exclude_file" ]
           then
-            echo "ERROR: The exclude file $exclude_file does not exists" >&2
+            echo "ERROR: The exclude file $exclude_file does not exist" >&2
             exit 1
           fi
           ;;
@@ -1713,7 +1713,7 @@ function dm_register_globus_directory {
           include_file="${OPTARG}"
           if [ ! -e "$include_file" ]
           then
-            echo "ERROR: The include file $include_file does not exists" >&2
+            echo "ERROR: The include file $include_file does not exist" >&2
             exit 1
           fi
           ;;
