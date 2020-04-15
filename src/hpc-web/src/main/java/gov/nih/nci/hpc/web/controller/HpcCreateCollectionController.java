@@ -294,8 +294,8 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed to create collection: " + e.getMessage());
-      model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
+			model.addAttribute("error", e.getMessage());
+			model.addAttribute("invalidCharacters4PathName", forbiddenCharacters);
 			return "addcollection";
 		} finally {
 			if (originPath == null)
