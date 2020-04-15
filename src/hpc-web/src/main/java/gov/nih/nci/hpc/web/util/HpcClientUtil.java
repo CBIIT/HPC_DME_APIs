@@ -967,13 +967,14 @@ public class HpcClientUtil {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        throw new HpcWebException("Failed to create collection: " + exception.getMessage());
+        throw new HpcWebException(exception.getMessage());
       }
     } catch (HpcWebException e) {
+      logger.error("Error creating collection: ", e.getStackTrace());
       throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to create collection due to: " + e.getMessage());
+    	logger.error("Exception creating collection: ", e.getStackTrace());
+      throw new HpcWebException(e.getMessage());
     }
   }
 
@@ -1005,9 +1006,10 @@ public class HpcClientUtil {
         throw new HpcWebException(exception.getMessage());
       }
     } catch (HpcWebException e) {
+      logger.error("Error creating collection: ", e.getStackTrace());
       throw e;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Exception creating collection: ", e.getStackTrace());
       throw new HpcWebException(e.getMessage());
     }
   }

@@ -840,7 +840,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 
     if (!directoriesCreated) {
       throw new HpcException(
-          "Failed to create directory (possibly insufficient permission on path): "
+          "Failed to create collection (possibly insufficient permission on path): "
               + getRelativePath(irodsFile.getPath()),
           HpcErrorType.INVALID_REQUEST_INPUT);
     }

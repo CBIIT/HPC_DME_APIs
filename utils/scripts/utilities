@@ -229,14 +229,14 @@ function verify_registration {
     REG_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
     if [ "$REG_HTTP_CODE" != "201" ]  && [ "$REG_HTTP_CODE" != "200" ]
     then
-        echo "FAILED TO REGISTER <$DESTINATION_PATH> , HTTP_CODE = $REG_HTTP_CODE" 1>&2
+        echo "Failed to register <$DESTINATION_PATH>, HTTP_CODE: $REG_HTTP_CODE" 1>&2
         if [ ! -e "$RESPONSE_MSG" ] 
         then
-          echo "Can not find the response message file $RESPONSE_MSG" >&2
+          echo "Cannot find the response message file $RESPONSE_MSG" >&2
           exit 1
         else
           MESSAGE=$(get_json_value "$RESPONSE_MSG" message)
-          echo "ERROR MESSAGE:$MESSAGE" 1>&2
+          echo "ERROR MESSAGE: $MESSAGE" 1>&2
           exit 1
         fi 
     fi
@@ -252,7 +252,7 @@ function get_json_description {
 
     if [ -z "$1" ] 
     then
-        echo "ERROR: using get_json_description" >&2
+        echo "ERROR: Using get_json_description" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
         exit
@@ -272,7 +272,7 @@ function get_file_attributes {
 
     if [ -z "$1" ] 
     then
-        echo "ERROR: using get_file_attributes" >&2
+        echo "ERROR: Using get_file_attributes" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
         exit
@@ -294,7 +294,7 @@ function list_new_files {
 
     if [ -z "$1" ] 
     then
-        echo "ERROR: using list_new_files" >&2
+        echo "ERROR: Using list_new_files" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
         exit
@@ -363,7 +363,7 @@ function list_globus_files {
 
     if [ "$#" -ne 2 ]
     then
-        echo "ERROR: using list_globus_files" >&2
+        echo "ERROR: Using list_globus_files" >&2
         echo "Received: $@" >&2
         echo "$USAGE" >&2
         exit
@@ -389,7 +389,7 @@ function print_error_message {
 
     if [ "$#" -lt 1 ] 
     then
-        echo "ERROR: using print_error_message" >&2
+        echo "ERROR: Using print_error_message" >&2
         echo "recieved $@" 
         echo "$USAGE" >&2
         exit 1
@@ -424,7 +424,7 @@ function print_json_message {
 
     if [ "$#" -lt 1 ] 
     then
-        echo "ERROR: using print_json_message" >&2
+        echo "ERROR: Using print_json_message" >&2
         echo "recieved $@" 
         echo "$USAGE" >&2
         exit
@@ -433,7 +433,7 @@ function print_json_message {
     JSON_MESSAGE="$1"
     if [ ! -e "$JSON_MESSAGE" ]
     then
-      echo "ERROR: Can not fin the file:\"$JSON_MESSAGE\"" >&2
+      echo "ERROR: Cannot fin the file:\"$JSON_MESSAGE\"" >&2
       exit 
     fi 
     #Check if python json formatter is present

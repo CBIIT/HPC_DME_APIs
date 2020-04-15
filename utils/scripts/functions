@@ -63,7 +63,7 @@ function dm_generate_token () {
 
     if [ -z $TOKEN ]
     then
-        echo "ERROR: no token found in $LOG_FILE " >&2
+        echo "ERROR: No token found in $LOG_FILE " >&2
         MESSAGE=$(get_json_value $LOG_FILE message)
         echo "ERROR MESSAGE: $MESSAGE"   
         return
@@ -152,7 +152,7 @@ function dm_register () {
 
     if [ ! -e "$DESCRIPTION" ]
     then
-      echo "ERROR: Can not access the \"$DESCRIPTION\" file" >&2
+      echo "ERROR: Cannot access the \"$DESCRIPTION\" file" >&2
       exit 1
     fi
     
@@ -362,7 +362,7 @@ function dm_register_dataobject_presigned {
     presigned_url=`get_json_value $RESPONSE_MSG uploadRequestURL`
     if [ -z "$presigned_url" ]
     then
-      echo "ERROR: Can not retrieve the presigned url from $RESPONSE_MSG for $destination_path" >&2
+      echo "ERROR: Cannot retrieve the presigned url from $RESPONSE_MSG for $destination_path" >&2
       return 1
     fi
 
@@ -372,7 +372,7 @@ function dm_register_dataobject_presigned {
     curl -X PUT  -H "Content-Type: application/octet-stream" -H "content-md5: ${checksum_val}" --upload-file ${source_file} "${presigned_url}" -D $response_header -o $response_msg 
     if [ "$?" -ne 0 ]
     then
-      echo "ERROR during presigned URL registration for $destination_path" >&2
+      echo "Error during presigned URL registration for $destination_path" >&2
       echo "Check the files $response_header and $response_msg" >&2
       return 1
     fi
@@ -680,7 +680,7 @@ function dm_get_dataobject {
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
     then
-      echo "ERROR getting \"$ITEM_PATH\" " >&2
+      echo "Error getting \"$ITEM_PATH\" " >&2
       #echo "ERROR_CODE:\"$RESPONSE_CODE\"" >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
       exit 1
@@ -794,7 +794,7 @@ function dm_get_collection {
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
     then
-      echo "ERROR getting \"$ITEM_PATH\" " >&2
+      echo "Error getting \"$ITEM_PATH\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
       exit 1
     else 
@@ -996,7 +996,7 @@ function dm_download_dataobject_sync {
     local FILE_NAME=$(basename "$OBJECT_PATH")
     if [ "$?" -ne 0 ]
     then
-      echo "ERROR:Can not retrieve the file name from \"$OBJECT_PATH\"" >&2
+      echo "ERROR: Cannot retrieve the file name from \"$OBJECT_PATH\"" >&2
       return 1
     fi
     local DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
@@ -1142,7 +1142,7 @@ function dm_download_dataobject_presigned {
     local FILE_NAME=$(basename "$OBJECT_PATH")
     if [ "$?" -ne 0 ]
     then
-      echo "ERROR:Can not retrieve the file name from \"$OBJECT_PATH\"" >&2
+      echo "ERROR: Cannot retrieve the file name from \"$OBJECT_PATH\"" >&2
       return 1
     fi
     local DESTINATION_PATH=$DESTINATION_PATH/${FILE_NAME}
@@ -1466,7 +1466,7 @@ function dm_register_directory {
           archiveType="${OPTARG}"
           if [ "$archiveType" != "S3" ] && [ "$archiveType" != "POSIX" ]
           then
-            echo "ERROR: the arhive type can be either \"S3\" or \"POSIX\". Recevied:\"$archiveType\"" >&2
+            echo "ERROR: The archive type can be either \"S3\" or \"POSIX\". Recevied:\"$archiveType\"" >&2
             exit 1 
           fi
           ;;
@@ -1721,7 +1721,7 @@ function dm_register_globus_directory {
           patternType="${OPTARG}"
           if [ "$patternType" != "Simple" ] && [ "$patternType" != "RegEx" ]
           then
-            echo "ERROR: the include/exclude pattern type can be either \"Simple\" or \"RegEx\". Recevied:\"$patternType\"" >&2
+            echo "ERROR: The include/exclude pattern type can be either \"Simple\" or \"RegEx\". Recevied:\"$patternType\"" >&2
             exit 1 
           fi
           ;;
@@ -1768,7 +1768,7 @@ function dm_register_globus_directory {
       globus_endpoint=$(get_globus_endpoint)
       if [ "$?" -ne 0 ]
       then
-        echo  "ERROR: Can not find the default Globus endpoint in the properties file." >&2
+        echo  "ERROR: Cannot find the default Globus endpoint in the properties file." >&2
         exit 1
       fi
     else
@@ -2143,7 +2143,7 @@ function dm_download_dataobject_globus {
 		item_type=$(get_type $src_path) || exit 1
 		if [ "$item_type" == "" ]
 		then
-			echo "ERROR: Can not find the item $src_path in the archive" >&2
+			echo "ERROR: Cannot find the item $src_path in the archive" >&2
 			exit 1
 		fi
 		local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
@@ -2252,7 +2252,7 @@ function dm_download_dataobject_globus {
     message=$(get_json_value $response_msg message)
     if [ ! -z "$message" ]
     then
-        echo "ERROR downloading $src_path:"  >&2
+        echo "Error downloading $src_path:"  >&2
         echo "$message" >&2
         exit 1
     else
@@ -2285,7 +2285,7 @@ function dm_download_s3_deprecated {
     item_type=$(get_type $SOURCE_PATH) || exit 1
     if [ "$item_type" == "" ]
     then
-        echo "ERROR: Can not find the item $SOURCE_PATH in the archive" >&2
+        echo "ERROR: Cannot find the item $SOURCE_PATH in the archive" >&2
         exit 1
     fi
 
@@ -2315,7 +2315,7 @@ function dm_download_s3_deprecated {
     message=$(get_json_value $response_msg message)
     if [ ! -z "$message" ]
     then
-        echo "ERROR downloading $src_path:"  >&2
+        echo "Error downloading $src_path:"  >&2
         echo "$message" >&2
         exit 1
     else
@@ -2413,7 +2413,7 @@ function dm_download_dataobject_s3 {
 		item_type=$(get_type $SOURCE_PATH) || exit 1
 		if [ "$item_type" == "" ]
 		then
-			echo "ERROR: Can not find the item $SOURCE_PATH in the archive" >&2
+			echo "ERROR: Cannot find the item $SOURCE_PATH in the archive" >&2
 			exit 1
 		fi
 	else
@@ -2503,7 +2503,7 @@ function dm_download_dataobject_s3 {
     message=$(get_json_value $response_msg message)
     if [ ! -z "$message" ]
     then
-        echo "ERROR downloading $src_path:"  >&2
+        echo "Error downloading $src_path:"  >&2
         echo "$message" >&2
         exit 1
     else
@@ -2681,7 +2681,7 @@ function dm_download_collection_s3 {
     message=$(get_json_value $response_msg message)
     if [ ! -z "$message" ]
     then
-        echo "ERROR downloading $src_path:"  >&2
+        echo "Error downloading $src_path:"  >&2
         echo "$message" >&2
         exit 1
     else
@@ -2780,7 +2780,7 @@ function dm_get_download_status {
     local response_code=$(get_http_code $response_header)
     if [ "$response_code" -ne 200 ]
     then
-      echo "ERROR getting download status for taskID:\"$task_id\" " >&2
+      echo "Error getting download status for taskID:\"$task_id\" " >&2
       print_error_message "$RESPONSE_MSG" "$response_code"
       exit 1
     else 
@@ -2860,7 +2860,7 @@ function dm_rename() {
 
     if [ ! -e "$DESCRIPTION" ]
     then
-      echo "ERROR: Can not access the \"$DESCRIPTION\" file" >&2
+      echo "ERROR: Cannot access the \"$DESCRIPTION\" file" >&2
       exit 1
     fi
 
@@ -2893,7 +2893,7 @@ function dm_rename() {
     local response_code=$(get_http_code $RESPONSE_HEADER)
     if [ "$response_code" -ne 200 ] && [ "$response_code" -ne 201 ]
     then
-      echo "ERROR performing rename operation " >&2
+      echo "Error performing rename operation " >&2
       print_error_message "$RESPONSE_MSG" "$response_code"
       exit 1
     else
@@ -2983,7 +2983,7 @@ function dm_add_bookmark () {
 
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
-      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      echo "ERROR: Cannot access the file \"$DESCRIPTION_PATH\" " >&2
       exit 1
     fi
     
@@ -3019,7 +3019,7 @@ function dm_add_bookmark () {
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 201 ]
     then
-      echo "ERROR enrolling user \"$BOOKMARK_NAME\" " >&2
+      echo "Error creating bookmark \"$BOOKMARK_NAME\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
       exit 1
     fi
@@ -3100,7 +3100,7 @@ function dm_register_user () {
 
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
-      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      echo "ERROR: Cannot access the file \"$DESCRIPTION_PATH\" " >&2
       exit 1
     fi
 
@@ -3136,7 +3136,7 @@ function dm_register_user () {
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 201 ]
     then
-      echo "ERROR enrolling user \"$USER_ID\" " >&2
+      echo "Error enrolling user \"$USER_ID\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
       exit 1
     fi
@@ -3216,7 +3216,7 @@ function dm_update_user () {
 
     if [ ! -e "$DESCRIPTION_PATH" ]
     then
-      echo "ERROR: Can not access the file \"$DESCRIPTION_PATH\" " >&2
+      echo "ERROR: Cannot access the file \"$DESCRIPTION_PATH\" " >&2
       exit 1
     fi
 
@@ -3253,7 +3253,7 @@ function dm_update_user () {
     local RESPONSE_CODE=$(get_http_code $RESPONSE_HEADER)
     if [ "$RESPONSE_CODE" -ne 200 ]
     then
-      echo "ERROR updating user \"$USER_ID\" " >&2
+      echo "Error updating user \"$USER_ID\" " >&2
       print_error_message "$RESPONSE_MSG" "$RESPONSE_CODE"
       exit 1
     fi
