@@ -298,20 +298,29 @@
 										      <input type="hidden" name="action" id="action" value="edit"/>
 											  <input type="hidden" name="path" id="path" th:value="${hpcDatafile.getPath()}"/>
 											  <tr th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
-												<div th:unless="${metadataItem.isSystemAttr() == true}">
-												  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												  <td><input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
-													th:value="${metadataItem.getAttrValue()}"></input></td>
-												</div>
+												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td th:if="${metadataItem.getValidValues() == null}"><input class="form-control" type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+												  th:value="${metadataItem.getAttrValue()}"></input></td>
+												<td th:unless="${metadataItem.getValidValues() == null}">
+													<select size="1"
+													th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+													th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+													class="form-control" th:required="required">
+														<option value="_select_null">----Select----</option>
+														<option
+															th:each="validValue : ${metadataItem.getValidValues()}"
+															th:value="${validValue}" th:text="${validValue}"
+															th:selected="${validValue.equals(metadataItem.getAttrValue())}">
+															Wireframe</option>
+													</select>
+												</td>
 											  </tr>
 											</div>
 											<div th:if="${action != 'edit'}">
 											  <tr th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
-												<div th:unless="${metadataItem.isSystemAttr() == true}">
-												  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												  <td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
-													th:text="${metadataItem.getAttrValue()}"></label></td>
-											    </div>
+												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
+												  th:text="${metadataItem.getAttrValue()}"></label></td>
 											  </tr>
 											</div>
 											<tr th:if="${action == 'edit'}">
@@ -353,13 +362,11 @@
 												<th>Value</th>
 											</tr>
 										</thead>
-										<tbody th:if="${hpcDatafile.getSelfMetadataEntries() != null}">
-											<tr th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
-												<div th:if="${metadataItem.isSystemAttr() == true}">
-												  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												  <td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
-													th:text="${metadataItem.getAttrValue()}"></label></td>
-												</div>
+										<tbody th:if="${hpcDatafile.getSelfSystemMetadataEntries() != null}">
+											<tr th:each="metadataItem : ${hpcDatafile.getSelfSystemMetadataEntries()}">
+												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
+												  th:text="${metadataItem.getAttrValue()}"></label></td>
 											</tr>
 										</tbody>
 									</table>
