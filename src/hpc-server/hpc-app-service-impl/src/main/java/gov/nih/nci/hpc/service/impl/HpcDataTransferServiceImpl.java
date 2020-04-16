@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
+import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -1809,8 +1810,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       // Caller requested to download to a directory. Append the source file name.
       HpcFileLocation calcDestination = new HpcFileLocation();
       calcDestination.setFileContainerId(destinationLocation.getFileContainerId());
-      calcDestination
-          .setFileId(destinationLocation.getFileId() + path.substring(path.lastIndexOf('/')));
+      calcDestination.setFileId(toNormalizedPath(
+          destinationLocation.getFileId() + path.substring(path.lastIndexOf('/'))));
 
       // Validate the calculated download destination.
       validateGlobusDownloadDestinationFileLocation(dataTransferType, calcDestination, true,
