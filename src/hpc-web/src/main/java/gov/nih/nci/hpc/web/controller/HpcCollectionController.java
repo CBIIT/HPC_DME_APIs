@@ -72,7 +72,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @Controller
 @EnableAutoConfiguration
 @RequestMapping("/collection")
-public class HpcCollectionController extends AbstractHpcController {
+public class HpcCollectionController extends HpcCreateCollectionDataFileController {
     private static final String
       ERROR_MSG__$DELETE_FAILED = "Failed to delete collection.",
       FEEDBACK_MSG__$DELETE_SUCCEEDED = "Collection has been deleted!",
@@ -183,8 +183,17 @@ public class HpcCollectionController extends AbstractHpcController {
 						model.addAttribute("error",
 								"No edit permission. Please contact collection owner for write access.");
 						model.addAttribute("action", "view");
-					} else
+					} else {
+						String collectionType = getCollectionType(collection);
+						populateFormAttributes(request, session, model, basePath,
+								collectionType, false, false);
+						List<HpcMetadataAttrEntry> userMetadataEntries = (List<HpcMetadataAttrEntry>) session.getAttribute("metadataEntries");
+						List<HpcMetadataAttrEntry> mergedMetadataEntries = mergeMatadataEntries(hpcCollection.getSelfMetadataEntries(), userMetadataEntries);
+						hpcCollection.setSelfMetadataEntries(mergedMetadataEntries);
+						model.addAttribute("collection", hpcCollection);
 						model.addAttribute("action", "edit");
+						
+					}
 			} else {
 				String message = "Collection not found!";
 				model.addAttribute("error", message);
@@ -302,16 +311,20 @@ public class HpcCollectionController extends AbstractHpcController {
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
-			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
-				attrEntry.setSystemAttr(true);
-			else
-				attrEntry.setSystemAttr(false);
 			if(isEncryptedAttribute(entry.getAttribute(), collectionType, rules))
 			   attrEntry.setEncrypted(true);
             else
                 attrEntry.setEncrypted(false);
-			if(!attrEntry.isEncrypted() || userInSecGroup)
-			  model.getSelfMetadataEntries().add(attrEntry);
+			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute())) {
+				attrEntry.setSystemAttr(true);
+				model.getSelfSystemMetadataEntries().add(attrEntry);
+			}
+			else {
+				attrEntry.setSystemAttr(false);
+				if(!attrEntry.isEncrypted() || userInSecGroup)
+					  model.getSelfMetadataEntries().add(attrEntry);
+			}
+			
 		}
 
 		for (HpcMetadataEntry entry : collection.getMetadataEntries().getParentMetadataEntries()) {

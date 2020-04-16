@@ -13,6 +13,7 @@ public class HpcCollectionModel {
 	private String path;
 	private HpcCollection collection;
 	private List<HpcMetadataAttrEntry> selfMetadataEntries;
+	private List<HpcMetadataAttrEntry> selfSystemMetadataEntries;
 	private List<HpcMetadataAttrEntry> parentMetadataEntries;
 	private Map<String, String> attributes = new HashMap<String, String>();
 	private String defaultValue;
@@ -77,6 +78,23 @@ public class HpcCollectionModel {
 
 	public void setSelfMetadataEntries(List<HpcMetadataAttrEntry> metadata) {
 		this.selfMetadataEntries = metadata;
+	}
+
+	public List<HpcMetadataAttrEntry> getSelfSystemMetadataEntries() {
+		if (selfSystemMetadataEntries == null)
+			selfSystemMetadataEntries = new ArrayList<HpcMetadataAttrEntry>();
+		Collections.sort(selfSystemMetadataEntries, new Comparator<HpcMetadataAttrEntry>() {
+			@Override
+			public int compare(HpcMetadataAttrEntry entry1, HpcMetadataAttrEntry entry2) {
+
+				return entry1.getAttrName().compareTo(entry2.getAttrName());
+			}
+		});
+		return selfSystemMetadataEntries;
+	}
+
+	public void setSelfSystemMetadataEntries(List<HpcMetadataAttrEntry> metadata) {
+		this.selfSystemMetadataEntries = metadata;
 	}
 
 	public List<HpcMetadataAttrEntry> getParentMetadataEntries() {
