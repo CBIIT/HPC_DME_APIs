@@ -713,6 +713,23 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		model.addAttribute("criteriaType", criteriaType);
 	}
 
+	protected List<HpcMetadataAttrEntry> mergeMatadataEntries(List<HpcMetadataAttrEntry> savedMetadataEntries,
+			List<HpcMetadataAttrEntry> userMetadataEntries) {
+		List<HpcMetadataAttrEntry> mergedMetadataEntries = new ArrayList<>();
+		for (HpcMetadataAttrEntry savedEntry: savedMetadataEntries) {
+			for(HpcMetadataAttrEntry configEntry: userMetadataEntries) {
+				if(savedEntry.getAttrName().equals(configEntry.getAttrName())) {
+					savedEntry.setMandatory(configEntry.isMandatory());
+					savedEntry.setValidValues(configEntry.getValidValues());
+					break;
+				}
+			}
+			if(!savedEntry.isEncrypted())
+				mergedMetadataEntries.add(savedEntry);
+		}
+		return mergedMetadataEntries;
+	}
+	
 	private String getCollectionAttrValue(HpcCollectionDTO collectionDTO, String attrName) {
 		if (collectionDTO == null || collectionDTO.getMetadataEntries() == null
 				|| collectionDTO.getMetadataEntries().getSelfMetadataEntries() == null)

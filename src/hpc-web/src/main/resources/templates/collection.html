@@ -265,37 +265,40 @@
 										    <input type="hidden" name="action" id="action" value="edit"/>
 											<input type="hidden" name="path" id="action" th:value="${collection.getCollection().getCollectionName()}"/>
 											<tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
-											  <div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == false}">
-												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												    <td>
-												      <input type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" 
-													  th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
-													  th:value="${metadataItem.getAttrValue()}"></input></td>
-												</div>
-												<div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == true}">
-												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												    <td><label for="${metadataItem.getAttrName()}">************************</label></td>
-												</div>
+											  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null}">
+											    <input type="text" class="form-control" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" 
+											      th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+												  th:value="${metadataItem.getAttrValue()}"></input></td>
+											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() != null}">
+													<select size="1"
+													th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+													th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+													class="form-control" th:required="required">
+														<option value="_select_null">----Select----</option>
+														<option
+															th:each="validValue : ${metadataItem.getValidValues()}"
+															th:value="${validValue}" th:text="${validValue}"
+															th:selected="${validValue.equals(metadataItem.getAttrValue())}">
+															Wireframe</option>
+													</select>
+											  </td>
+											  <td th:if="${metadataItem.isEncrypted() == true}"><label for="${metadataItem.getAttrName()}">************************</label></td>
 											</tr>
 										  </div>
 										  
 										  <div th:if="${action != 'edit'}">
 										    <tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
-										     <div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == false}">
-												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												    <td><label for="${metadataItem.getAttrName()}"
-														th:text="${metadataItem.getAttrValue()}"></label></td>	
-												</div>
-												<div th:if="${metadataItem.isSystemAttr() == false and metadataItem.isEncrypted() == true}">
-												    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-															<td><input type="password" disabled="disabled"
-																th:for="${metadataItem.getAttrName()}"
-																autocomplete="secured" style="border: none;background-color: white;"
-																th:value="${metadataItem.getAttrValue()}"></input>
-															<button type="button"
-																	th:id="'showButton'+${metadataItem.getAttrName()}"
-																	class="btn btn-outline-secondary btn-sm showButton">Show</button></td>
-														</div>
+											    <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+											    <td th:if="${metadataItem.isEncrypted() == false}"><label for="${metadataItem.getAttrName()}"
+													th:text="${metadataItem.getAttrValue()}"></label></td>	
+												<td th:if="${metadataItem.isEncrypted() == true}"><input type="password" disabled="disabled"
+													th:for="${metadataItem.getAttrName()}"
+													autocomplete="secured" style="border: none;background-color: white;"
+													th:value="${metadataItem.getAttrValue()}"></input>
+												<button type="button"
+														th:id="'showButton'+${metadataItem.getAttrName()}"
+														class="btn btn-outline-secondary btn-sm showButton">Show</button></td>
 											</tr>
 										  </div>
 										  
@@ -334,13 +337,11 @@
 												<th class="col-md-4">Value</th>
 											</tr>
 										</thead>
-										<tbody th:if="${collection.getSelfMetadataEntries() != null}">
-										  <tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
-										    <div th:if="${metadataItem.isSystemAttr() == true}">
-											  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-											  <td><label for="${metadataItem.getAttrName()}" 
-												    th:text="${metadataItem.getAttrValue()}"></label></td>	
-										    </div>									
+										<tbody th:if="${collection.getSelfSystemMetadataEntries() != null}">
+										  <tr th:each="metadataItem : ${collection.getSelfSystemMetadataEntries()}">
+											<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+											<td><label for="${metadataItem.getAttrName()}" 
+												  th:text="${metadataItem.getAttrValue()}"></label></td>									
 									      </tr>							
 										</tbody>
 									</table>
