@@ -264,31 +264,37 @@ public class HpcBrowseController extends AbstractHpcController {
     if (refresh != null) {
       session.removeAttribute("browserEntry");
     }
-
-    if (path == null || path.isEmpty()) {
-      path = request.getParameter("path");
-      if (path == null || path.isEmpty()) {
-        path = (String) request.getAttribute("path");
-      } else {
-    	  //path is present as a param, so we are either trying to browse from 
-    	  //details page or clicked on a bookmark. We want to check if path 
-    	  //points to file only if we clicked on a bookmark.If we are trying  
-    	  //to browse from details page, refresh will be 1
-    	  if(refresh != null && !refresh.equals("1")) {
-    		  //Check if path refers to file, and if so, redirect to data file view
-			  if (isPathForDataFile(path, authToken)) {
-				  try {
-					  return genRedirectNavForDataFileView(path);
-				  } catch (UnsupportedEncodingException e) {
-					  String errMsg = "Failed to get file details. Reason: " + e.getMessage();
-				        model.addAttribute("message", errMsg);
-				        logger.error(errMsg, e);
-				        return "browse";
+    
+    try {
+	    if (path == null || path.isEmpty()) {
+	      path = request.getParameter("path");
+	      if (path == null || path.isEmpty()) {
+	        path = (String) request.getAttribute("path");
+	      } else {
+	    	  //path is present as a param, so we are either trying to browse from 
+	    	  //details page or clicked on a bookmark. We want to check if path 
+	    	  //points to file only if we clicked on a bookmark.If we are trying  
+	    	  //to browse from details page, refresh will be 1
+	    	  if(refresh != null && !refresh.equals("1")) {
+	    		  //Check if path refers to file, and if so, redirect to data file view
+				  if (isPathForDataFile(path, authToken)) {
+					  try {
+						  return genRedirectNavForDataFileView(path);
+					  } catch (UnsupportedEncodingException e) {
+						  String errMsg = "Failed to get file details. Reason: " + e.getMessage();
+					        model.addAttribute("error", errMsg);
+					        logger.error(errMsg, e);
+					  }
 				  }
-			  }
-    	  }
-    	  
-      }
+	    	  }
+	    	  
+	      }
+	    }
+    } catch (Exception e) {
+    	// Can't navigate to the selected path, so display the base path
+    	path = null;
+    	model.addAttribute("error", e.getMessage());
+        logger.error(e.getMessage());
     }
     String selectedBrowsePath = (String) session.getAttribute("selectedBrowsePath");
 
