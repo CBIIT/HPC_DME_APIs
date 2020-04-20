@@ -95,7 +95,10 @@ class SFAudit(object):
         logging.info("\nFiles registered = {0}, Bytes_stored = {1} \n".format(self.file_count, self.byte_count))
 
         includes_csv = open(self.includes_csv_path, "a")
-        includes_csv.write(tarfileName + ", " + filePath + ", " + destPath + ", " + str(fileSize) + "\n")
+        if(tarfileName is not None):
+            includes_csv.write(tarfileName + ", " + filePath + ", " + destPath + ", " + str(fileSize) + "\n")
+        else:
+            includes_csv.write("None, " + filePath + ", " + destPath + ", " + str(fileSize) + "\n")
         includes_csv.close()
 
 
