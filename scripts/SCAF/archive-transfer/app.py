@@ -86,7 +86,7 @@ def main(args):
 
                         # Get full path of the extracted file
                         filePath = SFUtils.get_filepath_to_archive(line.rstrip(), extract_path)
-                        logging.info('Extracted filePath ' + filePath)
+                        print'Extracted filePath ' + filePath
 
                         if filePath.endswith('fastq') or filePath.endswith('fastq.gz') \
                                 or filePath.endswith('fastq.gz.md5') \
@@ -112,7 +112,7 @@ def copy_file(tarFile, filePath, destBaseDir, sf_audit):
     destDir = destBaseDir
 
     logging.info("filePath = %s", filePath)
-    print "filePath = " + filePath
+
     # Extract MRN number - split the string at /SCAF, get the 4 digit starting at 10th index
     if '/SCAF' in filePath:
         mrnSubPath = filePath.split('/SCAF')[1]
@@ -122,21 +122,29 @@ def copy_file(tarFile, filePath, destBaseDir, sf_audit):
             mrnNumber = mrnSubPath.split('_')[1][0:4]
             logging.info("MRN Number = %s", mrnNumber)
             print "MRN Number = " + mrnNumber
+
             # Create Patient folder using that MRN number if the folder does not already exist
             mrnDir = destBaseDir + '/Patient_' + mrnNumber
+            logging.info("mrnDir = %s ", mrnDir)
             print "mrnDir = " + mrnDir
             if not os.path.exists(mrnDir):
                 os.mkdir(mrnDir)
-            desDir = mrnDir
+            destDir = mrnDir
 
             #Create Run folder in the above Patient folder if it does not exist
-            if(tarFile is not None):
+            if tarFile is not None:
                 flowcell_id = SFHelper.get_flowcell_id(tarFile.split('/')[-1])
                 print "flowcell_id = " + flowcell_id
+                logging.info("flowcell_id = %s " + flowcell_id)
                 runDir = mrnDir + '/Run_' + flowcell_id
                 if not os.path.exists(runDir):
                     os.mkdir(runDir)
                 destDir = runDir
+            else:
+                print "tarfile is None"
+
+            logging.info("destDir = %s ", destDir)
+            print "destDir = " + destDir
 
             #name of file to copy from filePath
             fileName = filePath.split('/')[-1]
