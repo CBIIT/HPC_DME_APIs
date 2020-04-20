@@ -216,17 +216,19 @@ class SFHelper(object):
 
         try:
             run_date_str = run_date_arr[3]
-            run_date = datetime.strptime(run_date_str, "%y-%m-%d").strftime("%m-%d-%y")
+            print 'run_date_str: %s' %run_date_str
+            run_date = datetime.strptime(run_date_str, "%Y-%m-%d").strftime("%m-%d-%Y")
         except:
             run_date_str_list = [run_date_arr[3],run_date_arr[4],run_date_arr[5]]
             run_date_str = " ".join(run_date_str_list)
+            print 'run_date_str: %s' %run_date_str
             try:
-                run_date = datetime.strptime(run_date_str, "%b %d %H:%M:%S").strftime("%m-%d-%y")
+                run_date = datetime.strptime(run_date_str, "%b %d %H:%M:%S").strftime("%m-%d-%Y")
             except:
                 try:
-                    run_date = datetime.strptime(run_date_str, "%b %d %YYYY").strftime("%m-%d-%y")
+                    run_date = datetime.strptime(run_date_str, "%b %d %Y").strftime("%m-%d-%Y")
                 except:
-                    print "Date is not in expected format: %s", run_date_str
+                    print "Date is not in expected format: %s" %(run_date_str)
                     sys.exit(0)
 
         return run_date
