@@ -10,6 +10,7 @@ import subprocess
 #from metadata.sf_helper import SFHelper
 from common.sf_utils import SFUtils
 from common.sf_audit import SFAudit
+from metadata.sf_helper import SFHelper
 
 #Usage:
 #python app.py tarfiles /is2/projects/CCR-SF/archive/illumina/2015_new /mnt/IRODsScratch/bulk-uploads/CCR-SF/2015_new/uploads/ 2015_new_dryrun_with_size True True
@@ -104,10 +105,12 @@ def main(args):
     sf_audit.audit_summary()
 
 
-def copy_file(tarFile, filePath, destDir, sf_audit):
+def copy_file(tarFile, filePath, destBaseDir, sf_audit):
 
     # Extract the info for PI metadata
     # path = SFUtils.get_meta_path(filepath)
+    destDir = destBaseDir
+
     logging.info("filePath = %s", filePath)
     print "filePath = " + filePath
     # Extract MRN number - split the string at /SCAF, get the 4 digit starting at 10th index
@@ -120,15 +123,26 @@ def copy_file(tarFile, filePath, destDir, sf_audit):
             logging.info("MRN Number = %s", mrnNumber)
             print "MRN Number = " + mrnNumber
             # Create Patient folder using that MRN number if the folder does not already exist
-            mrnDir = destDir + '/Patient_' + mrnNumber
+            mrnDir = destBaseDir + '/Patient_' + mrnNumber
             print "mrnDir = " + mrnDir
             if not os.path.exists(mrnDir):
                 os.mkdir(mrnDir)
+            desDir = mrnDir
+
+            #Create Run folder in the above Patient folder if it does not exist
+            if(tarFile is not None):
+                flowcell_id = SFHelper.get_flowcell_id(tarFile.split('/')[-1])
+                print "flowcell_id = " + flowcell_id
+                runDir = mrnDir + '/Run_' + flowcell_id
+                if not os.path.exists(runDir):
+                    os.mkdir(runDir)
+                destDir = runDir
+
             #name of file to copy from filePath
             fileName = filePath.split('/')[-1]
             print "file to copy = "  + fileName
             # copy to that Patient directory
-            destPath = mrnDir + '/' + fileName
+            destPath = destDir + '/' + fileName
             shutil.copy(filePath, destPath)
             logging.info("copied file to: %s", destPath)
             print "copied file to " + destPath

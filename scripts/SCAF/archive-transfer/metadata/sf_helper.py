@@ -195,26 +195,23 @@ class SFHelper(object):
 
 
     @staticmethod
-    def get_flowcell_id(tarfile, log = True):
+    def get_flowcell_id(tarfile):
 
-        if log is True:
-            logging.info("Getting flowcell_id from tarfile: " + tarfile)
+        logging.info("Getting flowcell_id from tarfile: " + tarfile)
 
-        #Rule: After the last underscore in tar filename
-        #flowcell_str = tarfile.split(".")[0].split("_")[-1]
-        flowcell_str = tarfile.split(".")[0].split("_")[3]
-        flowcell_id = flowcell_str[1:len(flowcell_str)]
+        flowcell_str = tarfile.split("_")[1]
+        #flowcell_id = flowcell_str[1:len(flowcell_str)]
 
-        if log is True:
-            logging.info("Flowcell_id from tarfile: " + tarfile + " is " + flowcell_id)
+        logging.info("Flowcell_id from tarfile: " + tarfile + " is " + flowcell_str)
 
-        return flowcell_id
+        return flowcell_str
 
 
     @staticmethod
-    def get_run_date(tarfile):
+    def get_run_date(tar_entry):
         #Rule: String before the first underscore in tar filename - in the form YYMMDD
         #Change to MM/DD/YY
+        run_date_str = tar_entry.split()
         run_date_str = tarfile.split(".")[0].split("_")[0]
         run_date = datetime.strptime(run_date_str, "%y%m%d").strftime("%m-%d-%y")
         return run_date
