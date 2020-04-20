@@ -91,13 +91,13 @@ def main(args):
                         if filePath.endswith('fastq') or filePath.endswith('fastq.gz') \
                                 or filePath.endswith('fastq.gz.md5') \
                                 or (filePath.endswith('laneBarcode.html') and '/all/' in filePath):
-                           copy_file(tarPath, filePath, destDir, sf_audit)
+                           copy_file(tarPath, line, filePath, destDir, sf_audit)
 
                     os.system("rm -rf " + extract_path + "/" + fileName.split(".tar")[0])
 
                 elif fileName.endswith('bam'):
                     filePath = dirName + "/" + fileName
-                    copy_file(None, filePath, destDir, sf_audit)
+                    copy_file(None, None, filePath, destDir, sf_audit)
 
 
         logging.info('Done processing directory: ' + pi_dir_path)
@@ -105,7 +105,7 @@ def main(args):
     sf_audit.audit_summary()
 
 
-def copy_file(tarFile, filePath, destBaseDir, sf_audit):
+def copy_file(tarFile, tarEntry, filePath, destBaseDir, sf_audit):
 
     # Extract the info for PI metadata
     # path = SFUtils.get_meta_path(filepath)
@@ -134,9 +134,12 @@ def copy_file(tarFile, filePath, destBaseDir, sf_audit):
             #Create Run folder in the above Patient folder if it does not exist
             if tarFile is not None:
                 flowcell_id = SFHelper.get_flowcell_id(tarFile.split('/')[-1])
-                print "flowcell_id = " + flowcell_id
                 logging.info("flowcell_id = %s " + flowcell_id)
-                runDir = mrnDir + '/Run_' + flowcell_id
+
+                run_date = SFHelper.get_run_date(tarEntry)
+                logging.info("run_date = %s", run_date)
+
+                runDir = mrnDir + '/Run_' + flowcell_id + "_" + run_date
                 if not os.path.exists(runDir):
                     os.mkdir(runDir)
                 destDir = runDir

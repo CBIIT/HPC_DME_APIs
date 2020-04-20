@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 from datetime import datetime
 
 
@@ -209,11 +210,25 @@ class SFHelper(object):
 
     @staticmethod
     def get_run_date(tar_entry):
-        #Rule: String before the first underscore in tar filename - in the form YYMMDD
+        #Rule: String after the 3rd space in the form YYYY-MM-DD
         #Change to MM/DD/YY
-        run_date_str = tar_entry.split()
-        run_date_str = tarfile.split(".")[0].split("_")[0]
-        run_date = datetime.strptime(run_date_str, "%y%m%d").strftime("%m-%d-%y")
+        run_date_arr = tar_entry.split()
+
+        try:
+            run_date_str = run_date_arr[3]
+            run_date = datetime.strptime(run_date_str, "%y-%m-%d").strftime("%m-%d-%y")
+        except:
+            run_date_str_list = [run_date_arr[3],run_date_arr[4],run_date_arr[5]]
+            run_date_str = " ".join(run_date_str_list)
+            try:
+                run_date = datetime.strptime(run_date_str, "%b %d %H:%M:%S").strftime("%m-%d-%y")
+            except:
+                try:
+                    run_date = datetime.strptime(run_date_str, "%b %d %YYYY").strftime("%m-%d-%y")
+                except:
+                    print "Date is not in expected format: %s", run_date_str
+                    sys.exit(0)
+
         return run_date
 
 
