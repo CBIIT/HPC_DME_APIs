@@ -67,7 +67,7 @@ import gov.nih.nci.hpc.web.util.HpcClientUtil;
 @Controller
 @EnableAutoConfiguration
 @RequestMapping("/datafile")
-public class HpcDatafileController extends AbstractHpcController {
+public class HpcDatafileController extends HpcCreateCollectionDataFileController {
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.model}")
@@ -128,8 +128,16 @@ public class HpcDatafileController extends AbstractHpcController {
 				model.addAttribute("hpcDatafile", hpcDatafile);
 				model.addAttribute("attributeNames", getMetadataAttributeNames(dataFile));
 
-				if (action != null && action.equals("edit"))
+				if (action != null && action.equals("edit")) {
+					String collectionType = getParentCollectionType(dataFile);
+					populateFormAttributes(request, session, model, basePath,
+							collectionType, false, true);
+					List<HpcMetadataAttrEntry> userMetadataEntries = (List<HpcMetadataAttrEntry>) session.getAttribute("metadataEntries");
+					List<HpcMetadataAttrEntry> mergedMetadataEntries = mergeMatadataEntries(hpcDatafile.getSelfMetadataEntries(), userMetadataEntries);
+					hpcDatafile.setSelfMetadataEntries(mergedMetadataEntries);
+					model.addAttribute("hpcDatafile", hpcDatafile);
 					model.addAttribute("action", "edit");
+				}
 				//HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
 				//		serviceURL, sslCertPath, sslCertPassword);
 				if (user.getUserRole().equals("SYSTEM_ADMIN") || user.getUserRole().equals("GROUP_ADMIN")) {
@@ -152,6 +160,19 @@ public class HpcDatafileController extends AbstractHpcController {
 		return "datafile";
 	}
 
+
+
+	private String getParentCollectionType(HpcDataObjectDTO dataFile) {
+		if (dataFile != null && dataFile.getMetadataEntries() != null
+				&& dataFile.getMetadataEntries().getParentMetadataEntries() != null) {
+			for (HpcMetadataEntry entry : dataFile.getMetadataEntries().getParentMetadataEntries()) {
+				if (entry.getLevel() == 2 && entry.getAttribute().equals("collection_type"))
+					return entry.getValue();
+			}
+		}
+		return null;
+	}
+	
 	private List<String> getMetadataAttributeNames(HpcDataObjectDTO dataFile) {
 		List<String> names = new ArrayList<String>();
 		if (dataFile == null || dataFile.getMetadataEntries() == null
@@ -258,11 +279,15 @@ public class HpcDatafileController extends AbstractHpcController {
 			else
 			  attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
-			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
+			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute())) {
 				attrEntry.setSystemAttr(true);
-			else
+				model.getSelfSystemMetadataEntries().add(attrEntry);
+			}
+			else {
 				attrEntry.setSystemAttr(false);
-			model.getSelfMetadataEntries().add(attrEntry);
+				model.getSelfMetadataEntries().add(attrEntry);
+			}
+			
 		}
 
 		for (HpcMetadataEntry entry : datafile.getMetadataEntries().getParentMetadataEntries()) {
