@@ -89,13 +89,12 @@ def main(args):
                         print'Extracted filePath ' + filePath
 
                         if filePath.endswith('fastq') or filePath.endswith('fastq.gz') \
-                                or filePath.endswith('fastq.gz.md5') \
                                 or (filePath.endswith('laneBarcode.html') and '/all/' in filePath):
                            copy_file(tarPath, line, filePath, destDir, sf_audit)
 
                     os.system("rm -rf " + extract_path + "/" + fileName.split(".tar")[0])
 
-                elif fileName.endswith('bam'):
+                elif fileName.endswith('bam') or fileName.endswith('bai') or fileName.endswith('fastq'):
                     filePath = dirName + "/" + fileName
                     copy_file(None, None, filePath, destDir, sf_audit)
 
