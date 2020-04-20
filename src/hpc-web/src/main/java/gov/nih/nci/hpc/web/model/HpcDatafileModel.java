@@ -11,6 +11,7 @@ public class HpcDatafileModel {
 	private String path;
 	private HpcDataObject dataObject;
 	private List<HpcMetadataAttrEntry> selfMetadataEntries;
+	private List<HpcMetadataAttrEntry> selfSystemMetadataEntries;
 	private List<HpcMetadataAttrEntry> parentMetadataEntries;
 
 	public String getPath() {
@@ -47,6 +48,24 @@ public class HpcDatafileModel {
 		this.selfMetadataEntries = metadata;
 	}
 
+	public List<HpcMetadataAttrEntry> getSelfSystemMetadataEntries() {
+		if (selfSystemMetadataEntries == null)
+			selfSystemMetadataEntries = new ArrayList<HpcMetadataAttrEntry>();
+		Collections.sort(selfSystemMetadataEntries, new Comparator<HpcMetadataAttrEntry>() {
+			@Override
+			public int compare(HpcMetadataAttrEntry entry1, HpcMetadataAttrEntry entry2) {
+
+				return entry1.getAttrName().compareTo(entry2.getAttrName());
+			}
+		});
+
+		return selfSystemMetadataEntries;
+	}
+
+	public void setSelfSytemMetadataEntries(List<HpcMetadataAttrEntry> metadata) {
+		this.selfSystemMetadataEntries = metadata;
+	}
+	
 	public List<HpcMetadataAttrEntry> getParentMetadataEntries() {
 		if (parentMetadataEntries == null)
 			parentMetadataEntries = new ArrayList<HpcMetadataAttrEntry>();
