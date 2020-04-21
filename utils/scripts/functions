@@ -2032,7 +2032,7 @@ function dm_download_collection_globus {
     if [ "$code" -ne 200 ]
     then 
       #In this case the destination path file will contain the error code
-      print_error_message "$reponse_msg" "$code" 
+      print_error_message "$response_msg" "$code" 
     fi
 }
 
