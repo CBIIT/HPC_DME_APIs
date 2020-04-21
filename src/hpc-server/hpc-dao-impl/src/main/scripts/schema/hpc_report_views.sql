@@ -124,7 +124,7 @@ select distinct d.coll_name, b.object_id, c.create_ts from public.r_meta_main a,
 CREATE UNIQUE INDEX r_report_collection_path_uidx1 ON r_report_collection_path(object_id, coll_name);
 
 DROP MATERIALIZED VIEW IF EXISTS r_report_registered_by_audit;
-CREATE MATERIALIZED VIEW r_report_registered_by_audit
+CREATE MATERIALIZED VIEW public.r_report_registered_by_audit
 AS (
 select
   data.data_id,
@@ -150,6 +150,6 @@ from
   left join (select * from r_report_data_objects where meta_attr_name = 'data_transfer_completed') completed on data.data_id=completed.data_id
   left join (select * from r_report_data_objects where meta_attr_name = 'source_file_container_id') sourceEndpoint on data.data_id=sourceEndpoint.data_id
 );
-CREATE UNIQUE INDEX r_report_registered_by_audit_uidx1 ON r_report_registered_by_audit(data_id);
+CREATE UNIQUE INDEX r_report_registered_by_audit_uidx1 ON public.r_report_registered_by_audit(data_id);
 
 
