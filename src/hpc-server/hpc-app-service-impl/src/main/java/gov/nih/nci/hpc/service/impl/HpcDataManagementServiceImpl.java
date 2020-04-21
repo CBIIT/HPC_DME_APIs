@@ -57,6 +57,7 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
  * HPC Data Management Application Service Implementation.
@@ -103,6 +104,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   // Notification Application Service.
   @Autowired
   private HpcNotificationService notificationService = null;
+
+  // Notification Application Service.
+  @Autowired
+  private HpcSecurityService securityService = null;
 
   // Pagination support.
   @Autowired
@@ -263,9 +268,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     dataManagementProxy.createCollectionDirectory(authenticatedToken, path);
 
     // Set the permission inheritance to true, so any collection / data object created under this
-    // collection will inherit
-    // the permissions of this collection.
-    dataManagementProxy.setCollectionPermissionInheritace(authenticatedToken, path, true);
+    // collection will inherit the permissions of this collection. This must be executed as system
+    // account as iRODs not allowing
+    // users that are not owners to change the inheritance indicator.
+    securityService.executeAsSystemAccount(Optional.empty(),
+        () -> dataManagementProxy.setCollectionPermissionInheritace(
+            dataManagementAuthenticator.getAuthenticatedToken(), path, true));
 
     return true;
   }
