@@ -6,6 +6,11 @@
                 "attribute":"run_id",
                 "value":"run_id_sub1",
                 "operator":"NOT_EQUAL"
+            },
+            {
+                "attribute":"internal_project_id",
+                "value":"dice internal project 2",
+                "operator":"EQUAL"
             }
         ]
     },
