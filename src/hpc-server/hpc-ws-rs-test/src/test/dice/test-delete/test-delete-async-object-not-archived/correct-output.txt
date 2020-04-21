@@ -1,2 +1,0 @@
-200
-Object is not in archived state. It is in IN_TEMPORARY_ARCHIVE state

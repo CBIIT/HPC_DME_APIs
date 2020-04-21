@@ -1,0 +1,2 @@
+200
+Object is not in archived state. It is in IN_PROGRESS_TO_TEMPORARY_ARCHIVE state
