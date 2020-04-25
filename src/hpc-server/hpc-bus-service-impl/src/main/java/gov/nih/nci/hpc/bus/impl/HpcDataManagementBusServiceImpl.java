@@ -1236,11 +1236,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // 4. Data Object is archived (i.e. registration completed).
     HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
 
+    // Get the user requesting the download URL.
+    HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+
     // Generate a download URL for the data object, and return it in a DTO.
     return toDownloadResponseDTO(null, null, null,
-        dataTransferService.generateDownloadRequestURL(path, metadata.getArchiveLocation(),
-            metadata.getDataTransferType(), metadata.getConfigurationId(),
-            metadata.getS3ArchiveConfigurationId()),
+        dataTransferService.generateDownloadRequestURL(path, invokerNciAccount.getUserId(),
+            metadata.getArchiveLocation(), metadata.getDataTransferType(), metadata.getSourceSize(),
+            metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()),
         metadata.getDataTransferType().value());
   }
 
