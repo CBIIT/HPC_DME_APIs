@@ -171,7 +171,7 @@ public class HpcDataTransferServiceImplTest {
     expectedException.expect(HpcException.class);
     expectedException.expectMessage("Invalid generate download URL request");
 
-    dataTransferService.generateDownloadRequestURL("", new HpcFileLocation(), null, "", "");
+    dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), null, 2000, "", "");
   }
 
   /**
@@ -186,8 +186,8 @@ public class HpcDataTransferServiceImplTest {
     expectedException.expect(HpcException.class);
     expectedException.expectMessage("Invalid generate download URL request");
 
-    dataTransferService.generateDownloadRequestURL("", new HpcFileLocation(),
-        HpcDataTransferType.S_3, "", "");
+    dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(),
+        HpcDataTransferType.S_3, 1000, "", "");
   }
 
   /**
@@ -213,8 +213,8 @@ public class HpcDataTransferServiceImplTest {
     archiveLocation.setFileContainerId("test");
     archiveLocation.setFileId("test");
 
-    String downloadURL = dataTransferService.generateDownloadRequestURL("", archiveLocation,
-        HpcDataTransferType.S_3, "", "");
+    String downloadURL = dataTransferService.generateDownloadRequestURL("", "user-id", archiveLocation,
+        HpcDataTransferType.S_3, 1000, "", "");
 
     // Assert expected result.
     assertEquals(downloadURL, "https://downloadURL");
