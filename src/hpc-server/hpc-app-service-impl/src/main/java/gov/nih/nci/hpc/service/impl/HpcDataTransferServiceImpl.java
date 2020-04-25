@@ -438,23 +438,34 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   }
 
   @Override
-  public String generateDownloadRequestURL(String path, HpcFileLocation archiveLocation,
-      HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId)
-      throws HpcException {
-    // Input Validation.
-    if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
-      throw new HpcException("Invalid generate download URL request",
-          HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+  public String generateDownloadRequestURL(String path, String userId,
+      HpcFileLocation archiveLocation, HpcDataTransferType dataTransferType, long size,
+      String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+    // Generate the download URL.
+    String downloadRequestURL = generateDownloadRequestURL(path, archiveLocation, dataTransferType,
+        configurationId, s3ArchiveConfigurationId);
 
-    // Get the data transfer configuration.
-    HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-        .getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+    // Create a task result object.
+    HpcDownloadTaskResult taskResult = new HpcDownloadTaskResult();
+    Calendar now = Calendar.getInstance();
+    taskResult.setId(UUID.randomUUID().toString());
+    taskResult.setUserId(userId);
+    taskResult.setPath(path);
+    HpcFileLocation destinationLocation = new HpcFileLocation();
+    destinationLocation.setFileContainerId("Presigned Download URL");
+    destinationLocation.setFileId("");
+    taskResult.setDestinationLocation(destinationLocation);
+    taskResult.setResult(HpcDownloadResult.COMPLETED);
+    taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
+    taskResult.setCompletionEvent(false);
+    taskResult.setCreated(now);
+    taskResult.setSize(size);
+    taskResult.setCompleted(now);
 
-    // Generate and return the download URL.
-    return dataTransferProxies.get(dataTransferType).generateDownloadRequestURL(
-        getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-        archiveLocation, dataTransferConfiguration.getUploadRequestURLExpiration());
+    // Persist to the DB.
+    dataDownloadDAO.upsertDownloadTaskResult(taskResult);
+
+    return downloadRequestURL;
   }
 
   @Override
@@ -2097,6 +2108,39 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     return true;
+  }
+
+  /**
+   * Generate a (pre-signed) download URL for a data object file.
+   *
+   * @param path The data object path.
+   * @param archiveLocation The archive file location.
+   * @param dataTransferType The data transfer type.
+   * @param configurationId The configuration ID (needed to determine the archive connection
+   *        config).
+   * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
+   *        the S3 archive the data-object is stored in. This is only applicable for S3 archives,
+   *        not POSIX.
+   * @return The download URL.
+   * @throws HpcException on service failure.
+   */
+  private String generateDownloadRequestURL(String path, HpcFileLocation archiveLocation,
+      HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId)
+      throws HpcException {
+    // Input Validation.
+    if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
+      throw new HpcException("Invalid generate download URL request",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Get the data transfer configuration.
+    HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+        .getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+
+    // Generate and return the download URL.
+    return dataTransferProxies.get(dataTransferType).generateDownloadRequestURL(
+        getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+        archiveLocation, dataTransferConfiguration.getUploadRequestURLExpiration());
   }
 
   /*

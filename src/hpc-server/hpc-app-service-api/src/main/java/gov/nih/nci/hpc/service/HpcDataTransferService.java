@@ -130,8 +130,10 @@ public interface HpcDataTransferService {
    * Generate a (pre-signed) download URL for a data object file.
    *
    * @param path The data object path.
+   * @param userId The user-id requesting to generate the download URL.
    * @param archiveLocation The archive file location.
    * @param dataTransferType The data transfer type.
+   * @param size The data object's size in bytes.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
    * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID. Used to identify
@@ -140,8 +142,9 @@ public interface HpcDataTransferService {
    * @return The download URL.
    * @throws HpcException on service failure.
    */
-  public String generateDownloadRequestURL(String path, HpcFileLocation archiveLocation,
-      HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId)
+  public String generateDownloadRequestURL(String path, String userId,
+      HpcFileLocation archiveLocation, HpcDataTransferType dataTransferType, long size,
+      String configurationId, String s3ArchiveConfigurationId)
       throws HpcException;
 
   /**
