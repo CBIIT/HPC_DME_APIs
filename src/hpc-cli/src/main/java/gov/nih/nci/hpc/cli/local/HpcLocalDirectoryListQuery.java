@@ -121,7 +121,7 @@ public class HpcLocalDirectoryListQuery {
 				System.out.println("Including: " + fullPath);
 				pathAttributes.add(filePathAttr);
 			}
-			System.out.println("\nAggreate file size: " + totalSize);
+			System.out.println("\nAggregate file size (bytes): " + totalSize);
 		} catch (Exception e) {
 			throw new HpcException("Failed to get path attributes: " + fileLocation,
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
