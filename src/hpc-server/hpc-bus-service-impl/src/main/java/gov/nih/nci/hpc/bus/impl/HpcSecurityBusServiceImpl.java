@@ -1,9 +1,11 @@
 /**
  * HpcSecurityBusServiceImpl.java
  *
- * <p>Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
+ * <p>
+ * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.bus.impl;
@@ -26,6 +28,8 @@ import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.notification.HpcEventType;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -46,6 +50,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunction;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
@@ -56,60 +61,67 @@ import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constants
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   // Invalid base path error message.
   private static final String INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE =
       "Invalid default base path: ";
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Instance members
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   // The security service instance.
-  @Autowired private HpcSecurityService securityService = null;
+  @Autowired
+  private HpcSecurityService securityService = null;
 
   // The data management (iRODS) security service.
-  @Autowired private HpcDataManagementSecurityService dataManagementSecurityService = null;
+  @Autowired
+  private HpcDataManagementSecurityService dataManagementSecurityService = null;
 
   // The data management (iRODS) service.
-  @Autowired private HpcDataManagementService dataManagementService = null;
+  @Autowired
+  private HpcDataManagementService dataManagementService = null;
+
+  // The security service instance.
+  @Autowired
+  private HpcNotificationService notificationService = null;
 
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
   private Boolean ldapAuthentication = null;
-  
-  //LDAP account creation only on/off switch.
+
+  // LDAP account creation only on/off switch.
   @Value("${hpc.bus.createLdapAccountOnly}")
   private Boolean createLdapAccountOnly = null;
-  
-  //The logger instance.
+
+  // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Constructors
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /** Constructor for Spring Dependency Injection. */
   private HpcSecurityBusServiceImpl() {}
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // HpcUserBusService Interface Implementation
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   @Override
   public void registerUser(String nciUserId, HpcUserRequestDTO userRegistrationRequest)
       throws HpcException {
     // Input validation.
     if (StringUtils.isEmpty(nciUserId) || userRegistrationRequest == null) {
-      throw new HpcException(
-          "Null NCI user ID or user registation request", HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Null NCI user ID or user registation request",
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
     if (userRegistrationRequest.getActive() != null) {
       throw new HpcException(
@@ -117,8 +129,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
     if (securityService.getUser(nciUserId) != null) {
-      throw new HpcException(
-          "User already exists: " + nciUserId, HpcRequestRejectReason.USER_ALREADY_EXISTS);
+      throw new HpcException("User already exists: " + nciUserId,
+          HpcRequestRejectReason.USER_ALREADY_EXISTS);
     }
 
     // Get the configuration ID associated with the default base path.
@@ -141,25 +153,28 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     nciAccount.setDoc(userRegistrationRequest.getDoc());
     nciAccount.setDefaultConfigurationId(configurationId);
 
-    // Obtain user's first and last name from AD if LDAP account exists
+    // Obtain user's first and last name from AD if LDAP account exists.
     HpcNciAccount ldapNciAccount = securityService.getUserFirstLastNameFromAD(nciUserId);
-    if (ldapNciAccount != null && ldapNciAccount.getFirstName() != null && ldapNciAccount.getLastName() != null) {
+    if (ldapNciAccount != null && ldapNciAccount.getFirstName() != null
+        && ldapNciAccount.getLastName() != null) {
       nciAccount.setFirstName(ldapNciAccount.getFirstName());
       nciAccount.setLastName(ldapNciAccount.getLastName());
-	} else {
-	  if (createLdapAccountOnly)
-		  throw new HpcException("UserId does not exist in LDAP: " + nciUserId, HpcErrorType.INVALID_REQUEST_INPUT);
-	}
-    
-    // HPC-DM is integrated with a data management system (IRODS). When registering a user with HPC-DM,
-    // this service creates an account for the user with the data management system, unless an account
+    } else {
+      if (createLdapAccountOnly)
+        throw new HpcException("UserId does not exist in LDAP: " + nciUserId,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // HPC-DM is integrated with a data management system (IRODS). When registering a user with
+    // HPC-DM,
+    // this service creates an account for the user with the data management system, unless an
+    // account
     // already established for the user.
     if (!dataManagementSecurityService.userExists(nciUserId)) {
       // Determine the user role to create. If not provided, default to USER.
-      HpcUserRole role =
-          userRegistrationRequest.getUserRole() != null
-              ? roleFromString(userRegistrationRequest.getUserRole())
-              : HpcUserRole.USER;
+      HpcUserRole role = userRegistrationRequest.getUserRole() != null
+          ? roleFromString(userRegistrationRequest.getUserRole())
+          : HpcUserRole.USER;
 
       // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
       if (role == HpcUserRole.GROUP_ADMIN) {
@@ -172,13 +187,14 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
       // If the invoker is a GroupAdmin, then user being created must belong to their DOC
       HpcRequestInvoker invoker = securityService.getRequestInvoker();
-      if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) && !invoker.getNciAccount().getDoc().equals(userRegistrationRequest.getDoc())) {
-		String message = "Group Admins can only create user for their DOC";
-		logger.error(message);
-		throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
-	  }
-      
-      
+      if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
+          && !invoker.getNciAccount().getDoc().equals(userRegistrationRequest.getDoc())) {
+        String message = "Group Admins can only create user for their DOC";
+        logger.error(message);
+        throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
+      }
+
+
       // Create the data management (IRODS) account.
       executeGroupAdminAsSystemAccount(
           () -> dataManagementSecurityService.addUser(nciAccount, role));
@@ -188,6 +204,12 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     try {
       // Add the user to the system.
       securityService.addUser(nciAccount);
+      
+      // Notify the user if request.
+      if (Optional.ofNullable(userRegistrationRequest.getNotifyUser()).orElse(false)) {
+        notificationService.sendNotification(nciUserId, HpcEventType.USER_REGISTERED, null,
+            HpcNotificationDeliveryMethod.EMAIL);
+      }
 
       registrationCompleted = true;
 
@@ -208,8 +230,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // Get the user.
     HpcUser user = securityService.getUser(nciUserId);
     if (user == null) {
-      throw new HpcException(
-          "User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+      throw new HpcException("User not found: " + nciUserId,
+          HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
     }
 
     // Get the current user role.
@@ -217,23 +239,18 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
     // Determine update values.
     String updateFirstName =
-        !StringUtils.isEmpty(userUpdateRequest.getFirstName())
-            ? userUpdateRequest.getFirstName()
+        !StringUtils.isEmpty(userUpdateRequest.getFirstName()) ? userUpdateRequest.getFirstName()
             : user.getNciAccount().getFirstName();
     String updateLastName =
-        !StringUtils.isEmpty(userUpdateRequest.getLastName())
-            ? userUpdateRequest.getLastName()
+        !StringUtils.isEmpty(userUpdateRequest.getLastName()) ? userUpdateRequest.getLastName()
             : user.getNciAccount().getLastName();
-    String updateDoc =
-        !StringUtils.isEmpty(userUpdateRequest.getDoc())
-            ? userUpdateRequest.getDoc()
-            : user.getNciAccount().getDoc();
+    String updateDoc = !StringUtils.isEmpty(userUpdateRequest.getDoc()) ? userUpdateRequest.getDoc()
+        : user.getNciAccount().getDoc();
     String updateDefaultConfigurationId = user.getNciAccount().getDefaultConfigurationId();
     if (userUpdateRequest.getDefaultBasePath() != null) {
       if (!userUpdateRequest.getDefaultBasePath().isEmpty())
-        updateDefaultConfigurationId =
-            dataManagementService.getDataManagementConfigurationId(
-                userUpdateRequest.getDefaultBasePath());
+        updateDefaultConfigurationId = dataManagementService
+            .getDataManagementConfigurationId(userUpdateRequest.getDefaultBasePath());
       if (StringUtils.isEmpty(updateDefaultConfigurationId)) {
         throw new HpcException(
             INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + userUpdateRequest.getDefaultBasePath(),
@@ -244,10 +261,9 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       updateDefaultConfigurationId = null;
     }
 
-    HpcUserRole updateRole =
-        !StringUtils.isEmpty(userUpdateRequest.getUserRole())
-            ? roleFromString(userUpdateRequest.getUserRole())
-            : currentUserRole;
+    HpcUserRole updateRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole())
+        ? roleFromString(userUpdateRequest.getUserRole())
+        : currentUserRole;
     boolean active =
         userUpdateRequest.getActive() != null ? userUpdateRequest.getActive() : user.getActive();
 
@@ -260,17 +276,12 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
 
     // Update the data management (IRODS) account.
-    dataManagementSecurityService.updateUser(
-        nciUserId, updateFirstName, updateLastName, updateRole);
+    dataManagementSecurityService.updateUser(nciUserId, updateFirstName, updateLastName,
+        updateRole);
 
     // Update User.
-    securityService.updateUser(
-        nciUserId,
-        updateFirstName,
-        updateLastName,
-        updateDoc,
-        updateDefaultConfigurationId,
-        active);
+    securityService.updateUser(nciUserId, updateFirstName, updateLastName, updateDoc,
+        updateDefaultConfigurationId, active);
   }
 
   @Override
@@ -292,9 +303,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
 
     // Get the default data management configuration for this user.
-    HpcDataManagementConfiguration dataManagementConfiguration =
-        dataManagementService.getDataManagementConfiguration(
-            user.getNciAccount().getDefaultConfigurationId());
+    HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
+        .getDataManagementConfiguration(user.getNciAccount().getDefaultConfigurationId());
 
     // Map it to the DTO.
     HpcUserDTO userDTO = new HpcUserDTO();
@@ -309,14 +319,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   }
 
   @Override
-  public HpcUserListDTO getUsers(
-      String nciUserId,
-      String firstNamePattern,
-      String doc,
-      String lastNamePattern,
-      String defaultBasePath,
-      boolean active,
-      boolean query)
+  public HpcUserListDTO getUsers(String nciUserId, String firstNamePattern, String doc,
+      String lastNamePattern, String defaultBasePath, boolean active, boolean query)
       throws HpcException {
     // Get the users based on search criteria.
     HpcUserListDTO users = new HpcUserListDTO();
@@ -327,20 +331,17 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       defaultConfigurationId =
           dataManagementService.getDataManagementConfigurationId(defaultBasePath);
       if (StringUtils.isEmpty(defaultConfigurationId)) {
-        throw new HpcException(
-            INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + defaultBasePath,
+        throw new HpcException(INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + defaultBasePath,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
     // Perform the search and construct the return DTO.
-    for (HpcUser user :
-        securityService.getUsers(
-            nciUserId, firstNamePattern, doc, lastNamePattern, defaultConfigurationId, active, query)) {
+    for (HpcUser user : securityService.getUsers(nciUserId, firstNamePattern, doc, lastNamePattern,
+        defaultConfigurationId, active, query)) {
       // Get the default data management configuration for this user.
-      HpcDataManagementConfiguration dataManagementConfiguration =
-          dataManagementService.getDataManagementConfiguration(
-              user.getNciAccount().getDefaultConfigurationId());
+      HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
+          .getDataManagementConfiguration(user.getNciAccount().getDefaultConfigurationId());
 
       // Add user entry into the return list.
       HpcUserListEntry userListEntry = new HpcUserListEntry();
@@ -362,12 +363,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
 
   @Override
-  public HpcUserListDTO getUsersByRole(
-      String role,
-      String doc,
-      String defaultBasePath,
-      boolean active)
-      throws HpcException {
+  public HpcUserListDTO getUsersByRole(String role, String doc, String defaultBasePath,
+      boolean active) throws HpcException {
     // Get the users based on search criteria.
     HpcUserListDTO users = new HpcUserListDTO();
 
@@ -377,20 +374,16 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       defaultConfigurationId =
           dataManagementService.getDataManagementConfigurationId(defaultBasePath);
       if (StringUtils.isEmpty(defaultConfigurationId)) {
-        throw new HpcException(
-            INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + defaultBasePath,
+        throw new HpcException(INVALID_DEFAULT_BASE_PATH_ERROR_MESSAGE + defaultBasePath,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
 
     // Perform the search and construct the return DTO.
-    for (HpcUser user :
-        securityService.getUsersByRole(
-           role, doc, defaultConfigurationId, active)) {
+    for (HpcUser user : securityService.getUsersByRole(role, doc, defaultConfigurationId, active)) {
       // Get the default data management configuration for this user.
-      HpcDataManagementConfiguration dataManagementConfiguration =
-          dataManagementService.getDataManagementConfiguration(
-              user.getNciAccount().getDefaultConfigurationId());
+      HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService
+          .getDataManagementConfiguration(user.getNciAccount().getDefaultConfigurationId());
 
       // Add user entry into the return list.
       HpcUserListEntry userListEntry = new HpcUserListEntry();
@@ -412,27 +405,28 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 
   @Override
   public HpcGroupListDTO getUserGroups(String nciUserId) throws HpcException {
-	  
-	HpcRequestInvoker invoker = securityService.getRequestInvoker();
-	if(nciUserId != null) {
-	  HpcUser user = securityService.getUser(nciUserId);
-	  if (user == null) {
-	    throw new HpcException(
-	        "User does not exists: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
-	  }
-	  // If the invoker is a GroupAdmin, then user being created must belong to their DOC
-	  if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) && !StringUtils.equals(invoker.getNciAccount().getDoc(), user.getNciAccount().getDoc())) {
-	    String message = "Group Admins can only retrive groups that a user belongs to for their DOC";
-	    logger.error(message);
-	    throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
-	  }
-	} else {
-	  nciUserId = invoker.getNciAccount().getUserId();
-	}
-	
+
+    HpcRequestInvoker invoker = securityService.getRequestInvoker();
+    if (nciUserId != null) {
+      HpcUser user = securityService.getUser(nciUserId);
+      if (user == null) {
+        throw new HpcException("User does not exists: " + nciUserId,
+            HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+      }
+      // If the invoker is a GroupAdmin, then user being created must belong to their DOC
+      if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
+          && !StringUtils.equals(invoker.getNciAccount().getDoc(), user.getNciAccount().getDoc())) {
+        String message =
+            "Group Admins can only retrive groups that a user belongs to for their DOC";
+        logger.error(message);
+        throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
+      }
+    } else {
+      nciUserId = invoker.getNciAccount().getUserId();
+    }
+
     // Get user's group.
-    List<String> groupNames =
-    		dataManagementSecurityService.getUserGroups(nciUserId);
+    List<String> groupNames = dataManagementSecurityService.getUserGroups(nciUserId);
     if (groupNames == null || groupNames.isEmpty()) {
       return null;
     }
@@ -461,8 +455,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
 
     // Set the request invoker (in thread local).
-    setRequestInvoker(
-        nciUserId,
+    setRequestInvoker(nciUserId,
         ldapAuthentication ? HpcAuthenticationType.LDAP : HpcAuthenticationType.NONE,
         toDataManagementAccount(nciUserId, password));
   }
@@ -477,17 +470,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     HpcAuthenticationTokenClaims authenticationTokenClaims =
         securityService.parseAuthenticationToken(authenticationToken);
     if (authenticationTokenClaims == null) {
-      throw new HpcException(
-          "Invalid or Expired Authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Invalid or Expired Authentication token",
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Set the request invoker.
-    setRequestInvoker(
-        authenticationTokenClaims.getUserId(),
-        HpcAuthenticationType.TOKEN,
+    setRequestInvoker(authenticationTokenClaims.getUserId(), HpcAuthenticationType.TOKEN,
         authenticationTokenClaims.getDataManagementAccount());
   }
-  
+
   @Override
   public void authenticateSso(String nciUserId, String smSession) throws HpcException {
     // Input validation.
@@ -501,10 +492,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
 
     // Set the request invoker (in thread local).
-    setRequestInvoker(
-        nciUserId,
-        HpcAuthenticationType.SM,
-        toDataManagementAccount(nciUserId, ""));
+    setRequestInvoker(nciUserId, HpcAuthenticationType.SM, toDataManagementAccount(nciUserId, ""));
   }
 
   @Override
@@ -531,8 +519,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       HpcAuthenticationTokenClaims authenticationTokenClaims = new HpcAuthenticationTokenClaims();
       authenticationTokenClaims.setUserId(requestInvoker.getNciAccount().getUserId());
       authenticationTokenClaims.setDataManagementAccount(requestInvoker.getDataManagementAccount());
-      authenticationResponse.setToken(
-              securityService.createAuthenticationToken(requestInvoker.getAuthenticationType(), authenticationTokenClaims));
+      authenticationResponse.setToken(securityService.createAuthenticationToken(
+          requestInvoker.getAuthenticationType(), authenticationTokenClaims));
     }
 
     return authenticationResponse;
@@ -547,76 +535,70 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
 
     // Add the user to the managed collection.
-    securityService.addSystemAccount(
-        systemAccountRegistrationDTO.getAccount(),
+    securityService.addSystemAccount(systemAccountRegistrationDTO.getAccount(),
         systemAccountRegistrationDTO.getDataTransferType(),
         systemAccountRegistrationDTO.getClassifier());
   }
 
   @Override
-  public HpcGroupMembersResponseDTO registerGroup(
-      String groupName, HpcGroupMembersRequestDTO groupMembersRequest) throws HpcException {
+  public HpcGroupMembersResponseDTO registerGroup(String groupName,
+      HpcGroupMembersRequestDTO groupMembersRequest) throws HpcException {
     // Input validation.
     if (groupName == null) {
       throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
     }
     if (groupMembersRequest != null && !groupMembersRequest.getDeleteUserIds().isEmpty()) {
-      throw new HpcException(
-          "Delete users is invalid in group registration request",
+      throw new HpcException("Delete users is invalid in group registration request",
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    
-    //Add requester as a user if he is a group admin. This is to enable the check 
-    //to restrict addition of users to other groups by this group admin.
+
+    // Add requester as a user if he is a group admin. This is to enable the check
+    // to restrict addition of users to other groups by this group admin.
     HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
-    if(requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-    	groupMembersRequest.getAddUserIds().add(requestInvoker.getNciAccount().getUserId());
+    if (requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+      groupMembersRequest.getAddUserIds().add(requestInvoker.getNciAccount().getUserId());
     }
 
-    return executeGroupAdminAsSystemAccount(
-        () -> {
-          // Add the group.
-          dataManagementSecurityService.addGroup(groupName);
+    return executeGroupAdminAsSystemAccount(() -> {
+      // Add the group.
+      dataManagementSecurityService.addGroup(groupName);
 
-          // Optionally add members.
-          return updateGroupMembers(groupName, groupMembersRequest);
-        });
+      // Optionally add members.
+      return updateGroupMembers(groupName, groupMembersRequest);
+    });
   }
 
-  public HpcGroupMembersResponseDTO updateGroup(
-      String groupName, HpcGroupMembersRequestDTO groupMembersRequest) throws HpcException {
+  public HpcGroupMembersResponseDTO updateGroup(String groupName,
+      HpcGroupMembersRequestDTO groupMembersRequest) throws HpcException {
     // Input validation.
     if (groupName == null) {
       throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
     }
     if (!dataManagementSecurityService.groupExists(groupName)) {
-      throw new HpcException(
-          "Group doesn't exist: " + groupName, HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    if (groupMembersRequest == null
-        || (groupMembersRequest.getDeleteUserIds().isEmpty()
-            && groupMembersRequest.getAddUserIds().isEmpty())) {
-      throw new HpcException(
-          "Null or empty requests to add/delete members to group",
+      throw new HpcException("Group doesn't exist: " + groupName,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
-    
-    //Do not allow if this user is a group admin but not a member of this group
+    if (groupMembersRequest == null || (groupMembersRequest.getDeleteUserIds().isEmpty()
+        && groupMembersRequest.getAddUserIds().isEmpty())) {
+      throw new HpcException("Null or empty requests to add/delete members to group",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Do not allow if this user is a group admin but not a member of this group
     List<String> userIds = dataManagementSecurityService.getGroupMembers(groupName);
     HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
-    if(requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-    	if(userIds == null || !userIds.contains(requestInvoker.getNciAccount().getUserId())) {
-    		String msg = "No privileges to add users to " + groupName + " group";
-    		logger.error(requestInvoker.getNciAccount().getUserId() + ":" + msg);
-    		throw new HpcException(msg, HpcErrorType.REQUEST_REJECTED);
-    	}
+    if (requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+      if (userIds == null || !userIds.contains(requestInvoker.getNciAccount().getUserId())) {
+        String msg = "No privileges to add users to " + groupName + " group";
+        logger.error(requestInvoker.getNciAccount().getUserId() + ":" + msg);
+        throw new HpcException(msg, HpcErrorType.REQUEST_REJECTED);
+      }
     }
-    
 
-    return executeGroupAdminAsSystemAccount(
-        () ->
-            // Add/Delete group members.
-            updateGroupMembers(groupName, groupMembersRequest));
+
+    return executeGroupAdminAsSystemAccount(() ->
+    // Add/Delete group members.
+    updateGroupMembers(groupName, groupMembersRequest));
   }
 
   @Override
@@ -675,17 +657,17 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // Delete the group.
     executeGroupAdminAsSystemAccount(() -> dataManagementSecurityService.deleteGroup(groupName));
   }
-  
-  
+
+
   @Override
   public void refreshDataManagementConfigurations() throws HpcException {
-    
+
     securityService.refreshDataManagementConfigurations();
   }
 
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
   // Helper Methods
-  //---------------------------------------------------------------------//
+  // ---------------------------------------------------------------------//
 
   /**
    * When using the command line, a group-admin user can execute account security actions. It is not
@@ -694,16 +676,15 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    * to create accounts. If the invoker is not a group-admin, then its own credentials are used.
    *
    * @param systemAccountFunction The functional interface to execute as system account (no return
-   *     value)
+   *        value)
    * @throws HpcException If the enum value is invalid.
    */
   private void executeGroupAdminAsSystemAccount(
       HpcSystemAccountFunctionNoReturn systemAccountFunction) throws HpcException {
-    executeGroupAdminAsSystemAccount(
-        () -> {
-          systemAccountFunction.execute();
-          return null;
-        });
+    executeGroupAdminAsSystemAccount(() -> {
+      systemAccountFunction.execute();
+      return null;
+    });
   }
 
   /**
@@ -713,10 +694,11 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    * to create accounts. If the invoker is not a group-admin, then its own credentials are used.
    *
    * @param systemAccountFunction The functional interface to execute as system account with return
-   *     value.
+   *        value.
    * @param <T> A generic returned type.
    * @return A generic returned type.
-   * @throws HpcException If it failed to identify the request invoker, or the function raised an exception.
+   * @throws HpcException If it failed to identify the request invoker, or the function raised an
+   *         exception.
    */
   private <T> T executeGroupAdminAsSystemAccount(HpcSystemAccountFunction<T> systemAccountFunction)
       throws HpcException {
@@ -745,13 +727,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       return HpcUserRole.fromValue(roleStr);
 
     } catch (IllegalArgumentException e) {
-      throw new HpcException(
-          "Invalid user role: "
-              + roleStr
-              + ". Valid values: "
-              + Arrays.asList(HpcUserRole.values()),
-          HpcErrorType.INVALID_REQUEST_INPUT,
-          e);
+      throw new HpcException("Invalid user role: " + roleStr + ". Valid values: "
+          + Arrays.asList(HpcUserRole.values()), HpcErrorType.INVALID_REQUEST_INPUT, e);
     }
   }
 
@@ -764,16 +741,13 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    * @param dataManagementAccount The data management account.
    * @throws HpcException on service failure.
    */
-  private void setRequestInvoker(
-      String userId,
-      HpcAuthenticationType authenticationType,
-      HpcIntegratedSystemAccount dataManagementAccount)
-      throws HpcException {
+  private void setRequestInvoker(String userId, HpcAuthenticationType authenticationType,
+      HpcIntegratedSystemAccount dataManagementAccount) throws HpcException {
     // Get the HPC user and validate the account is active.
     HpcUser user = securityService.getUser(userId);
     if (user == null) {
-      throw new HpcException(
-          "User is not registered with HPC-DM: " + userId, HpcErrorType.UNAUTHORIZED_REQUEST);
+      throw new HpcException("User is not registered with HPC-DM: " + userId,
+          HpcErrorType.UNAUTHORIZED_REQUEST);
     }
     if (!user.getActive()) {
       throw new HpcException(
@@ -782,14 +756,12 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     }
 
     // Instantiate a request invoker and set it on thread local.
-    securityService.setRequestInvoker(
-        user.getNciAccount(), ldapAuthentication, authenticationType, dataManagementAccount);
+    securityService.setRequestInvoker(user.getNciAccount(), ldapAuthentication, authenticationType,
+        dataManagementAccount);
 
     // Get the user role and update the request invoker.
-    securityService
-        .getRequestInvoker()
-        .setUserRole(
-            dataManagementSecurityService.getUserRole(dataManagementAccount.getUsername()));
+    securityService.getRequestInvoker().setUserRole(
+        dataManagementSecurityService.getUserRole(dataManagementAccount.getUsername()));
   }
 
   /**
@@ -800,8 +772,8 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    * @return A DTO containing the results of each add/delete member request.
    * @throws HpcException on service failure.
    */
-  private HpcGroupMembersResponseDTO updateGroupMembers(
-      String groupName, HpcGroupMembersRequestDTO groupMembersRequest) throws HpcException {
+  private HpcGroupMembersResponseDTO updateGroupMembers(String groupName,
+      HpcGroupMembersRequestDTO groupMembersRequest) throws HpcException {
     if (groupMembersRequest == null) {
       return null;
     }
@@ -819,8 +791,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     userIds.addAll(addUserIds);
     userIds.retainAll(deleteUserIds);
     if (!userIds.isEmpty()) {
-      throw new HpcException(
-          "User Id(s) found in both add and delete lists: " + userIds,
+      throw new HpcException("User Id(s) found in both add and delete lists: " + userIds,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
@@ -874,21 +845,19 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       throws HpcException {
     // Input validation.
     if (StringUtils.isEmpty(nciUserId) || userUpdateRequest == null) {
-      throw new HpcException(
-          "Null NCI user ID or user update request", HpcErrorType.INVALID_REQUEST_INPUT);
+      throw new HpcException("Null NCI user ID or user update request",
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Validate that at least one user attribute (out of firstName, lastName, default base path,
-    //                                            DOC, role, active) is updated.
+    // DOC, role, active) is updated.
     List<Boolean> updateItems =
-        new ArrayList<>(
-            Arrays.asList(
-                !StringUtils.isEmpty(userUpdateRequest.getFirstName()),
-                !StringUtils.isEmpty(userUpdateRequest.getLastName()),
-                !StringUtils.isEmpty(userUpdateRequest.getDefaultBasePath()),
-                !StringUtils.isEmpty(userUpdateRequest.getDoc()),
-                !StringUtils.isEmpty(userUpdateRequest.getUserRole()),
-                userUpdateRequest.getActive() != null));
+        new ArrayList<>(Arrays.asList(!StringUtils.isEmpty(userUpdateRequest.getFirstName()),
+            !StringUtils.isEmpty(userUpdateRequest.getLastName()),
+            !StringUtils.isEmpty(userUpdateRequest.getDefaultBasePath()),
+            !StringUtils.isEmpty(userUpdateRequest.getDoc()),
+            !StringUtils.isEmpty(userUpdateRequest.getUserRole()),
+            userUpdateRequest.getActive() != null));
     if (!updateItems.contains(true)) {
       throw new HpcException(
           "Invalid update user request. Please provide either firstName, lastName, "
