@@ -381,6 +381,15 @@
 			]
 		},
 		{
+			"eventType": "USER_REGISTERED",
+			"subjectFormat": "Welcome to HPC-DME",
+			"subjectArguments": [
+			],
+			"textFormat": "Your HPC-DME account is now active",
+			"textArguments": [
+			]
+		},
+		{
 			"systemAdminNotificationType": "INTEGRATED_SYSTEM_ERROR",
 			"subjectFormat": "HPC-DM: %1$s error: %2$s",
 			"subjectArguments": [
