@@ -35,6 +35,7 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_REPORT" />
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT" />
 			<xsd:enumeration value="COLLECTION_UPDATED" />
+			<xsd:enumeration value="USER_REGISTERED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
