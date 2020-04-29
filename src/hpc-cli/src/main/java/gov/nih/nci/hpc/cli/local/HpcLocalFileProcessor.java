@@ -167,6 +167,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 		File file = new File(entity.getAbsolutePath());
     if (!file.exists()) {
       String message = "File does not exist. Skipping: " + entity.getAbsolutePath();
+      System.out.println(message);
       HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
       HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
       throw new RecordProcessingException(message);
@@ -605,7 +606,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 				String output;
 				while ((output = br.readLine()) != null) 
 					sb.append(output);
-				System.out.println("Failed to register - " + file.getAbsolutePath() + ". Check error log for details.");		
+				System.out.println("Failed to register - " + file.getAbsolutePath() + ". Check error log created under hpc.error-log.dir defined in hpcdme.properties.");		
 				throw new HpcBatchException("Failed to register - " + file.getAbsolutePath() + " Response: "+sb.toString());
 			}
 		} catch (IOException | InterruptedException e) {
