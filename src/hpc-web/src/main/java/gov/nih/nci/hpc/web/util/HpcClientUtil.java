@@ -401,11 +401,9 @@ public class HpcClientUtil {
       } else {
         final String extractedErrMsg =
             genHpcExceptionDtoOnNonOkRestResponse(restResponse).getMessage();
-        throw new HpcWebException(String.format(
-          ERR_MSG_TEMPLATE__FAILED_GET_PATH_ELEM_TYPE,
-          theItemPath,
+        throw new HpcWebException(
           extractedErrMsg
-        ));
+        );
       }
 
       return elemType;
