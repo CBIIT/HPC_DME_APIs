@@ -385,7 +385,8 @@
 			"subjectFormat": "Welcome to DME",
 			"subjectArguments": [
 			],
-			"textFormat": "Hello %1$s %2$s,<br/><br/>Your group administrator has registered your DME user account in the %3$s DOC with the %4$s role. You can now access DME as described in Getting Started.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>Regards,<br/>The NCI Data Vault team<br/>",
+			"textFormat": "Hello %1$s %2$s,<br/><br/>
+			We have created a DME user account for you. You can now access DME as described in <a href=\"https://wiki.nci.nih.gov/display/DMEdoc/Getting+Started\">Getting Started</a>.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>Regards,<br/>The NCI Data Vault team<br/>",
 			"textArguments": [
 			{
 					"payloadEntryAttribute": "FIRST_NAME",
@@ -394,14 +395,6 @@
 				{
 					"payloadEntryAttribute": "LAST_NAME",
 					"index": "1"
-				},
-				{
-					"payloadEntryAttribute": "DOC",
-					"index": "2"
-				},
-				{
-					"payloadEntryAttribute": "ROLE",
-					"index": "3"
 				}
 			]
 		},
