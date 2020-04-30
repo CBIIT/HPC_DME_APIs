@@ -171,13 +171,11 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // this service creates an account for the user with the data management system, unless an
     // account
     // already established for the user.
-    String roleStr = "";
     if (!dataManagementSecurityService.userExists(nciUserId)) {
       // Determine the user role to create. If not provided, default to USER.
       HpcUserRole role = userRegistrationRequest.getUserRole() != null
           ? roleFromString(userRegistrationRequest.getUserRole())
           : HpcUserRole.USER;
-      roleStr = role.value();
 
       // GROUP_ADMIN not supported by current Jargon API version. Respond with a workaround.
       if (role == HpcUserRole.GROUP_ADMIN) {
@@ -210,7 +208,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       // Notify the user if request.
       if (Optional.ofNullable(userRegistrationRequest.getNotifyUser()).orElse(false)) {
         sendUserRegisteredNotification(nciUserId, nciAccount.getFirstName(),
-            nciAccount.getLastName(), nciAccount.getDoc(), roleStr);
+            nciAccount.getLastName());
       }
 
       registrationCompleted = true;
@@ -915,8 +913,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    * @param firstName The user's DOC.
    * @param firstName The user's role.
    */
-  private void sendUserRegisteredNotification(String nciUserId, String firstName, String lastName,
-      String doc, String role) {
+  private void sendUserRegisteredNotification(String nciUserId, String firstName, String lastName) {
     List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
     HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
     payloadEntry.setAttribute("FIRST_NAME");
@@ -926,16 +923,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     payloadEntry = new HpcEventPayloadEntry();
     payloadEntry.setAttribute("LAST_NAME");
     payloadEntry.setValue(lastName);
-    payloadEntries.add(payloadEntry);
-
-    payloadEntry = new HpcEventPayloadEntry();
-    payloadEntry.setAttribute("DOC");
-    payloadEntry.setValue(doc);
-    payloadEntries.add(payloadEntry);
-
-    payloadEntry = new HpcEventPayloadEntry();
-    payloadEntry.setAttribute("ROLE");
-    payloadEntry.setValue(role);
     payloadEntries.add(payloadEntry);
 
     notificationService.sendNotification(nciUserId, HpcEventType.USER_REGISTERED, payloadEntries,
