@@ -883,6 +883,14 @@ case $1 in
      fi
     local CRITERIA="$1"
 
+    if [ ! -f $CRITERIA ]
+    then
+      echo "ERROR: Cannot find $CRITERIA " >&2
+      return 1
+    fi
+
+
+
     if [ ! -z "$2" ]
     then
       local SEARCH_PATH="$2"
@@ -1269,7 +1277,7 @@ function dm_delete_datafile {
     local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
     if [ ! -f $jar_path ]
     then
-      echo "Can not find $jar_path " >&2
+      echo "Cannot find $jar_path " >&2
       return 1
     fi
 
@@ -1374,7 +1382,7 @@ function dm_delete_collection {
     local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
     if [ ! -f $jar_path ]
     then
-       echo "Can not find $jar_path " >&2
+       echo "Cannot find $jar_path " >&2
        return 1
      fi
 
@@ -1554,7 +1562,7 @@ function dm_register_directory {
     local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
     if [ ! -f $jar_path ]
     then
-      echo "Can not find $jar_path " >&2
+      echo "Cannot find $jar_path " >&2
       return 1
     fi
 
@@ -1756,7 +1764,7 @@ function dm_register_globus_directory {
     local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
     if [ ! -f $jar_path ]
     then
-      echo "Can not find $jar_path " >&2
+      echo "Cannot find $jar_path " >&2
       return 1
     fi
 
@@ -1931,7 +1939,7 @@ function dm_download_collection_globus {
 	else
 		if [ ! -e "$path_file" ]
 		then
-			echo "Can not find the path file: $path_file" >&2
+			echo "Cannot find the path file: $path_file" >&2
 			echo "Please check the file location and try again" >&2
 			exit 1
 		fi
@@ -1942,7 +1950,7 @@ function dm_download_collection_globus {
 	
     if [ ! -e "$template_file" ]
     then
-        echo "Can not find the template file: $template_file" >&2
+        echo "Cannot find the template file: $template_file" >&2
         echo "Please pull the latest version and try again" >&2
         return 1
     fi
@@ -2132,7 +2140,7 @@ function dm_download_dataobject_globus {
     local template_file=$HPC_DM_UTILS/templates/download-async-template-internal.json
     if [ ! -e "$template_file" ]
     then
-        echo "Can not file the template file: $template_file" >&2
+        echo "Cannot file the template file: $template_file" >&2
         echo "Please pull the latest version and try again" >&2
         exit 1
     fi
@@ -2149,7 +2157,7 @@ function dm_download_dataobject_globus {
 	else
 		if [ ! -e "$path_file" ]
 		then
-			echo "Can not find the path file: $path_file" >&2
+			echo "Cannot find the path file: $path_file" >&2
 			echo "Please check the file location and try again" >&2
 			exit 1
 		fi
@@ -2161,7 +2169,7 @@ function dm_download_dataobject_globus {
 
     if [ ! -e "$template_file" ]
     then
-        echo "Can not find the template file: $template_file" >&2
+        echo "Cannot find the template file: $template_file" >&2
         echo "Please pull the latest version and try again" >&2
         exit 1
     fi
@@ -2418,7 +2426,7 @@ function dm_download_dataobject_s3 {
 	else
 		if [ ! -e "$path_file" ]
 		then
-			echo "Can not find the path file: $path_file" >&2
+			echo "Cannot find the path file: $path_file" >&2
 			echo "Please check the file location and try again" >&2
 			exit 1
 		fi
@@ -2597,7 +2605,7 @@ function dm_download_collection_s3 {
 	then
 		if [ ! -e "$path_file" ]
 		then
-			echo "Can not find the path file: $path_file" >&2
+			echo "Cannot find the path file: $path_file" >&2
 			echo "Please check the file location and try again" >&2
 			exit 1
 		fi
