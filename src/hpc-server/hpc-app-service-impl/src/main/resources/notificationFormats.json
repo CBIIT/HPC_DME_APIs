@@ -386,7 +386,7 @@
 			"subjectArguments": [
 			],
 			"textFormat": "Hello %1$s %2$s,<br/><br/>
-			We have created a DME user account for you. You can now access DME as described in <a href=\"https://wiki.nci.nih.gov/display/DMEdoc/Getting+Started\">Getting Started</a>.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>Regards,<br/>The NCI Data Vault team<br/>",
+			We have created a DME user account for you. You can now access <a href=\"https://hpcdmeweb.nci.nih.gov\">DME</a> as described in <a href=\"https://wiki.nci.nih.gov/x/xaE7Fg\">Getting Started</a>.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>Regards,<br/>The NCI Data Vault team<br/>",
 			"textArguments": [
 			{
 					"payloadEntryAttribute": "FIRST_NAME",
