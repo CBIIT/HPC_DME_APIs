@@ -3335,14 +3335,14 @@ function dm_download_collection_usage {
   read -d  '' usage <<- EOF
   usage: dm_download_collection [OPTIONS]  <source-path> <destination-path> 
 
-  Recursively copy all files in the archive's <source-path> to the local <destination-path>. 
+  Download the specified collection from the archive <source-path> to the local <destination-path>. 
   OPTIONS:
   -h                      Print this message 
   -t[NUM_THREADS]         The number of threads to use while downloading files from the archive to the local file system. This number should be between [1, 32].
 
 
 For detailed information on this command, refer to the following page: 
-https://wiki.nci.nih.gov/display/DMEdoc/Downloading+Data+via+the+CLU
+https://wiki.nci.nih.gov/x/tIWqGQ
 
 EOF
   echo "$usage"
@@ -3417,11 +3417,26 @@ function dm_download_collection {
       echo "The destination directory: $dst_path does not exist." >&2
       exit 1
     fi 
-
+	
+	if [ ! -w "$dst_path" ]
+	then 
+	echo "The destination directory: $dst_path is not writable." >&2
+      exit 1
+    fi 
+	
     command_args=""
 
+	pushd $dst_path > /dev/null
+	if [ "$?" -ne 0 ]
+	then
+	echo "The destination directory: $dst_path is not accessible." >&2
+      exit 1
+    fi
+	absolute_path=$(pwd)
+	popd > /dev/null
+	
     #Pass the mandatory arguments
-    full_dst_path=$(myreadlink $dst_path)
+    full_dst_path=$absolute_path
     full_dst_path_converted=$(convert_path "$full_dst_path")
     command_args+=" --sourceArchivePath \"$src_path\" "
     command_args+=" --destinationPath \"$full_dst_path_converted\" "
