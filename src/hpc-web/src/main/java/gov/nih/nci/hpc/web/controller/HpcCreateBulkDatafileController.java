@@ -399,7 +399,7 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 		} catch (Exception e) {
 		  log.error("failed to create data file: " + e.getMessage(), e);
 		  String msg = e.getMessage().replace("\n", "<br/>");
-		  model.addAttribute("error", "Failed to create data file: <br/><br/>" + msg);
+		  model.addAttribute("error", msg);
           model.addAttribute("invalidCharacters4PathName", forbiddenChars);
 			return "adddatafilebulk";
 		} finally {
