@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -66,19 +67,39 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 		logger.debug("sourceArchivePath " + sourceArchivePath);
 		logger.debug("objectPath " + objectPath);
 		logger.debug("destinationPath " + destinationPath);
-
+		System.out.println("Processing: " + objectPath);
+		Path downloadPath = null;
+		Path downloadPathTemp = null;
+				
 		// Get the relative path from the base path and create the destination folder if
 		// it doesn't exist
-		Path objectPathPath = Paths.get(objectPath);
-		Path sourceArchivePathPath = Paths.get(sourceArchivePath);
-		Path relativePath = sourceArchivePathPath.relativize(objectPathPath);
-		Path downloadPath = Paths.get(destinationPath, relativePath.toString());
-		if (!Files.exists(downloadPath.getParent()))
+		try {
+			Path objectPathPath = Paths.get(objectPath);
+			Path sourceArchivePathPath = Paths.get(sourceArchivePath).getParent();
+			Path relativePath = sourceArchivePathPath.relativize(objectPathPath);
+			downloadPath = Paths.get(destinationPath, relativePath.toString());
+			downloadPathTemp = Paths.get(downloadPath.toString() + "_filepart");
+		} catch (Exception e) {
+			System.out.println("Failed to create download path for " + objectPath);
+			HpcClientUtil.writeException(e, "Failed to create download path for " + objectPath, null, logFile);
+			HpcLogWriter.getInstance().WriteLog(recordFile, objectPath);
+		}
+		if (!Files.exists(downloadPath.getParent())) {
 			try {
-				Files.createDirectory(downloadPath.getParent());
+				Files.createDirectories(downloadPath.getParent());
 			} catch (IOException e1) {
 				// can be ignored.
+				logger.debug("Supressed exception: ", e1);
 			}
+		}
+		
+		try {
+			Files.deleteIfExists(downloadPathTemp);
+		} catch (IOException e) {
+			System.out.println("Previous partial file cannot be deleted " + downloadPathTemp.toString());
+			HpcClientUtil.writeException(e, e.getMessage(), null, logFile);
+			HpcLogWriter.getInstance().WriteLog(recordFile, objectPath);
+		}
 
 		try {
 			final String serviceURL = UriComponentsBuilder.fromHttpUrl(connection.getHpcServerURL())
@@ -97,7 +118,7 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 
 				HpcDataObjectDownloadResponseDTO downloadDTO = (HpcDataObjectDownloadResponseDTO) HpcClientUtil
 						.getObject(restResponse, HpcDataObjectDownloadResponseDTO.class);
-				downloadToUrl(downloadDTO.getDownloadRequestURL(), 1000000, downloadPath.toString());
+				downloadToUrl(downloadDTO.getDownloadRequestURL(), downloadPathTemp.toString());
 
 			} else if (restResponse.getStatus() == 400) {
 				// Bad request so assume that request can be retried without any state
@@ -106,25 +127,29 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 				dto.setGenerateDownloadRequestURL(false);
 				restResponse = client.invoke("POST", dto);
 				if (restResponse.getStatus() == 200) {
-					handleStreamingDownloadData(downloadPath.toString(), restResponse);
+					handleStreamingDownloadData(downloadPathTemp.toString(), restResponse);
 				} else {
 					handleDownloadProblem(restResponse);
 				}
 			} else {
 				handleDownloadProblem(restResponse);
 			}
-			return null;
+			//rename to original file name
+			Files.move(downloadPathTemp, downloadPath, StandardCopyOption.REPLACE_EXISTING);
+			
+			System.out.println("Successfully downloaded: " + objectPath);
+			return record;
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			String message = "Failed to download record due to: " + e.getMessage();
 			System.out.println(message);
 			HpcClientUtil.writeException(new HpcBatchException(message), message, null, logFile);
-			HpcLogWriter.getInstance().WriteLog(logFile, objectPath);
+			HpcLogWriter.getInstance().WriteLog(recordFile, objectPath);
 			throw new RecordProcessingException(message);
 		}
 	}
 
-	public void downloadToUrl(String urlStr, int bufferSize, String filePath) throws RecordProcessingException {
+	private void downloadToUrl(String urlStr, String filePath) throws RecordProcessingException {
 		try {
 			WebClient client = HpcClientUtil.getWebClient(urlStr, connection.getHpcServerProxyURL(),
 					connection.getHpcServerProxyPort(), connection.getHpcCertPath(), connection.getHpcCertPassword());
@@ -135,7 +160,7 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 			IOUtils.copy((InputStream) restResponse.getEntity(), fos);
 			fos.close();
 		} catch (IOException e) {
-			throw new RecordProcessingException(e);
+			throw new RecordProcessingException(e.getMessage(), e);
 		}
 	}
 
