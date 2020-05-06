@@ -30,6 +30,7 @@ import org.easybatch.core.filter.PoisonRecordFilter;
 import org.easybatch.core.job.Job;
 import org.easybatch.core.job.JobBuilder;
 import org.easybatch.core.job.JobReport;
+import org.easybatch.core.job.JobResult;
 import org.easybatch.core.reader.BlockingQueueRecordReader;
 import org.easybatch.core.record.Record;
 import org.slf4j.Logger;
@@ -97,6 +98,8 @@ public class HPCBatchCollectionDownloadProcessor {
 			threadPoolSize = 1;
 		}
 
+		System.out.println("Attempting to download collection " + sourceArchivePath + " to " + destinationPath);
+		
 		// Get all data objects recursively that belongs to this collection
 		try {
 			dataObjects = getAllDataObjectsForCollection(sourceArchivePath, dataObjects);
@@ -145,6 +148,10 @@ public class HPCBatchCollectionDownloadProcessor {
 
 			HPCJobReportMerger reportMerger = new HPCJobReportMerger();
 			JobReport finalReport = reportMerger.mergerReports(jobReports);
+			if (finalReport.getMetrics().getErrorCount() == 0)
+				finalReport.setJobResult(new JobResult(Constants.CLI_SUCCESS));
+			else
+				finalReport.setJobResult(new JobResult(Constants.CLI_5));
 			System.out.println(new HpcJobReportFormatter().formatReport(finalReport));
 
 		} catch (ExecutionException e) {
@@ -212,7 +219,7 @@ public class HPCBatchCollectionDownloadProcessor {
 				errorResponse = parser.readValueAs(HpcExceptionDTO.class);
 
 			} catch (IOException e) {
-				throw new HpcBatchException("Error response code: " + restResponse.getStatus(), e);
+				throw new HpcBatchException("Error response code: " + restResponse.getStatus() + ". Check the archive path", e);
 			}
 
 			throw new HpcBatchException("Error : " + errorResponse.getMessage());

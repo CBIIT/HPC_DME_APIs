@@ -3417,11 +3417,24 @@ function dm_download_collection {
       echo "The destination directory: $dst_path does not exist." >&2
       exit 1
     fi 
-
+	
+	if [ ! -w "$dst_path" ]
+	then 
+	echo "The destination directory: $dst_path is not writable." >&2
+      exit 1
+    fi 
+	
     command_args=""
 
+	pushd $dst_path > /dev/null
+	if [ "$?" -ne 0 ]
+	then
+	echo "The destination directory: $dst_path is not accessible." >&2
+      exit 1
+    fi
+	
     #Pass the mandatory arguments
-    full_dst_path=$(myreadlink $dst_path)
+    full_dst_path=$absolute_path
     full_dst_path_converted=$(convert_path "$full_dst_path")
     command_args+=" --sourceArchivePath \"$src_path\" "
     command_args+=" --destinationPath \"$full_dst_path_converted\" "
