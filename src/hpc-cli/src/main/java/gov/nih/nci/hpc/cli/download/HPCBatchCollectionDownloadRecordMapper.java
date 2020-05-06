@@ -43,6 +43,7 @@ public class HPCBatchCollectionDownloadRecordMapper extends AbstractRecordMapper
 	public GenericRecord processRecord(HPCBatchCollectionDownloadRecord record) throws RecordMappingException {
 		logger.debug("HPCBatchCollectionDownloadRecordMapper: processRecord: " + record.toString());
 
+		System.out.println("Including: " + record.getPayload().getPath());
 		HPCDataObject dataObject = new HPCDataObject();
 		dataObject.setLogFile(logFile);
 		dataObject.setErrorRecordsFile(errorRecordsFile);
