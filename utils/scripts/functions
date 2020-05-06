@@ -3335,14 +3335,14 @@ function dm_download_collection_usage {
   read -d  '' usage <<- EOF
   usage: dm_download_collection [OPTIONS]  <source-path> <destination-path> 
 
-  Recursively copy all files in the archive's <source-path> to the local <destination-path>. 
+  Download the specified collection from the archive <source-path> to the local <destination-path>. 
   OPTIONS:
   -h                      Print this message 
   -t[NUM_THREADS]         The number of threads to use while downloading files from the archive to the local file system. This number should be between [1, 32].
 
 
 For detailed information on this command, refer to the following page: 
-https://wiki.nci.nih.gov/display/DMEdoc/Downloading+Data+via+the+CLU
+https://wiki.nci.nih.gov/x/tIWqGQ
 
 EOF
   echo "$usage"

@@ -35,7 +35,7 @@ public class HPCBatchCollectionDownload extends HPCBatchClient {
 		logFile = logDir + File.separator + "downloadCollection_errorLog"
 				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
 		logRecordsFile = logDir + File.separator + "downloadCollection_errorRecords"
-				+ new SimpleDateFormat("yyyyMMddhhmm'.csv'").format(new Date());
+				+ new SimpleDateFormat("yyyyMMddhhmm'.txt'").format(new Date());
 	}
 
 	protected String processFile(String fileName, String userId, String password, String authToken) {

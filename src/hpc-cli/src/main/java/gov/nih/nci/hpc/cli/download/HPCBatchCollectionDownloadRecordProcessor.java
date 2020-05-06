@@ -68,14 +68,22 @@ public class HPCBatchCollectionDownloadRecordProcessor implements RecordProcesso
 		logger.debug("objectPath " + objectPath);
 		logger.debug("destinationPath " + destinationPath);
 		System.out.println("Processing: " + objectPath);
-		
+		Path downloadPath = null;
+		Path downloadPathTemp = null;
+				
 		// Get the relative path from the base path and create the destination folder if
 		// it doesn't exist
-		Path objectPathPath = Paths.get(objectPath);
-		Path sourceArchivePathPath = Paths.get(sourceArchivePath);
-		Path relativePath = sourceArchivePathPath.relativize(objectPathPath);
-		Path downloadPath = Paths.get(destinationPath, relativePath.toString());
-		Path downloadPathTemp = Paths.get(downloadPath.toString() + "_filepart");
+		try {
+			Path objectPathPath = Paths.get(objectPath);
+			Path sourceArchivePathPath = Paths.get(sourceArchivePath).getParent();
+			Path relativePath = sourceArchivePathPath.relativize(objectPathPath);
+			downloadPath = Paths.get(destinationPath, relativePath.toString());
+			downloadPathTemp = Paths.get(downloadPath.toString() + "_filepart");
+		} catch (Exception e) {
+			System.out.println("Failed to create download path for " + objectPath);
+			HpcClientUtil.writeException(e, "Failed to create download path for " + objectPath, null, logFile);
+			HpcLogWriter.getInstance().WriteLog(recordFile, objectPath);
+		}
 		if (!Files.exists(downloadPath.getParent())) {
 			try {
 				Files.createDirectories(downloadPath.getParent());
