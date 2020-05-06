@@ -222,7 +222,7 @@ public abstract class HPCBatchClient {
 			logger.debug("errorCode "+errorCode);
 			if (errorCode == null || errorCode.equals(Constants.CLI_SUCCESS))
 			{
-				System.out.println("Cmd process Successful");
+				System.out.println("Cmd process Completed");
 				return Constants.CLI_SUCCESS;
 			}
 			else
