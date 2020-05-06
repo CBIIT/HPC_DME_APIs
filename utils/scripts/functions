@@ -3432,6 +3432,8 @@ function dm_download_collection {
 	echo "The destination directory: $dst_path is not accessible." >&2
       exit 1
     fi
+	absolute_path=$(pwd)
+	popd > /dev/null
 	
     #Pass the mandatory arguments
     full_dst_path=$absolute_path
