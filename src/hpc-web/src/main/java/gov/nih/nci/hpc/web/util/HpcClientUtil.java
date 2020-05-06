@@ -651,7 +651,7 @@ public class HpcClientUtil {
   }
 
   public static boolean createUser(String token, String hpcUserURL, HpcUserRequestDTO userDTO,
-      String userId, String hpcCertPath, String hpcCertPassword) {
+      String userId, String hpcCertPath, String hpcCertPassword) throws JsonParseException, IOException {
     try {
       WebClient client = HpcClientUtil.getWebClient(UriComponentsBuilder
         .fromHttpUrl(hpcUserURL).pathSegment(userId).build().encode().toUri()
@@ -673,13 +673,11 @@ public class HpcClientUtil {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        throw new HpcWebException("Failed to create user: " + exception.getMessage());
+        throw new HpcWebException(exception.getMessage());
       }
-    } catch (HpcWebException e) {
-      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException("Failed to create User due to: " + e.getMessage());
+      logger.error("Exception creating user " + userId + ";", e.getStackTrace());
+      throw e;
     }
   }
 

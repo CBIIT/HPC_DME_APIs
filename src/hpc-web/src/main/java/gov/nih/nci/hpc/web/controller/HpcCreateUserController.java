@@ -123,6 +123,9 @@ public class HpcCreateUserController extends AbstractHpcController {
 			dto.setLastName(hpcWebUser.getLastName());
 			dto.setUserRole(hpcWebUser.getUserRole());
 			dto.setDefaultBasePath(hpcWebUser.getBasePath());
+			String notifyUser = hpcWebUser.getNotifyUser();
+			boolean isNotifyUser = notifyUser != null && notifyUser.equals("on");
+			dto.setNotifyUser(isNotifyUser);
 
 			boolean created = HpcClientUtil.createUser(authToken, userServiceURL, dto, hpcWebUser.getNciUserId(),
 					sslCertPath, sslCertPassword);
