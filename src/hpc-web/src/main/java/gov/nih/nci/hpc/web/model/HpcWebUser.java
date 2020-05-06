@@ -36,6 +36,9 @@ public class HpcWebUser {
 
 	@JsonView(Views.Public.class)
 	private String active;
+	
+	@JsonView(Views.Public.class)
+	private String notifyUser;
 
 	public String getDoc() {
 		return doc;
@@ -123,5 +126,13 @@ public class HpcWebUser {
 
 	public void setActive(String active) {
 		this.active = active;
+	}
+	
+	public String getNotifyUser() {
+		return notifyUser;
+	}
+
+	public void setNotifyUser(String notifyUser) {
+		this.notifyUser = notifyUser;
 	}
 }

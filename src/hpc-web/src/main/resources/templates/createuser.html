@@ -114,6 +114,11 @@
 														Wireframe</option>
 											</select>																			
 									</div>
+									<br/>
+									<div class="col-sm-12 column">
+									  <input th:if="${notifyUser == true}" type="checkbox" name="notifyUser" id="notifyUser" checked="checked"> Notify user</input>
+								      <input th:if="${notifyUser != true}" type="checkbox" name="notifyUser" id="notifyUser"> Notify user</input>
+									</div>	
 								</div>
 								<div class="modal-footer">
 									<button type="submit" class="btn btn-md btn-primary"
