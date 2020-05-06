@@ -147,13 +147,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           .instanceIRODSFile(getAbsolutePath(path));
       dataObjectFile.createNewFile();
 
-    } catch (JargonException e) {
-      throw new HpcException("Failed to create a file: " + e.getMessage(),
+    } catch (JargonException | IOException e) {
+      logger.error("Failed to register file " + path, e);
+      String[] exceptionMsg = e.getMessage().split("message:", 2);
+      String errorMsg = exceptionMsg.length > 1 ? exceptionMsg[1]: exceptionMsg[0];
+      throw new HpcException("Failed to register file " + path + ": " + errorMsg,
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
-
-    } catch (IOException ioe) {
-      throw new HpcException("Failed to create a file: " + ioe.getMessage(),
-          HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, ioe);
 
     } finally {
       closeIRODSFile(dataObjectFile);
@@ -167,8 +166,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
           .instanceIRODSFile(getAbsolutePath(path));
       return irodsPath.deleteWithForceOption();
 
-    } catch (Exception e) {
-      throw new HpcException("Failed to delete a path: " + path + "[" + e.getMessage() + "]",
+    } catch (JargonException e) {
+      throw new HpcException("Failed to delete " + path + ": " + e.getMessage(),
           HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     }
   }
@@ -187,9 +186,12 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       return irodsSourcePath.renameTo(irodsDestinationPath);
 
     } catch (Exception e) {
-      throw new HpcException("Failed to rename a path: " + e.getMessage(),
-          HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
-
+        logger.error("Failed to move/rename " + sourcePath, e);
+        
+        String[] exceptionMsg = e.getMessage().split("Exception:", 2);
+        String errorMsg = exceptionMsg.length > 1 ? exceptionMsg[1]: exceptionMsg[0];
+        throw new HpcException("Failed to move/rename " + sourcePath + ": " + errorMsg,
+                HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
     } finally {
       closeIRODSFile(irodsSourcePath);
       closeIRODSFile(irodsDestinationPath);
@@ -834,7 +836,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
       directoriesCreated = irodsFile.mkdirs();
 
     } catch (Exception e) {
-      throw new HpcException("Failed to create directory: " + getRelativePath(irodsFile.getPath()),
+      throw new HpcException("Failed to create collection: " + getRelativePath(irodsFile.getPath()),
           HpcErrorType.INVALID_REQUEST_INPUT, HpcIntegratedSystem.IRODS, e);
     }
 
