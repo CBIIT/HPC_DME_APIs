@@ -295,8 +295,8 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			clearSessionAttrs(session);
 			// }
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed to create data file: " + e.getMessage());
-      model.addAttribute("invalidCharacters4PathName", forbiddenChars);
+			model.addAttribute("error",  e.getMessage());
+			model.addAttribute("invalidCharacters4PathName", forbiddenChars);
 			return "adddatafile";
 		} finally {
 			if (!registered) {
