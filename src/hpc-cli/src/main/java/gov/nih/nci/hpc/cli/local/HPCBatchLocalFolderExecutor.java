@@ -192,14 +192,14 @@ public class HPCBatchLocalFolderExecutor {
           logger.error(e.getMessage(), e);
           System.out.println("Failed to process collection " + folder.getAbsolutePath()
               + " registration due to: " + e.getMessage());
-          generateJobReport(null, Constants.CLI_4);
-          return Constants.CLI_4;
+          generateJobReport(null, Constants.CLI_5);
+          return Constants.CLI_5;
         } catch (RecordProcessingException e) {
           logger.error(e.getMessage(), e);
           System.out.println("Failed to process collection " + folder.getAbsolutePath()
               + " registration due to: " + e.getMessage());
-          generateJobReport(null, Constants.CLI_4);
-          return Constants.CLI_4;
+          generateJobReport(null, Constants.CLI_5);
+          return Constants.CLI_5;
         }
       }
       //Measure appx transfer speed
