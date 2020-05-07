@@ -10,6 +10,8 @@
  */
 package gov.nih.nci.hpc.service;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -144,6 +146,34 @@ public interface HpcMetadataService {
   public HpcMetadataEntry addMetadataToDataObject(String path,
       List<HpcMetadataEntry> metadataEntries, String configurationId, String collectionType)
       throws HpcException;
+
+  /**
+   * Extract metadata from a file and add to a data object.
+   *
+   * @param path The data object path.
+   * @param dataObjectInputStream The file (input stream) to extract metadata from.
+   * @param configurationId The configuration to apply validation rules. Metadata validation rules
+   *        are configuration specific.
+   * @param collectionType The collection type containing the data object.
+   * @param closeInputStream If true, the method will close the input stream.
+   * @throws HpcException on service failure.
+   */
+  public void addMetadataToDataObjectFromFile(String path, InputStream dataObjectInputStream,
+      String configurationId, String collectionType, boolean closeInputStream) throws HpcException;
+  
+  /**
+   * Extract metadata from a file and add to a data object.
+   *
+   * @param path The data object path.
+   * @param dataObjectFile The file to extract metadata from.
+   * @param configurationId The configuration to apply validation rules. Metadata validation rules
+   *        are configuration specific.
+   * @param collectionType The collection type containing the data object.
+   * @param closeInputStream If true, the method will close the input stream.
+   * @throws HpcException on service failure.
+   */
+  public void addMetadataToDataObjectFromFile(String path, File dataObjectFile,
+      String configurationId, String collectionType, boolean closeInputStream) throws HpcException;
 
   /**
    * Generate system metadata and attach to the data object.
