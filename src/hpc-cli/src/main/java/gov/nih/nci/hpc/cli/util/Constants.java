@@ -25,22 +25,22 @@ public final class Constants {
 	
 	public static final String CLI_SUCCESS = "CLI_SUCCESS";
 	//Authentication error
-	public static final String CLI_0 = "CLI_0";
+	public static final String CLI_0 = "Authetication Error";
 	
 	//Error reading authentication token files
-	public static final String CLI_1 = "CLI_1";
+	public static final String CLI_1 = "Invalid Credential Error";
 	
 	//Invalid user input
-	public static final String CLI_2 = "CLI_2";
+	public static final String CLI_2 = "User Input Error";
 	
 	//No input files to process
-	public static final String CLI_3 = "CLI_3";
+	public static final String CLI_3 = "Missing Input Error";
 	
 	//Failed to process collection
-	public static final String CLI_4 = "CLI_4";
+	public static final String CLI_4 = "Collection Download Error";
 	
 	//System Error
-	public static final String CLI_5 = "CLI_5";
+	public static final String CLI_5 = "Server Processing Error";
 	
 	
 	public static final String CLI_6 = "CLI_6";

@@ -340,6 +340,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     	//Adjust the part chunk size so that the number of parts is less than 10000
     	partSize = (new Double(round((double) contentLength / 10000, 1024))).longValue();
     	parts = (int) Math.ceil((double) contentLength / partSize);
+    	logger.info("Exceeds 10000 parts, partSize set to : " + partSize + " number of parts: " + parts);
     }
     
     hpcDataObjectRegistrationDTO.setGenerateUploadRequestURL(true);
@@ -712,7 +713,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 	
 
 	private double round(double num, int multipleOf) {
-		return Math.floor((num + multipleOf / 2.0) / multipleOf) * multipleOf;
+		return Math.ceil((num + multipleOf / 2.0) / multipleOf) * multipleOf;
 	}
 
 }
