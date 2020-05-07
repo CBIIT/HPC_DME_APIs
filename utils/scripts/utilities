@@ -229,7 +229,7 @@ function verify_registration {
     REG_HTTP_CODE=`get_http_code $RESPONSE_HEADER`
     if [ "$REG_HTTP_CODE" != "201" ]  && [ "$REG_HTTP_CODE" != "200" ]
     then
-        echo "Failed to register <$DESTINATION_PATH>, HTTP_CODE: $REG_HTTP_CODE" 1>&2
+        echo "Error during registration, HTTP_CODE: $REG_HTTP_CODE" 1>&2
         if [ ! -e "$RESPONSE_MSG" ] 
         then
           echo "Cannot find the response message file $RESPONSE_MSG" >&2

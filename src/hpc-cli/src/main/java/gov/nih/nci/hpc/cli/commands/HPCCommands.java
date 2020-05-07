@@ -22,6 +22,7 @@ import gov.nih.nci.hpc.cli.HPCCmdDatafile;
 import gov.nih.nci.hpc.cli.HPCPermissions;
 import gov.nih.nci.hpc.cli.csv.HPCBatchCollection;
 import gov.nih.nci.hpc.cli.csv.HPCBatchDatafile;
+import gov.nih.nci.hpc.cli.download.HPCBatchCollectionDownload;
 import gov.nih.nci.hpc.cli.globus.HPCCmdRegisterGlobusFile;
 import gov.nih.nci.hpc.cli.local.HPCBatchLocalfile;
 import gov.nih.nci.hpc.cli.util.Constants;
@@ -49,6 +50,8 @@ public class HPCCommands implements CommandMarker {
 	private HPCPermissions putPermissions;
 	@Autowired
 	private HPCBatchLocalfile batchLocalFiles;
+	@Autowired
+	private HPCBatchCollectionDownload downloadCollection;
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
     
@@ -290,5 +293,23 @@ public class HPCCommands implements CommandMarker {
 			"source" }, mandatory = true, help = "Please provide file location for daatafiles. Usage: putDatafiles --source <file path>") final String source) {
 	    logger.debug("putDatafiles");
 	    return putDatafiles.process(source);
+	}
+	
+	@CliCommand(value = "downloadCollection", help = "Download collection from the HPC DME Archive to a local folder. Usage: downloadCollection --sourceArchivePath <Source archive path> --destinationPath <Destination path> --threads <number>")
+	public String downloadCollection(
+			@CliOption(key = {
+					"sourceArchivePath" }, mandatory = true, help = "Please provide source archive path. Usage: downloadCollection --sourceArchivePath <Source archive path> --destinationPath <Destination path> --threads <number>") final String sourceArchivePath,
+			@CliOption(key = {
+					"destinationPath" }, mandatory = true, help = "Please provide source archive path. Usage: downloadCollection --sourceArchivePath <Source archive path> --destinationPath <Destination path> --threads <number>") final String destinationPath,
+			@CliOption(key = {
+					"threads" }, mandatory = false, help = "Number of threads to process. Usage: downloadCollection --sourceArchivePath <Source archive path> --destinationPath <Destination path> --threads <number>") final String threads
+			) {
+	    logger.debug("downloadCollection");
+	    Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put("sourceArchivePath", sourceArchivePath);
+		criteriaMap.put("destinationPath", destinationPath);
+		criteriaMap.put("threads", threads);
+		downloadCollection.setCriteria(criteriaMap);
+		return downloadCollection.process(null);
 	}
 }

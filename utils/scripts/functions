@@ -3329,3 +3329,154 @@ function validate_archive_path () {
     fi
   fi
 }
+
+#Print Usage of dm_download_collection function
+function dm_download_collection_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_download_collection [OPTIONS]  <source-path> <destination-path> 
+
+  Download the specified collection from the archive <source-path> to the local <destination-path>. 
+  OPTIONS:
+  -h                      Print this message 
+  -t[NUM_THREADS]         The number of threads to use while downloading files from the archive to the local file system. This number should be between [1, 32].
+
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/tIWqGQ
+
+EOF
+  echo "$usage"
+}
+
+
+#Download a collection from the archive to the file system using the cmd line client.
+#Inputs:  <source-path>: The path on the archive
+#         <destinaton-path>: The destination path on the local file system 
+function dm_download_collection {
+
+    #local USAGE="USAGE: dm_download_collection <source-path> <destination-path>"
+    local OPTIND
+    
+    #Set the default parameters
+    numthreads=1
+
+    while getopts ":h:t:" option
+    do
+      case "${option}" in
+        h)
+          dm_show_register_directory_usage 
+          exit 1
+          ;;
+        t)
+          numthreads="${OPTARG}"
+          re='^[0-9]+$'
+          if ! [[ "$numthreads" =~ $re ]] ; then
+             echo "ERROR: The number of threads $numthreads is not a positive integer." >&2; exit 1
+          fi
+
+          if [ "$numthreads" -lt "0" ] || [ "$numthreads" -gt "32" ]
+          then
+             echo "ERROR: The number of threads $numthreads should be between [1, 32]" >&2; exit 1
+          fi
+          ;;
+        *)
+          dm_download_collection_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    shift $(( OPTIND-1 ))   
+
+    check_java
+    if [ "$?" -ne 0 ]
+    then 
+      return 1
+    fi
+    if [ -z "$1" ] || [ -z "$2" ] 
+    then
+        dm_download_collection_usage >&2
+        exit 1 
+    fi
+
+    local src_path="$1"
+    local dst_path="$2"
+
+    #Check if the jar exists:
+    local jar_file=$(get_jar)
+    local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
+    if [ ! -f $jar_path ]
+    then
+      echo "Can not find $jar_path " >&2
+      return 1
+    fi
+
+    #Make sure the destination directory exists:
+    if [ ! -d "$dst_path" ]
+    then
+      echo "The destination directory: $dst_path does not exist." >&2
+      exit 1
+    fi 
+	
+	if [ ! -w "$dst_path" ]
+	then 
+	echo "The destination directory: $dst_path is not writable." >&2
+      exit 1
+    fi 
+	
+    command_args=""
+
+	pushd $dst_path > /dev/null
+	if [ "$?" -ne 0 ]
+	then
+	echo "The destination directory: $dst_path is not accessible." >&2
+      exit 1
+    fi
+	absolute_path=$(pwd)
+	popd > /dev/null
+	
+    #Pass the mandatory arguments
+    full_dst_path=$absolute_path
+    full_dst_path_converted=$(convert_path "$full_dst_path")
+    command_args+=" --sourceArchivePath \"$src_path\" "
+    command_args+=" --destinationPath \"$full_dst_path_converted\" "
+    command_args+=" --threads $numthreads"
+
+    #Generate the command for the client: 
+    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    echo "downloadCollection  " $command_args >  $command_file
+
+    local log_file=./dm_log
+    local error_file=./dm_error
+
+    case "$(uname -s)" in
+    
+       Darwin|Linux)
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        exit_code="$?"
+       ;;
+    
+       CYGWIN*|MINGW32*|MSYS*)
+            java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+        exit_code="$?"
+       ;;
+    
+       # Add here more strings to compare
+       # See correspondence table at the bottom of this answer
+    
+       *)
+         echo 'Current OS not supported' 
+         exit 1
+         ;;
+    esac
+
+    if [ "$exit_code" -eq  "1" ]
+    then
+      echo "The collection download did not fully complete successfully" >&2
+      echo "Check complete log and error files at:" >&2
+      echo "$log_file" >&2
+      echo "$error_file" >&2
+      return 1
+    fi
+
+}
