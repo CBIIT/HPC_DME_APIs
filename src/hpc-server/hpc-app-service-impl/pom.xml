@@ -124,7 +124,7 @@
 		</dependency>
 		<dependency>
    			 <groupId>org.apache.tika</groupId>
-    		<artifactId>tika-parsers</artifactId>
+    		<artifactId>tika-bundle</artifactId>
 		</dependency>
 	</dependencies>
 </project>
