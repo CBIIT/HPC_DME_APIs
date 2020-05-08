@@ -60,7 +60,7 @@ public class HpcMimeMessagePreparator {
       mimeMessage.setSubject(notificationFormatter.formatSubject(eventType, payloadEntries));
       mimeMessage.setText(notificationFormatter.formatText(eventType, payloadEntries), "UTF-8",
           "html");
-      mimeMessage.setSender(new InternetAddress("DME Notification <dme-notification@doNotReply.nih.gov>"));
+      mimeMessage.setFrom(new InternetAddress("DME Notification <dme-notification@doNotReply.nih.gov>"));
     };
   }
 
