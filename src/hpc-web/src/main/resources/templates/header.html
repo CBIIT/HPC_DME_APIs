@@ -194,9 +194,11 @@
  							<li><a class="" th:href="@{/downloadtasks}">Download Tasks</a></li>
  							<li><a class="" th:href="@{/uploadtasks}">Upload Tasks</a></li>
 						</ul></li>
-					<li class="sub-menu"><a th:href="@{/reports}" class=""> <i
+					<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
+					    <a th:href="@{/reports}" class=""> <i
 							class="icon_document_alt"></i> <span>Reports</span>
-					</a></li>
+					    </a>
+					</li>
 					<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
 						<a href="#" class=""> 
 						<i class="icon_lock_alt"></i> 

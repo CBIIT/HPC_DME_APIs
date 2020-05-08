@@ -109,7 +109,7 @@
 		<prop key="hpc.ws.rs.auth.notification.subscribe-notifications">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
 		<prop key="hpc.ws.rs.auth.notification.get-notification-subscriptions">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		
-		<prop key="hpc.ws.rs.auth.report.generate-report">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
+		<prop key="hpc.ws.rs.auth.report.generate-report">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		
 		<prop key="hpc.ws.rs.auth.restrictedIPAddress"></prop>
 	</osgix:cm-properties>
