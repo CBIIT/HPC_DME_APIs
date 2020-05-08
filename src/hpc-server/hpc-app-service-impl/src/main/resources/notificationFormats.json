@@ -386,7 +386,7 @@
 			"subjectArguments": [
 			],
 			"textFormat": "Hello %1$s %2$s,<br/><br/>
-			A user account has been created for you in the Data Management Environment (DME) and data has been made available to you. You can now access and download this data through the <a href=\"https://hpcdmeweb.nci.nih.gov/browse\">DME GUI</a>. For downloading instructions, refer to <a href=\"https://wiki.nci.nih.gov/x/caM7Fg\">Downloading Data via the GUI</a><br/><br/>You can also search, share, and upload data as described in the <a\"https://wiki.nci.nih.gov/x/xKE7Fg\">DME User Guide</a>.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			A user account has been created for you in the Data Management Environment (DME) and data has been made available to you. You can now access and download this data through the <a href=\"https://hpcdmeweb.nci.nih.gov/browse\">DME GUI</a>. For downloading instructions, refer to <a href=\"https://wiki.nci.nih.gov/x/_QuKFg\"></a><br/><br/>You can also search, share, and upload data as described in the <a href=\"https://wiki.nci.nih.gov/x/xKE7Fg\">DME User Guide</a>.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
 			"textArguments": [
 			{
 					"payloadEntryAttribute": "FIRST_NAME",
