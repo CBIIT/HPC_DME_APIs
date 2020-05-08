@@ -22,6 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.easybatch.core.dispatcher.PoisonRecordBroadcaster;
@@ -103,6 +104,10 @@ public class HPCBatchCollectionDownloadProcessor {
 		// Get all data objects recursively that belongs to this collection
 		try {
 			dataObjects = getAllDataObjectsForCollection(sourceArchivePath, dataObjects);
+			if(CollectionUtils.isEmpty(dataObjects)) {
+				System.out.println("No data files found for processing");
+				return Constants.CLI_4;
+			}
 		} catch (Exception e) {
 			System.out.println("Failed to download collection: " + sourceArchivePath + " due to: " + e.getMessage());
 			return Constants.CLI_5;
