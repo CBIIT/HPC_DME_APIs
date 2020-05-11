@@ -133,7 +133,7 @@ public abstract class HPCCmdClient {
 
 			if (returnCode == null || returnCode.equals(Constants.CLI_SUCCESS))
 			{
-				System.out.println("Cmd process Successful");
+				System.out.println("Cmd process Completed");
 				return Constants.CLI_SUCCESS;
 			}
 			else
