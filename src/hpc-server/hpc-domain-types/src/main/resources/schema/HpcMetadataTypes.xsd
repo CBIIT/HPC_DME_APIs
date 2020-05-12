@@ -24,6 +24,7 @@
 			<xsd:element name="unit" type="xsd:string" />
 			<xsd:element name="level" type="xsd:int" minOccurs="0" />
 			<xsd:element name="levelLabel" type="xsd:string" />
+			<xsd:element name="collectionId" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -74,6 +75,7 @@
 				<xsd:element name="value" type="xsd:string" />
 				<xsd:element name="level" type="xsd:int" minOccurs="0" />
 				<xsd:element name="levelLabel" type="xsd:string" />
+				<xsd:element name="metaCollectionId" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
