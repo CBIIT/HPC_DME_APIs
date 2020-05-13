@@ -44,6 +44,7 @@
 	          value-type="gov.nih.nci.hpc.integration.HpcDataTransferProxy">
   		<entry key="GLOBUS" value-ref="hpcGlobusDataTransferProxy" />
   		<entry key="S_3" value-ref="hpcS3DataTransferProxy" />
+  		<entry key="GOOGLE_DRIVE" value-ref="hpcGoogleDriveDataTransferProxy" />
 	</util:map>
 	
 	<!--  HPC System Accounts Locator -->
