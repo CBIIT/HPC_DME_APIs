@@ -61,6 +61,10 @@
 	<!-- S3 Data Transfer Proxy -->
 	<bean id="hpcS3DataTransferProxy" 
 	      class="gov.nih.nci.hpc.integration.s3.impl.HpcDataTransferProxyImpl" />
+	      
+	<!-- Google Drive Data Transfer Proxy -->
+	<bean id="hpcGoogleDriveDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.googledrive.impl.HpcDataTransferProxyImpl" />
 	
 	<!-- HPC LDAP Authentication Proxy -->
 	<bean id="hpcLdapAuthenticationProxy"

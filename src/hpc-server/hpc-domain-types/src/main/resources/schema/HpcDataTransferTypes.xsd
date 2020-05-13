@@ -354,6 +354,8 @@
 				type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
 			<xsd:element name="s3DownloadDestination"
 				type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
+			<xsd:element name="googleDriveDownloadDestination"
+				type="hpc-domain-datatransfer:HpcGoogleDriveDownloadDestination" />
 			<xsd:element name="destinationType"
 				type="hpc-domain-datatransfer:HpcDataTransferType" />
 			<xsd:element name="completionEvent" type="xsd:boolean" />

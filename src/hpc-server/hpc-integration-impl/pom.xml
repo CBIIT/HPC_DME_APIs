@@ -35,10 +35,10 @@
 						<Private-Package>
 							gov.nih.nci.hpc.integration.globus.impl,
 							gov.nih.nci.hpc.integration.s3.impl,
+							gov.nih.nci.hpc.integration.googledrive.impl,
 							gov.nih.nci.hpc.integration.ldap.impl,
 							gov.nih.nci.hpc.integration.irods.impl,
-							gov.nih.nci.hpc.integration.sps.impl,
-							gov.nih.nci.hpc.integration.googledrive.impl,
+							gov.nih.nci.hpc.integration.sps.impl
 						</Private-Package>
 						<Import-Package>
 							org.springframework.scheduling.config,

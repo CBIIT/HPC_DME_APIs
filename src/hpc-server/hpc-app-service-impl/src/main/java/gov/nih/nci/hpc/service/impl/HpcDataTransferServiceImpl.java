@@ -837,10 +837,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
     }
 
-    // If the destination is AWS S3, we need to restart the download to S3.
-    if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)) {
+    // If the destination is AWS S3 or Google Drive, we need to restart the download.
+    if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3) ||
+        downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
       // Create a listener that will complete the download task when it is done.
-      progressListener = new HpcS3Download(downloadTask);
+      progressListener = new HpcStreamingDownload(downloadTask);
     }
 
     // Submit a transfer request.
@@ -1971,7 +1972,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcDataObjectDownloadResponse response, HpcArchive baseArchiveDestination)
       throws HpcException {
 
-    HpcS3Download s3Download = new HpcS3Download(downloadRequest);
+    HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest);
 
     // Perform the S3 download (From Cleversafe to User's AWS S3 bucket).
     try {
@@ -2007,7 +2008,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcDataObjectDownloadResponse response, HpcArchive baseArchiveDestination)
       throws HpcException {
 
-    HpcS3Download s3Download = new HpcS3Download(downloadRequest);
+    //HpcS3Download s3Download = new HpcS3Download(downloadRequest);
 
     // Generate a download URL from the Cleversafe archive.
     downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
@@ -2017,17 +2018,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     // Perform the S3 download (From Cleversafe to User's Google Drive).
     try {
       dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE).downloadDataObject(null,
-          downloadRequest, baseArchiveDestination, s3Download);
+          downloadRequest, baseArchiveDestination, /*s3Download*/ null);
 
       // Populate the response object.
-      response.setDownloadTaskId(s3Download.getDownloadTask().getId());
-      response.setDestinationLocation(
-          s3Download.getDownloadTask().getS3DownloadDestination().getDestinationLocation());
+      //response.setDownloadTaskId(s3Download.getDownloadTask().getId());
+      //response.setDestinationLocation(
+        //  s3Download.getDownloadTask().getS3DownloadDestination().getDestinationLocation());
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
-      completeDataObjectDownloadTask(s3Download.getDownloadTask(), HpcDownloadResult.FAILED,
-          e.getMessage(), Calendar.getInstance(), 0);
+      //completeDataObjectDownloadTask(s3Download.getDownloadTask(), HpcDownloadResult.FAILED,
+        //  e.getMessage(), Calendar.getInstance(), 0);
 
       throw (e);
     }
