@@ -841,7 +841,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     if (downloadTask.getDestinationType().equals(HpcDataTransferType.S_3)
         || downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
       // Create a listener that will complete the download task when it is done.
-      progressListener = new HpcStreamingDownload(downloadTask);
+      progressListener =
+          new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
     }
 
     // Submit a transfer request.
@@ -1972,7 +1973,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcDataObjectDownloadResponse response, HpcArchive baseArchiveDestination)
       throws HpcException {
 
-    HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest);
+    HpcStreamingDownload s3Download =
+        new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService, this);
 
     // Perform the S3 download (From Cleversafe to User's AWS S3 bucket).
     try {

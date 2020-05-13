@@ -13,7 +13,6 @@ package gov.nih.nci.hpc.service.impl;
 import java.util.Calendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
@@ -42,15 +41,12 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
   private HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 
   // Data object download DAO.
-  @Autowired
   private HpcDataDownloadDAO dataDownloadDAO = null;
 
   // Event service.
-  @Autowired
   private HpcEventService eventService = null;
 
   // Data Transfer service.
-  @Autowired
   private HpcDataTransferService dataTransferService = null;
 
   // The logger instance.
@@ -64,11 +60,19 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
    * Constructs a Streaming download object (to keep track of async processing)
    *
    * @param downloadRequest The download request.
+   * @param dataDownloadDAO data download DAO.
+   * @param eventService event service.
+   * @param dataTransferService data transfer service.
    * @throws HpcException If it failed to create a download task.
    */
-  public HpcStreamingDownload(HpcDataObjectDownloadRequest downloadRequest) throws HpcException {
+  public HpcStreamingDownload(HpcDataObjectDownloadRequest downloadRequest,
+      HpcDataDownloadDAO dataDownloadDAO, HpcEventService eventService,
+      HpcDataTransferService dataTransferService) throws HpcException {
     // Create an persist a download task. This object tracks the download request
     // through completion
+    this.dataDownloadDAO = dataDownloadDAO;
+    this.eventService = eventService;
+    this.dataTransferService = dataTransferService;
     createDownloadTask(downloadRequest);
   }
 
@@ -78,11 +82,19 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
    * needs to be restarted.
    *
    * @param downloadTask The download task.
+   * @param dataDownloadDAO data download DAO.
+   * @param eventService event service.
+   * @param dataTransferService data transfer service.
    * @throws HpcException If it failed to update a download task.
    */
-  public HpcStreamingDownload(HpcDataObjectDownloadTask downloadTask) throws HpcException {
+  public HpcStreamingDownload(HpcDataObjectDownloadTask downloadTask,
+      HpcDataDownloadDAO dataDownloadDAO, HpcEventService eventService,
+      HpcDataTransferService dataTransferService) throws HpcException {
     // Update an persist a download task. This object tracks the download request
     // through completion
+    this.dataDownloadDAO = dataDownloadDAO;
+    this.eventService = eventService;
+    this.dataTransferService = dataTransferService;
     updateDownloadTask(downloadTask);
   }
 
