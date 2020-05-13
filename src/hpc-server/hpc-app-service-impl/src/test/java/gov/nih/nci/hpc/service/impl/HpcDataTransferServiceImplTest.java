@@ -249,6 +249,66 @@ public class HpcDataTransferServiceImplTest {
     dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null,
         HpcDataTransferType.S_3, "", "", "", false, 0L);
   }
+  
+  /**
+   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+   */
+  /*
+   * Test scenario: Successful download to AWS S3 destination Expected:
+   * HpcDataObjectDownloadResponse object w/ download task ID
+   */
+  @Test
+  public void testS3DownloadDataObject() throws HpcException {
+    // Mock setup.
+    HpcArchive baseDownloadSource = new HpcArchive();
+    baseDownloadSource.setType(HpcArchiveType.ARCHIVE);
+    HpcFileLocation baseDownloadSourceFileLocation = new HpcFileLocation();
+    baseDownloadSourceFileLocation.setFileContainerId("testBaseDownloadSource");
+    baseDownloadSourceFileLocation.setFileId("testBaseDownloadSource");
+    baseDownloadSource.setFileLocation(baseDownloadSourceFileLocation);
+    HpcDataTransferConfiguration dataTransferConfig = new HpcDataTransferConfiguration();
+    dataTransferConfig.setBaseDownloadSource(baseDownloadSource);
+    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
+        anyObject(), anyObject())).thenReturn(dataTransferConfig);
+    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
+        anyObject(), anyObject())).thenReturn(dataTransferConfig);
+
+    when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+        .thenReturn(new HpcIntegratedSystemAccount());
+    when(systemAccountLocatorMock.getSystemAccount(anyObject()))
+        .thenReturn(new HpcIntegratedSystemAccount());
+    when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+
+    // Prepare test data.
+    HpcFileLocation archiveLocation = new HpcFileLocation();
+    archiveLocation.setFileContainerId("testArchiveFileContainerId");
+    archiveLocation.setFileId("testArchiveFileId");
+
+    HpcFileLocation destinationLocation = new HpcFileLocation();
+    destinationLocation.setFileContainerId("testDestinationFileContainerId");
+    destinationLocation.setFileId("testDestinationFileId");
+
+    HpcS3Account s3Account = new HpcS3Account();
+    s3Account.setAccessKey("testAccessKey");
+    s3Account.setSecretKey("testSecretKey");
+    s3Account.setRegion("testRegion");
+
+    HpcS3DownloadDestination s3loadDestination = new HpcS3DownloadDestination();
+    s3loadDestination.setDestinationLocation(destinationLocation);
+    s3loadDestination.setAccount(s3Account);
+
+    // Run the test.
+    HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(
+        "/test/path", archiveLocation, null, s3loadDestination, null, null, HpcDataTransferType.S_3,
+        "testConfigId", "", "testUserId", false, 0L);
+
+    // Assert expected result.
+    assertNull(downloadResponse.getDownloadTaskId());
+    assertEquals(downloadResponse.getDestinationLocation().getFileContainerId(),
+        destinationLocation.getFileContainerId());
+    assertEquals(downloadResponse.getDestinationLocation().getFileId(),
+        destinationLocation.getFileId());
+  }
 
   // ---------------------------------------------------------------------//
   // Helper Methods
