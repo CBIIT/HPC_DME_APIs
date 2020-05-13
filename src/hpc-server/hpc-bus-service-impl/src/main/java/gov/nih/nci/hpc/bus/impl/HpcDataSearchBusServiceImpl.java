@@ -421,6 +421,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		} else {
 			HpcMetadataEntry entry = new HpcMetadataEntry();
 			BeanUtils.copyProperties(collectionPath, entry);
+			entry.setCollectionId(collectionPath.getMetaCollectionId());
 			collection.getMetadataEntries().getParentMetadataEntries().add(entry);
 		}
 		prevId = collectionPath.getCollectionId();
