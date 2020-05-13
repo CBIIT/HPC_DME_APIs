@@ -136,7 +136,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DETAILED_COLLECTION_PATHS_SQL = "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
 			+ "coll.coll_owner_zone, coll.coll_map_id, coll.coll_inheritance, coll.r_comment, "
 			+ "coll.coll_info1, coll.coll_info2, coll.create_ts, coll.r_comment, coll.coll_type, "
-			+ "mv.meta_attr_name, mv.meta_attr_value, mv.level, mv.level_label "
+			+ "mv.meta_attr_name, mv.meta_attr_value, mv.level, mv.level_label, mv.coll_id "
 			+ "from \"r_coll_hierarchy_meta_main\" mv, public.\"r_coll_main\" coll "
 			+ "where mv.object_id = coll.coll_id and mv.object_path in ";
 
@@ -274,6 +274,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		Integer level = rs.getInt(17);
 		searchMetadataEntry.setLevel(level != null ? level.intValue() : null);
 		searchMetadataEntry.setLevelLabel(rs.getString(18));
+		Long metaCollId = rs.getLong(19);
+		searchMetadataEntry.setMetaCollectionId(metaCollId != null ? metaCollId.intValue() : null);
 
 		return searchMetadataEntry;
 	};
