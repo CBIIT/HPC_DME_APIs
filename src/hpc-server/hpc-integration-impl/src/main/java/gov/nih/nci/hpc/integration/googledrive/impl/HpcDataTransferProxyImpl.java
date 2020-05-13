@@ -15,6 +15,7 @@ import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -82,14 +83,33 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     try {
       Drive service = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(),
-          JacksonFactory.getDefaultInstance(), new GoogleCredential().setAccessToken(""))
-              .setApplicationName("").build();
+          JacksonFactory.getDefaultInstance(),
+          new GoogleCredential().setAccessToken(
+              "ya29.a0AfH6SMBOnYeDYUrLKn0eEOSZI6zpjOqFMRxKssisOeSdclZJ87NYVQu8R_ACgmkS8rPbI0Ai_FDmU3v9iUviE5b5yaFHIhf7E52pM0XXlxGxgghFimE6j1CXTkpopUaqJdghQE3vtfZEuFG3YWJttHOouY57inqobSI"))
+                  .setApplicationName("NCI-HPC-DME").build();
 
-      File fileMetadata = new File();
-      fileMetadata.setName("ERAN.jpg");
-      InputStream sourceInputStream = new URL(downloadRequest.getArchiveLocationURL()).openStream();
-      service.files().create(fileMetadata,
-          new InputStreamContent("application/octet-stream", sourceInputStream));
+      // Print the names and IDs for up to 10 files.
+      FileList result = service.files().list().setPageSize(100)
+          .setFields("nextPageToken, files(id, name, parents)").execute();
+      List<File> files = result.getFiles();
+      if (files == null || files.isEmpty()) {
+        logger.error("No files found.");
+      } else {
+        System.out.println("Browse drive - Files found:");
+        for (File file : files) {
+          logger.error("{} ({}) ({})\n", file.getName(), file.getId(), file.getParents());
+        }
+      }
+      
+      
+       File fileMetadata = new File(); 
+       fileMetadata.setName("ERAN-test-5-12-20.jpg"); 
+       InputStream sourceInputStream = new URL(downloadRequest.getArchiveLocationURL()).openStream();
+       InputStreamContent isc = new InputStreamContent("application/octet-stream",
+           sourceInputStream);
+       Drive.Files.Create create = service.files().create(fileMetadata, isc);
+       File fl = create.execute();
+       logger.error("ERAN: {}", fl.getId());
 
     } catch (IOException | GeneralSecurityException e) {
       throw new HpcException("[GoogleDrive] Failed to list objects: " + e.getMessage(),
