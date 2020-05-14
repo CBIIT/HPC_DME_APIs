@@ -55,4 +55,15 @@ public interface HpcDataBrowseService {
    * @throws HpcException on service failure.
    */
   public HpcBookmark getBookmark(String nciUserId, String bookmarkName) throws HpcException;
+  
+  
+  /**
+   * Get the saved list of bookmarks by path for a user.
+   *
+   * @param nciUserId The registered user ID.
+   * @param bookmarkPath The bookmark path.
+   * @return The requested bookmark.
+   * @throws HpcException on service failure.
+   */
+  public List<HpcBookmark> getBookmarksByPath(String nciUserId, String bookmarkPath) throws HpcException;
 }

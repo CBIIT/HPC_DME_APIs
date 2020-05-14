@@ -104,12 +104,18 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 	    if (!dataManagementSecurityService.groupExists(nciUserId) && securityService.getUser(nciUserId) == null) {
 	    	createUser(invoker, nciUserId);
 	    }
-    }
+    }									
     
     
     if (dataBrowseService.getBookmark(nciUserId, bookmarkName) != null) {
       throw new HpcException(
-          "Bookmark name already exists: " + bookmarkName, HpcErrorType.INVALID_REQUEST_INPUT);
+          "Bookmark name " + bookmarkName + " already exists ", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    
+    List<HpcBookmark> bookmarks = dataBrowseService.getBookmarksByPath(nciUserId, bookmarkRequest.getPath());
+    if ( bookmarks != null && bookmarks.size() > 0) {     
+        throw new HpcException(
+            "Bookmark path already exists in bookmark " + bookmarks.get(0).getName(), HpcErrorType.INVALID_REQUEST_INPUT);
     }
     
     HpcBookmark bookmark = new HpcBookmark();
@@ -252,7 +258,9 @@ public class HpcDataBrowseBusServiceImpl implements HpcDataBrowseBusService {
 
     return bookmarkList;
   }
-
+  
+  
+  
 
   //---------------------------------------------------------------------//
 	// Helper Methods
