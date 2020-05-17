@@ -60,6 +60,9 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 	private static final String GET_USER_BOOKMARK_SQL = 
 		    "select * from public.\"HPC_USER_BOOKMARK\" where \"USER_ID\" = ? and \"BOOKMARK_NAME\" = ?";
 	
+	private static final String GET_USER_BOOKMARKS_BY_PATH_SQL = 
+			"select * from public.\"HPC_USER_BOOKMARK\" where \"USER_ID\" = ? and \"PATH\" =?";
+	
     //---------------------------------------------------------------------//
     // Instance members
     //---------------------------------------------------------------------//
@@ -168,6 +171,22 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a user bookamrk: " + e.getMessage(),
 		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+    }
+    
+    
+    @Override
+    public List<HpcBookmark> getBookmarksByPath(String nciUserId, String bookmarkPath) 
+    		                      throws HpcException
+    {
+		try {
+		     return jdbcTemplate.query(GET_USER_BOOKMARKS_BY_PATH_SQL, userBookmarkRowMapper, 
+		    		                            nciUserId, bookmarkPath);
+		     
+		} catch(DataAccessException e) {
+		        throw new HpcException("Failed to get bookamrks for user " 
+		        		+ nciUserId + " for the given path " + bookmarkPath + ": " + e.getMessage(),
+		    	    	HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
 }
