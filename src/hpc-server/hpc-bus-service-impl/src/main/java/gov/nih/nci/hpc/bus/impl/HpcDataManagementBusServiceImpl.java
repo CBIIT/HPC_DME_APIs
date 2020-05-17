@@ -1192,12 +1192,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           taskStatus.getDataObjectDownloadTask().getDataTransferRequestId());
       downloadStatus
           .setDataTransferType(taskStatus.getDataObjectDownloadTask().getDataTransferType());
-      downloadStatus.setDestinationLocation(
-          taskStatus.getDataObjectDownloadTask().getGlobusDownloadDestination() != null
-              ? taskStatus.getDataObjectDownloadTask().getGlobusDownloadDestination()
-                  .getDestinationLocation()
-              : taskStatus.getDataObjectDownloadTask().getS3DownloadDestination()
-                  .getDestinationLocation());
+      if (taskStatus.getDataObjectDownloadTask().getGlobusDownloadDestination() != null) {
+        downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask()
+            .getGlobusDownloadDestination().getDestinationLocation());
+      } else if (taskStatus.getDataObjectDownloadTask().getS3DownloadDestination() != null) {
+        downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask()
+            .getS3DownloadDestination().getDestinationLocation());
+      } else if (taskStatus.getDataObjectDownloadTask()
+          .getGoogleDriveDownloadDestination() != null) {
+        downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask()
+            .getGoogleDriveDownloadDestination().getDestinationLocation());
+      }
       downloadStatus
           .setDestinationType(taskStatus.getDataObjectDownloadTask().getDestinationType());
       downloadStatus
