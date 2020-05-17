@@ -66,7 +66,7 @@ public class HPCCommands implements CommandMarker {
 	  logger.debug("getCollection");
 	  Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(path, path);
-		return getCollections.process("getCollection", criteriaMap, outputfile, format, null);
+		return getCollections.process("getCollection", criteriaMap, outputfile, format, "yes");
 	}
 
 	@CliCommand(value = "getCollections", help = "Get Collections from HPC Archive. Usage: getCollections --criteria <metadata criteria> --outputfile <output file full path> --format <json|csv> --detail <yes|no>")
@@ -82,7 +82,7 @@ public class HPCCommands implements CommandMarker {
         logger.debug("getCollections");
 		Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(criteria, criteria);
-		return getCollections.process("getCollections", criteriaMap, outputfile, format, detail);
+		return getCollections.process("getCollections", criteriaMap, outputfile, format, "yes");
 	}
 	
 	
@@ -108,7 +108,7 @@ public class HPCCommands implements CommandMarker {
 	    logger.debug("getDatafile");
 	    Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(path, path);
-		return getDatafiles.process("getDatafile", criteriaMap, outputfile, format, null);
+		return getDatafiles.process("getDatafile", criteriaMap, outputfile, format, "yes");
 	}
 
 	@CliCommand(value = "getDatafiles", help = "Get Data files from HPC Archive. Usage: getDatafiles --criteria <metadata criteria> --outputfile <output file full path> --format <json|csv> --detail <yes|no>")
@@ -124,7 +124,7 @@ public class HPCCommands implements CommandMarker {
 	    logger.debug("getCollection");
 	    Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(criteria, criteria);
-		return getDatafiles.process("getDatafiles", criteriaMap, outputfile, format, detail);
+		return getDatafiles.process("getDatafiles", criteriaMap, outputfile, format, "yes");
 	}
 	
 	@CliCommand(value = "deleteDatafile", help = "Delete data object from HPC Archive. Usage: deleteDatafile --path <data file path>")
