@@ -1,21 +1,22 @@
 package gov.nih.nci.hpc.integration.googledrive.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -36,19 +37,17 @@ import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
  */
 public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // ---------------------------------------------------------------------//
-  // Constants
-  // ---------------------------------------------------------------------//
-
-  // The expiration of streaming data request from Cleversafe to AWS S3.
-  private static final int S3_STREAM_EXPIRATION = 96;
-
-  // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
 
-  // The S3 download executor.
+  // The Google Drive download executor.
   @Autowired
-  Executor s3Executor = null;
+  @Qualifier("hpcGoogleDriveDownloadExecutor")
+  Executor googleDriveExecutor = null;
+
+  // The (Google) HPC Application name. Users need to provide drive access to this app name.
+  @Value("${hpc.integration.googledrive.hpcApplicationName}")
+  String hpcApplicationName = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -80,85 +79,51 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   public String downloadDataObject(Object authenticatedToken,
       HpcDataObjectDownloadRequest downloadRequest, HpcArchive baseArchiveDestination,
       HpcDataTransferProgressListener progressListener) throws HpcException {
+    // Input validation
+    if (progressListener == null) {
+      throw new HpcException(
+          "[Google Drive] No progress listener provided for a download to Google Drive destination",
+          HpcErrorType.UNEXPECTED_ERROR);
+    }
 
+    // Connect to Google Drive.
+    Drive drive = null;
     try {
-      Drive service = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(),
+      drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(),
           JacksonFactory.getDefaultInstance(),
-          new GoogleCredential().setAccessToken(
-              "ya29.a0AfH6SMBOnYeDYUrLKn0eEOSZI6zpjOqFMRxKssisOeSdclZJ87NYVQu8R_ACgmkS8rPbI0Ai_FDmU3v9iUviE5b5yaFHIhf7E52pM0XXlxGxgghFimE6j1CXTkpopUaqJdghQE3vtfZEuFG3YWJttHOouY57inqobSI"))
-                  .setApplicationName("NCI-HPC-DME").build();
+          new GoogleCredential()
+              .setAccessToken(downloadRequest.getGoogleDriveDestination().getAccessToken()))
+                  .setApplicationName(hpcApplicationName).build();
 
-      // Print the names and IDs for up to 10 files.
-      FileList result = service.files().list().setPageSize(100)
-          .setFields("nextPageToken, files(id, name, parents)").execute();
-      List<File> files = result.getFiles();
-      if (files == null || files.isEmpty()) {
-        logger.error("No files found.");
-      } else {
-        System.out.println("Browse drive - Files found:");
-        for (File file : files) {
-          logger.error("{} ({}) ({})\n", file.getName(), file.getId(), file.getParents());
-        }
-      }
-      
-      
-       File fileMetadata = new File(); 
-       fileMetadata.setName("ERAN-test-5-12-20.jpg"); 
-       InputStream sourceInputStream = new URL(downloadRequest.getArchiveLocationURL()).openStream();
-       InputStreamContent isc = new InputStreamContent("application/octet-stream",
-           sourceInputStream);
-       Drive.Files.Create create = service.files().create(fileMetadata, isc);
-       File fl = create.execute();
-       logger.error("ERAN: {}", fl.getId());
+      // Confirm the drive is accessible.
+      drive.about().get().setFields("appInstalled").execute();
 
     } catch (IOException | GeneralSecurityException e) {
-      throw new HpcException("[GoogleDrive] Failed to list objects: " + e.getMessage(),
-          HpcErrorType.DATA_TRANSFER_ERROR, e);
+      throw new HpcException("Failed to access Google Drive: " + e.getMessage(),
+          HpcErrorType.INVALID_REQUEST_INPUT, e);
     }
-    /*
-     * if (progressListener == null) { throw new HpcException(
-     * "[S3] No progress listener provided for a download to AWS S3 destination",
-     * HpcErrorType.UNEXPECTED_ERROR); }
-     * 
-     * CompletableFuture<Void> s3TransferManagerDownloadFuture = CompletableFuture.runAsync( () -> {
-     * try { // Create source URL and open a connection to it. InputStream sourceInputStream = new
-     * URL(sourceURL).openStream();
-     * 
-     * // Create a S3 upload request. ObjectMetadata metadata = new ObjectMetadata();
-     * metadata.setContentLength(fileSize); PutObjectRequest request = new PutObjectRequest(
-     * destinationLocation.getFileContainerId(), destinationLocation.getFileId(), sourceInputStream,
-     * metadata);
-     * 
-     * // Set the read limit on the request to avoid AWSreset exceptions.
-     * request.getRequestClientOptions().setReadLimit(getReadLimit(fileSize));
-     * 
-     * // Upload asynchronously. AWS transfer manager will perform the upload in its own managed
-     * thread. Upload s3Upload =
-     * s3Connection.getTransferManager(s3AccountAuthenticatedToken).upload(request);
-     * 
-     * // Attach a progress listener. String sourceDestinationLogMessage = "download to " +
-     * destinationLocation.getFileContainerId() + ":" + destinationLocation.getFileId();
-     * s3Upload.addProgressListener( new HpcS3ProgressListener(progressListener,
-     * sourceDestinationLogMessage));
-     * 
-     * logger.info(
-     * "S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
-     * sourceDestinationLogMessage, fileSize, request.getRequestClientOptions().getReadLimit());
-     * 
-     * // Wait for the result. This ensures the input stream to the URL remains opened and connected
-     * until the download is complete. // Note that this wait for AWS transfer manager completion is
-     * done in a separate thread (from s3Executor pool), so callers to // the API don't wait.
-     * s3Upload.waitForUploadResult();
-     * 
-     * } catch (AmazonClientException | HpcException | IOException e) { logger.error(
-     * "[S3] Failed to downloadload to AWS S3 destination: " + e.getMessage(), e);
-     * progressListener.transferFailed(e.getMessage());
-     * 
-     * } catch (InterruptedException ie) { Thread.currentThread().interrupt(); } }, s3Executor);
-     * 
-     * return String.valueOf(s3TransferManagerDownloadFuture.hashCode());
-     */
-    return null;
+
+    // Stream the file to Google Drive.
+    final Drive googleDrive = drive;
+    CompletableFuture<Void> googleDriveDownloadFuture = CompletableFuture.runAsync(() -> {
+      try {
+        progressListener.transferCompleted(googleDrive.files()
+            .create(
+                new File().setName(downloadRequest.getGoogleDriveDestination()
+                    .getDestinationLocation().getFileId()),
+                new InputStreamContent("application/octet-stream",
+                    new URL(downloadRequest.getArchiveLocationURL()).openStream()))
+            .setFields("size").execute().getSize());
+
+      } catch (IOException e) {
+        String message = "[GoogleDrive] Failed to download object: " + e.getMessage();
+        logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
+        progressListener.transferFailed(message);
+      }
+
+    }, googleDriveExecutor);
+
+    return String.valueOf(googleDriveDownloadFuture.hashCode());
   }
 
   @Override
@@ -172,30 +137,5 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       HpcFileLocation directoryLocation) throws HpcException {
     throw new HpcException("scanDirectory() not supported", HpcErrorType.UNEXPECTED_ERROR);
 
-  }
-
-  @Override
-  public String getFileContainerName(Object authenticatedToken, String fileContainerId)
-      throws HpcException {
-    return fileContainerId;
-  }
-
-  // ---------------------------------------------------------------------//
-  // Helper Methods
-  // ---------------------------------------------------------------------//
-
-  /**
-   * Get buffer read limit for a given file size
-   *
-   * @param fileSize The file size.
-   * @return read limit
-   */
-  private int getReadLimit(long fileSize) {
-    try {
-      return Math.toIntExact(fileSize + 1);
-
-    } catch (ArithmeticException e) {
-      return Integer.MAX_VALUE;
-    }
   }
 }

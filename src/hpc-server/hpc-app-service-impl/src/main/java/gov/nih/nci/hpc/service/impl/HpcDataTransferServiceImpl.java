@@ -734,9 +734,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     taskResult.setPath(downloadTask.getPath());
     taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
     taskResult.setDataTransferType(downloadTask.getDataTransferType());
-    taskResult.setDestinationLocation(downloadTask.getGlobusDownloadDestination() != null
-        ? downloadTask.getGlobusDownloadDestination().getDestinationLocation()
-        : downloadTask.getS3DownloadDestination().getDestinationLocation());
+    taskResult.setDestinationType(downloadTask.getDestinationType());
+    if (downloadTask.getGlobusDownloadDestination() != null) {
+      taskResult.setDestinationLocation(
+          downloadTask.getGlobusDownloadDestination().getDestinationLocation());
+    } else if (downloadTask.getS3DownloadDestination() != null) {
+      taskResult
+          .setDestinationLocation(downloadTask.getS3DownloadDestination().getDestinationLocation());
+    } else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
+      taskResult.setDestinationLocation(
+          downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
+    }
     taskResult.setDestinationType(downloadTask.getDestinationType());
     taskResult.setResult(result);
     taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
@@ -1122,8 +1130,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("Null / Empty file container ID.", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    return dataTransferProxies.get(dataTransferType).getFileContainerName(
-        getAuthenticatedToken(dataTransferType, configurationId, null), fileContainerId);
+    return dataTransferProxies.get(dataTransferType)
+        .getFileContainerName(dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE) ? null
+            : getAuthenticatedToken(dataTransferType, configurationId, null), fileContainerId);
   }
 
   /**
@@ -2010,27 +2019,28 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       HpcDataObjectDownloadResponse response, HpcArchive baseArchiveDestination)
       throws HpcException {
 
-    // HpcS3Download s3Download = new HpcS3Download(downloadRequest);
+    HpcStreamingDownload googleDriveDownload =
+        new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService, this);
 
     // Generate a download URL from the Cleversafe archive.
     downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
         downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
         downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
 
-    // Perform the S3 download (From Cleversafe to User's Google Drive).
+    // Perform the download (From Cleversafe to User's Google Drive).
     try {
       dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE).downloadDataObject(null,
-          downloadRequest, baseArchiveDestination, /* s3Download */ null);
+          downloadRequest, baseArchiveDestination, googleDriveDownload);
 
       // Populate the response object.
-      // response.setDownloadTaskId(s3Download.getDownloadTask().getId());
-      // response.setDestinationLocation(
-      // s3Download.getDownloadTask().getS3DownloadDestination().getDestinationLocation());
+      response.setDownloadTaskId(googleDriveDownload.getDownloadTask().getId());
+      response.setDestinationLocation(googleDriveDownload.getDownloadTask()
+          .getGoogleDriveDownloadDestination().getDestinationLocation());
 
     } catch (HpcException e) {
       // Cleanup the download task and rethrow.
-      // completeDataObjectDownloadTask(s3Download.getDownloadTask(), HpcDownloadResult.FAILED,
-      // e.getMessage(), Calendar.getInstance(), 0);
+      completeDataObjectDownloadTask(googleDriveDownload.getDownloadTask(),
+          HpcDownloadResult.FAILED, e.getMessage(), Calendar.getInstance(), 0);
 
       throw (e);
     }
@@ -2520,164 +2530,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           baseDownloadSource.getFileLocation().getFileId() + "/" + UUID.randomUUID().toString());
 
       return sourceLocation;
-    }
-  }
-
-  // AWS S3 download.
-  private class HpcS3Download implements HpcDataTransferProgressListener {
-    // ---------------------------------------------------------------------//
-    // Instance members
-    // ---------------------------------------------------------------------//
-
-    // A download data object task (keeps track of the async S3 download
-    // end-to-end.
-    private HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
-
-    // ---------------------------------------------------------------------//
-    // Constructors
-    // ---------------------------------------------------------------------//
-
-    /**
-     * Constructs a S3 download object (to keep track of async processing)
-     *
-     * @param downloadRequest The download request.
-     * @throws HpcException If it failed to create a download task.
-     */
-    public HpcS3Download(HpcDataObjectDownloadRequest downloadRequest) throws HpcException {
-      // Create an persist a download task. This object tracks the download request
-      // through completion
-      createDownloadTask(downloadRequest);
-    }
-
-    /**
-     * Constructs a S3 download object (to keep track of async processing). This constructor is used
-     * when a S3 download is restarted, i.e. there is an existing task, and the transfer needs to be
-     * restarted.
-     *
-     * @param downloadTask The download task.
-     * @throws HpcException If it failed to update a download task.
-     */
-    public HpcS3Download(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-      // Update an persist a download task. This object tracks the download request
-      // through completion
-      updateDownloadTask(downloadTask);
-    }
-
-    // ---------------------------------------------------------------------//
-    // Methods
-    // ---------------------------------------------------------------------//
-
-    /**
-     * Return the download task.
-     *
-     * @return The S3 download task.
-     */
-    public HpcDataObjectDownloadTask getDownloadTask() {
-      return downloadTask;
-    }
-
-    // ---------------------------------------------------------------------//
-    // HpcDataTransferProgressListener Interface Implementation
-    // ---------------------------------------------------------------------//
-
-    @Override
-    public void transferCompleted(Long bytesTransferred) {
-      // This callback method is called when the S3 download completed.
-      completeDownloadTask(HpcDownloadResult.COMPLETED, null, bytesTransferred);
-    }
-
-    @Override
-    public void transferFailed(String message) {
-      // This callback method is called when the first hop download failed.
-      completeDownloadTask(HpcDownloadResult.FAILED, message, 0);
-    }
-
-    // ---------------------------------------------------------------------//
-    // Helper Methods
-    // ---------------------------------------------------------------------//
-
-    /**
-     * Create a download task for a S3 download.
-     *
-     * @param downloadRequest The download request.
-     * @throws HpcException If it failed to persist the task.
-     */
-    private void createDownloadTask(HpcDataObjectDownloadRequest downloadRequest)
-        throws HpcException {
-      downloadTask.setDataTransferType(HpcDataTransferType.S_3);
-      downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
-      downloadTask.setDownloadFilePath(null);
-      downloadTask.setUserId(downloadRequest.getUserId());
-      downloadTask.setPath(downloadRequest.getPath());
-      downloadTask.setConfigurationId(downloadRequest.getConfigurationId());
-      downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
-      downloadTask.setCompletionEvent(downloadRequest.getCompletionEvent());
-      downloadTask.setArchiveLocation(downloadRequest.getArchiveLocation());
-      downloadTask.setS3DownloadDestination(downloadRequest.getS3Destination());
-      downloadTask.setDestinationType(HpcDataTransferType.S_3);
-      downloadTask.setCreated(Calendar.getInstance());
-      downloadTask.setPercentComplete(0);
-      downloadTask.setSize(downloadRequest.getSize());
-
-      dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
-    }
-
-    /**
-     * Update a download task for a S3 download.
-     *
-     * @param downloadTask The download task.
-     * @throws HpcException If it failed to persist the task.
-     */
-    private void updateDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-      this.downloadTask.setId(downloadTask.getId());
-      this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
-      this.downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.IN_PROGRESS);
-      this.downloadTask.setDownloadFilePath(null);
-      this.downloadTask.setUserId(downloadTask.getUserId());
-      this.downloadTask.setPath(downloadTask.getPath());
-      this.downloadTask.setConfigurationId(downloadTask.getConfigurationId());
-      this.downloadTask.setS3ArchiveConfigurationId(downloadTask.getS3ArchiveConfigurationId());
-      this.downloadTask.setCompletionEvent(downloadTask.getCompletionEvent());
-      this.downloadTask.setArchiveLocation(downloadTask.getArchiveLocation());
-      this.downloadTask.setS3DownloadDestination(downloadTask.getS3DownloadDestination());
-      this.downloadTask.setDestinationType(HpcDataTransferType.S_3);
-      this.downloadTask.setCreated(downloadTask.getCreated());
-      this.downloadTask.setPercentComplete(0);
-      this.downloadTask.setSize(downloadTask.getSize());
-
-      dataDownloadDAO.upsertDataObjectDownloadTask(this.downloadTask);
-    }
-
-    /**
-     * Complete this S3 download task, and send event.
-     *
-     * @param result The download task result.
-     * @param message The message to include in the download failed event.
-     * @param bytesTransferred Total bytes transfered in this download task.
-     */
-    private void completeDownloadTask(HpcDownloadResult result, String message,
-        long bytesTransferred) {
-      try {
-        Calendar completed = Calendar.getInstance();
-        completeDataObjectDownloadTask(downloadTask, result, message, completed, bytesTransferred);
-
-        // Send a download completion or failed event (if requested to).
-        if (downloadTask.getCompletionEvent()) {
-          if (result.equals(HpcDownloadResult.COMPLETED)) {
-            eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(),
-                downloadTask.getPath(), HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
-                downloadTask.getS3DownloadDestination().getDestinationLocation(), completed);
-          } else {
-            eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(),
-                downloadTask.getPath(), HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
-                downloadTask.getS3DownloadDestination().getDestinationLocation(), completed,
-                message);
-          }
-        }
-
-      } catch (HpcException e) {
-        logger.error("Failed to complete S3 download task", e);
-      }
     }
   }
 

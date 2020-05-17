@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
@@ -83,6 +84,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   // The S3 download executor.
   @Autowired
+  @Qualifier("hpcS3DownloadExecutor")
   Executor s3Executor = null;
 
   // Date formatter to format files last-modified date
