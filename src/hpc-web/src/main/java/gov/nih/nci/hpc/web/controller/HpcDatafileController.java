@@ -38,6 +38,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
@@ -91,8 +92,8 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			HttpServletRequest request) {
 		try {
 			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-			String userId = (String) session.getAttribute("hpcUserId");
-			String authToken = (String) session.getAttribute("hpcUserToken");
+			
+			String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);
 			if (user == null || authToken == null) {
 				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
 				bindingResult.addError(error);
@@ -107,15 +108,15 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			}
 
 			if (path == null)
-				return "dashboard";
+				return RET_DASHBOARD;
 
 			HpcDataObjectListDTO datafiles = HpcClientUtil.getDatafiles(authToken, serviceURL, path, false, true, 
 					sslCertPath, sslCertPassword);
-			if (datafiles != null && datafiles.getDataObjects() != null && datafiles.getDataObjects().size() > 0) {
-				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+			if (datafiles != null && datafiles.getDataObjects() != null && !datafiles.getDataObjects().isEmpty()) {
+				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
 				if (modelDTO == null) {
 					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-					session.setAttribute("userDOCModel", modelDTO);
+					session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
 				}
 				String basePath = path.substring(0, StringUtils.ordinalIndexOf(path, "/", 2) < 0 ? path.length() : StringUtils.ordinalIndexOf(path, "/", 2));
                 HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
@@ -127,7 +128,18 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 				hpcDatafile.setPath(path);
 				model.addAttribute("hpcDatafile", hpcDatafile);
 				model.addAttribute("attributeNames", getMetadataAttributeNames(dataFile));
-
+				
+				//Add the bookmark icon only if this path is not already bookmarked
+				boolean bookmarkExistsFlag = false;
+				List<HpcBookmark> bookmarks = fetchCurrentUserBookmarks(session);
+				for(HpcBookmark bookmark: bookmarks) {
+					if(bookmark.getPath().contentEquals(path)) {
+						bookmarkExistsFlag = true;
+						break;
+					}
+				}
+				model.addAttribute("bookmarkExists", Boolean.toString(bookmarkExistsFlag));
+								
 				if (action != null && action.equals("edit")) {
 					String collectionType = getParentCollectionType(dataFile);
 					populateFormAttributes(request, session, model, basePath,
@@ -138,23 +150,21 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 					model.addAttribute("hpcDatafile", hpcDatafile);
 					model.addAttribute("action", "edit");
 				}
-				//HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
-				//		serviceURL, sslCertPath, sslCertPassword);
+				
 				if (user.getUserRole().equals("SYSTEM_ADMIN") || user.getUserRole().equals("GROUP_ADMIN")) {
 					if (dataFile.getPermission().equals(HpcPermission.OWN))
-						model.addAttribute("userpermission", "DELETE");
+						model.addAttribute(ATTR_USER_PERMISSION, "DELETE");
 					else
-						model.addAttribute("userpermission", dataFile.getPermission().toString());
+						model.addAttribute(ATTR_USER_PERMISSION, dataFile.getPermission().toString());
 				} else
-					model.addAttribute("userpermission", dataFile.getPermission().toString());
+					model.addAttribute(ATTR_USER_PERMISSION, dataFile.getPermission().toString());
 			} else {
 				String message = "Data file not found!";
-				model.addAttribute("error", message);
-				return "dashboard";
+				model.addAttribute(ATTR_ERROR, message);
+				return RET_DASHBOARD;
 			}
-		} catch (Exception e) {
-			model.addAttribute("error", "Failed to get data file: " + e.getMessage());
-			e.printStackTrace();
+		} catch (HpcWebException e) {
+			model.addAttribute(ATTR_ERROR, e.getMessage());
 			return "datafile";
 		}
 		return "datafile";
@@ -174,7 +184,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 	}
 	
 	private List<String> getMetadataAttributeNames(HpcDataObjectDTO dataFile) {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		if (dataFile == null || dataFile.getMetadataEntries() == null
 				|| dataFile.getMetadataEntries().getSelfMetadataEntries() == null
 				|| dataFile.getMetadataEntries().getParentMetadataEntries() == null)
@@ -222,7 +232,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			if (hpcDatafile.getPath() == null || hpcDatafile.getPath().trim().length() == 0)
 				model.addAttribute("error", "Invald Data file path");
 
-			HpcDataObjectRegistrationRequestDTO registrationDTO = constructRequest(request, session, hpcDatafile.getPath());
+			HpcDataObjectRegistrationRequestDTO registrationDTO = constructRequest(request);
 
 			boolean updated = HpcClientUtil.updateDatafile(authToken, serviceURL, registrationDTO,
 					hpcDatafile.getPath(), sslCertPath, sslCertPassword);
@@ -279,7 +289,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			else
 			  attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
-			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute())) {
+			if (systemAttrs.contains(entry.getAttribute())) {
 				attrEntry.setSystemAttr(true);
 				model.getSelfSystemMetadataEntries().add(attrEntry);
 			}
@@ -295,22 +305,16 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
-			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
-				attrEntry.setSystemAttr(true);
-			else
-				attrEntry.setSystemAttr(false);
-			if(isEncryptedAttribute(entry.getAttribute(), null, rules))
-                attrEntry.setEncrypted(true);
-            else
-                attrEntry.setEncrypted(false);
+			attrEntry.setSystemAttr(systemAttrs.contains(entry.getAttribute()));
+            attrEntry.setEncrypted(isEncryptedAttribute(entry.getAttribute(), null, rules));
+           
 			if(!attrEntry.isEncrypted())
 			    model.getParentMetadataEntries().add(attrEntry);
 		}
 		return model;
 	}
 
-    private HpcDataObjectRegistrationRequestDTO constructRequest(HttpServletRequest request, HttpSession session,
-			String path) {
+    private HpcDataObjectRegistrationRequestDTO constructRequest(HttpServletRequest request) {
 		Enumeration<String> params = request.getParameterNames();
 		HpcDataObjectRegistrationRequestDTO dto = new HpcDataObjectRegistrationRequestDTO();
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
