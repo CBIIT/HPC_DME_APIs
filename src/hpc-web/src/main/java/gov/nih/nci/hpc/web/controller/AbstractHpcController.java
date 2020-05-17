@@ -1,6 +1,8 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,7 +16,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
+import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
+import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
 public abstract class AbstractHpcController {
@@ -30,6 +35,19 @@ public abstract class AbstractHpcController {
 	protected String GROUP_ADMIN;
 	@Value("${hpc.USER}")
 	protected String USER;
+	
+	@Value("${gov.nih.nci.hpc.server.bookmark}")
+	private String bookmarkServiceURL;
+	
+	//Attribute constants
+	protected static final String ATTR_USER_LOGIN = "hpcLogin";
+	protected static final String ATTR_USER_TOKEN = "hpcUserToken";
+	protected static final String ATTR_USER_DOC_MODEL = "userDOCModel";
+	protected static final String ATTR_USER_PERMISSION = "userpermission";
+	protected static final String ATTR_ERROR = "error";
+	
+	//Return constants
+	protected static final String RET_DASHBOARD = "dashboard";
 	
 
 	protected Logger log = LoggerFactory.getLogger(this.getClass());
@@ -65,4 +83,28 @@ public abstract class AbstractHpcController {
 			model.addAttribute("docs", userDOCs);
 		}
 	}
+	
+	
+	protected List<HpcBookmark> fetchCurrentUserBookmarks(HttpSession session) {
+	    List<HpcBookmark> retBookmarkList;
+	    if (session.getAttribute("bookmarks") instanceof List) {
+	      // if "bookmarks" session attribute of type List is present, assume component type is HpcBookmark
+	      retBookmarkList = (List<HpcBookmark>) session.getAttribute("bookmarks");
+	    } else if (null == session.getAttribute("hpcUserToken")) {
+	      throw new HpcWebException("No user token is session, so unable to resolve which user.");
+	    } else {
+	      final String authToken = session.getAttribute("hpcUserToken").toString();
+	      final HpcBookmarkListDTO dto = HpcClientUtil.getBookmarks(
+	          authToken, bookmarkServiceURL, sslCertPath,
+	          sslCertPassword);
+	      if (null == dto || null == dto.getBookmarks()) {
+	        retBookmarkList = Collections.emptyList();
+	      } else {
+	        retBookmarkList = dto.getBookmarks();
+	        retBookmarkList.sort(Comparator.comparing(HpcBookmark::getName));
+	      }
+	      session.setAttribute("bookmarks", retBookmarkList);
+	    }
+	    return retBookmarkList;
+	  }
 }

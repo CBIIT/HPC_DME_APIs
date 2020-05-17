@@ -424,30 +424,6 @@ public class HpcBrowseController extends AbstractHpcController {
   }
 
 
-  private List<HpcBookmark> fetchCurrentUserBookmarks(HttpSession session) {
-    List<HpcBookmark> retBookmarkList;
-    if (session.getAttribute("bookmarks") instanceof List) {
-      // if "bookmarks" session attribute of type List is present, assume component type is HpcBookmark
-      retBookmarkList = (List<HpcBookmark>) session.getAttribute("bookmarks");
-    } else if (null == session.getAttribute("hpcUserToken")) {
-      throw new HpcWebException("No user token is session, so unable to resolve which user.");
-    } else {
-      final String authToken = session.getAttribute("hpcUserToken").toString();
-      final HpcBookmarkListDTO dto = HpcClientUtil.getBookmarks(
-          authToken, bookmarkServiceURL, sslCertPath,
-          sslCertPassword);
-      if (null == dto || null == dto.getBookmarks()) {
-        retBookmarkList = Collections.emptyList();
-      } else {
-        retBookmarkList = dto.getBookmarks();
-        retBookmarkList.sort(Comparator.comparing(HpcBookmark::getName));
-      }
-      session.setAttribute("bookmarks", retBookmarkList);
-    }
-    return retBookmarkList;
-  }
-
-
   /**
    * Generates navigation outcome string for redirecting to the data
    * file/object view.
