@@ -31,6 +31,7 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "S3_ACCOUNT_ACCESS_KEY" bytea,
   "S3_ACCOUNT_SECRET_KEY" bytea,
   "S3_ACCOUNT_REGION" text,
+  "GOOGLE_DRIVE_ACCESS_TOKEN" bytea,
   "COMPLETION_EVENT" boolean,
   "PERCENT_COMPLETE" integer,
   "SIZE" bigint,
@@ -76,6 +77,8 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_SECRET_KEY"
                   'The S3 destination account secret key';  
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_REGION" IS 
                   'The S3 destination account region';  
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" IS 
+                  'The Google Drive Access Token';  
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."COMPLETION_EVENT" IS 
                   'An indicator whether a completion event needs to be generated when the task is completed';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PERCENT_COMPLETE" IS 
