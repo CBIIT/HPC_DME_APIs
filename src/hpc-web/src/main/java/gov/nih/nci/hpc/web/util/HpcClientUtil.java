@@ -433,23 +433,23 @@ public class HpcClientUtil {
 
   public static HpcCollectionListDTO getCollection(String token, String hpcCollectionlURL,
       String path, boolean children, boolean list, boolean includeAcl, String hpcCertPath, String hpcCertPassword) {
-    try {
+	  
+	  try {
       final UriComponentsBuilder ucBuilder = UriComponentsBuilder.fromHttpUrl(
         hpcCollectionlURL).path("/{dme-archive-path}");
       if (children) {
         ucBuilder.pathSegment("children");
       } else {
-        ucBuilder.queryParam("list", Boolean.valueOf(list).toString());
+        ucBuilder.queryParam("list", Boolean.toString(list));
       }
-      ucBuilder.queryParam("includeAcl", Boolean.valueOf(includeAcl).toString());
+      ucBuilder.queryParam("includeAcl", Boolean.toString(includeAcl));
       final String serviceURL = ucBuilder.buildAndExpand(path).encode().toUri()
         .toURL().toExternalForm();
 	  
       WebClient client = HpcClientUtil.getWebClient(serviceURL, hpcCertPath, hpcCertPassword);
       client.header("Authorization", "Bearer " + token);
       Response restResponse = client.invoke("GET", null);
-      // System.out.println("restResponse.getStatus():"
-      // +restResponse.getStatus());
+      
       if (restResponse.getStatus() == 200) {
         ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
@@ -461,15 +461,14 @@ public class HpcClientUtil {
         MappingJsonFactory factory = new MappingJsonFactory(mapper);
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-        HpcCollectionListDTO collections = parser.readValueAs(HpcCollectionListDTO.class);
-        return collections;
+        return parser.readValueAs(HpcCollectionListDTO.class);
       } else {
-        throw new HpcWebException("Failed to get collection! No READ access!");
+    	logger.error("Failed to get collection " + path);
+        throw new HpcWebException("Failed to get collection " + path);
       }
-
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(path + ": " + e.getMessage());
+      logger.error("Failed to get collection " + path + ": ", e);
+      throw new HpcWebException("Failed to get collection " + path + ": " + e.getMessage());
     }
   }
   
@@ -514,8 +513,8 @@ public class HpcClientUtil {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HpcWebException(path + " : " + e.getMessage());
+      logger.error("Failed to get data file for path " + path + ": ", e);
+      throw new HpcWebException("Failed to get data file for path " + path + ": " + e.getMessage());
     }
   }
 
@@ -1448,16 +1447,16 @@ public class HpcClientUtil {
 	        MappingJsonFactory factory = new MappingJsonFactory(mapper);
 	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
-	        HpcGroupListDTO groups = parser.readValueAs(HpcGroupListDTO.class);
-	        return groups;
+	        return parser.readValueAs(HpcGroupListDTO.class);	       
 	      }
 
 	    } catch (Exception e) {
-	      e.printStackTrace();
-	      throw new HpcWebException("Failed to get User's group due to: " + e.getMessage());
+	      logger.error("failed to get user's groups: ", e);
+	      throw new HpcWebException("Failed to get user's groups: " + e.getMessage());
 	    }
 	    return null;
-	  }
+  }
+  
   
   public static HpcNamedCompoundMetadataQueryDTO getQuery(String token, String hpcQueryURL,
       String queryName, String hpcCertPath, String hpcCertPassword) {

@@ -88,14 +88,14 @@
 				</div>
 				<!--Title End-->
 				<!--Row start-->
-				<div class="row">
-					<div class="col-lg-9 col-md-12">
-						<div class="panel panel-default">
-							<div class="panel-heading" th:if="${collection != null}">
-								<h2 th:switch="${userpermission}">
-								<div th:case="'READ'">
-									<i class="fa fa-list-alt red"></i>
-									<strong>Collection</strong>
+			<div class="row">
+			 <div class="col-lg-9 col-md-12">
+			  <div class="panel panel-default">
+			   <div class="panel-heading" th:if="${collection != null}">
+			    <h2 th:switch="${userpermission}">
+			     <div th:case="'READ'">
+			      <i class="fa fa-list-alt red"></i>
+			      <strong>Collection</strong>
                   &nbsp;&nbsp;
                    <a  class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
@@ -111,16 +111,18 @@
                      th:href="@{../browse(refresh=1,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  &nbsp;&nbsp;&nbsp;
-                  <a data-toggle="modal" id="createBookmarks"
-                     class="btn btn-link btn-sm"
-                     th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
-                     data-target="#createBookmarksTarget">
-                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                  </a>
-								</div>
-								<div th:case="'WRITE'">
-									<i class="fa fa-list-alt red"></i>
+                  <span th:if="${bookmarkExists == 'false'}">
+                    &nbsp;&nbsp;&nbsp;
+                    <a data-toggle="modal" id="createBookmarks"
+                       class="btn btn-link btn-sm"
+                       th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
+                       data-target="#createBookmarksTarget">
+                      <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                    </a>
+                  </span>
+				</div>
+			    <div th:case="'WRITE'">
+				  <i class="fa fa-list-alt red"></i>
                   <strong>Collection</strong>
                   &nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
@@ -142,15 +144,17 @@
                      th:href="@{../browse(refresh=1,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  &nbsp;&nbsp;&nbsp;
-                  <a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm"
-                     th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
-                     data-target="#createBookmarksTarget">
-                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                  </a>
-								</div>
-								<div th:case="'OWN'">
-									<i class="fa fa-list-alt red"></i>
+                  <span th:if="${bookmarkExists == 'false'}">
+                    &nbsp;&nbsp;&nbsp;
+                    <a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm"
+                      th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
+                      data-target="#createBookmarksTarget">
+                     <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                    </a>
+                  </span>
+				 </div>
+				 <div th:case="'OWN'">
+				 <i class="fa fa-list-alt red"></i>
                   <strong>Collection</strong>
                   &nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
@@ -172,12 +176,14 @@
                      th:href="@{../browse(refresh=1,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  &nbsp;&nbsp;&nbsp;
-                  <a id="createBookmarks" class="btn btn-link btn-sm"
-                     th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
-                     data-target="#createBookmarksTarget" data-toggle="modal">
+                  <span th:if="${bookmarkExists == 'false'}">
+                    &nbsp;&nbsp;&nbsp;
+                    <a id="createBookmarks" class="btn btn-link btn-sm"
+                       th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
+                       data-target="#createBookmarksTarget" data-toggle="modal">
                     <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                  </a>
+                    </a>
+                  </span>
                   <span th:if="${canDelete == 'true'}">
                     &nbsp;&nbsp;&nbsp;
                     <a id="deleteCollection" class="btn btn-link btn-sm"
@@ -185,15 +191,15 @@
                       <i class="fa fa-trash-o" aria-hidden="true"></i>
                     </a>
                   </span>
-								</div>
-								</h2>
-							</div>
-							<div id="errorsFeedback" style="word-break: break-all;">
-								<div class="alert alert-error" th:if="${error != null}">
-									<a class="close" data-dismiss="alert">×</a> <label
-										for="${error}" th:text="${error}"></label>
-								</div>
-							</div>
+				 </div>
+				 </h2>
+				  </div>
+				  <div id="errorsFeedback" style="word-break: break-all;">
+					<div class="alert alert-error" th:if="${error != null}">
+						<a class="close" data-dismiss="alert">×</a> <label
+								for="${error}" th:text="${error}"></label>
+					</div>
+				  </div>
 								<!--panel-body start-->
 								<div class="panel-body"  th:if="${collection != null}">
 								<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog"
@@ -228,18 +234,6 @@
 												for="${collection.getCollection().getCollectionOwnerName()}"
 												th:text="${collection.getCollection().getCollectionOwnerName()}"></label>
 										</div>
-										<!-- 
-										<div class="col-md-6 form-group">
-											<label for="textbox1">Created on:</label> <label
-												for="${collection.getCollection().getCreatedAt()}"
-												th:text="${#calendars.format(collection.getCollection().getCreatedAt(),'dd MMMM yyyy')}"></label>
-										</div>
-										<div class="col-md-6 form-group">
-											<label for="textbox1">Last updated on:</label> <label
-												for="${collection.getCollection().getModifiedAt()}"
-												th:text="${#calendars.format(collection.getCollection().getModifiedAt(),'dd MMMM yyyy')}"></label>
-										</div>
-										 -->
 									</div>
 								</div>
 								<div class="panel-heading">
@@ -302,7 +296,7 @@
 											</tr>
 										  </div>
 										  
-										  <tr th:if="${action == 'edit' and collection.getSelfMetadataEntries().size() &gt; 0}">
+										  <tr th:if="${action == 'edit'}">
 											<td>&nbsp;</td>
 											<td align="right">
 												<div class="modal-footer">
