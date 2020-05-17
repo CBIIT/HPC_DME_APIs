@@ -1,5 +1,5 @@
 /**
- * HpcDomainValidator.java
+ * HpcStreamingDownload.java
  *
  * <p>
  * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -117,13 +118,13 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 
   @Override
   public void transferCompleted(Long bytesTransferred) {
-    // This callback method is called when the S3 download completed.
+    // This callback method is called when the Streaming download completed.
     completeDownloadTask(HpcDownloadResult.COMPLETED, null, bytesTransferred);
   }
 
   @Override
   public void transferFailed(String message) {
-    // This callback method is called when the first hop download failed.
+    // This callback method is called when streaming download failed.
     completeDownloadTask(HpcDownloadResult.FAILED, message, 0);
   }
 
@@ -213,16 +214,24 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
       dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
           bytesTransferred);
 
+      HpcFileLocation destinationLocation = null;
+      if (downloadTask.getS3DownloadDestination() != null) {
+        destinationLocation = downloadTask.getS3DownloadDestination().getDestinationLocation();
+      } else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
+        destinationLocation =
+            downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+      }
+
       // Send a download completion or failed event (if requested to).
       if (downloadTask.getCompletionEvent()) {
         if (result.equals(HpcDownloadResult.COMPLETED)) {
           eventService.addDataTransferDownloadCompletedEvent(downloadTask.getUserId(),
               downloadTask.getPath(), HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
-              downloadTask.getS3DownloadDestination().getDestinationLocation(), completed);
+              destinationLocation, completed);
         } else {
           eventService.addDataTransferDownloadFailedEvent(downloadTask.getUserId(),
               downloadTask.getPath(), HpcDownloadTaskType.DATA_OBJECT, downloadTask.getId(),
-              downloadTask.getS3DownloadDestination().getDestinationLocation(), completed, message);
+              destinationLocation, completed, message);
         }
       }
 

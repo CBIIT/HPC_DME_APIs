@@ -107,4 +107,7 @@
 	<!--  S3 download executor (Cleversafe -> AWS) thread pool -->
 	<task:executor id="hpcS3DownloadExecutor" pool-size="${hpc.integration.s3.downloadExecutorThreadPoolSize}"/>
 	
+	<!--  Google Drive download executor (Cleversafe -> Google Drive) thread pool -->
+	<task:executor id="hpcGoogleDriveDownloadExecutor" pool-size="${hpc.integration.googledrive.downloadExecutorThreadPoolSize}"/>
+	
 </beans>
