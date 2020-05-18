@@ -855,10 +855,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Submit a transfer request.
     try {
-      downloadTask.setDataTransferRequestId(dataTransferProxies
-          .get(downloadRequest.getDataTransferType())
-          .downloadDataObject(getAuthenticatedToken(downloadRequest.getDataTransferType(),
-              downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()),
+      downloadTask.setDataTransferRequestId(
+          dataTransferProxies.get(downloadRequest.getDataTransferType()).downloadDataObject(
+              downloadRequest.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE) ? null
+                  : getAuthenticatedToken(downloadRequest.getDataTransferType(),
+                      downloadRequest.getConfigurationId(),
+                      downloadRequest.getS3ArchiveConfigurationId()),
               downloadRequest, dataTransferConfiguration.getBaseArchiveDestination(),
               progressListener));
 
