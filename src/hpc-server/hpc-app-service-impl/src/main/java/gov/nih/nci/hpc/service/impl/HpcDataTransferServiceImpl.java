@@ -852,7 +852,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       progressListener =
           new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
     }
-
+    
+    // If the destination is Google Drive, we need to generate a download URL from the archive.
+    if(downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+    downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+        downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
+        downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
+    }
+    
     // Submit a transfer request.
     try {
       downloadTask.setDataTransferRequestId(
