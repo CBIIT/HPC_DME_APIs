@@ -818,6 +818,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     downloadRequest.setUserId(downloadTask.getUserId());
     downloadRequest.setGlobusDestination(downloadTask.getGlobusDownloadDestination());
     downloadRequest.setS3Destination(downloadTask.getS3DownloadDestination());
+    downloadRequest.setGoogleDriveDestination(downloadTask.getGoogleDriveDownloadDestination());
 
     // Get the data transfer configuration.
     HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
