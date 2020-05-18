@@ -459,6 +459,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
   @Override
   @HpcExecuteAsSystemAccount
+  public void startGoogleDriveDataObjectDownloadTasks() throws HpcException {
+    // Iterate through all the data object download tasks that are received and type is
+    // GOOGLE_DRIVE.
+    processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.RECEIVED,
+        HpcDataTransferType.GOOGLE_DRIVE);
+  }
+
+  @Override
+  @HpcExecuteAsSystemAccount
   public void completeInProgressDataObjectDownloadTasks() throws HpcException {
     // Iterate through all the data object download tasks that are in-progress.
     processDataObjectDownloadTasks(HpcDataTransferDownloadStatus.IN_PROGRESS, null);
