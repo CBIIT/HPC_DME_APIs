@@ -1161,8 +1161,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     // Construct and return a DTO.
     return toDownloadResponseDTO(downloadResponse.getDestinationLocation(),
-        downloadResponse.getDestinationFile(), downloadResponse.getDownloadTaskId(), null,
-        metadata.getDataTransferType().value());
+        downloadResponse.getDestinationFile(), downloadResponse.getDownloadTaskId(), null);
   }
 
   @Override
@@ -1190,8 +1189,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setCreated(taskStatus.getDataObjectDownloadTask().getCreated());
       downloadStatus.setDataTransferRequestId(
           taskStatus.getDataObjectDownloadTask().getDataTransferRequestId());
-      downloadStatus
-          .setDataTransferType(taskStatus.getDataObjectDownloadTask().getDataTransferType());
       if (taskStatus.getDataObjectDownloadTask().getGlobusDownloadDestination() != null) {
         downloadStatus.setDestinationLocation(taskStatus.getDataObjectDownloadTask()
             .getGlobusDownloadDestination().getDestinationLocation());
@@ -1214,7 +1211,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       downloadStatus.setPath(taskStatus.getResult().getPath());
       downloadStatus.setCreated(taskStatus.getResult().getCreated());
       downloadStatus.setDataTransferRequestId(taskStatus.getResult().getDataTransferRequestId());
-      downloadStatus.setDataTransferType(taskStatus.getResult().getDataTransferType());
       downloadStatus.setDestinationLocation(taskStatus.getResult().getDestinationLocation());
       downloadStatus.setDestinationType(taskStatus.getResult().getDestinationType());
       downloadStatus.setCompleted(taskStatus.getResult().getCompleted());
@@ -1248,8 +1244,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return toDownloadResponseDTO(null, null, null,
         dataTransferService.generateDownloadRequestURL(path, invokerNciAccount.getUserId(),
             metadata.getArchiveLocation(), metadata.getDataTransferType(), metadata.getSourceSize(),
-            metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()),
-        metadata.getDataTransferType().value());
+            metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId()));
   }
 
   @Override
@@ -1699,19 +1694,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param destinationFile The destination file.
    * @param taskId The data object download task ID.
    * @param downloadRequestURL A URL to use to download the data object.
-   * @param dataTransferType The data transfer type performing the download (S3 or Globus).
    * @return A download response DTO object
    */
   private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(
       HpcFileLocation destinationLocation, File destinationFile, String taskId,
-      String downloadRequestURL, String dataTransferType) {
+      String downloadRequestURL) {
     // Construct and return a DTO
     HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
     downloadResponse.setDestinationFile(destinationFile);
     downloadResponse.setDestinationLocation(destinationLocation);
     downloadResponse.setTaskId(taskId);
     downloadResponse.setDownloadRequestURL(downloadRequestURL);
-    downloadResponse.setDataTransferType(dataTransferType);
 
     return downloadResponse;
   }
