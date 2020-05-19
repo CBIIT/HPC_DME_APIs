@@ -2,10 +2,10 @@
 	"notificationFormats": [
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_IN_TEMPORARY_ARCHIVE",
-			"subjectFormat": "HPC Data Upload received in temporary archive",
+			"subjectFormat": "DME Data Upload received in staging archive",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data upload request is stored in temporary archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s",
+			"textFormat": "Your data upload request is stored in staging archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -15,14 +15,14 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_ARCHIVED",
-			"subjectFormat": "HPC Data Transfer Upload Request Completed at %1$s",
+			"subjectFormat": "DME Data Transfer Upload Request Completed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your upload request is completed.<br/>Source path: %1$s<br/>Target path: %2$s",
+			"textFormat": "Your upload request is completed.<br/>Source path: %1$s<br/>Target path: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "SOURCE_LOCATION",
@@ -36,7 +36,7 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_FAILED",
-			"subjectFormat": "HPC Data Transfer Upload Request Failed at %1$s",
+			"subjectFormat": "DME Data Transfer Upload Request Failed at %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
@@ -57,10 +57,10 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_URL_EXPIRED",
-			"subjectFormat": "HPC Data Transfer Upload URL Expired",
+			"subjectFormat": "DME Data Transfer Upload URL Expired",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data upload URL expired. <br/>Data path: %1$s",
+			"textFormat": "Your data upload URL expired. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -70,14 +70,14 @@
 		},
 		{
 			"eventType": "BULK_DATA_OBJECT_REGISTRATION_COMPLETED",
-			"subjectFormat": "HPC Bulk Data Object Registration Request Completed at %1$s",
+			"subjectFormat": "DME Bulk Data Object Registration Request Completed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s",
+			"textFormat": "Your bulk registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
@@ -91,14 +91,14 @@
 		},
 		{
 			"eventType": "BULK_DATA_OBJECT_REGISTRATION_FAILED",
-			"subjectFormat": "HPC Bulk Data Object Registration Request Failed at %1$s",
+			"subjectFormat": "DME Bulk Data Object Registration Request Failed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk registration failed. <br/>Task ID: %1$s",
+			"textFormat": "Your bulk registration failed. <br/>Task ID: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
@@ -108,7 +108,7 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_DOWNLOAD_COMPLETED",
-			"subjectFormat": "HPC %1$s Download Request Completed at %2$s",
+			"subjectFormat": "DME %1$s Download Request Completed at %2$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE",
@@ -119,7 +119,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s",
+			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -137,7 +137,7 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_DOWNLOAD_FAILED",
-			"subjectFormat": "HPC %1$s Download Request Failed at %2$s",
+			"subjectFormat": "DME %1$s Download Request Failed at %2$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DOWNLOAD_TASK_TYPE",
@@ -148,7 +148,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s",
+			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -170,14 +170,14 @@
 		},
 		{
 			"eventType": "USAGE_SUMMARY_REPORT",
-			"subjectFormat": "HPC DME Summary Report: [%1$s]",
+			"subjectFormat": "DME Summary Report: [%1$s]",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
 					"index": "0"
 				}
 			],
-			"textFormat": "HPC DME Usage summary report generated on %1$s. <br/>_______________________________________________________
+			"textFormat": "DME Usage summary report generated on %1$s. <br/>_______________________________________________________
          <br/>Total registered users: %2$s 
          <br/>Total size of the data:  %3$s bytes
          <br/>Largest file:  %4$s bytes
@@ -193,7 +193,8 @@
 		 <br/>\t > 100MB and < 500MB:  %13$s
 		 <br/>\t > 500MB and < 1GB:  %14$s
 		 <br/>\t > 1GB and < 10GB:  %15$s
-		 <br/>\t > 10GB:  %16$s",
+		 <br/>\t > 10GB:  %16$s
+		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
@@ -263,14 +264,14 @@
 		},
 		{
 			"eventType": "USAGE_SUMMARY_BY_WEEKLY_REPORT",
-			"subjectFormat": "HPC DME Summary by weekly report: [%1$s]",
+			"subjectFormat": "DME Summary by weekly report: [%1$s]",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
 					"index": "0"
 				}
 			],
-			"textFormat": "HPC DME Usage summary report generated on %1$s. <br/>_______________________________________________________
+			"textFormat": "DME Usage summary report generated on %1$s. <br/>_______________________________________________________
          <br/>Reporting period from %17$s to %18$s<br/>
          <br/>Total registered users: %2$s 
          <br/>Total size of the data:  %3$s bytes
@@ -287,7 +288,8 @@
 		 <br/>\t > 100MB and < 500MB:  %13$s
 		 <br/>\t > 500MB and < 1GB:  %14$s
 		 <br/>\t > 1GB and < 10GB:  %15$s
-		 <br/>\t > 10GB:  %16$s",
+		 <br/>\t > 10GB:  %16$s
+		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
@@ -365,10 +367,10 @@
 		},
 		{
 			"eventType": "COLLECTION_UPDATED",
-			"subjectFormat": "HPC collection updated",
+			"subjectFormat": "DME collection updated",
 			"subjectArguments": [
 			],
-			"textFormat": "Collection %1$s was updated.<br/> %2$s.",
+			"textFormat": "Collection %1$s was updated.<br/> %2$s.<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "COLLECTION_PATH",
@@ -400,7 +402,7 @@
 		},
 		{
 			"systemAdminNotificationType": "INTEGRATED_SYSTEM_ERROR",
-			"subjectFormat": "HPC-DM: %1$s error: %2$s",
+			"subjectFormat": "DME %1$s error: %2$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "INTEGRATED_SYSTEM",
