@@ -37,7 +37,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
   // Instance members
   // ---------------------------------------------------------------------//
 
-  // A download data object task (keeps track of the async S3 download
+  // A download data object task (keeps track of the async streaming download
   // end-to-end.
   private HpcDataObjectDownloadTask downloadTask = new HpcDataObjectDownloadTask();
 
@@ -106,7 +106,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
   /**
    * Return the download task.
    *
-   * @return The S3 download task.
+   * @return The download task being tracked.
    */
   public HpcDataObjectDownloadTask getDownloadTask() {
     return downloadTask;
@@ -133,7 +133,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
   // ---------------------------------------------------------------------//
 
   /**
-   * Create a download task for a S3 download.
+   * Create a download task for a streaming download (to AWS S3 or Google Drive).
    *
    * @param downloadRequest The download request.
    * @throws HpcException If it failed to persist the task.
@@ -167,7 +167,7 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
   }
 
   /**
-   * Update a download task for a S3 download.
+   * Update a download task for a streaming download (to AWS S3 or Google Drive).
    *
    * @param downloadTask The download task.
    * @throws HpcException If it failed to persist the task.

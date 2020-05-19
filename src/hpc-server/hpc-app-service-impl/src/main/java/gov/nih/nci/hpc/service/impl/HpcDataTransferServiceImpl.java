@@ -1624,6 +1624,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         throw new HpcException("Invalid Google Drive download destination location",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
+      
+      if (!googleDriveDownloadDestination.getDestinationLocation().getFileContainerId().equals("MyDrive")) {
+        // At this point we only support download to personal drive and expect the container ID to be "MyDrive"
+        throw new HpcException("Invalid file container ID. Only 'MyDrive' is supported",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
 
       if (StringUtils.isEmpty(googleDriveDownloadDestination.getAccessToken())) {
         throw new HpcException("Invalid Google Drive access token",
