@@ -54,6 +54,15 @@
 						</tr>
 						<tr>
 							<td>
+								<div th:if="${messages != null}">
+									<div class="alert alert-error" th:each="message: ${messages}">
+										  <label for="${message}" th:text="${message}"></label>
+									</div>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
 								<div class="form-group">
 									<div class="col-sm-12 column">
 										<label for="name">Name:</label> <input
@@ -69,8 +78,14 @@
 									</div>
 								</div>
 								<div class="modal-footer">
-									<button type="submit" class="btn btn-md btn-primary"
+									<span th:if="${bookmarkExists == 'true'}">
+										<button type="submit" class="btn btn-md btn-primary"
+										id="primaryButton" th:disabled="disabled">Create</button>
+									</span>
+									<span th:if="${bookmarkExists == 'false'}">
+										<button type="submit" class="btn btn-md btn-primary"
 										id="primaryButton" onClick="return validate()">Create</button>
+									</span>
 									<button type="button" class="btn btn-primary"
 										data-dismiss="modal" id="close">Close</button>
 								</div>

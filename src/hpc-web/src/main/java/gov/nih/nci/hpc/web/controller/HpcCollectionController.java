@@ -185,17 +185,6 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 				boolean canDeleteFlag = determineIfCollectionCanBeDelete(session, collection);
 				model.addAttribute(ATTR_CAN_DELETE, Boolean.toString(canDeleteFlag));
 				
-				//Add the bookmark icon only if this path is not already bookmarked
-				boolean bookmarkExistsFlag = false;
-				List<HpcBookmark> bookmarks = fetchCurrentUserBookmarks(session);
-				for(HpcBookmark bookmark: bookmarks) {
-					if(bookmark.getPath().contentEquals(path)) {
-						bookmarkExistsFlag = true;
-						break;
-					}
-				}
-				model.addAttribute("bookmarkExists", Boolean.toString(bookmarkExistsFlag));
-				
 				if (action != null && action.equals("edit")) {
 					if (collection.getPermission() == null || collection.getPermission().equals(HpcPermission.NONE)
 							|| collection.getPermission().equals(HpcPermission.READ)) {
