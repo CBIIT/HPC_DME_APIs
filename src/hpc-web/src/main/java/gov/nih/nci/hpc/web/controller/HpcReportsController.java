@@ -249,8 +249,12 @@ public class HpcReportsController extends AbstractHpcController {
       }
       List<HpcReportEntryDTO> entries = dto.getReportEntries();
       for (HpcReportEntryDTO entry : entries) {
-        if (env.getProperty(entry.getAttribute()) != null)
+        if (env.getProperty(entry.getAttribute()) != null) {
           entry.setAttribute(env.getProperty(entry.getAttribute()));
+          if (entry.getAttribute().equals(env.getProperty("TOTAL_NUM_OF_COLLECTIONS"))) {
+        	  entry.setValue(entry.getValue().replaceAll("[\\[\\]{]","").replaceAll("}","<br>"));
+          }
+        }
       }
       tReports.add(dto);
     }
