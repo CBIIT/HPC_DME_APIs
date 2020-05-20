@@ -117,20 +117,19 @@
                      th:href="@{../permissions(assignType=User,type=dataObject,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-users" title="Permissions" aria-hidden="true"></i>
                   </a>
-                   &nbsp;&nbsp;&nbsp;
+                  &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  <span th:if="${bookmarkExists == 'false'}">
-                    &nbsp;&nbsp;&nbsp;
-                    <a id="createBookmarks" class="btn btn-link btn-sm"
-                       th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                       data-target="#createBookmarksTarget" data-toggle="modal">
-                      <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                    </a>
-                  </span>
+                  &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
 				 </div>
+
 				 <div th:case="'WRITE'">
 				 <i class="fa fa-list-alt red"></i>
                   <strong>Data file</strong>
@@ -149,20 +148,19 @@
                      th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
                   </a>
-                   &nbsp;&nbsp;&nbsp;
+                  &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  <span th:if="${bookmarkExists == 'false'}">
-                    &nbsp;&nbsp;&nbsp;
-                    <a id="createBookmarks" class="btn btn-link btn-sm"
-                       th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                       data-target="#createBookmarksTarget" data-toggle="modal">
-                      <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                    </a>
-                  </span>
+                  &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
 				 </div>
+
 				 <div th:case="'OWN'">
 				 <i class="fa fa-list-alt red"></i>
                   <strong>Data file</strong>
@@ -181,20 +179,19 @@
                      th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
                   </a>
-                   &nbsp;&nbsp;&nbsp;
+                  &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  <span th:if="${bookmarkExists == 'false'}">
-                    &nbsp;&nbsp;&nbsp;
-                    <a id="createBookmarks" class="btn btn-link btn-sm"
-                       th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                       data-target="#createBookmarksTarget" data-toggle="modal">
-                      <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                    </a>
-                  </span>
+                  &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
 				 </div>
+
 				 <div th:case="'DELETE'">
 				  <i class="fa fa-list-alt red"></i>
                   <strong>Data file</strong>
@@ -218,14 +215,13 @@
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  <span th:if="${bookmarkExists == 'false'}">
-                    &nbsp;&nbsp;&nbsp;
-                    <a id="createBookmarks" class="btn btn-link btn-sm"
-                       th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                       data-target="#createBookmarksTarget" data-toggle="modal">
-                      <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                    </a>
-                 </span>
+                  &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
+
                   &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:onclick="'deleteObject(\''  + ${hpcDatafile.getDataObject().getAbsolutePath()} + '\')'">

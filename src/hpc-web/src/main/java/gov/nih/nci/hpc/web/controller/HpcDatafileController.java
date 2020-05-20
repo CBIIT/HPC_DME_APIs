@@ -128,17 +128,6 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 				hpcDatafile.setPath(path);
 				model.addAttribute("hpcDatafile", hpcDatafile);
 				model.addAttribute("attributeNames", getMetadataAttributeNames(dataFile));
-				
-				//Add the bookmark icon only if this path is not already bookmarked
-				boolean bookmarkExistsFlag = false;
-				List<HpcBookmark> bookmarks = fetchCurrentUserBookmarks(session);
-				for(HpcBookmark bookmark: bookmarks) {
-					if(bookmark.getPath().contentEquals(path)) {
-						bookmarkExistsFlag = true;
-						break;
-					}
-				}
-				model.addAttribute("bookmarkExists", Boolean.toString(bookmarkExistsFlag));
 								
 				if (action != null && action.equals("edit")) {
 					String collectionType = getParentCollectionType(dataFile);

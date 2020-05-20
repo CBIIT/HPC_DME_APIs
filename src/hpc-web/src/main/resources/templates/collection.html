@@ -111,16 +111,15 @@
                      th:href="@{../browse(refresh=1,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  <span th:if="${bookmarkExists == 'false'}">
-                    &nbsp;&nbsp;&nbsp;
-                    <a data-toggle="modal" id="createBookmarks"
-                       class="btn btn-link btn-sm"
-                       th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
-                       data-target="#createBookmarksTarget">
-                      <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                    </a>
-                  </span>
+                  &nbsp;&nbsp;&nbsp;
+                  <a data-toggle="modal" id="createBookmarks"
+                     class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
+                     data-target="#createBookmarksTarget">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
 				</div>
+
 			    <div th:case="'WRITE'">
 				  <i class="fa fa-list-alt red"></i>
                   <strong>Collection</strong>
@@ -144,15 +143,14 @@
                      th:href="@{../browse(refresh=1,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  <span th:if="${bookmarkExists == 'false'}">
-                    &nbsp;&nbsp;&nbsp;
-                    <a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm"
-                      th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
-                      data-target="#createBookmarksTarget">
-                     <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                    </a>
-                  </span>
+                  &nbsp;&nbsp;&nbsp;
+                  <a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm"
+                    th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
+                    data-target="#createBookmarksTarget">
+                   <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
 				 </div>
+
 				 <div th:case="'OWN'">
 				 <i class="fa fa-list-alt red"></i>
                   <strong>Collection</strong>
@@ -176,14 +174,13 @@
                      th:href="@{../browse(refresh=1,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                  <span th:if="${bookmarkExists == 'false'}">
-                    &nbsp;&nbsp;&nbsp;
-                    <a id="createBookmarks" class="btn btn-link btn-sm"
-                       th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
-                       data-target="#createBookmarksTarget" data-toggle="modal">
-                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                    </a>
-                  </span>
+                  &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${collection.getCollection().getCollectionName()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                  <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
+
                   <span th:if="${canDelete == 'true'}">
                     &nbsp;&nbsp;&nbsp;
                     <a id="deleteCollection" class="btn btn-link btn-sm"
