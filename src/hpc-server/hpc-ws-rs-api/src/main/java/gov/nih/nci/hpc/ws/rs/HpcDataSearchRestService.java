@@ -126,6 +126,23 @@ public interface HpcDataSearchRestService {
   public Response addQuery(
       @PathParam("queryName") String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQuery);
 
+
+
+  /**
+   * Add a new named query.
+   *
+   * @param queryName The query name.
+   * @param compoundMetadataQuery The compound metadata query DTO.
+   * @return The REST service response.
+   */
+  @PUT
+  @Path("/query/{queryName:.*}/{userId:.*}")
+  @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response addQueryByUser(
+      @PathParam("queryName") String queryName, @PathParam("userId") String userId, HpcCompoundMetadataQueryDTO compoundMetadataQuery);
+
+
+
   /**
    * Update a named query.
    *
