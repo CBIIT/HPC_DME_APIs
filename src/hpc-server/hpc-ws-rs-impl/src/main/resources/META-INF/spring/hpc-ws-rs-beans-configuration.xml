@@ -201,6 +201,7 @@
 				<!-- Security Service Authorizations -->
 				<entry key="registerUser" value="${hpc.ws.rs.auth.security.register-user}" />
 				<entry key="updateUser" value="${hpc.ws.rs.auth.security.update-user}" />
+				<entry key="deleteUser" value="${hpc.ws.rs.auth.security.delete-user}" />
 				<entry key="getUser" value="${hpc.ws.rs.auth.security.get-user}" />
 				<entry key="getInvoker" value="${hpc.ws.rs.auth.security.get-invoker}" />
 				<entry key="getActiveUsers" value="${hpc.ws.rs.auth.security.get-active-users}" />
