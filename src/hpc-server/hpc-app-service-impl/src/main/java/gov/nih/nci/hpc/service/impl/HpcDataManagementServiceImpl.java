@@ -114,7 +114,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Qualifier("hpcRegistrationResultsPagination")
   private HpcPagination pagination = null;
 
-
   // Prepared query to get data objects that have their data transfer in-progress
   // to archive.
   private List<HpcMetadataQuery> dataTransferReceivedQuery = new ArrayList<>();
