@@ -55,6 +55,20 @@ public interface HpcSecurityRestService {
   public Response updateUser(
       @PathParam("nciUserId") String nciUserId, HpcUserRequestDTO userUpdateRequest);
 
+
+
+  /**
+   * Delete a user.
+   *
+   * @param nciUserId The user ID to update.
+   * @return The REST service response.
+   */
+  @DELETE
+  @Path("/user/{nciUserId}")
+  public Response deleteUser(@PathParam("nciUserId") String nciUserId);
+
+
+
   /**
    * Get a user by NCI user id.
    *

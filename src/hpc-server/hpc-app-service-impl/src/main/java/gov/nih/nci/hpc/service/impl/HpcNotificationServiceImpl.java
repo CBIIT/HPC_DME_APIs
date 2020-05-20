@@ -151,32 +151,19 @@ public class HpcNotificationServiceImpl implements HpcNotificationService {
   }
 
   @Override
-  public void deleteNotificationSubscription(HpcEventType eventType) throws HpcException {
+  public void deleteNotificationSubscription(String userId, HpcEventType eventType) throws HpcException {
     // Input validation.
     if (eventType == null) {
       throw new HpcException("Null event type", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Get the service invoker.
-    HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-    if (invoker == null) {
-      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
-    }
-
     // Delete from DB.
-    notificationDAO.deleteSubscription(invoker.getNciAccount().getUserId(), eventType);
+    notificationDAO.deleteSubscription(userId, eventType);
   }
 
   @Override
-  public List<HpcNotificationSubscription> getNotificationSubscriptions() throws HpcException {
-    // Get the service invoker.
-    HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-    if (invoker == null) {
-      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
-    }
-
-    // Query the DB.
-    return notificationDAO.getSubscriptions(invoker.getNciAccount().getUserId());
+  public List<HpcNotificationSubscription> getNotificationSubscriptions(String userId) throws HpcException {
+    return notificationDAO.getSubscriptions(userId);
   }
 
   @Override

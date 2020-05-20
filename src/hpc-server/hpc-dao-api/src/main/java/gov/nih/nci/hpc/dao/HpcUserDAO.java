@@ -32,7 +32,17 @@ public interface HpcUserDAO
      * @throws HpcException on database error.
      */
     public void upsertUser(HpcUser user) throws HpcException;
-    
+
+
+    /**
+     * Delete the user from the repository.
+     *
+     * @param user The user to be deleted.
+     * @throws HpcException on database error.
+     */
+    void deleteUser(String userId) throws HpcException;
+
+
     /**
      * Get user from the repository by ID.
      *
@@ -93,6 +103,8 @@ public interface HpcUserDAO
      */
     public List<HpcUser> queryUsers(String nciUserIdPattern, String firstNamePattern, String lastNamePattern, String doc,
 			String defaultConfigurationId, boolean active) throws HpcException;
+
+
 }
 
  
