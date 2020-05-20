@@ -9,6 +9,7 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -74,6 +75,7 @@ public class HpcBookmarkController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
+		List<String> messages = new ArrayList<String>();
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
 		String authToken = (String) session.getAttribute("hpcUserToken");
 		if (user == null || authToken == null) {
@@ -83,7 +85,22 @@ public class HpcBookmarkController extends AbstractHpcController {
 			model.addAttribute("hpcLogin", hpcLogin);
 			return "redirect:/login";
 		}
+
 		String path = request.getParameter("path");
+
+		//Check if this path is already bookmarked
+		boolean bookmarkExists = false;
+		List<gov.nih.nci.hpc.domain.databrowse.HpcBookmark> bookmarks = fetchCurrentUserBookmarks(session);
+		for(gov.nih.nci.hpc.domain.databrowse.HpcBookmark bookmark: bookmarks) {
+			if(bookmark.getPath().contentEquals(path)) {
+				bookmarkExists = true;
+				messages.add("Bookmark already exists: " + bookmark.getName());
+				model.addAttribute("messages", messages);
+				break;
+			}
+		}
+		model.addAttribute("bookmarkExists", Boolean.toString(bookmarkExists));
+
 		HpcBookmark bookmark = new HpcBookmark();
 		bookmark.setSelectedPath(path != null ? path.trim() : null);
 		bookmark.setPath(path != null ? path.trim() : null);
