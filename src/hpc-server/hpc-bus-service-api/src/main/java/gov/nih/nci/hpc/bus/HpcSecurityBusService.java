@@ -45,6 +45,16 @@ public interface HpcSecurityBusService {
    */
   public void updateUser(String nciUserId, HpcUserRequestDTO userUpdateRequest) throws HpcException;
 
+
+  /**
+   * Delete a User.
+   *
+   * @param nciUserId The user ID to delete.
+   * @throws HpcException on service failure.
+   */
+  public void deleteUser(String nciUserId) throws HpcException;
+
+
   /**
    * Get a user by its NCI user id.
    *
@@ -213,5 +223,6 @@ public interface HpcSecurityBusService {
    */
   public void refreshDataManagementConfigurations()
       throws HpcException;
+
 
 }
