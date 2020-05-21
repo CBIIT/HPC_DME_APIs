@@ -82,10 +82,11 @@ public interface HpcDataSearchBusService {
    * Add a named query for a user.
    *
    * @param queryName The query name.
+ * @param userId The userId
    * @param compoundMetadataQueryDTO The compound query DTO.
    * @throws HpcException on service failure.
    */
-  public void addQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+  public void addQuery(String queryName, String userId, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
       throws HpcException;
 
   /**

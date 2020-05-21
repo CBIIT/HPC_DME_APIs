@@ -59,7 +59,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
                                                    "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
 	
 
-
+	private static final String DELETE_USER_SQL = "delete from public.\"HPC_USER\" where \"USER_ID\" = ?";
 
 	private static final String GET_USER_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
 
@@ -172,7 +172,21 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
     }
-	
+
+
+	@Override
+	public void deleteUser(String userId) throws HpcException
+    {
+        try {
+            jdbcTemplate.update(DELETE_USER_SQL, userId);
+
+        } catch(DataAccessException e) {
+            throw new HpcException("Failed to delete user " + userId + ": " + e.getMessage(),
+                HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+        }
+    }
+
+
 	@Override 
 	public HpcUser getUser(String nciUserId) throws HpcException
 	{
