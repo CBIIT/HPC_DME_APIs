@@ -55,6 +55,19 @@ public interface HpcSecurityService {
       boolean active)
       throws HpcException;
 
+
+  /**
+   * Delete a user.
+   *
+   * @param nciUserId The NCI user ID of the user to update.
+   * @param defaultConfigurationId The default configuration ID for this user.
+   * @throws HpcException on service failure.
+   */
+  public void deleteUser(
+      String nciUserId)
+      throws HpcException;
+
+
   /**
    * Get a user.
    *
