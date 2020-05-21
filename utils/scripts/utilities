@@ -405,9 +405,14 @@ function print_error_message {
 
     if [ ! -z "$RESPONSE_CODE" ] && [ "$RESPONSE_CODE" -ne 204 ]
     then
+      echo "Error Code: $RESPONSE_CODE" >&2
       ERROR_MSG=$(get_json_value $1 message) >&2
-      echo "ERROR_CODE:$RESPONSE_CODE" >&2
-      echo "ERROR_MESSAGE:\"$ERROR_MSG\"" >&2
+      if [ -z $ERROR_MSG ]
+      then
+        echo "Error Message: Please see the file \"$1\" for error details" >&2
+      else
+        echo "Error Message:\"$ERROR_MSG\"" >&2
+      fi
       exit 1
     elif [ "$RESPONSE_CODE" -eq 204  ]
     then
