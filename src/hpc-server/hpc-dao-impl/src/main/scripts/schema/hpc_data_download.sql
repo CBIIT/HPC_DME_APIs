@@ -108,6 +108,7 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "S3_ACCOUNT_ACCESS_KEY" bytea,
   "S3_ACCOUNT_SECRET_KEY" bytea,
   "S3_ACCOUNT_REGION" text,
+  "GOOGLE_DRIVE_ACCESS_TOKEN" bytea,
   "APPEND_PATH_TO_DOWNLOAD_DESTINATION" boolean,
   "STATUS" text,
   "ITEMS" text,
@@ -147,6 +148,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_SECRET_KEY" 
                   'The S3 destination account secret key';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_REGION" IS 
                   'The S3 destination account region';  
+COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" IS 
+                  'The Google Drive Access Token';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."APPEND_PATH_TO_DOWNLOAD_DESTINATION" IS 
                   'An indicator whether to use the full object path at the download destination, or file name only';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."STATUS" IS 

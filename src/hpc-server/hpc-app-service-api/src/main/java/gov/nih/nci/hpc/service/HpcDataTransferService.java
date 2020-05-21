@@ -144,8 +144,7 @@ public interface HpcDataTransferService {
    */
   public String generateDownloadRequestURL(String path, String userId,
       HpcFileLocation archiveLocation, HpcDataTransferType dataTransferType, long size,
-      String configurationId, String s3ArchiveConfigurationId)
-      throws HpcException;
+      String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 
   /**
    * Add system generated metadata to the data object in the archive.
@@ -435,6 +434,7 @@ public interface HpcDataTransferService {
    * @param dataObjectPaths A list of data object paths.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId A configuration ID used to validate destination location. The list of
    *        data objects can be from from different configurations (DOCs) but we validate just for
@@ -446,8 +446,9 @@ public interface HpcDataTransferService {
    */
   public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId,
-      boolean appendPathToDownloadDestination) throws HpcException;
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
   /**
    * Update a collection download task.
