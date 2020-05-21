@@ -438,6 +438,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       collectionDownloadTask = dataTransferService.downloadDataObjects(
           downloadRequest.getDataObjectPaths(), downloadRequest.getGlobusDownloadDestination(),
           downloadRequest.getS3DownloadDestination(),
+          downloadRequest.getGoogleDriveDownloadDestination(),
           securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
           downloadRequest.getAppendPathToDownloadDestination());
     } else {

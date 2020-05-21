@@ -146,9 +146,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       "insert into public.\"HPC_COLLECTION_DOWNLOAD_TASK\" ( "
           + "\"ID\", \"USER_ID\", \"PATH\", \"CONFIGURATION_ID\", \"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
           + "\"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_OVERWRITE\", \"S3_ACCOUNT_ACCESS_KEY\", "
-          + "\"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", \"APPEND_PATH_TO_DOWNLOAD_DESTINATION\", \"ITEMS\", "
+          + "\"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", \"GOOGLE_DRIVE_ACCESS_TOKEN\", \"APPEND_PATH_TO_DOWNLOAD_DESTINATION\", \"ITEMS\", "
           + "\"STATUS\", \"TYPE\", \"DATA_OBJECT_PATHS\", \"COLLECTION_PATHS\", \"CREATED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
           + "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
           + "\"PATH\"=excluded.\"PATH\", " + "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
           + "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\"=excluded.\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", "
@@ -157,6 +157,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
           + "\"S3_ACCOUNT_ACCESS_KEY\"=excluded.\"S3_ACCOUNT_ACCESS_KEY\", "
           + "\"S3_ACCOUNT_SECRET_KEY\"=excluded.\"S3_ACCOUNT_SECRET_KEY\", "
           + "\"S3_ACCOUNT_REGION\"=excluded.\"S3_ACCOUNT_REGION\", "
+          + "\"GOOGLE_DRIVE_ACCESS_TOKEN\"=excluded.\"GOOGLE_DRIVE_ACCESS_TOKEN\", "
           + "\"APPEND_PATH_TO_DOWNLOAD_DESTINATION\"=excluded.\"APPEND_PATH_TO_DOWNLOAD_DESTINATION\", "
           + "\"ITEMS\"=excluded.\"ITEMS\", " + "\"STATUS\"=excluded.\"STATUS\", "
           + "\"TYPE\"=excluded.\"TYPE\", "
@@ -370,12 +371,23 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       s3Account.setSecretKey(this.encryptor.decrypt(s3AccountSecretKey));
       s3Account.setRegion(rs.getString("S3_ACCOUNT_REGION"));
     }
+    
+    String googleDriveAccessToken = null;
+    byte[] token = rs.getBytes("GOOGLE_DRIVE_ACCESS_TOKEN");
+    if (token != null) {
+      googleDriveAccessToken = encryptor.decrypt(token);
+    }
 
     if (s3Account != null) {
       HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
       s3DownloadDestination.setDestinationLocation(destinationLocation);
       s3DownloadDestination.setAccount(s3Account);
       collectionDownloadTask.setS3DownloadDestination(s3DownloadDestination);
+    } else if (googleDriveAccessToken != null) {
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination = new HpcGoogleDriveDownloadDestination();
+      googleDriveDownloadDestination.setDestinationLocation(destinationLocation);
+      googleDriveDownloadDestination.setAccessToken(googleDriveAccessToken);
+      collectionDownloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
     } else {
       HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
       globusDownloadDestination.setDestinationLocation(destinationLocation);
@@ -689,25 +701,31 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
       byte[] s3AccountAccessKey = null;
       byte[] s3AccountSecretKey = null;
       String s3AccountRegion = null;
+      byte[] googleDriveAccessToken = null;
       if (collectionDownloadTask.getGlobusDownloadDestination() != null) {
         destinationLocation =
             collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
         destinationOverwrite =
             collectionDownloadTask.getGlobusDownloadDestination().getDestinationOverwrite();
-      } else {
+      } else if (collectionDownloadTask.getS3DownloadDestination() != null) {
         destinationLocation =
             collectionDownloadTask.getS3DownloadDestination().getDestinationLocation();
         HpcS3Account s3Account = collectionDownloadTask.getS3DownloadDestination().getAccount();
         s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
         s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
         s3AccountRegion = s3Account.getRegion();
+      } else if (collectionDownloadTask.getGoogleDriveDownloadDestination() != null) {
+        destinationLocation =
+            collectionDownloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+        googleDriveAccessToken = encryptor
+            .encrypt(collectionDownloadTask.getGoogleDriveDownloadDestination().getAccessToken());
       }
 
       jdbcTemplate.update(UPSERT_COLLECTION_DOWNLOAD_TASK_SQL, collectionDownloadTask.getId(),
           collectionDownloadTask.getUserId(), collectionDownloadTask.getPath(),
           collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
           destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey,
-          s3AccountSecretKey, s3AccountRegion,
+          s3AccountSecretKey, s3AccountRegion, googleDriveAccessToken,
           collectionDownloadTask.getAppendPathToDownloadDestination(),
           toJSON(collectionDownloadTask.getItems()), collectionDownloadTask.getStatus().value(),
           collectionDownloadTask.getType().value(), dataObjectPathsSQLArray,

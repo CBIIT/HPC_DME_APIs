@@ -853,14 +853,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       progressListener =
           new HpcStreamingDownload(downloadTask, dataDownloadDAO, eventService, this);
     }
-    
+
     // If the destination is Google Drive, we need to generate a download URL from the archive.
-    if(downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
-    downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
-        downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
-        downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
+    if (downloadTask.getDestinationType().equals(HpcDataTransferType.GOOGLE_DRIVE)) {
+      downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
+          downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3,
+          downloadRequest.getConfigurationId(), downloadRequest.getS3ArchiveConfigurationId()));
     }
-    
+
     // Submit a transfer request.
     try {
       downloadTask.setDataTransferRequestId(
@@ -996,20 +996,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId,
-      boolean appendPathToDownloadDestination) throws HpcException {
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId, boolean appendPathToDownloadDestination) throws HpcException {
     // Validate the requested destination location. Note: we use the configuration
     // ID of one data object path. At this time, there is no need to validate for
     // all
     // configuration IDs.
-    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, null,
-        configurationId, true);
+    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination,
+        googleDriveDownloadDestination, null, configurationId, true);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
     downloadTask.setCreated(Calendar.getInstance());
     downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
     downloadTask.setS3DownloadDestination(s3DownloadDestination);
+    downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
     downloadTask.getDataObjectPaths().addAll(dataObjectPaths);
     downloadTask.setUserId(userId);
     downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
@@ -1624,9 +1626,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         throw new HpcException("Invalid Google Drive download destination location",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
-      
-      if (!googleDriveDownloadDestination.getDestinationLocation().getFileContainerId().equals("MyDrive")) {
-        // At this point we only support download to personal drive and expect the container ID to be "MyDrive"
+
+      if (!googleDriveDownloadDestination.getDestinationLocation().getFileContainerId()
+          .equals("MyDrive")) {
+        // At this point we only support download to personal drive and expect the container ID to
+        // be "MyDrive"
         throw new HpcException("Invalid file container ID. Only 'MyDrive' is supported",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
