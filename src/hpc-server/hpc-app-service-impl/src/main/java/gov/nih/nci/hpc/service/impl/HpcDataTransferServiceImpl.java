@@ -942,17 +942,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcCollectionDownloadTask downloadCollection(String path,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId)
-      throws HpcException {
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId) throws HpcException {
     // Validate the download destination.
-    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, null,
-        configurationId, true);
+    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination,
+        googleDriveDownloadDestination, null, configurationId, true);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
     downloadTask.setCreated(Calendar.getInstance());
     downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
     downloadTask.setS3DownloadDestination(s3DownloadDestination);
+    downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
     downloadTask.setPath(path);
     downloadTask.setUserId(userId);
     downloadTask.setType(HpcDownloadTaskType.COLLECTION);
@@ -969,17 +971,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   @Override
   public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId,
-      boolean appendPathToDownloadDestination) throws HpcException {
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId, boolean appendPathToDownloadDestination) throws HpcException {
     // Validate the download destination.
-    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, null, null,
-        configurationId, true);
+    validateDownloadDestination(globusDownloadDestination, s3DownloadDestination,
+        googleDriveDownloadDestination, null, configurationId, true);
 
     // Create a new collection download task.
     HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
     downloadTask.setCreated(Calendar.getInstance());
     downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
     downloadTask.setS3DownloadDestination(s3DownloadDestination);
+    downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
     downloadTask.getCollectionPaths().addAll(collectionPaths);
     downloadTask.setUserId(userId);
     downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);

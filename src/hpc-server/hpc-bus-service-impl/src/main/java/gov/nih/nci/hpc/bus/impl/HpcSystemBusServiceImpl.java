@@ -46,6 +46,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -534,12 +535,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           // Download all files under this collection.
           downloadItems = downloadCollection(collection,
               downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
+              downloadTask.getGoogleDriveDownloadDestination(),
               downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
               collectionDownloadBreaker);
 
         } else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
           downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
               downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
+              downloadTask.getGoogleDriveDownloadDestination(),
               downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
 
         } else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
@@ -552,6 +555,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             downloadItems
                 .addAll(downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
                     downloadTask.getS3DownloadDestination(),
+                    downloadTask.getGoogleDriveDownloadDestination(),
                     downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
                     collectionDownloadBreaker));
           }
@@ -1095,6 +1099,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param collection The collection to download.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param appendPathToDownloadDestination If true, the (full) object path will be used in the
    *        destination path, otherwise just the object name will be used.
    * @param userId The user ID who requested the collection download.
@@ -1105,15 +1110,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    */
   private List<HpcCollectionDownloadTaskItem> downloadCollection(HpcCollection collection,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, boolean appendPathToDownloadDestination,
-      String userId, HpcCollectionDownloadBreaker collectionDownloadBreaker) throws HpcException {
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+      boolean appendPathToDownloadDestination, String userId,
+      HpcCollectionDownloadBreaker collectionDownloadBreaker) throws HpcException {
     List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
     // Iterate through the data objects in the collection and download them.
     for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-      HpcCollectionDownloadTaskItem downloadItem =
-          downloadDataObject(dataObjectEntry.getPath(), globusDownloadDestination,
-              s3DownloadDestination, appendPathToDownloadDestination, userId);
+      HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectEntry.getPath(),
+          globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
+          appendPathToDownloadDestination, userId);
       downloadItems.add(downloadItem);
       if (collectionDownloadBreaker.abortDownload(downloadItem)) {
         // Need to abort collection download processing. Cancel and return the items processed so
@@ -1136,6 +1143,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                 appendPathToDownloadDestination ? null : false),
             calculateS3DownloadDestination(s3DownloadDestination, subCollectionPath,
                 appendPathToDownloadDestination ? null : false),
+            calculateGoogleDriveDownloadDestination(googleDriveDownloadDestination,
+                subCollectionPath, appendPathToDownloadDestination ? null : false),
             appendPathToDownloadDestination, userId, collectionDownloadBreaker));
       }
     }
@@ -1149,6 +1158,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param dataObjectPaths The list of data object path to download.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param appendPathToDownloadDestination If true, the (full) object path will be used in the
    *        destination path, otherwise just the object name will be used.
    * @param userId The user ID who requested the collection download.
@@ -1158,15 +1168,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    */
   private List<HpcCollectionDownloadTaskItem> downloadDataObjects(List<String> dataObjectPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, boolean appendPathToDownloadDestination,
-      String userId) throws HpcException {
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+      boolean appendPathToDownloadDestination, String userId) throws HpcException {
     List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
     // Iterate through the data objects in the collection and download them.
     for (String dataObjectPath : dataObjectPaths) {
       HpcCollectionDownloadTaskItem downloadItem =
           downloadDataObject(dataObjectPath, globusDownloadDestination, s3DownloadDestination,
-              appendPathToDownloadDestination, userId);
+              googleDriveDownloadDestination, appendPathToDownloadDestination, userId);
       downloadItems.add(downloadItem);
     }
 
@@ -1186,13 +1197,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    */
   private HpcCollectionDownloadTaskItem downloadDataObject(String path,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, boolean appendPathToDownloadDestination,
-      String userId) {
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
+      boolean appendPathToDownloadDestination, String userId) {
     HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
     dataObjectDownloadRequest.setGlobusDownloadDestination(calculateGlobusDownloadDestination(
         globusDownloadDestination, path, appendPathToDownloadDestination));
     dataObjectDownloadRequest.setS3DownloadDestination(calculateS3DownloadDestination(
         s3DownloadDestination, path, appendPathToDownloadDestination));
+    dataObjectDownloadRequest.setGoogleDriveDownloadDestination(
+        calculateGoogleDriveDownloadDestination(googleDriveDownloadDestination, path,
+            appendPathToDownloadDestination));
 
     // Instantiate a download item for this data object.
     HpcCollectionDownloadTaskItem downloadItem = new HpcCollectionDownloadTaskItem();
@@ -1211,9 +1226,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       logger.error("Failed to download data object in a collection", e);
 
       downloadItem.setResult(HpcDownloadResult.FAILED);
-      downloadItem.setDestinationLocation(
-          globusDownloadDestination != null ? globusDownloadDestination.getDestinationLocation()
-              : s3DownloadDestination.getDestinationLocation());
+      HpcFileLocation destinationLocation = null;
+      if (globusDownloadDestination != null) {
+        destinationLocation = globusDownloadDestination.getDestinationLocation();
+      } else if (s3DownloadDestination != null) {
+        destinationLocation = s3DownloadDestination.getDestinationLocation();
+      } else if (googleDriveDownloadDestination != null) {
+        destinationLocation = googleDriveDownloadDestination.getDestinationLocation();
+      }
+      downloadItem.setDestinationLocation(destinationLocation);
       downloadItem.setMessage(e.getMessage());
     }
 
@@ -1286,6 +1307,40 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     calcS3Destination.setAccount(collectionDestination.getAccount());
 
     return calcS3Destination;
+  }
+
+  /**
+   * Calculate a Google Drive download destination path for a collection entry under a collection.
+   *
+   * @param collectionDestination The Google Drive collection destination.
+   * @param collectionListingEntryPath The entry path under the collection to calculate the
+   *        destination location for.
+   * @param appendPathToDownloadDestination If true, the (full) object path will be used in the
+   *        destination path, otherwise just the object name will be used. If null - not used.
+   * 
+   * @return A calculated destination location.
+   */
+  private HpcGoogleDriveDownloadDestination calculateGoogleDriveDownloadDestination(
+      HpcGoogleDriveDownloadDestination collectionDestination, String collectionListingEntryPath,
+      Boolean appendPathToDownloadDestination) {
+    if (collectionDestination == null) {
+      return null;
+    }
+
+    HpcGoogleDriveDownloadDestination calcGoogleDriveDestination =
+        new HpcGoogleDriveDownloadDestination();
+    HpcFileLocation calcDestination = new HpcFileLocation();
+    calcDestination
+        .setFileContainerId(collectionDestination.getDestinationLocation().getFileContainerId());
+    String fileId = collectionDestination.getDestinationLocation().getFileId();
+    if (appendPathToDownloadDestination != null) {
+      fileId = fileId + (appendPathToDownloadDestination ? collectionListingEntryPath
+          : collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
+    }
+    calcDestination.setFileId(fileId);
+    calcGoogleDriveDestination.setAccessToken(collectionDestination.getAccessToken());
+
+    return calcGoogleDriveDestination;
   }
 
   /**

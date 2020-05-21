@@ -397,6 +397,7 @@ public interface HpcDataTransferService {
    * @param path The collection path.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
@@ -405,8 +406,9 @@ public interface HpcDataTransferService {
    */
   public HpcCollectionDownloadTask downloadCollection(String path,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId)
-      throws HpcException;
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId) throws HpcException;
 
   /**
    * Submit a request to download collections.
@@ -414,6 +416,7 @@ public interface HpcDataTransferService {
    * @param collectionPaths A list of collection paths.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId A configuration ID used to validate destination location. The list of
    *        data objects can be from from different configurations (DOCs) but we validate just for
@@ -425,8 +428,9 @@ public interface HpcDataTransferService {
    */
   public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId,
-      boolean appendPathToDownloadDestination) throws HpcException;
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
   /**
    * Submit a request to download data objects.

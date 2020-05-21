@@ -380,15 +380,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Submit a collection download task.
     HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadCollection(path,
         downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
+        downloadRequest.getGoogleDriveDownloadDestination(),
         securityService.getRequestInvoker().getNciAccount().getUserId(),
         metadata.getConfigurationId());
 
     // Create and return a DTO with the request receipt.
     HpcCollectionDownloadResponseDTO responseDTO = new HpcCollectionDownloadResponseDTO();
     responseDTO.setTaskId(collectionDownloadTask.getId());
-    responseDTO.setDestinationLocation(collectionDownloadTask.getS3DownloadDestination() != null
-        ? collectionDownloadTask.getS3DownloadDestination().getDestinationLocation()
-        : collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation());
+    responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
 
     return responseDTO;
   }
@@ -473,6 +472,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       collectionDownloadTask = dataTransferService.downloadCollections(
           downloadRequest.getCollectionPaths(), downloadRequest.getGlobusDownloadDestination(),
           downloadRequest.getS3DownloadDestination(),
+          downloadRequest.getGoogleDriveDownloadDestination(),
           securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
           downloadRequest.getAppendPathToDownloadDestination());
     }
@@ -480,9 +480,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // Create and return a DTO with the request receipt.
     HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
     responseDTO.setTaskId(collectionDownloadTask.getId());
-    responseDTO.setDestinationLocation(collectionDownloadTask.getS3DownloadDestination() != null
-        ? collectionDownloadTask.getS3DownloadDestination().getDestinationLocation()
-        : collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation());
+    responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
 
     return responseDTO;
   }
@@ -2675,6 +2673,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     // object.
     metadataService.addSystemGeneratedMetadataToDataObject(path, dataObjectIdMetadataEntry, userId,
         userName, configurationId, linkSourcePath);
+  }
+
+  /**
+   * Get a destination location from collection download task
+   *
+   * @param collectionDownloadTask The collection download task.
+   * return The destination location.
+   */
+  private HpcFileLocation getDestinationLocation(HpcCollectionDownloadTask collectionDownloadTask) {
+    HpcFileLocation destinationLocation = null;
+    if (collectionDownloadTask.getS3DownloadDestination() != null) {
+      destinationLocation =
+          collectionDownloadTask.getS3DownloadDestination().getDestinationLocation();
+    } else if (collectionDownloadTask.getGlobusDownloadDestination() != null) {
+      destinationLocation =
+          collectionDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
+    } else if (collectionDownloadTask.getGoogleDriveDownloadDestination() != null) {
+      destinationLocation =
+          collectionDownloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+    }
+
+    return destinationLocation;
   }
 
 
