@@ -11,6 +11,7 @@ public class HpcDownloadDatafile {
 	private String downloadFileName;
 	private String bucketName;
 	private String s3Path;
+	private String drivePath;
 	private String accessKey;
 	private String secretKey;
 	private String region;
@@ -93,6 +94,14 @@ public class HpcDownloadDatafile {
 		this.s3Path = s3Path;
 	}
 
+	public String getDrivePath() {
+      return drivePath;
+    }
+  
+    public void setDrivePath(String drivePath) {
+        this.drivePath = drivePath;
+    }
+    
 	public String getAccessKey() {
 		return accessKey;
 	}
