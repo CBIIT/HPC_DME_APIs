@@ -98,8 +98,10 @@ public class HpcDownloadController extends AbstractHpcController {
 		String code = request.getParameter("code");
         if (code != null) {
             //Return from Google Drive Authorization
-            downloadFilePath = request.getParameter("downloadFilePath");
-            final String returnURL = this.webServerName + "/download?type=" + downloadType + "&downloadFilePath=" + downloadFilePath;
+            downloadFilePath = (String)session.getAttribute("downloadFilePath");
+            downloadType = (String)session.getAttribute("downloadType");
+            source = (String)session.getAttribute("downloadSource");
+            final String returnURL = this.webServerName + "/download";
             try {
               session.setAttribute("accessToken", hpcAuthorizationService.getToken(code, returnURL));
             } catch (Exception e) {
@@ -168,8 +170,14 @@ public class HpcDownloadController extends AbstractHpcController {
 		}
 		
 		if (action != null && action.equals("Drive")) {
+  		  
+  		    session.setAttribute("downloadType", downloadType);
+            session.setAttribute("downloadSource", source);
+            downloadFilePath = request.getParameter("downloadFilePath");
+            session.setAttribute("downloadFilePath", downloadFilePath);
+          
   	        downloadFilePath = request.getParameter("downloadFilePath");
-  	        String returnURL = this.webServerName + "/download?type=" + downloadType + "&downloadFilePath=" + downloadFilePath;
+  	        String returnURL = this.webServerName + "/download";
   	        try {
               return "redirect:" + hpcAuthorizationService.authorize(returnURL);
             } catch (Exception e) {
