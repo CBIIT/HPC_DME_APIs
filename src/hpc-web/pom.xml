@@ -23,6 +23,7 @@
         <java.version>1.8</java.version>
         <resources.basedir>src/main/resources</resources.basedir>
         <app.configs.dir>${resources.basedir}/appconfigs</app.configs.dir>
+        <google-drive-sdk.version>1.25.0</google-drive-sdk.version>
     </properties>
     <dependencies>
         <dependency>
@@ -144,7 +145,17 @@
 		    <groupId>org.apache.poi</groupId>
 		    <artifactId>poi-ooxml</artifactId>
 		    <version>4.0.0</version>
-	    </dependency>        
+	    </dependency> 
+	    <dependency>
+   			<groupId>com.google.apis</groupId>
+   			<artifactId>google-api-services-drive</artifactId>
+   			<version>v3-rev197-${google-drive-sdk.version}</version>
+		</dependency>
+	    <dependency>
+   			<groupId>com.google.api-client</groupId>
+   			<artifactId>google-api-client</artifactId>
+   			<version>${google-drive-sdk.version}</version>
+		</dependency>       
     </dependencies>
     <build>
         <plugins>
