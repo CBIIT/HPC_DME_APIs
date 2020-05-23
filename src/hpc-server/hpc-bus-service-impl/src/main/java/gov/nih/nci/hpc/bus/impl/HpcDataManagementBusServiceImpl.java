@@ -1952,10 +1952,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
             .getS3DownloadDestination().getDestinationLocation());
         downloadStatus.setDestinationType(HpcDataTransferType.S_3);
-      } else {
+      } else if (taskStatus.getCollectionDownloadTask().getGlobusDownloadDestination() != null){
         downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
             .getGlobusDownloadDestination().getDestinationLocation());
         downloadStatus.setDestinationType(HpcDataTransferType.GLOBUS);
+      } else if (taskStatus.getCollectionDownloadTask().getGoogleDriveDownloadDestination() != null) {
+        downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
+            .getGoogleDriveDownloadDestination().getDestinationLocation());
+        downloadStatus.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
       }
       populateDownloadItems(downloadStatus, taskStatus.getCollectionDownloadTask().getItems());
 
