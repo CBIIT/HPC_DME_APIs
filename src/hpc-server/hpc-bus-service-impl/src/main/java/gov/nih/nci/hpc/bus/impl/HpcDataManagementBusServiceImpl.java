@@ -1952,11 +1952,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
             .getS3DownloadDestination().getDestinationLocation());
         downloadStatus.setDestinationType(HpcDataTransferType.S_3);
-      } else if (taskStatus.getCollectionDownloadTask().getGlobusDownloadDestination() != null){
+      } else if (taskStatus.getCollectionDownloadTask().getGlobusDownloadDestination() != null) {
         downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
             .getGlobusDownloadDestination().getDestinationLocation());
         downloadStatus.setDestinationType(HpcDataTransferType.GLOBUS);
-      } else if (taskStatus.getCollectionDownloadTask().getGoogleDriveDownloadDestination() != null) {
+      } else if (taskStatus.getCollectionDownloadTask()
+          .getGoogleDriveDownloadDestination() != null) {
         downloadStatus.setDestinationLocation(taskStatus.getCollectionDownloadTask()
             .getGoogleDriveDownloadDestination().getDestinationLocation());
         downloadStatus.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
@@ -2682,8 +2683,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
   /**
    * Get a destination location from collection download task
    *
-   * @param collectionDownloadTask The collection download task.
-   * return The destination location.
+   * @param collectionDownloadTask The collection download task. return The destination location.
    */
   private HpcFileLocation getDestinationLocation(HpcCollectionDownloadTask collectionDownloadTask) {
     HpcFileLocation destinationLocation = null;
