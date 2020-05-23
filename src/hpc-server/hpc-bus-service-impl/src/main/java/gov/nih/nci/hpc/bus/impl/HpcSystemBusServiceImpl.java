@@ -1369,15 +1369,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
     }
 
     // Send download completed/failed event.
+    HpcFileLocation destinationLocation = null;
+    if (downloadTask.getS3DownloadDestination() != null) {
+      destinationLocation = downloadTask.getS3DownloadDestination().getDestinationLocation();
+    } else if (downloadTask.getGlobusDownloadDestination() != null) {
+      destinationLocation = downloadTask.getGlobusDownloadDestination().getDestinationLocation();
+    } else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
+      destinationLocation =
+          downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation();
+    }
+
     addDataTransferDownloadEvent(downloadTask.getUserId(), path, downloadTask.getType(),
         downloadTask.getId(),
         downloadTask.getS3DownloadDestination() != null ? HpcDataTransferType.S_3
             : HpcDataTransferType.GLOBUS,
-        downloadTask.getConfigurationId(), result, message,
-        downloadTask.getS3DownloadDestination() != null
-            ? downloadTask.getS3DownloadDestination().getDestinationLocation()
-            : downloadTask.getGlobusDownloadDestination().getDestinationLocation(),
-        completed);
+        downloadTask.getConfigurationId(), result, message, destinationLocation, completed);
   }
 
   /**
