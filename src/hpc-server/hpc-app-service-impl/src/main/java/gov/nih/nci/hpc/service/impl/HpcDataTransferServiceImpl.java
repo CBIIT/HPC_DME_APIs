@@ -1081,10 +1081,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       taskResult
           .setDestinationLocation(downloadTask.getS3DownloadDestination().getDestinationLocation());
       taskResult.setDestinationType(HpcDataTransferType.S_3);
-    } else {
+    } else if (downloadTask.getGlobusDownloadDestination() != null) {
       taskResult.setDestinationLocation(
           downloadTask.getGlobusDownloadDestination().getDestinationLocation());
       taskResult.setDestinationType(HpcDataTransferType.GLOBUS);
+    } else if (downloadTask.getGoogleDriveDownloadDestination() != null) {
+      taskResult.setDestinationLocation(
+          downloadTask.getGoogleDriveDownloadDestination().getDestinationLocation());
+      taskResult.setDestinationType(HpcDataTransferType.GOOGLE_DRIVE);
     }
     taskResult.setResult(result);
     taskResult.setType(downloadTask.getType());
