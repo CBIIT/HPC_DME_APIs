@@ -407,7 +407,7 @@ function print_error_message {
     then
       echo "Error Code: $RESPONSE_CODE" >&2
       ERROR_MSG=$(get_json_value $1 message) >&2
-      if [ -z $ERROR_MSG ]
+      if [ -z "$ERROR_MSG" ]
       then
         echo "Error Message: Please see the file \"$1\" for error details" >&2
       else
