@@ -289,6 +289,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         fileExists = false;
       } else if (ase.getStatusCode() == 403) {
         pathAttributes.setIsAccessible(false);
+        return pathAttributes;
       } else {
         throw new HpcException("[S3] Failed to get object metadata: " + ase.getMessage(),
             HpcErrorType.DATA_TRANSFER_ERROR, ase);
@@ -748,11 +749,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     Object s3AccountAuthenticatedToken = s3Connection.authenticate(s3Destination.getAccount());
 
     // Confirm the S3 bucket is accessible.
+    boolean s3BucketAccessible = true;
     try {
-      getPathAttributes(s3AccountAuthenticatedToken, s3Destination.getDestinationLocation(), false);
+      s3BucketAccessible = getPathAttributes(s3AccountAuthenticatedToken,
+          s3Destination.getDestinationLocation(), false).getIsAccessible();
     } catch (HpcException e) {
-      throw new HpcException("Failed to access AWS S3 bucket: [" + e.getMessage() + "] "
-          + s3Destination.getDestinationLocation(), HpcErrorType.INVALID_REQUEST_INPUT, e);
+      s3BucketAccessible = false;
+      logger.error("Failed to get S3 path attributes: " + e.getMessage(), e);
+    }
+    if (!s3BucketAccessible) {
+      throw new HpcException(
+          "Failed to access AWS S3 bucket: " + s3Destination.getDestinationLocation(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Generate a download pre-signed URL for the requested data file from the Cleversafe archive.
