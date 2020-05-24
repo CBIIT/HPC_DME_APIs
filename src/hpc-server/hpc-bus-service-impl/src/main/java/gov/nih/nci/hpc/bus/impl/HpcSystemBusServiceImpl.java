@@ -1303,6 +1303,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           : collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
     }
     calcDestination.setFileId(fileId);
+    
     calcS3Destination.setDestinationLocation(calcDestination);
     calcS3Destination.setAccount(collectionDestination.getAccount());
 
@@ -1338,6 +1339,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           : collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
     }
     calcDestination.setFileId(fileId);
+    
+    calcGoogleDriveDestination.setDestinationLocation(calcDestination);
     calcGoogleDriveDestination.setAccessToken(collectionDestination.getAccessToken());
 
     return calcGoogleDriveDestination;
