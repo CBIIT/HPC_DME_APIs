@@ -63,12 +63,16 @@
 						</tr>
 						<tr>
 							<td>
+							  <span th:if="${bookmarkExists == 'false'}">
 								<div class="form-group">
 									<div class="col-sm-12 column">
+
 										<label for="name">Name:</label> <input
 											type="text" class="form-control"
 											th:field="*{name}" placeholder="Enter Bookmark Name" />
+
 									</div>
+
 									<div class="col-sm-12 column">
 										<label for="path">Path:</label> <input
 											type="text" class="form-control"
@@ -77,18 +81,16 @@
 											<input type="hidden" id="path" name="path" th:value="${bookmark.getPath()}"/>
 									</div>
 								</div>
+							  </span>
+							  <span th:if="${bookmarkExists == 'false'}">
 								<div class="modal-footer">
-									<span th:if="${bookmarkExists == 'true'}">
-										<button type="submit" class="btn btn-md btn-primary"
-										id="primaryButton" th:disabled="disabled">Create</button>
-									</span>
-									<span th:if="${bookmarkExists == 'false'}">
-										<button type="submit" class="btn btn-md btn-primary"
+									<button type="submit" class="btn btn-md btn-primary"
 										id="primaryButton" onClick="return validate()">Create</button>
-									</span>
+
 									<button type="button" class="btn btn-primary"
 										data-dismiss="modal" id="close">Close</button>
-								</div>
+                                </div>
+							  </span>
 							</td>
 						</tr>
 					</table>
@@ -98,7 +100,7 @@
 	</div>
 
 	<script>
-	
+
     function validate()
     {
     	var bookmark = document.getElementById("name").value;
