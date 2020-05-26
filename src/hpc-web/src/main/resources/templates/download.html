@@ -92,7 +92,7 @@
 			  <p>This page allows you to download the selected data file either synchronously to your computer or asynchronously to Globus endpoint location, to an S3 bucket, or to Google Drive.</p>
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
-              <p>This page allows you to download the selected collection to Globus endpoint location or an S3 bucket asynchronously.</p>    
+              <p>This page allows you to download the selected collection to Globus endpoint location, to an S3 bucket, or to Google Drive.</p>    
             </div>
      
 			<div class="panel panel-default">
@@ -129,7 +129,7 @@
 										name="searchType" id="searchTypeS3" value="s3"
 										onChange="display('s3')"/>AWS S3</label>
 										</div>
-										<div th:if="${downloadType == 'datafile'}" class="pull-left" style="margin-left: 15px">
+										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchTypeDrive" value="drive"
 										onChange="display('drive')"/>Google Drive</label>
@@ -212,7 +212,7 @@
 									</div>
 								</div>
 								
-								<div th:if="${downloadType == 'datafile'}" class="form-group" id="driveDiv" style="display: none">
+								<div class="form-group" id="driveDiv" style="display: none">
 									<div class="col-sm-12 column">
 										<a class="btn btn-primary" id="driveAuthlink" 
                                             th:href="@{../download(type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">                                  
