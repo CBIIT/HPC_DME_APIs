@@ -32,7 +32,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
@@ -359,7 +359,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       }
       if (request.getS3UploadSource() != null) {
         JSONObject jsonS3UploadSource = new JSONObject();
-        HpcS3UploadSource s3UploadSource = request.getS3UploadSource();
+        HpcStreamingUploadSource s3UploadSource = request.getS3UploadSource();
         jsonS3UploadSource.put("sourceFileContainerId",
             s3UploadSource.getSourceLocation().getFileContainerId());
         jsonS3UploadSource.put("sourceFileId", s3UploadSource.getSourceLocation().getFileId());
@@ -654,7 +654,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
     if (jsonRequest.get("s3UploadSource") != null) {
       JSONObject jsonS3UploadSource = (JSONObject) jsonRequest.get("s3UploadSource");
-      HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+      HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
       HpcFileLocation source = new HpcFileLocation();
       source.setFileContainerId(jsonS3UploadSource.get("sourceFileContainerId").toString());
       source.setFileId(jsonS3UploadSource.get("sourceFileId").toString());
