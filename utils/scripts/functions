@@ -1089,7 +1089,8 @@ function dm_download_dataobject_presigned {
   local CODE=0
  
   local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header.tmp
-  local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=obtain-presigned-url-response-message.tmp
+  local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=download-dataobject-response-message.tmp
+  local RESPONSE_MESSAGE=download-dataobject-response-message.tmp
 
   curl -H "Content-Type: application/json" -H "Accept: application/json" \
       $CONFIG -d @$TEMPLATE \
@@ -1135,11 +1136,12 @@ function dm_download_dataobject_presigned {
       CODE=$(get_http_code "$RESPONSE_STATUS")
       if [ "$CODE" -ne 200 ]
       then 
+		mv ${DESTINATION_PATH} $RESPONSE_MESSAGE
         >&2 echo "Failed to download file from obtained presigned URL.  See response data below."
-        >&2 echo "  ( Response data from request available in file $DESTINATION_PATH. )"
+        >&2 echo "  ( Response data from request available in file $RESPONSE_MESSAGE. )"
         >&2 echo ""
         >&2 cat $RESPONSE_STATUS
-        >&2 cat $DESTINATION_PATH
+        >&2 cat $RESPONSE_MESSAGE
       else
         rm -f $RESPONSE_HEADER_OBTAIN_PRESIGNED $RESPONSE_MESSAGE_OBTAIN_PRESIGNED  2>/dev/null
       fi
