@@ -78,7 +78,7 @@
 			<xsd:element name="globusUploadSource"
 				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
 			<xsd:element name="s3UploadSource"
-				type="hpc-domain-datatransfer:HpcS3UploadSource" />
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="linkSourcePath" type="xsd:string" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="metadataEntries"

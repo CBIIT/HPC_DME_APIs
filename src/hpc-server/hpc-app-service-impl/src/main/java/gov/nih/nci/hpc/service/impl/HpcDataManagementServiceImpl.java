@@ -37,7 +37,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -768,7 +768,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         .forEach(bulkDataObjectRegistrationItem -> Optional
             .of(bulkDataObjectRegistrationItem.getRequest())
             .map(HpcDataObjectRegistrationRequest::getS3UploadSource)
-            .map(HpcS3UploadSource::getAccount).ifPresent(s3Account -> {
+            .map(HpcStreamingUploadSource::getAccount).ifPresent(s3Account -> {
               s3Account.setAccessKey("****");
               s3Account.setSecretKey("****");
             }));

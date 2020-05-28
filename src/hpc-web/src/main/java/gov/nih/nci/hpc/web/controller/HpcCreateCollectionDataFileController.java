@@ -36,7 +36,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -386,7 +386,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			HpcFileLocation source = new HpcFileLocation();
 			source.setFileContainerId(bucketName);
 			source.setFileId(s3Path);
-			HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+			HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
 			HpcS3Account s3Account = new HpcS3Account();
 			s3Account.setAccessKey(accessKey);
 			s3Account.setSecretKey(secretKey);
