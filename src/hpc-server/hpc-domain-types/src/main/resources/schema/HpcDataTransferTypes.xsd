@@ -141,18 +141,19 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="HpcS3UploadSource">
+	<xsd:complexType name="HpcStreamingUploadSource">
 		<xsd:sequence>
 			<xsd:element name="sourceLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="account"
 				type="hpc-domain-datatransfer:HpcS3Account" />
+			<xsd:element name="accessToken" type="xsd:string" />
 			<xsd:element name="sourceURL" type="xsd:string" />
 			<xsd:element name="sourceSize" type="xsd:long"
 				minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
-
+	
 	<xsd:complexType name="HpcGlobusScanDirectory">
 		<xsd:sequence>
 			<xsd:element name="directoryLocation"
@@ -178,7 +179,7 @@
 			<xsd:element name="globusUploadSource"
 				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
 			<xsd:element name="s3UploadSource"
-				type="hpc-domain-datatransfer:HpcS3UploadSource" />
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="sourceFile"
 				type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="generateUploadRequestURL"

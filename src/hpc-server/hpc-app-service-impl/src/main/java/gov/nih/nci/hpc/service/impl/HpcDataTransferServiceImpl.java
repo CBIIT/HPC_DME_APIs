@@ -64,7 +64,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -230,7 +230,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
-      HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
+      HpcStreamingUploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
       Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId,
       String userId, String callerObjectId, String configurationId) throws HpcException {
     // Input Validation. One and only one of the first 4 parameters is expected to
@@ -1496,7 +1496,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *         directory.
    */
   private Long validateUploadSourceFileLocation(HpcGlobusUploadSource globusUploadSource,
-      HpcS3UploadSource s3UploadSource, File sourceFile, String configurationId)
+      HpcStreamingUploadSource s3UploadSource, File sourceFile, String configurationId)
       throws HpcException {
     if (sourceFile != null) {
       return sourceFile.length();

@@ -37,7 +37,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -72,7 +72,7 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
-      HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
+      HpcStreamingUploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
       Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId,
       String userId, String callerObjectId, String configurationId) throws HpcException;
 

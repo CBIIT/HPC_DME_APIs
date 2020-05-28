@@ -48,7 +48,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
@@ -1688,9 +1688,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    * @param sourceSize The source file size.
    * @return The packaged S3 upload source.
    */
-  private HpcS3UploadSource toS3UploadSource(HpcFileLocation sourceLocation, String sourceURL,
+  private HpcStreamingUploadSource toS3UploadSource(HpcFileLocation sourceLocation, String sourceURL,
       Long sourceSize) {
-    HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+    HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
     s3UploadSource.setSourceLocation(sourceLocation);
     s3UploadSource.setSourceURL(sourceURL);
     s3UploadSource.setSourceSize(sourceSize);

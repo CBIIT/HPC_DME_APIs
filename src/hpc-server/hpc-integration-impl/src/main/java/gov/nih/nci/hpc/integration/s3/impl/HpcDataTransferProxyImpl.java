@@ -50,7 +50,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -468,7 +468,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @throws HpcException on data transfer system failure.
    */
   private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-      HpcS3UploadSource s3UploadSource, HpcFileLocation archiveDestinationLocation, Long size,
+      HpcStreamingUploadSource s3UploadSource, HpcFileLocation archiveDestinationLocation, Long size,
       HpcDataTransferProgressListener progressListener, List<HpcMetadataEntry> metadataEntries)
       throws HpcException {
     if (progressListener == null) {

@@ -61,7 +61,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -2253,7 +2253,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     source.setFileContainerId(sourceFileContainerId);
     source.setFileId(scanItem.getFilePath());
     if (s3Account != null) {
-      HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+      HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
       s3UploadSource.setSourceLocation(source);
       s3UploadSource.setAccount(s3Account);
       dataObjectRegistration.setS3UploadSource(s3UploadSource);

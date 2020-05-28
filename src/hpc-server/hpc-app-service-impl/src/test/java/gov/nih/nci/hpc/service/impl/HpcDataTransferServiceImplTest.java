@@ -34,7 +34,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -104,7 +104,7 @@ public class HpcDataTransferServiceImplTest {
     expectedException.expect(HpcException.class);
     expectedException.expectMessage("Invalid S3 upload source");
 
-    HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+    HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
     dataTransferService.uploadDataObject(null, s3UploadSource, null, false, null, null, null, "dataObjectId",
         null, null, null);
   }
@@ -128,7 +128,7 @@ public class HpcDataTransferServiceImplTest {
     s3Account.setSecretKey("testSecretKey");
     s3Account.setRegion("testRegion");
 
-    HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+    HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
     s3UploadSource.setSourceLocation(sourceLocation);
     s3UploadSource.setAccount(s3Account);
 
