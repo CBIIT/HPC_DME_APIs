@@ -139,21 +139,26 @@ public class HpcSyncDownloadController extends AbstractHpcController {
         if (restResponse.getStatus() == 200) {
           handleStreamingDownloadData(downloadFile, response, restResponse);
         } else {
+          response.setHeader("Content-Disposition", "attachment; filename=" + downloadFile.getDownloadFileName() + ".error");
           return handleDownloadProblem(model, restResponse);
         }
       } else {
+        response.setHeader("Content-Disposition", "attachment; filename=" + downloadFile.getDownloadFileName() + ".error");
         return handleDownloadProblem(model, restResponse);
       }
     } catch (HttpStatusCodeException e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
+      response.setHeader("Content-Disposition", "attachment; filename=" + downloadFile.getDownloadFileName() + ".error");
       return new ByteArrayResource(("Failed to download: " +
         e.getMessage()).getBytes());
     } catch (RestClientException e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
+      response.setHeader("Content-Disposition", "attachment; filename=" + downloadFile.getDownloadFileName() + ".error");
       return new ByteArrayResource(("Failed to download: " +
         e.getMessage()).getBytes());
     } catch (Exception e) {
       model.addAttribute("message", "Failed to download: " + e.getMessage());
+      response.setHeader("Content-Disposition", "attachment; filename=" + downloadFile.getDownloadFileName() + ".error");
       return new ByteArrayResource(("Failed to download: " +
         e.getMessage()).getBytes());
     }
