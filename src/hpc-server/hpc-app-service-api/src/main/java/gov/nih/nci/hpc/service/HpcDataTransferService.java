@@ -56,6 +56,7 @@ public interface HpcDataTransferService {
    *
    * @param globusUploadSource (Optional) The Globus upload source.
    * @param s3UploadSource (Optional) The S3 upload source.
+   * @param googleDriveUploadSource (Optional) The Google Drive upload source.
    * @param sourceFile (Optional) The source file.
    * @param generateUploadRequestURL Generate an upload URL (so caller can directly upload file into
    *        archive).
@@ -72,9 +73,10 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
-      HpcStreamingUploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
-      Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId,
-      String userId, String callerObjectId, String configurationId) throws HpcException;
+      HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+      File sourceFile, boolean generateUploadRequestURL, Integer uploadParts,
+      String uploadRequestURLChecksum, String path, String dataObjectId, String userId,
+      String callerObjectId, String configurationId) throws HpcException;
 
   /**
    * Complete a multipart upload.
@@ -242,6 +244,18 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public HpcPathAttributes getPathAttributes(HpcS3Account s3Account, HpcFileLocation fileLocation,
+      boolean getSize) throws HpcException;
+  
+  /**
+   * Get path attributes for a given file in Google Drive (using user provided Google Drive token).
+   *
+   * @param accessToken The user provided Google Drive access token.
+   * @param fileLocation The drive/file-id to get attributes for.
+   * @param getSize If set to true, the file/directory size will be returned.
+   * @return The path attributes.
+   * @throws HpcException on service failure.
+   */
+  public HpcPathAttributes getPathAttributes(String accessToken, HpcFileLocation fileLocation,
       boolean getSize) throws HpcException;
 
   /**

@@ -104,6 +104,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
   private static final String MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE =
       "Multiple upload source and/or generate upload request provided";
 
+  // Google Drive 'My Drive' ID.
+  private static final String MY_GOOGLE_DRIVE_ID = "MyDrive";
+
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
@@ -230,9 +233,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
-      HpcStreamingUploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
-      Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId,
-      String userId, String callerObjectId, String configurationId) throws HpcException {
+      HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+      File sourceFile, boolean generateUploadRequestURL, Integer uploadParts,
+      String uploadRequestURLChecksum, String path, String dataObjectId, String userId,
+      String callerObjectId, String configurationId) throws HpcException {
     // Input Validation. One and only one of the first 4 parameters is expected to
     // be provided.
 
@@ -242,8 +246,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     // Validate an upload source was provided.
-    if (globusUploadSource == null && s3UploadSource == null && sourceFile == null
-        && !generateUploadRequestURL) {
+    if (globusUploadSource == null && s3UploadSource == null && googleDriveUploadSource == null
+        && sourceFile == null && !generateUploadRequestURL) {
       throw new HpcException(
           "No data transfer source or data attachment provided or upload URL requested",
           HpcErrorType.INVALID_REQUEST_INPUT);
@@ -251,7 +255,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Validate Globus upload source.
     if (globusUploadSource != null) {
-      if (s3UploadSource != null || sourceFile != null || generateUploadRequestURL) {
+      if (s3UploadSource != null || googleDriveUploadSource != null || sourceFile != null
+          || generateUploadRequestURL) {
         throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
@@ -262,7 +267,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Validate S3 upload source.
     if (s3UploadSource != null) {
-      if (sourceFile != null || generateUploadRequestURL) {
+      if (googleDriveUploadSource != null || sourceFile != null || generateUploadRequestURL) {
         throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
@@ -276,7 +281,45 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       }
       if (!StringUtils.isEmpty(s3UploadSource.getSourceURL())
           && s3UploadSource.getSourceSize() == null) {
-        throw new HpcException("source URL provided without source size",
+        throw new HpcException("AWS S3 source URL provided without source size",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (!StringUtils.isEmpty(s3UploadSource.getAccessToken())) {
+        throw new HpcException(
+            "Google Drive access token provided in AWS S3 upload source location",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
+    // Validate Google Drive upload source.
+    if (googleDriveUploadSource != null) {
+      if (sourceFile != null || generateUploadRequestURL) {
+        throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (!isValidFileLocation(googleDriveUploadSource.getSourceLocation())) {
+        throw new HpcException("Invalid Google Drive upload source location",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (!googleDriveUploadSource.getSourceLocation().getFileContainerId()
+          .equals(MY_GOOGLE_DRIVE_ID)) {
+        // At this point we only support upload from personal drive and expect the container ID to
+        // be "MyDrive"
+        throw new HpcException("Invalid file container ID. Only 'MyDrive' is supported",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (StringUtils.isEmpty(googleDriveUploadSource.getSourceURL())
+          && StringUtils.isEmpty(googleDriveUploadSource.getAccessToken())) {
+        throw new HpcException("Invalid Google Drive access token",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (!StringUtils.isEmpty(googleDriveUploadSource.getSourceURL())
+          && googleDriveUploadSource.getSourceSize() == null) {
+        throw new HpcException("Google Drive source URL provided without source size",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (googleDriveUploadSource.getAccount() != null) {
+        throw new HpcException("AWS S3 account provided in Google Drive upload source location",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }
@@ -304,7 +347,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
     // Validate source location exists and accessible.
     Long sourceSize = validateUploadSourceFileLocation(globusUploadSource, s3UploadSource,
-        sourceFile, configurationId);
+        googleDriveUploadSource, sourceFile, configurationId);
 
     // Create an upload request.
     HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
@@ -314,6 +357,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     uploadRequest.setCallerObjectId(callerObjectId);
     uploadRequest.setGlobusUploadSource(globusUploadSource);
     uploadRequest.setS3UploadSource(s3UploadSource);
+    uploadRequest.setGoogleDriveUploadSource(googleDriveUploadSource);
     uploadRequest.setSourceFile(sourceFile);
     uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
     uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
@@ -566,6 +610,32 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     } catch (HpcException e) {
       throw new HpcException(
           "Failed to access AWS S3 bucket: [" + e.getMessage() + "] " + fileLocation,
+          HpcErrorType.INVALID_REQUEST_INPUT, e);
+    }
+  }
+
+  @Override
+  public HpcPathAttributes getPathAttributes(String accessToken, HpcFileLocation fileLocation,
+      boolean getSize) throws HpcException {
+    // Input validation.
+    if (!isValidFileLocation(fileLocation)) {
+      throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+    if (StringUtils.isEmpty(accessToken)) {
+      throw new HpcException("Invalid Google Drive access token",
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // This is Google Drive only functionality, so we get the Google Drive data-transfer-proxy.
+    HpcDataTransferProxy dataTransferProxy =
+        dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE);
+    try {
+      return dataTransferProxy.getPathAttributes(dataTransferProxy.authenticate(accessToken),
+          fileLocation, getSize);
+
+    } catch (HpcException e) {
+      throw new HpcException(
+          "Failed to access Google Drive: [" + e.getMessage() + "] " + fileLocation,
           HpcErrorType.INVALID_REQUEST_INPUT, e);
     }
   }
@@ -1467,10 +1537,23 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         && uploadRequest.getSourceFile() != null;
 
     // Instantiate a progress listener for upload from AWS S3.
-    HpcDataTransferProgressListener progressListener =
-        uploadRequest.getS3UploadSource() != null ? new HpcS3Upload(uploadRequest.getPath(),
-            uploadRequest.getUserId(), uploadRequest.getS3UploadSource().getSourceLocation())
-            : null;
+    HpcDataTransferProgressListener progressListener = null;
+    if (uploadRequest.getS3UploadSource() != null) {
+      progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
+          uploadRequest.getS3UploadSource().getSourceLocation(), eventService);
+    }
+
+    // Get a source URL and instantiate a progress listener for upload from Google Drive.
+    if (uploadRequest.getGoogleDriveUploadSource() != null) {
+      HpcDataTransferProxy dataTransferProxy =
+          dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE);
+      dataTransferProxy.generateDownloadRequestURL(
+          dataTransferProxy
+              .authenticate(uploadRequest.getGoogleDriveUploadSource().getAccessToken()),
+          uploadRequest.getGoogleDriveUploadSource().getSourceLocation(), null);
+      progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
+          uploadRequest.getGoogleDriveUploadSource().getSourceLocation(), eventService);
+    }
 
     // Upload the data object using the appropriate data transfer system proxy and archive
     // configuration.
@@ -1488,6 +1571,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *
    * @param globusUploadSource The Globus source to validate.
    * @param s3UploadSource The S3 source to validate.
+   * @param googleDriveUploadSource The Google Drive source to validate.
    * @param sourceFile The source file to validate.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
@@ -1496,8 +1580,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
    *         directory.
    */
   private Long validateUploadSourceFileLocation(HpcGlobusUploadSource globusUploadSource,
-      HpcStreamingUploadSource s3UploadSource, File sourceFile, String configurationId)
-      throws HpcException {
+      HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+      File sourceFile, String configurationId) throws HpcException {
     if (sourceFile != null) {
       return sourceFile.length();
     }
@@ -1518,6 +1602,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       sourceFileLocation = s3UploadSource.getSourceLocation();
       pathAttributes =
           getPathAttributes(s3UploadSource.getAccount(), s3UploadSource.getSourceLocation(), true);
+
+    } else if (googleDriveUploadSource != null) {
+      if (googleDriveUploadSource.getSourceSize() != null) {
+        // When source URL + size are provided, we skip the source validation because
+        // this was done before at the time
+        // the URL was generated.
+        return googleDriveUploadSource.getSourceSize();
+      }
+      sourceFileLocation = googleDriveUploadSource.getSourceLocation();
+      pathAttributes = getPathAttributes(googleDriveUploadSource.getAccessToken(),
+          googleDriveUploadSource.getSourceLocation(), true);
 
     } else {
       // No source to validate. It's a request to generate an upload URL.
@@ -1636,7 +1731,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       }
 
       if (!googleDriveDownloadDestination.getDestinationLocation().getFileContainerId()
-          .equals("MyDrive")) {
+          .equals(MY_GOOGLE_DRIVE_ID)) {
         // At this point we only support download to personal drive and expect the container ID to
         // be "MyDrive"
         throw new HpcException("Invalid file container ID. Only 'MyDrive' is supported",
@@ -1803,12 +1898,24 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
     }
 
     if (uploadRequest.getS3UploadSource() != null) {
-      // It's an asynchronous upload request w/ S3. This is only supported Cleversafe
+      // It's an asynchronous upload request from AWS S3. This is only supported Cleversafe
       // archive.
       if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
         throw new HpcException("S3 upload source not supported by POSIX archive",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
+      return HpcDataTransferType.S_3;
+    }
+
+    if (uploadRequest.getGoogleDriveUploadSource() != null) {
+      // It's an asynchronous upload request from Google Drive. This is only supported Cleversafe
+      // archive.
+      if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
+        throw new HpcException("Google Drive upload source not supported by POSIX archive",
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+
+      // We use the S_3 data transfer proxy to stream files from Google Drive to an S3 archive.
       return HpcDataTransferType.S_3;
     }
 
@@ -2558,63 +2665,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           baseDownloadSource.getFileLocation().getFileId() + "/" + UUID.randomUUID().toString());
 
       return sourceLocation;
-    }
-  }
-
-  // AWS S3 upload.
-  private class HpcS3Upload implements HpcDataTransferProgressListener {
-    // ---------------------------------------------------------------------//
-    // Instance members
-    // ---------------------------------------------------------------------//
-
-    // The data object path that is being uploaded.
-    private String path = null;
-
-    // The user id registering the data object.
-    private String userId = null;
-
-    // The upload source location.
-    private HpcFileLocation sourceLocation = null;
-
-    // ---------------------------------------------------------------------//
-    // Constructors
-    // ---------------------------------------------------------------------//
-
-    /**
-     * Constructs a S3 upload object (to keep track of async processing)
-     *
-     * @param path The data object path that is being uploaded.
-     * @param userId The user ID requested the upload.
-     * @param sourceLocation The upload file location.
-     */
-    public HpcS3Upload(String path, String userId, HpcFileLocation sourceLocation) {
-      this.path = path;
-      this.userId = userId;
-      this.sourceLocation = sourceLocation;
-    }
-
-    // ---------------------------------------------------------------------//
-    // Methods
-    // ---------------------------------------------------------------------//
-
-    // ---------------------------------------------------------------------//
-    // HpcDataTransferProgressListener Interface Implementation
-    // ---------------------------------------------------------------------//
-
-    @Override
-    public void transferCompleted(Long bytesTransferred) {
-      logger.info("AWS S3 upload completed for: {}", path);
-    }
-
-    @Override
-    public void transferFailed(String message) {
-      logger.error("AWS S3 upload failed for: {} - {}", path, message);
-      try {
-        eventService.addDataTransferUploadFailedEvent(userId, path, sourceLocation,
-            Calendar.getInstance(), message);
-      } catch (HpcException e) {
-        logger.error("Failed to send upload failed event for AWS S3 streaming", e);
-      }
     }
   }
 }

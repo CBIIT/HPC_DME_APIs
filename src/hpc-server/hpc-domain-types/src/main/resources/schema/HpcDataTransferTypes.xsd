@@ -180,6 +180,8 @@
 				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
 			<xsd:element name="s3UploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="googleDriveUploadSource"
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="sourceFile"
 				type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="generateUploadRequestURL"
