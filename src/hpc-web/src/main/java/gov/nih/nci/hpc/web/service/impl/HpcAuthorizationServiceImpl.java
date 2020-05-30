@@ -9,9 +9,6 @@
  */
 package gov.nih.nci.hpc.web.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -21,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -39,23 +35,20 @@ public class HpcAuthorizationServiceImpl implements HpcAuthorizationService {
   private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
   private static HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
-  @Value("${gov.nih.nci.hpc.drive.credentials}")
-  private String credentialsFile;
+  @Value("${gov.nih.nci.hpc.drive.clientid}")
+  private String clientId;
+  @Value("${gov.nih.nci.hpc.drive.clientsecret}")
+  private String clientSecret;
 
   private Logger logger = LoggerFactory.getLogger(HpcAuthorizationServiceImpl.class);
   private GoogleAuthorizationCodeFlow flow;
 
   @PostConstruct
   public void init() throws Exception {
-    File file = new File(credentialsFile);
-    FileInputStream in = new FileInputStream(file);
-
-    GoogleClientSecrets clientSecrets =
-        GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
     // Build flow and trigger user authorization request.
     flow =
-        new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+        new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientId, clientSecret, SCOPES)
             .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
             .setAccessType("offline")
             .build();

@@ -2939,7 +2939,7 @@ function dm_add_bookmark () {
     rm -f  $RESPONSE_MSG 2>/dev/null 
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
-    local CURL_FLAGS="${SERVER}/bookmark/${BOOKMARK_NAME}  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS="${SERVER}/bookmark/$(urlencode $BOOKMARK_NAME)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
   
     curl -X PUT -H "Content-Type: application/json" -d @${DESCRIPTION_PATH} $CURL_FLAGS -H "Accept: application/json" 2> $HPC_DM_UTILS/temp/curl-status 
