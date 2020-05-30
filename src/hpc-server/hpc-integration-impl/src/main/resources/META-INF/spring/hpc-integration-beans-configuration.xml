@@ -65,6 +65,9 @@
 	<!-- Google Drive Data Transfer Proxy -->
 	<bean id="hpcGoogleDriveDataTransferProxy" 
 	      class="gov.nih.nci.hpc.integration.googledrive.impl.HpcDataTransferProxyImpl" />
+	      
+	<!--  Google Drive Connection  -->
+	<bean id="hpcGoogleDriveConnection" class="gov.nih.nci.hpc.integration.googledrive.impl.HpcGoogleDriveConnection" />
 	
 	<!-- HPC LDAP Authentication Proxy -->
 	<bean id="hpcLdapAuthenticationProxy"

@@ -38,6 +38,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
@@ -148,8 +149,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         // Transfer the data file.
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
-            toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, false,
-            null, null, path, systemGeneratedMetadata.getObjectId(),
+            toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null,
+            false, null, null, path, systemGeneratedMetadata.getObjectId(),
             systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
 
@@ -344,7 +345,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   @Override
   @HpcExecuteAsSystemAccount
   public void processDataTranferUploadStreamingStopped() throws HpcException {
-    // Iterate through the data objects that their data transfer (S3 streaming) has
+    // Iterate through the data objects that their data transfer (S3 / Google Drive streaming) has
     // stopped.
     List<HpcDataObject> dataObjectsStreamingStopped =
         dataManagementService.getDataTranferUploadStreamingStopped();
@@ -358,8 +359,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         // Transfer the data file.
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null,
-            toS3UploadSource(systemGeneratedMetadata.getSourceLocation(),
-                systemGeneratedMetadata.getSourceURL(), systemGeneratedMetadata.getSourceSize()),
+            toS3UploadSource(systemGeneratedMetadata.getDataTransferMethod(),
+                systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceURL(),
+                systemGeneratedMetadata.getSourceSize()),
+            toGoogleDriveUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
+                systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceURL(),
+                systemGeneratedMetadata.getSourceSize()),
             null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
             systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
@@ -402,7 +407,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
         // Transfer the data file from the temporary archive into the archive.
         HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null,
-            null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+            null, null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
             systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
             systemGeneratedMetadata.getConfigurationId());
 
@@ -1303,7 +1308,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           : collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
     }
     calcDestination.setFileId(fileId);
-    
+
     calcS3Destination.setDestinationLocation(calcDestination);
     calcS3Destination.setAccount(collectionDestination.getAccount());
 
@@ -1339,7 +1344,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           : collectionListingEntryPath.substring(collectionListingEntryPath.lastIndexOf('/')));
     }
     calcDestination.setFileId(fileId);
-    
+
     calcGoogleDriveDestination.setDestinationLocation(calcDestination);
     calcGoogleDriveDestination.setAccessToken(collectionDestination.getAccessToken());
 
@@ -1683,18 +1688,46 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   /**
    * Package a source location into a S3 upload source object.
    *
+   * @param uploadMethod The method of upload. If not S_3, null will be returned.
    * @param sourceLocation The source location to package.
    * @param sourceURL The source URL to stream from.
    * @param sourceSize The source file size.
    * @return The packaged S3 upload source.
    */
-  private HpcStreamingUploadSource toS3UploadSource(HpcFileLocation sourceLocation, String sourceURL,
-      Long sourceSize) {
+  private HpcStreamingUploadSource toS3UploadSource(HpcDataTransferUploadMethod uploadMethod,
+      HpcFileLocation sourceLocation, String sourceURL, Long sourceSize) {
+    if (uploadMethod.equals(HpcDataTransferUploadMethod.S_3)) {
+      return null;
+    }
+
     HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
     s3UploadSource.setSourceLocation(sourceLocation);
     s3UploadSource.setSourceURL(sourceURL);
     s3UploadSource.setSourceSize(sourceSize);
     return s3UploadSource;
+  }
+
+  /**
+   * Package a source location into a Google Drive upload source object.
+   *
+   * @param uploadMethod The method of upload. If not GOOGLE_DRIVE, null will be returned
+   * @param sourceLocation The source location to package.
+   * @param sourceURL The source URL to stream from.
+   * @param sourceSize The source file size.
+   * @return The packaged S3 upload source.
+   */
+  private HpcStreamingUploadSource toGoogleDriveUploadSource(
+      HpcDataTransferUploadMethod uploadMethod, HpcFileLocation sourceLocation, String sourceURL,
+      Long sourceSize) {
+    if (uploadMethod.equals(HpcDataTransferUploadMethod.GOOGLE_DRIVE)) {
+      return null;
+    }
+
+    HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
+    googleDriveUploadSource.setSourceLocation(sourceLocation);
+    googleDriveUploadSource.setSourceURL(sourceURL);
+    googleDriveUploadSource.setSourceSize(sourceSize);
+    return googleDriveUploadSource;
   }
 
   /**

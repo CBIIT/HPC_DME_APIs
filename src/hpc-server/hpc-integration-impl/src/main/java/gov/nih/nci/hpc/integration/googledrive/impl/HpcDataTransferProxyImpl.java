@@ -3,7 +3,6 @@ package gov.nih.nci.hpc.integration.googledrive.impl;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.IOException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -13,23 +12,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.InputStreamContent;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -44,9 +37,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // Constants
   // ---------------------------------------------------------------------//
 
+  // Google drive folder mime-type.
+  private static final String FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
+
   // Google drive search query for folders.
   private static final String FOLDER_QUERY =
-      "mimeType = 'application/vnd.google-apps.folder' and name = '%s' and '%s' in parents";
+      "mimeType = '" + FOLDER_MIME_TYPE + "' and name = '%s' and '%s' in parents";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -57,9 +53,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   @Qualifier("hpcGoogleDriveDownloadExecutor")
   Executor googleDriveExecutor = null;
 
-  // The (Google) HPC Application name. Users need to provide drive access to this app name.
-  @Value("${hpc.integration.googledrive.hpcApplicationName}")
-  String hpcApplicationName = null;
+  // The S3 connection instance.
+  @Autowired
+  private HpcGoogleDriveConnection googleDriveConnection = null;
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -80,11 +76,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // ---------------------------------------------------------------------//
 
   @Override
-  public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-      HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
-      Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-      List<HpcMetadataEntry> metadataEntries) throws HpcException {
-    throw new HpcException("uploadDataObject() not supported", HpcErrorType.UNEXPECTED_ERROR);
+  public Object authenticate(String accessToken) throws HpcException {
+    return googleDriveConnection.authenticate(accessToken);
   }
 
   @Override
@@ -98,25 +91,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    // Connect to Google Drive.
-    Drive drive = null;
-    try {
-      drive = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(),
-          JacksonFactory.getDefaultInstance(),
-          new GoogleCredential()
-              .setAccessToken(downloadRequest.getGoogleDriveDestination().getAccessToken()))
-                  .setApplicationName(hpcApplicationName).build();
-
-      // Confirm the drive is accessible.
-      drive.about().get().setFields("appInstalled").execute();
-
-    } catch (IOException | GeneralSecurityException e) {
-      throw new HpcException("Failed to access Google Drive: " + e.getMessage(),
-          HpcErrorType.INVALID_REQUEST_INPUT, e);
-    }
+    // Authenticate the Google Drive access token.
+    final Drive drive = googleDriveConnection.getDrive(googleDriveConnection
+        .authenticate(downloadRequest.getGoogleDriveDestination().getAccessToken()));
 
     // Stream the file to Google Drive.
-    final Drive googleDrive = drive;
     CompletableFuture<Void> googleDriveDownloadFuture = CompletableFuture.runAsync(() -> {
       try {
         // Find / Create the folder in Google Drive where we download the file to
@@ -125,10 +104,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         int lastSlashIndex = destinationPath.lastIndexOf('/');
         String destinationFolderPath = destinationPath.substring(0, lastSlashIndex);
         String destinationFileName = destinationPath.substring(lastSlashIndex + 1);
-        String folderId = getFolderId(googleDrive, destinationFolderPath);
+        String folderId = getFolderId(drive, destinationFolderPath);
 
         // Transfer the file to Google Drive, and complete the download task.
-        progressListener.transferCompleted(googleDrive.files().create(
+        progressListener.transferCompleted(drive.files().create(
             new File().setName(destinationFileName).setParents(Collections.singletonList(folderId)),
             new InputStreamContent("application/octet-stream",
                 new URL(downloadRequest.getArchiveLocationURL()).openStream()))
@@ -148,7 +127,51 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   @Override
   public HpcPathAttributes getPathAttributes(Object authenticatedToken,
       HpcFileLocation fileLocation, boolean getSize) throws HpcException {
-    throw new HpcException("getPathAttributes() not supported", HpcErrorType.UNEXPECTED_ERROR);
+
+    Drive drive = googleDriveConnection.getDrive(authenticatedToken);
+
+    HpcPathAttributes pathAttributes = new HpcPathAttributes();
+    pathAttributes.setIsAccessible(true);
+    
+    try {
+      File file = getFile(drive, fileLocation.getFileContainerId());
+      if (file == null) {
+        pathAttributes.setExists(false);
+      } else {
+        pathAttributes.setExists(true);
+        if (file.getMimeType().equals(FOLDER_MIME_TYPE)) {
+          pathAttributes.setIsDirectory(true);
+          pathAttributes.setIsFile(false);
+        } else {
+          pathAttributes.setIsDirectory(false);
+          pathAttributes.setIsFile(true);
+          if (getSize) {
+            pathAttributes.setSize(file.getSize());
+          }
+        }
+      }
+
+    } catch(GoogleJsonResponseException e) {
+      if(e.getStatusCode() == 401) {
+        pathAttributes.setIsAccessible(false);
+      } else {
+        throw new HpcException("[Google Drive] Failed to get file: " + e.getMessage(),
+            HpcErrorType.DATA_TRANSFER_ERROR, e);
+      }
+    } 
+    catch (IOException e) {
+      throw new HpcException("[Google Drive] Failed to get file: " + e.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, e);
+    }
+    
+    return pathAttributes;
+  }
+
+  @Override
+  public String generateDownloadRequestURL(Object authenticatedToken,
+      HpcFileLocation archiveLocation, Integer downloadRequestURLExpiration) throws HpcException {
+    throw new HpcException("Generating download URL is not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
   }
 
   @Override
@@ -164,24 +187,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   /**
    * Find the ID of a folder in Google Drive. If not found, the folder is created.
    *
-   * @param googleDrive A Google drive instance.
+   * @param drive A Google drive instance.
    * @param folderPath The folder path to find / create in Google Drive.
    * @return The folder ID.
    * @throws IOException on data transfer system failure.
    */
-  private String getFolderId(Drive googleDrive, String folderPath) throws IOException {
+  private String getFolderId(Drive drive, String folderPath) throws IOException {
     String parentFolderId = "root";
     if (!StringUtils.isEmpty(folderPath)) {
       boolean createNewFolder = false;
       for (String subFolderName : folderPath.split("/")) {
-        if(StringUtils.isEmpty(subFolderName)) {
+        if (StringUtils.isEmpty(subFolderName)) {
           continue;
         }
         if (!createNewFolder) {
           // Search for the sub-folder.
-          FileList result = googleDrive.files().list()
-              .setQ(String.format(FOLDER_QUERY, subFolderName, parentFolderId))
-              .setFields("files(id)").execute();
+          FileList result =
+              drive.files().list().setQ(String.format(FOLDER_QUERY, subFolderName, parentFolderId))
+                  .setFields("files(id)").execute();
           if (!result.getFiles().isEmpty()) {
             // Sub-folder was found. Note: In Google Drive, it's possible to have multiple folders
             // with the same name
@@ -196,7 +219,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         }
 
         // Creating a new sub folder.
-        parentFolderId = googleDrive.files()
+        parentFolderId = drive.files()
             .create(new File().setName(subFolderName)
                 .setParents(Collections.singletonList(parentFolderId))
                 .setMimeType("application/vnd.google-apps.folder"))
@@ -205,5 +228,27 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     return parentFolderId;
+  }
+
+  /**
+   * Get a file/folder by ID or path.
+   *
+   * @param drive A Google drive instance.
+   * @param idOrPath The file/folder ID or path to get.
+   * @return A File instance or null if not found
+   * @throws IOException on data transfer system failure.
+   */
+  private File getFile(Drive drive, String idOrPath) throws IOException {
+    File file = null;
+    try {
+      file = drive.files().get(idOrPath).setFields("id,name,mimeType,size").execute();
+      
+    } catch(GoogleJsonResponseException e) {
+      if(e.getStatusCode() != 404) {
+        throw e;
+      }
+    }
+    
+    return file;
   }
 }

@@ -826,7 +826,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           // Transfer the data file.
           HpcDataObjectUploadResponse uploadResponse =
               dataTransferService.uploadDataObject(dataObjectRegistration.getGlobusUploadSource(),
-                  dataObjectRegistration.getS3UploadSource(), dataObjectFile,
+                  dataObjectRegistration.getS3UploadSource(),
+                  dataObjectRegistration.getGoogleDriveUploadSource(), dataObjectFile,
                   generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
                   generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
                   dataObjectMetadataEntry.getValue(), userId,
@@ -2324,8 +2325,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
       // Re-generate the upload request URL.
       HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null,
-          null, true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(), userId,
-          callerObjectId, systemGeneratedMetadata.getConfigurationId());
+          null, null, true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(),
+          userId, callerObjectId, systemGeneratedMetadata.getConfigurationId());
 
       // Update data-transfer-status system metadata accordingly.
       metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
