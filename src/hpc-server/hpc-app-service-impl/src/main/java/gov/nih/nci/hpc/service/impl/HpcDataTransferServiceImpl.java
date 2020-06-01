@@ -308,14 +308,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
         throw new HpcException("Invalid file container ID. Only 'MyDrive' is supported",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
-      if (StringUtils.isEmpty(googleDriveUploadSource.getSourceURL())
-          && StringUtils.isEmpty(googleDriveUploadSource.getAccessToken())) {
+      if (StringUtils.isEmpty(googleDriveUploadSource.getAccessToken())) {
         throw new HpcException("Invalid Google Drive access token",
-            HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-      if (!StringUtils.isEmpty(googleDriveUploadSource.getSourceURL())
-          && googleDriveUploadSource.getSourceSize() == null) {
-        throw new HpcException("Google Drive source URL provided without source size",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
       if (googleDriveUploadSource.getAccount() != null) {
@@ -1543,14 +1537,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           uploadRequest.getS3UploadSource().getSourceLocation(), eventService);
     }
 
-    // Get a source URL and instantiate a progress listener for upload from Google Drive.
+    // Get a source InputStream and instantiate a progress listener for upload from Google Drive.
     if (uploadRequest.getGoogleDriveUploadSource() != null) {
       HpcDataTransferProxy dataTransferProxy =
           dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE);
-      dataTransferProxy.generateDownloadRequestURL(
-          dataTransferProxy
-              .authenticate(uploadRequest.getGoogleDriveUploadSource().getAccessToken()),
-          uploadRequest.getGoogleDriveUploadSource().getSourceLocation(), null);
+      uploadRequest.getGoogleDriveUploadSource()
+          .setSourceInputStream(dataTransferProxy.generateDownloadInputStream(
+              dataTransferProxy
+                  .authenticate(uploadRequest.getGoogleDriveUploadSource().getAccessToken()),
+              uploadRequest.getGoogleDriveUploadSource().getSourceLocation()));
       progressListener = new HpcStreamingUpload(uploadRequest.getPath(), uploadRequest.getUserId(),
           uploadRequest.getGoogleDriveUploadSource().getSourceLocation(), eventService);
     }
@@ -1604,12 +1599,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
           getPathAttributes(s3UploadSource.getAccount(), s3UploadSource.getSourceLocation(), true);
 
     } else if (googleDriveUploadSource != null) {
-      if (googleDriveUploadSource.getSourceSize() != null) {
-        // When source URL + size are provided, we skip the source validation because
-        // this was done before at the time
-        // the URL was generated.
-        return googleDriveUploadSource.getSourceSize();
-      }
       sourceFileLocation = googleDriveUploadSource.getSourceLocation();
       pathAttributes = getPathAttributes(googleDriveUploadSource.getAccessToken(),
           googleDriveUploadSource.getSourceLocation(), true);
