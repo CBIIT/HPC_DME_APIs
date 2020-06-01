@@ -1696,7 +1696,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
    */
   private HpcStreamingUploadSource toS3UploadSource(HpcDataTransferUploadMethod uploadMethod,
       HpcFileLocation sourceLocation, String sourceURL, Long sourceSize) {
-    if (uploadMethod.equals(HpcDataTransferUploadMethod.S_3)) {
+    if (!uploadMethod.equals(HpcDataTransferUploadMethod.S_3)) {
       return null;
     }
 
@@ -1719,13 +1719,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   private HpcStreamingUploadSource toGoogleDriveUploadSource(
       HpcDataTransferUploadMethod uploadMethod, HpcFileLocation sourceLocation, String sourceURL,
       Long sourceSize) {
-    if (uploadMethod.equals(HpcDataTransferUploadMethod.GOOGLE_DRIVE)) {
+    if (!uploadMethod.equals(HpcDataTransferUploadMethod.GOOGLE_DRIVE)) {
       return null;
     }
 
     HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
     googleDriveUploadSource.setSourceLocation(sourceLocation);
-    googleDriveUploadSource.setSourceURL(sourceURL);
+    // For Google drive, we persisted the access-token as source-url.
+    googleDriveUploadSource.setAccessToken(sourceURL);
     googleDriveUploadSource.setSourceSize(sourceSize);
     return googleDriveUploadSource;
   }

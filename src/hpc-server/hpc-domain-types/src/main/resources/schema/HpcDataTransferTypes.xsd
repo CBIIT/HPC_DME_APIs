@@ -125,6 +125,7 @@
 	</xsd:complexType>
 
 	<xsd:complexType name="HpcFile" />
+	<xsd:complexType name="HpcInputStream" />
 
 	<xsd:complexType name="HpcGlobusUploadSource">
 		<xsd:sequence>
@@ -151,6 +152,7 @@
 			<xsd:element name="sourceURL" type="xsd:string" />
 			<xsd:element name="sourceSize" type="xsd:long"
 				minOccurs="0" />
+			<xsd:element name="sourceInputStream" type="hpc-domain-datatransfer:HpcInputStream" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

@@ -2,6 +2,7 @@ package gov.nih.nci.hpc.integration.googledrive.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // Google drive search query for folders.
   private static final String FOLDER_QUERY =
       "mimeType = '" + FOLDER_MIME_TYPE + "' and name = '%s' and '%s' in parents";
+
+  // Google drive search query for files.
+  private static final String FILE_QUERY =
+      "mimeType != '" + FOLDER_MIME_TYPE + "' and name = '%s' and '%s' in parents";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -104,7 +109,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         int lastSlashIndex = destinationPath.lastIndexOf('/');
         String destinationFolderPath = destinationPath.substring(0, lastSlashIndex);
         String destinationFileName = destinationPath.substring(lastSlashIndex + 1);
-        String folderId = getFolderId(drive, destinationFolderPath);
+        String folderId = getFolderId(drive, destinationFolderPath, true);
 
         // Transfer the file to Google Drive, and complete the download task.
         progressListener.transferCompleted(drive.files().create(
@@ -132,9 +137,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     HpcPathAttributes pathAttributes = new HpcPathAttributes();
     pathAttributes.setIsAccessible(true);
-    
+
     try {
-      File file = getFile(drive, fileLocation.getFileContainerId());
+      File file = getFile(drive, fileLocation.getFileId());
       if (file == null) {
         pathAttributes.setExists(false);
       } else {
@@ -151,27 +156,38 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         }
       }
 
-    } catch(GoogleJsonResponseException e) {
-      if(e.getStatusCode() == 401) {
+    } catch (GoogleJsonResponseException e) {
+      if (e.getStatusCode() == 401) {
         pathAttributes.setIsAccessible(false);
       } else {
         throw new HpcException("[Google Drive] Failed to get file: " + e.getMessage(),
             HpcErrorType.DATA_TRANSFER_ERROR, e);
       }
-    } 
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new HpcException("[Google Drive] Failed to get file: " + e.getMessage(),
           HpcErrorType.DATA_TRANSFER_ERROR, e);
     }
-    
+
     return pathAttributes;
   }
 
   @Override
-  public String generateDownloadRequestURL(Object authenticatedToken,
-      HpcFileLocation archiveLocation, Integer downloadRequestURLExpiration) throws HpcException {
-    throw new HpcException("Generating download URL is not supported",
-        HpcErrorType.UNEXPECTED_ERROR);
+  public InputStream generateDownloadInputStream(Object authenticatedToken,
+      HpcFileLocation fileLocation) throws HpcException {
+    Drive drive = googleDriveConnection.getDrive(authenticatedToken);
+    try {
+      File file = getFile(drive, fileLocation.getFileId());
+      if (file == null) {
+        throw new HpcException("Google drive file not found", HpcErrorType.UNEXPECTED_ERROR);
+      }
+
+      return drive.files().get(file.getId()).executeMediaAsInputStream();
+
+    } catch (IOException e) {
+      throw new HpcException(
+          "[Google Drive] Failed to generate download InputStream: " + e.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, e);
+    }
   }
 
   @Override
@@ -189,10 +205,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    *
    * @param drive A Google drive instance.
    * @param folderPath The folder path to find / create in Google Drive.
-   * @return The folder ID.
+   * @param create If true, the folder will be created.
+   * @return The folder ID or null if not found.
    * @throws IOException on data transfer system failure.
    */
-  private String getFolderId(Drive drive, String folderPath) throws IOException {
+  private String getFolderId(Drive drive, String folderPath, boolean create) throws IOException {
     String parentFolderId = "root";
     if (!StringUtils.isEmpty(folderPath)) {
       boolean createNewFolder = false;
@@ -214,6 +231,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
           } else {
             // Sub-folder was not found.
+            if (!create) {
+              // Requested to not create folders.
+              return null;
+            }
             createNewFolder = true;
           }
         }
@@ -239,16 +260,34 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @throws IOException on data transfer system failure.
    */
   private File getFile(Drive drive, String idOrPath) throws IOException {
-    File file = null;
+    // Search by ID.
     try {
-      file = drive.files().get(idOrPath).setFields("id,name,mimeType,size").execute();
-      
-    } catch(GoogleJsonResponseException e) {
-      if(e.getStatusCode() != 404) {
+      return drive.files().get(idOrPath).setFields("id,name,mimeType,size").execute();
+
+    } catch (GoogleJsonResponseException e) {
+      if (e.getStatusCode() != 404) {
         throw e;
       }
     }
-    
-    return file;
+
+    // File not found by ID, search by path
+    String filePath = toNormalizedPath(idOrPath);
+    int lastSlashIndex = filePath.lastIndexOf('/');
+    String folderId = getFolderId(drive, filePath.substring(0, lastSlashIndex), false);
+    if (folderId == null) {
+      // folder not found.
+      return null;
+    }
+
+    String fileName = filePath.substring(lastSlashIndex + 1);
+    FileList result = drive.files().list().setQ(String.format(FILE_QUERY, fileName, folderId))
+        .setFields("files(id,name,mimeType,size)").execute();
+    if (!result.getFiles().isEmpty()) {
+      // Note: In Google Drive, it's possible to have multiple files with the same name
+      // We simply grab the first one on the list.
+      return result.getFiles().get(0);
+    }
+
+    return null;
   }
 }

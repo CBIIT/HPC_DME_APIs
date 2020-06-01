@@ -10,6 +10,7 @@
  */
 package gov.nih.nci.hpc.integration;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -140,6 +141,20 @@ public interface HpcDataTransferProxy {
   public default String generateDownloadRequestURL(Object authenticatedToken,
       HpcFileLocation archiveLocation, Integer downloadRequestURLExpiration) throws HpcException {
     throw new HpcException("Generating download URL is not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
+   * Generate an input stream for a data object file.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveLocation The data object's archive location.
+   * @return Input stream to the file.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default InputStream generateDownloadInputStream(Object authenticatedToken,
+      HpcFileLocation archiveLocation) throws HpcException {
+    throw new HpcException("Generating download InputStream is not supported",
         HpcErrorType.UNEXPECTED_ERROR);
   }
 

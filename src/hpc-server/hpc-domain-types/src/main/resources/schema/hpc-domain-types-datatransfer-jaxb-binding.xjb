@@ -9,7 +9,6 @@
  * See http://ncip.github.com/HPC/LICENSE.txt for details.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  -->
 <jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
 			  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -38,6 +37,9 @@
 	<jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
 		<jxb:bindings node="//xsd:complexType[@name='HpcFile']">
         	<jxb:class ref="java.io.File"/>
+		</jxb:bindings>
+		<jxb:bindings node="//xsd:complexType[@name='HpcInputStream']">
+        	<jxb:class ref="java.io.InputStream"/>
 		</jxb:bindings>
     </jxb:bindings>
     
