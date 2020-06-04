@@ -250,6 +250,25 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     upsert(user);
   }
 
+
+  @Override
+  public void deleteUser(String nciUserId) throws HpcException {
+      // Input validation.
+      if (StringUtils.isEmpty(nciUserId)) {
+          throw new HpcException("Null or empty nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+
+      // Get the user.
+	  HpcUser user = getUser(nciUserId);
+      if (user == null) {
+		  throw new HpcException(
+              "User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+      }
+
+      userDAO.deleteUser(nciUserId);
+  }
+
+
   @Override
   public HpcUser getUser(String nciUserId) throws HpcException {
     // Input validation.

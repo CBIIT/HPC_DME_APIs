@@ -201,6 +201,7 @@
 				<!-- Security Service Authorizations -->
 				<entry key="registerUser" value="${hpc.ws.rs.auth.security.register-user}" />
 				<entry key="updateUser" value="${hpc.ws.rs.auth.security.update-user}" />
+				<entry key="deleteUser" value="${hpc.ws.rs.auth.security.delete-user}" />
 				<entry key="getUser" value="${hpc.ws.rs.auth.security.get-user}" />
 				<entry key="getInvoker" value="${hpc.ws.rs.auth.security.get-invoker}" />
 				<entry key="getActiveUsers" value="${hpc.ws.rs.auth.security.get-active-users}" />
@@ -270,6 +271,7 @@
 				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />
 				<entry key="queryDataObjects" value="${hpc.ws.rs.auth.data-search.query-data-objects}" />
 				<entry key="addQuery" value="${hpc.ws.rs.auth.data-search.add-query}" />
+				<entry key="addQueryByUser" value="${hpc.ws.rs.auth.data-search.add-query-by-user}" />
 				<entry key="updateQuery" value="${hpc.ws.rs.auth.data-search.update-query}" />
 				<entry key="deleteQuery" value="${hpc.ws.rs.auth.data-search.delete-query}" />
 				<entry key="getQuery" value="${hpc.ws.rs.auth.data-search.get-query}" />

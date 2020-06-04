@@ -7,7 +7,7 @@
 <meta name="author" content="SVG, Inc" />
 <link rel="shortcut icon" href="img/favicon.png" />
 
-<title>HPC Data Management Environment</title>
+<title>NCI Data Management Environment</title>
 
 <!-- Bootstrap CSS -->
 <link href="css/bootstrap.min.css" rel="stylesheet" />
@@ -269,7 +269,7 @@
 										</div>
 										<tr id='attrRow0' th:each="entry : ${report.reportEntries}">
 											<td th:text="${entry.attribute}">value</td>
-											<td th:text="${entry.value}">value</td>
+											<td th:utext="${entry.value}">value</td>
 										</tr>
 									</table>
 								</td>

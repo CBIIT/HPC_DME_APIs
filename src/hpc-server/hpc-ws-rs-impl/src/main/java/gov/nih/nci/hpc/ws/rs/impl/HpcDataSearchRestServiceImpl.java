@@ -169,7 +169,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
   @Override
   public Response addQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
     try {
-      dataSearchBusService.addQuery(decodeString(queryName), compoundMetadataQuery);
+      dataSearchBusService.addQuery(decodeString(queryName), null, compoundMetadataQuery);
 
     } catch (HpcException e) {
       return errorResponse(e);
@@ -177,6 +177,20 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 
     return createdResponse(null);
   }
+
+
+  @Override
+  public Response addQueryByUser(String queryName, String userId, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+    try {
+      dataSearchBusService.addQuery(decodeString(queryName), userId, compoundMetadataQuery);
+
+    } catch (HpcException e) {
+      return errorResponse(e);
+    }
+
+    return createdResponse(null);
+  }
+
 
   @Override
   public Response updateQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {

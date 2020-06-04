@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import gov.nih.nci.hpc.bus.HpcSecurityBusService;
+import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
@@ -31,6 +32,7 @@ import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcEventPayloadEntry;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
+import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -49,6 +51,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListEntry;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataBrowseService;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
@@ -89,6 +92,10 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
   // The security service instance.
   @Autowired
   private HpcNotificationService notificationService = null;
+
+  // The browse service instance
+  @Autowired
+  private HpcDataBrowseService browseService = null;
 
   // LDAP authentication on/off switch.
   @Value("${hpc.bus.ldapAuthentication}")
@@ -283,6 +290,46 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     securityService.updateUser(nciUserId, updateFirstName, updateLastName, updateDoc,
         updateDefaultConfigurationId, active);
   }
+
+
+  @Override
+  public void deleteUser(String nciUserId) throws HpcException {
+	  // Get the user.
+	  HpcUser user = securityService.getUser(nciUserId);
+	  if (user == null) {
+	      throw new HpcException("User not found: " + nciUserId,
+	          HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+	  }
+	  HpcRequestInvoker invoker = securityService.getRequestInvoker();
+	  if(!invoker.getUserRole().equals(HpcUserRole.SYSTEM_ADMIN)) {
+		  String message = "Not authorized to delete: " + nciUserId;
+		  logger.error(message);
+		  throw new HpcException(message, HpcRequestRejectReason.NOT_AUTHORIZED);
+	  }
+
+	  //Delete the user from iRODS
+	  dataManagementSecurityService.deleteUser(nciUserId);
+
+	  //Delete the user entry from DME
+	  securityService.deleteUser(nciUserId);
+
+	  //Delete the user bookmarks
+	  List<HpcBookmark> bookmarks = browseService.getBookmarks(nciUserId);
+	  if(bookmarks != null && !bookmarks.isEmpty()) {
+	      for(HpcBookmark bookmark: bookmarks) {
+		      browseService.deleteBookmark(nciUserId, bookmark.getName());
+	      }
+	  }
+
+	  //Delete the user subscriptions
+	  List<HpcNotificationSubscription> subscriptions = notificationService.getNotificationSubscriptions(nciUserId);
+	  if(subscriptions != null && !subscriptions.isEmpty()) {
+	      for(HpcNotificationSubscription subscription: subscriptions) {
+		      notificationService.deleteNotificationSubscription(nciUserId, subscription.getEventType());
+	      }
+	  }
+  }
+
 
   @Override
   public HpcUserDTO getUser(String nciUserId) throws HpcException {
