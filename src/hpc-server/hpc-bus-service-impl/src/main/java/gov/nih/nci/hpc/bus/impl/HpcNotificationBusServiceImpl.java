@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.bus.impl;
 
 import gov.nih.nci.hpc.bus.HpcNotificationBusService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.notification.HpcEvent;
 import gov.nih.nci.hpc.domain.notification.HpcEventType;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationDeliveryMethod;
@@ -25,6 +26,8 @@ import gov.nih.nci.hpc.dto.notification.HpcRemoveNotificationSubscriptionProblem
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +68,8 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
 
   @Autowired private HpcEventService eventService = null;
 
+  @Autowired private HpcSecurityService securityService = null;
+
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -104,9 +109,16 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
 
   @Override
   public HpcNotificationSubscriptionListDTO getNotificationSubscriptions() throws HpcException {
-    // Get the subscriptions for the user.
+
+	// Get the service invoker.
+	HpcRequestInvoker invoker = securityService.getRequestInvoker();
+	if (invoker == null) {
+	      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
+	// Get the subscriptions for the user.
     List<HpcNotificationSubscription> subscriptions =
-        notificationService.getNotificationSubscriptions();
+        notificationService.getNotificationSubscriptions(invoker.getNciAccount().getUserId());
     if (subscriptions == null || subscriptions.isEmpty()) {
       return null;
     }
@@ -202,7 +214,14 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
    *         notification actions (adds, updates, and removes)
    */
   private void helpProcessSubscriptionRemovals(
-      HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) {
+      HpcNotificationSubscriptionsRequestDTO notificationSubscriptions) throws HpcException {
+
+	// Get the service invoker.
+	HpcRequestInvoker invoker = securityService.getRequestInvoker();
+	if (invoker == null) {
+	      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
     if (null == this.removedSubs) {
       this.removedSubs = new ArrayList<>();
     } else {
@@ -217,7 +236,7 @@ public class HpcNotificationBusServiceImpl implements HpcNotificationBusService 
       for (HpcEventType removeSubEvent : notificationSubscriptions
           .getDeleteSubscriptions()) {
         try {
-          notificationService.deleteNotificationSubscription(removeSubEvent);
+          notificationService.deleteNotificationSubscription(invoker.getNciAccount().getUserId(), removeSubEvent);
           this.removedSubs.add(removeSubEvent);
         } catch (HpcException hpce) {
           HpcRemoveNotificationSubscriptionProblem problem =

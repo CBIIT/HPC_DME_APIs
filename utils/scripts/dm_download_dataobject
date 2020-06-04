@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dm_download_dataobject_presigned
+# dm_download_dataobject
 # @author: George Zaki 
 # 
 # Copyright Leidos Biomedical Research, Inc
@@ -10,4 +10,4 @@
 # Download an object using presigned URL 
 
 source $HPC_DM_UTILS/scripts/functions
-dm_download_dataobject_presigned $@
+dm_download_dataobject $@

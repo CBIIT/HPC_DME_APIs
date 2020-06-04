@@ -20,13 +20,16 @@ import javax.validation.Valid;
 import gov.nih.nci.hpc.web.util.HpcCollectionUtil;
 import gov.nih.nci.hpc.web.util.HpcEncryptionUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -38,6 +41,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import com.fasterxml.jackson.annotation.JsonView;
+
+import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataValidationRule;
@@ -79,6 +84,8 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
       KEY_PREFIX = "fdc-",
       NAV_OUTCOME_FORWARD_PREFIX = "forward:",
       NAV_OUTCOME_REDIRECT_PREFIX = "redirect:";
+    
+    private static final String ATTR_CAN_DELETE = "canDelete";
 
 	@Value("${gov.nih.nci.hpc.server.collection}")
 	private String serviceURL;
@@ -88,6 +95,9 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
     private String userGroupServiceURL;
 
 
+	//The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	  
 	/**
 	 * Get selected collection details from its path
 	 *
@@ -106,14 +116,13 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			HttpServletRequest request, RedirectAttributes redirAttrs) {
 		try {
 			// User Session validation
-			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
-			String userId = (String) session.getAttribute("hpcUserId");
-			String authToken = (String) session.getAttribute("hpcUserToken");
+			HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");			
+			String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);
 			if (user == null || authToken == null) {
-				ObjectError error = new ObjectError("hpcLogin", "Invalid user session!");
+				ObjectError error = new ObjectError("error", "Invalid user session!");
 				bindingResult.addError(error);
 				HpcLogin hpcLogin = new HpcLogin();
-				model.addAttribute("hpcLogin", hpcLogin);
+				model.addAttribute(ATTR_USER_LOGIN, hpcLogin);
 				final Map<String, String> paramsMap = new HashMap<>();
 				paramsMap.put("returnPath", "collection");
 				paramsMap.put("action", action);
@@ -123,7 +132,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			}
 
 			if (path == null) {
-                return "dashboard";
+                return RET_DASHBOARD;
             } else if (copyInputFlashMap2Model(request, model, KEY_PREFIX)) {
                 // This point reached if arrived at this controller action via
                 // forward from controller action handling collection item
@@ -137,11 +146,11 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			HpcCollectionListDTO collections = HpcClientUtil.getCollection(authToken, serviceURL, path, false,
 					false, true, sslCertPath, sslCertPassword);
 			if (collections != null && collections.getCollections() != null
-					&& collections.getCollections().size() > 0) {
-				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+					&& !collections.getCollections().isEmpty()) {
+				HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
 				if (modelDTO == null) {
 					modelDTO = HpcClientUtil.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-					session.setAttribute("userDOCModel", modelDTO);
+					session.setAttribute(ATTR_USER_DOC_MODEL, modelDTO);
 				}
 				//Find out if user belongs to the SEC_GROUP for this DOC
 				HpcGroupListDTO groups = (HpcGroupListDTO) session.getAttribute("hpcSecGroup");
@@ -155,7 +164,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 		        
 		        String doc = HpcClientUtil.getDocByBasePath(modelDTO, basePath);
 		        boolean userInSecGroup = false;
-		        if(groups != null && CollectionUtils.isNotEmpty(groups.getGroups())) {
+		        if(groups != null && !CollectionUtils.isEmpty(groups.getGroups())) {
 		          for (HpcGroup group : groups.getGroups()) {
 		            if (group.getGroupName().equalsIgnoreCase(doc + "_SEC_GROUP")) {
 		              userInSecGroup = true;
@@ -164,23 +173,22 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 		          }
 		        }
 		        
-				// Get collection permissions to enable Edit, Permission icons
-				// on the UI
-				//HpcUserPermissionDTO permission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
-				//		serviceURL, sslCertPath, sslCertPassword);
 				HpcCollectionDTO collection = collections.getCollections().get(0);
 				HpcCollectionModel hpcCollection = buildHpcCollection(collection,
 						modelDTO.getCollectionSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules(), userInSecGroup);
 				model.addAttribute("collection", hpcCollection);
-				model.addAttribute("userpermission", (collection.getPermission() != null)
+				model.addAttribute(ATTR_USER_PERMISSION, (collection.getPermission() != null)
 						? collection.getPermission().toString() : "null");
 				model.addAttribute("attributeNames", getMetadataAttributeNames(collection));
-                boolean canDeleteFlag = determineIfCollectionCanBeDelete(session, collection);
-				model.addAttribute("canDelete", Boolean.valueOf(canDeleteFlag).toString());
-				if (action != null && action.equals("edit"))
+                
+				//Add the delete icon only if user has permission to delete this collection 
+				boolean canDeleteFlag = determineIfCollectionCanBeDelete(session, collection);
+				model.addAttribute(ATTR_CAN_DELETE, Boolean.toString(canDeleteFlag));
+				
+				if (action != null && action.equals("edit")) {
 					if (collection.getPermission() == null || collection.getPermission().equals(HpcPermission.NONE)
 							|| collection.getPermission().equals(HpcPermission.READ)) {
-						model.addAttribute("error",
+						model.addAttribute(ATTR_ERROR,
 								"No edit permission. Please contact collection owner for write access.");
 						model.addAttribute("action", "view");
 					} else {
@@ -191,18 +199,16 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 						List<HpcMetadataAttrEntry> mergedMetadataEntries = mergeMatadataEntries(hpcCollection.getSelfMetadataEntries(), userMetadataEntries);
 						hpcCollection.setSelfMetadataEntries(mergedMetadataEntries);
 						model.addAttribute("collection", hpcCollection);
-						model.addAttribute("action", "edit");
-						
+						model.addAttribute("action", "edit");						
 					}
+				}
 			} else {
-				String message = "Collection not found!";
-				model.addAttribute("error", message);
-				return "dashboard";
+				String message = "Could not find collection " + path;
+				model.addAttribute(ATTR_ERROR, message);
+				return RET_DASHBOARD;
 			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			model.addAttribute("error", "Failed to get Collection: " + e.getMessage());
-			e.printStackTrace();
+		} catch (HpcWebException e) {
+			model.addAttribute(ATTR_ERROR, e.getMessage());
 		}
 		model.addAttribute("hpcCollection", new HpcCollectionModel());
 		return "collection";
@@ -230,16 +236,15 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
      */
 	private boolean determineIfCollectionCanBeDelete(
       HttpSession session, HpcCollectionDTO collection) {
-        final boolean retVal =
-          HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session) &&
+      
+          return HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session) &&
           HpcCollectionUtil.isUserCollectionOwner(session, collection);
 
-        return retVal;
     }
 
 
     private List<String> getMetadataAttributeNames(HpcCollectionDTO collection) {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		if (collection == null || collection.getMetadataEntries() == null
 				|| collection.getMetadataEntries().getSelfMetadataEntries() == null
 				|| collection.getMetadataEntries().getParentMetadataEntries() == null)
@@ -248,6 +253,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			names.add(entry.getAttribute());
 		return names;
 	}
+    
 
 	/**
 	 * Update collection
@@ -273,21 +279,21 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
       return "redirect:/collection?".concat(MiscUtil.generateEncodedQueryString(
         paramsMap));
     }
-		String authToken = (String) session.getAttribute("hpcUserToken");
+		String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);
 		try {
 			if (hpcCollection.getPath() == null || hpcCollection.getPath().trim().length() == 0)
-				model.addAttribute("error", "Invald collection path");
+				model.addAttribute(ATTR_ERROR, "Invald collection path");
 
-			HpcCollectionRegistrationDTO registrationDTO = constructRequest(request, session, hpcCollection.getPath());
+			HpcCollectionRegistrationDTO registrationDTO = constructRequest(request);
 
 			boolean updated = HpcClientUtil.updateCollection(authToken, serviceURL, registrationDTO,
 					hpcCollection.getPath(), sslCertPath, sslCertPassword);
 			if (updated) {
-				redirectAttributes.addFlashAttribute("error", "Collection " + hpcCollection.getPath() + " is Updated!");
+				redirectAttributes.addFlashAttribute(ATTR_ERROR, "Collection " + hpcCollection.getPath() + " is Updated!");
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Failed to update data file: " + e.getMessage());
+			redirectAttributes.addFlashAttribute(ATTR_ERROR, "Failed to update data file: " + e.getMessage());
 		}
 		final Map<String, String> paramsMap = new HashMap<>();
 		paramsMap.put("path", hpcCollection.getPath());
@@ -296,6 +302,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
       paramsMap));
 	}
 
+	
 	private HpcCollectionModel buildHpcCollection(HpcCollectionDTO collection, List<String> systemAttrs, List<HpcMetadataValidationRule> rules, boolean userInSecGroup) {
 		HpcCollectionModel model = new HpcCollectionModel();
 		systemAttrs.add("collection_type");
@@ -311,11 +318,9 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
-			if(isEncryptedAttribute(entry.getAttribute(), collectionType, rules))
-			   attrEntry.setEncrypted(true);
-            else
-                attrEntry.setEncrypted(false);
-			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute())) {
+			attrEntry.setEncrypted(isEncryptedAttribute(entry.getAttribute(), collectionType, rules));
+            
+			if (systemAttrs.contains(entry.getAttribute())) {
 				attrEntry.setSystemAttr(true);
 				model.getSelfSystemMetadataEntries().add(attrEntry);
 			}
@@ -324,7 +329,6 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 				if(!attrEntry.isEncrypted() || userInSecGroup)
 					  model.getSelfMetadataEntries().add(attrEntry);
 			}
-			
 		}
 
 		for (HpcMetadataEntry entry : collection.getMetadataEntries().getParentMetadataEntries()) {
@@ -332,14 +336,9 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
-			if (systemAttrs != null && systemAttrs.contains(entry.getAttribute()))
-				attrEntry.setSystemAttr(true);
-			else
-				attrEntry.setSystemAttr(false);
-			if(isEncryptedAttribute(entry.getAttribute(), null, rules))
-                attrEntry.setEncrypted(true);
-            else
-                attrEntry.setEncrypted(false);
+			attrEntry.setSystemAttr(systemAttrs.contains(entry.getAttribute()));
+            attrEntry.setEncrypted(isEncryptedAttribute(entry.getAttribute(), null, rules));
+           
 			if(!attrEntry.isEncrypted())
 			    model.getParentMetadataEntries().add(attrEntry);
 		}
@@ -366,8 +365,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 	  return null;
 	}
 
-	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session, String path)
-			throws HpcWebException {
+	private HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request) {
 		Enumeration<String> params = request.getParameterNames();
 		HpcCollectionRegistrationDTO dto = new HpcCollectionRegistrationDTO();
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
@@ -388,10 +386,11 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 				String[] attrValue = request.getParameterValues("addAttrValue" + attrId);
 				if (attrName.length > 0 && !attrName[0].isEmpty()) {
 					entry.setAttribute(attrName[0]);
-					if (attrValue.length > 0 && !attrValue[0].isEmpty())
+					if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
 						entry.setValue(attrValue[0]);
-					else
+					} else {
 						throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+					}
 				} else if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
 					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
 				} else {
@@ -428,11 +427,11 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 					collPath, collAction, model, session, bindingResult);
 			if (retNavOutcome.isEmpty()) {
 				retNavOutcome = doDeleteCollection(
-                    collPath, collAction, model, request, redirAttrs, session);
+                    collPath, collAction, model, redirAttrs, session);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			model.addAttribute("error", e.getMessage());
+			logger.error("Error deleting collection ",e);
+			model.addAttribute(ATTR_ERROR, e.getMessage());
 			copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
 			final Map<String, String> qParams = new HashMap<>();
 			qParams.put("path", collPath);
@@ -448,29 +447,28 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
       @RequestParam("collectionPath4Delete") String collPath,
       @RequestParam("action") String collAction,
       Model model,
-      HttpServletRequest request,
       RedirectAttributes redirAttrs,
       HttpSession session)
     {
         String retNavOutcome = "";
-        final String authToken = (String) session.getAttribute("hpcUserToken");
+        final String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);
         // Populate model based on collection item's state
         populateModelForCollectionDetailView(
                 authToken, collPath, collAction, session, model);
         if (HpcClientUtil.deleteCollection(authToken, serviceURL, collPath,
                                               sslCertPath, sslCertPassword)) {
-            model.addAttribute("error", FEEDBACK_MSG__$DELETE_SUCCEEDED);
+            model.addAttribute(ATTR_ERROR, FEEDBACK_MSG__$DELETE_SUCCEEDED);
             // At this point, retain populated model attributes based on just
             // deleted collection item.
             // After successful deletion,
             //   1) user permission not applicable
             //   2) can no longer delete
             //   3) can only view info about just deleted collection
-            model.addAttribute("userpermission", "null");
-            model.addAttribute("canDelete", Boolean.FALSE.toString());
+            model.addAttribute(ATTR_USER_PERMISSION, "null");
+            model.addAttribute(ATTR_CAN_DELETE, Boolean.FALSE.toString());
             model.addAttribute("action", "view");
         } else {
-            model.addAttribute("error", ERROR_MSG__$DELETE_FAILED);
+            model.addAttribute(ATTR_ERROR, ERROR_MSG__$DELETE_FAILED);
         }
         copyModelState2FlashScope(model, redirAttrs, KEY_PREFIX);
         final String allowedAction = (String) model.asMap().get("action");
@@ -541,8 +539,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
             }
         }
         }
-        final boolean retVal = (numAttrsCopied > 0);
-        return retVal;
+        return (numAttrsCopied > 0);
     }
 
 
@@ -577,11 +574,11 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
     {
 	    String retNavOutcome = "";
         if (!(session.getAttribute("hpcUser") instanceof HpcUserDTO) ||
-              !(session.getAttribute("hpcUserToken") instanceof String))
+              !(session.getAttribute(ATTR_USER_TOKEN) instanceof String))
         {
-            bindingResult.addError(new ObjectError("hpcLogin",
+            bindingResult.addError(new ObjectError("error",
                                         "Invalid user session!"));
-            model.addAttribute("hpcLogin", new HpcLogin());
+            model.addAttribute(ATTR_USER_LOGIN, new HpcLogin());
             final Map<String, String> qParams = new HashMap<>();
             qParams.put("returnPath", "collection");
             qParams.put("action", collectionAction);
@@ -600,11 +597,10 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
      * @param collectionPath  Path of collection item
      * @return String representing navigation outcome to take if missing or blank collection path; otherwise, empty string
      */
-    private String checkIfMissingOrBlankPath(String collectionPath) {
-	    final String retNavOutcome =
-          (null == collectionPath || collectionPath.isEmpty()) ?
-          "dashboard" : "";
-        return retNavOutcome;
+    private String checkIfMissingOrBlankPath(String collectionPath) {	   
+          return (null == collectionPath || collectionPath.isEmpty()) ?
+          RET_DASHBOARD : "";
+       
     }
 
 
@@ -679,11 +675,11 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
      */
     private void putUserDocModelIntoSession(
       String authToken, HttpSession session, boolean fetchFreshModel) {
-        if (!(session.getAttribute("userDOCModel") instanceof
+        if (!(session.getAttribute(ATTR_USER_DOC_MODEL) instanceof
                 HpcDataManagementModelDTO) || fetchFreshModel) {
             HpcDataManagementModelDTO retDtoObj = HpcClientUtil.getDOCModel(
               authToken, hpcModelURL, sslCertPath, sslCertPassword);
-            session.setAttribute("userDOCModel", retDtoObj);
+            session.setAttribute(ATTR_USER_DOC_MODEL, retDtoObj);
         }
     }
 
@@ -713,10 +709,10 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
           authToken, serviceURL, collectionPath, false,
           sslCertPath, sslCertPassword);
         if (null != collections && null != collections.getCollections() &&
-              0 < collections.getCollections().size()) {
+              !collections.getCollections().isEmpty()) {
             theCollectionDto = collections.getCollections().get(0);
             final HpcDataManagementModelDTO modelDTO =
-              (HpcDataManagementModelDTO) session.getAttribute("userDOCModel");
+              (HpcDataManagementModelDTO) session.getAttribute(ATTR_USER_DOC_MODEL);
             String basePath = collectionPath.substring(0, StringUtils.ordinalIndexOf(collectionPath, "/", 2) < 0 ? collectionPath.length() : StringUtils.ordinalIndexOf(collectionPath, "/", 2));
             HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
             retHpcCollObj = buildHpcCollection(theCollectionDto,
@@ -750,9 +746,9 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
      * @return  String conveying simple permission text
      */
     private String convertPermDto2String(HpcUserPermissionDTO permDto) {
-        String retVal = (null == permDto || null == permDto.getPermission()) ?
+        return (null == permDto || null == permDto.getPermission()) ?
           "null" : permDto.getPermission().toString();
-        return retVal;
+       
     }
 
 
@@ -851,8 +847,8 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
         final String canDeleteFlag = Boolean.toString(
           determineIfCollectionCanBeDelete(session, collDto)
         );
-        model.addAttribute("userpermission", permAsStr);
-        model.addAttribute("canDelete", canDeleteFlag);
+        model.addAttribute(ATTR_USER_PERMISSION, permAsStr);
+        model.addAttribute(ATTR_CAN_DELETE, canDeleteFlag);
         return permissionDto;
     }
 
@@ -879,7 +875,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
         final String actionErrorMsg = actionCheckResult.get("error");
         model.addAttribute("action", actionAllowed);
         if (null != actionErrorMsg) {
-            model.addAttribute("error", actionErrorMsg);
+            model.addAttribute(ATTR_ERROR, actionErrorMsg);
         }
         return actionCheckResult;
     }
