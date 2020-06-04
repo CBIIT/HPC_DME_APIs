@@ -64,6 +64,17 @@ public interface HpcUserBookmarkDAO
      */
     public HpcBookmark getBookmark(String nciUserId, String bookmarkName) 
     		                      throws HpcException;
+
+    
+    /**
+     * Get bookmarks by path for a user.
+     *
+     * @param nciUserId The registered user ID.
+     * @param bookmarkPath The bookmark path.
+     * @return The requested bookmark.
+     * @throws HpcException on database error.
+     */
+	public List<HpcBookmark> getBookmarksByPath(String nciUserId, String bookmarkPath) throws HpcException;
 }
 
  

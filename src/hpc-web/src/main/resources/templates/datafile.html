@@ -8,7 +8,7 @@
 <link rel="shortcut icon" href="img/favicon.png" />
 
 
-<title>HPC Data Management Environment</title>
+<title>NCI Data Management Environment</title>
 
 <link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
@@ -100,14 +100,13 @@
 							</div>
 				</div>
 				<div class="row">
-					<div class="col-lg-9 col-md-12">
-						<div class="panel panel-default">
-							<div class="panel-heading" th:if="${hpcDatafile != null}">
-								<h2 th:switch="${userpermission}">
-								<div th:case="'READ'">
-									<!-- <i class="fa fa-list-alt red"></i><strong>Data file</strong>&nbsp;&nbsp;<a data-toggle="modal" id="downloadlink" class="btn btn-link btn-sm" th:href="@{'../download?type=datafile&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#downloadModal"><i class="fa fa-download" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-link btn-sm" th:href="@{'../permissions?assignType=User&amp;type=dataObject&amp;path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}"><i class="fa fa-users" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="createBookmarks" class="btn btn-link btn-sm" th:href="@{'../bookmark?path=' + ${hpcDatafile.getDataObject().getAbsolutePath()}}" data-target="#createBookmarksTarget"><i class="fa fa-star-o" aria-hidden="true"></i></a> -->
-									<i class="fa fa-list-alt red"></i>
-									<strong>Data file</strong>
+				<div class="col-lg-9 col-md-12">
+				<div class="panel panel-default">
+				<div class="panel-heading" th:if="${hpcDatafile != null}">
+				<h2 th:switch="${userpermission}">
+				 <div th:case="'READ'">
+				  <i class="fa fa-list-alt red"></i>
+				  <strong>Data file</strong>
                   &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
                      th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
@@ -118,7 +117,7 @@
                      th:href="@{../permissions(assignType=User,type=dataObject,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-users" title="Permissions" aria-hidden="true"></i>
                   </a>
-                   &nbsp;&nbsp;&nbsp;
+                  &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
@@ -129,9 +128,72 @@
                      data-target="#createBookmarksTarget" data-toggle="modal">
                     <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
                   </a>
-								</div>
-								<div th:case="'WRITE'">
-									<i class="fa fa-list-alt red"></i>
+				 </div>
+
+				 <div th:case="'WRITE'">
+				 <i class="fa fa-list-alt red"></i>
+                  <strong>Data file</strong>
+                  &nbsp;&nbsp;
+                  <a id="downloadlink" class="btn btn-link btn-sm"
+                     th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
+                    <i class="fa fa-download" title="Download" aria-hidden="true"></i>
+                  </a>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../permissions(assignType=User,type=dataObject,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
+                    <i class="fa fa-users" title="Permissions" aria-hidden="true"></i>
+                  </a>
+                  &nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
+                    <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
+                  </a>
+                  &nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
+                    <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
+                  </a>
+                  &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
+				 </div>
+
+				 <div th:case="'OWN'">
+				 <i class="fa fa-list-alt red"></i>
+                  <strong>Data file</strong>
+                  &nbsp;&nbsp;
+                  <a id="downloadlink" class="btn btn-link btn-sm"
+                     th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
+                    <i class="fa fa-download" title="Download" aria-hidden="true"></i>
+                  </a>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../permissions(assignType=User,type=dataObject,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
+                    <i class="fa fa-users" title="Permissions" aria-hidden="true"></i>
+                  </a>
+                  &nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
+                    <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
+                  </a>
+                  &nbsp;&nbsp;&nbsp;
+                  <a class="btn btn-link btn-sm"
+                     th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
+                    <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
+                  </a>
+                  &nbsp;&nbsp;&nbsp;
+                  <a id="createBookmarks" class="btn btn-link btn-sm"
+                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
+                     data-target="#createBookmarksTarget" data-toggle="modal">
+                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
+                  </a>
+				 </div>
+
+				 <div th:case="'DELETE'">
+				  <i class="fa fa-list-alt red"></i>
                   <strong>Data file</strong>
                   &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
@@ -153,72 +215,13 @@
                      th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
                     <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
                   </a>
-                   &nbsp;&nbsp;&nbsp;
-                  <a id="createBookmarks" class="btn btn-link btn-sm"
-                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                     data-target="#createBookmarksTarget" data-toggle="modal">
-                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                  </a>
-								</div>
-								<div th:case="'OWN'">
-									<i class="fa fa-list-alt red"></i>
-                  <strong>Data file</strong>
-                  &nbsp;&nbsp;
-                  <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
-                    <i class="fa fa-download" title="Download" aria-hidden="true"></i>
-                  </a>
-                  &nbsp;&nbsp;&nbsp;&nbsp;
-                  <a class="btn btn-link btn-sm"
-                     th:href="@{../permissions(assignType=User,type=dataObject,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
-                    <i class="fa fa-users" title="Permissions" aria-hidden="true"></i>
-                  </a>
                   &nbsp;&nbsp;&nbsp;
-                  <a class="btn btn-link btn-sm"
-                     th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
-                    <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
-                  </a>
-                   &nbsp;&nbsp;&nbsp;
-                  <a class="btn btn-link btn-sm"
-                     th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
-                    <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
-                  </a>
-                   &nbsp;&nbsp;&nbsp;
                   <a id="createBookmarks" class="btn btn-link btn-sm"
                      th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
                      data-target="#createBookmarksTarget" data-toggle="modal">
                     <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
                   </a>
-								</div>
-								<div th:case="'DELETE'">
-									<i class="fa fa-list-alt red"></i>
-                  <strong>Data file</strong>
-                  &nbsp;&nbsp;
-                  <a id="downloadlink" class="btn btn-link btn-sm"
-                     th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
-                    <i class="fa fa-download" title="Download" aria-hidden="true"></i>
-                  </a>
-                  &nbsp;&nbsp;&nbsp;&nbsp;
-                  <a class="btn btn-link btn-sm"
-                     th:href="@{../permissions(assignType=User,type=dataObject,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
-                    <i class="fa fa-users" title="Permissions" aria-hidden="true"></i>
-                  </a>
-                  &nbsp;&nbsp;&nbsp;
-                  <a class="btn btn-link btn-sm"
-                     th:href="@{../datafile(action=edit,path=${hpcDatafile.getDataObject().getAbsolutePath()})}">
-                    <i class="fa fa-edit" title="Edit" aria-hidden="true"></i>
-                  </a>
-                   &nbsp;&nbsp;&nbsp;
-                  <a class="btn btn-link btn-sm"
-                     th:href="@{../browse(refresh=1,path=${hpcDatafile.getDataObject().getCollectionName()})}">
-                    <i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i>
-                  </a>
-                   &nbsp;&nbsp;&nbsp;
-                  <a id="createBookmarks" class="btn btn-link btn-sm"
-                     th:href="@{../bookmark(path=${hpcDatafile.getDataObject().getAbsolutePath()})}"
-                     data-target="#createBookmarksTarget" data-toggle="modal">
-                    <i class="fa fa-star-o" title="Bookmark" aria-hidden="true"></i>
-                  </a>
+
                   &nbsp;&nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:onclick="'deleteObject(\''  + ${hpcDatafile.getDataObject().getAbsolutePath()} + '\')'">

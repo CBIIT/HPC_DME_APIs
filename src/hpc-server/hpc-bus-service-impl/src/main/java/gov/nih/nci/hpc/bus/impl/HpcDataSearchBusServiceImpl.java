@@ -198,8 +198,9 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
         toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
   }
 
+
   @Override
-  public void addQuery(String queryName, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+  public void addQuery(String queryName, String userId, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
       throws HpcException {
     // Input validation.
     if (StringUtils.isEmpty(queryName) || compoundMetadataQueryDTO == null) {
@@ -207,8 +208,11 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
           "Null or empty queryName / compoundMetadataQueryDTO", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Get the user-id of this request invoker.
-    String nciUserId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    // Get the user-id of the request invoker if user not specified.
+    String nciUserId = userId;
+    if(nciUserId == null) {
+        nciUserId = securityService.getRequestInvoker().getNciAccount().getUserId();
+    }
 
     if (dataSearchService.getQuery(nciUserId, queryName) != null) {
       throw new HpcException(
@@ -421,6 +425,7 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 		} else {
 			HpcMetadataEntry entry = new HpcMetadataEntry();
 			BeanUtils.copyProperties(collectionPath, entry);
+			entry.setCollectionId(collectionPath.getMetaCollectionId());
 			collection.getMetadataEntries().getParentMetadataEntries().add(entry);
 		}
 		prevId = collectionPath.getCollectionId();

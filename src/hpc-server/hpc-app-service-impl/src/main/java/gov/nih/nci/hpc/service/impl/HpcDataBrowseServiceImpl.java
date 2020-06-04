@@ -91,4 +91,9 @@ public class HpcDataBrowseServiceImpl implements HpcDataBrowseService {
   public HpcBookmark getBookmark(String nciUserId, String bookmarkName) throws HpcException {
     return userBookmarkDAO.getBookmark(nciUserId, bookmarkName);
   }
+  
+  @Override
+  public List<HpcBookmark> getBookmarksByPath(String nciUserId, String bookmarkPath) throws HpcException {
+    return userBookmarkDAO.getBookmarksByPath(nciUserId, bookmarkPath);
+  }
 }
