@@ -455,11 +455,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   /**
-   * Upload a data object file from AWS S3 source.
+   * Upload a data object file from AWS S3 or Google Drive source.
    *
    * @param authenticatedToken An authenticated token.
    * @param s3UploadSource The S3 upload source.
-   * @param s3UploadSource The Google Drive upload source.
+   * @param googleDriveUploadSource The Google Drive upload source.
    * @param archiveDestinationLocation The archive destination location.
    * @param size the size of the file to upload.
    * @param progressListener (Optional) a progress listener for async notification on transfer
