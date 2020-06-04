@@ -8,7 +8,7 @@
 <link rel="shortcut icon" href="img/favicon.png" />
 
 
-<title>HPC Data Management Environment</title>
+<title>NCI Data Management Environment</title>
 
 <link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
@@ -63,6 +63,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
     var searchType = [[${hpcSearch.getSearchType()}]];
+    var authorized = [[${authorized}]];
 /*]]>*/
 </script>
 
@@ -103,17 +104,23 @@
                         <i class="fa fa-list-alt red"></i><strong>Download</strong>
                     </h2>
                 </div>
+                <div th:if="${error != null}">
+					<div class="alert alert-error">
+						<a class="close" data-dismiss="alert">�</a> <label
+							for="${error}" th:text="${error}"></label>
+					</div>
+				</div>
 				<div class="panel-body">
 					<table>
 						<tr>
 							<td>
 							    <div class="pull-center" th:if="${downloadType == 'datafiles'}" >
-							    <p>This page allows you to download the following selected data files to a Globus endpoint location or an S3 bucket
-									asynchronously.</p> 
+							    <p>This page allows you to download the following selected data files to a Globus endpoint location, to an S3 bucket, or to Google Drive.
+								</p> 
 							    </div>
 							    <div class="pull-center" th:if="${downloadType == 'collections'}" >
-							    <p>This page allows you to download the following selected collections to a Globus endpoint location or an S3 bucket
-									asynchronously.</p> 
+							    <p>This page allows you to download the following selected collections to a Globus endpoint location, to an S3 bucket, or to Google Drive.
+								</p> 
 							    </div>
 							</td>
 						</tr>
@@ -142,32 +149,33 @@
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchTypeAsync" value="async"
-										onChange="display('async')"/>Asynchronous (Globus)</label>
+										onChange="display('async')"/>Globus</label>
 										</div>
 										
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchTypeS3" value="s3"
-										onChange="display('s3')"/>Asynchronous (S3)</label>
+										onChange="display('s3')"/>AWS S3</label>
+										</div>
+										
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="searchType" id="searchTypeDrive" value="drive"
+										onChange="display('drive')"/>Google Drive</label>
 										</div>
 								</div>
 								
 								<div class="pull-center" id="AsyncTextDiv" style="display: none">
-								    <p>To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+Use+Globus+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.</p>                                 
-								    <br/>
-								</div>
-								<div class="pull-center" id="s3TextDiv" style="display: none">
-								    <p>To download to an S3 bucket, proper permissions should be set up.  Refer to <a href="https://wiki.nci.nih.gov/display/DMEdoc/Preparing+to+use+Amazon+Web+Services+S3+with+DME" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to use Amazon Web Services S3 with DME</a> for instructions.</p>				
+								    <p>To download to Globus, DME should be provided write access to the targeted Globus endpoint.  Refer to <a href="https://wiki.nci.nih.gov/x/cAyKFg" target="_blank" title="Link to help document (opens in new tab or window)">Preparing to Use Globus with DME</a> for instructions.</p>
 								    <br/>
 								</div>
                                 
                                 <div class="form-group" id="AsyncDiv" style="display: none">
                                     <div class="col-sm-12 column">
 										<label for="endPointName">Globus Endpoint UUID:</label> 
-										Optionally click 
 										<a id="downloadlink"
-										    th:href="@{../downloadfiles}">
-                                            here</a> to obtain from Globus
+										    th:href="@{../downloadfiles(transferType=globus)}">
+                                            Obtain from Globus (Optional)</a>
 										<input type="hidden" name="actionType" id="actionType" />
 										<input
 											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
@@ -214,6 +222,22 @@
 											th:value="${region}"
 											name="region" id="region"
 											placeholder="Enter Region (for Example us-east-1)" size="40" />
+									</div>
+								</div>
+								<div class="form-group" id="driveDiv" style="display: none">
+									<div class="col-sm-12 column">
+										<a class="btn btn-primary" id="driveAuthlink" 
+                                            th:href="@{../downloadfiles(transferType=drive)}">                                  
+                                            Authorize DME to access your Google Drive</a>
+									</div>
+									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
+									<br/>
+									<div class="col-sm-12 column">
+										<label for="drivePath">Google Drive (Destination) Path:</label> <input
+											type="text" class="form-control"
+											th:value="${drivePath}"
+											name="drivePath" id="drivePath"
+											placeholder="Enter Google Drive (Destination) Path" size="40" />
 									</div>
 								</div>
 								<div class="modal-footer">
@@ -322,6 +346,14 @@
 					alert("Please enter asynchronous download values");
 					return false;
 				}
+			} else if (radioValue == 'drive') {
+				var drivePath = document
+				.getElementById("drivePath").value;
+				if (drivePath == null
+						|| drivePath.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
 			}
 		}
 
@@ -329,7 +361,10 @@
 	        if($('#transferType').val() == 'globus') {
 	            $("#searchTypeAsync").prop("checked", true);
 	            display('async');
-		    }
+		    } if($('#transferType').val() == 'drive') {
+            	$("#searchTypeDrive").prop("checked", true); 
+                display('drive');
+	        }
 		});
 
 
@@ -387,16 +422,36 @@
 			var s3Div = document.getElementById("s3Div");
 			var asyncTextDiv = document.getElementById("AsyncTextDiv");
 			var s3TextDiv = document.getElementById("s3TextDiv");
+			var driveDiv = document.getElementById("driveDiv");
 			if (value == "async") {
 				asyncDiv.style.display = "block";
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "block";
 				s3TextDiv.style.display = "none";
-			} else {
+				if(driveDiv)
+					driveDiv.style.display = "none";
+				$("#submit").prop('disabled', false);
+			} else if (value == 's3') {
 				asyncDiv.style.display = "none";
 				s3Div.style.display = "block";
 				asyncTextDiv.style.display = "none";
 				s3TextDiv.style.display = "block";
+				if(driveDiv)
+					driveDiv.style.display = "none";
+				$("#submit").prop('disabled', false);
+			} else {
+				asyncDiv.style.display = "none";
+				s3Div.style.display = "none";
+				asyncTextDiv.style.display = "none";
+				s3TextDiv.style.display = "none";
+				if(driveDiv)
+					driveDiv.style.display = "block";
+				if(authorized != null) {
+					$("#submit").prop('disabled', false);
+					$("#driveAuthlink").addClass('disabled');
+				} else {
+					$("#submit").prop('disabled', true);
+				}
 			}
 		}
 	</script>
