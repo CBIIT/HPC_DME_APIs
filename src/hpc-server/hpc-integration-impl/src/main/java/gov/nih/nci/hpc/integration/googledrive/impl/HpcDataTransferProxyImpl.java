@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.locks.Lock;
 import org.apache.cxf.common.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.common.util.concurrent.Striped;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
@@ -61,6 +63,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // The S3 connection instance.
   @Autowired
   private HpcGoogleDriveConnection googleDriveConnection = null;
+
+  // Locks to synchronize threads executing on path.
+  private Striped<Lock> pathLocks = Striped.lock(127);
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -205,46 +210,58 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    *
    * @param drive A Google drive instance.
    * @param folderPath The folder path to find / create in Google Drive.
-   * @param create If true, the folder will be created.
+   * @param create If true, the folder will be created if not found.
    * @return The folder ID or null if not found.
    * @throws IOException on data transfer system failure.
    */
   private String getFolderId(Drive drive, String folderPath, boolean create) throws IOException {
     String parentFolderId = "root";
     if (!StringUtils.isEmpty(folderPath)) {
-      boolean createNewFolder = false;
-      for (String subFolderName : folderPath.split("/")) {
-        if (StringUtils.isEmpty(subFolderName)) {
-          continue;
-        }
-        if (!createNewFolder) {
-          // Search for the sub-folder.
-          FileList result =
-              drive.files().list().setQ(String.format(FOLDER_QUERY, subFolderName, parentFolderId))
-                  .setFields("files(id)").execute();
-          if (!result.getFiles().isEmpty()) {
-            // Sub-folder was found. Note: In Google Drive, it's possible to have multiple folders
-            // with the same name
-            // We simply grab the first one on the list.
-            parentFolderId = result.getFiles().get(0).getId();
+      // If the request is to create a folder if not found, we lock the path.
+      Lock lock = pathLocks.get(folderPath);
+      if (create) {
+        lock.lock();
+      }
+
+      try {
+        boolean createNewFolder = false;
+        for (String subFolderName : folderPath.split("/")) {
+          if (StringUtils.isEmpty(subFolderName)) {
             continue;
-
-          } else {
-            // Sub-folder was not found.
-            if (!create) {
-              // Requested to not create folders.
-              return null;
-            }
-            createNewFolder = true;
           }
-        }
+          if (!createNewFolder) {
+            // Search for the sub-folder.
+            FileList result = drive.files().list()
+                .setQ(String.format(FOLDER_QUERY, subFolderName, parentFolderId))
+                .setFields("files(id)").execute();
+            if (!result.getFiles().isEmpty()) {
+              // Sub-folder was found. Note: In Google Drive, it's possible to have multiple folders
+              // with the same name
+              // We simply grab the first one on the list.
+              parentFolderId = result.getFiles().get(0).getId();
+              continue;
 
-        // Creating a new sub folder.
-        parentFolderId = drive.files()
-            .create(new File().setName(subFolderName)
-                .setParents(Collections.singletonList(parentFolderId))
-                .setMimeType("application/vnd.google-apps.folder"))
-            .setFields("id").execute().getId();
+            } else {
+              // Sub-folder was not found.
+              if (!create) {
+                // Requested to not create folders.
+                return null;
+              }
+              createNewFolder = true;
+            }
+          }
+
+          // Creating a new sub folder.
+          parentFolderId = drive.files()
+              .create(new File().setName(subFolderName)
+                  .setParents(Collections.singletonList(parentFolderId))
+                  .setMimeType(FOLDER_MIME_TYPE))
+              .setFields("id").execute().getId();
+        }
+      } finally {
+        if (create) {
+          lock.unlock();
+        }
       }
     }
 
