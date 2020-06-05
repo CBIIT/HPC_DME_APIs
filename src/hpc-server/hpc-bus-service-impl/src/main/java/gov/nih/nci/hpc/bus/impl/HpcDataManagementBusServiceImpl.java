@@ -993,6 +993,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectRegistrationRequest
           .setS3UploadSource(dataObjectRegistrationItem.getS3UploadSource());
       dataObjectRegistrationRequest
+      .setGoogleDriveUploadSource(dataObjectRegistrationItem.getGoogleDriveUploadSource());
+      dataObjectRegistrationRequest
           .setLinkSourcePath(dataObjectRegistrationItem.getLinkSourcePath());
       dataObjectRegistrationRequest.getMetadataEntries()
           .addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
