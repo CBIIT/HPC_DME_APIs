@@ -103,7 +103,9 @@ public class HpcDownloadController extends AbstractHpcController {
             source = (String)session.getAttribute("downloadSource");
             final String returnURL = this.webServerName + "/download";
             try {
-              session.setAttribute("accessToken", hpcAuthorizationService.getToken(code, returnURL));
+              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
+              session.setAttribute("accessToken", accessToken);
+              model.addAttribute("accessToken", accessToken);
             } catch (Exception e) {
               model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
               e.printStackTrace();
