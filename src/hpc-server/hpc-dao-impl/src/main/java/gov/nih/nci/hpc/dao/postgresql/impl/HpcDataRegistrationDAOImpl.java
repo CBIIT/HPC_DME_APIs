@@ -373,6 +373,19 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         }
         jsonRequest.put("s3UploadSource", jsonS3UploadSource);
       }
+      if (request.getGoogleDriveUploadSource() != null) {
+        JSONObject jsonGoogleDriveUploadSource = new JSONObject();
+        HpcStreamingUploadSource googleUploadSource = request.getGoogleDriveUploadSource();
+        jsonGoogleDriveUploadSource.put("sourceFileContainerId",
+            googleUploadSource.getSourceLocation().getFileContainerId());
+        jsonGoogleDriveUploadSource.put("sourceFileId",
+            googleUploadSource.getSourceLocation().getFileId());
+        if (googleUploadSource.getAccessToken() != null) {
+          jsonGoogleDriveUploadSource.put("accessToken", Base64.getEncoder()
+              .encodeToString(encryptor.encrypt(googleUploadSource.getAccessToken())));
+        }
+        jsonRequest.put("googleDriveUploadSource", jsonGoogleDriveUploadSource);
+      }
       if (request.getLinkSourcePath() != null) {
         jsonRequest.put("linkSourcePath", request.getLinkSourcePath());
       }
@@ -670,6 +683,22 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         s3UploadSource.setAccount(s3Account);
       }
       request.setS3UploadSource(s3UploadSource);
+    }
+
+    if (jsonRequest.get("googleDriveUploadSource") != null) {
+      JSONObject jsonGoogleDriveUploadSource =
+          (JSONObject) jsonRequest.get("googleDriveUploadSource");
+      HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
+      HpcFileLocation source = new HpcFileLocation();
+      source
+          .setFileContainerId(jsonGoogleDriveUploadSource.get("sourceFileContainerId").toString());
+      source.setFileId(jsonGoogleDriveUploadSource.get("sourceFileId").toString());
+      googleDriveUploadSource.setSourceLocation(source);
+      if (jsonGoogleDriveUploadSource.get("accessToken") != null) {
+        googleDriveUploadSource.setAccessToken(encryptor.decrypt(
+            Base64.getDecoder().decode(jsonGoogleDriveUploadSource.get("accessToken").toString())));
+      }
+      request.setGoogleDriveUploadSource(googleDriveUploadSource);
     }
 
     Object linkSourcePath = jsonRequest.get("linkSourcePath");
