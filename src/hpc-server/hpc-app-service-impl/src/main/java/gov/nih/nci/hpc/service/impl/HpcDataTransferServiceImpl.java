@@ -636,9 +636,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
   @Override
   public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
-      HpcS3Account s3Account, HpcFileLocation directoryLocation, String configurationId,
-      String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
-      HpcPatternType patternType) throws HpcException {
+      HpcS3Account s3Account, String googleDriveAccessToken, HpcFileLocation directoryLocation,
+      String configurationId, String s3ArchiveConfigurationId, List<String> includePatterns,
+      List<String> excludePatterns, HpcPatternType patternType) throws HpcException {
     // Input validation.
     if (!HpcDomainValidator.isValidFileLocation(directoryLocation)) {
       throw new HpcException("Invalid directory location", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -647,12 +647,26 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
       throw new HpcException("S3 account provided for Non S3 data transfer",
           HpcErrorType.UNEXPECTED_ERROR);
     }
+    if (!dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE)
+        && !StringUtils.isEmpty(googleDriveAccessToken)) {
+      throw new HpcException(
+          "Google Drive access token provided for Non Google Drive data transfer",
+          HpcErrorType.UNEXPECTED_ERROR);
+    }
 
-    // If an S3 account was provided, then we use it to get authenticated token,
+    // If an S3 account or Google Drive access token was provided, then we use it to get
+    // authenticated token,
     // otherwise, we use a system account token.
-    Object authenticatedToken =
-        s3Account != null ? dataTransferProxies.get(dataTransferType).authenticate(s3Account)
-            : getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
+    Object authenticatedToken = null;
+    if (s3Account != null) {
+      authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(s3Account);
+    } else if (!StringUtils.isEmpty(googleDriveAccessToken)) {
+      authenticatedToken =
+          dataTransferProxies.get(dataTransferType).authenticate(googleDriveAccessToken);
+    } else {
+      authenticatedToken =
+          getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
+    }
 
     // Scan the directory to get a list of all files.
     List<HpcDirectoryScanItem> scanItems = dataTransferProxies.get(dataTransferType)

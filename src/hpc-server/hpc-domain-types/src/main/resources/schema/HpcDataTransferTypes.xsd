@@ -171,6 +171,14 @@
 				type="hpc-domain-datatransfer:HpcS3Account" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="HpcGoogleDriveScanDirectory">
+		<xsd:sequence>
+			<xsd:element name="directoryLocation"
+				type="hpc-domain-datatransfer:HpcFileLocation" />
+			<xsd:element name="accessToken" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 	<xsd:complexType name="HpcDataObjectUploadRequest">
 		<xsd:sequence>

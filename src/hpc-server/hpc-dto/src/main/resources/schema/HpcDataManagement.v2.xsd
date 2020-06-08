@@ -119,6 +119,8 @@
 				type="hpc-domain-datatransfer:HpcGlobusScanDirectory" />
 			<xsd:element name="s3ScanDirectory"
 				type="hpc-domain-datatransfer:HpcS3ScanDirectory" />
+			<xsd:element name="googleDriveScanDirectory"
+				type="hpc-domain-datatransfer:HpcGoogleDriveScanDirectory" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="includePatterns" type="xsd:string"
 				minOccurs="0" maxOccurs="unbounded" />

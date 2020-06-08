@@ -4,7 +4,11 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -43,13 +47,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   // Google drive folder mime-type.
   private static final String FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
 
-  // Google drive search query for folders.
+  // Google drive search query for a folder.
   private static final String FOLDER_QUERY =
       "mimeType = '" + FOLDER_MIME_TYPE + "' and name = '%s' and '%s' in parents";
 
-  // Google drive search query for files.
-  private static final String FILE_QUERY =
-      "mimeType != '" + FOLDER_MIME_TYPE + "' and name = '%s' and '%s' in parents";
+  // Google drive search query for a file / folder.
+  private static final String PATH_QUERY = "name = '%s' and '%s' in parents";
+
+  // Google drive query for all files under a folder.
+  private static final String DIRECTORY_SCAN_QUERY = "'%s' in parents";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -60,12 +66,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   @Qualifier("hpcGoogleDriveDownloadExecutor")
   Executor googleDriveExecutor = null;
 
-  // The S3 connection instance.
+  // The Google Drive connection instance.
   @Autowired
   private HpcGoogleDriveConnection googleDriveConnection = null;
 
   // Locks to synchronize threads executing on path.
   private Striped<Lock> pathLocks = Striped.lock(127);
+
+  // Date formatter to format files last-modified date
+  private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
   // The logger instance.
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -182,7 +191,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     Drive drive = googleDriveConnection.getDrive(authenticatedToken);
     try {
       File file = getFile(drive, fileLocation.getFileId());
-      if (file == null) {
+      if (file == null || file.getMimeType().equals(FOLDER_MIME_TYPE)) {
         throw new HpcException("Google drive file not found", HpcErrorType.UNEXPECTED_ERROR);
       }
 
@@ -198,7 +207,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   @Override
   public List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken,
       HpcFileLocation directoryLocation) throws HpcException {
-    throw new HpcException("scanDirectory() not supported", HpcErrorType.UNEXPECTED_ERROR);
+    Drive drive = googleDriveConnection.getDrive(authenticatedToken);
+    List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
+    String folderPath = toNormalizedPath(directoryLocation.getFileId());
+
+    try {
+      String folderId = getFolderId(drive, folderPath, false);
+      if (folderId != null) {
+        scanDirectory(drive, directoryScanItems, folderPath, folderId);
+      }
+
+    } catch (IOException e) {
+      throw new HpcException(
+          "[Google Drive] Failed to generate download InputStream: " + e.getMessage(),
+          HpcErrorType.DATA_TRANSFER_ERROR, e);
+    }
+
+    return directoryScanItems;
   }
 
   // ---------------------------------------------------------------------//
@@ -297,7 +322,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     String fileName = filePath.substring(lastSlashIndex + 1);
-    FileList result = drive.files().list().setQ(String.format(FILE_QUERY, fileName, folderId))
+    FileList result = drive.files().list().setQ(String.format(PATH_QUERY, fileName, folderId))
         .setFields("files(id,name,mimeType,size)").execute();
     if (!result.getFiles().isEmpty()) {
       // Note: In Google Drive, it's possible to have multiple files with the same name
@@ -306,5 +331,36 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     }
 
     return null;
+  }
+
+  /**
+   * Scan a directory recursively.
+   *
+   * @param drive A Google drive instance.
+   * @param directoryScanItems Add scan items to this collection.
+   * @param folderPath The folder path scanned.
+   * @param folderId The folder ID scanned.
+   * @throws IOException on data transfer system failure.
+   */
+  private void scanDirectory(Drive drive, List<HpcDirectoryScanItem> directoryScanItems,
+      String folderPath, String folderId) throws IOException {
+
+    for (File file : drive.files().list().setQ(String.format(DIRECTORY_SCAN_QUERY, folderId))
+        .setFields("files(id,name,mimeType,modifiedTime)").execute().getFiles()) {
+      String filePath = folderPath + "/" + file.getName();
+      if (file.getMimeType().equals(FOLDER_MIME_TYPE)) {
+        // It's a sub-folder. Scan it.
+        scanDirectory(drive, directoryScanItems, filePath, file.getId());
+
+      } else {
+        // It's a file. Add to the list
+        HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
+        directoryScanItem.setFilePath(filePath);
+        directoryScanItem.setFileName(file.getName());
+        directoryScanItem
+            .setLastModified(dateFormat.format(new Date(file.getModifiedTime().getValue())));
+        directoryScanItems.add(directoryScanItem);
+      }
+    }
   }
 }

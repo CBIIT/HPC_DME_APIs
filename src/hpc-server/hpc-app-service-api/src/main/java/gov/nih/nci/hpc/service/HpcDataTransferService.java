@@ -245,7 +245,7 @@ public interface HpcDataTransferService {
    */
   public HpcPathAttributes getPathAttributes(HpcS3Account s3Account, HpcFileLocation fileLocation,
       boolean getSize) throws HpcException;
-  
+
   /**
    * Get path attributes for a given file in Google Drive (using user provided Google Drive token).
    *
@@ -262,8 +262,8 @@ public interface HpcDataTransferService {
    * Scan a directory (recursively) and return a list of all its files.
    *
    * @param dataTransferType The data transfer type.
-   * @param s3Account (Optional) S3 account to use. If null, then system account for the data
-   *        transfer type is used.
+   * @param s3Account (Optional) S3 account to use.
+   * @param googleDriveAccessToken (Optional) Google Drive access-token to use.
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
@@ -277,9 +277,9 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
-      HpcS3Account s3Account, HpcFileLocation directoryLocation, String configurationId,
-      String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
-      HpcPatternType patternType) throws HpcException;
+      HpcS3Account s3Account, String googleDriveAccessToken, HpcFileLocation directoryLocation,
+      String configurationId, String s3ArchiveConfigurationId, List<String> includePatterns,
+      List<String> excludePatterns, HpcPatternType patternType) throws HpcException;
 
   /**
    * Get a file from the archive.
