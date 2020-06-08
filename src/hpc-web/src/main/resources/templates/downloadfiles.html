@@ -8,7 +8,7 @@
 <link rel="shortcut icon" href="img/favicon.png" />
 
 
-<title>NCI Data Management Environment</title>
+<title>HPC Data Management Environment</title>
 
 <link rel="stylesheet" type="text/css" href="css/ng-grid.css" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
@@ -64,6 +64,7 @@
 /*<![CDATA[*/
     var searchType = [[${hpcSearch.getSearchType()}]];
     var authorized = [[${authorized}]];
+    var oauthToken = [[${accessToken}]];
 /*]]>*/
 </script>
 
@@ -233,7 +234,10 @@
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
 									<div class="col-sm-12 column">
-										<label for="drivePath">Google Drive (Destination) Path:</label> <input
+										<label for="drivePath">Google Drive (Destination) Path:</label>
+										<a id="pickerLink" onclick="loadDownloadPicker()">                                  
+                                            Pick From Google Drive (Optional)</a>
+										<input
 											type="text" class="form-control"
 											th:value="${drivePath}"
 											name="drivePath" id="drivePath"
@@ -421,13 +425,11 @@
 			var asyncDiv = document.getElementById("AsyncDiv");
 			var s3Div = document.getElementById("s3Div");
 			var asyncTextDiv = document.getElementById("AsyncTextDiv");
-			var s3TextDiv = document.getElementById("s3TextDiv");
 			var driveDiv = document.getElementById("driveDiv");
 			if (value == "async") {
 				asyncDiv.style.display = "block";
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "block";
-				s3TextDiv.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				$("#submit").prop('disabled', false);
@@ -435,7 +437,6 @@
 				asyncDiv.style.display = "none";
 				s3Div.style.display = "block";
 				asyncTextDiv.style.display = "none";
-				s3TextDiv.style.display = "block";
 				if(driveDiv)
 					driveDiv.style.display = "none";
 				$("#submit").prop('disabled', false);
@@ -443,9 +444,9 @@
 				asyncDiv.style.display = "none";
 				s3Div.style.display = "none";
 				asyncTextDiv.style.display = "none";
-				s3TextDiv.style.display = "none";
-				if(driveDiv)
+				if(driveDiv) {
 					driveDiv.style.display = "block";
+				}
 				if(authorized != null) {
 					$("#submit").prop('disabled', false);
 					$("#driveAuthlink").addClass('disabled');
@@ -455,6 +456,8 @@
 			}
 		}
 	</script>
-
+<!-- The Google API Loader script. -->
+	<script type="text/javascript" src="js/hpcDownload.js"></script>
+    <script type="text/javascript" src="js/google/api.js"></script>
 </body>
 </html>

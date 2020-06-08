@@ -180,8 +180,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
             //Return from Google Drive Authorization
             final String returnURL = this.webServerName + "/downloadfiles";
             try {
-              session.setAttribute("accessToken", hpcAuthorizationService.getToken(code, returnURL));
-            } catch (Exception e) {
+              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
+              session.setAttribute("accessToken", accessToken);
+              model.addAttribute("accessToken", accessToken);
+           } catch (Exception e) {
               model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
               e.printStackTrace();
             }
