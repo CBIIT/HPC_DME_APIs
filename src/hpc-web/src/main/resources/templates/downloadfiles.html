@@ -234,8 +234,10 @@
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
 									<div class="col-sm-12 column">
-										<button type="button" onclick="loadDownloadPicker()">Pick From Google Drive</button>
-										<label for="drivePath">Google Drive (Destination) Path:</label> <input
+										<label for="drivePath">Google Drive (Destination) Path:</label>
+										<a id="pickerLink" onclick="loadDownloadPicker()">                                  
+                                            Pick From Google Drive (Optional)</a>
+										<input
 											type="text" class="form-control"
 											th:value="${drivePath}"
 											name="drivePath" id="drivePath"
@@ -444,10 +446,6 @@
 				asyncTextDiv.style.display = "none";
 				if(driveDiv) {
 					driveDiv.style.display = "block";
-					if(downloadType == "collection")
-						$("#drivePath").val("/");
-					else
-						$("#drivePath").val(downloadFileName);
 				}
 				if(authorized != null) {
 					$("#submit").prop('disabled', false);
