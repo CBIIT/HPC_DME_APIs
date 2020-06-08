@@ -993,7 +993,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       dataObjectRegistrationRequest
           .setS3UploadSource(dataObjectRegistrationItem.getS3UploadSource());
       dataObjectRegistrationRequest
-      .setGoogleDriveUploadSource(dataObjectRegistrationItem.getGoogleDriveUploadSource());
+          .setGoogleDriveUploadSource(dataObjectRegistrationItem.getGoogleDriveUploadSource());
       dataObjectRegistrationRequest
           .setLinkSourcePath(dataObjectRegistrationItem.getLinkSourcePath());
       dataObjectRegistrationRequest.getMetadataEntries()
@@ -2105,13 +2105,21 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       }
 
       // Validate a scan directory was provided.
-      if (directoryScanRegistrationItem.getGlobusScanDirectory() == null
-          && directoryScanRegistrationItem.getS3ScanDirectory() == null) {
+      int scanDirectoryCount = 0;
+      if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
+        scanDirectoryCount++;
+      }
+      if (directoryScanRegistrationItem.getS3ScanDirectory() != null) {
+        scanDirectoryCount++;
+      }
+      if (directoryScanRegistrationItem.getGoogleDriveScanDirectory() != null) {
+        scanDirectoryCount++;
+      }
+      if (scanDirectoryCount == 0) {
         throw new HpcException("No scan directory provided", HpcErrorType.INVALID_REQUEST_INPUT);
       }
-      if (directoryScanRegistrationItem.getGlobusScanDirectory() != null
-          && directoryScanRegistrationItem.getS3ScanDirectory() != null) {
-        throw new HpcException("Both Globus and S3 directory provided",
+      if (scanDirectoryCount > 1) {
+        throw new HpcException("Multiple (Globus / S3 / Google Drive) scan directory provided",
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
 
@@ -2145,13 +2153,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcFileLocation scanDirectoryLocation = null;
       HpcDataTransferType dataTransferType = null;
       HpcS3Account s3Account = null;
+      String googleDriveAccessToken = null;
       if (directoryScanRegistrationItem.getGlobusScanDirectory() != null) {
         dataTransferType = HpcDataTransferType.GLOBUS;
         scanDirectoryLocation =
             directoryScanRegistrationItem.getGlobusScanDirectory().getDirectoryLocation();
         pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GLOBUS,
             scanDirectoryLocation, false, configurationId, null);
-      } else {
+      } else if (directoryScanRegistrationItem.getS3ScanDirectory() != null) {
         // It is a request to scan an S3 directory.
         dataTransferType = HpcDataTransferType.S_3;
         s3Account = directoryScanRegistrationItem.getS3ScanDirectory().getAccount();
@@ -2159,6 +2168,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
             directoryScanRegistrationItem.getS3ScanDirectory().getDirectoryLocation();
         pathAttributes =
             dataTransferService.getPathAttributes(s3Account, scanDirectoryLocation, false);
+      } else {
+        // It is a request to scan a Google Drive directory.
+        dataTransferType = HpcDataTransferType.GOOGLE_DRIVE;
+        googleDriveAccessToken =
+            directoryScanRegistrationItem.getGoogleDriveScanDirectory().getAccessToken();
+        scanDirectoryLocation =
+            directoryScanRegistrationItem.getGoogleDriveScanDirectory().getDirectoryLocation();
+        pathAttributes = dataTransferService.getPathAttributes(googleDriveAccessToken,
+            scanDirectoryLocation, false);
       }
 
       if (!pathAttributes.getExists()) {
@@ -2185,14 +2203,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
       final String fileContainerId = scanDirectoryLocation.getFileContainerId();
       final HpcS3Account fs3Account = s3Account;
+      final String fgoogleDriveAccessToken = googleDriveAccessToken;
       dataTransferService
-          .scanDirectory(dataTransferType, s3Account, scanDirectoryLocation, configurationId, null,
-              directoryScanRegistrationItem.getIncludePatterns(),
+          .scanDirectory(dataTransferType, s3Account, googleDriveAccessToken, scanDirectoryLocation,
+              configurationId, null, directoryScanRegistrationItem.getIncludePatterns(),
               directoryScanRegistrationItem.getExcludePatterns(), patternType)
           .forEach(
               scanItem -> dataObjectRegistrationItems.add(toDataObjectRegistrationItem(scanItem,
                   basePath, fileContainerId, directoryScanRegistrationItem.getCallerObjectId(),
-                  directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fs3Account)));
+                  directoryScanRegistrationItem.getBulkMetadataEntries(), pathMap, fs3Account,
+                  fgoogleDriveAccessToken)));
     }
 
     return dataObjectRegistrationItems;
@@ -2210,12 +2230,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param pathMap Replace 'fromPath' (found in scanned directory) with 'toPath'.
    * @param s3Account (Optional) Provided if this is a registration item from S3 source, otherwise
    *        null.
+   * @param googleDriveAccessToken (Optional) Provided if this is a registration item from Google
+   *        Drive source, otherwise null.
    * @return data object registration DTO.
    */
   private HpcDataObjectRegistrationItemDTO toDataObjectRegistrationItem(
       HpcDirectoryScanItem scanItem, String basePath, String sourceFileContainerId,
       String callerObjectId, HpcBulkMetadataEntries bulkMetadataEntries,
-      HpcDirectoryScanPathMap pathMap, HpcS3Account s3Account) {
+      HpcDirectoryScanPathMap pathMap, HpcS3Account s3Account, String googleDriveAccessToken) {
     // If pathMap provided - use the map to replace scanned path with user provided path (or part of
     // path).
     String scanItemFilePath = scanItem.getFilePath();
@@ -2260,6 +2282,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       s3UploadSource.setSourceLocation(source);
       s3UploadSource.setAccount(s3Account);
       dataObjectRegistration.setS3UploadSource(s3UploadSource);
+    } else if (!StringUtils.isEmpty(googleDriveAccessToken)) {
+      HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
+      googleDriveUploadSource.setSourceLocation(source);
+      googleDriveUploadSource.setAccessToken(googleDriveAccessToken);
+      dataObjectRegistration.setGoogleDriveUploadSource(googleDriveUploadSource);
     } else {
       HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
       globusUploadSource.setSourceLocation(source);
