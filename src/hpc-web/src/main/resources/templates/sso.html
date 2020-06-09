@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<HEAD>
-<META HTTP-EQUIV='PRAGMA' CONTENT='NO-CACHE'/>
-<META HTTP-EQUIV='CACHE-CONTROL' CONTENT='NO-CACHE'/>
-<title>NCI DME Auto-POST form</TITLE>
-</HEAD>
+<head>
+<meta http-equiv='PRAGMA' content='NO-CACHE'/>
+<meta http-equiv='CACHE-CONTROL' content='NO-CACHE'/>
+<title>NCI DME Auto-POST form</title>
+</head>
 <body onLoad="document.forms[0].submit()">
-	<NOSCRIPT>
+	<noscript>
 		Your browser does not support JavaScript. Please click the 'Continue'
 		button below to proceed. <br/>
 		<br/>
-	</NOSCRIPT>
+	</noscript>
 	<form th:if="${urlencoded}" th:action="${redirectURL}" method="POST">
 		<input type="hidden" name="token" th:value="${token}"/>
-		<NOSCRIPT>
-			<INPUT TYPE="SUBMIT" VALUE="Continue"/>
-		</NOSCRIPT>
+		<noscript>
+			<input type="submit" value="Continue"/>
+		</noscript>
 	</form>
 	<form th:if="${!urlencoded}" th:action="${redirectURL}" method="POST" enctype="text/plain">
 		<div th:remove="tag" th:utext="${formattedToken}"></div>
-		<NOSCRIPT>
-			<INPUT TYPE="SUBMIT" VALUE="Continue"/>
-		</NOSCRIPT>
+		<noscript>
+			<input type="submit" value="Continue"/>
+		</noscript>
 	</form>
 </body>
 </html>
