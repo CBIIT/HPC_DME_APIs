@@ -474,8 +474,13 @@
 				s3Div.style.display = "none";
 				if(driveDiv)
 					driveDiv.style.display = "none";
-				if(downloadType == "datafile")
-					$("#endPointLocation").val(downloadFileName);
+				if(downloadType == "datafile") {
+					var endPointLocation = $("#endPointLocation").val();
+					if(endPointLocation)
+						$("#endPointLocation").val(endPointLocation + downloadFileName);
+					else
+						$("#endPointLocation").val(downloadFileName);
+				}
 				$("#submit").prop('disabled', false);
 			} else if (value == "sync") {
 				if(syncDiv)
