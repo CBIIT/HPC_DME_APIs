@@ -428,8 +428,13 @@
 				if(syncDiv)
 					syncDiv.style.display = "none";
 				s3Div.style.display = "none";
-				if(downloadType == "datafile")
-					$("#endPointLocation").val(downloadFileName);
+				if(downloadType == "datafile") {
+					var endPointLocation = $("#endPointLocation").val();
+					if(endPointLocation)
+						$("#endPointLocation").val(endPointLocation + downloadFileName);
+					else
+						$("#endPointLocation").val(downloadFileName);
+				}
 			} else if (value == "sync") {
 				if(syncDiv)
 					syncDiv.style.display = "block";
