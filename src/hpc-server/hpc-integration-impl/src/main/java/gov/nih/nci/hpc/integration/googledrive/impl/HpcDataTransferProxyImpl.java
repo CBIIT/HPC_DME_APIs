@@ -209,14 +209,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
       HpcFileLocation directoryLocation) throws HpcException {
     Drive drive = googleDriveConnection.getDrive(authenticatedToken);
     List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
-    String folderPath = toNormalizedPath(directoryLocation.getFileId());
 
     try {
-      String folderId = getFolderId(drive, folderPath, false);
-      if (folderId != null) {
+      // Get the id and path of the folder to be scanned.
+      // Note: directoryLocation.getFileId() can be either the Google Drive ID of the folder, or a
+      // path.
+      File folder = getFile(drive, directoryLocation.getFileId());
+      if (folder != null && folder.getMimeType().contentEquals(FOLDER_MIME_TYPE)) {
+        String folderId = folder.getId();
+        String folderPath =
+            folderId.equals(directoryLocation.getFileId()) ? getFolderPath(drive, folder)
+                : toNormalizedPath(directoryLocation.getFileId());
         scanDirectory(drive, directoryScanItems, folderPath, folderId);
       }
-
     } catch (IOException e) {
       throw new HpcException(
           "[Google Drive] Failed to generate download InputStream: " + e.getMessage(),
@@ -304,7 +309,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   private File getFile(Drive drive, String idOrPath) throws IOException {
     // Search by ID.
     try {
-      return drive.files().get(idOrPath).setFields("id,name,mimeType,size").execute();
+      return drive.files().get(idOrPath).setFields("id,name,mimeType,size,parents").execute();
 
     } catch (GoogleJsonResponseException e) {
       if (e.getStatusCode() != 404) {
@@ -323,7 +328,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
     String fileName = filePath.substring(lastSlashIndex + 1);
     FileList result = drive.files().list().setQ(String.format(PATH_QUERY, fileName, folderId))
-        .setFields("files(id,name,mimeType,size)").execute();
+        .setFields("files(id,name,mimeType,size,parents)").execute();
     if (!result.getFiles().isEmpty()) {
       // Note: In Google Drive, it's possible to have multiple files with the same name
       // We simply grab the first one on the list.
@@ -362,5 +367,25 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         directoryScanItems.add(directoryScanItem);
       }
     }
+  }
+
+  /**
+   * Get the folder path of a Google Drive folder.
+   *
+   * @param drive A Google drive instance.
+   * @param folder The folder to get the path for.
+   * @return The folder path.
+   * @throws IOException on data transfer system failure.
+   */
+  private String getFolderPath(Drive drive, File folder) throws IOException {
+
+    String rootId = drive.files().get("root").execute().getId();
+    String folderPath = folder.getName();
+    while (!folder.getParents().contains(rootId)) {
+      folder = getFile(drive, folder.getParents().get(0));
+      folderPath = folder.getName() + "/" + folderPath;
+    }
+
+    return toNormalizedPath(folderPath);
   }
 }
