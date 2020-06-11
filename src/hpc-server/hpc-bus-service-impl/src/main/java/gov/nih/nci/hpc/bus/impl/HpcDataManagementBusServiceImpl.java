@@ -886,6 +886,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       // is not attached to the request.
       if (dataObjectFile != null || dataObjectRegistration.getGlobusUploadSource() != null
           || dataObjectRegistration.getS3UploadSource() != null
+          || dataObjectRegistration.getGoogleDriveUploadSource() != null
           || dataObjectRegistration.getLinkSourcePath() != null) {
         throw new HpcException(
             "A data file by that name already exists in this collection. Only updating metadata is allowed.",
