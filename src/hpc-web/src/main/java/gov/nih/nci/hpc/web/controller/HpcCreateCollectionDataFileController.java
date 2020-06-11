@@ -379,13 +379,15 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 HpcFileLocation source = new HpcFileLocation();
                 source.setFileContainerId("MyDrive");
                 source.setFileId(fileId);
+                Path filePath = Paths.get(globusEndpointFiles.get(googleDriveFileIds.indexOf(fileId)));
+                String fileName = filePath.getFileName().toString();
                 HpcStreamingUploadSource googleDriveSource = new HpcStreamingUploadSource();
                 googleDriveSource.setSourceLocation(source);
                 googleDriveSource.setAccessToken(accessToken);
                 file.setGoogleDriveUploadSource(googleDriveSource);
                 file.setCreateParentCollections(true);
-                file.setPath(path + "/" + globusEndpointFiles.get(googleDriveFileIds.indexOf(fileId)));
-                System.out.println(path + "/" + globusEndpointFiles.get(googleDriveFileIds.indexOf(fileId)));
+                file.setPath(path + "/" + fileName);
+                System.out.println(path + "/" + fileName);
                 files.add(file);
             }
             dto.getDataObjectRegistrationItems().addAll(files);
@@ -445,14 +447,23 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
                 gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO folder = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDirectoryScanRegistrationItemDTO();
                 HpcFileLocation source = new HpcFileLocation();
                 source.setFileContainerId("MyDrive");
-                //source.setFileId(folderId);
-                source.setFileId(globusEndpointFolders.get(googleDriveFolderIds.indexOf(folderId)));
+                Path folderPath = Paths.get(globusEndpointFolders.get(googleDriveFolderIds.indexOf(folderId)));
+                String folderName = folderPath.getFileName().toString();
+                String fromPath = "/" + folderPath.toString();
+                String toPath = "/" + folderName;
+                source.setFileId(folderId);
                 folder.setBasePath(datafilePath);
                 HpcGoogleDriveScanDirectory googleDriveDirectory = new HpcGoogleDriveScanDirectory();
                 googleDriveDirectory.setDirectoryLocation(source);
                 googleDriveDirectory.setAccessToken(accessToken);
                 folder.setGoogleDriveScanDirectory(googleDriveDirectory);
                 folders.add(folder);
+                if(!fromPath.equals(toPath)) {
+                    HpcDirectoryScanPathMap pathDTO = new HpcDirectoryScanPathMap();
+                    pathDTO.setFromPath(fromPath);
+                    pathDTO.setToPath(toPath);
+                    folder.setPathMap(pathDTO);
+                }
                 if(criteriaType != null && criteriaType.equals("Simple"))
                     folder.setPatternType(HpcPatternType.SIMPLE);
                 else
