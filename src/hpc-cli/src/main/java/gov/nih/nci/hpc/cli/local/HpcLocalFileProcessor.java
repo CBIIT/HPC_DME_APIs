@@ -136,11 +136,11 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     } catch (HpcCmdException e) {
       logger.error(e.getMessage(), e);
       String message =
-          "Failed to process file: " + entity.getAbsolutePath() + " Reaon: " + e.getMessage();
+          "Failed to process file: " + entity.getAbsolutePath() + " Reason: " + e.getMessage();
       System.out.println(message);
       HpcClientUtil.writeException(e, message, null, logFile);
       HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
-      return false;
+      throw new RecordProcessingException(message);
     }
     logger.debug("metadataEntries {}", metadataEntries);
 
