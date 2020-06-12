@@ -1218,7 +1218,7 @@ function dm_delete_datafile {
     case "$(uname -s)" in
     
        Darwin|Linux)
-        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar -Dhttp.proxyHost=$PROXY_IP -Dhttp.proxyPort=$PROXY_PORT $jar_path  --cmdfile $command_file
         exit_code="$?"
        ;;
     
@@ -1326,7 +1326,7 @@ function dm_delete_collection {
     case "$(uname -s)" in
     
        Darwin|Linux)
-        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -Dhttp.proxyHost=$PROXY_IP -Dhttp.proxyPort=$PROXY_PORT -jar $jar_path  --cmdfile $command_file
         exit_code="$?"
        ;;
     
@@ -1563,7 +1563,7 @@ function dm_register_directory {
     case "$(uname -s)" in
     
        Darwin|Linux)
-        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -Dhttp.proxyHost=$PROXY_IP -Dhttp.proxyPort=$PROXY_PORT -jar $jar_path  --cmdfile $command_file
         exit_code="$?"
        ;;
     
@@ -1745,7 +1745,7 @@ function dm_register_globus_directory {
          return 1
          ;;
        Linux)
-        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -Dhttp.proxyHost=$PROXY_IP -Dhttp.proxyPort=$PROXY_PORT -jar $jar_path  --cmdfile $command_file
          ;;
        CYGWIN*|MINGW32*|MSYS*)
             java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
@@ -3377,7 +3377,7 @@ function dm_download_collection {
     case "$(uname -s)" in
     
        Darwin|Linux)
-        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar $jar_path  --cmdfile $command_file
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -Dhttp.proxyHost=$PROXY_IP -Dhttp.proxyPort=$PROXY_PORT -jar $jar_path  --cmdfile $command_file
         exit_code="$?"
        ;;
     
