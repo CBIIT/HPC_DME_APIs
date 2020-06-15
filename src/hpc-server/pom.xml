@@ -28,7 +28,7 @@
 		<cxf-xjc.version>3.0.5</cxf-xjc.version>
 		<postgresql.version>9.3-1102-jdbc41</postgresql.version>
 		<slf4j.version>1.7.22</slf4j.version>
-		<spring.version>3.2.17.RELEASE</spring.version>
+		<spring.version>5.2.7.RELEASE</spring.version>
 		<spring.retry.version>1.2.1.RELEASE</spring.retry.version>
         <spring.security.version>3.2.10.RELEASE</spring.security.version>
 		<amazon-aws.version>1.11.125</amazon-aws.version>
