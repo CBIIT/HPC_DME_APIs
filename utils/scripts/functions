@@ -1740,11 +1740,7 @@ function dm_register_globus_directory {
     
     case "$(uname -s)" in
     
-       Darwin)
-         echo 'Mac OS X is not currently supported'
-         return 1
-         ;;
-       Linux)
+       Darwin|Linux)
         java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -Dhttp.proxyHost=$PROXY_IP -Dhttp.proxyPort=$PROXY_PORT -jar $jar_path  --cmdfile $command_file
          ;;
        CYGWIN*|MINGW32*|MSYS*)
