@@ -464,6 +464,100 @@ function dm_register_dataobject {
     verify_registration "$RESPONSE_HEADER" "$RESPONSE_MSG" "$DESTINATION_PATH"
 }
 
+#Print Usage of dm_register_dataobject_multipart function
+function dm_register_dataobject_multipart_usage {
+  read -d  '' usage <<- EOF
+  usage: dm_register_dataobject_multipart <description-json> <destination-path> <source-path>
+
+  Register a dataobject using multi-part upload.
+  description-json            Path to the JSON file containing the metadata for the new dataobject
+  destination-path            Destination path in the archive
+  source-path                 Path of the file to upload
+
+For detailed information on this command, refer to the following page: 
+https://wiki.nci.nih.gov/x/KohzFw
+
+EOF
+  echo "$usage"
+}
+
+
+#Register a datafile from the archive using the cmd line client.
+#Inputs:  <description-json>: JSON file containing the metadata for the new dataobject
+#		  <destination-path>: Archive destination folder
+#		  <source-path>: The path on the file system 
+		  
+
+function dm_register_dataobject_multipart {
+
+    #local USAGE="usage: dm_register_dataobject_multipart <description-json> <destination-path> <source-path>"
+
+    check_java
+    if [ "$#" -lt 3 ]
+    then
+        dm_register_dataobject_multipart_usage >&2
+        return
+    fi
+
+    while getopts ":" option
+    do
+      case "${option}" in
+        *)
+          dm_register_dataobject_multipart_usage >&2
+          exit 1
+          ;;
+      esac
+    done
+    
+    local description="$1"
+    local destination_path="$2"
+    local source_path="$3"
+   
+    #Check if the jar exists:
+    local jar_file=$(get_jar)
+    local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
+    if [ ! -f $jar_path ]
+    then
+      echo "Cannot find $jar_path " >&2
+      return 1
+    fi
+
+    command_args=""
+
+    #Pass the mandatory arguments
+    command_args+=" --sourceFilePath \"$source_path\" --destinationArchivePath \"$destination_path\" --metadataFile \"$description\""
+  
+    #Generate the command for the client: 
+    local command_file=$HPC_DM_UTILS/temp/cmd-file
+    echo "putDatafile  " $command_args >  $command_file
+
+    case "$(uname -s)" in
+    
+       Darwin|Linux)
+        java -Dhpc.client.properties=$HPC_DM_UTILS/hpcdme.properties -DHPC_DM_UTILS=$HPC_DM_UTILS -jar -Dhttp.proxyHost=$PROXY_IP -Dhttp.proxyPort=$PROXY_PORT $jar_path  --cmdfile $command_file
+        exit_code="$?"
+       ;;
+    
+       CYGWIN*|MINGW32*|MSYS*)
+            java -DHPC_DM_UTILS=$(cygpath -m $HPC_DM_UTILS) -Dhpc.client.properties=$(cygpath -w $HPC_DM_UTILS/hpcdme.properties)  -jar $(cygpath -w $jar_path)  --cmdfile $(cygpath -w $command_file)
+        exit_code="$?"
+       ;;
+    
+       *)
+         echo 'Current OS not supported' 
+         exit 1
+         ;;
+    esac
+
+    if [ "$exit_code" -eq  "1" ]
+    then
+      echo "The dataobject registration did not fully complete successfully" >&2
+      echo "Check complete log and error files" >&2
+      return 1
+    fi
+
+}
+
 #Sync a folder in the current file system with a logical path in the Archive
 #There is no metadata for folder and they will be automatically created.
 #The files metadata is the list of attributes/values pair that are returned by the 

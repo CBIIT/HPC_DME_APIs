@@ -62,12 +62,12 @@ public class HpcLocalDirectoryListProcessor {
               HpcLocalFileProcessor fileProcess = new HpcLocalFileProcessor(connection);
               fileProcess.process(file, filePath, filePathBaseName, destinationBasePath, logFile,
                   recordFile,
-                  metadataOnly, false, checksum);
+                  metadataOnly, false, checksum, null);
             } else {
               HpcLocalFolderProcessor folderProcess = new HpcLocalFolderProcessor(connection);
               folderProcess.process(file, filePath, filePathBaseName, destinationBasePath, logFile,
                   recordFile,
-                  metadataOnly, false, checksum);
+                  metadataOnly, false, checksum, null);
             }
 
           } catch (RecordProcessingException e) {
