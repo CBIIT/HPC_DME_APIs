@@ -29,16 +29,21 @@ public abstract class HpcLocalEntityProcessor {
 	}
 
 	public abstract boolean process(HpcPathAttributes entity, String localPath, String filePathBaseName, String destinationBasePath,
-			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum)
+			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum, String metadataFile)
 			throws RecordProcessingException;
 
-  protected List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly)
+  protected List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly, String externalMetadataFile)
       throws HpcCmdException {
 //		String fullPath = file.getAbsolutePath();
 //		File metadataFile = new File(fullPath + ".metadata.json");
     logger.debug("getMetadata: "+file.toString());
-    final String metadataFilePath = file.getAbsolutePath().concat(".metadata.json");
-    File metadataFile = new File(metadataFilePath);
+    File metadataFile = null;
+    if(externalMetadataFile != null) {
+      metadataFile = new File(externalMetadataFile);
+    } else {
+      final String metadataFilePath = file.getAbsolutePath().concat(".metadata.json");
+      metadataFile = new File(metadataFilePath);
+    }
     List<HpcMetadataEntry> metadataEntries = new ArrayList<HpcMetadataEntry>();
     if (metadataFile.exists()) {
       MappingJsonFactory factory = new MappingJsonFactory();
@@ -104,7 +109,7 @@ public abstract class HpcLocalEntityProcessor {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 		pathAttributes.setUpdatedDate(sdf.format(new Date()));
 		pathAttributes.setAbsolutePath(parentPath.replace("/", File.separator));
-		List<HpcMetadataEntry> metadata = getMetadata(pathAttributes, metadataOnly);
+		List<HpcMetadataEntry> metadata = getMetadata(pathAttributes, metadataOnly, null);
 
 		if (metadata == null)
 			return null;
