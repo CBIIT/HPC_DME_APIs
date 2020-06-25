@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import gov.nih.nci.hpc.cli.HPCCmdCollection;
 import gov.nih.nci.hpc.cli.HPCCmdDatafile;
+import gov.nih.nci.hpc.cli.HPCCmdPutDatafile;
 import gov.nih.nci.hpc.cli.HPCPermissions;
 import gov.nih.nci.hpc.cli.csv.HPCBatchCollection;
 import gov.nih.nci.hpc.cli.csv.HPCBatchDatafile;
@@ -40,6 +41,8 @@ public class HPCCommands implements CommandMarker {
 	private HPCCmdCollection getCollections;
 	@Autowired
 	private HPCCmdDatafile getDatafiles;
+	@Autowired
+	private HPCCmdPutDatafile putDatafile;
 	@Autowired
 	private HPCCmdRegisterGlobusFile getGlobusDatafiles;
 //	@Autowired
@@ -125,6 +128,22 @@ public class HPCCommands implements CommandMarker {
 	    Map<String, String> criteriaMap = new HashMap<String, String>();
 		criteriaMap.put(criteria, criteria);
 		return getDatafiles.process("getDatafiles", criteriaMap, outputfile, format, "yes");
+	}
+	
+	@CliCommand(value = "putDatafile", help = "Register datafile to HPC Archive. Usage: putDatafile --sourceFilePath <Source file path> --destinationArchivePath <Destination file path> --metadataFile <Metadata JSON file> ")
+	public String putDatafile(
+			@CliOption(key = {
+					"sourceFilePath" }, mandatory = true, help = "Please provide source file path. Usage: putDatafile --sourceFilePath <Source file path> --destinationArchivePath <Destination file path> --metadataFile <Metadata JSON file> ") final String sourcePath,
+			@CliOption(key = {
+					"destinationArchivePath" }, mandatory = true, help = "Please provide destination file path. Usage: putDatafile --sourceFilePath <Source file path> --destinationArchivePath <Destination file path> --metadataFile <Metadata JSON file>") final String destinationPath,
+			@CliOption(key = {
+					"metadataFile" }, mandatory = true, help = "Please provide metadata JSON file path. Usage: putDatafile --sourceFilePath <Source file path> --destinationArchivePath <Destination file path> --metadataFile <Metadata JSON file>") final String metadataFile) {
+	    logger.debug("getDatafile");
+	    Map<String, String> criteriaMap = new HashMap<String, String>();
+		criteriaMap.put("sourcePath", sourcePath);
+		criteriaMap.put("destinationPath", destinationPath);
+		criteriaMap.put("metadataFile", metadataFile);
+		return putDatafile.process("putDatafile", criteriaMap, null, null, null);
 	}
 	
 	@CliCommand(value = "deleteDatafile", help = "Delete data object from HPC Archive. Usage: deleteDatafile --path <data file path>")

@@ -48,7 +48,7 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
   public boolean process(HpcPathAttributes entity, String localPath, String filePathBaseName,
       String destinationBasePath,
       String logFile, String recordFile, boolean metadataOnly, boolean directUpload,
-      boolean checksum)
+      boolean checksum, String metadataFile)
       throws RecordProcessingException {
     this.filePath4LogFile = logFile;
     this.filePath4ErrorRecordsFile = recordFile;
@@ -63,7 +63,7 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
     performPathValidation(collectionPath, basePath, file);
     collectionPath = collectionPath.replace("//", "/");
     collectionPath = collectionPath.replace("\\", "/");
-    List<HpcMetadataEntry> metadataList = getMetadata(file, false);
+    List<HpcMetadataEntry> metadataList = getMetadata(file, false, null);
 
     if (metadataList == null || metadataList.isEmpty()) {
       System.out.println("No metadata to add. Skipping collection: " + file.getAbsolutePath());
