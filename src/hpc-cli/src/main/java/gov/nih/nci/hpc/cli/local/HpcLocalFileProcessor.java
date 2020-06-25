@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +49,8 @@ import java.util.concurrent.Future;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
@@ -107,7 +110,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
   public boolean process(HpcPathAttributes entity, String filePath, String filePathBaseName,
       String destinationBasePath,
       String logFile, String recordFile, boolean metadataOnly, boolean directUpload,
-      boolean checksum)
+      boolean checksum, String metadataFile)
       throws RecordProcessingException {
     logger.debug("HpcPathAttributes {}", entity);
     logger.debug("filePath {}", filePath);
@@ -128,7 +131,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
 
     List<HpcMetadataEntry> metadataEntries = null;
     try {
-      metadataEntries = getMetadata(entity, metadataOnly);
+      metadataEntries = getMetadata(entity, metadataOnly, metadataFile);
       if (metadataEntries == null) {
         System.out.println("No metadata file found. Skipping file: " + entity.getAbsolutePath());
         return true;
@@ -136,11 +139,11 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     } catch (HpcCmdException e) {
       logger.error(e.getMessage(), e);
       String message =
-          "Failed to process file: " + entity.getAbsolutePath() + " Reaon: " + e.getMessage();
+          "Failed to process file: " + entity.getAbsolutePath() + " Reason: " + e.getMessage();
       System.out.println(message);
       HpcClientUtil.writeException(e, message, null, logFile);
       HpcClientUtil.writeRecord(filePath, entity.getAbsolutePath(), recordFile);
-      return false;
+      throw new RecordProcessingException(message);
     }
     logger.debug("metadataEntries {}", metadataEntries);
 
@@ -159,7 +162,16 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     HpcFileLocation fileLocation = new HpcFileLocation();
     fileLocation.setFileId(entity.getAbsolutePath());
     dataObject.setCallerObjectId(null);
-    String objectPath = getObjectPath(filePath, filePathBaseName, entity.getPath());
+    String destinationPath = null;
+    if(StringUtils.isNotBlank(metadataFile)) {
+      //This is a single file upload request
+      destinationPath = Paths.get(destinationBasePath).getFileName().toString();
+      destinationBasePath = Paths.get(destinationBasePath).getParent().toString();
+    } else {
+      destinationPath = getObjectPath(filePath, filePathBaseName, entity.getPath());
+    }
+    final String objectPath = destinationPath;
+    final String basePath = destinationBasePath;
     logger.debug("objectPath {}", objectPath);
 
     performObjectPathValidation(objectPath, entity.getAbsolutePath(), filePath);
@@ -175,7 +187,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("directUpload {}", directUpload);
     boolean multipartUpload = false;
     if (directUpload && !metadataOnly) {
-    	//Check whether it requires multi-part upload (default > 1GB)
+    	//Check whether it requires multi-part upload (default > 50MB)
         
         long multipartThresholdSize = this.multipartThreshold;
     	multipartThresholdSize = multipartThresholdSize < (5L * 1024 * 1025) ? (5L * 1024 * 1025) : multipartThresholdSize;
@@ -192,7 +204,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     		retryTemplate.execute(new RetryCallback<Void, RecordProcessingException>() {
     	        @Override
     	        public Void doWithRetry(RetryContext context) throws RecordProcessingException {
-    	        	processS3Record(entity, dataObject, filePath, destinationBasePath, objectPath,
+    	        	processS3Record(entity, dataObject, filePath, basePath, objectPath,
         			checksum, false);
     	            return null;
     	        }
@@ -202,7 +214,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
       retryTemplate.execute(new RetryCallback<Void, RecordProcessingException>() {
         @Override
         public Void doWithRetry(RetryContext context) throws RecordProcessingException {
-            processRecord(entity, dataObject, filePath, destinationBasePath, objectPath, metadataOnly,
+            processRecord(entity, dataObject, filePath, basePath, objectPath, metadataOnly,
             checksum);
             return null;
         }

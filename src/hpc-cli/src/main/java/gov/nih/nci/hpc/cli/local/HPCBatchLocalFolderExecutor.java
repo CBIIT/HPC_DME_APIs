@@ -187,7 +187,7 @@ public class HPCBatchLocalFolderExecutor {
           folderProcessor = new HpcLocalFolderProcessor(connection);
           folderProcessor.process(folder, localPath, fileBasePath, destinationBasePath, logFile,
               errorRecordsFile,
-              metadataOnly, true, checksum);
+              metadataOnly, true, checksum, null);
         } catch (IOException e) {
           logger.error(e.getMessage(), e);
           System.out.println("Failed to process collection " + folder.getAbsolutePath()
