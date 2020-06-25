@@ -50,11 +50,11 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 				HpcLocalFileProcessor fileProcess;
 				fileProcess = new HpcLocalFileProcessor(dataObject);
 				fileProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
-						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum);
+						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, null);
 			} else {
 				HpcLocalFolderProcessor folderProcess = new HpcLocalFolderProcessor(dataObject.getConnection());
 				folderProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
-						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum);
+						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, null);
 			}
 		} catch (RecordProcessingException e) {
 		  logger.error("RecordProcessingException " + e.getMessage());
