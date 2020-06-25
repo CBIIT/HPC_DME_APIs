@@ -132,7 +132,7 @@ public class HpcLocalDirectoryListGenerator {
 								}
 							} catch (HpcCmdException e) {
 							    logger.error(e.getMessage(), e);
-								String message = "Failed to process file: " + file.getAbsolutePath() + " Reaon: "
+								String message = "Failed to process file: " + file.getAbsolutePath() + " Reason: "
 										+ e.getMessage();
 								System.out.println(message);
 								writeException(e, message, null);
