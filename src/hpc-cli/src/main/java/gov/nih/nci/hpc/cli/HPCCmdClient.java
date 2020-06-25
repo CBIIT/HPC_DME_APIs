@@ -16,6 +16,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +50,12 @@ public abstract class HPCCmdClient {
 	protected boolean headerAdded = false;
 	protected boolean inputCredentials = true;
 	protected int bufferSize = 0;
+	protected int maxAttempts = 0;
+	protected long backOffPeriod = 0;
+	protected int multipartPoolSize = 0;
+	protected long multipartThreshold = 0;
+	protected long multipartChunksize = 0;
+	protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 	public HPCCmdClient() {
 
 	}
@@ -83,6 +91,48 @@ public abstract class HPCCmdClient {
 		globusLoginFile = basePath + File.separator + globusLoginFile;
 		hpcCertPath = basePath + File.separator + hpcCertPath;
 		
+		String maxAttemptsStr = configProperties.getProperty("hpc.retry.max.attempts");
+        logger.debug("hpc.retry.max.attempts "+maxAttemptsStr);
+        try {
+            maxAttempts = Integer.parseInt(maxAttemptsStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.retry.max.attempts value. Setting it to 3");
+            maxAttempts = 3;
+        }
+        String backOffPeriodStr = configProperties.getProperty("hpc.retry.backoff.period");
+        logger.debug("hpc.retry.backoff.period "+backOffPeriodStr);
+        try {
+          backOffPeriod = Long.parseLong(maxAttemptsStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.retry.backoff.period value. Setting it to 5000");
+            backOffPeriod = 5000;
+        }
+		String multipartPoolSizeStr = configProperties.getProperty("hpc.multipart.threadpoolsize");
+        logger.debug("hpc.multipart.threadpoolsize "+multipartPoolSizeStr);
+        try {
+        	multipartPoolSize = Integer.parseInt(multipartPoolSizeStr);
+        	if(multipartPoolSize > 10)
+        		multipartPoolSize = 10;
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.multipart.threadpoolsize value. Setting it to 10");
+            multipartPoolSize = 10;
+        }
+        String multipartThresholdStr = configProperties.getProperty("hpc.multipart.threshold");
+        logger.debug("hpc.multipart.threshold "+multipartThresholdStr);
+        try {
+        	multipartThreshold = Long.parseLong(multipartThresholdStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.multipart.threshold value. Setting it to 52480000 (> 50MB)");
+            multipartThreshold = 52480000L;
+        }
+        String multipartChunksizeStr = configProperties.getProperty("hpc.multipart.chunksize");
+        logger.debug("hpc.multipart.chunksize "+multipartChunksizeStr);
+        try {
+        	multipartChunksize = Long.parseLong(multipartChunksizeStr);
+        } catch (Exception e) {
+            logger.info("Defaulting hpc.multipart.chunksize value. Setting it to 52428800 (50MB)");
+            multipartChunksize = 52428800L;
+        }
 		initializeLog();
 	}
 

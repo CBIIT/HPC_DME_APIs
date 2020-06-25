@@ -501,6 +501,13 @@ function get_config {
 
 function check_java {
 
+  #Automaticly import system proxy settings
+  if [ -n "$http_proxy" ] ; then
+    PROXY_HOST=$(echo $http_proxy | sed 's/http:\/\/\(.*\):.*/\1/')
+    local PROXY_PORT=$(echo $http_proxy | sed 's/http:\/\/.*:\(.*\)/\1/' | tr -d "/")
+    local PROXY_IP=$(ping -q -c 1 -t 1 $PROXY_HOST | grep PING | sed -e "s/).*//" | sed -e "s/.*(//") 
+  fi
+
   java -version &>/dev/null
   if [ $? -ne 0 ]
   then 
