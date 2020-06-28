@@ -163,8 +163,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       } catch (HpcException e) {
         logger.error("Failed to process queued data transfer upload :" + path, e);
 
-        // Delete the data object.
-        deleteDataObject(path);
+        // Process the data object registration failure.
+        processDataObjectRegistrationFailure(path, e.getMessage());
       }
     }
   }
@@ -177,6 +177,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
         dataManagementService.getDataObjectsUploadInProgress();
     for (HpcDataObject dataObject : dataObjectsInProgress) {
       String path = dataObject.getAbsolutePath();
+
       logger.info("Processing data object upload in-progress: {}", path);
       try {
         // Get the system metadata.
@@ -208,6 +209,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             dataTransferCompleted = Calendar.getInstance();
             metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
                 dataTransferStatus, null, null, dataTransferCompleted, null, null);
+
+            // Record data object registration result.
+            dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata,
+                true, null);
+
             break;
 
           case IN_TEMPORARY_ARCHIVE:
@@ -224,6 +230,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
           case FAILED:
             // Data transfer failed.
+
             throw new HpcException("Data transfer failed: " + dataTransferUploadReport.getMessage(),
                 HpcErrorType.DATA_TRANSFER_ERROR);
 
@@ -244,10 +251,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       } catch (HpcException e) {
         logger.error("Failed to process data transfer upload in progress:" + path, e);
 
-        // Delete the data object.
-        deleteDataObject(path);
+        // Process the data object registration failure.
+        processDataObjectRegistrationFailure(path, e.getMessage());
       }
     }
+
   }
 
   @Override
@@ -280,6 +288,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               HpcDataTransferUploadStatus.URL_GENERATED, null, null,
               systemGeneratedMetadata.getDataTransferType(),
               systemGeneratedMetadata.getConfigurationId(), HpcDataTransferType.S_3);
+
+          // Record a registration result.
+          dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata,
+              false, "Presigned upload URL expired");
         }
 
       } catch (HpcException e) {
@@ -330,8 +342,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       } catch (HpcException e) {
         logger.error("Failed to process data transfer upload streaming in progress:" + path, e);
 
-        // Delete the data object.
-        deleteDataObject(path);
+        // Process the data object registration failure.
+        processDataObjectRegistrationFailure(path, e.getMessage());
       }
     }
   }
@@ -377,8 +389,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
       } catch (HpcException e) {
         logger.error("Failed to process restart upload streaming for data object:" + path, e);
 
-        // Delete the data object.
-        deleteDataObject(path);
+        // Process the data object registration failure.
+        processDataObjectRegistrationFailure(path, e.getMessage());
       }
     }
   }
@@ -430,8 +442,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             checksum, uploadResponse.getDataTransferStatus(), uploadResponse.getDataTransferType(),
             null, uploadResponse.getDataTransferCompleted(), null, null);
 
-        // Data transfer upload completed (successfully or failed). Add an event if
-        // needed.
+        // Data transfer upload completed successfully. Add an event if needed.
         if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
           addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path,
               uploadResponse.getDataTransferStatus(), systemGeneratedMetadata.getSourceLocation(),
@@ -439,11 +450,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
               systemGeneratedMetadata.getConfigurationId(), HpcDataTransferType.GLOBUS);
         }
 
+        // Record a registration result.
+        systemGeneratedMetadata.setDataTransferCompleted(uploadResponse.getDataTransferCompleted());
+        dataManagementService
+            .addDataObjectRegistrationResult(path, systemGeneratedMetadata, true,
+            null);
+
       } catch (HpcException e) {
         logger.error("Failed to transfer data from temporary archive:" + path, e);
 
-        // Delete the data object.
-        deleteDataObject(path);
+        // Process the data object registration failure.
+        processDataObjectRegistrationFailure(path, e.getMessage());
       }
     }
   }
@@ -1500,11 +1517,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
   }
 
   /**
-   * Delete a data object (from the data management system).
+   * Process a data object registration failure. 1. Delete object from iRODS. 2. Send an event 3.
+   * Record the result in the DB
    *
    * @param path The data object path.
+   * @param message an error message.
    */
-  private void deleteDataObject(String path) {
+  private void processDataObjectRegistrationFailure(String path, String message) {
     // Update the data transfer status. This is needed in case the actual deletion
     // failed.
     HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
@@ -1536,6 +1555,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
           systemGeneratedMetadata.getDataTransferType(),
           systemGeneratedMetadata.getConfigurationId(),
           systemGeneratedMetadata.getDataTransferType());
+    }
+
+    // Record a data object registration result.
+    try {
+      dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata, false,
+          message);
+
+    } catch (HpcException e) {
+      logger.error("Failed to record registration result: " + path, HpcErrorType.UNEXPECTED_ERROR,
+          e);
     }
   }
 
@@ -1781,6 +1810,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
             dataTransferCompleted, systemGeneratedMetadata.getDataTransferType(),
             systemGeneratedMetadata.getConfigurationId(), HpcDataTransferType.S_3);
       }
+
+      // Record a registration result.
+      systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
+      dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata, true,
+          null);
 
       logger.info("After updateS3UploadStatus(): upload-completed {}", path);
       return true;
