@@ -74,6 +74,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
@@ -801,7 +802,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         Optional.ofNullable(dataObjectRegistration.getGenerateUploadRequestURL()).orElse(false);
 
     if (responseDTO.getRegistered()) {
-      boolean registrationCompleted = false;
       try {
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
@@ -865,20 +865,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
             metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
                 null, null, null, null, null, null);
-          }
 
+            // Record data object registration result
+            dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata,
+                true, null);
+          }
         }
 
         // Add collection update event.
         addCollectionUpdatedEvent(path, false, true, userId);
 
-        registrationCompleted = true;
+      } catch (Exception e) {
+        // Data object registration failed. Remove it from Data Management.
+        dataManagementService.delete(path, true);
 
-      } finally {
-        if (!registrationCompleted) {
-          // Data object registration failed. Remove it from Data Management.
-          dataManagementService.delete(path, true);
-        }
+        // Record a data object registration result.
+        dataManagementService.addDataObjectRegistrationResult(path,
+            toFailedDataObjectRegistrationResult(path, userId, e.getMessage()), null);
+
+        throw e;
       }
 
     } else {
@@ -2732,6 +2737,29 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     return destinationLocation;
   }
 
+  /**
+   * Create a failed data object registration result object
+   *
+   * @param path The data object path
+   * @param userId The registrar user id.
+   * @param message The error message.
+   * @return a HpcDataObjectRegistrationResult instance
+   */
+  private HpcDataObjectRegistrationResult toFailedDataObjectRegistrationResult(String path, String userId,
+      String message) {
+
+    HpcDataObjectRegistrationResult dataObjectRegistrationResult =
+        new HpcDataObjectRegistrationResult();
+    Calendar now = Calendar.getInstance();
+    dataObjectRegistrationResult.setCreated(now);
+    dataObjectRegistrationResult.setCompleted(now);
+    dataObjectRegistrationResult.setResult(false);
+    dataObjectRegistrationResult.setMessage(message);
+    dataObjectRegistrationResult.setUserId(userId);
+    dataObjectRegistrationResult.setPath(path);
+
+    return dataObjectRegistrationResult;
+  }
 
   private HpcPermissionForCollection fetchCollectionPermission(String path, String userId)
       throws HpcException {
