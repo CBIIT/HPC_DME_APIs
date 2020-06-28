@@ -74,3 +74,38 @@ COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."CREATED" IS
                   'The data/time the bulk registration request was submitted';
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."COMPLETED" IS 
                   'The data/time the bulk registration request was completed';
+                  
+DROP TABLE IF EXISTS public."HPC_DATA_OBJECT_REGISTRATION_RESULT";
+CREATE TABLE public."HPC_DATA_OBJECT_REGISTRATION_RESULT"
+(
+  "PATH" text NOT NULL,
+  "USER_ID" text NOT NULL,
+  "UPLOAD_METHOD" text,
+  "RESULT" boolean NOT NULL,
+  "MESSAGE" text,
+  "EFFECTIVE_TRANSFER_SPEED" integer,
+  "CREATED" timestamp NOT NULL,
+  "COMPLETED" timestamp NOT NULL
+)
+WITH (
+  OIDS=FALSE
+);
+
+COMMENT ON TABLE public."HPC_DATA_OBJECT_REGISTRATION_RESULT" IS 
+                 'Data object registration task results';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."PATH" IS 
+                  'The registered path';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."USER_ID" IS 
+                  'The user ID who submitted the request';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."UPLOAD_METHOD" IS 
+                  'The upload method used w/ the registration request';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."RESULT" IS 
+                  'Registration success/failure indicator';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."MESSAGE" IS 
+                  'An error message if the registration failed';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."EFFECTIVE_TRANSFER_SPEED" IS 
+                  'The upload effective transfer speed in bytes per second';     
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."CREATED" IS 
+                  'The data/time the bulk registration request was submitted';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."COMPLETED" IS 
+                  'The data/time the bulk registration request was completed';

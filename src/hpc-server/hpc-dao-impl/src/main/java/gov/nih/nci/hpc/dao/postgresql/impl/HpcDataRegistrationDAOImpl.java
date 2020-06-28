@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -96,6 +97,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
   public static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_SQL =
       "select count(*) from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" where \"USER_ID\" = ?";
+
+  public static final String INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL =
+      "insert into public.\"HPC_DATA_OBJECT_REGISTRATION_RESULT\" ("
+          + "\"PATH\", \"USER_ID\", \"UPLOAD_METHOD\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?)";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -300,6 +306,26 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to count download results: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
+  @Override
+  public void insertDataObjectRegistrationResult(HpcDataObjectRegistrationResult registrationResult)
+      throws HpcException {
+    try {
+      jdbcTemplate.update(INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getPath(),
+          registrationResult.getUserId(),
+          registrationResult.getUploadMethod() != null
+              ? registrationResult.getUploadMethod().value()
+              : null,
+          registrationResult.getResult(), registrationResult.getMessage(),
+          registrationResult.getEffectiveTransferSpeed(), registrationResult.getCreated(),
+          registrationResult.getCompleted());
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to insert a data object registration result: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
     }
   }
