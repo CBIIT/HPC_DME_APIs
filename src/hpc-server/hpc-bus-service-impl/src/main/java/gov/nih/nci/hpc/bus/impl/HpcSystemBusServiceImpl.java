@@ -211,6 +211,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
                 dataTransferStatus, null, null, dataTransferCompleted, null, null);
 
             // Record data object registration result.
+            systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
             dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata,
                 true, null);
 
