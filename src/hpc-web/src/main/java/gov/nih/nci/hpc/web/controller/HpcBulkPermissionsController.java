@@ -52,7 +52,8 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcGroupPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcUserPermission;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcUserPermissionResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
@@ -181,7 +182,7 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 		String downloadType = request.getParameter("downloadType");
 		HpcEntityPermissionsDTO permissionDTO = constructRequest(request);
 		
-		List<HpcBulkPermissionsResult> bulkResults = new ArrayList<HpcBulkPermissionsResult>();
+		List<HpcBulkPermissionsResult> bulkResults = new ArrayList<>();
 		
 		HpcDownloadDatafile hpcDownloadDatafile = new HpcDownloadDatafile();
 		hpcDownloadDatafile.setDownloadType(downloadType);
@@ -198,24 +199,9 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 				HpcBulkPermissionsResult result = new HpcBulkPermissionsResult();
 				result.setPath(path);
 				try {
-					//Check if user has own permission for this path
-					String userId = (String) session.getAttribute("hpcUserId");
-					HpcUserPermissionDTO userPermission = HpcClientUtil.getPermissionForUser(authToken, path, userId,
-							(permissionsRequest.getType() != null && permissionsRequest.getType().equals("collection")) ? serverCollectionURL : serverDataObjectURL, sslCertPath,
-							sslCertPassword);
-					if(userPermission == null || !userPermission.getPermission().equals(HpcPermission.OWN)) {
-						result.setError("Permission denied");
-						result.setStatus("Failure");
-						bulkResults.add(result);
-						continue;
-					}
-					//Get exising permissions for path
 					String serviceAPIUrl = getServiceURL(path, permissionsRequest.getType());
-					HpcEntityPermissionsDTO existingPermissionsDTO = getPermissionForPath(serviceAPIUrl, path, permissionsRequest.getType(), authToken);
-					//Merge with existing permissions
-					HpcEntityPermissionsDTO mergedPermissionsDTO = mergeExistingPermissions(permissionDTO, existingPermissionsDTO);
 					//Update permissions
-					if (setPermissionForPath(serviceAPIUrl, mergedPermissionsDTO, authToken)) {
+					if (setPermissionForPath(serviceAPIUrl, permissionDTO, authToken)) {
 						result.setStatus("Success");
 						bulkResults.add(result);
 					}
@@ -256,10 +242,10 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 	      if (null == basisUrl) {
 	        return null;
 	      }
-				final String serviceAPIUrl = UriComponentsBuilder.fromHttpUrl(basisUrl)
+		
+	      return UriComponentsBuilder.fromHttpUrl(basisUrl)
 					.path("/{dme-archive-path}/acl").buildAndExpand(path).encode().toUri()
 	        .toURL().toExternalForm();
-	      return serviceAPIUrl;
 	    } catch (MalformedURLException e) {
 	      throw new HpcWebException("Unable to generate URL to invoke for ACL on" +
 	        " " + type + " " + path + ".", e);
@@ -278,6 +264,22 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 
 				Response restResponse = client.invoke("POST", permissionDTO);
 				if (restResponse.getStatus() == 200) {
+					ObjectMapper mapper = new ObjectMapper();
+					AnnotationIntrospectorPair intr = new AnnotationIntrospectorPair(
+							new JaxbAnnotationIntrospector(TypeFactory.defaultInstance()),
+							new JacksonAnnotationIntrospector());
+					mapper.setAnnotationIntrospector(intr);
+					mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+					MappingJsonFactory factory = new MappingJsonFactory(mapper);
+					JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
+
+					HpcEntityPermissionsResponseDTO permissionResponseDTO = parser.readValueAs(HpcEntityPermissionsResponseDTO.class);
+					for(HpcUserPermissionResponseDTO userPermissionResponse: permissionResponseDTO.getUserPermissionResponses()) {
+						if(!userPermissionResponse.getResult()) {
+							throw new Exception(userPermissionResponse.getMessage());
+						}
+					}
 					return true;
 				} else {
 					ObjectMapper mapper = new ObjectMapper();
@@ -302,14 +304,6 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 			throw e;
 		}
 		return false;
-	}
-
-	private HpcEntityPermissionsDTO getPermissionForPath(String serviceAPIUrl, String path, String type, String token) {
-		
-		HpcEntityPermissionsDTO permissionsDTO = HpcClientUtil.getPermissions(token, serviceAPIUrl, sslCertPath,
-				sslCertPassword);
-		
-		return permissionsDTO;
 	}
 	
 	private HpcEntityPermissionsDTO constructRequest(HttpServletRequest request) {
@@ -362,40 +356,6 @@ public class HpcBulkPermissionsController extends AbstractHpcController {
 		
 		return dto;
 		
-	}
-	
-	private HpcEntityPermissionsDTO mergeExistingPermissions(HpcEntityPermissionsDTO permisssionsDTO, HpcEntityPermissionsDTO existingPermissionsDTO) {
-
-		List<String> assignedNames = new ArrayList<String>();
-		HpcEntityPermissionsDTO newPermisssionsDTO = new HpcEntityPermissionsDTO();
-		for (HpcUserPermission permission : permisssionsDTO.getUserPermissions()) {
-			assignedNames.add(permission.getUserId());
-			newPermisssionsDTO.getUserPermissions().add(permission);
-		}
-		for (HpcGroupPermission permission : permisssionsDTO.getGroupPermissions()) {
-			assignedNames.add(permission.getGroupName());
-			newPermisssionsDTO.getGroupPermissions().add(permission);
-		}
-		
-		if (existingPermissionsDTO != null) {
-			List<HpcUserPermission> userPermissions = existingPermissionsDTO.getUserPermissions();
-			for (HpcUserPermission permission : userPermissions) {
-				if (permission.getUserId().equals("rods") || permission.getUserId().equals(serviceAccount))
-					continue;
-				if(!assignedNames.contains(permission.getUserId()))
-					newPermisssionsDTO.getUserPermissions().add(permission);
-			}
-			List<HpcGroupPermission> groupPermissions = existingPermissionsDTO.getGroupPermissions();
-			for (HpcGroupPermission permission : groupPermissions) {
-				if (permission.getGroupName().equals("rodsadmin"))
-					continue;
-				if(!assignedNames.contains(permission.getGroupName()))
-					newPermisssionsDTO.getGroupPermissions().add(permission);
-			}
-
-		}
-		
-		return newPermisssionsDTO;
 	}
 	
 	private void populatePermissions(HpcEntityPermissionsDTO permissionsDTO, Model model, String type) {
