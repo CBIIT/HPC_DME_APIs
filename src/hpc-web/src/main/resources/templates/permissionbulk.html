@@ -131,10 +131,10 @@
 												<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 													th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
 												<div class="form-group" th:if="${downloadType == 'datafiles'}">
-												  <p>This page allows you to add or override the user permissions for the selected data file.</p>
+												  <p>This page allows you to add or modify the user permissions for the selected data file.</p>
 												</div>
 												<div class="form-group" th:if="${downloadType == 'collections'}">
-												  <p>This page allows you to add or override the user permissions for the selected collection.</p>
+												  <p>This page allows you to add or modify the user permissions for the selected collection.</p>
 												</div>
 												<div class="form-group" th:if="${bulkResults != null and !bulkResults.empty}">
 													<label for="Name">Results:</label> 
@@ -163,7 +163,8 @@
 													</div>
 												</div>
 												<div class="form-group">
-													<table class="table table-bordered table-hover"
+													<table class="table table-bordered table-hover" 
+														th:classappend="${permissions.getEntries().isEmpty()} ? hidden : ''"
 														id="permissionsTable">
 														<thead>
 															<tr>
@@ -264,7 +265,7 @@
 															id="primaryButton" onClick="updatePermission()" disabled="disabled">Save</button>
 													
 														<button type="button" class="btn btn-md btn-primary" th:if="${bulkResults == null or bulkResults.empty}"
-															id="addUserButton" data-toggle="modal" data-target="#addUserModal">Add or Edit User</button>
+															id="addUserButton" data-toggle="modal" data-target="#addUserModal">Add or Edit Permission</button>
 													  </div>
 													</div>
 												</div>
@@ -483,6 +484,7 @@
 			$('#primaryButton').removeClass('disabled');
 			$('#primaryButton').prop('disabled', false);
 			$('#permissionsTable input:radio').prop('disabled', false);
+			$('#permissionsTable').removeClass("hidden");
 		}
 
 		function updatePermission()
