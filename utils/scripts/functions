@@ -1038,23 +1038,33 @@ case $1 in
 
 }
 
-#THIS COMMAND IS NO LONGER SUPPORTED
-#Print Usage of dm_download_dataobject_sync function
-function dm_show_download_dataobject_sync_usage {
-  
-  echo "dm_download_dataobject_sync has been deprecated. Use dm_download_dataobject_presigned." >&2
-        dm_download_dataobject_presigned $@
+
+#Print Usage of dm_download_dataobject function
+function dm_show_download_dataobject_usage {
+  read -d  '' usage <<- EOF
+
+  usage: dm_download_dataobject [-D REST-response] <source-path> <destination-file>
+
+  Download the specified dataobject to the local machine using presigned URL.
+  [-D REST-response]     Optionally specify the filename to capture the REST response
+  source_path            Full path to the source file in the archive
+  destination-file       The location for the destination file
+
+For detailed information on this command, refer to the following page:
+https://wiki.nci.nih.gov/x/owRlGQ
+
+EOF
+  echo "$usage"
 }
 
 
-#THIS COMMAND IS NO LONGER SUPPORTED
 #Download a dataObject synchronously 
 #Inputs: [-D REST-response]
 #        [-p]
 #        logic-path 
 #        destination-file
-function dm_download_dataobject_sync {
-  #local USAGE="usage: dm_download_dataobject_sync [-D REST-response] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
+function dm_download_dataobject {
+  #local USAGE="usage: dm_download_dataobject [-D REST-response] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
 
   #Set the default parameters
   local APPLY_PRESIGNED=0
@@ -1068,7 +1078,7 @@ function dm_download_dataobject_sync {
                     RESPONSE_HEADER="$2"
                     shift
                 else
-                    echo "$USAGE" >&2
+                    dm_show_download_dataobject_usage >&2 
                     return 1
                 fi
             ;;
@@ -1089,14 +1099,14 @@ function dm_download_dataobject_sync {
 
   if [ "$#" -lt 2 ] 
   then
-    dm_show_download_dataobject_sync_usage >&2
+    dm_show_download_dataobject_usage >&2
     return 1
   fi
   local OBJECT_PATH="$1"
   local DESTINATION_PATH="$2"
   if [ -d "$DESTINATION_PATH"  ]
   then
-    #Download the file with the same file name 
+    #Download the file with the same file name
     local FILE_NAME=$(basename "$OBJECT_PATH")
     if [ "$?" -ne 0 ]
     then
@@ -1206,7 +1216,7 @@ EOF
 }
 
 
-#Download a dataObject using presigned URL
+#Download a dataObject to the local machine using presigned URL
 #Inputs: [-D REST-response]
 #        [-p]
 #        logic-path
@@ -1258,7 +1268,7 @@ function dm_download_dataobject_presigned {
     then
       RESPONSE_STATUS=download-dataobject-response-header.tmp
   fi
- 
+  
   local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header.tmp
   local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=download-dataobject-response-message.tmp
   local RESPONSE_MESSAGE=download-dataobject-response-message.tmp
@@ -1319,8 +1329,6 @@ function dm_download_dataobject_presigned {
     fi
   fi
 }
-
-
 
 
 
