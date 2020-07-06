@@ -1043,10 +1043,11 @@ case $1 in
 function dm_show_download_dataobject_usage {
   read -d  '' usage <<- EOF
 
-  usage: dm_download_dataobject [-D REST-response] <source-path> <destination-file>
+  usage: dm_download_dataobject [-D REST-response] [-f json-file] <source-path> <destination-file>
 
   Download the specified dataobject to the local machine.
   [-D REST-response]     Optionally specify the filename to capture the REST response
+  [-f json-file]         Optionally specify the json file for specifying download filter
   source_path            Full path to the source file in the archive
   destination-file       The location for the destination file
 
@@ -1060,16 +1061,18 @@ EOF
 
 #Download a dataObject synchronously 
 #Inputs: [-D REST-response]
+#        [-f json-file]
 #        [-p]
 #        logic-path 
 #        destination-file
 function dm_download_dataobject {
-  #local USAGE="usage: dm_download_dataobject [-D REST-response] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
+  #local USAGE="usage: dm_download_dataobject [-D REST-response] [-f json-file] [-p] <logic-path> <destination-file>\n   -p indicates to use S3-presigned URL for downloading"
 
   #Set the default parameters
   local APPLY_PRESIGNED=0
   local TEMPLATE
   local RESPONSE_HEADER
+  local template_file
 
   while :; do
         case $1 in
@@ -1080,6 +1083,15 @@ function dm_download_dataobject {
                 else
                     dm_show_download_dataobject_usage >&2 
                     return 1
+                fi
+            ;;
+            -f|--file)
+            	if [ "$2" ]; then
+                	template_file="$2"
+                	shift
+                else
+                	dm_show_download_dataobject_usage >&2 
+                	return 1
                 fi
             ;;
             -p)
@@ -1093,8 +1105,14 @@ function dm_download_dataobject {
 
   if [ $APPLY_PRESIGNED -eq 0 ]
   then
-    printf '{\n}' > $HPC_DM_UTILS/templates/download-sync-template.json.tmp
-    TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json.tmp"
+    if [ ! -e "$template_file" ]
+    then
+        printf '{\n}' > $HPC_DM_UTILS/templates/download-sync-template.json.tmp
+        TEMPLATE="$HPC_DM_UTILS/templates/download-sync-template.json.tmp"
+    else
+    	TEMPLATE="$template_file"
+    fi
+    echo $TEMPLATE
   fi
 
   if [ "$#" -lt 2 ] 
@@ -1126,12 +1144,12 @@ function dm_download_dataobject {
   then
     curl -H "Content-Type: application/json" -H "Accept: application/json" \
       $CONFIG -d @$TEMPLATE \
-      -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download \
+      -X POST ${SERVER}/v2/dataObject/$(urlencode $OBJECT_PATH)/download \
       -D $RESPONSE_HEADER -o $DESTINATION_PATH -s \
       2> $HPC_DM_UTILS/temp/curl-status
     check_connection $RESPONSE_HEADER
     CODE=$(get_http_code "$RESPONSE_HEADER")
-    rm $HPC_DM_UTILS/templates/download-sync-template.json.tmp
+    rm -f $HPC_DM_UTILS/templates/download-sync-template.json.tmp
     if [ "$CODE" -ne 200 ]
     then 
       #In this case the destination path file will contain the error code
@@ -1143,7 +1161,7 @@ function dm_download_dataobject {
 
     curl -H "Content-Type: application/json" -H "Accept: application/json" \
       $CONFIG -d @$TEMPLATE \
-      -X POST ${SERVER}/dataObject/$(urlencode $OBJECT_PATH)/download \
+      -X POST ${SERVER}/v2/dataObject/$(urlencode $OBJECT_PATH)/download \
       -D $RESPONSE_HEADER_OBTAIN_PRESIGNED \
       -o $RESPONSE_MESSAGE_OBTAIN_PRESIGNED \
       -s 2> $HPC_DM_UTILS/temp/curl-status
