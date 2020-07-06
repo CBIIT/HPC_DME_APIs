@@ -276,6 +276,8 @@ function dm_show_register_dataobject_presigned_usage {
   read -d  '' usage <<- EOF
   usage: dm_register_dataobject_presigned [-D REST-response] [-o output-file] <description.json> <archive-path> [source-file]
 
+For files larger than 2GB, use dm_register_dataobject_multipart.
+
   Register a dataobject with pre-signed URL
   [-D REST-response]          Optionally specify the filename to capture the REST response
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
