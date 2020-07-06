@@ -252,8 +252,12 @@
 											<input type="hidden" name="path" id="action" th:value="${collection.getCollection().getCollectionName()}"/>
 											<tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
 											  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null}">
+											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null and metadataItem.isMandatory()}">
 											    <input type="text" class="form-control" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" 
+											      th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+												  th:value="${metadataItem.getAttrValue()}" th:required="required" placeholder="Required"></input></td>
+											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null and not metadataItem.isMandatory()}">
+											    <input type="text" class="form-control" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 											      th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 												  th:value="${metadataItem.getAttrValue()}"></input></td>
 											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() != null}">
