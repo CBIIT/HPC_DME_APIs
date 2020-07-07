@@ -131,10 +131,10 @@
 												<input type="hidden" name="selectedFilePaths" id="selectedFilePaths"
 													th:value="${hpcDownloadDatafile.getSelectedPaths()}" />
 												<div class="form-group" th:if="${downloadType == 'datafiles'}">
-												  <p>This page allows you to add or modify the user permissions for the selected data file.</p>
+												  <p>This page allows you to add or modify the user permissions for the selected data files.</p>
 												</div>
 												<div class="form-group" th:if="${downloadType == 'collections'}">
-												  <p>This page allows you to add or modify the user permissions for the selected collection.</p>
+												  <p>This page allows you to add or modify the user permissions for the selected collections.</p>
 												</div>
 												<div class="form-group" th:if="${bulkResults != null and !bulkResults.empty}">
 													<label for="Name">Results:</label> 
