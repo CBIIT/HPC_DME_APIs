@@ -449,25 +449,6 @@
 	    return false;
 	}	
 	
-	function validateMetadata()
-	{
-		rowId++;
-	    var table = document.getElementById("metaAttrTable");
-	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-		for(var i=1;i<rows;i++)
-		{
-			if(document.getElementById("addAttrName"+i) != null)
-			{
-				var attrNameValue = document.getElementById("addAttrName"+i).value;	
-				if(attributeNames.indexOf(attrNameValue) > -1)
-				{
-					alert("Duplicate attribute name: " + attrNameValue + ", Please use different name")
-					return false;
-				}
-			}
-		}
-		return true;
-	}
 	
 	function cancelEdit()
 	{
