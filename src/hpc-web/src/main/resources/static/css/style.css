@@ -817,7 +817,7 @@ div[data-role="editor-toolbar"] {
 }
 
 .top-nav  {
-    margin-top: -15px;
+    margin-top: -5px;
 }
 
 .top-nav ul.top-menu > li .dropdown-menu.logout {
@@ -887,22 +887,27 @@ div[data-role="editor-toolbar"] {
     padding-right: 10px
 }
 
+.top-nav > li > a > i {
+    display: inline-block;
+    padding-right: 10px;
+}
+
 .top-nav .username {
     font-size: 13px;
-    color: #bdbdbd;
+    color: #fff;
 }
 
 .top-nav.top-menu > li > a {
     padding: 8px;
     background: none;
-    /*margin-right: 0;*/
+    font-size: 13px !important;
 }
 .top-nav.top-menu > li {
     margin-left: 10px;
 }
 
 .top-nav.top-menu > li > a:hover, .top-nav ul.top-menu > li > a:focus {    
-    background: #F1F2F7;
+    background: #fff;
 
 }
 
