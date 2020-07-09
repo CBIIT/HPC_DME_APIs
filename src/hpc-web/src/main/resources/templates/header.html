@@ -39,6 +39,11 @@
 						<li class="eborder-top"><a href="https://wiki.nci.nih.gov/display/DMEdoc" target="_blank"><i class="icon_book_alt"></i> User Guide</a></li>
 						<li><a href="https://github.com/CBIIT/HPC_DME_APIs" target="_blank"><i class="icon_key_alt"></i> DME Site on GitHub</a></li>
 					</ul></li>
+					
+					<li class="nav-item versionNumber">
+						<span th:if="${session.env != 'PROD'}" th:text="'v'+${session.version}+' ('+${session.env}+')'"></span>
+						<span th:if="${session.env == 'PROD'}" th:text="'v'+${session.version}"></span>
+						</li>
 				<!-- user login dropdown end -->
 				</ul>
 			</div>
