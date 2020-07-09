@@ -476,7 +476,7 @@
 					driveDiv.style.display = "none";
 				if(downloadType == "datafile") {
 					var endPointLocation = $("#endPointLocation").val();
-					if(endPointLocation)
+					if(endPointLocation.endsWith("/"))
 						$("#endPointLocation").val(endPointLocation + downloadFileName);
 					else
 						$("#endPointLocation").val(downloadFileName);
