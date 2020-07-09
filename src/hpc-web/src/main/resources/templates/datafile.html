@@ -269,11 +269,6 @@
 												for="${hpcDatafile.getDataObject().getCollectionName()}"
 												th:text="${hpcDatafile.getDataObject().getCollectionName()}"></label>
 										</div>
-										<div class="col-md-12 form-group">
-											<label for="Name">Owner:</label> <label
-												for="${hpcDatafile.getDataObject().getDataOwnerName()}"
-												th:text="${hpcDatafile.getDataObject().getDataOwnerName()}"></label>
-										</div>
 									</div>
 								</div>
 								
@@ -302,7 +297,13 @@
 											  <input type="hidden" name="path" id="path" th:value="${hpcDatafile.getPath()}"/>
 											  <tr th:each="metadataItem : ${hpcDatafile.getSelfMetadataEntries()}">
 												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
-												<td th:if="${metadataItem.getValidValues() == null}"><input class="form-control" type="text" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+												<td th:if="${metadataItem.getValidValues() == null and metadataItem.isMandatory()}">
+												  <input class="form-control" type="text"
+												  th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+												  th:value="${metadataItem.getAttrValue()}" th:required="required" placeholder="Required"></input></td>
+												<td th:if="${metadataItem.getValidValues() == null and not metadataItem.isMandatory()}">
+												  <input class="form-control" type="text"
+												  th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 												  th:value="${metadataItem.getAttrValue()}"></input></td>
 												<td th:unless="${metadataItem.getValidValues() == null}">
 													<select size="1"
@@ -448,25 +449,6 @@
 	    return false;
 	}	
 	
-	function validateMetadata()
-	{
-		rowId++;
-	    var table = document.getElementById("metaAttrTable");
-	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-		for(var i=1;i<rows;i++)
-		{
-			if(document.getElementById("addAttrName"+i) != null)
-			{
-				var attrNameValue = document.getElementById("addAttrName"+i).value;	
-				if(attributeNames.indexOf(attrNameValue) > -1)
-				{
-					alert("Duplicate attribute name: " + attrNameValue + ", Please use different name")
-					return false;
-				}
-			}
-		}
-		return true;
-	}
 	
 	function cancelEdit()
 	{

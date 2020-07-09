@@ -316,7 +316,7 @@
         	document.getElementById("editsearchform").submit();
         };
         
-        $scope.downloadSelectedRows = function() {
+        $scope.performActionSelectedRows = function(action) {
           console.log('$scope.selectedRows: ', $scope.selectedRows);
           console.log('hpcSelectedDatafileList: ', hpcSelectedDatafileList);
           var updatedList = [];
@@ -344,19 +344,35 @@
 
           if(updatedList == null || updatedList.length == 0)
           {
-            alert("Select at least one data file to download");
+        	if(action == 'download')
+            	alert("Select at least one data file to download");
+        	else
+            	alert("Select at least one data file to manage permissions");
             return false;
           }
-          document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
-          if(source == "criteria")
-            document.getElementById("downloadFilesform").elements.namedItem("searchType").value = "criteria";
-          else
-            document.getElementById("downloadFilesform").elements.namedItem("searchType").value = "search";
-          document.getElementById("downloadFilesform").elements.namedItem("pageNumber").value =  currentPage;
-          document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
-          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
-          document.getElementById("downloadType").value = "datafiles";
-          document.getElementById("downloadFilesform").submit();
+          if (action == 'download') {
+	          document.getElementById("downloadFilesform").elements.namedItem("selectedFilePaths").value = updatedList;
+	          if(source == "criteria")
+	            document.getElementById("downloadFilesform").elements.namedItem("searchType").value = "criteria";
+	          else
+	            document.getElementById("downloadFilesform").elements.namedItem("searchType").value = "search";
+	          document.getElementById("downloadFilesform").elements.namedItem("pageNumber").value =  currentPage;
+	          document.getElementById("downloadFilesform").elements.namedItem("pageSize").value =  currentPageSize;
+	          document.getElementById("downloadFilesform").elements.namedItem("queryName").value = queryName;
+	          document.getElementById("downloadType").value = "datafiles";
+	          document.getElementById("downloadFilesform").submit();
+          } else {
+        	document.getElementById("bulkPermissionsform").elements.namedItem("selectedFilePaths").value = updatedList;
+	        if(source == "criteria")
+	          document.getElementById("searchType3").value = "criteria";
+	        else
+	          document.getElementById("searchType3").value = "search";
+	        document.getElementById("bulkPermissionsform").elements.namedItem("pageNumber").value =  currentPage;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("pageSize").value =  currentPageSize;
+	        document.getElementById("bulkPermissionsform").elements.namedItem("queryName").value = queryName;
+	        document.getElementById("downloadType3").value = "datafiles";
+	        document.getElementById("bulkPermissionsform").submit();
+          }
         };
 
         $scope.linkSelectedRows = function() {
@@ -461,8 +477,11 @@
 								</div>
 								<div class="pull-right">
 									<a data-toggle="modal" id="downloadselectedlink"
-										class="btn btn-link btn-sm" ng-click="downloadSelectedRows()"
+										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('download')"
 										>Download Files</a>
+									<a data-toggle="modal" id="bulkPermissionlink"
+										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('permission')"
+										>Manage Permissions on Selected Data Files</a>
 									<a data-toggle="modal" id="linkselectedlink"
 										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
 										>Create Links</a>
@@ -545,6 +564,16 @@
 						<input type="hidden" id="pageNumber2" name="pageNumber"/>
 						<input type="hidden" id="pageSize2" name="pageSize"/>
 						<input type="hidden" id="queryName2" name="queryName"/>
+					</form> 
+					<form class="form-horizontal" id="bulkPermissionsform" action="#"
+						role="form" th:action="@{/bulkpermissions}" 
+						method="post" enctype="multipart/form-data">
+						<input type="hidden" id="selectedFilePaths3" name="selectedFilePaths" value=""/>
+						<input type="hidden" id="downloadType3" name="downloadType" value=""/>
+						<input type="hidden" id="searchType3" name="searchType" value=""/>
+						<input type="hidden" id="pageNumber3" name="pageNumber"/>
+						<input type="hidden" id="pageSize3" name="pageSize"/>
+						<input type="hidden" id="queryName3" name="queryName"/>
 					</form> 
 					<form class="form-horizontal" id="editsearchform" action="#"
 						role="form" th:action="@{/editSearch}" th:object="${hpcSearch}"

@@ -226,11 +226,6 @@
 												for="${collection.getCollection().getCollectionParentName()}"
 												th:text="${collection.getCollection().getCollectionParentName()}"></label>
 										</div>
-										<div class="col-md-12 form-group">
-											<label for="Name">Owner:</label> <label
-												for="${collection.getCollection().getCollectionOwnerName()}"
-												th:text="${collection.getCollection().getCollectionOwnerName()}"></label>
-										</div>
 									</div>
 								</div>
 								<div class="panel-heading">
@@ -257,8 +252,12 @@
 											<input type="hidden" name="path" id="action" th:value="${collection.getCollection().getCollectionName()}"/>
 											<tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
 											  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
-											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null}">
+											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null and metadataItem.isMandatory()}">
 											    <input type="text" class="form-control" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" 
+											      th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+												  th:value="${metadataItem.getAttrValue()}" th:required="required" placeholder="Required"></input></td>
+											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null and not metadataItem.isMandatory()}">
+											    <input type="text" class="form-control" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 											      th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 												  th:value="${metadataItem.getAttrValue()}"></input></td>
 											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() != null}">
@@ -300,7 +299,7 @@
 													<button class="btn btn-md btn-primary"
 														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 													<button type="submit" class="btn btn-md btn-primary"
-														id="primaryButton" onClick="return validateMetadata()" th:disabled="${collection.getSelfMetadataEntries() == null} ?'disabled' : 'false'">Update</button>
+														id="primaryButton" th:disabled="${collection.getSelfMetadataEntries() == null} ?'disabled' : 'false'">Update</button>
 													<button type="submit" class="btn btn-primary"
 														id="cancel" onClick="cancelEdit()">Cancel</button>
 												</div>
@@ -430,25 +429,6 @@
 	    return false;
 	}	
 
-	function validateMetadata()
-	{
-		rowId++;
-	    var table = document.getElementById("metaAttrTable");
-	    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
-		for(var i=1;i<rows;i++)
-		{
-			if(document.getElementById("addAttrName"+i) != null)
-			{
-				var attrNameValue = document.getElementById("addAttrName"+i).value;	
-				if(attributeNames.indexOf(attrNameValue) > -1)
-				{
-					alert("Duplicate attribute name: " + attrNameValue + ", Please use different name")
-					return false;
-				}
-			}
-		}
-		return true;
-	}
 	
 	function cancelEdit()
     {
