@@ -108,6 +108,9 @@
 	<osgi:reference id="hpcS3DataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcS3DataTransferProxy"/>
+	<osgi:reference id="hpcGoogleDriveDataTransferProxy"
+		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
+		            bean-name="hpcGoogleDriveDataTransferProxy"/>
 	<osgi:reference id="hpcLdapAuthenticationProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcLdapAuthenticationProxy" />
 	<osgi:reference id="hpcDataManagementProxy"

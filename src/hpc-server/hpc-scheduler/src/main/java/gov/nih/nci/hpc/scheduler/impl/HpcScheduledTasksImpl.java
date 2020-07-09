@@ -113,6 +113,13 @@ public class HpcScheduledTasksImpl {
         "startS3DataObjectDownloadTasks()", systemBusService::startS3DataObjectDownloadTasks);
   }
   
+  /** Start Data Object Download Tasks that are in RECEIVED state for GOOGLE_DRIVE transfer. */
+  @Scheduled(cron = "${hpc.scheduler.cron.startGoogleDriveDataObjectDownloadTasks.delay}")
+  private void startGoogleDriveDataObjectDownloadTasks() {
+    executeTask(
+        "startGoogleDriveDataObjectDownloadTasks()", systemBusService::startGoogleDriveDataObjectDownloadTasks);
+  }
+  
   /** Complete In-Progress Data Object Download Tasks. */
   @Scheduled(cron = "${hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay}")
   private void completeInProgressDataObjectDownloadTasksTask() {
