@@ -34,6 +34,7 @@
 		<prop key="hpc.scheduler.cron.completeCanceledDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startGlobusDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startS3DataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.startGoogleDriveDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processCollectionDownloadTasks.delay">50 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeCollectionDownloadTasks.delay">55 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processBulkDataObjectRegistrationTasks.delay">45 0/1 * * * ?</prop>

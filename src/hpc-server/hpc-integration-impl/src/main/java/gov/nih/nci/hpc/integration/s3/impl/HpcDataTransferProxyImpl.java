@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
@@ -49,7 +50,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -83,6 +84,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
   // The S3 download executor.
   @Autowired
+  @Qualifier("hpcS3DownloadExecutor")
   Executor s3Executor = null;
 
   // Date formatter to format files last-modified date
@@ -154,10 +156,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           archiveDestinationLocation, progressListener, baseArchiveDestination.getType(),
           metadataEntries);
     } else {
-      // Upload from AWS S3 source.
+      // Upload by streaming from AWS S3 or Google Drive source.
       return uploadDataObject(authenticatedToken, uploadRequest.getS3UploadSource(),
-          archiveDestinationLocation, uploadRequest.getSourceSize(), progressListener,
-          metadataEntries);
+          uploadRequest.getGoogleDriveUploadSource(), archiveDestinationLocation,
+          uploadRequest.getSourceSize(), progressListener, metadataEntries);
     }
   }
 
@@ -287,6 +289,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         fileExists = false;
       } else if (ase.getStatusCode() == 403) {
         pathAttributes.setIsAccessible(false);
+        return pathAttributes;
       } else {
         throw new HpcException("[S3] Failed to get object metadata: " + ase.getMessage(),
             HpcErrorType.DATA_TRANSFER_ERROR, ase);
@@ -452,20 +455,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
   }
 
   /**
-   * Upload a data object file from AWS S3 source.
+   * Upload a data object file from AWS S3 or Google Drive source.
    *
    * @param authenticatedToken An authenticated token.
    * @param s3UploadSource The S3 upload source.
+   * @param googleDriveUploadSource The Google Drive upload source.
    * @param archiveDestinationLocation The archive destination location.
    * @param size the size of the file to upload.
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *        completion.
    * @param metadataEntries The metadata entries to attach to the data-object in S3 archive.
+   * @param uploadMethod The upload method (source) - AWS S3 or Google Drive
    * @return A data object upload response.
    * @throws HpcException on data transfer system failure.
    */
   private HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
-      HpcS3UploadSource s3UploadSource, HpcFileLocation archiveDestinationLocation, Long size,
+      HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+      HpcFileLocation archiveDestinationLocation, Long size,
       HpcDataTransferProgressListener progressListener, List<HpcMetadataEntry> metadataEntries)
       throws HpcException {
     if (progressListener == null) {
@@ -478,18 +484,44 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
           HpcErrorType.UNEXPECTED_ERROR);
     }
 
-    // If not provided, generate a download pre-signed URL for the requested data file from AWS
-    // (using the provided S3 account).
-    String sourceURL = StringUtils.isEmpty(s3UploadSource.getSourceURL())
-        ? generateDownloadRequestURL(s3Connection.authenticate(s3UploadSource.getAccount()),
-            s3UploadSource.getSourceLocation(), S3_STREAM_EXPIRATION)
-        : s3UploadSource.getSourceURL();
+    HpcDataTransferUploadMethod uploadMethod = null;
+    String sourceURL = null;
+    HpcFileLocation sourceLocation = null;
 
+    if (s3UploadSource != null) {
+      // Upload by streaming from AWS S3.
+      uploadMethod = HpcDataTransferUploadMethod.S_3;
+      sourceLocation = s3UploadSource.getSourceLocation();
+
+      // If not provided, generate a download pre-signed URL for the requested data file from AWS
+      // (using the provided S3 account).
+      sourceURL = StringUtils.isEmpty(s3UploadSource.getSourceURL())
+          ? generateDownloadRequestURL(s3Connection.authenticate(s3UploadSource.getAccount()),
+              sourceLocation, S3_STREAM_EXPIRATION)
+          : s3UploadSource.getSourceURL();
+
+    } else {
+      // Upload by streaming from Google Drive.
+      uploadMethod = HpcDataTransferUploadMethod.GOOGLE_DRIVE;
+      sourceLocation = googleDriveUploadSource.getSourceLocation();
+
+      // We set the sourceURL to be the access-token, so it's persisted in case we need it to
+      // restart
+      // the upload following a server restart.
+      sourceURL = googleDriveUploadSource.getAccessToken();
+    }
+
+    final String url = sourceURL;
+    final String sourceDestinationLogMessage =
+        "upload from " + sourceLocation.getFileContainerId() + ":" + sourceLocation.getFileId();
     Calendar dataTransferStarted = Calendar.getInstance();
+
     CompletableFuture<Void> s3TransferManagerUploadFuture = CompletableFuture.runAsync(() -> {
       try {
-        // Create source URL and open a connection to it.
-        InputStream sourceInputStream = new URL(sourceURL).openStream();
+        // Open a connection to the input stream of the file to be uploaded.
+        InputStream sourceInputStream =
+            googleDriveUploadSource != null ? googleDriveUploadSource.getSourceInputStream()
+                : new URL(url).openStream();
 
         // Create a S3 upload request.
         ObjectMetadata metadata = toS3Metadata(metadataEntries);
@@ -506,9 +538,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
         Upload s3Upload = s3Connection.getTransferManager(authenticatedToken).upload(request);
 
         // Attach a progress listener.
-        String sourceDestinationLogMessage =
-            "upload from " + s3UploadSource.getSourceLocation().getFileContainerId() + ":"
-                + s3UploadSource.getSourceLocation().getFileId();
         s3Upload.addProgressListener(
             new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
@@ -537,13 +566,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     uploadResponse.setArchiveLocation(archiveDestinationLocation);
     uploadResponse.setDataTransferType(HpcDataTransferType.S_3);
     uploadResponse.setDataTransferStarted(dataTransferStarted);
-    uploadResponse.setUploadSource(s3UploadSource.getSourceLocation());
+    uploadResponse.setUploadSource(sourceLocation);
     uploadResponse
         .setDataTransferRequestId(String.valueOf(s3TransferManagerUploadFuture.hashCode()));
     uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.STREAMING_IN_PROGRESS);
     uploadResponse.setSourceURL(sourceURL);
     uploadResponse.setSourceSize(size);
-    uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.S_3);
+    uploadResponse.setDataTransferMethod(uploadMethod);
 
     return uploadResponse;
   }
@@ -746,11 +775,18 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
     Object s3AccountAuthenticatedToken = s3Connection.authenticate(s3Destination.getAccount());
 
     // Confirm the S3 bucket is accessible.
+    boolean s3BucketAccessible = true;
     try {
-      getPathAttributes(s3AccountAuthenticatedToken, s3Destination.getDestinationLocation(), false);
+      s3BucketAccessible = getPathAttributes(s3AccountAuthenticatedToken,
+          s3Destination.getDestinationLocation(), false).getIsAccessible();
     } catch (HpcException e) {
-      throw new HpcException("Failed to access AWS S3 bucket: [" + e.getMessage() + "] "
-          + s3Destination.getDestinationLocation(), HpcErrorType.INVALID_REQUEST_INPUT, e);
+      s3BucketAccessible = false;
+      logger.error("Failed to get S3 path attributes: " + e.getMessage(), e);
+    }
+    if (!s3BucketAccessible) {
+      throw new HpcException(
+          "Failed to access AWS S3 bucket: " + s3Destination.getDestinationLocation(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
     // Generate a download pre-signed URL for the requested data file from the Cleversafe archive.

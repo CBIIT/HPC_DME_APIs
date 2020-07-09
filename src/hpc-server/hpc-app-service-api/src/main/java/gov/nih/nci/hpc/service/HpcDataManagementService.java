@@ -1,7 +1,8 @@
 /**
  * Copyright SVG, Inc. Copyright Leidos Biomedical Research, Inc
  *
- * <p>Distributed under the OSI-approved BSD 3-Clause License. See
+ * <p>
+ * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
 package gov.nih.nci.hpc.service;
@@ -22,6 +23,8 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -53,7 +56,7 @@ public interface HpcDataManagementService {
    *
    * @param path The path.
    * @return Boolean to convey whether path refers to collection or data file; true for collection
-   *     and false for data file.
+   *         and false for data file.
    * @throws HpcException on data management system failure
    */
   public boolean interrogatePathRef(String path) throws HpcException;
@@ -82,7 +85,7 @@ public interface HpcDataManagementService {
    * @param sourcePath The data object or collection path to move.
    * @param destinationPath The destination path to move to.
    * @param pathTypeValidation (Optional) True to validate if the path is a collection, False to
-   *     validate if it is a data object. If null - no path type validation is performed.
+   *        validate if it is a data object. If null - no path type validation is performed.
    * @throws HpcException on service failure.
    */
   public void move(String sourcePath, String destinationPath, Optional<Boolean> pathTypeValidation)
@@ -104,14 +107,9 @@ public interface HpcDataManagementService {
    * @param dataTransferStatus (Optional) Data transfer (Cleversafe) request completion status.
    * @param message (Optional) Error message if the request failed.
    */
-  public void addAuditRecord(
-      String path,
-      HpcAuditRequestType requestType,
-      HpcMetadataEntries metadataBefore,
-      HpcMetadataEntries metadataAfter,
-      HpcFileLocation archiveLocation,
-      boolean dataManagementStatus,
-      Boolean dataTransferStatus,
+  public void addAuditRecord(String path, HpcAuditRequestType requestType,
+      HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
+      HpcFileLocation archiveLocation, boolean dataManagementStatus, Boolean dataTransferStatus,
       String message);
 
   /**
@@ -152,7 +150,7 @@ public interface HpcDataManagementService {
    * @param path Path of given collection.
    * @param userId UserId of given user.
    * @return <code>HpcSubjectPermission</code> representing permission that given user has on given
-   *     collection.
+   *         collection.
    * @throws HpcException on service failure.
    */
   public HpcSubjectPermission acquireCollectionPermission(String path, String userId)
@@ -185,7 +183,7 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure.
    */
   public List<HpcSubjectPermission> getDataObjectPermissions(String path) throws HpcException;
-  
+
   /**
    * Acquire permission of given user on a given DataObject. Ensures that even if given user has no
    * permission on given collection, an instance of the return type is returned indicating
@@ -194,12 +192,12 @@ public interface HpcDataManagementService {
    * @param path Path of given DataObject.
    * @param userId UserId of given user.
    * @return <code>HpcSubjectPermission</code> representing permission that given user has on given
-   *     collection.
+   *         collection.
    * @throws HpcException on service failure.
    */
   public HpcSubjectPermission acquireDataObjectPermission(String path, String userId)
       throws HpcException;
-  
+
 
   /**
    * Get data object permission for a given user.
@@ -237,7 +235,7 @@ public interface HpcDataManagementService {
    * @param path The collection path.
    * @param configurationId Use validation rules of this data management configuration.
    * @param dataObjectRegistration If true, the service validates if data object registration is
-   *     allowed in this collection.
+   *        allowed in this collection.
    * @throws HpcException If the hierarchy is invalid.
    */
   public void validateHierarchy(String path, String configurationId, boolean dataObjectRegistration)
@@ -294,7 +292,7 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure.
    */
   public List<HpcDataObject> getDataTranferUploadInProgressWithGeneratedURL() throws HpcException;
-  
+
   /**
    * Get data objects that have their data transfer upload in progress via streaming.
    *
@@ -302,7 +300,7 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure.
    */
   public List<HpcDataObject> getDataTranferUploadStreamingInProgress() throws HpcException;
-  
+
   /**
    * Get data objects that have their data transfer upload via streaming has stopped.
    *
@@ -318,7 +316,7 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure.
    */
   public List<HpcDataObject> getDataObjectsUploadInTemporaryArchive() throws HpcException;
-  
+
   /**
    * Get all the links to a data object path.
    *
@@ -336,14 +334,12 @@ public interface HpcDataManagementService {
    *
    * @param userId The user ID requested the registration.
    * @param uiURL (Optional) A URL for viewing the registration task on a UI. Note: {task_id} in
-   *     this URL will be replaced with actual task ID value.
+   *        this URL will be replaced with actual task ID value.
    * @param dataObjectRegistrationRequests The data object registration requests.
    * @return The task ID created to register the data objects and can be used to track status
    * @throws HpcException on service failure.
    */
-  public String registerDataObjects(
-      String userId,
-      String uiURL,
+  public String registerDataObjects(String userId, String uiURL,
       Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests)
       throws HpcException;
 
@@ -376,19 +372,17 @@ public interface HpcDataManagementService {
    * @throws HpcException on service failure.
    */
   public void completeBulkDataObjectRegistrationTask(
-      HpcBulkDataObjectRegistrationTask registrationTask,
-      boolean result,
-      String message,
-      Calendar completed)
-      throws HpcException;
+      HpcBulkDataObjectRegistrationTask registrationTask, boolean result, String message,
+      Calendar completed) throws HpcException;
 
   /**
    * Get bulk data object registration task status.
    *
    * @param taskId The registration task ID.
    * @return A download status object, or null if the task can't be found. Note: The returned object
-   *     is associated with a 'task' object if the registration is in-progress. If the registration
-   *     completed or failed, the returned object is associated with a 'result' object.
+   *         is associated with a 'task' object if the registration is in-progress. If the
+   *         registration completed or failed, the returned object is associated with a 'result'
+   *         object.
    * @throws HpcException on service failure.
    */
   public HpcBulkDataObjectRegistrationStatus getBulkDataObjectRegistrationTaskStatus(String taskId)
@@ -472,6 +466,28 @@ public interface HpcDataManagementService {
    * @return A configuration ID, or null if not found.
    */
   public HpcDataManagementConfiguration getDataManagementConfiguration(String id);
-  
 
+  /**
+   * Add a data object registration request result to the DB.
+   *
+   * @param path The data object path.
+   * @param systemGeneratedMetadata The data object system generated metadata.
+   * @param result the registration request result (success/fail indicator).
+   * @param message (Optional) If the registration failed, a message describing the failure.
+   * @throws HpcException on service failure.
+   */
+  public void addDataObjectRegistrationResult(String path,
+      HpcSystemGeneratedMetadata systemGeneratedMetadata, boolean result, String message)
+      throws HpcException;
+
+  /**
+   * Add a data object registration request result to the DB.
+   *
+   * @param path The data object path.
+   * @param dataObjectRegistrationResult The data object registration result.
+   * @param size The data object size
+   * @throws HpcException on service failure.
+   */
+  public void addDataObjectRegistrationResult(String path,
+      HpcDataObjectRegistrationResult dataObjectRegistrationResult, Long size) throws HpcException;
 }

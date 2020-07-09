@@ -10,6 +10,7 @@
  */
 package gov.nih.nci.hpc.integration;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -64,6 +65,18 @@ public interface HpcDataTransferProxy {
   }
 
   /**
+   * Authenticate a Google Drive account.
+   *
+   * @param accessToken Google Drive access token.
+   * @return An authenticated token, to be used in subsequent calls to data transfer.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default Object authenticate(String accessToken) throws HpcException {
+    throw new HpcException("authenticate(GoogleDrive access-token) not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
    * Check if upload/download requests are accepted at the moment.
    *
    * @param authenticatedToken An authenticated token.
@@ -92,10 +105,13 @@ public interface HpcDataTransferProxy {
    * @return A data object upload response.
    * @throws HpcException on data transfer system failure.
    */
-  public HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
+  public default HpcDataObjectUploadResponse uploadDataObject(Object authenticatedToken,
       HpcDataObjectUploadRequest uploadRequest, HpcArchive baseArchiveDestination,
       Integer uploadRequestURLExpiration, HpcDataTransferProgressListener progressListener,
-      List<HpcMetadataEntry> metadataEntries) throws HpcException;
+      List<HpcMetadataEntry> metadataEntries) throws HpcException {
+    throw new HpcException("uploadDataObject() is not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+
 
   /**
    * Download a data object file.
@@ -125,6 +141,20 @@ public interface HpcDataTransferProxy {
   public default String generateDownloadRequestURL(Object authenticatedToken,
       HpcFileLocation archiveLocation, Integer downloadRequestURLExpiration) throws HpcException {
     throw new HpcException("Generating download URL is not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
+   * Generate an input stream for a data object file.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveLocation The data object's archive location.
+   * @return Input stream to the file.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default InputStream generateDownloadInputStream(Object authenticatedToken,
+      HpcFileLocation archiveLocation) throws HpcException {
+    throw new HpcException("Generating download InputStream is not supported",
         HpcErrorType.UNEXPECTED_ERROR);
   }
 
@@ -249,8 +279,8 @@ public interface HpcDataTransferProxy {
    * @param message The message to attach to the cancellation request.
    * @throws HpcException on data transfer system failure.
    */
-  public default void cancelTransferRequest(Object authenticatedToken,
-      String dataTransferRequestId, String message) throws HpcException {
+  public default void cancelTransferRequest(Object authenticatedToken, String dataTransferRequestId,
+      String message) throws HpcException {
     throw new HpcException("cancelTransferRequest() not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
 
