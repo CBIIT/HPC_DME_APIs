@@ -63,6 +63,8 @@
     var attributeNames = [[${attributeNames}]];
     var action = [[${useraction}]];
     var invalidCharacters4PathName = [[${invalidCharacters4PathName}]];
+    var authorized = [[${authorized}]];
+    var oauthToken = [[${accessToken}]];
 /*]]>*/
 </script>
 
@@ -116,7 +118,8 @@
 								<!--panel-body start-->
 								<div class="panel-body">
 									<p>This page allows you to bulk register folders/files from
-										a Globus endpoint (source) or S3 bucket (source) to a DME
+										a Globus endpoint, a S3 bucket, or 
+										Google Drive (source) to a DME
 										collection (destination) asynchronously.</p>
 									<div class="form-group" id="radioset">
 										<div class="pull-left" style="margin-left: 15px">
@@ -129,6 +132,11 @@
 										name="bulkType" id="bulkTypeS3" value="s3"
 										onChange="display('s3')"/>S3</label>
 										</div>
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="bulkType" id="bulkTypeDrive" value="drive"
+										onChange="display('drive')"/>Google Drive</label>
+										</div>
 									</div>
 									<div id="globus-help-links" style="display: none;">
 										<p>
@@ -139,6 +147,14 @@
 												Use Globus with DME</a> in the User Guide.
 										</p>
 									</div>
+									<div class="form-group drive" style="margin-left: 0px">
+										<button type="button" class="btn btn-primary"
+											id="driveAuthlink"
+											onClick="return refreshAttributes('Drive')">Authorize 
+											DME to access your Google Drive</button>
+									</div>
+									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
+									<br/>
 									<div class="panel-heading hidden">
 										<div class="col-md-3">
 											<h2>
@@ -204,6 +220,13 @@
 																	name="region" id="region"
 																	placeholder="Enter Region (for Example us-east-1)" size="40" />
 															</td></tr>
+															<tr class="drive">
+															<td colspan="2">
+															<div class="col-sm-12 column" id="driveDiv">
+																<a href="" id="pickerLink" onclick="loadUploadPicker();return false;">Select
+																	Data from Google Drive</a>
+															</div>
+															</td></tr>
 															<tr><td colspan="2">&nbsp;</td></tr>
 															
 															<tr>
@@ -261,16 +284,23 @@
 															</div>
 															</td></tr>
 															<tr><td colspan="2">
-															<div class="col-sm-12 column"
-																th:if="${fileNames != null}">
-																<label for="fileName">Selected Files:</label> <label
-																	th:text="${fileName}" th:each="fileName : ${fileNames}"><br /></label>
+															<div class="col-sm-12 column" id="fileNamesDiv" 
+																th:style="${fileNames != null ? 'display:block' : 'display:none'}">
+																<label for="fileName"><b>Selected Files:</b></label> 
+																<div th:each="fileName : ${fileNames}">
+																	<label th:text="${fileName}"></label>
+																</div>
+																<input th:if="${fileIds != null}" type="hidden" name="fileIds" th:value="${fileId}"
+																	th:each="fileId : ${fileIds}"/>
 															</div>
-															<div class="col-sm-12 column"
-																th:if="${folderNames != null}">
-																<label for="folderName">Selected Folders:</label> <label
-																	th:text="${folderName}"
-																	th:each="folderName : ${folderNames}"><br /></label>
+															<div class="col-sm-12 column" id="folderNamesDiv" 
+																th:style="${folderNames != null ? 'display:block' : 'display:none'}">
+																<label for="folderName"><b>Selected Folders:</b></label> 
+																<div th:each="folderName : ${folderNames}">
+																	<label th:text="${folderName}"></label>
+																</div>
+																<input th:if="${folderIds != null}" type="hidden" name="folderIds" th:value="${folderId}"
+																	th:each="folderId : ${folderIds}"/>
 															</div>
 														
 													</td>
@@ -708,13 +738,26 @@
 		if (value == "globus") {
 			$(".globus").removeClass("hidden");
 			$(".s3").addClass("hidden");
+			$(".drive").addClass("hidden");
 			globusDiv.style.display = "block";
 			globusHelpLinksDiv.style.display = "block";
-		} else {
+		} else if (value == "s3"){
 			$(".s3").removeClass("hidden");
 			$(".globus").addClass("hidden");
 			globusHelpLinksDiv.style.display = "none";
+			$(".drive").addClass("hidden");
 			$("#primaryCreateButton").prop("disabled", false);
+		} else if (value == "drive"){
+			$(".s3").addClass("hidden");
+			$(".globus").addClass("hidden");
+			globusHelpLinksDiv.style.display = "none";
+			$(".drive").removeClass("hidden");
+			if(authorized != null) {
+				$("#primaryCreateButton").prop('disabled', false);
+				$("#driveAuthlink").addClass('disabled');
+			} else {
+				$("#primaryCreateButton").prop('disabled', true);
+			}
 		}
 	}
 	$(document).ready(function(){
@@ -724,6 +767,9 @@
 	    } else if($('#bulkType').val() == 's3') {
 	    	$("#bulkTypeS3").prop("checked", true);
             display('s3');
+		} else if($('#bulkType').val() == 'drive') {
+	    	$("#bulkTypeDrive").prop("checked", true);
+            display('drive');
 		}
         $('#hpcMetaDatafile').change(function(){
   		  var ext = this.value.match(/\.([^\.]+)$/)[1];
@@ -739,6 +785,9 @@
 	
 //]]>	
 </script>
+<!-- The Google API Loader script. -->
+	<script type="text/javascript" src="js/hpcUpload.js"></script>
+    <script type="text/javascript" src="js/google/api.js"></script>
 
 </body>
 </html>
