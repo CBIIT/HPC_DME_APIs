@@ -69,15 +69,21 @@ function enroll() {
 <body>
 
 	<div th:fragment="header">
-		<header class="header dark-bg">
+		<header class="header white-bg">
 			<div class="toggle-nav">
 				<div class="icon-reorder tooltips"
 					data-original-title="Toggle Navigation" data-placement="bottom"></div>
 			</div>
 
 			<!--logo start-->
-			<a th:href="@{/}" class="logo">HPC <span class="lite">Data
-					Management Environment</span></a>
+			<div class="col order-first">
+				<a href="#" aria-label="image link"> <img
+					src="/img/nci_logo.png" class="logoImg"
+					alt="National Cancer Institute"/></a>
+			</div>
+			<div id="toolTitle">
+				<a th:href="@{/}" >NCI Data Management Environment</a>
+			</div>
 			<!--logo end-->
 		</header>
 	</div>
@@ -110,7 +116,39 @@ function enroll() {
 		</form>
 
 	</div>
-
+	<div id="footer" class="footer" role="contentinfo">
+		<div class="text-center">
+			<ul class="list-inline">
+				<li><a id="contactLink"
+					th:href="@{/}" tabindex="0">Home</a></li>
+				<li>|</li>
+				<li><a target="_blank" href="http://www.cancer.gov/contact"
+					tabindex="0">Contact</a></li>
+				<li>|</li>
+				<li><a target="_blank" href="https://www.cancer.gov/policies"
+					tabindex="0">Policies</a></li>
+				<li>|</li>
+				<li><a target="_blank"
+					href="http://www.cancer.gov/policies/accessibility" tabindex="0">Accessibility</a></li>
+			</ul>
+			<ul class="list-inline">
+				<li><a id="HSSlink" target="_blank" href="http://www.hhs.gov/"
+					tabindex="0">U.S. Department of Health and Human Services</a></li>
+				<li>|</li>
+				<li><a target="_blank" href="http://www.nih.gov" tabindex="0">National
+						Institutes of Health</a></li>
+				<li>|</li>
+				<li><a target="_blank" href="http://www.cancer.gov/"
+					tabindex="0">National Cancer Institute</a></li>
+				<li>|</li>
+				<li><a target="_blank" href="http://usa.gov" tabindex="0">USA.gov</a></li>
+			</ul>
+			<ul class="list-inline">
+				<li><span class="removeOutline" tabindex="-1">NIH ...
+						Turning Discovery Into Health</span><sup>®</sup></li>
+			</ul>
+		</div>
+	</div>
 
 </body>
 </html>
