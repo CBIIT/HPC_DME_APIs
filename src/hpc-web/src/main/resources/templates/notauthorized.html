@@ -41,15 +41,21 @@
 <body>
 
 	<div th:fragment="header">
-		<header class="header dark-bg">
+		<header class="header white-bg">
 			<div class="toggle-nav">
 				<div class="icon-reorder tooltips"
 					data-original-title="Toggle Navigation" data-placement="bottom"></div>
 			</div>
 
 			<!--logo start-->
-			<a th:href="@{/}" class="logo">HPC <span class="lite">Data
-					Management Environment</span></a>
+			<div class="col order-first">
+				<a href="#" aria-label="image link"> <img
+					src="/img/nci_logo.png" class="logoImg"
+					alt="National Cancer Institute"/></a>
+			</div>
+			<div id="toolTitle">
+				<a th:href="@{/}" >NCI Data Management Environment</a>
+			</div>
 			<!--logo end-->
 		</header>
 	</div>
