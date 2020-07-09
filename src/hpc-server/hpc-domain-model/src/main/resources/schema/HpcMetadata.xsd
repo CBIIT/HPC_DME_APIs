@@ -46,6 +46,7 @@
 				<xsd:element name="metadataUpdated" type="xsd:dateTime" />
 				<xsd:element name="registrationCompletionEvent" type="xsd:boolean" minOccurs="0" maxOccurs="1" />
 				<xsd:element name="linkSourcePath" type="xsd:string" />
+				<xsd:element name="extractedMetadataAttributes" type="xsd:string" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

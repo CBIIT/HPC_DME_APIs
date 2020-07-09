@@ -772,7 +772,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
       HpcDataObjectRegistrationRequestDTO dataObjectRegistration, File dataObjectFile,
       String userId, String userName, String configurationId, boolean registrationCompletionEvent)
       throws HpcException {
-
     // Input validation.
     validatePath(path);
 
@@ -854,8 +853,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           // Generate archive (Cleversafe) system generated metadata. Note: This is only
           // performed for synchronous data registration.
           if (dataObjectFile != null) {
-            // transfered to the archive (Cleversafe), i.e. it is a synchronous data
-            // registration.
             String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
                 systemGeneratedMetadata.getArchiveLocation(),
                 systemGeneratedMetadata.getDataTransferType(),
@@ -863,8 +860,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 systemGeneratedMetadata.getS3ArchiveConfigurationId(),
                 systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
 
+            // Update system-generated checksum metadata in iRODS w/ checksum value provided from
+            // the archive.
             metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
                 null, null, null, null, null, null);
+
+            // Automatically extract metadata from the file itself and add to iRODs.
+            metadataService.addMetadataToDataObjectFromFile(path, dataObjectFile, configurationId,
+                collectionType, true);
 
             // Record data object registration result
             dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata,
@@ -2745,8 +2748,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    * @param message The error message.
    * @return a HpcDataObjectRegistrationResult instance
    */
-  private HpcDataObjectRegistrationResult toFailedDataObjectRegistrationResult(String path, String userId,
-      String message) {
+  private HpcDataObjectRegistrationResult toFailedDataObjectRegistrationResult(String path,
+      String userId, String message) {
 
     HpcDataObjectRegistrationResult dataObjectRegistrationResult =
         new HpcDataObjectRegistrationResult();
