@@ -100,8 +100,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
   public static final String INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL =
       "insert into public.\"HPC_DATA_OBJECT_REGISTRATION_RESULT\" ("
-          + "\"PATH\", \"USER_ID\", \"UPLOAD_METHOD\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?)";
+          + "\"ID\", \"PATH\", \"USER_ID\", \"UPLOAD_METHOD\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -314,8 +314,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   public void insertDataObjectRegistrationResult(HpcDataObjectRegistrationResult registrationResult)
       throws HpcException {
     try {
-      jdbcTemplate.update(INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getPath(),
-          registrationResult.getUserId(),
+      jdbcTemplate.update(INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
+          registrationResult.getPath(), registrationResult.getUserId(),
           registrationResult.getUploadMethod() != null
               ? registrationResult.getUploadMethod().value()
               : null,
