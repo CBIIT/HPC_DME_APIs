@@ -888,6 +888,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
     HpcDataObjectRegistrationResult dataObjectRegistrationResult =
         new HpcDataObjectRegistrationResult();
+    dataObjectRegistrationResult.setId(systemGeneratedMetadata.getObjectId());
     dataObjectRegistrationResult.setPath(path);
     dataObjectRegistrationResult.setResult(result);
     dataObjectRegistrationResult.setMessage(message);

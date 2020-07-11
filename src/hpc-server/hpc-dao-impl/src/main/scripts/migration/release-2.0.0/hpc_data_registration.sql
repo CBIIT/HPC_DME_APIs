@@ -15,6 +15,7 @@
 DROP TABLE IF EXISTS public."HPC_DATA_OBJECT_REGISTRATION_RESULT";
 CREATE TABLE public."HPC_DATA_OBJECT_REGISTRATION_RESULT"
 (
+  "ID" text PRIMARY KEY,
   "PATH" text NOT NULL,
   "USER_ID" text NOT NULL,
   "UPLOAD_METHOD" text,
@@ -28,10 +29,13 @@ WITH (
   OIDS=FALSE
 );
 
+
 COMMENT ON TABLE public."HPC_DATA_OBJECT_REGISTRATION_RESULT" IS 
                  'Data object registration task results';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."ID" IS 
+                  'The registered data object ID';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."PATH" IS 
-                  'The registered path';
+                  'The registered data object path';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."USER_ID" IS 
                   'The user ID who submitted the request';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_REGISTRATION_RESULT"."UPLOAD_METHOD" IS 
