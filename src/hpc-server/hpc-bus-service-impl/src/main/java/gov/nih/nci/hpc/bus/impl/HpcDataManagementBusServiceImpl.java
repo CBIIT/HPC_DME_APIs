@@ -866,8 +866,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 null, null, null, null, null, null);
 
             // Automatically extract metadata from the file itself and add to iRODs.
-            metadataService.addMetadataToDataObjectFromFile(path, dataObjectFile, configurationId,
-                collectionType, true);
+            if (Optional.ofNullable(dataObjectRegistration.getExtractMetadata()).orElse(false)) {
+              metadataService.addMetadataToDataObjectFromFile(path, dataObjectFile, configurationId,
+                  collectionType, true);
+            }
 
             // Record data object registration result
             dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata,
