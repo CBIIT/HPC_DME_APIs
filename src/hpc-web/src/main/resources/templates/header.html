@@ -16,7 +16,7 @@
 					alt="National Cancer Institute"/></a>
 			</div>
 			<div id="toolTitle">
-				<a th:href="@{/}" >NCI Data Management Environment</a>
+				<a th:href="@{/}" >Data Management Environment</a>
 				<ul class="navbar-nav navbar-dark pull-right top-menu top-nav nav notification-row">
 				<!-- user login dropdown start-->
 
@@ -41,8 +41,8 @@
 					</ul></li>
 					
 					<li class="nav-item versionNumber">
-						<span th:if="${session.env != 'PROD'}" th:text="'v'+${session.version}+' ('+${session.env}+')'"></span>
-						<span th:if="${session.env == 'PROD'}" th:text="'v'+${session.version}"></span>
+						<span th:if="${session.env != 'PROD'}" th:text="'version: '+${session.version}+' ('+${session.env}+')'"></span>
+						<span th:if="${session.env == 'PROD'}" th:text="'version'+${session.version}"></span>
 						</li>
 				<!-- user login dropdown end -->
 				</ul>
