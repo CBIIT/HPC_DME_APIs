@@ -160,7 +160,7 @@ public interface HpcMetadataService {
    */
   public void addMetadataToDataObjectFromFile(String path, InputStream dataObjectInputStream,
       String configurationId, String collectionType, boolean closeInputStream) throws HpcException;
-  
+
   /**
    * Extract metadata from a file and add to a data object.
    *
@@ -174,6 +174,20 @@ public interface HpcMetadataService {
    */
   public void addMetadataToDataObjectFromFile(String path, File dataObjectFile,
       String configurationId, String collectionType, boolean closeInputStream) throws HpcException;
+
+  /**
+   * Add extracted metadata to a data object.
+   *
+   * @param path The data object path.
+   * @param extractedMetadataEntries The extracted metadata (from the physical file) entries to add.
+   * @param configurationId The configuration to apply validation rules. Metadata validation rules
+   *        are configuration specific.
+   * @param collectionType The collection type containing the data object.
+   * @throws HpcException on service failure.
+   */
+  public void addExtractedMetadataToDataObject(String path,
+      List<HpcMetadataEntry> extractedMetadataEntries, String configurationId,
+      String collectionType) throws HpcException;
 
   /**
    * Generate system metadata and attach to the data object.
