@@ -48,6 +48,8 @@
 				<xsd:element name="callerObjectId" type="xsd:string" />
 				<xsd:element name="metadataEntries"
 					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
+				<xsd:element name="extractedMetadataEntries"
+					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
 				<xsd:element name="createParentCollections"
 					type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="parentCollectionsBulkMetadataEntries"

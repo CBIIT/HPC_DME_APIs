@@ -817,10 +817,25 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
         } else {
           // This is a registration request w/ data upload.
+          boolean extractMetadata =
+              Optional.ofNullable(dataObjectRegistration.getExtractMetadata()).orElse(false);
 
           // Attach the user provided metadata.
           HpcMetadataEntry dataObjectMetadataEntry = metadataService.addMetadataToDataObject(path,
               dataObjectRegistration.getMetadataEntries(), configurationId, collectionType);
+
+          // Attach the user provided extracted metadata (from the physical file)
+          if (!dataObjectRegistration.getExtractedMetadataEntries().isEmpty()) {
+            if (extractMetadata) {
+              throw new HpcException(
+                  "Extracted metadata provided w/ request to auto extract: " + path,
+                  HpcErrorType.INVALID_REQUEST_INPUT);
+            }
+
+            metadataService.addExtractedMetadataToDataObject(path,
+                dataObjectRegistration.getExtractedMetadataEntries(), configurationId,
+                collectionType);
+          }
 
           // Transfer the data file.
           HpcDataObjectUploadResponse uploadResponse =
@@ -866,7 +881,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
                 null, null, null, null, null, null);
 
             // Automatically extract metadata from the file itself and add to iRODs.
-            if (Optional.ofNullable(dataObjectRegistration.getExtractMetadata()).orElse(false)) {
+            if (extractMetadata) {
               metadataService.addMetadataToDataObjectFromFile(path, dataObjectFile, configurationId,
                   collectionType, true);
             }
