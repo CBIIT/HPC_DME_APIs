@@ -400,7 +400,6 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
       String configurationId, String collectionType, boolean closeInputStream) throws HpcException {
     Parser parser = new AutoDetectParser();
     Metadata extractedMetadata = new Metadata();
-    StringBuffer extractedMetadataAttributes = new StringBuffer();
 
     try {
       // Extract metadata from the file.
@@ -414,25 +413,10 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
         metadataEntry.setAttribute(name);
         metadataEntry.setValue(extractedMetadata.get(name));
         metadataEntries.add(metadataEntry);
-
-        // Capture this extracted metadata name.
-        extractedMetadataAttributes.append(name + "|");
       }
-      logger.info("Extracted Metadata attributes [{}] - {}", path,
-          extractedMetadataAttributes.toString());
 
-      // Update the data object's metadata.
-      updateDataObjectMetadata(path, metadataEntries, configurationId, collectionType);
-
-      // Set the extracted-metadata-attributes system generated metadata to have all the attributes
-      // we extracted.
-      // This is done, so that we can differentiate between user-provided and extracted metadata.
-      List<HpcMetadataEntry> systemGeneratedMetadataEntries = new ArrayList<>();
-      addMetadataEntry(systemGeneratedMetadataEntries, toMetadataEntry(
-          EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE, extractedMetadataAttributes.toString()));
-      dataManagementProxy.addMetadataToDataObject(
-          dataManagementAuthenticator.getAuthenticatedToken(), path,
-          systemGeneratedMetadataEntries);
+      // Update the data object's metadata w/ the extracted entries.
+      addExtractedMetadataToDataObject(path, metadataEntries, configurationId, collectionType);
 
     } catch (IOException | SAXException | TikaException e) {
       throw new HpcException("Failed to extract metadata from file",
@@ -457,8 +441,29 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
       throw new HpcException("File to extract metadata from not found",
           HpcErrorType.UNEXPECTED_ERROR, e);
     }
-
   }
+
+  @Override
+  public void addExtractedMetadataToDataObject(String path,
+      List<HpcMetadataEntry> extractedMetadataEntries, String configurationId,
+      String collectionType) throws HpcException {
+    // Update the data object's metadata.
+    updateDataObjectMetadata(path, extractedMetadataEntries, configurationId, collectionType);
+
+    // Set the extracted-metadata-attributes system generated metadata to have all the attributes
+    // we extracted.
+    // This is done, so that we can differentiate between user-provided and extracted metadata.
+    StringBuffer extractedMetadataAttributes = new StringBuffer();
+    extractedMetadataEntries.forEach(
+        metadataEntry -> extractedMetadataAttributes.append(metadataEntry.getAttribute() + "|"));
+
+    List<HpcMetadataEntry> systemGeneratedMetadataEntries = new ArrayList<>();
+    addMetadataEntry(systemGeneratedMetadataEntries, toMetadataEntry(
+        EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE, extractedMetadataAttributes.toString()));
+    dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
+        path, systemGeneratedMetadataEntries);
+  }
+
 
   @Override
   public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToDataObject(String path,
