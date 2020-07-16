@@ -37,7 +37,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
@@ -56,6 +56,7 @@ public interface HpcDataTransferService {
    *
    * @param globusUploadSource (Optional) The Globus upload source.
    * @param s3UploadSource (Optional) The S3 upload source.
+   * @param googleDriveUploadSource (Optional) The Google Drive upload source.
    * @param sourceFile (Optional) The source file.
    * @param generateUploadRequestURL Generate an upload URL (so caller can directly upload file into
    *        archive).
@@ -72,9 +73,10 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
-      HpcS3UploadSource s3UploadSource, File sourceFile, boolean generateUploadRequestURL,
-      Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId,
-      String userId, String callerObjectId, String configurationId) throws HpcException;
+      HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+      File sourceFile, boolean generateUploadRequestURL, Integer uploadParts,
+      String uploadRequestURLChecksum, String path, String dataObjectId, String userId,
+      String callerObjectId, String configurationId) throws HpcException;
 
   /**
    * Complete a multipart upload.
@@ -144,8 +146,7 @@ public interface HpcDataTransferService {
    */
   public String generateDownloadRequestURL(String path, String userId,
       HpcFileLocation archiveLocation, HpcDataTransferType dataTransferType, long size,
-      String configurationId, String s3ArchiveConfigurationId)
-      throws HpcException;
+      String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 
   /**
    * Add system generated metadata to the data object in the archive.
@@ -246,11 +247,23 @@ public interface HpcDataTransferService {
       boolean getSize) throws HpcException;
 
   /**
+   * Get path attributes for a given file in Google Drive (using user provided Google Drive token).
+   *
+   * @param accessToken The user provided Google Drive access token.
+   * @param fileLocation The drive/file-id to get attributes for.
+   * @param getSize If set to true, the file/directory size will be returned.
+   * @return The path attributes.
+   * @throws HpcException on service failure.
+   */
+  public HpcPathAttributes getPathAttributes(String accessToken, HpcFileLocation fileLocation,
+      boolean getSize) throws HpcException;
+
+  /**
    * Scan a directory (recursively) and return a list of all its files.
    *
    * @param dataTransferType The data transfer type.
-   * @param s3Account (Optional) S3 account to use. If null, then system account for the data
-   *        transfer type is used.
+   * @param s3Account (Optional) S3 account to use.
+   * @param googleDriveAccessToken (Optional) Google Drive access-token to use.
    * @param directoryLocation The endpoint/directory to scan and get a list of files for.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
@@ -264,9 +277,9 @@ public interface HpcDataTransferService {
    * @throws HpcException on service failure.
    */
   public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType,
-      HpcS3Account s3Account, HpcFileLocation directoryLocation, String configurationId,
-      String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
-      HpcPatternType patternType) throws HpcException;
+      HpcS3Account s3Account, String googleDriveAccessToken, HpcFileLocation directoryLocation,
+      String configurationId, String s3ArchiveConfigurationId, List<String> includePatterns,
+      List<String> excludePatterns, HpcPatternType patternType) throws HpcException;
 
   /**
    * Get a file from the archive.
@@ -398,6 +411,7 @@ public interface HpcDataTransferService {
    * @param path The collection path.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId The configuration ID (needed to determine the archive connection
    *        config).
@@ -406,8 +420,9 @@ public interface HpcDataTransferService {
    */
   public HpcCollectionDownloadTask downloadCollection(String path,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId)
-      throws HpcException;
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId) throws HpcException;
 
   /**
    * Submit a request to download collections.
@@ -415,6 +430,7 @@ public interface HpcDataTransferService {
    * @param collectionPaths A list of collection paths.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId A configuration ID used to validate destination location. The list of
    *        data objects can be from from different configurations (DOCs) but we validate just for
@@ -426,8 +442,9 @@ public interface HpcDataTransferService {
    */
   public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId,
-      boolean appendPathToDownloadDestination) throws HpcException;
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
   /**
    * Submit a request to download data objects.
@@ -435,6 +452,7 @@ public interface HpcDataTransferService {
    * @param dataObjectPaths A list of data object paths.
    * @param globusDownloadDestination The user requested Glopbus download destination.
    * @param s3DownloadDestination The user requested S3 download destination.
+   * @param googleDriveDownloadDestination The user requested Google Drive download destination.
    * @param userId The user ID submitting the download request.
    * @param configurationId A configuration ID used to validate destination location. The list of
    *        data objects can be from from different configurations (DOCs) but we validate just for
@@ -446,8 +464,9 @@ public interface HpcDataTransferService {
    */
   public HpcCollectionDownloadTask downloadDataObjects(List<String> dataObjectPaths,
       HpcGlobusDownloadDestination globusDownloadDestination,
-      HpcS3DownloadDestination s3DownloadDestination, String userId, String configurationId,
-      boolean appendPathToDownloadDestination) throws HpcException;
+      HpcS3DownloadDestination s3DownloadDestination,
+      HpcGoogleDriveDownloadDestination googleDriveDownloadDestination, String userId,
+      String configurationId, boolean appendPathToDownloadDestination) throws HpcException;
 
   /**
    * Update a collection download task.

@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
@@ -39,6 +41,7 @@ import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.Views;
+import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
 
@@ -57,6 +60,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @EnableAutoConfiguration
 @RequestMapping("/download")
 public class HpcDownloadController extends AbstractHpcController {
+    @Autowired
+    private HpcAuthorizationService hpcAuthorizationService;
+    
 	@Value("${gov.nih.nci.hpc.server.v2.dataObject}")
 	private String dataObjectServiceURL;
 	@Value("${gov.nih.nci.hpc.server.v2.collection}")
@@ -88,8 +94,28 @@ public class HpcDownloadController extends AbstractHpcController {
 		String downloadType = request.getParameter("type");
 		String source = request.getParameter("source");
 		String downloadFilePath = null;
-
-		if(action == null && endPointName == null) {
+		
+		String code = request.getParameter("code");
+        if (code != null) {
+            //Return from Google Drive Authorization
+            downloadFilePath = (String)session.getAttribute("downloadFilePath");
+            downloadType = (String)session.getAttribute("downloadType");
+            source = (String)session.getAttribute("downloadSource");
+            final String returnURL = this.webServerName + "/download";
+            try {
+              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
+              session.setAttribute("accessToken", accessToken);
+              model.addAttribute("accessToken", accessToken);
+            } catch (Exception e) {
+              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+              e.printStackTrace();
+            }
+            model.addAttribute("searchType", "drive");
+            model.addAttribute("transferType", "drive");
+            model.addAttribute("authorized", "true");
+            
+        }
+        else if(action == null && endPointName == null) {
 			//User clicked the download icon on the detail view page
 			if("collection".equals(downloadType)) {
 				model.addAttribute("searchType", "async");
@@ -144,6 +170,23 @@ public class HpcDownloadController extends AbstractHpcController {
 	        "action=" + percentEncodedReturnURL;
 
 		}
+		
+		if (action != null && action.equals("Drive")) {
+  		  
+  		    session.setAttribute("downloadType", downloadType);
+            session.setAttribute("downloadSource", source);
+            downloadFilePath = request.getParameter("downloadFilePath");
+            session.setAttribute("downloadFilePath", downloadFilePath);
+          
+  	        downloadFilePath = request.getParameter("downloadFilePath");
+  	        String returnURL = this.webServerName + "/download";
+  	        try {
+              return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+            } catch (Exception e) {
+              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+              e.printStackTrace();
+            }
+        }
 
 		if(endPointName != null) {
 			//This is return from Globus site
@@ -224,7 +267,16 @@ public class HpcDownloadController extends AbstractHpcController {
 				account.setRegion(downloadFile.getRegion());
 				destination.setAccount(account);
 				dto.setS3DownloadDestination(destination);
-			}
+			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("drive")) {
+  			    String accessToken = (String)session.getAttribute("accessToken");
+  			    HpcGoogleDriveDownloadDestination destination = new HpcGoogleDriveDownloadDestination();
+                HpcFileLocation location = new HpcFileLocation();
+                location.setFileContainerId("MyDrive");
+                location.setFileId(downloadFile.getDrivePath());
+                destination.setDestinationLocation(location);
+                destination.setAccessToken(accessToken);
+                dto.setGoogleDriveDownloadDestination(destination);
+            }
             final String downloadTaskType = "collection".equals(downloadFile.
                     getDownloadType()) ? HpcDownloadTaskType.COLLECTION.name() :
                         HpcDownloadTaskType.DATA_OBJECT.name();
