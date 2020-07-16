@@ -87,6 +87,14 @@ public interface HpcSystemBusService {
   public void startS3DataObjectDownloadTasks() throws HpcException;
 
   /**
+   * Start all received data objects download tasks for Google Drive and process to make them in
+   * progress.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void startGoogleDriveDataObjectDownloadTasks() throws HpcException;
+
+  /**
    * Check status of all in-progress data objects download tasks and complete these that are no
    * longer in progress.
    *

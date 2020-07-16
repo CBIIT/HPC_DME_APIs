@@ -118,5 +118,13 @@
     		<groupId>org.apache.commons</groupId>
     		<artifactId>commons-compress</artifactId>
 		</dependency>
+		<dependency>
+   			 <groupId>org.apache.tika</groupId>
+    		<artifactId>tika-core</artifactId>
+		</dependency>
+		<dependency>
+   			 <groupId>org.apache.tika</groupId>
+    		<artifactId>tika-bundle</artifactId>
+		</dependency>
 	</dependencies>
 </project>

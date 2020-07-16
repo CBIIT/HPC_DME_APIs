@@ -34,6 +34,8 @@
     var downloadFilePath = [[${downloadFilePath}]];
     var downloadFileName = downloadFilePath.split('/').pop()
     var source = [[${source}]];
+    var authorized = [[${authorized}]];
+    var oauthToken = [[${accessToken}]];
 /*]]>*/
 </script>
 </head>
@@ -71,7 +73,13 @@
 					</h2>
 				  </div>
 
-				  <div th:if="${error == null}">
+				  <div th:if="${error != null}">
+					<div class="alert alert-error">
+						<a class="close" data-dismiss="alert">�</a> <label
+							for="${error}" th:text="${error}"></label>
+					</div>
+				  </div>
+				  <div>
 				  <!--panel-body start-->
 				    <div class="panel-body">
 
@@ -83,10 +91,10 @@
 
 
 			<div class="pull-center" th:if="${downloadType == 'datafile'}">
-			  <p>This page allows you to download the selected data file either synchronously to your computer or asynchronously to Globus endpoint location or an S3 bucket.</p>
+			  <p>This page allows you to download the selected data file either synchronously to your computer or asynchronously to Globus endpoint location, to an S3 bucket, or to Google Drive.</p>
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
-              <p>This page allows you to download the selected collection to Globus endpoint location or an S3 bucket asynchronously.</p>    
+              <p>This page allows you to download the selected collection to Globus endpoint location, to an S3 bucket, or to Google Drive.</p>    
             </div>
      
 			<div class="panel panel-default">
@@ -115,7 +123,7 @@
 						<tr>
 							<td>
 								<div class="form-group" id="radioset">
-										<div class="pull-left" th:if="${downloadType == 'datafile'}">
+										<div class="pull-left" style="margin-left: 15px" th:if="${downloadType == 'datafile'}">
 										<label class="radio-inline"><input type="radio"
 										id="searchTypeSync" name="searchType" value="sync"
 										onChange="display('sync')" checked="checked" />Synchronous</label>
@@ -123,12 +131,17 @@
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchTypeAsync" value="async"
-										onChange="display('async')"/>Asynchronous (Globus)</label>
+										onChange="display('async')"/>Globus</label>
 										</div>
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
 										name="searchType" id="searchTypeS3" value="s3"
-										onChange="display('s3')"/>Asynchronous (S3)</label>
+										onChange="display('s3')"/>AWS S3</label>
+										</div>
+										<div class="pull-left" style="margin-left: 15px">
+										<label class="radio-inline"><input type="radio"
+										name="searchType" id="searchTypeDrive" value="drive"
+										onChange="display('drive')"/>Google Drive</label>
 										</div>
 								</div>
 		                        
@@ -140,10 +153,9 @@
 								<div class="form-group" id="AsyncDiv" style="display: none">
 								    <div class="col-sm-12 column">
 										<label for="endPointName">Globus Endpoint UUID:</label> 
-										Optionally click 
 										<a id="downloadlink" 
                                             th:href="@{../download(type=${downloadType},source=${source},actionType=Globus,downloadFilePath=${downloadFilePath})}">                                  
-                                            here</a> to obtain from Globus
+                                            Obtain from Globus (Optional)</a>
 										<input type="hidden" name="actionType" id="actionType" />
 										<input
 											type="text" class="form-control" name="endPointName" th:value="${endPointName}"
@@ -205,6 +217,26 @@
 									</div>
 								</div>
 								
+								<div class="form-group" id="driveDiv" style="display: none">
+									<div class="col-sm-12 column">
+										<a class="btn btn-primary" id="driveAuthlink" 
+                                            th:href="@{../download(type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">                                  
+                                            Authorize DME to access your Google Drive</a>
+									</div>
+									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
+									<br/>
+									<div class="col-sm-12 column">
+										<label for="drivePath">Google Drive (Destination) Path:</label>
+										<a id="pickerLink" onclick="loadDownloadPicker()">                                  
+                                            Pick From Google Drive (Optional)</a>
+										<input
+											type="text" class="form-control"
+											th:value="${drivePath}"
+											name="drivePath" id="drivePath"
+											placeholder="Enter Google Drive (Destination) Path" size="40" />
+									</div>
+								</div>
+								
 								<div>
 									<button class="btn btn-primary" id="submit"
 										onClick="return validateAndSubmit()">Download</button>
@@ -260,6 +292,7 @@
 
     </section>
     </section>
+    <div th:include="footer :: footer"></div>
     </section>
 
 	<!-- javascripts -->
@@ -313,6 +346,14 @@
 					alert("Please enter asynchronous download values");
 					return false;
 				}
+			} else if (radioValue == 'drive') {
+				var drivePath = document
+						.getElementById("drivePath").value;
+				if (drivePath == null
+						|| drivePath.trim().length == 0) {
+					alert("Please enter asynchronous download values");
+					return false;
+				}
 			} else {
 				var downloadFileName = document
 						.getElementById("downloadFileName").value;
@@ -346,8 +387,11 @@
 	    $(document).ready(function(){
             if($('#transferType').val() == 'globus') {
             	$("#searchTypeAsync").prop("checked", true); 
-                //$('input:radio[name=searchType][value=async]').checked = true;
                 display('async');
+	        }
+            if($('#transferType').val() == 'drive') {
+            	$("#searchTypeDrive").prop("checked", true); 
+                display('drive');
 	        }
 	    });
 
@@ -382,7 +426,7 @@
 								e.preventDefault();
 								
 								var radioValue = document.querySelector('input[name="searchType"]:checked').value
-								if (radioValue == 'async' || radioValue == 's3') {
+								if (radioValue == 'async' || radioValue == 's3' || radioValue == 'drive') {
 									$("#wait")
 											.html(
 													'<img width="50" height="50" src="img/spinner.gif" alt="Wait" />');
@@ -422,12 +466,15 @@
 			var globusHelpLinksDiv = document.getElementById("globus-help-links");
 			var syncDiv = document.getElementById("SyncDiv");
 			var s3Div = document.getElementById("s3Div");
+			var driveDiv = document.getElementById("driveDiv");
 			if (value == "async") {
 				asyncDiv.style.display = "block";
 				globusHelpLinksDiv.style.display = "block";
 				if(syncDiv)
 					syncDiv.style.display = "none";
 				s3Div.style.display = "none";
+				if(driveDiv)
+					driveDiv.style.display = "none";
 				if(downloadType == "datafile") {
 					var endPointLocation = $("#endPointLocation").val();
 					if(endPointLocation.endsWith("/"))
@@ -435,26 +482,54 @@
 					else
 						$("#endPointLocation").val(downloadFileName);
 				}
+				$("#submit").prop('disabled', false);
 			} else if (value == "sync") {
 				if(syncDiv)
 					syncDiv.style.display = "block";
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
 				s3Div.style.display = "none";
+				if(driveDiv)
+					driveDiv.style.display = "none";
 				if(downloadType == "datafile")
 					$("#downloadFileName").val(downloadFileName);
-			} else {
+				$("#submit").prop('disabled', false);
+			} else if (value == 's3'){
 				if(syncDiv)
 					syncDiv.style.display = "none";
 				asyncDiv.style.display = "none";
 				globusHelpLinksDiv.style.display = "none";
 				s3Div.style.display = "block";
+				if(driveDiv)
+					driveDiv.style.display = "none";
 				if(downloadType == "datafile")
 					$("#s3Path").val(downloadFileName);
+				$("#submit").prop('disabled', false);
+			}  else {
+				if(syncDiv)
+					syncDiv.style.display = "none";
+				asyncDiv.style.display = "none";
+				globusHelpLinksDiv.style.display = "none";
+				s3Div.style.display = "none";
+				if(driveDiv) {
+					driveDiv.style.display = "block";
+					if(downloadType == "collection")
+						$("#drivePath").val("/");
+					else
+						$("#drivePath").val(downloadFileName);
+				}
+				if(authorized != null) {
+					$("#submit").prop('disabled', false);
+					$("#driveAuthlink").addClass('disabled');
+				} else {
+					$("#submit").prop('disabled', true);
+				}
 			}
 		}
 	//]]>	
 	</script>
-
+<!-- The Google API Loader script. -->
+	<script type="text/javascript" src="js/hpcDownload.js"></script>
+    <script type="text/javascript" src="js/google/api.js"></script>
 </body>
 </html>
