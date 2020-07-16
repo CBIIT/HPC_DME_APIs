@@ -35,9 +35,10 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -50,6 +51,8 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -113,7 +116,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
   @Autowired
   @Qualifier("hpcRegistrationResultsPagination")
   private HpcPagination pagination = null;
-
 
   // Prepared query to get data objects that have their data transfer in-progress
   // to archive.
@@ -769,7 +771,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
         .forEach(bulkDataObjectRegistrationItem -> Optional
             .of(bulkDataObjectRegistrationItem.getRequest())
             .map(HpcDataObjectRegistrationRequest::getS3UploadSource)
-            .map(HpcS3UploadSource::getAccount).ifPresent(s3Account -> {
+            .map(HpcStreamingUploadSource::getAccount).ifPresent(s3Account -> {
               s3Account.setAccessKey("****");
               s3Account.setSecretKey("****");
             }));
@@ -875,6 +877,55 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     return dataManagementConfigurationLocator.get(id);
   }
 
+  @Override
+  public void addDataObjectRegistrationResult(String path,
+      HpcSystemGeneratedMetadata systemGeneratedMetadata, boolean result, String message)
+      throws HpcException {
+    if (systemGeneratedMetadata == null) {
+      logger.error("Null system-generated-metadata");
+      return;
+    }
+
+    HpcDataObjectRegistrationResult dataObjectRegistrationResult =
+        new HpcDataObjectRegistrationResult();
+    dataObjectRegistrationResult.setId(systemGeneratedMetadata.getObjectId());
+    dataObjectRegistrationResult.setPath(path);
+    dataObjectRegistrationResult.setResult(result);
+    dataObjectRegistrationResult.setMessage(message);
+    dataObjectRegistrationResult.setUploadMethod(systemGeneratedMetadata.getDataTransferMethod());
+    dataObjectRegistrationResult.setUserId(systemGeneratedMetadata.getRegistrarId());
+    dataObjectRegistrationResult.setCreated(systemGeneratedMetadata.getDataTransferStarted());
+    dataObjectRegistrationResult.setCompleted(systemGeneratedMetadata.getDataTransferCompleted());
+
+    addDataObjectRegistrationResult(path, dataObjectRegistrationResult,
+        systemGeneratedMetadata.getSourceSize());
+  }
+
+  public void addDataObjectRegistrationResult(String path,
+      HpcDataObjectRegistrationResult dataObjectRegistrationResult, Long size) throws HpcException {
+    if (StringUtils.isEmpty(path)) {
+      logger.error("Null / Empty path");
+      return;
+    }
+
+    Calendar created = dataObjectRegistrationResult.getCreated();
+    Calendar completed = dataObjectRegistrationResult.getCompleted();
+
+    // Calculate the effective transfer speed (Bytes per second). Note: This is N/A for SYNC
+    // uploads.
+    HpcDataTransferUploadMethod uploadMethod = dataObjectRegistrationResult.getUploadMethod();
+    if (uploadMethod != null && !uploadMethod.equals(HpcDataTransferUploadMethod.SYNC)
+        && size != null && created != null && completed != null) {
+      long transferTime = completed.getTimeInMillis() - created.getTimeInMillis();
+      if (transferTime > 0) {
+        dataObjectRegistrationResult
+            .setEffectiveTransferSpeed(Math.toIntExact(size * 1000 / (transferTime)));
+      }
+    }
+
+    dataRegistrationDAO.insertDataObjectRegistrationResult(dataObjectRegistrationResult);
+  }
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -939,15 +990,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     if (registrationRequest.getS3UploadSource() != null) {
       uploadSourceCount++;
     }
+    if (registrationRequest.getGoogleDriveUploadSource() != null) {
+      uploadSourceCount++;
+    }
     if (registrationRequest.getLinkSourcePath() != null) {
       uploadSourceCount++;
     }
     if (uploadSourceCount > 1) {
-      throw new HpcException("Multiple (Globus/S3/Link) upload source provided for: " + path,
+      throw new HpcException(
+          "Multiple (Globus/S3/Google Drive/Link) upload source provided for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
     if (uploadSourceCount == 0) {
-      throw new HpcException("No Globus/S3/Link upload source provided for: " + path,
+      throw new HpcException("No Globus/S3/Google Drive/Link upload source provided for: " + path,
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
@@ -964,6 +1019,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
       }
       if (!isValidS3Account(registrationRequest.getS3UploadSource().getAccount())) {
         throw new HpcException("Invalid S3 account in registration request for: " + path,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+    }
+
+    if (registrationRequest.getGoogleDriveUploadSource() != null) {
+      if (!isValidFileLocation(
+          registrationRequest.getGoogleDriveUploadSource().getSourceLocation())) {
+        throw new HpcException(
+            "Invalid Google Drive upload source in registration request for: " + path,
+            HpcErrorType.INVALID_REQUEST_INPUT);
+      }
+      if (StringUtils.isEmpty(registrationRequest.getGoogleDriveUploadSource().getAccessToken())) {
+        throw new HpcException("Invalid Google Drive account in registration request for: " + path,
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
     }

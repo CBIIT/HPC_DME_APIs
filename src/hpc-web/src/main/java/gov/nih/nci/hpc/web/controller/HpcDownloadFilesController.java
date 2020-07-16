@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -35,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO;
@@ -45,6 +47,7 @@ import gov.nih.nci.hpc.web.model.HpcDownloadDatafile;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcSearch;
 import gov.nih.nci.hpc.web.model.Views;
+import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 import gov.nih.nci.hpc.web.util.MiscUtil;
@@ -62,6 +65,10 @@ import gov.nih.nci.hpc.web.util.MiscUtil;
 @EnableAutoConfiguration
 @RequestMapping("/downloadfiles")
 public class HpcDownloadFilesController extends AbstractHpcController {
+  
+    @Autowired
+    private HpcAuthorizationService hpcAuthorizationService;
+  
 	@Value("${gov.nih.nci.hpc.server.v2.download}")
 	private String downloadServiceURL;
 	
@@ -138,10 +145,12 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 
 
 	/**
-	 * Links to the Globus site to obtain the endpoint UUID and path.
+	 * Links to the Globus site to obtain the endpoint UUID and path. Or links to the Google Drive authorization.
 	 * Invoked from the download page when 
 	 * - user clicks the 'Select Globus Endpoint UUID and Destination Path' link
 	 * - user clicks the Submit button on the Globus page after selecting the Globus endpoint and path
+	 * - user clicks the 'Authorize DME to access your Google Drive' button
+     * - user clicks the Allow button on the Google page granting NCI-HPC-DME permission
 	 * @param body
 	 * @param model
 	 * @param bindingResult
@@ -150,7 +159,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public String getGlobusPath(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
+	public String getExternalPath(@RequestBody(required = false) String body, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 
 		HpcUserDTO user = (HpcUserDTO) session.getAttribute("hpcUser");
@@ -165,7 +174,39 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 		}
 
 		String endPointName = request.getParameter("endpoint_id");
-		if(endPointName == null) {
+		String code = request.getParameter("code");
+		String transferType = request.getParameter("transferType");
+        if (code != null) {
+            //Return from Google Drive Authorization
+            final String returnURL = this.webServerName + "/downloadfiles";
+            try {
+              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
+              session.setAttribute("accessToken", accessToken);
+              model.addAttribute("accessToken", accessToken);
+           } catch (Exception e) {
+              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+              e.printStackTrace();
+            }
+            HpcSearch hpcSaveSearch = (HpcSearch)session.getAttribute("hpcSavedSearch");
+            model.addAttribute("hpcSearch", hpcSaveSearch);
+
+            HpcDownloadDatafile hpcDownloadDatafile = (HpcDownloadDatafile)session.getAttribute("hpcDownloadDatafile");
+            model.addAttribute("hpcDownloadDatafile", hpcDownloadDatafile);
+            model.addAttribute("searchType", "drive");
+            model.addAttribute("transferType", "drive");
+            model.addAttribute("authorized", "true");
+            
+            return "downloadfiles";
+        } else if (transferType != null && transferType.equals("drive")) {
+            String returnURL = this.webServerName + "/downloadfiles";
+            try {
+              return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+            } catch (Exception e) {
+              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+              e.printStackTrace();
+            }
+        }
+        else if(endPointName == null) {
 			final String percentEncodedReturnURL = MiscUtil.performUrlEncoding(
 					this.webServerName) + "/downloadfiles";
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
@@ -254,7 +295,16 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 				account.setRegion(downloadFile.getRegion());
 				destination.setAccount(account);
 				dto.setS3DownloadDestination(destination);
-			}
+			} else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("drive")) {
+                String accessToken = (String)session.getAttribute("accessToken");
+                HpcGoogleDriveDownloadDestination destination = new HpcGoogleDriveDownloadDestination();
+                HpcFileLocation location = new HpcFileLocation();
+                location.setFileContainerId("MyDrive");
+                location.setFileId(downloadFile.getDrivePath());
+                destination.setDestinationLocation(location);
+                destination.setAccessToken(accessToken);
+                dto.setGoogleDriveDownloadDestination(destination);
+            }
 
 			try {
 				HpcBulkDataObjectDownloadResponseDTO downloadDTO = null;

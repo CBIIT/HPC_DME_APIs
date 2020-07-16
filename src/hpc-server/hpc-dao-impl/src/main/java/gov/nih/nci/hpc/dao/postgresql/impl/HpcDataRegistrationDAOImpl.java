@@ -32,7 +32,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
+import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -96,6 +97,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
   public static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_SQL =
       "select count(*) from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" where \"USER_ID\" = ?";
+
+  public static final String INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL =
+      "insert into public.\"HPC_DATA_OBJECT_REGISTRATION_RESULT\" ("
+          + "\"ID\", \"PATH\", \"USER_ID\", \"UPLOAD_METHOD\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -304,6 +310,26 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     }
   }
 
+  @Override
+  public void insertDataObjectRegistrationResult(HpcDataObjectRegistrationResult registrationResult)
+      throws HpcException {
+    try {
+      jdbcTemplate.update(INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
+          registrationResult.getPath(), registrationResult.getUserId(),
+          registrationResult.getUploadMethod() != null
+              ? registrationResult.getUploadMethod().value()
+              : null,
+          registrationResult.getResult(), registrationResult.getMessage(),
+          registrationResult.getEffectiveTransferSpeed(), registrationResult.getCreated(),
+          registrationResult.getCompleted());
+
+    } catch (DataAccessException e) {
+      throw new HpcException(
+          "Failed to insert a data object registration result: " + e.getMessage(),
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+    }
+  }
+
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -359,7 +385,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       }
       if (request.getS3UploadSource() != null) {
         JSONObject jsonS3UploadSource = new JSONObject();
-        HpcS3UploadSource s3UploadSource = request.getS3UploadSource();
+        HpcStreamingUploadSource s3UploadSource = request.getS3UploadSource();
         jsonS3UploadSource.put("sourceFileContainerId",
             s3UploadSource.getSourceLocation().getFileContainerId());
         jsonS3UploadSource.put("sourceFileId", s3UploadSource.getSourceLocation().getFileId());
@@ -372,6 +398,19 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
           jsonS3UploadSource.put("region", s3Account.getRegion());
         }
         jsonRequest.put("s3UploadSource", jsonS3UploadSource);
+      }
+      if (request.getGoogleDriveUploadSource() != null) {
+        JSONObject jsonGoogleDriveUploadSource = new JSONObject();
+        HpcStreamingUploadSource googleUploadSource = request.getGoogleDriveUploadSource();
+        jsonGoogleDriveUploadSource.put("sourceFileContainerId",
+            googleUploadSource.getSourceLocation().getFileContainerId());
+        jsonGoogleDriveUploadSource.put("sourceFileId",
+            googleUploadSource.getSourceLocation().getFileId());
+        if (googleUploadSource.getAccessToken() != null) {
+          jsonGoogleDriveUploadSource.put("accessToken", Base64.getEncoder()
+              .encodeToString(encryptor.encrypt(googleUploadSource.getAccessToken())));
+        }
+        jsonRequest.put("googleDriveUploadSource", jsonGoogleDriveUploadSource);
       }
       if (request.getLinkSourcePath() != null) {
         jsonRequest.put("linkSourcePath", request.getLinkSourcePath());
@@ -654,7 +693,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
     if (jsonRequest.get("s3UploadSource") != null) {
       JSONObject jsonS3UploadSource = (JSONObject) jsonRequest.get("s3UploadSource");
-      HpcS3UploadSource s3UploadSource = new HpcS3UploadSource();
+      HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
       HpcFileLocation source = new HpcFileLocation();
       source.setFileContainerId(jsonS3UploadSource.get("sourceFileContainerId").toString());
       source.setFileId(jsonS3UploadSource.get("sourceFileId").toString());
@@ -670,6 +709,22 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
         s3UploadSource.setAccount(s3Account);
       }
       request.setS3UploadSource(s3UploadSource);
+    }
+
+    if (jsonRequest.get("googleDriveUploadSource") != null) {
+      JSONObject jsonGoogleDriveUploadSource =
+          (JSONObject) jsonRequest.get("googleDriveUploadSource");
+      HpcStreamingUploadSource googleDriveUploadSource = new HpcStreamingUploadSource();
+      HpcFileLocation source = new HpcFileLocation();
+      source
+          .setFileContainerId(jsonGoogleDriveUploadSource.get("sourceFileContainerId").toString());
+      source.setFileId(jsonGoogleDriveUploadSource.get("sourceFileId").toString());
+      googleDriveUploadSource.setSourceLocation(source);
+      if (jsonGoogleDriveUploadSource.get("accessToken") != null) {
+        googleDriveUploadSource.setAccessToken(encryptor.decrypt(
+            Base64.getDecoder().decode(jsonGoogleDriveUploadSource.get("accessToken").toString())));
+      }
+      request.setGoogleDriveUploadSource(googleDriveUploadSource);
     }
 
     Object linkSourcePath = jsonRequest.get("linkSourcePath");

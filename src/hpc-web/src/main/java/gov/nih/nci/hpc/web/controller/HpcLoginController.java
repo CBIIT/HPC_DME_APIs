@@ -68,6 +68,10 @@ public class HpcLoginController extends AbstractHpcController {
 	private String collectionAclURL;
 	@Value("${gov.nih.nci.hpc.login.module:}")
 	protected String hpcLoginModule;
+	@Value("${app.version:}")
+    protected String version;
+	@Value("${app.env:}")
+    protected String env;
 	
 	@Autowired
 	private HpcModelBuilder hpcModelBuilder;
@@ -79,6 +83,8 @@ public class HpcLoginController extends AbstractHpcController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String home(@CookieValue(value="NIHSMSESSION", required = false) String smSession, Model model, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 		session.setAttribute("callerPath", getCallerPath(request));
+		session.setAttribute("env", env);
+        session.setAttribute("version", version);
 		String userId = (String) session.getAttribute("hpcUserId");
 		if (StringUtils.equalsIgnoreCase(hpcLoginModule, "LDAP")) {
 			// This is for local configuration where site minder is not available or we don't want to use the SMSESSION.

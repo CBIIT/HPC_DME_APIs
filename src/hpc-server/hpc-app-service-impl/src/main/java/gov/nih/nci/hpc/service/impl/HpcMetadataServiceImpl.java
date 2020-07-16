@@ -18,12 +18,14 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CALLER_OBJECT_ID
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CHECKSUM_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.CONFIGURATION_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_COMPLETED_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_METHOD_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_REQUEST_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_METHOD_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
@@ -33,7 +35,11 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,9 +49,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.io.IOUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.xml.sax.SAXException;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
@@ -222,6 +236,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     systemGeneratedMetadata
         .setS3ArchiveConfigurationId(metadataMap.get(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE));
     systemGeneratedMetadata.setLinkSourcePath(metadataMap.get(LINK_SOURCE_PATH_ATTRIBUTE));
+    systemGeneratedMetadata
+        .setExtractedMetadataAttributes(metadataMap.get(EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE));
 
     HpcFileLocation archiveLocation = new HpcFileLocation();
     archiveLocation
@@ -251,7 +267,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
         systemGeneratedMetadata.setDataTransferStatus(HpcDataTransferUploadStatus.FAILED);
       }
     }
-    
+
     if (metadataMap.get(DATA_TRANSFER_METHOD_ATTRIBUTE) != null) {
       try {
         systemGeneratedMetadata.setDataTransferMethod(
@@ -380,17 +396,89 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
   }
 
   @Override
+  public void addMetadataToDataObjectFromFile(String path, InputStream dataObjectInputStream,
+      String configurationId, String collectionType, boolean closeInputStream) throws HpcException {
+    Parser parser = new AutoDetectParser();
+    Metadata extractedMetadata = new Metadata();
+
+    try {
+      // Extract metadata from the file.
+      parser.parse(dataObjectInputStream, new BodyContentHandler(), extractedMetadata,
+          new ParseContext());
+
+      // Map the Tika extracted metadata to HPC metadata entry list.
+      List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+      for (String name : extractedMetadata.names()) {
+        HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+        metadataEntry.setAttribute(name);
+        metadataEntry.setValue(extractedMetadata.get(name));
+        metadataEntries.add(metadataEntry);
+      }
+
+      // Update the data object's metadata w/ the extracted entries.
+      addExtractedMetadataToDataObject(path, metadataEntries, configurationId, collectionType);
+
+    } catch (IOException | SAXException | TikaException e) {
+      throw new HpcException("Failed to extract metadata from file",
+          HpcErrorType.INVALID_REQUEST_INPUT, e);
+
+    } finally {
+      if (closeInputStream) {
+        // Close the input stream if asked to.
+        IOUtils.closeQuietly(dataObjectInputStream);
+      }
+    }
+  }
+
+  @Override
+  public void addMetadataToDataObjectFromFile(String path, File dataObjectFile,
+      String configurationId, String collectionType, boolean closeInputStream) throws HpcException {
+    try {
+      addMetadataToDataObjectFromFile(path, new FileInputStream(dataObjectFile), configurationId,
+          collectionType, true);
+
+    } catch (FileNotFoundException e) {
+      throw new HpcException("File to extract metadata from not found",
+          HpcErrorType.UNEXPECTED_ERROR, e);
+    }
+  }
+
+  @Override
+  public void addExtractedMetadataToDataObject(String path,
+      List<HpcMetadataEntry> extractedMetadataEntries, String configurationId,
+      String collectionType) throws HpcException {
+    // Update the data object's metadata.
+    updateDataObjectMetadata(path, extractedMetadataEntries, configurationId, collectionType);
+
+    // Set the extracted-metadata-attributes system generated metadata to have all the attributes
+    // we extracted.
+    // This is done, so that we can differentiate between user-provided and extracted metadata.
+    StringBuffer extractedMetadataAttributes = new StringBuffer();
+    extractedMetadataEntries.forEach(
+        metadataEntry -> extractedMetadataAttributes.append(metadataEntry.getAttribute() + "|"));
+
+    List<HpcMetadataEntry> systemGeneratedMetadataEntries = new ArrayList<>();
+    addMetadataEntry(systemGeneratedMetadataEntries, toMetadataEntry(
+        EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE, extractedMetadataAttributes.toString()));
+    dataManagementProxy.addMetadataToDataObject(dataManagementAuthenticator.getAuthenticatedToken(),
+        path, systemGeneratedMetadataEntries);
+  }
+
+
+  @Override
   public HpcSystemGeneratedMetadata addSystemGeneratedMetadataToDataObject(String path,
       HpcMetadataEntry dataObjectIdMetadataEntry, HpcFileLocation archiveLocation,
       HpcFileLocation sourceLocation, String dataTransferRequestId,
-      HpcDataTransferUploadStatus dataTransferStatus, HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
+      HpcDataTransferUploadStatus dataTransferStatus,
+      HpcDataTransferUploadMethod dataTransferMethod, HpcDataTransferType dataTransferType,
       Calendar dataTransferStarted, Calendar dataTransferCompleted, Long sourceSize,
       String sourceURL, String callerObjectId, String userId, String userName,
       String configurationId, String s3ArchiveConfigurationId, boolean registrationCompletionEvent)
       throws HpcException {
     // Input validation.
-    if (path == null || dataTransferStatus == null || dataTransferType == null || dataTransferMethod == null
-        || dataTransferStarted == null || dataObjectIdMetadataEntry == null) {
+    if (path == null || dataTransferStatus == null || dataTransferType == null
+        || dataTransferMethod == null || dataTransferStarted == null
+        || dataObjectIdMetadataEntry == null) {
       throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
     }
     if ((archiveLocation != null && !isValidFileLocation(archiveLocation))
@@ -437,7 +525,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
     // Create the Data Transfer Status metadata.
     addMetadataEntry(metadataEntries,
         toMetadataEntry(DATA_TRANSFER_STATUS_ATTRIBUTE, dataTransferStatus.value()));
-    
+
     // Create the Data Transfer Method metadata.
     addMetadataEntry(metadataEntries,
         toMetadataEntry(DATA_TRANSFER_METHOD_ATTRIBUTE, dataTransferMethod.value()));
