@@ -801,6 +801,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         Optional.ofNullable(dataObjectRegistration.getGenerateUploadRequestURL()).orElse(false);
 
     if (responseDTO.getRegistered()) {
+      HpcDataObjectUploadResponse uploadResponse = null;
       try {
         // Assign system account as an additional owner of the data-object.
         dataManagementService.setCoOwnership(path, userId);
@@ -838,7 +839,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
           }
 
           // Transfer the data file.
-          HpcDataObjectUploadResponse uploadResponse =
+          uploadResponse =
               dataTransferService.uploadDataObject(dataObjectRegistration.getGlobusUploadSource(),
                   dataObjectRegistration.getS3UploadSource(),
                   dataObjectRegistration.getGoogleDriveUploadSource(), dataObjectFile,
@@ -901,7 +902,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
         // Record a data object registration result.
         dataManagementService.addDataObjectRegistrationResult(path,
-            toFailedDataObjectRegistrationResult(path, userId, e.getMessage()), null);
+            toFailedDataObjectRegistrationResult(path, userId, uploadResponse, e.getMessage()),
+            null);
 
         throw e;
       }
@@ -2762,11 +2764,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
    *
    * @param path The data object path
    * @param userId The registrar user id.
+   * @param uploadResponse The upload request (to Globus/S3, etc) response
    * @param message The error message.
    * @return a HpcDataObjectRegistrationResult instance
    */
   private HpcDataObjectRegistrationResult toFailedDataObjectRegistrationResult(String path,
-      String userId, String message) {
+      String userId, HpcDataObjectUploadResponse uploadResponse, String message) {
 
     HpcDataObjectRegistrationResult dataObjectRegistrationResult =
         new HpcDataObjectRegistrationResult();
@@ -2777,6 +2780,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
     dataObjectRegistrationResult.setMessage(message);
     dataObjectRegistrationResult.setUserId(userId);
     dataObjectRegistrationResult.setPath(path);
+    if (uploadResponse != null) {
+      dataObjectRegistrationResult
+          .setDataTransferRequestId(uploadResponse.getDataTransferRequestId());
+      dataObjectRegistrationResult.setSourceLocation(uploadResponse.getUploadSource());
+    }
 
     return dataObjectRegistrationResult;
   }
