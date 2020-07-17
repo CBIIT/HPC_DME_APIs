@@ -100,8 +100,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
   public static final String INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL =
       "insert into public.\"HPC_DATA_OBJECT_REGISTRATION_RESULT\" ("
-          + "\"ID\", \"PATH\", \"USER_ID\", \"UPLOAD_METHOD\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", \"CREATED\", \"COMPLETED\") "
-          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+          + "\"ID\", \"PATH\", \"USER_ID\", \"UPLOAD_METHOD\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", "
+          + "\"DATA_TRANSFER_REQUEST_ID\", \"SOURCE_LOCATION_FILE_ID\", \"SOURCE_LOCATION_FILE_CONTAINER_ID\", "
+          + "\"SOURCE_LOCATION_FILE_CONTAINER_NAME\", \"CREATED\", \"COMPLETED\") "
+          + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -314,14 +316,23 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
   public void insertDataObjectRegistrationResult(HpcDataObjectRegistrationResult registrationResult)
       throws HpcException {
     try {
+      String fileId = null, containerId = null, containerName = null;
+      HpcFileLocation sourceLocation = registrationResult.getSourceLocation();
+      if (sourceLocation != null) {
+        fileId = sourceLocation.getFileId();
+        containerId = sourceLocation.getFileContainerName();
+        containerName = sourceLocation.getFileContainerName();
+      }
+
       jdbcTemplate.update(INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
           registrationResult.getPath(), registrationResult.getUserId(),
           registrationResult.getUploadMethod() != null
               ? registrationResult.getUploadMethod().value()
               : null,
           registrationResult.getResult(), registrationResult.getMessage(),
-          registrationResult.getEffectiveTransferSpeed(), registrationResult.getCreated(),
-          registrationResult.getCompleted());
+          registrationResult.getEffectiveTransferSpeed(),
+          registrationResult.getDataTransferRequestId(), fileId, containerId, containerName,
+          registrationResult.getCreated(), registrationResult.getCompleted());
 
     } catch (DataAccessException e) {
       throw new HpcException(
