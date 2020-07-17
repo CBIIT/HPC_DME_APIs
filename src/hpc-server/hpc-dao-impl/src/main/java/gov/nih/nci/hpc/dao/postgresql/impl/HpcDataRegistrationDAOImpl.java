@@ -320,7 +320,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
       HpcFileLocation sourceLocation = registrationResult.getSourceLocation();
       if (sourceLocation != null) {
         fileId = sourceLocation.getFileId();
-        containerId = sourceLocation.getFileContainerName();
+        containerId = sourceLocation.getFileContainerId();
         containerName = sourceLocation.getFileContainerName();
       }
 
