@@ -896,6 +896,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
     dataObjectRegistrationResult.setUserId(systemGeneratedMetadata.getRegistrarId());
     dataObjectRegistrationResult.setCreated(systemGeneratedMetadata.getDataTransferStarted());
     dataObjectRegistrationResult.setCompleted(systemGeneratedMetadata.getDataTransferCompleted());
+    dataObjectRegistrationResult.setDataTransferRequestId(systemGeneratedMetadata.getDataTransferRequestId());
+    dataObjectRegistrationResult.setSourceLocation(systemGeneratedMetadata.getSourceLocation());
 
     addDataObjectRegistrationResult(path, dataObjectRegistrationResult,
         systemGeneratedMetadata.getSourceSize());
