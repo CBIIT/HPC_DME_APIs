@@ -45,6 +45,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -534,6 +536,8 @@ public class HpcBrowseController extends AbstractHpcController {
 					selectedEntry.setFullPath(collection.getAbsolutePath());
 					selectedEntry.setId(collection.getAbsolutePath());
 					selectedEntry.setName(collection.getCollectionName());
+					selectedEntry.setFileSize(getAttributeValue("source_file_size", collectionDTO.getMetadataEntries()));
+	                selectedEntry.setLastUpdated(getAttributeValue("metadata_updated", collectionDTO.getMetadataEntries()));
 				}
 
 				//This will ensure that the next time we access this path
@@ -619,4 +623,20 @@ public class HpcBrowseController extends AbstractHpcController {
 		return entry;
 	}
 
+	private String getAttributeValue(String attrName, HpcMetadataEntries entries) {
+		if (entries == null)
+			return null;
+
+		List<HpcMetadataEntry> selfEntries = entries.getSelfMetadataEntries();
+		for (HpcMetadataEntry entry : selfEntries) {
+			if (entry.getAttribute().equals(attrName))
+				return entry.getValue();
+		}
+		List<HpcMetadataEntry> parentEntries = entries.getParentMetadataEntries();
+		for (HpcMetadataEntry entry : parentEntries) {
+			if (entry.getAttribute().equals(attrName))
+				return entry.getValue();
+		}
+		return null;
+	}
 }

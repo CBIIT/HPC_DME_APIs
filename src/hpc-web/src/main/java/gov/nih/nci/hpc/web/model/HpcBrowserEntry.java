@@ -35,6 +35,12 @@ public class HpcBrowserEntry {
 
 	@JsonView(Views.Public.class)
 	private boolean partial;
+	
+	@JsonView(Views.Public.class)
+	private String fileSize;
+	
+	@JsonView(Views.Public.class)
+	private String lastUpdated;
 
 	public String getId() {
 		return id;
@@ -116,6 +122,22 @@ public class HpcBrowserEntry {
 
 	public void setScrollLoc(String scrollLoc) {
 		this.scrollLoc = scrollLoc;
+	}
+
+	public String getFileSize() {
+		return fileSize;
+	}
+
+	public void setFileSize(String fileSize) {
+		this.fileSize = fileSize;
+	}
+
+	public String getLastUpdated() {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated(String lastUpdated) {
+		this.lastUpdated = lastUpdated;
 	}
 
 	@Override

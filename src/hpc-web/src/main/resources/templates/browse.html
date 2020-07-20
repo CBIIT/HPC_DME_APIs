@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html ng-app="app" lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,6 +33,9 @@
       <script src="js/respond.min.js"></script>
       <script src="js/lte-ie7.js"></script>
     <![endif]-->
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script
+	src="js/jquery/3.1.1/jquery.min.js"></script>
 <script
 	src="js/angular/1.5.0/angular.js"></script>
 <script
@@ -44,12 +47,10 @@
 <script src="js/ui-grid/vfs_fonts.js"></script>
 
 <script src="js/ui-grid/4.0.2/ui-grid.js"></script>
-<script src="../bower_components/jquery/dist/jquery.js"></script>
-<script
-	src="js/jquery/3.1.1/jquery.min.js"></script>
 <!--https://mbraak.github.io/jqTree -->
 <script src="js/tree.jquery.js"></script>
 <script src="js/jqTreeContextMenu.js"></script>
+<script src="js/contextMenu.js"></script>
 <link rel="stylesheet" href="css/ui-grid.css"
 	type="text/css" />
 <script
@@ -64,14 +65,109 @@
     var scrollLoc = [[${scrollLoc}]];
     var userBookmarks = [[${userBookmarks}]];
     var refresh = null;
+    var detail = true;
 /*]]>*/
 </script>
 	
+<script>
+//<![CDATA[
+var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.resizeColumns', 'ui.grid.moveColumns', 'ui.grid.autoResize', 'ui.bootstrap.contextMenu']);
+
+app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $http, $interval, uiGridGroupingConstants ) {
+	$scope.openFolder = function( node ) {
+    	browseNode1(node.id, node.fullPath);
+    };
+    
+	$scope.gridOptions1 = {
+	    enableSorting: true,
+	    columnDefs: [
+	      { field : 'name',
+	    	width: '60%',
+	        displayName : 'File name',
+	        cellTemplate: '<div class="ui-grid-cell-contents folder" ng-if="row.entity.collection" ng-click="grid.appScope.openFolder(row.entity);" ><i class="fa fa-folder"></i>{{COL_FIELD CUSTOM_FILTERS}}<div id="processingIcon{{row.entity.id}}" style="display:inline-block; visibility:hidden" class="loader"></div></div><div class="ui-grid-cell-contents file" ng-if="!row.entity.collection" >{{COL_FIELD CUSTOM_FILTERS}}</div>'
+	      },
+	      {
+	        field : 'fileSize',
+	        displayName : 'File size'
+	      },
+	      {
+	        field : 'lastUpdated',
+	        displayName : 'Last updated'
+	      }
+	    ],
+	    rowTemplate: rowTemplate(),
+	    onRegisterApi : function(gridApi) {
+	    	$scope.gridApi = gridApi;
+	    }
+	};
+		    
+	$scope.gridOptions1.data = data[0].children;
+	
+	$scope.refreshGrid = function() {
+		$scope.gridOptions1.data = data[0].children;
+		$scope.gridApi.core.refresh();
+		constructBreadcrumb(data[0]);
+    };
+      
+    function constructBreadcrumb(node) {
+    	var paths = node.fullPath.split("/");
+    	var path = '/'+paths[1];
+    	var html='';
+    	for(i = 1; i < paths.length; i++){
+    		if(html.length == 0)
+    			html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')"><i class="fa fa-folder-open"></i>'+ paths[i] +'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    		else {
+    			path=path+'/'+paths[i];
+    			html=html+'<li onclick="browseNode1(\''+path+'\',\''+path+'\')">'+ paths[i] +'<div id="processingIcon'+path+'" style="display:none; visibility:hidden" class="loader"></div></li>';
+    		}
+    	}
+    	$('.breadcrumb.folderpath').html(html);
+    	
+    }
+    
+    function rowTemplate() {    //custom rowtemplate to enable double click and right click menu options
+
+        return '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }"  ui-grid-cell context-menu="grid.appScope.contextmenuOptions(row)"  data-target="myMenu" ></div>'
+
+    }
+    
+    $scope.contextmenuOptions = function(row) {
+        var contextMenuData = [];
+
+        $scope.rightClickedRow = row;
+        var node = row.entity;
+
+        contextMenuData.push(['View Details', function() {
+        	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
+            percentEncodePath(node.fullPath) + "&source=browse&init";
+        }]);
+        contextMenuData.push(['Add Collection', function() { 
+        	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+        }]);
+        contextMenuData.push(['Add Data File', function() { 
+        	window.location = "/addDatafile?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+        }]);
+        contextMenuData.push(['Add Bulk (Globus)', function() { 
+        	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+        }]);
+        contextMenuData.push(['Refresh Node', function() { 
+        	refreshNode(node);
+        }]);
+
+        
+        return contextMenuData
+    }
+    
+}]);
+/*]]>*/
+</script>
+
 <style>
 /*style.css*/
 .gridStyle {
 	border: 1px solid rgb(212, 212, 212);
-	height: 300px
+	height: 300px;
+	position:absolute;top:0;left:0;right:0;bottom:0;
 }
 
 .loader {
@@ -117,9 +213,61 @@
 #toggleBookmarksElem > i {
   margin-right: 1em;
 }
+
+.ui-grid {
+  height: auto;
+   .ui-grid-viewport {
+     height: 100% !important;
+   }
+ }
+
+
+ol.folderpath {
+	color: #1C4257;
+	box-shadow: none;
+	padding-left: 0;
+	height: initial;
+}
+
+ol.folderpath > li {
+	cursor: pointer;
+}
+
+
+div.ui-grid-cell-contents {
+	color: #1C4257;
+}
+
+div.ui-grid-cell-contents > i.fa-folder {
+	margin-right: 0.5em;
+}
+
+div.ui-grid-cell-contents.folder {
+	cursor: pointer;
+}
+
+@media (min-width: 768px){
+  #left {
+  	position: relative;
+    width: 50%;
+    overflow-y: scroll; 
+    height: 780px;
+  }
+  
+  #right {
+    position: relative;
+    width: 50%;
+    height: 780px;
+  }
+}
+
+.ui-grid-cell-contents:hover {
+  visibility: visible;
+  overflow: visible;
+}
 </style>
 </head>
-<body ng-controller="MyCtrl" onload="scrollWindow()">
+<body ng-controller="MainCtrl" onload="scrollWindow()">
 
 	<!-- container section start -->
 	<section id="container" class="">
@@ -182,6 +330,7 @@
 										</div>
 										<!-- /.modal-dialog -->
 									</div>
+									<div class="row"><div id="left" class="col-md-6 grid">
 									<div class="form-group">
 										<div id="tree1"></div>
                     <div id="bookmarksContent">
@@ -205,6 +354,37 @@
 											<li><a href="#refreshNode">Refresh Node</a></li>
 									</ul>	
 								</div>
+									<div id="right" class="col-md-6">
+										<!-- <div class="form-group">
+											<table class="table table-bordered col-md-12" id="sysMetaAttrTable">
+												<thead>
+													<tr>
+														<th>File name</th>
+														<th>File size</th>
+														<th>Last updated</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td><label>Filename</label></td>
+														<td><label>Filesize</label></td>
+														<td><label>Last updated</label></td>
+													</tr>
+												</tbody>
+											</table>
+								  		</div> -->
+								  		<div ng-controller="MainCtrl">
+								  			<div>
+												<ol class="breadcrumb folderpath">
+												</ol>
+											</div>
+											<div id="grid1" ui-grid="gridOptions1" ui-grid-auto-resize="true" ui-grid-cellNav="true"
+												ui-grid-resize-columns="true" ui-grid-move-columns="true"></div>
+											<div id="refreshGrid" ng-click="refreshGrid()"></div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 						<!--/col-->
 					</div>
@@ -297,6 +477,12 @@ $('#tree1').bind(
     function(event) {
         var node = event.node;
         $('#tree1').tree('toggle', node);
+        if(!refresh && node.populated && node.collection) {
+	        data[0] = node;
+			angular.element('#refreshGrid').triggerHandler('click');
+	    } else if (!node.collection && !node.populated) {
+	    	browseDataobject(node);
+	    }
     }
 );
 
@@ -332,7 +518,7 @@ function scrollWindow()
 
 
  //Invoked when we click on a node to open it or progammatically open it.
- $('#tree1').bind('tree.open', function (e,data) {  
+ $('#tree1').bind('tree.open', function (e,data1) {  
 	//document.getElementById("selectedNodePath").value = e.node.fullPath;
 	var node = e.node;
 	//Make call to server to get data only if we are coming from onCreateLi
@@ -350,6 +536,52 @@ function scrollWindow()
 }
 );
 
+function browseDataobject(node) {
+	  
+	  document.getElementById("selectedNodeId").value = node.id;
+	  
+      $.ajax({
+          type : "POST",
+          data: {selectedNodePath: node.fullPath, refreshNode: refresh, scrollLoc: scrollLoc},
+          dataType: "json",
+          url : "/browse/dataObject",
+          success : function(msg) {
+       
+          	data = msg;
+          	angular.element('#refreshGrid').triggerHandler('click');
+          },
+    	  error : function(e) {
+    		 console.log('ERROR: ', e);
+    	  }
+      });
+};
+
+function browseNode1(id, path) {
+	  
+	  $(document.getElementById("processingIcon"+ id)).parent().click();
+	  /*
+	  document.getElementById("selectedNodeId").value = id;
+	  document.getElementById("processingIcon"+ id).style.visibility = "visible";
+	  document.getElementById("processingIcon"+ id).style.display = "inline-block";
+	  
+    $.ajax({
+        type : "POST",
+        data: {selectedNodePath: path, refreshNode: refresh, scrollLoc: scrollLoc, detailView: detail},
+        dataType: "json",
+        url : "/browse/collection",
+        success : function(msg) {
+     
+        	data = msg;
+        	document.getElementById("processingIcon"+ id).style.visibility = "hidden";
+        	document.getElementById("processingIcon"+ id).style.display = "none";
+        	angular.element('#refreshGrid').triggerHandler('click');
+        },
+  	  error : function(e) {
+  		 console.log('ERROR: ', e);
+  	  }
+    });
+    */
+};
 
 function browseNode(node) {
 	  
@@ -365,6 +597,7 @@ function browseNode(node) {
        
           	data = msg;
           	$('#tree1').tree('updateNode', node, data[0]);
+          	angular.element('#refreshGrid').triggerHandler('click');
           },
     	  error : function(e) {
     		 console.log('ERROR: ', e);
