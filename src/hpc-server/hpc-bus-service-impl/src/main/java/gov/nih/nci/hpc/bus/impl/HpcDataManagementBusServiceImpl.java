@@ -215,8 +215,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Locking the path
 		Lock lock = collectionRegistrationLocks.get(path);
 		try {
+			logger.info("Acquiring collectionRegistrationLocks - {}", path);
 			lock.lock();
-
+			logger.info("Aquired collectionRegistrationLocks - {}", path);
+			
 			// Input validation.
 			validatePath(path);
 
@@ -293,7 +295,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return created;
 
 		} finally {
+			logger.info("Releasing collectionRegistrationLocks - {}", path);
 			lock.unlock();
+			logger.info("Released collectionRegistrationLocks - {}", path);
 		}
 	}
 
@@ -1679,7 +1683,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			Lock lock = createParentCollectionsLocks.get(parentCollectionPath);
 			try {
 				if (createParentCollectionsForDataObject) {
+					logger.info("Acquiring createParentCollectionsLocks - {}", parentCollectionPath);
 					lock.lock();
+					logger.info("Acquired createParentCollectionsLocks - {}", parentCollectionPath);
 				}
 
 				if (!dataManagementService.isPathParentDirectory(path)) {
@@ -1697,7 +1703,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			} finally {
 				if (createParentCollectionsForDataObject) {
+					logger.info("Releasing createParentCollectionsLocks - {}", parentCollectionPath);
 					lock.unlock();
+					logger.info("Released createParentCollectionsLocks - {}", parentCollectionPath);
 				}
 			}
 		}
