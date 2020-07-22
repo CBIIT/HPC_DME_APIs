@@ -213,8 +213,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
     // Locking the path
     Lock lock = pathLocks.get(path);
-    lock.lock();
     try {
+      lock.lock();
 
       // Input validation.
       validatePath(path);
@@ -1772,8 +1772,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         // The parent collection exists, but in case its registration still in-progress, we wait for
         // its completion.
         Lock lock = pathLocks.get(parentCollectionPath);
-        lock.lock();
-        lock.unlock();
+        try {
+          lock.lock();
+        } finally {
+          lock.unlock();
+        }
       }
     }
   }
