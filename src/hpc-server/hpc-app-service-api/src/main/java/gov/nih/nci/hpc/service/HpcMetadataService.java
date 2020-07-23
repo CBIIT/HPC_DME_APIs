@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -316,4 +317,13 @@ public interface HpcMetadataService {
    * @throws HpcException on service failure.
    */
   public List<String> getDataObjectSystemMetadataAttributeNames() throws HpcException;
+
+  /**
+   * Get latest metadata for browse for a list of ids.
+   *
+   * @param ids The list of collection or data-object ID.
+   * @return A map of HpcCollectionListingEntry
+   * @throws HpcException on database error.
+   */
+  public Map<Integer, HpcCollectionListingEntry> getMetadataForBrowseByIds(List<Integer> ids) throws HpcException;
 }
