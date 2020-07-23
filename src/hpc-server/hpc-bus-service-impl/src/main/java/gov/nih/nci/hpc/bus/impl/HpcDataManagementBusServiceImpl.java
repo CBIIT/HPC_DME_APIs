@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.bus.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,15 +23,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
-import com.google.common.util.concurrent.Striped;
+
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
@@ -165,10 +167,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Autowired
 	private HpcEventService eventService = null;
 
-	// Locks to synchronize threads executing on path.
-	private Striped<Lock> collectionRegistrationLocks = Striped.lock(127);
-	private Striped<Lock> createParentCollectionsLocks = Striped.lock(127);
-
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -212,93 +210,79 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public boolean registerCollection(String path, HpcCollectionRegistrationDTO collectionRegistration, String userId,
 			String userName, String configurationId) throws HpcException {
 
-		// Locking the path
-		Lock lock = collectionRegistrationLocks.get(path);
-		try {
-			logger.info("Acquiring collectionRegistrationLocks - {}", path);
-			lock.lock();
-			logger.info("Aquired collectionRegistrationLocks - {}", path);
-			
-			// Input validation.
-			validatePath(path);
+		// Input validation.
+		validatePath(path);
 
-			if (collectionRegistration == null || collectionRegistration.getMetadataEntries().isEmpty()) {
-				throw new HpcException("Null or empty metadata entries", HpcErrorType.INVALID_REQUEST_INPUT);
-			}
-
-			// Create parent collections if requested to.
-			createParentCollections(path, collectionRegistration.getCreateParentCollections(),
-					collectionRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId,
-					false);
-
-			// Create a collection directory.
-			boolean created = dataManagementService.createDirectory(path);
-
-			// Attach the metadata.
-			if (created) {
-				boolean registrationCompleted = false;
-				try {
-					// Assign system account as an additional owner of the collection.
-					dataManagementService.setCoOwnership(path, userId);
-
-					// Add user provided metadata.
-					metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
-							configurationId);
-
-					// Generate system metadata and attach to the collection.
-					metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
-
-					// Validate the collection hierarchy.
-					securityService.executeAsSystemAccount(Optional.empty(),
-							() -> dataManagementService.validateHierarchy(path, configurationId, false));
-
-					// Add collection update event.
-					addCollectionUpdatedEvent(path, true, false, userId);
-
-					registrationCompleted = true;
-
-				} finally {
-					if (!registrationCompleted) {
-						// Collection registration failed. Remove it from Data Management.
-						dataManagementService.delete(path, true);
-					}
-				}
-
-			} else {
-				// Get the metadata for this collection.
-				HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
-				HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
-						.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
-
-				// Update the metadata.
-				boolean updated = true;
-				String message = null;
-				try {
-					metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
-							systemGeneratedMetadata.getConfigurationId());
-
-				} catch (HpcException e) {
-					// Collection metadata update failed. Capture this in the audit record.
-					updated = false;
-					message = e.getMessage();
-					throw (e);
-
-				} finally {
-					// Add an audit record of this deletion attempt.
-					dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
-							metadataService.getCollectionMetadataEntries(path), null, updated, null, message);
-				}
-
-				addCollectionUpdatedEvent(path, false, false, userId);
-			}
-
-			return created;
-
-		} finally {
-			logger.info("Releasing collectionRegistrationLocks - {}", path);
-			lock.unlock();
-			logger.info("Released collectionRegistrationLocks - {}", path);
+		if (collectionRegistration == null || collectionRegistration.getMetadataEntries().isEmpty()) {
+			throw new HpcException("Null or empty metadata entries", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+
+		// Create parent collections if requested to.
+		createParentCollections(path, collectionRegistration.getCreateParentCollections(),
+				collectionRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId);
+
+		// Create a collection directory.
+		boolean created = dataManagementService.createDirectory(path);
+
+		// Attach the metadata.
+		if (created) {
+			boolean registrationCompleted = false;
+			try {
+				// Assign system account as an additional owner of the collection.
+				dataManagementService.setCoOwnership(path, userId);
+
+				// Add user provided metadata.
+				metadataService.addMetadataToCollection(path, collectionRegistration.getMetadataEntries(),
+						configurationId);
+
+				// Generate system metadata and attach to the collection.
+				metadataService.addSystemGeneratedMetadataToCollection(path, userId, userName, configurationId);
+
+				// Validate the collection hierarchy.
+				securityService.executeAsSystemAccount(Optional.empty(),
+						() -> dataManagementService.validateHierarchy(path, configurationId, false));
+
+				// Add collection update event.
+				addCollectionUpdatedEvent(path, true, false, userId);
+
+				registrationCompleted = true;
+
+			} finally {
+				if (!registrationCompleted) {
+					// Collection registration failed. Remove it from Data Management.
+					dataManagementService.delete(path, true);
+				}
+			}
+
+		} else {
+			// Get the metadata for this collection.
+			HpcMetadataEntries metadataBefore = metadataService.getCollectionMetadataEntries(path);
+			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+					.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries());
+
+			// Update the metadata.
+			boolean updated = true;
+			String message = null;
+			try {
+				metadataService.updateCollectionMetadata(path, collectionRegistration.getMetadataEntries(),
+						systemGeneratedMetadata.getConfigurationId());
+
+			} catch (HpcException e) {
+				// Collection metadata update failed. Capture this in the audit record.
+				updated = false;
+				message = e.getMessage();
+				throw (e);
+
+			} finally {
+				// Add an audit record of this deletion attempt.
+				dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
+						metadataService.getCollectionMetadataEntries(path), null, updated, null, message);
+			}
+
+			addCollectionUpdatedEvent(path, false, false, userId);
+		}
+
+		return created;
 	}
 
 	@Override
@@ -750,8 +734,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Create parent collections if requested to.
 		createParentCollections(path, dataObjectRegistration.getCreateParentCollections(),
-				dataObjectRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId,
-				true);
+				dataObjectRegistration.getParentCollectionsBulkMetadataEntries(), userId, userName, configurationId);
 
 		// Create a data object file (in the data management system).
 		HpcDataObjectRegistrationResponseDTO responseDTO = new HpcDataObjectRegistrationResponseDTO();
@@ -1674,39 +1657,22 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 *                                             collections for a data object
 	 * @throws HpcException on service failure.
 	 */
-	private void createParentCollections(String path, Boolean createParentCollections,
+	synchronized private void createParentCollections(String path, Boolean createParentCollections,
 			HpcBulkMetadataEntries parentCollectionsBulkMetadataEntries, String userId, String userName,
-			String configurationId, boolean createParentCollectionsForDataObject) throws HpcException {
+			String configurationId) throws HpcException {
 		// Create parent collections if requested and needed to.
 		if (createParentCollections != null && createParentCollections) {
 			String parentCollectionPath = path.substring(0, path.lastIndexOf('/'));
-			Lock lock = createParentCollectionsLocks.get(parentCollectionPath);
-			try {
-				if (createParentCollectionsForDataObject) {
-					logger.info("Acquiring createParentCollectionsLocks - {}", parentCollectionPath);
-					lock.lock();
-					logger.info("Acquired createParentCollectionsLocks - {}", parentCollectionPath);
-				}
+			if (!dataManagementService.isPathParentDirectory(path)) {
+				// Create a parent collection registration request DTO.
+				HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
+				collectionRegistration.getMetadataEntries().addAll(
+						getParentCollectionMetadataEntries(parentCollectionPath, parentCollectionsBulkMetadataEntries));
+				collectionRegistration.setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
+				collectionRegistration.setCreateParentCollections(true);
 
-				if (!dataManagementService.isPathParentDirectory(path)) {
-					// Create a parent collection registration request DTO.
-					HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
-					collectionRegistration.getMetadataEntries().addAll(getParentCollectionMetadataEntries(
-							parentCollectionPath, parentCollectionsBulkMetadataEntries));
-					collectionRegistration
-							.setParentCollectionsBulkMetadataEntries(parentCollectionsBulkMetadataEntries);
-					collectionRegistration.setCreateParentCollections(true);
-
-					// Register the parent collection.
-					registerCollection(parentCollectionPath, collectionRegistration, userId, userName, configurationId);
-				}
-
-			} finally {
-				if (createParentCollectionsForDataObject) {
-					logger.info("Releasing createParentCollectionsLocks - {}", parentCollectionPath);
-					lock.unlock();
-					logger.info("Released createParentCollectionsLocks - {}", parentCollectionPath);
-				}
+				// Register the parent collection.
+				registerCollection(parentCollectionPath, collectionRegistration, userId, userName, configurationId);
 			}
 		}
 	}
