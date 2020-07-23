@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -360,6 +361,16 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
         .addAll(metadataDAO.getCollectionMetadata(dataManagementProxy.getAbsolutePath(path), 2));
 
     return metadataEntries;
+  }
+  
+  @Override
+  public Map<Integer, HpcCollectionListingEntry> getMetadataForBrowseByIds(List<Integer> ids) throws HpcException {
+    Map<Integer, HpcCollectionListingEntry> map = new HashMap<>();
+    List<HpcCollectionListingEntry> entries = metadataDAO.getBrowseMetadataByIds(ids);
+    for (HpcCollectionListingEntry entry: entries) {
+      map.put(entry.getId(), entry);
+    }
+    return map;
   }
 
   @Override

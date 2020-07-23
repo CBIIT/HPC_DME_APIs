@@ -72,28 +72,43 @@
 <script>
 //<![CDATA[
 var app = angular.module('app', ['ngAnimate', 'ngTouch', 'ui.grid', 'ui.grid.resizeColumns', 'ui.grid.moveColumns', 'ui.grid.autoResize', 'ui.bootstrap.contextMenu']);
-
-app.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $http, $interval, uiGridGroupingConstants ) {
+app
+.filter('dmePathEncoding', function () {
+  return function (value) {
+    return percentEncodePath(value);
+  };
+})
+.controller('MainCtrl', ['$scope', '$http', '$interval', function ($scope, $http, $interval, uiGridGroupingConstants ) {
 	$scope.openFolder = function( node ) {
     	browseNode1(node.id, node.fullPath);
     };
     
 	$scope.gridOptions1 = {
 	    enableSorting: true,
+	    enableFiltering : true,
 	    columnDefs: [
 	      { field : 'name',
-	    	width: '60%',
+	    	width: '50%',
 	        displayName : 'File name',
 	        cellTemplate: '<div class="ui-grid-cell-contents folder" ng-if="row.entity.collection" ng-click="grid.appScope.openFolder(row.entity);" ><i class="fa fa-folder"></i>{{COL_FIELD CUSTOM_FILTERS}}<div id="processingIcon{{row.entity.id}}" style="display:inline-block; visibility:hidden" class="loader"></div></div><div class="ui-grid-cell-contents file" ng-if="!row.entity.collection" >{{COL_FIELD CUSTOM_FILTERS}}</div>'
 	      },
 	      {
 	        field : 'fileSize',
-	        displayName : 'File size'
+	        displayName : 'File size',
+	        type: 'number'
 	      },
 	      {
 	        field : 'lastUpdated',
 	        displayName : 'Last updated'
-	      }
+	      },
+	      {
+            field : 'fullPath',
+            displayName : 'Download',
+            cellFilter : 'dmePathEncoding',
+            cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" ng-if="row.entity.collection" href="../download?type=collection&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a><a id="downloadlink" class="btn btn-link btn-sm" ng-if="!row.entity.collection" href="../download?type=datafile&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+            exporterSuppressExport : true,
+            enableSorting: false
+          },
 	    ],
 	    rowTemplate: rowTemplate(),
 	    onRegisterApi : function(gridApi) {
@@ -291,7 +306,7 @@ div.ui-grid-cell-contents.folder {
 				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
-					<div class="col-lg-9 col-md-12" style="word-break:break-all">
+					<div class="col-md-12" style="word-break:break-all">
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<div class="col-md-3">
@@ -556,31 +571,10 @@ function browseDataobject(node) {
       });
 };
 
-function browseNode1(id, path) {
-	  
+function browseNode1(id, path) {  
+	  node = $('#tree1').tree('getNodeById', id);
+	  $('#tree1').tree('closeNode', node, false);
 	  $(document.getElementById("processingIcon"+ id)).parent().click();
-	  /*
-	  document.getElementById("selectedNodeId").value = id;
-	  document.getElementById("processingIcon"+ id).style.visibility = "visible";
-	  document.getElementById("processingIcon"+ id).style.display = "inline-block";
-	  
-    $.ajax({
-        type : "POST",
-        data: {selectedNodePath: path, refreshNode: refresh, scrollLoc: scrollLoc, detailView: detail},
-        dataType: "json",
-        url : "/browse/collection",
-        success : function(msg) {
-     
-        	data = msg;
-        	document.getElementById("processingIcon"+ id).style.visibility = "hidden";
-        	document.getElementById("processingIcon"+ id).style.display = "none";
-        	angular.element('#refreshGrid').triggerHandler('click');
-        },
-  	  error : function(e) {
-  		 console.log('ERROR: ', e);
-  	  }
-    });
-    */
 };
 
 function browseNode(node) {
@@ -630,7 +624,7 @@ $('#tree1').bind('tree.init', function() {
            }
 	    }
 	 }
-	
+	angular.element('#refreshGrid').triggerHandler('click');
 });
 
 

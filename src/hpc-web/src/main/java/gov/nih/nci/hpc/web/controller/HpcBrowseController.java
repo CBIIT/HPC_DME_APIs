@@ -11,9 +11,8 @@ package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -526,7 +525,9 @@ public class HpcBrowseController extends AbstractHpcController {
 			//info about the selectedEntry.
 			HpcCollectionListDTO collections = HpcClientUtil.getCollection(
 					authToken, collectionURL, path, 
-					partial || refresh ? false : true, partial || refresh,
+					//TODO testing with the child listing only
+					true, true,
+					//partial || refresh ? false : true, partial || refresh,
 					sslCertPath, sslCertPassword);
 
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
@@ -536,8 +537,6 @@ public class HpcBrowseController extends AbstractHpcController {
 					selectedEntry.setFullPath(collection.getAbsolutePath());
 					selectedEntry.setId(collection.getAbsolutePath());
 					selectedEntry.setName(collection.getCollectionName());
-					selectedEntry.setFileSize(getAttributeValue("source_file_size", collectionDTO.getMetadataEntries()));
-	                selectedEntry.setLastUpdated(getAttributeValue("metadata_updated", collectionDTO.getMetadataEntries()));
 				}
 
 				//This will ensure that the next time we access this path
@@ -552,6 +551,9 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setFullPath(listEntry.getPath());
 					listChildEntry.setId(listEntry.getPath());
 					listChildEntry.setName(listEntry.getPath());
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    if(listEntry.getCreatedAt() != null)
+                      listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));
 					listChildEntry.setPopulated(false);
 					if (getChildren)
 						listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false, partial,
@@ -570,6 +572,10 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setFullPath(listEntry.getPath());
 					listChildEntry.setId(listEntry.getPath());
 					listChildEntry.setName(listEntry.getPath());
+					listChildEntry.setFileSize(Long.toString(listEntry.getDataSize()));
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+					if(listEntry.getCreatedAt() != null)
+					  listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));
 					listChildEntry.setPopulated(true);
 					selectedEntry.getChildren().add(listChildEntry);
 				}
@@ -623,20 +629,4 @@ public class HpcBrowseController extends AbstractHpcController {
 		return entry;
 	}
 
-	private String getAttributeValue(String attrName, HpcMetadataEntries entries) {
-		if (entries == null)
-			return null;
-
-		List<HpcMetadataEntry> selfEntries = entries.getSelfMetadataEntries();
-		for (HpcMetadataEntry entry : selfEntries) {
-			if (entry.getAttribute().equals(attrName))
-				return entry.getValue();
-		}
-		List<HpcMetadataEntry> parentEntries = entries.getParentMetadataEntries();
-		for (HpcMetadataEntry entry : parentEntries) {
-			if (entry.getAttribute().equals(attrName))
-				return entry.getValue();
-		}
-		return null;
-	}
 }

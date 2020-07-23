@@ -16,6 +16,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQueryOperator;
@@ -279,6 +281,19 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		return searchMetadataEntry;
 	};
+    private RowMapper<HpcCollectionListingEntry> browseMetadataRowMapper = (rs, rowNum) -> {
+        HpcCollectionListingEntry metadataEntry = new HpcCollectionListingEntry();
+        Integer id = rs.getInt("id");
+        metadataEntry.setId(id != null ? id.intValue() : null);
+        metadataEntry.setPath(rs.getString("path"));
+        Long size = rs.getLong("size");
+        metadataEntry.setDataSize(size != null ? size.longValue() : null);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(rs.getTimestamp("uploaded"));
+        metadataEntry.setCreatedAt(cal);
+        return metadataEntry;
+    };
+
 	// SQL Maps from operators to queries and filters.
 	private HpcSQLMaps dataObjectSQL = new HpcSQLMaps();
 	private HpcSQLMaps collectionSQL = new HpcSQLMaps();
@@ -513,6 +528,24 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		}
 	}
 
+
+    @Override
+    public List<HpcCollectionListingEntry> getBrowseMetadataByIds(List<Integer> ids)
+      throws HpcException {
+        try {
+            String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
+            return jdbcTemplate.query(
+                String.format("SELECT * FROM r_browse_meta_main WHERE id IN (%s)", inSql), ids.toArray(),
+                browseMetadataRowMapper);
+        } catch (DataAccessException e) {
+            throw new HpcException(
+                "Failed to get browse metadata : " + e.getMessage(),
+                HpcErrorType.DATABASE_ERROR,
+                HpcIntegratedSystem.POSTGRESQL,
+                e);
+        }
+    }
+    
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

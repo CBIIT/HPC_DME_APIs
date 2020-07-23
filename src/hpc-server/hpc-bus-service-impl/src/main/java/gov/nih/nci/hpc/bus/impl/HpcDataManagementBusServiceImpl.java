@@ -327,6 +327,31 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			return null;
 		}
 
+		List<Integer> ids = new ArrayList<>();
+	    for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
+	        ids.add(subCollection.getId());
+	    }
+	    for(HpcCollectionListingEntry dataObject: collection.getDataObjects()) {
+	        ids.add(dataObject.getId());
+	    }
+	    if(!ids.isEmpty()) {
+	        Map<Integer, HpcCollectionListingEntry> childMetadataMap = metadataService.getMetadataForBrowseByIds(ids);
+	        for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
+	            HpcCollectionListingEntry entry = childMetadataMap.get(subCollection.getId());
+	            if(entry != null) {
+	                subCollection.setDataSize(entry.getDataSize());
+	                subCollection.setCreatedAt(entry.getCreatedAt());
+	            }
+	        }
+	        for(HpcCollectionListingEntry dataObject: collection.getDataObjects()) {
+	            HpcCollectionListingEntry entry = childMetadataMap.get(dataObject.getId());
+	            if(entry != null) {
+	                dataObject.setDataSize(entry.getDataSize());
+	                dataObject.setCreatedAt(entry.getCreatedAt());
+	            }
+	        }
+	    }
+	    
 		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
 		collectionDTO.setCollection(collection);
 
