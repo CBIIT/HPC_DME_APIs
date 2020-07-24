@@ -15,4 +15,12 @@ response_hdr=add-bookmark-response-header.tmp
 response_msg=add-bookmark-response-message.json.tmp
 
 add_bookmark_from_template "$collection_path"  "$response_hdr" "$response_msg"
-get_http_code $response_hdr
+RESPONSE_CODE=$(get_http_code $response_hdr)
+echo $RESPONSE_CODE
+if [ "$RESPONSE_CODE" -eq 201 ]
+then
+  bookmark_name=$(cat bookmark-name.tmp)
+  delete_response_hdr=delete-bookmark-response-header.tmp
+  delete_response_msg=delete-bookmark-response-message.json.tmp
+  delete_bookmark "$bookmark_name" "$delete_response_hdr" "$delete_response_msg"
+fi
