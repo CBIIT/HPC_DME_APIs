@@ -15,9 +15,20 @@
 					src="/img/nci_logo.png" class="logoImg"
 					alt="National Cancer Institute"/></a>
 			</div>
-			<div id="toolTitle">
-				<a th:href="@{/}" >Data Management Environment</a>
-				<ul class="navbar-nav navbar-dark pull-right top-menu top-nav nav notification-row">
+			<nav class="navbar navbar-default" id="appnavbar">
+			  <div id="toolTitle" class="container-fluid">
+			  	<div class="navbar-header">
+					<span class="navbar-toggler-icon"></span>
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#appNav" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					</button>
+				  <a th:href="@{/}" >Data Management Environment</a>
+				</div>
+				<div id="appNav" class="collapse navbar-collapse">
+				<ul class="nav navbar-nav pull-right top-menu top-nav">
 				<!-- user login dropdown start-->
 
 					<li class="nav-item" role="tab"><a data-toggle="dropdown"
@@ -40,75 +51,84 @@
 						<li><a href="https://github.com/CBIIT/HPC_DME_APIs" target="_blank"><i class="icon_key_alt"></i> DME Site on GitHub</a></li>
 					</ul></li>
 					
-					<li class="nav-item versionNumber">
+					<li class="nav-item versionNumber"><a href="">
 						<span th:if="${session.env != 'PROD'}" th:text="'version: '+${session.version}+' ('+${session.env}+')'"></span>
 						<span th:if="${session.env == 'PROD'}" th:text="'version'+${session.version}"></span>
-						</li>
+						</a></li>
 				<!-- user login dropdown end -->
 				</ul>
+				</div>
 			</div>
+			</nav>
 			<!--logo end-->
-		</header>
-		<!--header end-->
 
-		<!--sidebar start-->
-		<aside>
-			<div id="sidebar" class="nav-collapse ">
-				<!-- sidebar menu start-->
-				<ul class="sidebar-menu">
-					<li><a class="" th:href="@{/dashboard}"> <i
-							class="icon_house_alt"></i> <span>Dashboard</span>
-					</a></li>
-					<li class="sub-menu"><a href="javascript:;" class=""> <i
-							class="icon_document_alt"></i> <span>Register</span> <span
-							class="menu-arrow arrow_carrot-right"></span>
-					</a>
-						<ul class="sub">
-							<li><a class="" th:href="@{/addCollection?init}">Collection</a></li>
-							<li><a class="" th:href="@{/addDatafile?init}">Data File</a></li>
-							<li><a class="" th:href="@{/addbulk?init}">Bulk</a></li>
-						</ul></li>
-					<li class="sub-menu"><a th:href="@{/criteria}" class=""> <i
-							class="icon_search"></i> <span>Search</span>
-					</a></li>
-					<li class="sub-menu"><a th:href="@{/browse?base}" class=""> <i
-							class="icon_folder"></i> <span>Browse</span>
-					</a></li>
-					<li class="sub-menu"><a href="javascript:;" class=""> <i
-							class="social_share"></i> <span>Manage</span> <span
-							class="menu-arrow arrow_carrot-right"></span>
-					</a>
-						<ul class="sub">
- 							<li><a class="" th:href="@{/subscribe}">Notifications</a></li>
- 							<li><a class="" th:href="@{/downloadtasks}">Download Tasks</a></li>
- 							<li><a class="" th:href="@{/uploadtasks}">Upload Tasks</a></li>
-						</ul></li>
-					<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
-					    <a th:href="@{/reports}" class=""> <i
-							class="icon_document_alt"></i> <span>Reports</span>
-					    </a>
-					</li>
-					<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
-						<a href="#" class=""> 
-						<i class="icon_lock_alt"></i> 
-							<span>Admin</span> 
-							<span class="menu-arrow arrow_carrot-right"></span>
+
+		<!--navbar start-->
+		<nav class="navbar navbar-default" id="menunavbar">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<span class="navbar-toggler-icon"></span>
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNav" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					</button>
+				</div>
+				<div id="topNav" class="collapse navbar-collapse">
+					<!-- navbar menu start-->
+					<ul class="nav navbar-nav pull-left">
+						<li><a class="" th:href="@{/dashboard}"> <i
+								class="icon_house_alt"></i> <span>Dashboard</span>
+						</a></li>
+						<li class="sub-menu"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i
+								class="icon_document_alt"></i> <span>Register</span> <span
+								class="menu-arrow arrow_carrot-right"></span>
 						</a>
-						<ul class="sub" >
-							<li><a class="" th:href="@{/user}">User</a></li>
-							<li><a class="" th:href="@{/group}">Group</a></li>
-							<li><a class="" th:href="@{/doc}" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'">DOC</a></li>
-						</ul>
-					</li>
-					<li><a href="/logout"><i
-									class="icon_arrow_triangle_right_alt"></i> Log Out</a></li>
-					
-				</ul>
-				<!-- sidebar menu end-->
+							<ul class="sub dropdown-menu" aria-labelledby="register_dropdown">
+								<li><a class="" th:href="@{/addCollection?init}">Collection</a></li>
+								<li><a class="" th:href="@{/addDatafile?init}">Data File</a></li>
+								<li><a class="" th:href="@{/addbulk?init}">Bulk</a></li>
+							</ul></li>
+						<li class="sub-menu"><a th:href="@{/criteria}" class=""> <i
+								class="icon_search"></i> <span>Search</span>
+						</a></li>
+						<li class="sub-menu"><a th:href="@{/browse?base}" class=""> <i
+								class="icon_folder"></i> <span>Browse</span>
+						</a></li>
+						<li class="sub-menu"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i
+								class="social_share"></i> <span>Manage</span> <span
+								class="menu-arrow arrow_carrot-right"></span>
+						</a>
+							<ul class="sub dropdown-menu" aria-labelledby="manage_dropdown">
+									<li><a class="" th:href="@{/subscribe}">Notifications</a></li>
+									<li><a class="" th:href="@{/downloadtasks}">Download Tasks</a></li>
+									<li><a class="" th:href="@{/uploadtasks}">Upload Tasks</a></li>
+							</ul></li>
+						<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
+						    <a th:href="@{/reports}" class=""> <i
+								class="icon_document_alt"></i> <span>Reports</span>
+						    </a>
+						</li>
+						<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> 
+							<i class="icon_lock_alt"></i> 
+								<span>Admin</span> 
+								<span class="menu-arrow arrow_carrot-right"></span>
+							</a>
+							<ul class="sub dropdown-menu" aria-labelledby="admin_dropdown">
+								<li><a class="" th:href="@{/user}">User</a></li>
+								<li><a class="" th:href="@{/group}">Group</a></li>
+								<li><a class="" th:href="@{/doc}" th:if="${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN'">DOC</a></li>
+							</ul>
+						</li>
+					</ul>
+					<!-- navbar menu end-->
+				</div>
 			</div>
-		</aside>
-		<!--sidebar end-->
-
+		</nav>
+				</header>
+		<!--header end-->
 	</div>
 </body>
 </html>

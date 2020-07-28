@@ -288,6 +288,38 @@ table tr th { color: #688a7e;}
     background: #1c5e86;
 }
 
+#menunavbar {
+    z-index: 10;
+    background-color: #1c5e86;
+    border-radius: 0px;
+    margin-bottom: 0px;
+    border: none;
+    width: 100%;
+}
+
+#menunavbar.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
+    background-color: #999;
+}
+
+@media screen and (max-width: 767px) {
+	.navbar-nav .open .dropdown-menu > li > a, .navbar-nav .open .dropdown-menu .dropdown-header {
+		color: #fff !important;
+	}
+}
+
+#menunavbar.navbar-default .navbar-nav > li > a {
+    color: #fff;
+}
+
+#menunavbar > div > div .navbar-toggle {
+    float: left;
+    margin-left: 15px;
+}
+
+#topNav.navbar-collapse {
+    max-height: 300px;
+}
+
 .nav-collapse.collapse {
     display: inline;
 }
@@ -511,9 +543,6 @@ ul.sidebar-menu li.active a i {
 }
 /*main content*/
 
-#main-content {
-    margin-left: 180px;
-}
 
 .logoImg {
   max-width: 600px;
@@ -565,24 +594,34 @@ ul.sidebar-menu li.active a i {
 }
 .wrapper {
     display: inline-block;
-    margin-top: 60px;
+    margin-top: 210px;
     padding: 15px;
     width: 100%;
 }
+
+#appnavbar.navbar {
+    border-radius: 0px;
+    margin-bottom: 0px;
+    border: none;
+  height: 60px;
+  line-height: 60px;
+}
+
+
 
 header #toolTitle {
   background-color: #2a72a5;
   color: #fff;
   font-weight: bold;
-  padding: 1em 0;
   padding-left: 5em;
+  min-height: 60px;
+  max-height: 60px;
 }
 
 header #toolTitle a {
   color: inherit;
   font-size: 22px;
   font-weight: bold;
-  line-height: 20px;
 }
 
 a.logo {
@@ -816,9 +855,6 @@ div[data-role="editor-toolbar"] {
 	
 }
 
-.top-nav  {
-    margin-top: -5px;
-}
 
 .top-nav ul.top-menu > li .dropdown-menu.logout {
     width: 200px !important;
@@ -898,7 +934,6 @@ div[data-role="editor-toolbar"] {
 }
 
 .top-nav .versionNumber {
-    margin-top: 8px;
     padding-right: 10px;
 }
 
