@@ -324,12 +324,24 @@ public interface HpcDataManagementBusService {
   /**
    * Get Data Object.
    *
+   * @deprecated
    * @param path The data object's path.
    * @param includeAcl An indicator to obtain user permission.
    * @return A Data Object DTO.
    * @throws HpcException on service failure.
    */
-  public HpcDataObjectDTO getDataObject(String path, Boolean includeAcl) throws HpcException;
+  @Deprecated
+  public HpcDataObjectDTO getDataObjectV1(String path, Boolean includeAcl) throws HpcException;
+  
+  /**
+   * Get Data Object.
+   *
+   * @param path The data object's path.
+   * @param includeAcl An indicator to obtain user permission.
+   * @return A Data Object DTO.
+   * @throws HpcException on service failure.
+   */
+  public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, Boolean includeAcl) throws HpcException;
 
   /**
    * Download Data Object. In this overloaded method, the request invoker will be notified (if
