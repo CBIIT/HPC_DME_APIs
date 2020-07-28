@@ -21,6 +21,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -294,6 +295,15 @@ public interface HpcMetadataService {
    * @throws HpcException on service failure.
    */
   public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
+  
+  /**
+   * Get metadata of a data object grouped by user / extracted / system
+   *
+   * @param path The data object's path.
+   * @return HpcMetadataEntries The data object's metadata entries.
+   * @throws HpcException on service failure.
+   */
+  public HpcGroupedMetadataEntries getDataObjectGroupedMetadataEntries(String path) throws HpcException;
 
   /**
    * Refresh all metadata materialized views.

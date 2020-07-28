@@ -39,6 +39,30 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="HpcGroupedMetadataEntries">
+		<xsd:sequence>
+				<xsd:element name="selfMetadataEntries" 
+			                 type="hpc-domain-metadata:HpcSelfMetadataEntries" />
+				<xsd:element name="parentMetadataEntries" 
+			                 type="hpc-domain-metadata:HpcMetadataEntry" 
+				             maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="HpcSelfMetadataEntries">
+		<xsd:sequence>
+				<xsd:element name="userMetadataEntries" 
+			                 type="hpc-domain-metadata:HpcMetadataEntry" 
+				             maxOccurs="unbounded" />
+				<xsd:element name="extractedMetadataEntries" 
+			                 type="hpc-domain-metadata:HpcMetadataEntry" 
+				             maxOccurs="unbounded" />
+				<xsd:element name="systemMetadataEntries" 
+			                 type="hpc-domain-metadata:HpcMetadataEntry" 
+				             maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:complexType name="HpcSearchMetadataEntry">
 		<xsd:sequence>
 				<xsd:element name="id" type="xsd:int" />
