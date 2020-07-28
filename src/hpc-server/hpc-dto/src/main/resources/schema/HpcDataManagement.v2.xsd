@@ -223,5 +223,20 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:element name="HpcDataObjectDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObject"
+					type="hpc-domain-datamanagement:HpcDataObject" />
+				<xsd:element name="metadataEntries"
+					type="hpc-domain-metadata:HpcGroupedMetadataEntries" />
+				<xsd:element name="percentComplete" type="xsd:int"
+					minOccurs="0" />
+				<xsd:element name="permission"
+					type="hpc-domain-datamanagement:HpcPermission" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 </xsd:schema>

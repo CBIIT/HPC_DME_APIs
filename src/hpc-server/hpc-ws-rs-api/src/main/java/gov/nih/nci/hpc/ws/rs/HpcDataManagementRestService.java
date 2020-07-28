@@ -384,12 +384,27 @@ public interface HpcDataManagementRestService {
   /**
    * Get a data object.
    *
+   * @deprecated
+   * @param path The data object path.
+   * @param includeAcl Flag to include ACL.
+   * @return The REST service response w/ HpcDataObjectListDTO entity.
+   */
+  @Deprecated	
+  @GET
+  @Path("/dataObject/{path:.*}")
+  @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+  public Response getDataObjectV1(@PathParam("path") String path,
+      @QueryParam("includeAcl") Boolean includeAcl);
+  
+  /**
+   * Get a data object.
+   *
    * @param path The data object path.
    * @param includeAcl Flag to include ACL.
    * @return The REST service response w/ HpcDataObjectListDTO entity.
    */
   @GET
-  @Path("/dataObject/{path:.*}")
+  @Path("/v2/dataObject/{path:.*}")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response getDataObject(@PathParam("path") String path,
       @QueryParam("includeAcl") Boolean includeAcl);
