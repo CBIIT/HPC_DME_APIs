@@ -301,11 +301,6 @@ table tr th { color: #688a7e;}
     background-color: #999;
 }
 
-@media screen and (max-width: 767px) {
-	.navbar-nav .open .dropdown-menu > li > a, .navbar-nav .open .dropdown-menu .dropdown-header {
-		color: #fff !important;
-	}
-}
 
 #menunavbar.navbar-default .navbar-nav > li > a {
     color: #fff;
@@ -615,7 +610,6 @@ header #toolTitle {
   font-weight: bold;
   padding-left: 5em;
   min-height: 60px;
-  max-height: 60px;
 }
 
 header #toolTitle a {
@@ -941,6 +935,7 @@ div[data-role="editor-toolbar"] {
     padding: 8px;
     background: none;
     font-size: 13px !important;
+    line-height: 50px;
 }
 .top-nav.top-menu > li {
     margin-left: 10px;
