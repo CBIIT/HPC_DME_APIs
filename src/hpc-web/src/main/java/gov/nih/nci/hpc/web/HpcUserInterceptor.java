@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -48,9 +47,8 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 
 		if (StringUtils.isBlank(user)) {
 			user = request.getHeader("SM_USER");
-			HpcUserDTO userDto = (HpcUserDTO) session.getAttribute("hpcUser");
-
-			if (StringUtils.isBlank(user) || userDto == null) {
+			
+			if (StringUtils.isBlank(user)) {
 				log.error(
 						"redirect to login - no authorized user to work with in SM_USER "
 								+ "header");
