@@ -14,7 +14,6 @@ import java.util.UUID;
  * HPC Key generator w/ UUID.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
- * @version $Id$
  */
 public class HpcUUIDKeyGeneratorImpl implements HpcKeyGenerator {
   //---------------------------------------------------------------------//
