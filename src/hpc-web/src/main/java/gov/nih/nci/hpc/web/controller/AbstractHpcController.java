@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -15,10 +15,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
-
+import org.springframework.web.servlet.ModelAndView;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
+import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 
@@ -52,6 +53,22 @@ public abstract class AbstractHpcController {
 
 	protected Logger log = LoggerFactory.getLogger(this.getClass());
 
+	/**
+     * Handler for authorization exceptions thrown by HpcUserInterceptor
+     *
+     * @param req the req
+     * @param e   the e
+     * @return model and view
+     */
+    @ExceptionHandler({HpcAuthorizationException.class})
+    public ModelAndView handleUnauthorizedException(HttpServletRequest req, Exception e) {
+        ModelAndView mav = new ModelAndView();
+
+        mav.setViewName("notauthorized");
+
+        return mav;
+    }
+    
 	@ExceptionHandler({ Exception.class, java.net.ConnectException.class })
 	public @ResponseBody HpcResponse handleUncaughtException(Exception ex, WebRequest request,
 			HttpServletResponse response) {
