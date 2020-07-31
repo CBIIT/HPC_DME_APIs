@@ -86,7 +86,7 @@ public class HpcLoginController extends AbstractHpcController {
 		session.setAttribute("env", env);
         session.setAttribute("version", version);
 		String userId = (String) session.getAttribute("hpcUserId");
-		if (StringUtils.equalsIgnoreCase(hpcLoginModule, "LDAP")) {
+		if (StringUtils.equalsIgnoreCase(hpcLoginModule, "LDAP") && StringUtils.isBlank(userId)) {
 			// This is for local configuration where site minder is not available or we don't want to use the SMSESSION.
 			HpcLogin hpcLogin = new HpcLogin();
 			model.addAttribute("hpcLogin", hpcLogin);
@@ -97,40 +97,6 @@ public class HpcLoginController extends AbstractHpcController {
 		} else if (StringUtils.isBlank(userId) && !StringUtils.isBlank(smSession)) {
 			//This can happen if login url was requested directly when site minder is available, so go through the interceptor first.
 			return "redirect:/";
-		}
-		try {
-			String authToken = HpcClientUtil.getAuthenticationTokenSso(userId, smSession,
-					authenticateURL);
-			session.setAttribute("hpcUserToken", authToken);
-			try {
-				HpcUserDTO user = HpcClientUtil.getUser(authToken, serviceUserURL, sslCertPath, sslCertPassword);
-				if (user == null)
-					throw new HpcWebException("Invlaid User");
-				session.setAttribute("hpcUser", user);
-				logger.info("getting DOCModel for user: " + user.getFirstName() + " " + user.getLastName());			
-				//Get DOC Models, go to server only if not available in cache
-				HpcDataManagementModelDTO modelDTO = hpcModelBuilder.getDOCModel(authToken, hpcModelURL, sslCertPath, sslCertPassword);
-				
-				if (modelDTO != null)
-					session.setAttribute("userDOCModel", modelDTO);
-				
-				//Not required here, this is being populated on an as needed basis elsewhere
-				//HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken, userId,
-				//	collectionAclURL, sslCertPath, sslCertPassword);
-						
-				
-			} catch (HpcWebException e) {
-				model.addAttribute("loginStatus", false);
-				model.addAttribute("loginOutput", "Invalid login");
-				ObjectError error = new ObjectError("hpcLogin", "Authentication failed. " + e.getMessage());
-				return "notauthorized";
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			model.addAttribute("loginStatus", false);
-			model.addAttribute("loginOutput", "Invalid login" + e.getMessage());
-			ObjectError error = new ObjectError("hpcLogin", "Authentication failed. " + e.getMessage());
-			return "notauthorized";
 		}
 		model.addAttribute("queryURL", queryURL);
 		String callerPath = (String) session.getAttribute("callerPath");
