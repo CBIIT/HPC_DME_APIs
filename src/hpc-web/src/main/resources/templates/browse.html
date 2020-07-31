@@ -458,6 +458,8 @@ $(function() {
                     //then the 2nd level collections onwards won't have
                     //got populated, so we wont get here.
                     $('#tree1').tree('selectNode', node);
+                    data[0] = node;
+                    angular.element('#refreshGrid').triggerHandler('click');
                 }
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
             } else {
@@ -552,6 +554,7 @@ function scrollWindow()
 	}
 	
 	$('#tree1').tree('selectNode', node);
+	angular.element('#refreshGrid').triggerHandler('click');
 }
 );
 
