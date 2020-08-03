@@ -95,11 +95,13 @@ app
 	      {
 	        field : 'fileSize',
 	        displayName : 'File size',
-	        type: 'number'
+	        type: 'number',
+            enableFiltering: false
 	      },
 	      {
 	        field : 'lastUpdated',
-	        displayName : 'Last updated'
+	        displayName : 'Last updated',
+            enableFiltering: false
 	      },
 	      {
             field : 'fullPath',
@@ -107,7 +109,8 @@ app
             cellFilter : 'dmePathEncoding',
             cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" ng-if="row.entity.collection" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a><a id="downloadlink" class="btn btn-link btn-sm" ng-if="!row.entity.collection" href="../download?type=datafile&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
             exporterSuppressExport : true,
-            enableSorting: false
+            enableSorting: false,
+            enableFiltering: false
           },
 	    ],
 	    rowTemplate: rowTemplate(),
