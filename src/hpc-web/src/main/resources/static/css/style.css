@@ -319,6 +319,10 @@ table tr th { color: #688a7e;}
     display: inline;
 }
 
+ul.navbar-nav li.sub-menu{
+    width: 120px;
+}
+
 ul.sidebar-menu , ul.sidebar-menu li ul.sub{
     margin: -2px 0 0;
     padding: 0;
