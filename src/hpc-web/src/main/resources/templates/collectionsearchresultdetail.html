@@ -411,10 +411,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 						<h3 class="page-header">
 							<i class="fa fa-search"></i> Search
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-home"></i><a th:href="@{/dashboard}">Dashboard
-							</a> / <a th:href="@{/criteria}">Search</a></li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -528,6 +524,11 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	<script src="js/jquery.customSelect.min.js"></script>
 <script>
 /*<![CDATA[*/
+	$(document).ready(function(){
+		$('[data-toggle="tooltip"]').tooltip();
+		$('#sub-menu-search').addClass("active");
+	});
+	
     function updatePage(action, newPageSize)
     {
     	$('.ui-grid-pager-next').prop('disabled', true);

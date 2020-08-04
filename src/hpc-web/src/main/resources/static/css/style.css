@@ -705,6 +705,11 @@ ul.top-menu > li > a:hover, ul.top-menu > li > a:focus {
     border-radius: 4px;
     -webkit-border-radius: 4px;
 }
+
+.navbar-nav li:hover {
+    cursor: pointer;
+}
+
 .navbar-form{
     padding: 0px;
     margin: 0 0 0 10px;    
