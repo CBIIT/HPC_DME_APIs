@@ -134,6 +134,11 @@ public class HpcBrowseController extends AbstractHpcController {
 					}
 				}
 
+				browserEntry = new HpcBrowserEntry();
+		        browserEntry.setCollection(true);
+		        browserEntry.setFullPath(hpcBrowserEntry.getSelectedNodePath().trim());
+		        browserEntry.setId(hpcBrowserEntry.getSelectedNodePath().trim());
+		        browserEntry.setName(hpcBrowserEntry.getSelectedNodePath().trim());
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
 						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
