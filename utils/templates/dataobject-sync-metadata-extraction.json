@@ -1,0 +1,13 @@
+{ 
+  "extractMetadata" : true,
+  "metadataEntries": [
+    {
+      "attribute": "description",
+      "value": "my-file-description"
+    }, 
+    {
+      "attribute": "my-second-attribute-name",
+      "value": "my-second-attribute-description"
+    }
+  ]
+}

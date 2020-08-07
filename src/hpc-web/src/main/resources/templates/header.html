@@ -78,10 +78,10 @@
 				<div id="topNav" class="collapse navbar-collapse">
 					<!-- navbar menu start-->
 					<ul class="nav navbar-nav">
-						<li><a class="" th:href="@{/dashboard}"> <i
+						<li id="sub-menu-dashboard" class="sub-menu"><a class="" th:href="@{/dashboard}"> <i
 								class="icon_house_alt"></i> <span>Dashboard</span>
 						</a></li>
-						<li class="sub-menu"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i
+						<li id="sub-menu-register" class="sub-menu"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i
 								class="icon_document_alt"></i> <span>Register</span> <span
 								class="menu-arrow arrow_carrot-right"></span>
 						</a>
@@ -90,13 +90,13 @@
 								<li><a class="" th:href="@{/addDatafile?init}">Data File</a></li>
 								<li><a class="" th:href="@{/addbulk?init}">Bulk</a></li>
 							</ul></li>
-						<li class="sub-menu"><a th:href="@{/criteria}" class=""> <i
+						<li id="sub-menu-search" class="sub-menu"><a th:href="@{/criteria}" class=""> <i
 								class="icon_search"></i> <span>Search</span>
 						</a></li>
-						<li class="sub-menu"><a th:href="@{/browse?base}" class=""> <i
+						<li id="sub-menu-browse" class="sub-menu"><a th:href="@{/browse?base}" class=""> <i
 								class="icon_folder"></i> <span>Browse</span>
 						</a></li>
-						<li class="sub-menu"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i
+						<li id="sub-menu-manage" class="sub-menu"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i
 								class="social_share"></i> <span>Manage</span> <span
 								class="menu-arrow arrow_carrot-right"></span>
 						</a>
@@ -105,12 +105,12 @@
 									<li><a class="" th:href="@{/downloadtasks}">Download Tasks</a></li>
 									<li><a class="" th:href="@{/uploadtasks}">Upload Tasks</a></li>
 							</ul></li>
-						<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
+						<li id="sub-menu-reports" class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
 						    <a th:href="@{/reports}" class=""> <i
 								class="icon_document_alt"></i> <span>Reports</span>
 						    </a>
 						</li>
-						<li class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
+						<li id="sub-menu-admin" class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> 
 							<i class="icon_lock_alt"></i> 
 								<span>Admin</span> 

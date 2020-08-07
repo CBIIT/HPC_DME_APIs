@@ -151,14 +151,8 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-lock"></i> Admin
+							<i class="fa fa-lock"></i> Assign Group
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Authorization</li>
-							<li><i class="fa fa-list-alt"></i>Assign Group</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -273,6 +267,10 @@
 
 	<script type="text/javascript">
 		//<![CDATA[
+		$(document).ready(function(){
+			sub-menu-admin').addClass("active");
+		});
+			
 		$("#spinner").show();
 	    $("#dimmer").show();
 		function prepareAndSubmit()
