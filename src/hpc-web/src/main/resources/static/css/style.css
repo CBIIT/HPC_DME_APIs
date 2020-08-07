@@ -548,6 +548,11 @@ ul.sidebar-menu li.active a i {
   height: 82px;
 }
 
+.header {
+	position: absolute;
+    top: 0px;
+}
+
 .header, .footer {
     min-height: 60px;
     /*padding: 0 15px;*/
@@ -558,7 +563,6 @@ ul.sidebar-menu li.active a i {
   line-height: 2;
   margin-top: 40px;
   width: 100%;
-  position: absolute;
 }
 
 .footer *,
@@ -593,7 +597,6 @@ ul.sidebar-menu li.active a i {
 }
 .wrapper {
     display: inline-block;
-    margin-top: 210px;
     padding: 15px;
     width: 100%;
 }
@@ -1907,6 +1910,13 @@ div[data-role="editor-toolbar"] {
     font-size: 20px;
 }
 
+#main-content {
+	position: absolute;
+    top: 210px;
+    bottom: 0px;
+    overflow: auto;
+    width: 100%;
+}
 
 .sidebar-closed > #sidebar > ul {
     display: none;
