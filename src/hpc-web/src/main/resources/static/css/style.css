@@ -319,6 +319,10 @@ table tr th { color: #688a7e;}
     display: inline;
 }
 
+ul.navbar-nav li.sub-menu{
+    width: 120px;
+}
+
 ul.sidebar-menu , ul.sidebar-menu li ul.sub{
     margin: -2px 0 0;
     padding: 0;
@@ -701,6 +705,11 @@ ul.top-menu > li > a:hover, ul.top-menu > li > a:focus {
     border-radius: 4px;
     -webkit-border-radius: 4px;
 }
+
+.navbar-nav li:hover {
+    cursor: pointer;
+}
+
 .navbar-form{
     padding: 0px;
     margin: 0 0 0 10px;    
