@@ -95,11 +95,13 @@ app
 	      {
 	        field : 'fileSize',
 	        displayName : 'File size',
-	        type: 'number'
+	        type: 'number',
+            enableFiltering: false
 	      },
 	      {
 	        field : 'lastUpdated',
-	        displayName : 'Last updated'
+	        displayName : 'Last updated',
+            enableFiltering: false
 	      },
 	      {
             field : 'fullPath',
@@ -107,7 +109,8 @@ app
             cellFilter : 'dmePathEncoding',
             cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" ng-if="row.entity.collection" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a><a id="downloadlink" class="btn btn-link btn-sm" ng-if="!row.entity.collection" href="../download?type=datafile&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
             exporterSuppressExport : true,
-            enableSorting: false
+            enableSorting: false,
+            enableFiltering: false
           },
 	    ],
 	    rowTemplate: rowTemplate(),
@@ -296,11 +299,6 @@ div.ui-grid-cell-contents.folder {
 						<h3 class="page-header">
 							<i class="fa fa-folder"></i> Browse
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Browse</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -440,6 +438,10 @@ div.ui-grid-cell-contents.folder {
 //Invoked after the server side code is executed when 
 //- the browse menu is first accessed
 //- A bookmark is clicked on the Browse page
+$(document).ready(function(){
+	$('#sub-menu-browse').addClass("active");
+});
+		
 $(function() {
     $('#tree1').tree({
     	closedIcon: $('<i class="fa fa-folder" />'),
@@ -458,6 +460,8 @@ $(function() {
                     //then the 2nd level collections onwards won't have
                     //got populated, so we wont get here.
                     $('#tree1').tree('selectNode', node);
+                    data[0] = node;
+                    angular.element('#refreshGrid').triggerHandler('click');
                 }
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
             } else {
@@ -552,6 +556,7 @@ function scrollWindow()
 	}
 	
 	$('#tree1').tree('selectNode', node);
+	angular.element('#refreshGrid').triggerHandler('click');
 }
 );
 
