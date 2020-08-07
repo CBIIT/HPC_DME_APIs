@@ -113,7 +113,7 @@
 								<!--panel-body start-->
 								<div class="panel-body">
 									<p>This page allows you to bulk register folders/files from
-										a Globus endpoint, a S3 bucket, or 
+										a Globus endpoint, an S3 bucket, or 
 										Google Drive (source) to a DME
 										collection (destination) asynchronously.</p>
 									<div class="form-group" id="radioset">
@@ -146,7 +146,7 @@
 										<button type="button" class="btn btn-primary"
 											id="driveAuthlink"
 											onClick="return refreshAttributes('Drive')">Authorize 
-											DME to access your Google Drive</button>
+											DME to Access Your Google Drive</button>
 									</div>
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
