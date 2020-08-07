@@ -89,18 +89,18 @@ app
 	    columnDefs: [
 	      { field : 'name',
 	    	width: '50%',
-	        displayName : 'File name',
+	        displayName : 'File Name',
 	        cellTemplate: '<div class="ui-grid-cell-contents folder" ng-if="row.entity.collection" ng-click="grid.appScope.openFolder(row.entity);" ><i class="fa fa-folder"></i>{{COL_FIELD CUSTOM_FILTERS}}<div id="processingIcon{{row.entity.id}}" style="display:inline-block; visibility:hidden" class="loader"></div></div><div class="ui-grid-cell-contents file" ng-if="!row.entity.collection" >{{COL_FIELD CUSTOM_FILTERS}}</div>'
 	      },
 	      {
 	        field : 'fileSize',
-	        displayName : 'File size',
+	        displayName : 'File Size',
 	        type: 'number',
             enableFiltering: false
 	      },
 	      {
 	        field : 'lastUpdated',
-	        displayName : 'Last updated',
+	        displayName : 'Last Updated',
             enableFiltering: false
 	      },
 	      {
