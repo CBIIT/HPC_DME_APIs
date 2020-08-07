@@ -86,10 +86,10 @@
 
 
 			<div class="pull-center" th:if="${downloadType == 'datafile'}">
-			  <p>This page allows you to download the selected data file either synchronously to your computer or asynchronously to Globus endpoint location, to an S3 bucket, or to Google Drive.</p>
+			  <p>This page allows you to download the selected data file either synchronously to your computer or asynchronously to a Globus endpoint location, to an S3 bucket, or to Google Drive.</p>
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
-              <p>This page allows you to download the selected collection to Globus endpoint location, to an S3 bucket, or to Google Drive.</p>    
+              <p>This page allows you to download the selected collection to a Globus endpoint location, to an S3 bucket, or to Google Drive.</p>    
             </div>
      
 			<div class="panel panel-default">
@@ -216,7 +216,7 @@
 									<div class="col-sm-12 column">
 										<a class="btn btn-primary" id="driveAuthlink" 
                                             th:href="@{../download(type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">                                  
-                                            Authorize DME to access your Google Drive</a>
+                                            Authorize DME to Access Your Google Drive</a>
 									</div>
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
