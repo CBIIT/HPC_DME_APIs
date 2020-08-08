@@ -742,7 +742,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		logger.info("download task: {} - task completed - result={} [transfer-type={}, destination-type={}]",
+		logger.info("download task: {} - completed - {} [transfer-type={}, destination-type={}]",
 				downloadTask.getId(), result.value(), downloadTask.getDataTransferType(),
 				downloadTask.getDestinationType());
 
@@ -2178,7 +2178,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 								downloadRequest.getS3ArchiveConfigurationId()),
 						downloadRequest, baseArchiveDestination, secondHopDownload);
 
-				logger.info("download task: {} - 2 Hop download initiated. [transfer-type={}, destination-type={}]",
+				logger.info("download task: {} - 1st hop started. [transfer-type={}, destination-type={}]",
 						secondHopDownload.downloadTask.getId(), secondHopDownload.downloadTask.getDataTransferType(),
 						secondHopDownload.downloadTask.getDestinationType());
 			} else {
@@ -2421,7 +2421,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// through the 2-hop async download requests.
 			createDownloadTask(firstHopDownloadRequest, secondHopArchiveLocation, secondHopGlobusDestination);
 
-			logger.info("download task: {} - 2 Hop download path at scratch space: {}", downloadTask.getId(),
+			logger.info("download task: {} - 2 Hop download created. Path at scratch space: {}", downloadTask.getId(),
 					sourceFile.getAbsolutePath());
 		}
 
@@ -2450,7 +2450,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// through the 2-hop async download requests.
 			updateDownloadTask(downloadTask, secondHopArchiveLocation);
 
-			logger.info("download task: {} - 2 Hop download path at scratch space: {}", downloadTask.getId(),
+			logger.info("download task: {} - 2 Hop download created. Path at scratch space: {}", downloadTask.getId(),
 					sourceFile.getAbsolutePath());
 		}
 
