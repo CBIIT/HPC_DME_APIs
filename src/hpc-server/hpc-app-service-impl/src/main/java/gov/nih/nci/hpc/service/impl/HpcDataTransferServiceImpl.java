@@ -2507,7 +2507,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 				}
 
-				logger.info("download task: {} - 1 Hop download completed. Path at scratch space: {}",
+				logger.info("download task: {} - 1st hop completed. Path at scratch space: {}",
 						downloadTask.getId(), sourceFile.getAbsolutePath());
 
 			} catch (HpcException e) {
