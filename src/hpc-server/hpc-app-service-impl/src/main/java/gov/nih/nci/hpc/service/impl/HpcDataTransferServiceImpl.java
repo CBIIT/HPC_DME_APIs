@@ -1110,7 +1110,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status,
 			boolean inProcess) throws HpcException {
-		return dataDownloadDAO.getCollectionDownloadTasks(status);
+		return dataDownloadDAO.getCollectionDownloadTasks(status, inProcess);
 	}
 
 	@Override

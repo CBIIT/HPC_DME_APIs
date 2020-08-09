@@ -551,6 +551,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// processed yet).
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
+			logger.info("collection download task: {} - started processing [{}]", downloadTask.getId(),
+					downloadTask.getType());
+
 			// Mark this collection download task in-process
 			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
 
@@ -624,6 +627,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							// Persist the collection download task.
 							dataTransferService.updateCollectionDownloadTask(downloadTask);
+							
+							logger.info("collection download task: {} - finished processing [{}]", downloadTask.getId(),
+									downloadTask.getType());
 
 						} catch (HpcException e) {
 							logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
@@ -683,8 +689,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								// This item failed because of permission denied.
 								// Cancel any pending download items (i.e. items in RECEIVED state).
 								dataTransferService.cancelCollectionDownloadTask(downloadTask);
-								logger.info("Detected permission denied in collection download task: {}",
-										downloadTask.getId());
+								logger.info("collection download task: {} - detected permission denied [{}]",
+										downloadTask.getId(), downloadTask.getType().value());
 							}
 
 						} else {
@@ -1476,6 +1482,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		addDataTransferDownloadEvent(downloadTask.getUserId(), path, downloadTask.getType(), downloadTask.getId(),
 				dataTransferType, downloadTask.getConfigurationId(), result, message, destinationLocation, completed);
+
+		logger.info("collection download task: {} - completed as {} [{}]", downloadTask.getId(), result.value(),
+				downloadTask.getType().value());
+
 	}
 
 	/**
