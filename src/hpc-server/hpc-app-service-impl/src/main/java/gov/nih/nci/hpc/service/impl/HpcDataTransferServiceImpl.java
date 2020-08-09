@@ -742,9 +742,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Invalid data object download task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		logger.info("download task: {} - completed - {} [transfer-type={}, destination-type={}]",
-				downloadTask.getId(), result.value(), downloadTask.getDataTransferType(),
-				downloadTask.getDestinationType());
+		logger.info("download task: {} - completed - {} [transfer-type={}, destination-type={}]", downloadTask.getId(),
+				result.value(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 
 		// If it's a cancelled data-object download task to a Globus destination,
 		// request Globus to
@@ -1106,6 +1105,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status)
 			throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasks(status);
+	}
+
+	@Override
+	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status,
+			boolean inProcess) throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadTasks(status);
+	}
+
+	@Override
+	public void setCollectionDownloadTaskInProgress(String taskId, boolean inProcess) throws HpcException {
+		dataDownloadDAO.setCollectionDownloadTaskInProcess(taskId, inProcess);
 	}
 
 	@Override
@@ -2507,8 +2517,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 				}
 
-				logger.info("download task: {} - 1st hop completed. Path at scratch space: {}",
-						downloadTask.getId(), sourceFile.getAbsolutePath());
+				logger.info("download task: {} - 1st hop completed. Path at scratch space: {}", downloadTask.getId(),
+						sourceFile.getAbsolutePath());
 
 			} catch (HpcException e) {
 				logger.error("Failed to update download task", e);

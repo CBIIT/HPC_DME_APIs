@@ -506,6 +506,26 @@ public interface HpcDataTransferService {
    */
   public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
       HpcCollectionDownloadTaskStatus status) throws HpcException;
+  
+  /**
+   * Get collection download tasks.
+   *
+   * @param status Get tasks in this status.
+   * @param inProcess Indicator whether the task is being actively processed.
+   * @return A list of collection download tasks.
+   * @throws HpcException on database error.
+   */
+  public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
+	      HpcCollectionDownloadTaskStatus status, boolean inProcess) throws HpcException;
+  
+  /**
+   * Set collection download task in-progress
+   *
+   * @param taskId The collection download task ID.
+   * @param inProcess Indicator whether the task is being actively processed.
+   * @throws HpcException on database error.
+   */
+  public void setCollectionDownloadTaskInProgress(String taskId, boolean inProcess) throws HpcException;
 
   /**
    * Complete a collection download task: 1. Update task info in DB with results info.

@@ -158,6 +158,27 @@ public interface HpcDataDownloadDAO {
    */
   public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
       HpcCollectionDownloadTaskStatus status) throws HpcException;
+  
+  /**
+   * Get collection download requests.
+   *
+   * @param status Get requests in this status.
+   * @param inProcess Indicator whether the task is being actively processed.
+   * @return A list of collection download requests.
+   * @throws HpcException on database error.
+   */
+  public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(
+	      HpcCollectionDownloadTaskStatus status, boolean inProcess) throws HpcException;
+  
+  /**
+   * Set a collection download task in-process value.
+   *
+   * @param id The collection download task ID.
+   * @param inProcess The value to set.
+   * @throws HpcException on database error.
+   */
+	public void setCollectionDownloadTaskInProcess(String id, boolean inProcess)
+      throws HpcException;
 
   /**
    * Set a collection download task cancellation request.

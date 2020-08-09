@@ -114,7 +114,8 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "ITEMS" text,
   "CREATED" timestamp,
   "PRIORITY" integer DEFAULT 100,
-  "CANCELLATION_REQUESTED" boolean
+  "CANCELLATION_REQUESTED" boolean,
+  "IN_PROCESS" boolean NOT NULL DEFAULT false
 )
 WITH (
   OIDS=FALSE
@@ -162,6 +163,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."PRIORITY" IS
                   'The download task priority';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."CANCELLATION_REQUESTED" IS 
                   'A request to cancel the download was submitted';
+COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."IN_PROCESS" IS 
+                  'An indicator whether this task is in-process, i.e. individual file download tasks are submitted';
                                    
 DROP TABLE IF EXISTS public."HPC_DOWNLOAD_TASK_RESULT";
 CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"

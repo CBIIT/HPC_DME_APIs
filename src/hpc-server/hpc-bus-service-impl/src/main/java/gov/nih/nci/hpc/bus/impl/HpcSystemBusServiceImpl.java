@@ -514,9 +514,24 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 
 			} catch (HpcException e) {
-				logger.error("Failed to restart download task: " + downloadTask.getId(), e);
+				logger.error("Failed to restart data-object download task: " + downloadTask.getId(), e);
 			}
 		}
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void restartCollectionDownloadTasks() throws HpcException {
+		// Iterate through all the collection download tasks that are in-process
+		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, true)
+				.forEach(downloadTask -> {
+					try {
+						dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
+
+					} catch (HpcException e) {
+						logger.error("Failed to restart collection download task: " + downloadTask.getId(), e);
+					}
+				});
 	}
 
 	@Override
@@ -525,7 +540,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through all the collection download requests that were submitted (not
 		// processed yet).
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
-				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED)) {
+				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
+			// Mark this collection download task in-process
+			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
 
 			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
 				// User requested to cancel this collection download task.
@@ -1469,8 +1486,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					: downloadTask.getDataTransferType() + " transfer failed ["
 							+ dataTransferDownloadReport.getMessage() + "].";
 			Calendar completed = Calendar.getInstance();
-			dataTransferService
-					.completeDataObjectDownloadTask(downloadTask, result, message, completed,
+			dataTransferService.completeDataObjectDownloadTask(downloadTask, result, message, completed,
 					dataTransferDownloadReport.getBytesTransferred());
 
 			// Send a download completion event (if requested to).
@@ -1484,7 +1500,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// Download is still in progress. Update the progress (percent complete).
 			dataTransferService.updateDataObjectDownloadTask(downloadTask,
 					dataTransferDownloadReport.getBytesTransferred());
-			
+
 			logger.info("download task: {} - still in-progress [transfer-type={}, destination-type={}]",
 					downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType());
 		}
