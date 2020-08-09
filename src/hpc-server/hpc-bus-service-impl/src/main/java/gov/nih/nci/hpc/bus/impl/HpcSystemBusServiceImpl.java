@@ -15,11 +15,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.CollectionUtils;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
@@ -115,6 +119,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// Reports Application Service Instance
 	@Autowired
 	private HpcReportService reportsService = null;
+
+	// The collection download task executor.
+	@Autowired
+	@Qualifier("hpcCollectionDownloadTaskExecutor")
+	Executor collectionDownloadTaskExecutor = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -550,63 +559,74 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				continue;
 			}
 
-			try {
-				List<HpcCollectionDownloadTaskItem> downloadItems = null;
-				HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker(
-						downloadTask.getId());
+			// Process this collection download task async.
+			CompletableFuture.runAsync(() -> {
+				try {
+					List<HpcCollectionDownloadTaskItem> downloadItems = null;
+					HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker(
+							downloadTask.getId());
 
-				if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
-					// Get the collection to be downloaded.
-					HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(), true);
-					if (collection == null) {
-						throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
-					}
-
-					// Download all files under this collection.
-					downloadItems = downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
-							downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
-							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
-							collectionDownloadBreaker);
-
-				} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
-					downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
-							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
-							downloadTask.getGoogleDriveDownloadDestination(),
-							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
-
-				} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
-					downloadItems = new ArrayList<>();
-					for (String path : downloadTask.getCollectionPaths()) {
-						HpcCollection collection = dataManagementService.getCollection(path, true);
+					if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+						// Get the collection to be downloaded.
+						HpcCollection collection = dataManagementService.getCollection(downloadTask.getPath(), true);
 						if (collection == null) {
 							throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 						}
-						downloadItems.addAll(downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
+
+						// Download all files under this collection.
+						downloadItems = downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
 								downloadTask.getS3DownloadDestination(),
 								downloadTask.getGoogleDriveDownloadDestination(),
 								downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
-								collectionDownloadBreaker));
+								collectionDownloadBreaker);
+
+					} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+						downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
+								downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
+								downloadTask.getGoogleDriveDownloadDestination(),
+								downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId());
+
+					} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
+						downloadItems = new ArrayList<>();
+						for (String path : downloadTask.getCollectionPaths()) {
+							HpcCollection collection = dataManagementService.getCollection(path, true);
+							if (collection == null) {
+								throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+							}
+							downloadItems
+									.addAll(downloadCollection(collection, downloadTask.getGlobusDownloadDestination(),
+											downloadTask.getS3DownloadDestination(),
+											downloadTask.getGoogleDriveDownloadDestination(),
+											downloadTask.getAppendPathToDownloadDestination(), downloadTask.getUserId(),
+											collectionDownloadBreaker));
+						}
+					}
+
+					// Verify data objects found under this collection.
+					if (downloadItems == null || downloadItems.isEmpty()) {
+						// No data objects found under this collection.
+						throw new HpcException("No data objects found under collection",
+								HpcErrorType.INVALID_REQUEST_INPUT);
+					}
+
+					// 'Activate' the collection download request.
+					downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
+					downloadTask.getItems().addAll(downloadItems);
+
+					// Persist the collection download task.
+					dataTransferService.updateCollectionDownloadTask(downloadTask);
+
+				} catch (HpcException e) {
+					logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
+					try {
+						completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
+
+					} catch (HpcException ex) {
+						logger.error("Failed to complete collection download as failed {}", downloadTask.getId(), e);
 					}
 				}
 
-				// Verify data objects found under this collection.
-				if (downloadItems == null || downloadItems.isEmpty()) {
-					// No data objects found under this collection.
-					throw new HpcException("No data objects found under collection",
-							HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-
-				// 'Activate' the collection download request.
-				downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
-				downloadTask.getItems().addAll(downloadItems);
-
-				// Persist the collection download task.
-				dataTransferService.updateCollectionDownloadTask(downloadTask);
-
-			} catch (HpcException e) {
-				logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
-				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
-			}
+			}, collectionDownloadTaskExecutor);
 		}
 	}
 

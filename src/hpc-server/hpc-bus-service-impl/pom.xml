@@ -41,6 +41,8 @@
 							org.springframework.aop,
 							org.springframework.aop.framework,
 							org.aopalliance.aop,
+							org.springframework.scheduling.config,
+							org.springframework.scheduling.concurrent,
 							*
 						</Import-Package>
 					</instructions>
