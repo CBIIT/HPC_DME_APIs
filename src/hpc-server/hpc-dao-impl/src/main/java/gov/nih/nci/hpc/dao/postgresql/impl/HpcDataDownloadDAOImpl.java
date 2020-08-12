@@ -174,6 +174,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"USER_ID\" = ? and "
 			+ "\"COMPLETION_EVENT\" = true";
 
+	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL = "select count(*) from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"USER_ID\" = ? and "
+			+ "\"STATUS\" = ? and \"IN_PROCESS\" = ?";
+
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"IN_PROCESS\" = ? where \"ID\" = ?";
 
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"CANCELLATION_REQUESTED\" = ? where \"ID\" = ?";
@@ -745,6 +748,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection download tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+
+	@Override
+	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
+			throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL, Integer.class, userId,
+					status.value(), inProcess);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to count collection download requests: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}

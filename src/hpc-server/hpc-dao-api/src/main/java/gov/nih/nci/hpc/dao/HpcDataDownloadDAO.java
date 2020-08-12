@@ -168,6 +168,19 @@ public interface HpcDataDownloadDAO {
 			boolean inProcess) throws HpcException;
 
 	/**
+	 * Get collection download tasks count for a user w/ specific status and
+	 * in-process indicator
+	 *
+	 * @param userId    The user ID to query for.
+	 * @param status    Get requests in this status.
+	 * @param inProcess Indicator whether the task is being actively processed.
+	 * @return Count of collection download requests.
+	 * @throws HpcException on database error.
+	 */
+	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
+			throws HpcException;
+
+	/**
 	 * Set a collection download task in-process value.
 	 *
 	 * @param id        The collection download task ID.
