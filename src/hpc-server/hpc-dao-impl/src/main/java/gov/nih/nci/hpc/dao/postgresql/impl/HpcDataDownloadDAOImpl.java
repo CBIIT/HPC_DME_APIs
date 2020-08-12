@@ -25,6 +25,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -194,6 +196,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// Encryptor.
 	@Autowired
 	HpcEncryptor encryptor = null;
+	
+	// The logger instance.
+		private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	// HpcDataObjectDownloadTask table to object mapper.
 	private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> {
@@ -756,8 +761,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
 			throws HpcException {
 		try {
-			return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL, Integer.class, userId,
+			int val =  jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL, Integer.class, userId,
 					status.value(), inProcess);
+			
+			logger.error("ERAN: {} {} {}",  userId, status.value(), inProcess, val);
+			return val;
+			
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to count collection download requests: " + e.getMessage(),
