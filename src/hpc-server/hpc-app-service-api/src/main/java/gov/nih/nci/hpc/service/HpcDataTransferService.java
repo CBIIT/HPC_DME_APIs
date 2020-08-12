@@ -561,6 +561,18 @@ public interface HpcDataTransferService {
 			boolean inProcess) throws HpcException;
 
 	/**
+	 * Get collection download tasks count for a user.
+	 *
+	 * @param userId    The user ID.
+	 * @param status    Get tasks in this status.
+	 * @param inProcess Indicator whether the task is being actively processed.
+	 * @return A list of collection download tasks.
+	 * @throws HpcException on database error.
+	 */
+	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
+			throws HpcException;
+
+	/**
 	 * Set collection download task in-progress
 	 *
 	 * @param taskId    The collection download task ID.
