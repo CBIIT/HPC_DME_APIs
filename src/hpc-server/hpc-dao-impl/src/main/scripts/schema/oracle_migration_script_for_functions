@@ -1,0 +1,97 @@
+create or replace FUNCTION irods.num_greater_or_equal(attr_value varchar2, value varchar2) RETURN BOOLEAN
+IS
+    num_attr_value    NUMBER;
+    num_value    NUMBER;
+BEGIN
+    num_attr_value := CAST(attr_value AS NUMBER);
+    num_value := CAST(value AS NUMBER);
+    RETURN num_attr_value >= num_value;
+EXCEPTION
+    WHEN others THEN
+        RETURN FALSE;
+END;
+
+
+create or replace function irods.num_greater_than(attr_value varchar2, value varchar2) RETURN BOOLEAN
+ IS
+    num_attr_value  NUMBER;
+    num_value NUMBER;
+BEGIN
+    num_attr_value := CAST(attr_value AS NUMBER);
+    num_value := CAST(value AS NUMBER);
+    RETURN num_attr_value > num_value;
+EXCEPTION
+    WHEN others THEN
+        RETURN FALSE;
+END;
+
+
+create or replace function irods.num_less_or_equal(attr_value varchar2, value varchar2) RETURN BOOLEAN
+ IS
+    num_attr_value  NUMBER;
+    num_value NUMBER;
+BEGIN
+    num_attr_value := CAST(attr_value AS NUMBER);
+    num_value := CAST(value AS NUMBER);
+    RETURN num_attr_value <= num_value;
+EXCEPTION
+    WHEN others THEN
+        RETURN FALSE;
+END;
+
+
+create or replace function irods.num_less_than(attr_value varchar2, value varchar2) RETURN BOOLEAN
+ IS
+    num_attr_value  NUMBER;
+    num_value NUMBER;
+BEGIN
+    num_attr_value := CAST(attr_value AS NUMBER);
+    num_value := CAST(value AS NUMBER);
+    RETURN num_attr_value < num_value;
+EXCEPTION
+    WHEN others THEN
+        RETURN FALSE;
+END;
+
+create or replace function irods.timestamp_less_than(attr_value varchar2, value varchar2) RETURN BOOLEAN
+ IS
+
+BEGIN
+    RETURN to_timestamp(attr_value) < to_timestamp(value);
+EXCEPTION
+    WHEN others THEN
+        RETURN FALSE;
+END;
+
+
+create or replace function irods.timestamp_greater_than(attr_value varchar2, value varchar2) RETURN BOOLEAN
+ IS
+
+BEGIN
+    RETURN to_timestamp(attr_value) > to_timestamp(value);
+EXCEPTION
+    WHEN others THEN
+        RETURN FALSE;
+END;
+
+
+create or replace function irods.timestamp_less_or_equal(attr_value varchar2, value varchar2) RETURN BOOLEAN
+ IS
+
+BEGIN
+    RETURN to_timestamp(attr_value) <= to_timestamp(value);
+EXCEPTION
+    WHEN others THEN
+        RETURN FALSE;
+END;
+
+
+create or replace function irods.timestamp_greater_or_equal(attr_value varchar2, value varchar2) RETURN BOOLEAN
+ IS
+
+BEGIN
+    RETURN to_timestamp(attr_value) >= to_timestamp(value);
+EXCEPTION
+    WHEN others THEN
+        RETURN FALSE;
+END;
