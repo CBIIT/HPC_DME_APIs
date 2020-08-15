@@ -1,0 +1,586 @@
+create materialized view public.r_report_registered_by as
+SELECT DISTINCT a.meta_attr_name,
+                a.meta_attr_value,
+                b.object_id,
+                b.meta_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_data_main c
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.data_id
+  AND cast(a.meta_attr_name as clob) = cast('registered_by' as clob);
+
+alter materialized view public.r_report_registered_by owner to postgres;
+
+create unique index r_report_registered_by_uidx1
+    on public.r_report_registered_by (meta_attr_name, meta_attr_value, object_id);
+
+create materialized view public.r_data_hierarchy_metamap as
+WITH RECURSIVE r_data_hierarchy(parent_coll_name, coll_name, coll_id, object_id, object_path, level) AS (
+    SELECT data_coll.coll_name,
+           NULL::character varying AS "varchar",
+           NULL::bigint            AS int8,
+           data_base.data_id,
+           (cast(data_coll.coll_name as clob) || cast('/' as clob)) || data_base.data_name::text,
+           1
+    FROM r_data_main data_base,
+         r_coll_main data_coll
+    WHERE data_base.coll_id = data_coll.coll_id
+    UNION ALL
+    SELECT coll_iter.parent_coll_name,
+           coll_iter.coll_name,
+           coll_iter.coll_id,
+           coll_hierarchy_iter.object_id,
+           coll_hierarchy_iter.object_path,
+           coll_hierarchy_iter.level + 1
+    FROM r_coll_main coll_iter,
+         r_data_hierarchy coll_hierarchy_iter
+    WHERE cast(coll_iter.coll_name as clob) <> cast('/' as clob)
+      AND cast(coll_iter.coll_name as clob) = cast(coll_hierarchy_iter.parent_coll_name as clob)
+)
+SELECT data_hierarchy.object_id,
+       data_hierarchy.object_path,
+       metamap.meta_id,
+       data_hierarchy.coll_id,
+       data_hierarchy.level
+FROM r_data_hierarchy data_hierarchy,
+     r_objt_metamap metamap
+WHERE data_hierarchy.object_id = metamap.object_id AND data_hierarchy.coll_id IS NULL
+   OR data_hierarchy.coll_id = metamap.object_id;
+
+comment on column public.r_data_hierarchy_metamap.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
+
+comment on column public.r_data_hierarchy_metamap.object_path is 'Data object Hierarchy Path:  r_coll_main.coll_name / r_data_main.data_name';
+
+comment on column public.r_data_hierarchy_metamap.meta_id is 'Metadata ID: r_meta_main.meta_id';
+
+comment on column public.r_data_hierarchy_metamap.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
+
+comment on column public.r_data_hierarchy_metamap.level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
+
+alter materialized view public.r_data_hierarchy_metamap owner to postgres;
+
+create unique index r_data_hierarchy_metamap_unique
+    on public.r_data_hierarchy_metamap (object_id, meta_id, level);
+
+create materialized view public.r_data_hierarchy_meta_main as
+SELECT data_hierarchy_metamap.object_id,
+       data_hierarchy_metamap.object_path,
+       data_hierarchy_metamap.coll_id,
+       data_hierarchy_metamap.meta_id,
+       data_hierarchy_metamap.level,
+       CASE
+           WHEN data_hierarchy_metamap.level = 1 THEN cast('DataObject' as  varchar2(4000))
+           ELSE coll_type_metadata.meta_attr_value
+           END AS level_label,
+       meta_main.meta_attr_name,
+       meta_main.meta_attr_value,
+       meta_main.meta_attr_unit
+FROM r_data_hierarchy_metamap data_hierarchy_metamap
+         LEFT JOIN r_meta_main meta_main USING (meta_id)
+         LEFT JOIN (r_objt_metamap metamap
+    JOIN r_meta_main coll_type_metadata ON metamap.meta_id = coll_type_metadata.meta_id AND
+                                           coll_type_metadata.meta_attr_name::text = cast('collection_type' as clob))
+                   ON metamap.object_id = data_hierarchy_metamap.coll_id
+ORDER BY data_hierarchy_metamap.object_id;
+
+comment on column public.r_data_hierarchy_meta_main.object_id is 'Data object Hierarchy ID: r_data_main.data_id';
+
+comment on column public.r_data_hierarchy_meta_main.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Null if the metadata is associated with the data object itself';
+
+comment on column public.r_data_hierarchy_meta_main.meta_id is 'Metadata ID: r_meta_main.meta_id';
+
+comment on column public.r_data_hierarchy_meta_main.level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
+
+comment on column public.r_data_hierarchy_meta_main.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level. "DataObject" if the metadata is associated with the data object itself';
+
+comment on column public.r_data_hierarchy_meta_main.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
+
+comment on column public.r_data_hierarchy_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
+
+comment on column public.r_data_hierarchy_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
+
+alter materialized view public.r_data_hierarchy_meta_main owner to postgres;
+
+create unique index r_data_hierarchy_meta_main_unique
+    on public.r_data_hierarchy_meta_main (object_id, meta_id, level);
+
+create index r_data_hierarchy_meta_main_path_query
+    on public.r_data_hierarchy_meta_main (object_path);
+
+create index r_data_hierarchy_meta_main_id_query
+    on public.r_data_hierarchy_meta_main (object_id);
+
+create index r_data_hierarchy_meta_main_metadata_query_level
+    on public.r_data_hierarchy_meta_main (meta_attr_name, meta_attr_value, level);
+
+create index r_data_hierarchy_meta_main_metadata_query_level_label
+    on public.r_data_hierarchy_meta_main (meta_attr_name, meta_attr_value, level_label);
+
+create materialized view public.r_coll_hierarchy_metamap as
+WITH RECURSIVE r_coll_hierarchy(parent_coll_name, coll_name, coll_id, object_id, object_path, level) AS (
+    SELECT coll_base.parent_coll_name,
+           coll_base.coll_name,
+           coll_base.coll_id,
+           coll_base.coll_id,
+           coll_base.coll_name,
+           1
+    FROM r_coll_main coll_base
+    UNION ALL
+    SELECT coll_iter.parent_coll_name,
+           coll_iter.coll_name,
+           coll_iter.coll_id,
+           coll_hierarchy_iter.object_id,
+           coll_hierarchy_iter.object_path,
+           coll_hierarchy_iter.level + 1
+    FROM r_coll_main coll_iter,
+         r_coll_hierarchy coll_hierarchy_iter
+    WHERE cast(coll_iter.coll_name as clob) <> cast('/' as clob)
+      AND cast(coll_iter.coll_name as clob) = cast(coll_hierarchy_iter.parent_coll_name as clob)
+)
+SELECT coll_hierarchy.object_id,
+       coll_hierarchy.object_path,
+       metamap.meta_id,
+       coll_hierarchy.coll_id,
+       coll_hierarchy.level
+FROM r_coll_hierarchy coll_hierarchy,
+     r_objt_metamap metamap
+WHERE coll_hierarchy.coll_id = metamap.object_id;
+
+comment on column public.r_coll_hierarchy_metamap.object_id is 'Collection Hierarchy ID: r_coll_main.coll_id';
+
+comment on column public.r_coll_hierarchy_metamap.object_path is 'Collection Hierarchy Path: r_coll_main.coll_name';
+
+comment on column public.r_coll_hierarchy_metamap.meta_id is 'Metadata ID: r_meta_main.meta_id';
+
+comment on column public.r_coll_hierarchy_metamap.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Same as object_id if the metadata is associated with the collection itself';
+
+comment on column public.r_coll_hierarchy_metamap.level is 'The level of the metadata in the hierarchy, starting with 1 at the collection level';
+
+alter materialized view public.r_coll_hierarchy_metamap owner to postgres;
+
+create unique index r_coll_hierarchy_metamap_unique
+    on public.r_coll_hierarchy_metamap (object_id, meta_id, level);
+
+create materialized view public.r_coll_hierarchy_meta_main as
+SELECT coll_hierarchy_metamap.object_id,
+       coll_hierarchy_metamap.object_path,
+       coll_hierarchy_metamap.coll_id,
+       coll_hierarchy_metamap.meta_id,
+       coll_hierarchy_metamap.level,
+       coll_type_metadata.meta_attr_value AS level_label,
+       meta_main.meta_attr_name,
+       meta_main.meta_attr_value,
+       meta_main.meta_attr_unit
+FROM r_coll_hierarchy_metamap coll_hierarchy_metamap
+         LEFT JOIN r_meta_main meta_main USING (meta_id)
+         LEFT JOIN (r_objt_metamap metamap
+    JOIN r_meta_main coll_type_metadata ON metamap.meta_id = coll_type_metadata.meta_id AND
+                                           coll_type_metadata.meta_attr_name::text = cast('collection_type' as clob))
+                   ON metamap.object_id = coll_hierarchy_metamap.coll_id
+ORDER BY coll_hierarchy_metamap.object_id;
+
+comment on column public.r_coll_hierarchy_meta_main.object_id is 'Collection Hierarchy ID: r_coll_main.coll_id';
+
+comment on column public.r_coll_hierarchy_meta_main.object_path is 'Collection Hierarchy Path: r_coll_main.coll_name';
+
+comment on column public.r_coll_hierarchy_meta_main.coll_id is 'Collection (in the hierarchy) ID: r_coll_main.coll_id. Same as object_id if the metadata is associated with the collection itself';
+
+comment on column public.r_coll_hierarchy_meta_main.meta_id is 'Metadata ID: r_meta_main.meta_id';
+
+comment on column public.r_coll_hierarchy_meta_main.level is 'The level of the metadata in the hierarchy, starting with 1 at the collection level';
+
+comment on column public.r_coll_hierarchy_meta_main.level_label is 'The level label of the metadata in the hierarchy which is the collection_type value at the same level';
+
+comment on column public.r_coll_hierarchy_meta_main.meta_attr_name is 'Metadata attribute: r_meta_main.meta_attr_name';
+
+comment on column public.r_coll_hierarchy_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
+
+comment on column public.r_coll_hierarchy_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
+
+alter materialized view public.r_coll_hierarchy_meta_main owner to postgres;
+
+create unique index r_coll_hierarchy_meta_main_unique
+    on public.r_coll_hierarchy_meta_main (object_id, meta_id, level);
+
+create index r_coll_hierarchy_meta_main_path_query
+    on public.r_coll_hierarchy_meta_main (object_path);
+
+create index r_coll_hierarchy_meta_main_id_query
+    on public.r_coll_hierarchy_meta_main (object_id);
+
+create index r_coll_hierarchy_meta_main_metadata_query_level
+    on public.r_coll_hierarchy_meta_main (meta_attr_name, meta_attr_value, level);
+
+create index r_coll_hierarchy_meta_main_metadata_query_level_label
+    on public.r_coll_hierarchy_meta_main (meta_attr_name, meta_attr_value, level_label);
+
+create materialized view public.r_data_hierarchy_meta_attr_name as
+SELECT r_data_hierarchy_meta_main.level_label,
+       r_data_hierarchy_meta_main.meta_attr_name,
+       array_agg(DISTINCT r_data_hierarchy_meta_main.object_id FROM dual) AS object_ids
+FROM r_data_hierarchy_meta_main
+GROUP BY r_data_hierarchy_meta_main.level_label, r_data_hierarchy_meta_main.meta_attr_name;
+
+alter materialized view public.r_data_hierarchy_meta_attr_name owner to postgres;
+
+create unique index r_data_hierarchy_meta_attr_name_unique
+    on public.r_data_hierarchy_meta_attr_name (level_label, meta_attr_name);
+
+create materialized view public.r_coll_hierarchy_meta_attr_name as
+SELECT r_coll_hierarchy_meta_main.level_label,
+       r_coll_hierarchy_meta_main.meta_attr_name,
+       array_agg(DISTINCT r_coll_hierarchy_meta_main.object_id FROM dual) AS object_ids
+FROM r_coll_hierarchy_meta_main
+GROUP BY r_coll_hierarchy_meta_main.level_label, r_coll_hierarchy_meta_main.meta_attr_name;
+
+alter materialized view public.r_coll_hierarchy_meta_attr_name owner to postgres;
+
+create unique index r_coll_hierarchy_meta_attr_name_unique
+    on public.r_coll_hierarchy_meta_attr_name (level_label, meta_attr_name);
+
+create materialized view public.r_report_source_file_size as
+SELECT a.meta_attr_name,
+       a.meta_attr_value,
+       b.object_id,
+       c.create_ts
+FROM r_meta_main a
+         JOIN r_objt_metamap b ON a.meta_id = b.meta_id
+         JOIN r_data_main c ON b.object_id = c.data_id
+WHERE cast(a.meta_attr_name as clob) = cast('source_file_size' as clob);
+
+alter materialized view public.r_report_source_file_size owner to postgres;
+
+create unique index r_report_source_file_size_idx1
+    on public.r_report_source_file_size (meta_attr_name, meta_attr_value, object_id);
+
+create unique index r_report_source_file_size_uidx1
+    on public.r_report_source_file_size (meta_attr_value, meta_attr_name, object_id);
+
+create materialized view public.r_report_meta_main as
+SELECT a.meta_attr_value,
+       a.meta_attr_name,
+       a.meta_id,
+       b.object_id,
+       a.create_ts
+FROM r_meta_main a
+         JOIN r_objt_metamap b ON a.meta_id = b.meta_id;
+
+alter materialized view public.r_report_meta_main owner to postgres;
+
+create unique index r_report_meta_main_uidx1
+    on public.r_report_meta_main (meta_attr_value, meta_attr_name, meta_id, object_id);
+
+create materialized view public.r_report_data_objects as
+SELECT a.data_id,
+       c.meta_attr_name,
+       c.meta_attr_value,
+       a.create_ts
+FROM r_data_main a
+         JOIN r_objt_metamap b ON a.data_id = b.object_id
+         JOIN r_meta_main c ON b.meta_id = c.meta_id;
+
+alter materialized view public.r_report_data_objects owner to postgres;
+
+create unique index r_report_data_objects_uidx1
+    on public.r_report_data_objects (meta_attr_name, meta_attr_value, data_id);
+
+create materialized view public.r_report_coll_registered_by as
+SELECT DISTINCT a.meta_attr_name,
+                a.meta_attr_value,
+                c.coll_id,
+                b.meta_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_coll_main c
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.coll_id
+  AND cast(a.meta_attr_name as clob) = cast('registered_by' as clob);
+
+alter materialized view public.r_report_coll_registered_by owner to postgres;
+
+create unique index r_report_coll_registered_by_uidx1
+    on public.r_report_coll_registered_by (meta_attr_name, meta_attr_value, coll_id);
+
+create materialized view public.r_report_coll_registered_by_doc as
+SELECT DISTINCT d."DOC",
+                a.meta_attr_name,
+                a.meta_attr_value,
+                c.coll_id,
+                b.meta_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_coll_main c,
+     "HPC_DATA_MANAGEMENT_CONFIGURATION" d
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.coll_id
+  AND cast(a.meta_attr_name as clob) = cast('configuration_id' as clob)
+  AND cast(a.meta_attr_value as clob) = d."ID";
+
+alter materialized view public.r_report_coll_registered_by_doc owner to postgres;
+
+create unique index r_report_coll_registered_by_doc_uidx1
+    on public.r_report_coll_registered_by_doc (meta_attr_name, meta_attr_value, coll_id, "DOC");
+
+create materialized view public.r_report_registered_by_doc as
+SELECT DISTINCT d."DOC",
+                a.meta_attr_name,
+                a.meta_attr_value,
+                b.object_id,
+                b.meta_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_data_main c,
+     "HPC_DATA_MANAGEMENT_CONFIGURATION" d
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.data_id
+  AND cast(a.meta_attr_name as clob) = cast('configuration_id' as clob)
+  AND cast(a.meta_attr_value as clob) = d."ID";
+
+alter materialized view public.r_report_registered_by_doc owner to postgres;
+
+create unique index r_report_registered_by_doc_uidx1
+    on public.r_report_registered_by_doc (meta_attr_name, meta_attr_value, object_id, "DOC");
+
+create materialized view public.r_report_registered_by_basepath as
+SELECT DISTINCT d."BASE_PATH",
+                a.meta_attr_name,
+                a.meta_attr_value,
+                b.object_id,
+                b.meta_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_data_main c,
+     "HPC_DATA_MANAGEMENT_CONFIGURATION" d
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.data_id
+  AND cast(a.meta_attr_name as clob) = cast('configuration_id' as clob)
+  AND cast(a.meta_attr_value as clob) = d."ID";
+
+alter materialized view public.r_report_registered_by_basepath owner to postgres;
+
+create unique index r_report_registered_by_basepath_uidx1
+    on public.r_report_registered_by_basepath (meta_attr_name, meta_attr_value, object_id, "BASE_PATH");
+
+create materialized view public.r_report_coll_registered_by_basepath as
+SELECT DISTINCT d."BASE_PATH",
+                a.meta_attr_name,
+                a.meta_attr_value,
+                c.coll_id,
+                b.meta_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_coll_main c,
+     "HPC_DATA_MANAGEMENT_CONFIGURATION" d
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.coll_id
+  AND cast(a.meta_attr_name as clob) = cast('configuration_id' as clob)
+  AND cast(a.meta_attr_value as clob) = d."ID";
+
+alter materialized view public.r_report_coll_registered_by_basepath owner to postgres;
+
+create unique index r_report_coll_registered_by_basepath_uidx1
+    on public.r_report_coll_registered_by_basepath (meta_attr_name, meta_attr_value, coll_id, "BASE_PATH");
+
+create materialized view public.r_report_collection_type as
+SELECT a.meta_attr_value,
+       a.meta_attr_name,
+       b.object_id,
+       c.coll_id,
+       c.create_ts
+FROM r_meta_main a
+         JOIN r_objt_metamap b ON a.meta_id = b.meta_id
+         JOIN r_coll_main c ON b.object_id = c.coll_id
+WHERE cast(a.meta_attr_name as clob) = cast('collection_type' as clob);
+
+alter materialized view public.r_report_collection_type owner to postgres;
+
+create unique index r_report_collection_type_uidx1
+    on public.r_report_collection_type (meta_attr_name, meta_attr_value, object_id);
+
+create materialized view public.r_report_coll_registered_by_path as
+SELECT DISTINCT c.coll_name,
+                a.meta_attr_name,
+                a.meta_attr_value,
+                c.coll_id,
+                b.meta_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_coll_main c
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.coll_id;
+
+alter materialized view public.r_report_coll_registered_by_path owner to postgres;
+
+create unique index r_report_coll_registered_by_path_uidx1
+    on public.r_report_coll_registered_by_path (meta_attr_name, meta_attr_value, coll_id, coll_name);
+
+create materialized view public.r_report_registered_by_path as
+SELECT DISTINCT d.coll_name,
+                a.meta_attr_name,
+                a.meta_attr_value,
+                b.object_id,
+                b.meta_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_data_main c,
+     r_coll_main d
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.data_id
+  AND c.coll_id = d.coll_id;
+
+alter materialized view public.r_report_registered_by_path owner to postgres;
+
+create unique index r_report_registered_by_path_uidx1
+    on public.r_report_registered_by_path (meta_attr_name, meta_attr_value, object_id, coll_name);
+
+create materialized view public.r_report_collection_path as
+SELECT DISTINCT d.coll_name,
+                b.object_id,
+                c.create_ts
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_data_main c,
+     r_coll_main d
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.data_id
+  AND c.coll_id = d.coll_id;
+
+alter materialized view public.r_report_collection_path owner to postgres;
+
+create unique index r_report_collection_path_uidx1
+    on public.r_report_collection_path (object_id, coll_name);
+
+create materialized view public.r_catalog_meta_main as
+SELECT config."DOC",
+       config."BASE_PATH",
+       meta_main.object_id,
+       meta_main.object_path,
+       meta_main.meta_id,
+       meta_main.meta_attr_name,
+       meta_main.meta_attr_value,
+       meta_main.meta_attr_unit
+FROM r_coll_hierarchy_meta_main meta_main,
+     "HPC_DATA_MANAGEMENT_CONFIGURATION" config,
+     "HPC_CATALOG_ATTRIBUTE" catalog,
+     (r_meta_main meta_main_1
+         JOIN r_objt_metamap metamap ON cast(meta_main_1.meta_attr_name as clob) = cast('configuration_id' as clob) AND
+                                        metamap.meta_id = meta_main_1.meta_id) config_meta(meta_id, meta_namespace,
+                                                                                           meta_attr_name,
+                                                                                           meta_attr_value,
+                                                                                           meta_attr_unit, r_comment,
+                                                                                           create_ts, modify_ts,
+                                                                                           object_id, meta_id_1,
+                                                                                           create_ts_1, modify_ts_1)
+WHERE (meta_main.object_id IN (SELECT r_coll_hierarchy_meta_main.object_id
+                               FROM r_coll_hierarchy_meta_main
+                               WHERE r_coll_hierarchy_meta_main.meta_attr_name::text = cast('access' as clob)
+                                 AND (lower(cast(r_coll_hierarchy_meta_main.meta_attr_value as clob)) = ANY
+                                      (ARRAY ['controlled access'::text, 'open access'::text]))
+                                 AND r_coll_hierarchy_meta_main.level_label::text = cast('Project' as clob)
+                                 AND r_coll_hierarchy_meta_main.level = 1))
+  AND catalog.level_label = meta_main.level_label::text
+  AND catalog.meta_attr_name = meta_main.meta_attr_name::text
+  AND config_meta.meta_attr_value::text = config."ID"
+  AND config_meta.object_id = meta_main.object_id
+ORDER BY meta_main.coll_id;
+
+comment on column public.r_catalog_meta_main."DOC" is 'The DOC of the catalog entry';
+
+comment on column public.r_catalog_meta_main."BASE_PATH" is 'The base path of the catalog entry';
+
+comment on column public.r_catalog_meta_main.object_id is 'Collection ID: r_coll_hierarchy_meta_main.object_id';
+
+comment on column public.r_catalog_meta_main.object_path is 'Collection Path: r_coll_hierarchy_meta_main.object_path';
+
+comment on column public.r_catalog_meta_main.meta_id is 'Metadata ID: r_coll_hierarchy_meta_main.meta_id';
+
+comment on column public.r_catalog_meta_main.meta_attr_name is 'Metadata attribute: r_coll_hierarchy_meta_main.meta_attr_name';
+
+comment on column public.r_catalog_meta_main.meta_attr_value is 'Metadata value: r_coll_hierarchy_meta_main.meta_attr_value';
+
+comment on column public.r_catalog_meta_main.meta_attr_unit is 'Metadata unit: r_coll_hierarchy_meta_main.meta_attr_unit';
+
+alter materialized view public.r_catalog_meta_main owner to postgres;
+
+create unique index r_catalog_meta_main_uidx1
+    on public.r_catalog_meta_main (meta_attr_value, meta_attr_name, meta_id, object_id);
+
+create materialized view public.r_report_registered_by_audit as
+SELECT data.data_id,
+       basepath."BASE_PATH",
+       doc."DOC",
+       data.data_path,
+       cast(size.meta_attr_value as number(19))                           AS "SIZE",
+       user_id.meta_attr_value                                AS "USER_ID",
+       transfermethod.meta_attr_value                         AS "DATA_TRANSFER_METHOD",
+       transfertype.meta_attr_value                           AS "DATA_TRANSFER_TYPE",
+       sourceendpoint.meta_attr_value                         AS "SOURCE_ENDPOINT",
+       cast(created.meta_attr_value as timestamp)   AS "CREATED",
+       cast(completed.meta_attr_value as timestamp) AS "COMPLETED"
+FROM r_data_main data
+         JOIN r_report_registered_by_basepath basepath ON data.data_id = basepath.object_id
+         JOIN r_report_registered_by_doc doc ON data.data_id = doc.object_id
+         LEFT JOIN (SELECT r_report_data_objects.data_id,
+                           r_report_data_objects.meta_attr_name,
+                           r_report_data_objects.meta_attr_value,
+                           r_report_data_objects.create_ts
+                    FROM r_report_data_objects
+                    WHERE cast(r_report_data_objects.meta_attr_name as clob) = cast('source_file_size' as clob)) size
+                   ON data.data_id = size.data_id
+         LEFT JOIN (SELECT r_report_data_objects.data_id,
+                           r_report_data_objects.meta_attr_name,
+                           r_report_data_objects.meta_attr_value,
+                           r_report_data_objects.create_ts
+                    FROM r_report_data_objects
+                    WHERE cast(r_report_data_objects.meta_attr_name as clob) = cast('registered_by' as clob)) user_id
+                   ON data.data_id = user_id.data_id
+         LEFT JOIN (SELECT r_report_data_objects.data_id,
+                           r_report_data_objects.meta_attr_name,
+                           r_report_data_objects.meta_attr_value,
+                           r_report_data_objects.create_ts
+                    FROM r_report_data_objects
+                    WHERE cast(r_report_data_objects.meta_attr_name as clob) = cast('data_transfer_method' as clob)) transfermethod
+                   ON data.data_id = transfermethod.data_id
+         LEFT JOIN (SELECT r_report_data_objects.data_id,
+                           r_report_data_objects.meta_attr_name,
+                           r_report_data_objects.meta_attr_value,
+                           r_report_data_objects.create_ts
+                    FROM r_report_data_objects
+                    WHERE cast(r_report_data_objects.meta_attr_name as clob) = cast('data_transfer_type' as clob)) transfertype
+                   ON data.data_id = transfertype.data_id
+         LEFT JOIN (SELECT r_report_data_objects.data_id,
+                           r_report_data_objects.meta_attr_name,
+                           r_report_data_objects.meta_attr_value,
+                           r_report_data_objects.create_ts
+                    FROM r_report_data_objects
+                    WHERE cast(r_report_data_objects.meta_attr_name as clob) = cast('data_transfer_started' as clob)) created
+                   ON data.data_id = created.data_id
+         LEFT JOIN (SELECT r_report_data_objects.data_id,
+                           r_report_data_objects.meta_attr_name,
+                           r_report_data_objects.meta_attr_value,
+                           r_report_data_objects.create_ts
+                    FROM r_report_data_objects
+                    WHERE cast(r_report_data_objects.meta_attr_name as clob) = cast('data_transfer_completed' as clob)) completed
+                   ON data.data_id = completed.data_id
+         LEFT JOIN (SELECT r_report_data_objects.data_id,
+                           r_report_data_objects.meta_attr_name,
+                           r_report_data_objects.meta_attr_value,
+                           r_report_data_objects.create_ts
+                    FROM r_report_data_objects
+                    WHERE cast(r_report_data_objects.meta_attr_name as clob) = cast('source_file_container_id' as clob)) sourceendpoint
+                   ON data.data_id = sourceendpoint.data_id;
+
+alter materialized view public.r_report_registered_by_audit owner to postgres;
+
+create unique index r_report_registered_by_audit_uidx1
+    on public.r_report_registered_by_audit (data_id);
+
