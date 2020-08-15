@@ -35,6 +35,7 @@
 						<Export-Package />
 						<Private-Package>
 							gov.nih.nci.hpc.dao.postgresql.impl
+							gov.nih.nci.hpc.dao.oracle.impl
 						</Private-Package>
 						<Import-Package>
 							org.postgresql,
