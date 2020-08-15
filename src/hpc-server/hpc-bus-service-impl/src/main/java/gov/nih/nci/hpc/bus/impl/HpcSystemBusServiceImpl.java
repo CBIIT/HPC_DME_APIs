@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.CollectionUtils;
+
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount;
@@ -554,14 +555,25 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			logger.info("collection download task: {} - started processing [{}]", downloadTask.getId(),
 					downloadTask.getType());
 
-			// Mark this collection download task in-process
-			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
-
 			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
 				// User requested to cancel this collection download task.
 				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED, "Download request canceled");
 				continue;
 			}
+
+			// We limit to one collection download task processing per user at a time.
+			int tasksInProgressCount = dataTransferService.getCollectionDownloadTasksCount(downloadTask.getUserId(),
+					HpcCollectionDownloadTaskStatus.RECEIVED, true);
+			if (tasksInProgressCount > 0) {
+				// Another collection download tasks in in-process (other thread) for this user.
+				logger.info(
+						"collection download task: {} - Not processing at this time. {} tasks in-process for user: {}",
+						downloadTask.getId(), tasksInProgressCount, downloadTask.getUserId());
+				continue;
+			}
+
+			// Mark this collection download task in-process.
+			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
 
 			// Process this collection download task async.
 			CompletableFuture.runAsync(() -> {
@@ -627,7 +639,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							// Persist the collection download task.
 							dataTransferService.updateCollectionDownloadTask(downloadTask);
-							
+
 							logger.info("collection download task: {} - finished processing [{}]", downloadTask.getId(),
 									downloadTask.getType());
 

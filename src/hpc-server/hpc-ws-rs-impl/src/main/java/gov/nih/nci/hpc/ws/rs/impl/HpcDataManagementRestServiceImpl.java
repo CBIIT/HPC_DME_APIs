@@ -11,20 +11,25 @@
 package gov.nih.nci.hpc.ws.rs.impl;
 
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory;
@@ -732,18 +737,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		}
 
 		return bulkMoveResponse.getResult() ? okResponse(bulkMoveResponse, true) : errorResponse(bulkMoveResponse);
-	}
-
-	// TODO - Remove HPCDATAMGM-1189 code
-	@Override
-	public Response updateFileContainerName() {
-		try {
-			dataManagementBusService.updateFileContainerName();
-		} catch (HpcException e) {
-			return errorResponse(e);
-		}
-		return okResponse(null, false);
-
 	}
 
 	// ---------------------------------------------------------------------//
