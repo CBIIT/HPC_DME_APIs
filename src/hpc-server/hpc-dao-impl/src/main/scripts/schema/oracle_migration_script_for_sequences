@@ -1,0 +1,7 @@
+create sequence irods.r_objectid;
+
+create sequence irods."HPC_NOTIFICATION_SUBSCRIPTION_ID_seq";
+
+create sequence irods."HPC_EVENT_ID_seq";
+
+create sequence irods."HPC_SYSTEM_ACCOUNT_SEQ";
