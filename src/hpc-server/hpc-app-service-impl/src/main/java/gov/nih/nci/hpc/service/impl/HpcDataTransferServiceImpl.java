@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.service.impl;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -33,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
+
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -80,7 +83,6 @@ import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
-import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -129,10 +131,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Metadata service.
 	@Autowired
 	private HpcMetadataService metadataService = null;
-
-	// TODO - Remove HPCDATAMGM-1189 code
-	@Autowired
-	private HpcDataManagementService dataManagementService = null;
 
 	// Data management configuration locator.
 	@Autowired
@@ -1108,6 +1106,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
+			throws HpcException {
+		return dataDownloadDAO.getCollectionDownloadTasksCount(userId, status, inProcess);
+	}
+
+	@Override
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus status,
 			boolean inProcess) throws HpcException {
 		return dataDownloadDAO.getCollectionDownloadTasks(status, inProcess);
@@ -1300,41 +1304,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Return true if the current time is passed the expiration time.
 		return expiration.before(new Date());
-	}
-
-	// TODO - Remove HPCDATAMGM-1189 code
-	@Override
-	public void updateFileContainerName() throws HpcException {
-		List<HpcDownloadTaskResult> taskResults = dataDownloadDAO.updateFileContainerName();
-		logger.info("Updating endpoint name for download task results: {} tasks", taskResults.size());
-		taskResults.forEach(taskResult -> {
-			String path = taskResult.getPath();
-			if (StringUtils.isEmpty(path) && !taskResult.getItems().isEmpty()) {
-				path = taskResult.getItems().get(0).getPath();
-			}
-			String containerName = taskResult.getDestinationLocation().getFileContainerId();
-			String configurationId = dataManagementService.findDataManagementConfigurationId(path);
-			if (StringUtils.isEmpty(configurationId)) {
-				logger.error("HPCDATAMGM-1189: Failed to get configuration ID for task[{}]", taskResult.getId());
-			} else {
-				try {
-					containerName = getFileContainerName(taskResult.getDestinationType(), configurationId,
-							taskResult.getDestinationLocation().getFileContainerId());
-				} catch (HpcException e) {
-					logger.error("HPCDATAMGM-1189: Failed to get container name for task[{}]", taskResult.getId());
-				}
-			}
-
-			try {
-				dataDownloadDAO.updateFileContainerName(taskResult.getId(), containerName);
-				logger.info("HPCDATAMGM-1189: Updated endpoint name for for task [{}]: {}", taskResult.getId(),
-						containerName);
-
-			} catch (HpcException e) {
-				logger.error("HPCDATAMGM-1189: Failed to updated endpoint name for task[{}]: {}", taskResult.getId(),
-						e.getMessage());
-			}
-		});
 	}
 
 	// ---------------------------------------------------------------------//
