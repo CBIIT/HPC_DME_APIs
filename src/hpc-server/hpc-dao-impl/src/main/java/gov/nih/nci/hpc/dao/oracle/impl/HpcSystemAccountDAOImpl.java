@@ -113,7 +113,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
       throw new HpcException(
           "Failed to update a system account: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR,
-          HpcIntegratedSystem.POSTGRESQL,
+          HpcIntegratedSystem.ORACLE,
           e);
     }
   }
@@ -136,7 +136,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
       throw new HpcException(
           "Failed to upsert a system account: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR,
-          HpcIntegratedSystem.POSTGRESQL,
+          HpcIntegratedSystem.ORACLE,
           e);
     }
   }
@@ -155,7 +155,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
       throw new HpcException(
           "Failed to get a system account: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR,
-          HpcIntegratedSystem.POSTGRESQL,
+          HpcIntegratedSystem.ORACLE,
           e);
     }
   }
@@ -172,7 +172,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
       throw new HpcException(
           "Failed to get a system account: " + e.getMessage(),
           HpcErrorType.DATABASE_ERROR,
-          HpcIntegratedSystem.POSTGRESQL,
+          HpcIntegratedSystem.ORACLE,
           e);
     }
   }

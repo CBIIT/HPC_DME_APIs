@@ -105,7 +105,7 @@ public class HpcGroupDAOImpl implements HpcGroupDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get groups: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}		
     }
 	
@@ -126,7 +126,7 @@ public class HpcGroupDAOImpl implements HpcGroupDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get groups for user: " + userId + ": " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}		
     }
 	
