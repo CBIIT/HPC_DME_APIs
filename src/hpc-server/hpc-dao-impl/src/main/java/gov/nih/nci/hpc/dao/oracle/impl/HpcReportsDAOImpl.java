@@ -1045,7 +1045,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
       jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_audit");
     } catch (DataAccessException e) {
       throw new HpcException("Failed to refresh report views: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 

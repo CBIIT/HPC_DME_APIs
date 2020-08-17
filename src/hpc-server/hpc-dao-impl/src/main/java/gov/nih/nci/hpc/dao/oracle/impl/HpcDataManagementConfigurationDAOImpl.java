@@ -156,7 +156,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to get data management configurations: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -169,7 +169,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to get S3 Archive configurations: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -189,7 +189,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
     } catch (Exception e) {
       throw new HpcException("Failed to connect to PostgreSQL DB. Check credentials config",
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
