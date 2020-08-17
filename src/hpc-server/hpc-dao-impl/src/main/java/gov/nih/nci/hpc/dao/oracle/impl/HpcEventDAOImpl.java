@@ -133,7 +133,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to insert an event " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 	
@@ -148,7 +148,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get notification events: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}	    	
     }
     
@@ -160,7 +160,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to delete a notification event" + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}    	
     }
     
@@ -178,7 +178,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to insert an event to history table" + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
     }
     
@@ -194,7 +194,7 @@ public class HpcEventDAOImpl implements HpcEventDAO
 		    
 		} catch(DataAccessException e) {
 	            throw new HpcException("Failed to get an event from history: " + e.getMessage(),
-	    	    	                   HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+	    	    	                   HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
     }
 	

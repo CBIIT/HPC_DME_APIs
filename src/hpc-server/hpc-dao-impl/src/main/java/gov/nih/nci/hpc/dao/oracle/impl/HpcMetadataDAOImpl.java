@@ -456,7 +456,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection hierarchical metadata: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -467,7 +467,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get data object hierarchical metadata: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -495,7 +495,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection/data-object Paths: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -522,10 +522,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			}
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		} catch (SQLException e) {
 			throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -537,7 +537,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 					ids.toArray(), browseMetadataRowMapper);
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get browse metadata : " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
-					HpcIntegratedSystem.POSTGRESQL, e);
+					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -787,7 +787,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection/data-object Paths: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -804,7 +804,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get data-object Detailed Paths: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -822,7 +822,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection Detailed Paths: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -839,7 +839,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to count collection/data-object: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
@@ -888,7 +888,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get metadata attributes: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
-					HpcIntegratedSystem.POSTGRESQL, e);
+					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 }

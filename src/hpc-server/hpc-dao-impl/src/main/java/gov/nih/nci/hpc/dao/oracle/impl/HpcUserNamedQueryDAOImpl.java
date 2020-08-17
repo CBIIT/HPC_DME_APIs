@@ -145,7 +145,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user query " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 	
@@ -157,7 +157,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to delete a user query" + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}   
 	}
 	
@@ -174,7 +174,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get user queries: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}	    	
     }
     
@@ -192,7 +192,7 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a user query: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
     }
 	

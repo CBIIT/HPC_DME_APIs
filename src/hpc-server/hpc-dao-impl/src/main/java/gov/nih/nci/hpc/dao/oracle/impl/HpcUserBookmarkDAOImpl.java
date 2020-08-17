@@ -123,7 +123,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user bookmark " + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 	
@@ -136,7 +136,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to delete a bookmark" + 
 		                               e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}   
 	}
 	
@@ -152,7 +152,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get user bookmarks: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}	    	
     }
     
@@ -170,7 +170,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a user bookamrk: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
     }
     
@@ -186,7 +186,7 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get bookamrks for user " 
 		        		+ nciUserId + " for the given path " + bookmarkPath + ": " + e.getMessage(),
-		    	    	HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
     }
 }

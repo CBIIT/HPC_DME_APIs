@@ -193,7 +193,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     } catch (DataAccessException e) {
       throw new HpcException(
           "Failed to upsert a bulk data object registration request: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -210,7 +210,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     } catch (DataAccessException e) {
       throw new HpcException(
           "Failed to get a bulk data object registration task: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -222,7 +222,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     } catch (DataAccessException e) {
       throw new HpcException(
           "Failed to delete a bulk data object registration task: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -235,7 +235,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to get bulk data object registration tasks: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -252,7 +252,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     } catch (DataAccessException e) {
       throw new HpcException(
           "Failed to upsert a bulk data object registration result: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -269,7 +269,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     } catch (DataAccessException e) {
       throw new HpcException(
           "Failed to get a bulk data object registration result: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -282,7 +282,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to get bulk data object registration tasks: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -296,7 +296,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     } catch (DataAccessException e) {
       throw new HpcException(
           "Failed to get bulk data object rwegistration results: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -308,7 +308,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
     } catch (DataAccessException e) {
       throw new HpcException("Failed to count download results: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 
@@ -337,7 +337,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
     } catch (DataAccessException e) {
       throw new HpcException(
           "Failed to insert a data object registration result: " + e.getMessage(),
-          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+          HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
     }
   }
 

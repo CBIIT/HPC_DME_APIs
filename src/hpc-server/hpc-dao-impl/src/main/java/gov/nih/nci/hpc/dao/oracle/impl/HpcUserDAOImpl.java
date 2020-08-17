@@ -169,7 +169,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to upsert a user: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
     }
 
@@ -182,7 +182,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 
         } catch(DataAccessException e) {
             throw new HpcException("Failed to delete user " + userId + ": " + e.getMessage(),
-                HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+                HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
         }
     }
 
@@ -199,7 +199,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get a user: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 	
@@ -247,7 +247,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get users: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}		
     }
 
@@ -284,7 +284,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get users for role = " + role + " in doc = " + doc + e.getMessage(),
-		        HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		        HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
     }
 
@@ -344,7 +344,7 @@ public class HpcUserDAOImpl implements HpcUserDAO
 			    
 		} catch(DataAccessException e) {
 		        throw new HpcException("Failed to get users: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}		
     }
 }
