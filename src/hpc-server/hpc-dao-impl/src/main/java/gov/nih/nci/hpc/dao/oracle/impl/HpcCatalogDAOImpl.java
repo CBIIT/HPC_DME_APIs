@@ -129,7 +129,7 @@ public class HpcCatalogDAOImpl implements HpcCatalogDAO {
                 
         } catch(DataAccessException e) {
                 throw new HpcException("Failed to get catalog entries: " + e.getMessage(),
-                                       HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+                                       HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
         }       
     }
 	
@@ -159,7 +159,7 @@ public class HpcCatalogDAOImpl implements HpcCatalogDAO {
 
         } catch (DataAccessException e) {
             throw new HpcException("Failed to count catalog: " + e.getMessage(),
-                  HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+                  HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
         }
     }
 

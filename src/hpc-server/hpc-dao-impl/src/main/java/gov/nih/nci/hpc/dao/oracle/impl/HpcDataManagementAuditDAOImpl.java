@@ -99,7 +99,7 @@ public class HpcDataManagementAuditDAOImpl implements HpcDataManagementAuditDAO
 		     
 		} catch(DataAccessException e) {
 			    throw new HpcException("Failed to insert a data management audit record: " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
     }
 	
