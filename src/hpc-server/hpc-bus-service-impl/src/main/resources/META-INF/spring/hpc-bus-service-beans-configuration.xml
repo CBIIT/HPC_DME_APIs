@@ -35,7 +35,8 @@
 	<!-- Business Services Aspects -->
 	<bean id="hpcBusServiceAspect" class="gov.nih.nci.hpc.bus.aspect.HpcBusServiceAspect" />
 	
-	<!--  Collection download task executor thread pool -->
+	<!--  Download task executor thread pools -->
 	<task:executor id="hpcCollectionDownloadTaskExecutor" pool-size="${hpc.bus.collectionDownloadTaskExecutorThreadPoolSize}"/>
+	<task:executor id="hpcDataObjectDownloadTaskExecutor" pool-size="${hpc.bus.dataObjectDownloadTaskExecutorThreadPoolSize}"/>
 
 </beans>
