@@ -26,3 +26,8 @@ ALTER TABLE public."HPC_COLLECTION_DOWNLOAD_TASK" ADD COLUMN "IN_PROCESS" boolea
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."IN_PROCESS" IS 
                   'An indicator whether this task is in-process, i.e. individual file download tasks are submitted';
                   
+-- Allow processing of concurrent data-object download tasks.             
+ALTER TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK" ADD COLUMN "IN_PROCESS" boolean NOT NULL DEFAULT false;                  
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."IN_PROCESS" IS 
+                  'An indicator whether this task is in-process, i.e. a thread is working on submitting it';
+                  

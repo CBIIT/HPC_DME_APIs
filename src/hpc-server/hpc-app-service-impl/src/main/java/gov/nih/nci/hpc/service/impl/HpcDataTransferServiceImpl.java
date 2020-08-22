@@ -956,6 +956,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		downloadTask.setProcessed(Calendar.getInstance());
+		downloadTask.setInProcess(true);
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
 

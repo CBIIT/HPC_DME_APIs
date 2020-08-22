@@ -376,6 +376,7 @@
 			<xsd:element name="processed" type="xsd:dateTime" />
 			<xsd:element name="percentComplete" type="xsd:int" />
 			<xsd:element name="size" type="xsd:long" />
+			<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
