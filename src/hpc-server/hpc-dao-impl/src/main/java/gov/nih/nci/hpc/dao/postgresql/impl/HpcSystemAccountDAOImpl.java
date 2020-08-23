@@ -8,7 +8,10 @@
  */
 package gov.nih.nci.hpc.dao.postgresql.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,8 +24,6 @@ import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccountProperty;
 import gov.nih.nci.hpc.exception.HpcException;
-
-import java.util.List;
 
 /**
  * HPC System Account DAO Implementation.
@@ -59,6 +60,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
   //---------------------------------------------------------------------//
 
   // The Spring JDBC Template instance.
+  @Qualifier("hpcPostgreSQLJdbcTemplate")
   @Autowired private JdbcTemplate jdbcTemplate = null;
 
   // Encryptor.

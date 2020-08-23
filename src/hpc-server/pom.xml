@@ -26,7 +26,10 @@
 	<properties>
 		<cxf.version>3.1.5</cxf.version>
 		<cxf-xjc.version>3.0.5</cxf-xjc.version>
+		<!-- TODO: Remove after Oracle migration -->
 		<postgresql.version>9.3-1102-jdbc41</postgresql.version>
+		<!-- TODO: END -->
+		<oracle.version>19.7.0.0</oracle.version>
 		<slf4j.version>1.7.22</slf4j.version>
 		<spring.version>3.2.17.RELEASE</spring.version>
 		<spring.retry.version>1.2.1.RELEASE</spring.retry.version>
@@ -201,10 +204,17 @@
 				<artifactId>cxf-xjc-runtime</artifactId>
 				<version>${cxf-xjc.version}</version>
 			</dependency>
+			<!-- TODO: Remove after Oracle migration -->
 			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
 				<version>${postgresql.version}</version>
+			</dependency>
+			<!--  TODO: END -->
+			<dependency>
+   				<groupId>com.oracle.database.jdbc</groupId>
+    			<artifactId>ojdbc8</artifactId>
+    			<version>${oracle.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>

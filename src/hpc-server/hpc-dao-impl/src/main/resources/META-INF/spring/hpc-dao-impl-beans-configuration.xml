@@ -21,6 +21,7 @@
 
 	<context:annotation-config />
 	
+	<!-- TODO: Remove after Oracle migration -->
 	<!-- HPC PostgreSQL DB data source -->
 	<bean id="hpcPostgreSQLDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="org.postgresql.Driver" />
@@ -36,15 +37,33 @@
 	</bean>
     
     <!-- Spring JDBC Template -->
-    <bean id="hpcJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+    <bean id="hpcPostgreSQLJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<constructor-arg ref="hpcPostgreSQLDataSource" />
 	</bean>
+	<!--  TODO: END -->
 	
-	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
-  		<constructor-arg ref="hpcPostgreSQLDataSource" />
+	<!-- HPC Oracle DB data source -->
+	<bean id="hpcOracleDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+        <property name="url" value="${hpc.dao.oracle.url}" />
+        <property name="username" value="${hpc.dao.oracle.username}" />
+        <property name="password" value="${hpc.dao.oracle.password}" />
+        <property name="maxActive" value="${hpc.dao.oracle.maxActive}" />
+    </bean>
+    
+    <!-- HPC Oracle Encryptor -->
+	<bean id="hpcOracleEncryptor" class="gov.nih.nci.hpc.dao.oracle.impl.HpcEncryptor">
+		<constructor-arg value="${hpc.dao.oracle.encryptor.key}" />
+	</bean>
+    
+    <!-- Spring JDBC Template -->
+    <bean id="hpcOracleJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<constructor-arg ref="hpcOracleDataSource" />
 	</bean>
 
 	<!-- HPC DAO Implementation Beans -->
+	
+	<!-- TODO: Remove after Oracle migration -->
 	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" />
 	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" />
 	<bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataDownloadDAOImpl" />
@@ -63,5 +82,25 @@
 	      class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementConfigurationDAOImpl" 
 	      init-method="dbConnect"/>
 	<bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcCatalogDAOImpl" />
+	<!-- TODO: END -->
+	
+	<!--  <bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserDAOImpl" /> -->
+	<!-- <bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcSystemAccountDAOImpl" /> -->
+	<!-- <bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataDownloadDAOImpl" /> -->
+	<!-- <bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataRegistrationDAOImpl" /> -->
+	<!-- <bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementAuditDAOImpl" /> -->
+	<!-- <bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcNotificationDAOImpl" /> -->
+	<!-- <bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcEventDAOImpl" /> -->
+	<!-- <bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl">
+		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
+	</bean> -->
+	<!-- <bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl" /> -->
+	<!-- <bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl" /> -->
+	<!-- <bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserBookmarkDAOImpl" /> -->
+	<!-- <bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGroupDAOImpl" /> -->
+	<!-- <bean id="hpcDataManagementConfigurationDAO" 
+	      class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementConfigurationDAOImpl" 
+	      init-method="dbConnect"/> -->
+	<!-- <bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcCatalogDAOImpl" /> -->
 
 </beans>

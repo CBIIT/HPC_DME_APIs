@@ -16,13 +16,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+
 import gov.nih.nci.hpc.dao.HpcReportsDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.report.HpcReport;
@@ -326,6 +329,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
   // The Spring JDBC Template instance.
   @Autowired
+  @Qualifier("hpcPostgreSQLJdbcTemplate")
   private JdbcTemplate jdbcTemplate = null;
 
   // The logger instance.
