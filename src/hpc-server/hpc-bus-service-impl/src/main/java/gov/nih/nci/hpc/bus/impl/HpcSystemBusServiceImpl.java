@@ -127,6 +127,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Qualifier("hpcCollectionDownloadTaskExecutor")
 	Executor collectionDownloadTaskExecutor = null;
 
+	// The collection download task executor.
+	@Autowired
+	@Qualifier("hpcDataObjectDownloadTaskExecutor")
+	Executor dataObjectDownloadTaskExecutor = null;
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -1009,13 +1014,47 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				try {
 					// First mark the task as picked up in this run so we don't pick up the same
 					// record.
+					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
 					dataTransferService.markProcessedDataObjectDownloadTask(downloadTask);
+
 					switch (downloadTask.getDataTransferStatus()) {
 					case RECEIVED:
-						logger.info("download task: {} - continuing [transfer-type={}, destination-type={}]",
-								downloadTask.getId(), downloadTask.getDataTransferType(),
-								downloadTask.getDestinationType());
-						dataTransferService.continueDataObjectDownloadTask(downloadTask);
+						if (inProcess) {
+							// This task is in-process in another thread. Skip it
+							logger.info(
+									"download task: {} - continuing in-process in another thread [transfer-type={}, destination-type={}]",
+									downloadTask.getId(), downloadTask.getDataTransferType(),
+									downloadTask.getDestinationType());
+							break;
+						}
+
+						CompletableFuture.runAsync(() -> {
+							try {
+								// Since this is executed in a separate thread. Need to get system-account
+								// execution again.
+								securityService.executeAsSystemAccount(Optional.empty(), () -> {
+									try {
+										logger.info(
+												"download task: {} - continuing [transfer-type={}, destination-type={}]",
+												downloadTask.getId(), downloadTask.getDataTransferType(),
+												downloadTask.getDestinationType());
+										dataTransferService.continueDataObjectDownloadTask(downloadTask);
+
+									} catch (HpcException e) {
+										logger.error(
+												"download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+												downloadTask.getId(), downloadTask.getDataTransferType(),
+												downloadTask.getDestinationType(), e);
+									}
+								});
+							} catch (HpcException e) {
+								logger.error(
+										"download task: {} - Failed to execute as system account [transfer-type={}, destination-type={}]",
+										downloadTask.getId(), downloadTask.getDataTransferType(),
+										downloadTask.getDestinationType(), e);
+							}
+
+						}, dataObjectDownloadTaskExecutor);
 						break;
 
 					case IN_PROGRESS:
@@ -1041,7 +1080,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					}
 
 				} catch (HpcException e) {
-					logger.error("Failed to complete download task: " + downloadTask.getId(), e);
+					logger.error("download task: {} - Failed to process [transfer-type={}, destination-type={}]",
+							downloadTask.getId(), downloadTask.getDataTransferType(), downloadTask.getDestinationType(),
+							e);
 				}
 			}
 		} while (!CollectionUtils.isEmpty(downloadTasks));
