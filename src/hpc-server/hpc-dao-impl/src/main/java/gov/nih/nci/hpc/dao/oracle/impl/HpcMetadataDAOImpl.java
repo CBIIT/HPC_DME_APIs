@@ -19,13 +19,16 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -192,6 +195,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
+	// TODO: Remove after Oracle migration
+	@Qualifier("hpcOracleJdbcTemplate")
+	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Row mappers.

@@ -27,6 +27,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -191,6 +192,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
+	@Qualifier("hpcPostgreSQLJdbcTemplate")
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
