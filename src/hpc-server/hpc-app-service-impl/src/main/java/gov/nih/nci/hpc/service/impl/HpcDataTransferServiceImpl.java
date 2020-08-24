@@ -945,6 +945,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		downloadTask.setInProcess(false);
 		if (!StringUtils.isEmpty(downloadTask.getDownloadFilePath())) {
 			FileUtils.deleteQuietly(new File(downloadTask.getDownloadFilePath()));
 			downloadTask.setDownloadFilePath(null);
@@ -956,6 +957,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Override
 	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
 		downloadTask.setProcessed(Calendar.getInstance());
+		downloadTask.setInProcess(true);
 		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 	}
 

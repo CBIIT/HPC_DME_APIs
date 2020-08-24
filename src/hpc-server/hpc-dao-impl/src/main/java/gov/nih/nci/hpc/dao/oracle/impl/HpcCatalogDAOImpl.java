@@ -13,12 +13,15 @@ package gov.nih.nci.hpc.dao.oracle.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
+
 import gov.nih.nci.hpc.dao.HpcCatalogDAO;
 import gov.nih.nci.hpc.domain.catalog.HpcCatalogCriteria;
 import gov.nih.nci.hpc.domain.catalog.HpcCatalogMetadataEntry;
@@ -61,6 +64,9 @@ public class HpcCatalogDAOImpl implements HpcCatalogDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
+	// TODO: Remove after Oracle migration
+	@Qualifier("hpcOracleJdbcTemplate")
+	// //TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Row mappers.
@@ -129,7 +135,7 @@ public class HpcCatalogDAOImpl implements HpcCatalogDAO {
                 
         } catch(DataAccessException e) {
                 throw new HpcException("Failed to get catalog entries: " + e.getMessage(),
-                                       HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+                                       HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
         }       
     }
 	
@@ -159,7 +165,7 @@ public class HpcCatalogDAOImpl implements HpcCatalogDAO {
 
         } catch (DataAccessException e) {
             throw new HpcException("Failed to count catalog: " + e.getMessage(),
-                  HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+                  HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
         }
     }
 
