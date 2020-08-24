@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.json.simple.JSONArray;
@@ -26,6 +27,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -70,8 +72,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", "
 			+ "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", "
 			+ "\"S3_ACCOUNT_ACCESS_KEY\", \"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", \"GOOGLE_DRIVE_ACCESS_TOKEN\", "
-			+ "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\", \"PROCESSED\") "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+			+ "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\", \"PROCESSED\", \"IN_PROCESS\") "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
 			+ "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + "\"PATH\"=excluded.\"PATH\", "
 			+ "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
 			+ "\"S3_ARCHIVE_CONFIGURATION_ID\"=excluded.\"S3_ARCHIVE_CONFIGURATION_ID\", "
@@ -90,7 +92,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "\"GOOGLE_DRIVE_ACCESS_TOKEN\"=excluded.\"GOOGLE_DRIVE_ACCESS_TOKEN\", "
 			+ "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
 			+ "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", " + "\"SIZE\"=excluded.\"SIZE\", "
-			+ "\"CREATED\"=excluded.\"CREATED\", " + "\"PROCESSED\"=excluded.\"PROCESSED\"";
+			+ "\"CREATED\"=excluded.\"CREATED\", " + "\"PROCESSED\"=excluded.\"PROCESSED\", "
+			+ "\"IN_PROCESS\"=excluded.\"IN_PROCESS\"";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
 
@@ -189,6 +192,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
+	@Qualifier("hpcPostgreSQLJdbcTemplate")
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
@@ -211,6 +215,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		dataObjectDownloadTask.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
 		dataObjectDownloadTask.setPercentComplete(rs.getInt("PERCENT_COMPLETE"));
 		dataObjectDownloadTask.setSize(rs.getLong("SIZE"));
+		dataObjectDownloadTask.setInProcess(rs.getBoolean("IN_PROCESS"));
 
 		String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
 		String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
@@ -480,7 +485,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, googleDriveAccessToken,
 					dataObjectDownloadTask.getCompletionEvent(), dataObjectDownloadTask.getPercentComplete(),
 					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
-					dataObjectDownloadTask.getProcessed());
+					dataObjectDownloadTask.getProcessed(),
+					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false));
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
