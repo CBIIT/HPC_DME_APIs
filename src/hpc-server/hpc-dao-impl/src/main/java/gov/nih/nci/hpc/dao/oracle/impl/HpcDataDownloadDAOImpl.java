@@ -19,17 +19,21 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
+
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -68,8 +72,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "\"ARCHIVE_LOCATION_FILE_CONTAINER_ID\", \"ARCHIVE_LOCATION_FILE_ID\", "
 			+ "\"DESTINATION_LOCATION_FILE_CONTAINER_ID\", \"DESTINATION_LOCATION_FILE_ID\", \"DESTINATION_TYPE\", "
 			+ "\"S3_ACCOUNT_ACCESS_KEY\", \"S3_ACCOUNT_SECRET_KEY\", \"S3_ACCOUNT_REGION\", \"GOOGLE_DRIVE_ACCESS_TOKEN\", "
-			+ "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\", \"PROCESSED\") "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+			+ "\"COMPLETION_EVENT\", \"PERCENT_COMPLETE\", \"SIZE\", \"CREATED\", \"PROCESSED\", \"IN_PROCESS\") "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
 			+ "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", " + "\"PATH\"=excluded.\"PATH\", "
 			+ "\"CONFIGURATION_ID\"=excluded.\"CONFIGURATION_ID\", "
 			+ "\"S3_ARCHIVE_CONFIGURATION_ID\"=excluded.\"S3_ARCHIVE_CONFIGURATION_ID\", "
@@ -88,7 +92,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "\"GOOGLE_DRIVE_ACCESS_TOKEN\"=excluded.\"GOOGLE_DRIVE_ACCESS_TOKEN\", "
 			+ "\"COMPLETION_EVENT\"=excluded.\"COMPLETION_EVENT\", "
 			+ "\"PERCENT_COMPLETE\"=excluded.\"PERCENT_COMPLETE\", " + "\"SIZE\"=excluded.\"SIZE\", "
-			+ "\"CREATED\"=excluded.\"CREATED\", " + "\"PROCESSED\"=excluded.\"PROCESSED\"";
+			+ "\"CREATED\"=excluded.\"CREATED\", " + "\"PROCESSED\"=excluded.\"PROCESSED\", "
+			+ "\"IN_PROCESS\"=excluded.\"IN_PROCESS\"";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
 
@@ -172,6 +177,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"USER_ID\" = ? and "
 			+ "\"COMPLETION_EVENT\" = true";
 
+	private static final String GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL = "select count(*) from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"USER_ID\" = ? and "
+			+ "\"STATUS\" = ? and \"IN_PROCESS\" = ?";
+
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"IN_PROCESS\" = ? where \"ID\" = ?";
 
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"CANCELLATION_REQUESTED\" = ? where \"ID\" = ?";
@@ -184,6 +192,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
+	// TODO: Remove after Oracle migration
+	@Qualifier("hpcOracleJdbcTemplate")
+	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
@@ -206,6 +217,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		dataObjectDownloadTask.setCompletionEvent(rs.getBoolean("COMPLETION_EVENT"));
 		dataObjectDownloadTask.setPercentComplete(rs.getInt("PERCENT_COMPLETE"));
 		dataObjectDownloadTask.setSize(rs.getLong("SIZE"));
+		dataObjectDownloadTask.setInProcess(rs.getBoolean("IN_PROCESS"));
 
 		String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
 		String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
@@ -475,7 +487,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, googleDriveAccessToken,
 					dataObjectDownloadTask.getCompletionEvent(), dataObjectDownloadTask.getPercentComplete(),
 					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
-					dataObjectDownloadTask.getProcessed());
+					dataObjectDownloadTask.getProcessed(),
+					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false));
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
@@ -748,6 +761,19 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
+	public int getCollectionDownloadTasksCount(String userId, HpcCollectionDownloadTaskStatus status, boolean inProcess)
+			throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_COLLECTION_DOWNLOAD_REQUESTS_COUNT_SQL, Integer.class, userId,
+					status.value(), inProcess);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to count collection download requests: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+
+	@Override
 	public void setCollectionDownloadTaskInProcess(String id, boolean inProcess) throws HpcException {
 		try {
 			jdbcTemplate.update(SET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess, id);
@@ -825,36 +851,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to count download results: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.POSTGRESQL, e);
-		}
-	}
-
-	/**
-	 * TODO - Remove HPCDATAMGM-1189 code
-	 */
-	public List<HpcDownloadTaskResult> updateFileContainerName() throws HpcException {
-		try {
-			return jdbcTemplate.query(
-					"select * from public.\"HPC_DOWNLOAD_TASK_RESULT\" where \"DESTINATION_TYPE\" is not null and \"DESTINATION_LOCATION_FILE_CONTAINER_NAME\" is null and \"DESTINATION_LOCATION_FILE_CONTAINER_ID\" is not null",
-					downloadTaskResultRowMapper);
-
-		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get download results for container name update: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}
-	}
-
-	/**
-	 * TODO - Remove HPCDATAMGM-1189 code
-	 */
-	public void updateFileContainerName(String taskId, String containerName) throws HpcException {
-		try {
-			jdbcTemplate.update(
-					"update \"HPC_DOWNLOAD_TASK_RESULT\" set \"DESTINATION_LOCATION_FILE_CONTAINER_NAME\" = ? where \"ID\" = ?",
-					containerName, taskId);
-
-		} catch (DataAccessException e) {
-			throw new HpcException("Failed to update download result w/ container name: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 

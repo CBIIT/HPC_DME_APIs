@@ -16,16 +16,19 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.StringUtils;
+
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
@@ -115,6 +118,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
   // The Spring JDBC Template instance.
   @Autowired
+  @Qualifier("hpcPostgreSQLJdbcTemplate")
   private JdbcTemplate jdbcTemplate = null;
 
   // HpcBulkDataObjectRegistrationTask table to object mapper.

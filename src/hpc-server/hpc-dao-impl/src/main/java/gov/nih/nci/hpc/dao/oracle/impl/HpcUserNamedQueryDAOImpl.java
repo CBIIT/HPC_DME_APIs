@@ -21,6 +21,7 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,47 +49,43 @@ import gov.nih.nci.hpc.exception.HpcException;
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 
-public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
-{ 
-    //---------------------------------------------------------------------//
-    // Constants
-    //---------------------------------------------------------------------//    
-    
-    // SQL Queries.
-	private static final String UPSERT_USER_QUERY_SQL = 
-			"insert into public.\"HPC_USER_QUERY\" ( " +
-	                "\"USER_ID\", \"QUERY_NAME\", \"QUERY\", \"DETAILED_RESPONSE\", " +
-	                "\"TOTAL_COUNT\", \"QUERY_TYPE\", \"CREATED\", \"UPDATED\" ) " +
-	                "values (?, ?, ?, ?, ?, ?, ?, ?) " + 
-	        "on conflict(\"USER_ID\", \"QUERY_NAME\") do update " +
-            "set \"QUERY\"=excluded.\"QUERY\", \"DETAILED_RESPONSE\"=excluded.\"DETAILED_RESPONSE\", " +
-	        "\"TOTAL_COUNT\"=excluded.\"TOTAL_COUNT\", \"QUERY_TYPE\"=excluded.\"QUERY_TYPE\", " +
-	        "\"CREATED\"=excluded.\"CREATED\", \"UPDATED\"=excluded.\"UPDATED\"";
-	        
-	private static final String DELETE_USER_QUERY_SQL = 
-		    "delete from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
-	
-	private static final String GET_USER_QUERIES_SQL = 
-		    "select * from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ?";
-	
-	private static final String GET_USER_QUERY_SQL = 
-		    "select * from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
-	
-    //---------------------------------------------------------------------//
-    // Instance members
-    //---------------------------------------------------------------------//
-	
+public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
+	// ---------------------------------------------------------------------//
+	// Constants
+	// ---------------------------------------------------------------------//
+
+	// SQL Queries.
+	private static final String UPSERT_USER_QUERY_SQL = "insert into public.\"HPC_USER_QUERY\" ( "
+			+ "\"USER_ID\", \"QUERY_NAME\", \"QUERY\", \"DETAILED_RESPONSE\", "
+			+ "\"TOTAL_COUNT\", \"QUERY_TYPE\", \"CREATED\", \"UPDATED\" ) " + "values (?, ?, ?, ?, ?, ?, ?, ?) "
+			+ "on conflict(\"USER_ID\", \"QUERY_NAME\") do update "
+			+ "set \"QUERY\"=excluded.\"QUERY\", \"DETAILED_RESPONSE\"=excluded.\"DETAILED_RESPONSE\", "
+			+ "\"TOTAL_COUNT\"=excluded.\"TOTAL_COUNT\", \"QUERY_TYPE\"=excluded.\"QUERY_TYPE\", "
+			+ "\"CREATED\"=excluded.\"CREATED\", \"UPDATED\"=excluded.\"UPDATED\"";
+
+	private static final String DELETE_USER_QUERY_SQL = "delete from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
+
+	private static final String GET_USER_QUERIES_SQL = "select * from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ?";
+
+	private static final String GET_USER_QUERY_SQL = "select * from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
+
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
+
 	// The Spring JDBC Template instance.
 	@Autowired
+	// TODO: Remove after Oracle migration
+	@Qualifier("hpcOracleJdbcTemplate")
+	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
-	
+
 	// Encryptor.
 	@Autowired
 	HpcEncryptor encryptor = null;
-	
+
 	// Row mappers.
-	private RowMapper<HpcNamedCompoundMetadataQuery> userQueryRowMapper = (rs, rowNum) ->
-	{
+	private RowMapper<HpcNamedCompoundMetadataQuery> userQueryRowMapper = (rs, rowNum) -> {
 		HpcNamedCompoundMetadataQuery namedCompoundQuery = new HpcNamedCompoundMetadataQuery();
 		namedCompoundQuery.setCompoundQuery(fromJSON(encryptor.decrypt(rs.getBytes("QUERY"))));
 		namedCompoundQuery.setName(rs.getString("QUERY_NAME"));
@@ -103,269 +100,247 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO
 		namedCompoundQuery.setUpdated(updated);
 		return namedCompoundQuery;
 	};
-	
-    // The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
-	
-    //---------------------------------------------------------------------//
-    // Constructors
-    //---------------------------------------------------------------------//
-	
-    /**
-     * Constructor for Spring Dependency Injection. 
-     * 
-     */
-    private HpcUserNamedQueryDAOImpl()
-    {
-    }   
-    
-    //---------------------------------------------------------------------//
-    // Methods
-    //---------------------------------------------------------------------//
-    
-    //---------------------------------------------------------------------//
-    // HpcUserNamedQueryDAO Interface Implementation
-    //---------------------------------------------------------------------//  
-    
-	@Override
-	public void upsertQuery(String nciUserId, 
-			                HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery) 
-                           throws HpcException
-	{
-		try {
-		     jdbcTemplate.update(UPSERT_USER_QUERY_SQL,
-		    		             nciUserId, namedCompoundMetadataQuery.getName(),
-		    		             encryptor.encrypt(toJSONString(
-		    		            		           namedCompoundMetadataQuery.getCompoundQuery())),
-		    		             namedCompoundMetadataQuery.getDetailedResponse(),
-		    		             namedCompoundMetadataQuery.getTotalCount(),
-		    		             namedCompoundMetadataQuery.getCompoundQueryType().value(),
-		    		             namedCompoundMetadataQuery.getCreated(),
-		    		             namedCompoundMetadataQuery.getUpdated());
-		     
-		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to upsert a user query " + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}
-	}
-	
-	@Override
-	public void deleteQuery(String nciUserId, String queryName) throws HpcException
-	{
-		try {
-		     jdbcTemplate.update(DELETE_USER_QUERY_SQL, nciUserId, queryName);
-		     
-		} catch(DataAccessException e) {
-			    throw new HpcException("Failed to delete a user query" + e.getMessage(),
-			    		               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}   
-	}
-	
-	@Override
-	public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) 
-			                                             throws HpcException
-    {
-		try {
-		     return jdbcTemplate.query(GET_USER_QUERIES_SQL, userQueryRowMapper, 
-		    		                   nciUserId);
-		     
-		} catch(IncorrectResultSizeDataAccessException notFoundEx) {
-			    return null;
-			    
-		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get user queries: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}	    	
-    }
-    
-    @Override
-    public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) 
-    		                                    throws HpcException
-    {
-		try {
-		     return jdbcTemplate.queryForObject(GET_USER_QUERY_SQL, userQueryRowMapper, 
-		    		                            nciUserId, queryName);
-		     
-		} catch(IncorrectResultSizeDataAccessException irse) {
-			    logger.error("Multiple queries with the same name found", irse);
-			    return null;
-			    
-		} catch(DataAccessException e) {
-		        throw new HpcException("Failed to get a user query: " + e.getMessage(),
-		    	    	               HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
-		}
-    }
-	
-    //---------------------------------------------------------------------//
-    // Helper Methods
-    //---------------------------------------------------------------------//  
 
-	/** 
-     * Convert compound query into a JSON string.
-     * 
-     * @param compoundMetadataQuery The compound metadata query to convert.
-     * @return A JSON representation of the compound query.
-     */
-	private String toJSONString(HpcCompoundMetadataQuery compoundMetadataQuery)
-	{
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
+
+	// ---------------------------------------------------------------------//
+	// Constructors
+	// ---------------------------------------------------------------------//
+
+	/**
+	 * Constructor for Spring Dependency Injection.
+	 * 
+	 */
+	private HpcUserNamedQueryDAOImpl() {
+	}
+
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
+
+	// ---------------------------------------------------------------------//
+	// HpcUserNamedQueryDAO Interface Implementation
+	// ---------------------------------------------------------------------//
+
+	@Override
+	public void upsertQuery(String nciUserId, HpcNamedCompoundMetadataQuery namedCompoundMetadataQuery)
+			throws HpcException {
+		try {
+			jdbcTemplate.update(UPSERT_USER_QUERY_SQL, nciUserId, namedCompoundMetadataQuery.getName(),
+					encryptor.encrypt(toJSONString(namedCompoundMetadataQuery.getCompoundQuery())),
+					namedCompoundMetadataQuery.getDetailedResponse(), namedCompoundMetadataQuery.getTotalCount(),
+					namedCompoundMetadataQuery.getCompoundQueryType().value(), namedCompoundMetadataQuery.getCreated(),
+					namedCompoundMetadataQuery.getUpdated());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to upsert a user query " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void deleteQuery(String nciUserId, String queryName) throws HpcException {
+		try {
+			jdbcTemplate.update(DELETE_USER_QUERY_SQL, nciUserId, queryName);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to delete a user query" + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcNamedCompoundMetadataQuery> getQueries(String nciUserId) throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_USER_QUERIES_SQL, userQueryRowMapper, nciUserId);
+
+		} catch (IncorrectResultSizeDataAccessException notFoundEx) {
+			return null;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get user queries: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public HpcNamedCompoundMetadataQuery getQuery(String nciUserId, String queryName) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_USER_QUERY_SQL, userQueryRowMapper, nciUserId, queryName);
+
+		} catch (IncorrectResultSizeDataAccessException irse) {
+			logger.error("Multiple queries with the same name found", irse);
+			return null;
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get a user query: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	// ---------------------------------------------------------------------//
+	// Helper Methods
+	// ---------------------------------------------------------------------//
+
+	/**
+	 * Convert compound query into a JSON string.
+	 * 
+	 * @param compoundMetadataQuery The compound metadata query to convert.
+	 * @return A JSON representation of the compound query.
+	 */
+	private String toJSONString(HpcCompoundMetadataQuery compoundMetadataQuery) {
 		return toJSON(compoundMetadataQuery).toJSONString();
 	}
-	
-    /** 
-     * Convert compound query into a JSON object.
-     * 
-     * @param compoundMetadataQuery The compound query.
-     * @return A JSON representation of the compound query.
-     */
+
+	/**
+	 * Convert compound query into a JSON object.
+	 * 
+	 * @param compoundMetadataQuery The compound query.
+	 * @return A JSON representation of the compound query.
+	 */
 	@SuppressWarnings("unchecked")
-	private JSONObject toJSON(HpcCompoundMetadataQuery compoundMetadataQuery)
-	{
+	private JSONObject toJSON(HpcCompoundMetadataQuery compoundMetadataQuery) {
 		JSONObject jsonCompoundMetadataQuery = new JSONObject();
-		
-		if(compoundMetadataQuery == null) {
-		   return jsonCompoundMetadataQuery;
+
+		if (compoundMetadataQuery == null) {
+			return jsonCompoundMetadataQuery;
 		}
-		
+
 		// Map the compound operator
 		jsonCompoundMetadataQuery.put("operator", compoundMetadataQuery.getOperator().value());
-		
+
 		// Map the nested metadata queries.
 		JSONArray jsonQueries = new JSONArray();
-		for(HpcMetadataQuery nestedQuery : compoundMetadataQuery.getQueries()) {
+		for (HpcMetadataQuery nestedQuery : compoundMetadataQuery.getQueries()) {
 			JSONObject jsonQuery = new JSONObject();
-			if(nestedQuery.getAttribute() != null) {
-			   jsonQuery.put("attribute", nestedQuery.getAttribute());
+			if (nestedQuery.getAttribute() != null) {
+				jsonQuery.put("attribute", nestedQuery.getAttribute());
 			}
 			jsonQuery.put("operator", nestedQuery.getOperator().value());
 			jsonQuery.put("value", nestedQuery.getValue());
-			if(nestedQuery.getFormat() != null) {
+			if (nestedQuery.getFormat() != null) {
 				jsonQuery.put("format", nestedQuery.getFormat());
 			}
-			if(nestedQuery.getLevelFilter() != null) {
-			   jsonQuery.put("level", nestedQuery.getLevelFilter().getLevel());
-			   jsonQuery.put("levelLabel", nestedQuery.getLevelFilter().getLabel());
-			   jsonQuery.put("levelOperator", nestedQuery.getLevelFilter().getOperator().value());
+			if (nestedQuery.getLevelFilter() != null) {
+				jsonQuery.put("level", nestedQuery.getLevelFilter().getLevel());
+				jsonQuery.put("levelLabel", nestedQuery.getLevelFilter().getLabel());
+				jsonQuery.put("levelOperator", nestedQuery.getLevelFilter().getOperator().value());
 			}
-			if(nestedQuery.getAttributeMatch() != null) {
-			   jsonQuery.put("attributeMatch", nestedQuery.getAttributeMatch().value());
+			if (nestedQuery.getAttributeMatch() != null) {
+				jsonQuery.put("attributeMatch", nestedQuery.getAttributeMatch().value());
 			}
-			
+
 			jsonQueries.add(jsonQuery);
 		}
 		jsonCompoundMetadataQuery.put("queries", jsonQueries);
-		
+
 		// Map the nested compound queries.
 		JSONArray jsonCompoundQueries = new JSONArray();
-		for(HpcCompoundMetadataQuery nestedCompoundQuery : compoundMetadataQuery.getCompoundQueries()) {
-		    jsonCompoundQueries.add(toJSON(nestedCompoundQuery));
+		for (HpcCompoundMetadataQuery nestedCompoundQuery : compoundMetadataQuery.getCompoundQueries()) {
+			jsonCompoundQueries.add(toJSON(nestedCompoundQuery));
 		}
 		jsonCompoundMetadataQuery.put("compoundQueries", jsonCompoundQueries);
-		
+
 		return jsonCompoundMetadataQuery;
 	}
-	  
-    /** 
-     * Convert JSON string to HpcCompoundMetadataQuery domain object.
-     * 
-     * @param jsonCompoundMetadataQueryStr The compound query JSON string.
-     * @return A Compound Metadata Query.
-     */
-	private HpcCompoundMetadataQuery fromJSON(String jsonCompoundMetadataQueryStr)
-	{
+
+	/**
+	 * Convert JSON string to HpcCompoundMetadataQuery domain object.
+	 * 
+	 * @param jsonCompoundMetadataQueryStr The compound query JSON string.
+	 * @return A Compound Metadata Query.
+	 */
+	private HpcCompoundMetadataQuery fromJSON(String jsonCompoundMetadataQueryStr) {
 		HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
-		if(StringUtils.isEmpty(jsonCompoundMetadataQueryStr)) {
-		   return compoundMetadataQuery;
+		if (StringUtils.isEmpty(jsonCompoundMetadataQueryStr)) {
+			return compoundMetadataQuery;
 		}
 
 		// Parse the JSON string.
 		JSONObject jsonCompoundMetadataQuery = null;
 		try {
-			 jsonCompoundMetadataQuery = (JSONObject) (new JSONParser().parse(jsonCompoundMetadataQueryStr));
-			 
-		} catch(ParseException e) {
-			    return compoundMetadataQuery;
-		}
-		
-		return fromJSON(jsonCompoundMetadataQuery);
-	}	
-	
-    /** 
-     * Convert JSON string to HpcCompoundMetadataQuery domain object.
-     * 
-     * @param jsonCompoundMetadataQuery The compound query JSON.
-     * @return A Compound Metadata Query.
-     */
-	@SuppressWarnings("unchecked")
-	private HpcCompoundMetadataQuery fromJSON(JSONObject jsonCompoundMetadataQuery)
-	{
-		HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
-		compoundMetadataQuery.setOperator(HpcCompoundMetadataQueryOperator.fromValue(
-				                          jsonCompoundMetadataQuery.get("operator").toString()));
-		
-		// Map the nested metadata queries.
-	    JSONArray jsonQueries = (JSONArray) jsonCompoundMetadataQuery.get("queries");
-  	    if(jsonQueries != null) {
-		   Iterator<JSONObject> queriesIterator = jsonQueries.iterator();
-	       while(queriesIterator.hasNext()) {
-	    	     compoundMetadataQuery.getQueries().add(metadataQueryFromJSON(queriesIterator.next()));
-	       }
-  	    }
-  	    
-		// Map the nested compound metadata queries.
-	    JSONArray jsonCompoundQueries = (JSONArray) jsonCompoundMetadataQuery.get("compoundQueries");
-  	    if(jsonCompoundQueries != null) {
-		   Iterator<JSONObject> compoundQueriesIterator = jsonCompoundQueries.iterator();
-	       while(compoundQueriesIterator.hasNext()) {
-	    	     compoundMetadataQuery.getCompoundQueries().add(fromJSON(compoundQueriesIterator.next()));
-	       }
-  	    }
-  	    
-  	    return compoundMetadataQuery;
-	}	
-	
-    /**
-     * Instantiate a HpcMetadataQuery from JSON.
-     *
-     * @param jsonMetadataQuery The metadata query JSON object. 
-     * @return A Metadata Query.
-     */
-	private HpcMetadataQuery metadataQueryFromJSON(JSONObject jsonMetadataQuery) 
-    {
-    	HpcMetadataQuery metadataQuery = new HpcMetadataQuery();
-		
-    	Object attribute = jsonMetadataQuery.get("attribute");
-    	if(attribute != null) {
-    	   metadataQuery.setAttribute(attribute.toString());
-    	}
-    	metadataQuery.setOperator(HpcMetadataQueryOperator.fromValue(
-    			                  jsonMetadataQuery.get("operator").toString()));
-    	metadataQuery.setValue(jsonMetadataQuery.get("value").toString());
-    	Object level = jsonMetadataQuery.get("level");
-    	Object levelLabel = jsonMetadataQuery.get("levelLabel");
-    	Object levelOperator = jsonMetadataQuery.get("levelOperator");
-    	if((level != null || levelLabel != null) && levelOperator != null) {
-    	   HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
-    	   if(level != null) {
-    	      levelFilter.setLevel(Integer.valueOf(level.toString()));
-    	   }
-    	   if(levelLabel != null) {
-    		  levelFilter.setLabel(levelLabel.toString()); 
-    	   }
-    	   levelFilter.setOperator(HpcMetadataQueryOperator.fromValue(
-    			                   jsonMetadataQuery.get("levelOperator").toString()));
-    	   metadataQuery.setLevelFilter(levelFilter);
-    	}
-    	Object format = jsonMetadataQuery.get("format");
-    	if(format != null) {
-    		metadataQuery.setFormat(format.toString());
-    	}
-    	Object attributeMatch = jsonMetadataQuery.get("attributeMatch");
-    	if(attributeMatch != null) {
-    		metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.fromValue(attributeMatch.toString()));	
-    	}
-    	
-    	return metadataQuery;
-    }
-}
+			jsonCompoundMetadataQuery = (JSONObject) (new JSONParser().parse(jsonCompoundMetadataQueryStr));
 
- 
+		} catch (ParseException e) {
+			return compoundMetadataQuery;
+		}
+
+		return fromJSON(jsonCompoundMetadataQuery);
+	}
+
+	/**
+	 * Convert JSON string to HpcCompoundMetadataQuery domain object.
+	 * 
+	 * @param jsonCompoundMetadataQuery The compound query JSON.
+	 * @return A Compound Metadata Query.
+	 */
+	@SuppressWarnings("unchecked")
+	private HpcCompoundMetadataQuery fromJSON(JSONObject jsonCompoundMetadataQuery) {
+		HpcCompoundMetadataQuery compoundMetadataQuery = new HpcCompoundMetadataQuery();
+		compoundMetadataQuery.setOperator(
+				HpcCompoundMetadataQueryOperator.fromValue(jsonCompoundMetadataQuery.get("operator").toString()));
+
+		// Map the nested metadata queries.
+		JSONArray jsonQueries = (JSONArray) jsonCompoundMetadataQuery.get("queries");
+		if (jsonQueries != null) {
+			Iterator<JSONObject> queriesIterator = jsonQueries.iterator();
+			while (queriesIterator.hasNext()) {
+				compoundMetadataQuery.getQueries().add(metadataQueryFromJSON(queriesIterator.next()));
+			}
+		}
+
+		// Map the nested compound metadata queries.
+		JSONArray jsonCompoundQueries = (JSONArray) jsonCompoundMetadataQuery.get("compoundQueries");
+		if (jsonCompoundQueries != null) {
+			Iterator<JSONObject> compoundQueriesIterator = jsonCompoundQueries.iterator();
+			while (compoundQueriesIterator.hasNext()) {
+				compoundMetadataQuery.getCompoundQueries().add(fromJSON(compoundQueriesIterator.next()));
+			}
+		}
+
+		return compoundMetadataQuery;
+	}
+
+	/**
+	 * Instantiate a HpcMetadataQuery from JSON.
+	 *
+	 * @param jsonMetadataQuery The metadata query JSON object.
+	 * @return A Metadata Query.
+	 */
+	private HpcMetadataQuery metadataQueryFromJSON(JSONObject jsonMetadataQuery) {
+		HpcMetadataQuery metadataQuery = new HpcMetadataQuery();
+
+		Object attribute = jsonMetadataQuery.get("attribute");
+		if (attribute != null) {
+			metadataQuery.setAttribute(attribute.toString());
+		}
+		metadataQuery.setOperator(HpcMetadataQueryOperator.fromValue(jsonMetadataQuery.get("operator").toString()));
+		metadataQuery.setValue(jsonMetadataQuery.get("value").toString());
+		Object level = jsonMetadataQuery.get("level");
+		Object levelLabel = jsonMetadataQuery.get("levelLabel");
+		Object levelOperator = jsonMetadataQuery.get("levelOperator");
+		if ((level != null || levelLabel != null) && levelOperator != null) {
+			HpcMetadataQueryLevelFilter levelFilter = new HpcMetadataQueryLevelFilter();
+			if (level != null) {
+				levelFilter.setLevel(Integer.valueOf(level.toString()));
+			}
+			if (levelLabel != null) {
+				levelFilter.setLabel(levelLabel.toString());
+			}
+			levelFilter
+					.setOperator(HpcMetadataQueryOperator.fromValue(jsonMetadataQuery.get("levelOperator").toString()));
+			metadataQuery.setLevelFilter(levelFilter);
+		}
+		Object format = jsonMetadataQuery.get("format");
+		if (format != null) {
+			metadataQuery.setFormat(format.toString());
+		}
+		Object attributeMatch = jsonMetadataQuery.get("attributeMatch");
+		if (attributeMatch != null) {
+			metadataQuery.setAttributeMatch(HpcMetadataQueryAttributeMatch.fromValue(attributeMatch.toString()));
+		}
+
+		return metadataQuery;
+	}
+}
