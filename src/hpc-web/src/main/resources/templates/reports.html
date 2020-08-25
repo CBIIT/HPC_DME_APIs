@@ -64,11 +64,6 @@
 						<h3 class="page-header">
 							<i class="fa fa-list-alt"></i> Reports
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Reports</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -279,9 +274,9 @@
 					</table>
 				</div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
-		<div th:include="footer :: footer"></div>
 	</section>
 	<!-- container section start -->
 
@@ -332,6 +327,10 @@
 
 	<script>
 	//<![CDATA[
+	$(document).ready(function(){
+		$('#sub-menu-reports').addClass("active");
+	});
+		
   $('#fromDate').datepicker({
 	    format: 'mm/dd/yyyy',
 	    defaultDate: 'now',

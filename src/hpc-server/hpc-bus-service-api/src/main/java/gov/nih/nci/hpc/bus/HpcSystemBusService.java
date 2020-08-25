@@ -115,6 +115,13 @@ public interface HpcSystemBusService {
    * @throws HpcException on service failure.
    */
   public void restartDataObjectDownloadTasks() throws HpcException;
+  
+  /**
+   * Restart collection download tasks that are in-process.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void restartCollectionDownloadTasks() throws HpcException;
 
   /**
    * Process collection download tasks that received. i.e. kick off the download of individual data

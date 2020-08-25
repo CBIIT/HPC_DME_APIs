@@ -28,6 +28,12 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcMetadataEntries']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcSelfMetadataEntries']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcSelfMetadataEntries" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGroupedMetadataEntries']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcBulkMetadataEntry']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry" />
       </jxb:bindings>

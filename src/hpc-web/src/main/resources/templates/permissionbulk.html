@@ -88,14 +88,8 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-dashboard"></i> Dashboard
+							<i class="fa fa-dashboard"></i> Bulk Permissions
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Authorization</li>
-							<li><i class="fa fa-list-alt"></i>Bulk Permissions</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -278,7 +272,7 @@
 															<!-- /.modal-content -->
 															<div class="modal-header">
 																<button id="addUserButton" type="button" class="close" data-dismiss="modal">&times;</button>
-																<h4 class="modal-title">Add User</h4>
+																<h4 class="modal-title">Add or Edit Permission</h4>
 															</div>
 															<div class="modal-body">
 																<div class="panel panel-default">
@@ -372,13 +366,13 @@
 				</div>
 				<div class="row"></div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
 		<div id="spinner" style="display:none" class="spinner">
 			<img id="img-spinner" th:src="@{/img/spinner.gif}" alt="Loading" />
 		</div>
 		<div id="dimmer" style="display:none" ></div>
-		<div th:include="footer :: footer"></div>
 	</section>
 	<!-- container section start -->
 
@@ -398,6 +392,9 @@
 
 	<script type="text/javascript">
 	//<![CDATA[
+		$(document).ready(function(){
+			$('#sub-menu-search').addClass("active");
+		});
 		
 		$(function() {
 			$('#userName').select2({

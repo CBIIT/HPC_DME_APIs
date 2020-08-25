@@ -89,25 +89,28 @@ app
 	    columnDefs: [
 	      { field : 'name',
 	    	width: '50%',
-	        displayName : 'File name',
+	        displayName : 'File Name',
 	        cellTemplate: '<div class="ui-grid-cell-contents folder" ng-if="row.entity.collection" ng-click="grid.appScope.openFolder(row.entity);" ><i class="fa fa-folder"></i>{{COL_FIELD CUSTOM_FILTERS}}<div id="processingIcon{{row.entity.id}}" style="display:inline-block; visibility:hidden" class="loader"></div></div><div class="ui-grid-cell-contents file" ng-if="!row.entity.collection" >{{COL_FIELD CUSTOM_FILTERS}}</div>'
 	      },
 	      {
 	        field : 'fileSize',
-	        displayName : 'File size',
-	        type: 'number'
+	        displayName : 'File Size',
+	        type: 'number',
+            enableFiltering: false
 	      },
 	      {
 	        field : 'lastUpdated',
-	        displayName : 'Last updated'
+	        displayName : 'Last Updated',
+            enableFiltering: false
 	      },
 	      {
             field : 'fullPath',
             displayName : 'Download',
             cellFilter : 'dmePathEncoding',
-            cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" ng-if="row.entity.collection" href="../download?type=collection&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a><a id="downloadlink" class="btn btn-link btn-sm" ng-if="!row.entity.collection" href="../download?type=datafile&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
+            cellTemplate : '<div class="ui-grid-cell-contents"><a id="downloadlink" class="btn btn-link btn-sm" ng-if="row.entity.collection" href="../download?type=collection&amp;path={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a><a id="downloadlink" class="btn btn-link btn-sm" ng-if="!row.entity.collection" href="../download?type=datafile&amp;downloadFilePath={{COL_FIELD CUSTOM_FILTERS}}&amp;source=browse"><i class="fa fa-download" aria-hidden="true"></i></a></div>',
             exporterSuppressExport : true,
-            enableSorting: false
+            enableSorting: false,
+            enableFiltering: false
           },
 	    ],
 	    rowTemplate: rowTemplate(),
@@ -156,18 +159,20 @@ app
         	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
             percentEncodePath(node.fullPath) + "&source=browse&init";
         }]);
-        contextMenuData.push(['Add Collection', function() { 
-        	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Add Data File', function() { 
-        	window.location = "/addDatafile?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Add Bulk', function() { 
-        	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Refresh Node', function() { 
-        	refreshNode(node);
-        }]);
+        if(node.collection) {
+	        contextMenuData.push(['Add Collection', function() { 
+	        	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Add Data File', function() { 
+	        	window.location = "/addDatafile?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Add Bulk', function() { 
+	        	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Refresh Node', function() { 
+	        	refreshNode(node);
+	        }]);
+        }
 
         
         return contextMenuData
@@ -296,11 +301,6 @@ div.ui-grid-cell-contents.folder {
 						<h3 class="page-header">
 							<i class="fa fa-folder"></i> Browse
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Browse</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -406,9 +406,9 @@ div.ui-grid-cell-contents.folder {
 				</div>
 				<div class="row"></div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
-		<div th:include="footer :: footer"></div>
 	</section>
 	<form class="form-horizontal" id="browseForm"
 	    th:action="@{/browse}"
@@ -440,6 +440,10 @@ div.ui-grid-cell-contents.folder {
 //Invoked after the server side code is executed when 
 //- the browse menu is first accessed
 //- A bookmark is clicked on the Browse page
+$(document).ready(function(){
+	$('#sub-menu-browse').addClass("active");
+});
+		
 $(function() {
     $('#tree1').tree({
     	closedIcon: $('<i class="fa fa-folder" />'),
@@ -458,6 +462,8 @@ $(function() {
                     //then the 2nd level collections onwards won't have
                     //got populated, so we wont get here.
                     $('#tree1').tree('selectNode', node);
+                    data[0] = node;
+                    angular.element('#refreshGrid').triggerHandler('click');
                 }
 //                $li.find('.jqtree-element').append('<a id="refreshBrowse" class="btn btn-link btn-sm refresh" th:href="@{/browse?refresh}"><i class="fa fa-refresh" title="Refresh" aria-hidden="true" data-node-id="' + node.id + '"></i></a>');
             } else {
@@ -479,7 +485,11 @@ $('#tree1').on('click', '.refresh', function(e) {
 
 function refreshNode(node) {    
 
-	console.log('parent: ' + node.parent.id);
+	if(node.parent != null) {
+		console.log('parent: ' + node.parent.id);
+	} else {
+		node = $('#tree1').tree('getNodeById', node.id);
+	}
 	refresh = node.id;
 	browseNode(node);
 	$('#tree1').tree('openNode', node);
@@ -548,6 +558,7 @@ function scrollWindow()
 	}
 	
 	$('#tree1').tree('selectNode', node);
+	angular.element('#refreshGrid').triggerHandler('click');
 }
 );
 

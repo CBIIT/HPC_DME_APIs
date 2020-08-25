@@ -165,7 +165,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String CLEANUP_REFRESH_VIEW_SQL = "select internal.cleanup_hierarchy_meta_view_refresh()";
 
 	private static final String REFRESH_VIEW_SQL = "select internal.refresh_hierarchy_meta_view()";
-	
+
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select collection.level_label, collection.meta_attr_name "
 			+ "from \"r_coll_hierarchy_meta_attr_name\" collection, unnest(collection.object_ids) as object_id "
 			+ "where object_id in " + USER_ACCESS_SQL + " GROUP BY level_label, meta_attr_name";
@@ -281,18 +281,20 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		return searchMetadataEntry;
 	};
-    private RowMapper<HpcCollectionListingEntry> browseMetadataRowMapper = (rs, rowNum) -> {
-        HpcCollectionListingEntry metadataEntry = new HpcCollectionListingEntry();
-        Integer id = rs.getInt("id");
-        metadataEntry.setId(id != null ? id.intValue() : null);
-        metadataEntry.setPath(rs.getString("path"));
-        Long size = rs.getLong("size");
-        metadataEntry.setDataSize(size != null ? size.longValue() : null);
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(rs.getTimestamp("uploaded"));
-        metadataEntry.setCreatedAt(cal);
-        return metadataEntry;
-    };
+	private RowMapper<HpcCollectionListingEntry> browseMetadataRowMapper = (rs, rowNum) -> {
+		HpcCollectionListingEntry metadataEntry = new HpcCollectionListingEntry();
+		Integer id = rs.getInt("id");
+		metadataEntry.setId(id != null ? id.intValue() : null);
+		metadataEntry.setPath(rs.getString("path"));
+		Long size = rs.getLong("size");
+		metadataEntry.setDataSize(size != null ? size.longValue() : null);
+		if (rs.getTimestamp("uploaded") != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(rs.getTimestamp("uploaded"));
+			metadataEntry.setCreatedAt(cal);
+		}
+		return metadataEntry;
+	};
 
 	// SQL Maps from operators to queries and filters.
 	private HpcSQLMaps dataObjectSQL = new HpcSQLMaps();
@@ -424,10 +426,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 
 	@Override
-	public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(String path, 
-			HpcCompoundMetadataQuery compoundMetadataQuery,
-			String dataManagementUsername, int offset, int limit, HpcMetadataQueryLevelFilter defaultLevelFilter)
-			throws HpcException {
+	public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(String path,
+			HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername, int offset, int limit,
+			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException {
 
 		List<HpcSearchMetadataEntry> dataPaths = new ArrayList<>();
 
@@ -502,9 +503,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	public void refreshViews() throws HpcException {
 		try {
 			Connection conn = jdbcTemplate.getDataSource().getConnection();
-	        try {
-	        	conn.setAutoCommit(false);
-	        	Statement statement = conn.createStatement();
+			try {
+				conn.setAutoCommit(false);
+				Statement statement = conn.createStatement();
 				// In case previous refresh is unsuccessful
 				conn.createStatement();
 				statement.execute(CLEANUP_REFRESH_VIEW_SQL);
@@ -516,10 +517,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				statement.execute(REFRESH_VIEW_SQL);
 				conn.commit();
 				conn.setAutoCommit(true);
-	        } finally {
-	          conn.close();
-	        }
-		}  catch (DataAccessException e) {
+			} finally {
+				conn.close();
+			}
+		} catch (DataAccessException e) {
 			throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		} catch (SQLException e) {
@@ -528,24 +529,18 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		}
 	}
 
+	@Override
+	public List<HpcCollectionListingEntry> getBrowseMetadataByIds(List<Integer> ids) throws HpcException {
+		try {
+			String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
+			return jdbcTemplate.query(String.format("SELECT * FROM r_browse_meta_main WHERE id IN (%s)", inSql),
+					ids.toArray(), browseMetadataRowMapper);
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get browse metadata : " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
 
-    @Override
-    public List<HpcCollectionListingEntry> getBrowseMetadataByIds(List<Integer> ids)
-      throws HpcException {
-        try {
-            String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
-            return jdbcTemplate.query(
-                String.format("SELECT * FROM r_browse_meta_main WHERE id IN (%s)", inSql), ids.toArray(),
-                browseMetadataRowMapper);
-        } catch (DataAccessException e) {
-            throw new HpcException(
-                "Failed to get browse metadata : " + e.getMessage(),
-                HpcErrorType.DATABASE_ERROR,
-                HpcIntegratedSystem.POSTGRESQL,
-                e);
-        }
-    }
-    
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -564,13 +559,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				HpcMetadataQueryOperator.class);
 		private String exactAttributeMatchFilter = null;
 	}
-	
-	
-	
+
 	private HpcPreparedQuery prepareQuery(String getObjectPathsQuery, HpcPreparedQuery userQuery,
 			String dataManagementUsername, Integer offset, Integer limit) {
-		return prepareQuery(getObjectPathsQuery, null, userQuery,
-				dataManagementUsername, offset, limit);
+		return prepareQuery(getObjectPathsQuery, null, userQuery, dataManagementUsername, offset, limit);
 	}
 
 	/**
@@ -579,7 +571,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	 * 
 	 * @param getObjectPathsQuery    The query to get object paths based on object
 	 *                               IDs.
-	 * @param path             		 The path to search in.                              
+	 * @param path                   The path to search in.
 	 * @param userQuery              The calculated SQL query based on user input
 	 *                               (represented by query domain objects).
 	 * @param dataManagementUsername The data management user name.
@@ -594,16 +586,16 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		// Combine the metadata queries into a single SQL statement.
 		sqlQueryBuilder.append(getObjectPathsQuery);
-		
-		//Add query to limit results to within the path if specified
-		if(path != null) {
+
+		// Add query to limit results to within the path if specified
+		if (path != null) {
 			sqlQueryBuilder.append("object_path LIKE ?");
 			args.add("%" + path + "%");
 		}
-		
-		//Add query to search for requested metadata
-		if(userQuery != null) {
-			if(path != null) {
+
+		// Add query to search for requested metadata
+		if (userQuery != null) {
+			if (path != null) {
 				sqlQueryBuilder.append(" and ");
 			}
 			sqlQueryBuilder.append(userQuery.sql);
@@ -742,8 +734,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException {
 		StringBuilder sqlQueryBuilder = new StringBuilder();
 		List<Object> args = new ArrayList<>();
-		
-		if(compoundMetadataQuery == null) {
+
+		if (compoundMetadataQuery == null) {
 			return null;
 		}
 

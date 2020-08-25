@@ -54,11 +54,6 @@
 			  <h3 class="page-header">
 				<i class="fa fa-download"></i> Download
 			  </h3>
-			  <ol class="breadcrumb">
-				  <li><i class="fa fa-dashboard"></i><a th:href="@{/dashboard}">Dashboard</a></li>
-				  <li><i class="fa fa-list-alt"></i>Detail View</li>
-				  <li><i class="fa fa-list-alt"></i>Download</li>
-			  </ol>
 		    </div>
 		  </div>
 		  <!--Title End-->
@@ -91,10 +86,10 @@
 
 
 			<div class="pull-center" th:if="${downloadType == 'datafile'}">
-			  <p>This page allows you to download the selected data file either synchronously to your computer or asynchronously to Globus endpoint location, to an S3 bucket, or to Google Drive.</p>
+			  <p>This page allows you to download the selected data file either synchronously to your computer or asynchronously to a Globus endpoint location, to an S3 bucket, or to Google Drive.</p>
 			</div>
 			<div class="pull-center" th:if="${downloadType == 'collection' or searchType == 'async'}">
-              <p>This page allows you to download the selected collection to Globus endpoint location, to an S3 bucket, or to Google Drive.</p>    
+              <p>This page allows you to download the selected collection to a Globus endpoint location, to an S3 bucket, or to Google Drive.</p>    
             </div>
      
 			<div class="panel panel-default">
@@ -221,14 +216,14 @@
 									<div class="col-sm-12 column">
 										<a class="btn btn-primary" id="driveAuthlink" 
                                             th:href="@{../download(type=${downloadType},source=${source},actionType=Drive,downloadFilePath=${downloadFilePath})}">                                  
-                                            Authorize DME to access your Google Drive</a>
+                                            Authorize DME to Access Your Google Drive</a>
 									</div>
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
 									<div class="col-sm-12 column">
 										<label for="drivePath">Google Drive (Destination) Path:</label>
 										<a id="pickerLink" onclick="loadDownloadPicker()" style="cursor:pointer">                                  
-                                            Pick From Google Drive (Optional)</a>
+                                            Select from Google Drive (Optional)</a>
 										<input
 											type="text" class="form-control"
 											th:value="${drivePath}"
@@ -291,8 +286,8 @@
  
 
     </section>
-    </section>
     <div th:include="footer :: footer"></div>
+    </section>
     </section>
 
 	<!-- javascripts -->
