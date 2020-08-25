@@ -120,7 +120,7 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
-
+			    hpcBrowserEntry.setSelectedNodePath(StringUtils.removeEnd(hpcBrowserEntry.getSelectedNodePath().trim(), "/"));
 				// Detect if path refers to data file, and if so, redirect to data
 				// file view.Do this check only if we are clicking on Browse button
 				//after selecting the path. If we are here because we 
@@ -134,6 +134,11 @@ public class HpcBrowseController extends AbstractHpcController {
 					}
 				}
 
+				browserEntry = new HpcBrowserEntry();
+		        browserEntry.setCollection(true);
+		        browserEntry.setFullPath(hpcBrowserEntry.getSelectedNodePath().trim());
+		        browserEntry.setId(hpcBrowserEntry.getSelectedNodePath().trim());
+		        browserEntry.setName(hpcBrowserEntry.getSelectedNodePath().trim());
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
 						model, getChildren, hpcBrowserEntry.isPartial(), refresh);

@@ -51,6 +51,7 @@ import gov.nih.nci.hpc.dto.security.HpcGroupMembersResponseDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserRequestDTO;
+import gov.nih.nci.hpc.web.HpcAuthorizationException;
 import gov.nih.nci.hpc.web.HpcResponseErrorHandler;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
@@ -226,7 +227,7 @@ public class HpcClientUtil {
         JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
         HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-        throw new HpcWebException("Authentication failed: " + exception.getMessage());
+        throw new HpcAuthorizationException("Authentication failed: " + exception.getMessage());
       }
       MappingJsonFactory factory = new MappingJsonFactory();
       JsonParser parser;
@@ -261,7 +262,7 @@ public class HpcClientUtil {
 	        JsonParser parser = factory.createParser((InputStream) restResponse.getEntity());
 
 	        HpcExceptionDTO exception = parser.readValueAs(HpcExceptionDTO.class);
-	        throw new HpcWebException("Authentication failed: " + exception.getMessage());
+	        throw new HpcAuthorizationException("Authentication failed: " + exception.getMessage());
 	      }
 	      MappingJsonFactory factory = new MappingJsonFactory();
 	      JsonParser parser;
