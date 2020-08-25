@@ -72,13 +72,8 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-share-alt"></i> Manage
+							<i class="fa fa-share-alt"></i> Manage Notifications
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Notifications</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -192,9 +187,9 @@
 				</div>
 				<div class="row"></div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
-		<div th:include="footer :: footer"></div>
 	</section>
 	<!-- container section start -->
 
@@ -213,6 +208,10 @@
 	<script src="js/scripts.js"></script>
 
 <script type="text/javascript">
+
+$(document).ready(function(){
+	$('#sub-menu-manage').addClass("active");
+});
 
 function showalert(message,alerttype) {
 

@@ -68,6 +68,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
@@ -328,30 +329,30 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		List<Integer> ids = new ArrayList<>();
-	    for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
-	        ids.add(subCollection.getId());
-	    }
-	    for(HpcCollectionListingEntry dataObject: collection.getDataObjects()) {
-	        ids.add(dataObject.getId());
-	    }
-	    if(!ids.isEmpty()) {
-	        Map<Integer, HpcCollectionListingEntry> childMetadataMap = metadataService.getMetadataForBrowseByIds(ids);
-	        for(HpcCollectionListingEntry subCollection: collection.getSubCollections()) {
-	            HpcCollectionListingEntry entry = childMetadataMap.get(subCollection.getId());
-	            if(entry != null) {
-	                subCollection.setDataSize(entry.getDataSize());
-	                subCollection.setCreatedAt(entry.getCreatedAt());
-	            }
-	        }
-	        for(HpcCollectionListingEntry dataObject: collection.getDataObjects()) {
-	            HpcCollectionListingEntry entry = childMetadataMap.get(dataObject.getId());
-	            if(entry != null) {
-	                dataObject.setDataSize(entry.getDataSize());
-	                dataObject.setCreatedAt(entry.getCreatedAt());
-	            }
-	        }
-	    }
-	    
+		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
+			ids.add(subCollection.getId());
+		}
+		for (HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
+			ids.add(dataObject.getId());
+		}
+		if (!ids.isEmpty()) {
+			Map<Integer, HpcCollectionListingEntry> childMetadataMap = metadataService.getMetadataForBrowseByIds(ids);
+			for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
+				HpcCollectionListingEntry entry = childMetadataMap.get(subCollection.getId());
+				if (entry != null) {
+					subCollection.setDataSize(entry.getDataSize());
+					subCollection.setCreatedAt(entry.getCreatedAt());
+				}
+			}
+			for (HpcCollectionListingEntry dataObject : collection.getDataObjects()) {
+				HpcCollectionListingEntry entry = childMetadataMap.get(dataObject.getId());
+				if (entry != null) {
+					dataObject.setDataSize(entry.getDataSize());
+					dataObject.setCreatedAt(entry.getCreatedAt());
+				}
+			}
+		}
+
 		HpcCollectionDTO collectionDTO = new HpcCollectionDTO();
 		collectionDTO.setCollection(collection);
 
@@ -1064,8 +1065,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return registrationSummary;
 	}
 
+	@Deprecated
 	@Override
-	public HpcDataObjectDTO getDataObject(String path, Boolean includeAcl) throws HpcException {
+	public HpcDataObjectDTO getDataObjectV1(String path, Boolean includeAcl) throws HpcException {
 		// Input validation.
 		if (path == null) {
 			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1084,6 +1086,37 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataObjectDTO.setMetadataEntries(metadataEntries);
 		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(
 				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
+
+		if (includeAcl) {
+			// Set the permission
+			dataObjectDTO.setPermission(dataManagementService.getDataObjectPermission(path).getPermission());
+		}
+
+		return dataObjectDTO;
+	}
+
+	@Override
+	public gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO getDataObject(String path, Boolean includeAcl)
+			throws HpcException {
+		// Input validation.
+		if (path == null) {
+			throw new HpcException("Null data object path", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the data object.
+		HpcDataObject dataObject = dataManagementService.getDataObject(path);
+		if (dataObject == null) {
+			return null;
+		}
+
+		// Get the metadata for this data object.
+		HpcGroupedMetadataEntries metadataEntries = metadataService
+				.getDataObjectGroupedMetadataEntries(dataObject.getAbsolutePath());
+		gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO dataObjectDTO = new gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectDTO();
+		dataObjectDTO.setDataObject(dataObject);
+		dataObjectDTO.setMetadataEntries(metadataEntries);
+		dataObjectDTO.setPercentComplete(dataTransferService.calculateDataObjectUploadPercentComplete(metadataService
+				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())));
 
 		if (includeAcl) {
 			// Set the permission
@@ -1545,12 +1578,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		});
 
 		return bulkMoveResponse;
-	}
-
-	// TODO - Remove HPCDATAMGM-1189 code
-	@Override
-	public void updateFileContainerName() throws HpcException {
-		dataTransferService.updateFileContainerName();
 	}
 
 	// ---------------------------------------------------------------------//

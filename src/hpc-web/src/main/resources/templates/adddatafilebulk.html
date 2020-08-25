@@ -83,17 +83,12 @@
 						<h3 class="page-header">
 							<i class="fa fa-list-alt"></i> Register Bulk Data
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Register Bulk Data</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
 				<!--Row start-->
 				<div class="row">
-					<div class="col-lg-9 col-md-12">
+					<div class="col-lg-12 col-md-12">
 						<div class="panel panel-default">
 							<div th:if="${error != null}">
 								<div class="alert alert-error">
@@ -118,7 +113,7 @@
 								<!--panel-body start-->
 								<div class="panel-body">
 									<p>This page allows you to bulk register folders/files from
-										a Globus endpoint, a S3 bucket, or 
+										a Globus endpoint, an S3 bucket, or 
 										Google Drive (source) to a DME
 										collection (destination) asynchronously.</p>
 									<div class="form-group" id="radioset">
@@ -130,7 +125,7 @@
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
 										name="bulkType" id="bulkTypeS3" value="s3"
-										onChange="display('s3')"/>S3</label>
+										onChange="display('s3')"/>AWS S3</label>
 										</div>
 										<div class="pull-left" style="margin-left: 15px">
 										<label class="radio-inline"><input type="radio"
@@ -151,7 +146,7 @@
 										<button type="button" class="btn btn-primary"
 											id="driveAuthlink"
 											onClick="return refreshAttributes('Drive')">Authorize 
-											DME to access your Google Drive</button>
+											DME to Access Your Google Drive</button>
 									</div>
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
@@ -497,9 +492,9 @@
 				</div>
 				<div class="row"></div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
-		<div th:include="footer :: footer"></div>
 	</section>
 	<!-- container section start -->
 
@@ -518,6 +513,7 @@
 	<script>
 		$(document).ready(function(){
   			$('[data-toggle="tooltip"]').tooltip();
+  			$('#sub-menu-register').addClass("active");
 		});
 	</script>
 	<script type="text/javascript">

@@ -71,14 +71,8 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-dashboard"></i> Dashboard
+							<i class="fa fa-dashboard"></i> DOC
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Admin</li>
-							<li><i class="fa fa-list-alt"></i>DOC</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -137,9 +131,9 @@
 				</div>
 				<div class="row"></div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
-		<div th:include="footer :: footer"></div>
 	</section>
 	<form class="form-horizontal" id="docForm"
 	    th:action="@{/doc}"
@@ -160,7 +154,11 @@
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
-
+	<script>
+		$(document).ready(function(){
+			$('#sub-menu-admin').addClass("active");
+		});
+	</script>
 
 </body>
 </html>

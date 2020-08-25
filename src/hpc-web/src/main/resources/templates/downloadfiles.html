@@ -83,12 +83,6 @@
 						<h3 class="page-header">
 							<i class="fa fa-download"></i> Download
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li th:if="${downloadType == 'datafiles'}"><i class="fa fa-list-alt"></i>Download Data files</li>
-							<li th:if="${downloadType == 'collections'}"><i class="fa fa-list-alt"></i>Download Collections</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -229,14 +223,14 @@
 									<div class="col-sm-12 column">
 										<a class="btn btn-primary" id="driveAuthlink" 
                                             th:href="@{../downloadfiles(transferType=drive)}">                                  
-                                            Authorize DME to access your Google Drive</a>
+                                            Authorize DME to Access Your Google Drive</a>
 									</div>
 									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
 									<div class="col-sm-12 column">
 										<label for="drivePath">Google Drive (Destination) Path:</label>
 										<a id="pickerLink" onclick="loadDownloadPicker()" style="cursor:pointer">                                  
-                                            Pick From Google Drive (Optional)</a>
+                                            Select from Google Drive (Optional)</a>
 										<input
 											type="text" class="form-control"
 											th:value="${drivePath}"
@@ -296,9 +290,9 @@
 				</div>
 				<div class="row"></div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
-		<div th:include="footer :: footer"></div>
 	</section>
 	<!-- container section start -->
 
