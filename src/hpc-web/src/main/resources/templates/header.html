@@ -52,8 +52,8 @@
 					</ul></li>
 					
 					<li class="nav-item versionNumber"><a href="">
-						<span th:if="${session.env != 'PROD'}" th:text="'version: '+${session.version}+' ('+${session.env}+')'"></span>
-						<span th:if="${session.env == 'PROD'}" th:text="'version'+${session.version}"></span>
+						<span th:if="${session.env == 'Local' or session.env == 'DEV' or session.env == 'UAT'}" th:text="'version: '+${session.version}+' ('+${session.env}+')'"></span>
+						<span th:if="${session.env == 'PROD'}" th:text="'version: '+${session.version}"></span>
 						</a></li>
 				<!-- user login dropdown end -->
 				</ul>
