@@ -159,18 +159,20 @@ app
         	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
             percentEncodePath(node.fullPath) + "&source=browse&init";
         }]);
-        contextMenuData.push(['Add Collection', function() { 
-        	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Add Data File', function() { 
-        	window.location = "/addDatafile?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Add Bulk', function() { 
-        	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Refresh Node', function() { 
-        	refreshNode(node);
-        }]);
+        if(node.collection) {
+	        contextMenuData.push(['Add Collection', function() { 
+	        	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Add Data File', function() { 
+	        	window.location = "/addDatafile?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Add Bulk', function() { 
+	        	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Refresh Node', function() { 
+	        	refreshNode(node);
+	        }]);
+        }
 
         
         return contextMenuData
