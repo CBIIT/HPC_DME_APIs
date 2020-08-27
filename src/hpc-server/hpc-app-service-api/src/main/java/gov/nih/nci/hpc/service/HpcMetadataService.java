@@ -10,14 +10,18 @@
  */
 package gov.nih.nci.hpc.service;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -146,6 +150,48 @@ public interface HpcMetadataService {
       throws HpcException;
 
   /**
+   * Extract metadata from a file and add to a data object.
+   *
+   * @param path The data object path.
+   * @param dataObjectInputStream The file (input stream) to extract metadata from.
+   * @param configurationId The configuration to apply validation rules. Metadata validation rules
+   *        are configuration specific.
+   * @param collectionType The collection type containing the data object.
+   * @param closeInputStream If true, the method will close the input stream.
+   * @throws HpcException on service failure.
+   */
+  public void addMetadataToDataObjectFromFile(String path, InputStream dataObjectInputStream,
+      String configurationId, String collectionType, boolean closeInputStream) throws HpcException;
+
+  /**
+   * Extract metadata from a file and add to a data object.
+   *
+   * @param path The data object path.
+   * @param dataObjectFile The file to extract metadata from.
+   * @param configurationId The configuration to apply validation rules. Metadata validation rules
+   *        are configuration specific.
+   * @param collectionType The collection type containing the data object.
+   * @param closeInputStream If true, the method will close the input stream.
+   * @throws HpcException on service failure.
+   */
+  public void addMetadataToDataObjectFromFile(String path, File dataObjectFile,
+      String configurationId, String collectionType, boolean closeInputStream) throws HpcException;
+
+  /**
+   * Add extracted metadata to a data object.
+   *
+   * @param path The data object path.
+   * @param extractedMetadataEntries The extracted metadata (from the physical file) entries to add.
+   * @param configurationId The configuration to apply validation rules. Metadata validation rules
+   *        are configuration specific.
+   * @param collectionType The collection type containing the data object.
+   * @throws HpcException on service failure.
+   */
+  public void addExtractedMetadataToDataObject(String path,
+      List<HpcMetadataEntry> extractedMetadataEntries, String configurationId,
+      String collectionType) throws HpcException;
+
+  /**
    * Generate system metadata and attach to the data object.
    *
    * @param path The data object path.
@@ -249,6 +295,15 @@ public interface HpcMetadataService {
    * @throws HpcException on service failure.
    */
   public HpcMetadataEntries getDataObjectMetadataEntries(String path) throws HpcException;
+  
+  /**
+   * Get metadata of a data object grouped by user / extracted / system
+   *
+   * @param path The data object's path.
+   * @return HpcMetadataEntries The data object's metadata entries.
+   * @throws HpcException on service failure.
+   */
+  public HpcGroupedMetadataEntries getDataObjectGroupedMetadataEntries(String path) throws HpcException;
 
   /**
    * Refresh all metadata materialized views.
@@ -272,4 +327,13 @@ public interface HpcMetadataService {
    * @throws HpcException on service failure.
    */
   public List<String> getDataObjectSystemMetadataAttributeNames() throws HpcException;
+
+  /**
+   * Get latest metadata for browse for a list of ids.
+   *
+   * @param ids The list of collection or data-object ID.
+   * @return A map of HpcCollectionListingEntry
+   * @throws HpcException on database error.
+   */
+  public Map<Integer, HpcCollectionListingEntry> getMetadataForBrowseByIds(List<Integer> ids) throws HpcException;
 }

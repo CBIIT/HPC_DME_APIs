@@ -33,6 +33,12 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcMetadataEntries']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcSelfMetadataEntries']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcSelfMetadataEntries" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGroupedMetadataEntries']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcBulkMetadataEntry']">
          <jxb:class ref="gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry" />
       </jxb:bindings>
@@ -80,6 +86,9 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcFile']">
          <jxb:class ref="java.io.File" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcInputStream']">
+         <jxb:class ref="java.io.InputStream" />
+      </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadRequest']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest" />
       </jxb:bindings>
@@ -113,14 +122,17 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcGlobusUploadSource']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource" />
       </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcS3UploadSource']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource" />
+      <jxb:bindings node="//xsd:complexType[@name='HpcStreamingUploadSource']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcGlobusScanDirectory']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcS3ScanDirectory']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGoogleDriveScanDirectory']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveScanDirectory" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadResponse']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse" />
