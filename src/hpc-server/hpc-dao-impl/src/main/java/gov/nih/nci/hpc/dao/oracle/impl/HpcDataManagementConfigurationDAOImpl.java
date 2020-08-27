@@ -47,8 +47,8 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL = "select * from public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\"";
-	private static final String GET_S3_ARCHIVE_CONFIGURATIONS_SQL = "select * from public.\"HPC_S3_ARCHIVE_CONFIGURATION\"";
+	private static final String GET_DATA_MANAGEMENT_CONFIGURATIONS_SQL = "select * from HPC_DATA_MANAGEMENT_CONFIGURATION";
+	private static final String GET_S3_ARCHIVE_CONFIGURATIONS_SQL = "select * from HPC_S3_ARCHIVE_CONFIGURATION";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
