@@ -901,6 +901,11 @@ div[data-role="editor-toolbar"] {
 .dropdown-menu > li > a{
     color: #797979 !important;
 }
+
+.dropdown-menu > li.disabled > a {
+	color: #d7d7d7 !important;
+}
+
 .dropdown-menu.extended.logout > li > a {
     border-bottom: 1px solid #EBEBEB !important;
     font-size: 14px;
