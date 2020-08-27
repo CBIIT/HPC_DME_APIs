@@ -11,9 +11,8 @@ package gov.nih.nci.hpc.web.controller;
 
 import gov.nih.nci.hpc.web.util.MiscUtil;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +44,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.databrowse.HpcBookmarkListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
@@ -119,7 +120,7 @@ public class HpcBrowseController extends AbstractHpcController {
 
 		try {
 			if (hpcBrowserEntry.getSelectedNodePath() != null) {
-
+			    hpcBrowserEntry.setSelectedNodePath(StringUtils.removeEnd(hpcBrowserEntry.getSelectedNodePath().trim(), "/"));
 				// Detect if path refers to data file, and if so, redirect to data
 				// file view.Do this check only if we are clicking on Browse button
 				//after selecting the path. If we are here because we 
@@ -133,6 +134,11 @@ public class HpcBrowseController extends AbstractHpcController {
 					}
 				}
 
+				browserEntry = new HpcBrowserEntry();
+		        browserEntry.setCollection(true);
+		        browserEntry.setFullPath(hpcBrowserEntry.getSelectedNodePath().trim());
+		        browserEntry.setId(hpcBrowserEntry.getSelectedNodePath().trim());
+		        browserEntry.setName(hpcBrowserEntry.getSelectedNodePath().trim());
 				browserEntry = getTreeNodes(hpcBrowserEntry.getSelectedNodePath().trim(), browserEntry,
 						authToken,
 						model, getChildren, hpcBrowserEntry.isPartial(), refresh);
@@ -524,7 +530,9 @@ public class HpcBrowseController extends AbstractHpcController {
 			//info about the selectedEntry.
 			HpcCollectionListDTO collections = HpcClientUtil.getCollection(
 					authToken, collectionURL, path, 
-					partial || refresh ? false : true, partial || refresh,
+					//TODO testing with the child listing only
+					true, true,
+					//partial || refresh ? false : true, partial || refresh,
 					sslCertPath, sslCertPassword);
 
 			for (HpcCollectionDTO collectionDTO : collections.getCollections()) {
@@ -548,6 +556,9 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setFullPath(listEntry.getPath());
 					listChildEntry.setId(listEntry.getPath());
 					listChildEntry.setName(listEntry.getPath());
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    if(listEntry.getCreatedAt() != null)
+                      listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));
 					listChildEntry.setPopulated(false);
 					if (getChildren)
 						listChildEntry = getTreeNodes(listEntry.getPath(), listChildEntry, authToken, model, false, partial,
@@ -566,6 +577,10 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setFullPath(listEntry.getPath());
 					listChildEntry.setId(listEntry.getPath());
 					listChildEntry.setName(listEntry.getPath());
+					listChildEntry.setFileSize(Long.toString(listEntry.getDataSize()));
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+					if(listEntry.getCreatedAt() != null)
+					  listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));
 					listChildEntry.setPopulated(true);
 					selectedEntry.getChildren().add(listChildEntry);
 				}

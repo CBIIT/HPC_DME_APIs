@@ -25,6 +25,8 @@
 		<prop key="hpc.service.notification.systemAdministratorUserId">HPC_DME_Admin</prop>
 		<prop key="hpc.bus.ldapAuthentication">true</prop>
 		<prop key="hpc.bus.createLdapAccountOnly">true</prop>
+		<prop key="hpc.bus.collectionDownloadTaskExecutorThreadPoolSize">100</prop>
+		<prop key="hpc.bus.dataObjectDownloadTaskExecutorThreadPoolSize">100</prop>
 	</osgix:cm-properties>
 
 	<ctx:property-placeholder properties-ref="preProps" />

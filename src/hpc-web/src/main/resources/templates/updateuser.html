@@ -150,6 +150,10 @@
 
 	<script>
 	//<![CDATA[
+	$(document).ready(function(){
+		$('#sub-menu-admin').addClass("active");
+	});
+		
 	function refreshBasePath(docName) {
 		var attrOptions="<option value='_select_null'>--Select--</option>";
 		if(basePaths != null && basePaths.length > 0)

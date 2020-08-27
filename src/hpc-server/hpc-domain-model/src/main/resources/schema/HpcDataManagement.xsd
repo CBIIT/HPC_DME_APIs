@@ -78,7 +78,9 @@
 			<xsd:element name="globusUploadSource"
 				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
 			<xsd:element name="s3UploadSource"
-				type="hpc-domain-datatransfer:HpcS3UploadSource" />
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="googleDriveUploadSource"
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="linkSourcePath" type="xsd:string" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="metadataEntries"
@@ -140,6 +142,26 @@
 				type="hpc-domain-model:HpcBulkDataObjectRegistrationTask" />
 			<xsd:element name="result"
 				type="hpc-domain-model:HpcBulkDataObjectRegistrationResult" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType
+		name="HpcDataObjectRegistrationResult">
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:string" />
+			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="userId" type="xsd:string" />
+			<xsd:element name="result" type="xsd:boolean" />
+			<xsd:element name="message" type="xsd:string" />
+			<xsd:element name="created" type="xsd:dateTime" />
+			<xsd:element name="completed" type="xsd:dateTime" />
+			<xsd:element name="uploadMethod" 
+				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
+			<xsd:element name="effectiveTransferSpeed" 
+				type="xsd:int" minOccurs="0" />
+			<xsd:element name="dataTransferRequestId"
+				type="xsd:string" />
+			<xsd:element name="sourceLocation" type="hpc-domain-datatransfer:HpcFileLocation" />	
 		</xsd:sequence>
 	</xsd:complexType>
 

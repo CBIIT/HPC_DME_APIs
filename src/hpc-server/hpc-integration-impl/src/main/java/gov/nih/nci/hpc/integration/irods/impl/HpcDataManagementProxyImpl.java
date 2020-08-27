@@ -1155,6 +1155,10 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
    */
   private HpcSubjectPermission toHpcSubjectPermission(Object authenticatedToken,
       UserFilePermission irodsUserPermission, boolean checkGroup) throws HpcException {
+	if(irodsUserPermission == null) {
+		return null;
+	}
+	  
     HpcSubjectPermission hpcSubjectPermission = new HpcSubjectPermission();
     hpcSubjectPermission
         .setPermission(toHpcPermission(irodsUserPermission.getFilePermissionEnum()));

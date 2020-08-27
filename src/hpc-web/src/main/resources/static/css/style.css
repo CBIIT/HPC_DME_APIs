@@ -285,11 +285,42 @@ table tr th { color: #688a7e;}
     width: 180px;
     height: 100%;
     position: fixed;
-    background: #394a59;
+    background: #1c5e86;
+}
+
+#menunavbar {
+    z-index: 10;
+    background-color: #1c5e86;
+    border-radius: 0px;
+    margin-bottom: 0px;
+    border: none;
+    width: 100%;
+}
+
+#menunavbar.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
+    background-color: #999;
+}
+
+
+#menunavbar.navbar-default .navbar-nav > li > a {
+    color: #fff;
+}
+
+#menunavbar > div > div .navbar-toggle {
+    float: left;
+    margin-left: 15px;
+}
+
+#topNav.navbar-collapse {
+    max-height: 300px;
 }
 
 .nav-collapse.collapse {
     display: inline;
+}
+
+ul.navbar-nav li.sub-menu{
+    width: 120px;
 }
 
 ul.sidebar-menu , ul.sidebar-menu li ul.sub{
@@ -298,7 +329,7 @@ ul.sidebar-menu , ul.sidebar-menu li ul.sub{
 }
 
 ul.sidebar-menu {
-    margin-top: 60px;
+    margin-top: 134px;
 }
 
 #sidebar > ul > li > ul.sub {
@@ -331,7 +362,7 @@ ul.sidebar-menu li ul.sub li a {
     -o-transition: all 0.3s ease;
     -ms-transition: all 0.3s ease;
     transition: all 0.3s ease;
-    color: #d0d8df;
+    color: #fff;
     font-size: 14px;
 }
 
@@ -365,7 +396,7 @@ ul.sidebar-menu li a span{
 }
 
 ul.sidebar-menu li a{
-    color: #d0d8df;
+    color: #fff;
     text-decoration: none;
     display: block;
     padding: 15px 0 15px 10px;
@@ -385,7 +416,7 @@ ul.sidebar-menu li a{
     top: 2px;
 }*/
 ul.sidebar-menu li.active a, ul.sidebar-menu li a:hover, ul.sidebar-menu li a:focus {
-    background: #2e3b46;
+    background: #606060;
     color: #fff;
     display: block;
     /*border-radius: 4px;
@@ -511,14 +542,34 @@ ul.sidebar-menu li.active a i {
 }
 /*main content*/
 
-#main-content {
-    margin-left: 180px;
+
+.logoImg {
+  max-width: 600px;
+  height: 82px;
+}
+
+.header {
+	position: absolute;
+    top: 0px;
 }
 
 .header, .footer {
     min-height: 60px;
-    padding: 0 15px;
+    /*padding: 0 15px;*/
 }
+
+.footer {
+  background-color: #1c5e86;
+  line-height: 2;
+  margin-top: 40px;
+  width: 100%;
+}
+
+.footer *,
+.footer ul li a {
+  color: #fff;
+}
+
 .box1 {
     font-size: 16px;
     display: inline-block;
@@ -546,15 +597,38 @@ ul.sidebar-menu li.active a i {
 }
 .wrapper {
     display: inline-block;
-    margin-top: 60px;
     padding: 15px;
     width: 100%;
+}
+
+#appnavbar.navbar {
+    border-radius: 0px;
+    margin-bottom: 0px;
+    border: none;
+  height: 60px;
+  line-height: 60px;
+}
+
+
+
+header #toolTitle {
+  background-color: #2a72a5;
+  color: #fff;
+  font-weight: bold;
+  padding-left: 5em;
+  min-height: 60px;
+}
+
+header #toolTitle a {
+  color: inherit;
+  font-size: 22px;
+  font-weight: bold;
 }
 
 a.logo {
     font-size: 22px;
     font-weight: 300;
-    color: #fed189;
+    color: #fff;
     float: left;
     margin-top: 15px;
     /*text-transform: uppercase;*/
@@ -634,6 +708,11 @@ ul.top-menu > li > a:hover, ul.top-menu > li > a:focus {
     border-radius: 4px;
     -webkit-border-radius: 4px;
 }
+
+.navbar-nav li:hover {
+    cursor: pointer;
+}
+
 .navbar-form{
     padding: 0px;
     margin: 0 0 0 10px;    
@@ -716,7 +795,7 @@ div[data-role="editor-toolbar"] {
 
 .dropdown-menu.extended li a {
     border-bottom: 1px solid #EBEBEB !important;
-    font-size: 12px;
+    font-size: 13px !important;
     list-style: none;
 }
 
@@ -728,7 +807,7 @@ div[data-role="editor-toolbar"] {
 
 .dropdown-menu.extended li a:hover {
     background-color: #F7F8F9 !important;
-    color: #2E2E2E;
+    color: #fff;
     border-bottom: 1px solid #688a7e !important;
 }
 
@@ -782,9 +861,6 @@ div[data-role="editor-toolbar"] {
 	
 }
 
-.top-nav  {
-    margin-top: 7px;
-}
 
 .top-nav ul.top-menu > li .dropdown-menu.logout {
     width: 200px !important;
@@ -813,18 +889,23 @@ div[data-role="editor-toolbar"] {
 }
 
 .dropdown-menu.extended.logout > li:last-child > a, .dropdown-menu.extended.logout > li:last-child > a:hover {
-    color: #fff;
+    color: #fff !important;
     border-bottom: none !important;
     /*text-transform: uppercase;*/
     background-color:#688a7e !important;
 }
 
 .dropdown-menu.extended.logout > li:last-child > a:hover > i{
-    color: #fff;
+    color: #fff !important;
 }
 .dropdown-menu > li > a{
-    color: #797979;
+    color: #797979 !important;
 }
+
+.dropdown-menu > li.disabled > a {
+	color: #d7d7d7 !important;
+}
+
 .dropdown-menu.extended.logout > li > a {
     border-bottom: 1px solid #EBEBEB !important;
     font-size: 14px;
@@ -853,22 +934,32 @@ div[data-role="editor-toolbar"] {
     padding-right: 10px
 }
 
-.top-nav .username {
-    font-size: 13px;
-    color: #bdbdbd;
+.top-nav > li > a > i {
+    display: inline-block;
+    padding-right: 10px;
 }
 
-.top-nav ul.top-menu > li > a {
+.top-nav .username {
+	font-size: 13px;
+    color: #fff;
+}
+
+.top-nav .versionNumber {
+    padding-right: 10px;
+}
+
+.top-nav.top-menu > li > a {
     padding: 8px;
     background: none;
-    margin-right: 0;
+    font-size: 13px !important;
+    line-height: 50px;
 }
-.top-nav ul.top-menu > li {
+.top-nav.top-menu > li {
     margin-left: 10px;
 }
 
-.top-nav ul.top-menu > li > a:hover, .top-nav ul.top-menu > li > a:focus {    
-    background: #F1F2F7;
+.top-nav.top-menu > li > a:hover, .top-nav ul.top-menu > li > a:focus {    
+    background: #fff;
 
 }
 
@@ -876,13 +967,13 @@ div[data-role="editor-toolbar"] {
     top: 50px;
 }
 
-.top-nav .nav .caret {
-    border-bottom-color: #A4AABA;
-    border-top-color: #A4AABA;
+.top-nav.nav .caret {
+    border-bottom-color: #fff;
+    border-top-color: #fff;
 }
-.top-nav ul.top-menu > li > a:hover .caret {
-    border-bottom-color: #7498f1;
-    border-top-color: #7498f1;
+.top-nav.nav > li > a:hover .caret {
+    border-bottom-color: #fff;
+    border-top-color: #fff;
 }
 
 .log-arrow-up {
@@ -1824,6 +1915,13 @@ div[data-role="editor-toolbar"] {
     font-size: 20px;
 }
 
+#main-content {
+	position: absolute;
+    top: 210px;
+    bottom: 0px;
+    overflow: auto;
+    width: 100%;
+}
 
 .sidebar-closed > #sidebar > ul {
     display: none;

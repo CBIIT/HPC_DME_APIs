@@ -36,13 +36,19 @@
 				<xsd:element name="globusUploadSource"
 					type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
 				<xsd:element name="s3UploadSource"
-					type="hpc-domain-datatransfer:HpcS3UploadSource" />
+					type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+				<xsd:element name="googleDriveUploadSource"
+					type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 				<xsd:element name="generateUploadRequestURL"
+					type="xsd:boolean" minOccurs="0" />
+				<xsd:element name="extractMetadata"
 					type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="uploadParts" type="xsd:int" minOccurs="0" />
 				<xsd:element name="linkSourcePath" type="xsd:string" />
 				<xsd:element name="callerObjectId" type="xsd:string" />
 				<xsd:element name="metadataEntries"
+					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
+				<xsd:element name="extractedMetadataEntries"
 					type="hpc-domain-metadata:HpcMetadataEntry" maxOccurs="unbounded" />
 				<xsd:element name="createParentCollections"
 					type="xsd:boolean" minOccurs="0" />
@@ -80,6 +86,8 @@
 					type="hpc-domain-datatransfer:HpcGlobusDownloadDestination" />
 				<xsd:element name="s3DownloadDestination"
 					type="hpc-domain-datatransfer:HpcS3DownloadDestination" />
+				<xsd:element name="googleDriveDownloadDestination"
+					type="hpc-domain-datatransfer:HpcGoogleDriveDownloadDestination" />
 				<xsd:element name="appendPathToDownloadDestination"
 					type="xsd:boolean" minOccurs="0" />
 			</xsd:sequence>
@@ -93,7 +101,9 @@
 			<xsd:element name="globusUploadSource"
 				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
 			<xsd:element name="s3UploadSource"
-				type="hpc-domain-datatransfer:HpcS3UploadSource" />
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="googleDriveUploadSource"
+				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="linkSourcePath" type="xsd:string" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="dataObjectMetadataEntries"
@@ -113,6 +123,8 @@
 				type="hpc-domain-datatransfer:HpcGlobusScanDirectory" />
 			<xsd:element name="s3ScanDirectory"
 				type="hpc-domain-datatransfer:HpcS3ScanDirectory" />
+			<xsd:element name="googleDriveScanDirectory"
+				type="hpc-domain-datatransfer:HpcGoogleDriveScanDirectory" />
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="includePatterns" type="xsd:string"
 				minOccurs="0" maxOccurs="unbounded" />
@@ -208,6 +220,21 @@
 				<xsd:element name="limit" type="xsd:int" />
 				<xsd:element name="totalCount" type="xsd:int"
 					minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcDataObjectDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObject"
+					type="hpc-domain-datamanagement:HpcDataObject" />
+				<xsd:element name="metadataEntries"
+					type="hpc-domain-metadata:HpcGroupedMetadataEntries" />
+				<xsd:element name="percentComplete" type="xsd:int"
+					minOccurs="0" />
+				<xsd:element name="permission"
+					type="hpc-domain-datamanagement:HpcPermission" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

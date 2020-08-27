@@ -78,14 +78,8 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-lock"></i> Admin
+							<i class="fa fa-lock"></i> Group
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Manage</li>
-							<li><i class="fa fa-list-alt"></i>Group</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -205,6 +199,7 @@
 				</div>
 				<div class="row"></div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
 	</section>
@@ -226,7 +221,10 @@
 
 	<script type="text/javascript">
 	//<![CDATA[
-	       
+	    $(document).ready(function(){
+			$('#sub-menu-admin').addClass("active");
+		});
+	    
 	    function validate()
 	    {
 	    	var groupName = document.getElementById("groupName").value;

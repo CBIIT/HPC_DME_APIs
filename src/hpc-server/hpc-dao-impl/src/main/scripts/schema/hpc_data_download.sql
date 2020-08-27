@@ -31,12 +31,14 @@ CREATE TABLE public."HPC_DATA_OBJECT_DOWNLOAD_TASK"
   "S3_ACCOUNT_ACCESS_KEY" bytea,
   "S3_ACCOUNT_SECRET_KEY" bytea,
   "S3_ACCOUNT_REGION" text,
+  "GOOGLE_DRIVE_ACCESS_TOKEN" bytea,
   "COMPLETION_EVENT" boolean,
   "PERCENT_COMPLETE" integer,
   "SIZE" bigint,
   "CREATED" timestamp,
   "PROCESSED" timestamp,
-  "PRIORITY" integer DEFAULT 100
+  "PRIORITY" integer DEFAULT 100,
+  "IN_PROCESS" boolean NOT NULL DEFAULT false
 )
 WITH (
   OIDS=FALSE
@@ -76,6 +78,8 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_SECRET_KEY"
                   'The S3 destination account secret key';  
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_REGION" IS 
                   'The S3 destination account region';  
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" IS 
+                  'The Google Drive Access Token';  
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."COMPLETION_EVENT" IS 
                   'An indicator whether a completion event needs to be generated when the task is completed';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PERCENT_COMPLETE" IS 
@@ -88,6 +92,8 @@ COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PROCESSED" IS
                   'The date and time the task was processed';
 COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."PRIORITY" IS 
                   'The download task priority';
+COMMENT ON COLUMN public."HPC_DATA_OBJECT_DOWNLOAD_TASK"."IN_PROCESS" IS 
+                  'An indicator whether this task is in-process, i.e. a thread is working on submitting it';
 
 DROP TABLE IF EXISTS public."HPC_COLLECTION_DOWNLOAD_TASK";
 CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
@@ -105,12 +111,14 @@ CREATE TABLE public."HPC_COLLECTION_DOWNLOAD_TASK"
   "S3_ACCOUNT_ACCESS_KEY" bytea,
   "S3_ACCOUNT_SECRET_KEY" bytea,
   "S3_ACCOUNT_REGION" text,
+  "GOOGLE_DRIVE_ACCESS_TOKEN" bytea,
   "APPEND_PATH_TO_DOWNLOAD_DESTINATION" boolean,
   "STATUS" text,
   "ITEMS" text,
   "CREATED" timestamp,
   "PRIORITY" integer DEFAULT 100,
-  "CANCELLATION_REQUESTED" boolean
+  "CANCELLATION_REQUESTED" boolean,
+  "IN_PROCESS" boolean NOT NULL DEFAULT false
 )
 WITH (
   OIDS=FALSE
@@ -144,6 +152,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_SECRET_KEY" 
                   'The S3 destination account secret key';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_REGION" IS 
                   'The S3 destination account region';  
+COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" IS 
+                  'The Google Drive Access Token';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."APPEND_PATH_TO_DOWNLOAD_DESTINATION" IS 
                   'An indicator whether to use the full object path at the download destination, or file name only';  
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."STATUS" IS 
@@ -156,6 +166,8 @@ COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."PRIORITY" IS
                   'The download task priority';
 COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."CANCELLATION_REQUESTED" IS 
                   'A request to cancel the download was submitted';
+COMMENT ON COLUMN public."HPC_COLLECTION_DOWNLOAD_TASK"."IN_PROCESS" IS 
+                  'An indicator whether this task is in-process, i.e. individual file download tasks are submitted';
                                    
 DROP TABLE IF EXISTS public."HPC_DOWNLOAD_TASK_RESULT";
 CREATE TABLE public."HPC_DOWNLOAD_TASK_RESULT"

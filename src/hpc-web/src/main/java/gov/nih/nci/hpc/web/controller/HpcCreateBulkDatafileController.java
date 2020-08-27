@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -49,6 +50,7 @@ import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcCollectionModel;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
 import gov.nih.nci.hpc.web.model.HpcMetadataAttrEntry;
+import gov.nih.nci.hpc.web.service.HpcAuthorizationService;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcExcelUtil;
 
@@ -65,6 +67,8 @@ import gov.nih.nci.hpc.web.util.HpcExcelUtil;
 @EnableAutoConfiguration
 @RequestMapping("/addbulk")
 public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFileController {
+    @Autowired
+    private HpcAuthorizationService hpcAuthorizationService;
 	@Value("${gov.nih.nci.hpc.server.dataObject}")
 	private String serviceURL;
 	@Value("${gov.nih.nci.hpc.server.collection}")
@@ -108,6 +112,20 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				model.addAttribute("create", true);
 			String path = request.getParameter("path");
 			String endPoint = request.getParameter("endpoint_id");
+			String code = request.getParameter("code");
+	        if (code != null) {
+	            //Return from Google Drive Authorization
+	            final String returnURL = this.webServerName + "/addbulk";
+	            try {
+	              String accessToken = hpcAuthorizationService.getToken(code, returnURL);
+	              session.setAttribute("accessToken", accessToken);
+	              model.addAttribute("accessToken", accessToken);
+	            } catch (Exception e) {
+	              model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+	              e.printStackTrace();
+	            }
+	            model.addAttribute("authorized", "true");            
+	        }
 			String parent = request.getParameter("parent");
 			if (parent == null || parent.isEmpty())
 				parent = (String) session.getAttribute("parent");
@@ -307,7 +325,24 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 			return "redirect:https://app.globus.org/file-manager?method=GET&" +
 	        "action=" + percentEncodedReturnURL;
 			
-		}
+		} else if (action != null && action.length > 0 && action[0].equals("Drive")) {
+          session.setAttribute("datafilePath", hpcDataModel.getPath());
+          session.setAttribute("basePathSelected", basePath);
+          model.addAttribute("useraction", "drive");
+          session.setAttribute("bulkType", "drive");
+          setCriteria(model, request, session);
+          populateFormAttributes(request, session, model, basePath, getParentCollectionType(request, session), true,
+                  false);
+          
+          String returnURL = this.webServerName + "/addbulk";
+          try {
+            return "redirect:" + hpcAuthorizationService.authorize(returnURL);
+          } catch (Exception e) {
+            model.addAttribute("error", "Failed to redirect to Google for authorization: " + e.getMessage());
+            e.printStackTrace();
+          }
+          
+        }
 
 		try {
 			if (hpcDataModel.getPath() == null || hpcDataModel.getPath().trim().length() == 0)

@@ -61,6 +61,13 @@
 	<!-- S3 Data Transfer Proxy -->
 	<bean id="hpcS3DataTransferProxy" 
 	      class="gov.nih.nci.hpc.integration.s3.impl.HpcDataTransferProxyImpl" />
+	      
+	<!-- Google Drive Data Transfer Proxy -->
+	<bean id="hpcGoogleDriveDataTransferProxy" 
+	      class="gov.nih.nci.hpc.integration.googledrive.impl.HpcDataTransferProxyImpl" />
+	      
+	<!--  Google Drive Connection  -->
+	<bean id="hpcGoogleDriveConnection" class="gov.nih.nci.hpc.integration.googledrive.impl.HpcGoogleDriveConnection" />
 	
 	<!-- HPC LDAP Authentication Proxy -->
 	<bean id="hpcLdapAuthenticationProxy"
@@ -102,5 +109,8 @@
 	      
 	<!--  S3 download executor (Cleversafe -> AWS) thread pool -->
 	<task:executor id="hpcS3DownloadExecutor" pool-size="${hpc.integration.s3.downloadExecutorThreadPoolSize}"/>
+	
+	<!--  Google Drive download executor (Cleversafe -> Google Drive) thread pool -->
+	<task:executor id="hpcGoogleDriveDownloadExecutor" pool-size="${hpc.integration.googledrive.downloadExecutorThreadPoolSize}"/>
 	
 </beans>
