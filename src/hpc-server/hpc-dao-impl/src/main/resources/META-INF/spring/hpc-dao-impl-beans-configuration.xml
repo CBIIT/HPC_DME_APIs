@@ -78,9 +78,9 @@
 	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserNamedQueryDAOImpl" />
 	<bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserBookmarkDAOImpl" />
 	<bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcGroupDAOImpl" />
-	<bean id="hpcDataManagementConfigurationDAO" 
+	<!--  <bean id="hpcDataManagementConfigurationDAO" 
 	      class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementConfigurationDAOImpl" 
-	      init-method="dbConnect"/>
+	      init-method="dbConnect"/> -->
 	<bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcCatalogDAOImpl" />
 	<!-- TODO: END -->
 	
@@ -98,9 +98,9 @@
 	<!-- <bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl" /> -->
 	<!-- <bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserBookmarkDAOImpl" /> -->
 	<!-- <bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGroupDAOImpl" /> -->
-	<!-- <bean id="hpcDataManagementConfigurationDAO" 
+	<bean id="hpcDataManagementConfigurationDAO" 
 	      class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementConfigurationDAOImpl" 
-	      init-method="dbConnect"/> -->
+	      init-method="dbConnect"/>
 	<!-- <bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcCatalogDAOImpl" /> -->
 
 </beans>
