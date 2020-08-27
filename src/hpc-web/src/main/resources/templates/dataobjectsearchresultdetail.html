@@ -457,10 +457,6 @@
 						<h3 class="page-header">
 							<i class="fa fa-search"></i> Search
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-home"></i><a th:href="@{/dashboard}">Dashboard
-							</a> / <a th:href="@{/criteria}">Search</a></li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -469,6 +465,7 @@
 					<div class="col-lg-12 col-md-12" ng-controller="MainCtrl">
 						<div class="panel panel-default">
 							<div class="panel-heading">
+							  <div class="row">
 								<div class="pull-left">
 									<h2 align="left">
 										<i class="fa fa-list-alt red"></i><strong>Data File
@@ -476,15 +473,6 @@
 									</h2>
 								</div>
 								<div class="pull-right">
-									<a data-toggle="modal" id="downloadselectedlink"
-										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('download')"
-										>Download Files</a>
-									<a data-toggle="modal" id="bulkPermissionlink"
-										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('permission')"
-										>Manage Permissions on Selected Data Files</a>
-									<a data-toggle="modal" id="linkselectedlink"
-										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
-										>Create Links</a>
 									<a data-toggle="modal" id="savesearchlink"
 										class="btn btn-link btn-sm" href="/savesearch"
 										data-target="#myModal">Save Search Criteria</a>
@@ -492,6 +480,20 @@
 										class="btn btn-link btn-sm" ng-click="editSearch()"
 										>Edit Search Criteria</a>
 								</div>
+							  </div>
+							  <div class="row" style="background-color: #fff;border-top: 1px solid #ccc;border-bottom: none;">
+							    <div class="pull-left">
+									<a data-toggle="modal" id="downloadselectedlink"
+										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('download')"
+										><i class="fa fa-download" title="Download Selected Data Files"></i></a>
+									<a data-toggle="modal" id="bulkPermissionlink"
+										class="btn btn-link btn-sm" ng-click="performActionSelectedRows('permission')"
+										><i class="fa fa-users" title="Manage Permissions on Selected Data Files"></i></a>
+									<a data-toggle="modal" id="linkselectedlink"
+										class="btn btn-link btn-sm" ng-click="linkSelectedRows()"
+										><i class="fa fa-link" title="Create Links for Selected Data Files"></i></a>
+								</div>
+							  </div>
 								<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
 									aria-labelledby="myModalLabel" aria-hidden="true">
 									<div class="modal-dialog">
@@ -583,6 +585,7 @@
 				<!--/col-->
 
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
 	</section>
@@ -596,6 +599,10 @@
 	<script src="js/jquery.customSelect.min.js"></script>
 <script>
 /*<![CDATA[*/
+	$(document).ready(function(){
+		$('#sub-menu-search').addClass("active");
+	});
+	
     function updatePage(action, newPageSize)
     {
 

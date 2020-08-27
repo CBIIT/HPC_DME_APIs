@@ -10,6 +10,7 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataLevelAttributes;
@@ -191,6 +192,15 @@ public interface HpcMetadataDAO
      */
 	public Calendar getMetadataModifiedAt(int id) throws HpcException;
     
+	/**
+     * Get the latest metadata for browse for specified list of ids.
+     *
+     * @param ids The list of collection or data-object ID.
+     * @return A list of HpcCollectionListingEntry
+     * @throws HpcException on database error.
+     */
+	public List<HpcCollectionListingEntry> getBrowseMetadataByIds(List<Integer> ids) throws HpcException;
+	
     /**
      * Refresh all materialized views.
      * @throws HpcException on database error.

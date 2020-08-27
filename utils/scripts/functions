@@ -168,7 +168,8 @@ function dm_register () {
     rm -f  $RESPONSE_MSG 2>/dev/null 
     rm -f $RESPONSE_HEADER 2>/dev/null 
 
-    local CURL_FLAGS="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS_COLLECTION="-X PUT ${SERVER}/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
+    local CURL_FLAGS="-X PUT ${SERVER}/v2/${TYPE}/$(urlencode $DESTINATION_PATH)  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG "
     
     if [ "$TYPE" == "dataObject" ]
     then
@@ -181,7 +182,7 @@ function dm_register () {
     elif [ "$TYPE" == "collection" ]
     then
             
-           curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS  -H "Accept: application/json" 2>$HPC_DM_UTILS/temp/curl-status
+           curl -H "Content-Type: application/json" -d @$DESCRIPTION $CURL_FLAGS_COLLECTION  -H "Accept: application/json" 2>$HPC_DM_UTILS/temp/curl-status
     else
         echo "ERROR: Unsupported registration type:$TYPE"
         exit 1
@@ -477,7 +478,7 @@ function dm_register_dataobject_multipart_usage {
   source-path                 Path of the file to upload
 
 For detailed information on this command, refer to the following page: 
-https://wiki.nci.nih.gov/x/KohzFw
+https://wiki.nci.nih.gov/x/7AIFGg
 
 EOF
   echo "$usage"
@@ -1227,7 +1228,7 @@ function dm_show_download_dataobject_presigned_usage {
   destination-file       The location for the destination file
 
 For detailed information on this command, refer to the following page:
-https://wiki.nci.nih.gov/x/owRlGQ
+https://wiki.nci.nih.gov/x/PwMFGg
 
 EOF
   echo "$usage"

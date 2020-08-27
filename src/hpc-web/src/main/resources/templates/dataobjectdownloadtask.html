@@ -72,13 +72,8 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-laptop"></i> User Tasks
+							<i class="fa fa-laptop"></i> Data Object Download Task Details
 						</h3>
-						<ol class="breadcrumb">
-							<li><i class="fa fa-dashboard"></i><a
-								th:href="@{/dashboard}">Dashboard</a></li>
-							<li><i class="fa fa-list-alt"></i>Data Object Download Task Details</li>
-						</ol>
 					</div>
 				</div>
 				<!--Title End-->
@@ -134,9 +129,9 @@
 												th:text="${hpcDataObjectDownloadStatusDTO.getDataTransferRequestId()}"></label>
 										</div>
 										<div class="col-md-12 form-group">
-											<label for="Name">Transfer Request Type:</label> <label
-												for="${hpcDataObjectDownloadStatusDTO.getDataTransferType().value()}"
-												th:text="${hpcDataObjectDownloadStatusDTO.getDataTransferType().value()}"></label>
+											<label for="Name">Destination Type:</label> <label
+												for="${hpcDataObjectDownloadStatusDTO.getDestinationType().value()}"
+												th:text="${hpcDataObjectDownloadStatusDTO.getDestinationType().value()}"></label>
 										</div>
 										<div class="col-md-12 form-group">
 											<label for="Name">Destination Endpoint:</label> <label
@@ -189,6 +184,7 @@
 				</div>
 				<div class="row"></div>
 			</section>
+			<div th:include="footer :: footer"></div>
 		</section>
 		<!--main content end-->
 	<form class="form-horizontal" id="downloadForm"
@@ -216,6 +212,10 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
 
+$(document).ready(function(){
+	$('#sub-menu-manage').addClass("active");
+});
+	
 function retryDownload(task, taskType)
 {
 	$('#downloadfailed').addClass('disabled');
