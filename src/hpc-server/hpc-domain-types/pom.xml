@@ -157,8 +157,8 @@
 	</build>
 	<dependencies>
 		<dependency>
-   				 <groupId>org.apache.commons</groupId>
-    			<artifactId>commons-lang3</artifactId>
+   			<groupId>org.apache.commons</groupId>
+    		<artifactId>commons-lang3</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf.xjc-utils</groupId>
