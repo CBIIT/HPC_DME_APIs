@@ -24,27 +24,32 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<cxf.version>3.1.5</cxf.version>
-		<cxf-xjc.version>3.0.5</cxf-xjc.version>
+		<commons-lang3.version>3.11</commons-lang3.version>
+		<commons-io.version>2.7</commons-io.version>
+		<commons-compress.version>1.20</commons-compress.version>
+		
+		<cxf.version>3.1.9</cxf.version>
+		<cxf-xjc.version>3.2.3</cxf-xjc.version>
+		
 		<!-- TODO: Remove after Oracle migration -->
 		<postgresql.version>9.3-1102-jdbc41</postgresql.version>
 		<!-- TODO: END -->
+		
 		<oracle.version>19.7.0.0</oracle.version>
-		<slf4j.version>1.7.22</slf4j.version>
+		<slf4j.version>1.7.30</slf4j.version>
 		<spring.version>3.2.18.RELEASE</spring.version>
-		<spring.retry.version>1.2.1.RELEASE</spring.retry.version>
+		<spring.retry.version>1.3.0</spring.retry.version>
         <spring.security.version>3.2.10.RELEASE</spring.security.version>
-		<amazon-aws.version>1.11.125</amazon-aws.version>
-		<jackson.version>2.10.1</jackson.version>
-		<jargon.version>4.1.10.0-RELEASE</jargon.version>
-		<jargon-conveyor.version>4.0.2.1-RELEASE</jargon-conveyor.version> 
+        <aspectj.version>1.9.6</aspectj.version>
+		<amazon-aws.version>1.11.827</amazon-aws.version>
+		<jackson.version>2.11.2</jackson.version>
+		<jargon.version>4.3.1.0-RELEASE</jargon.version>
 		<google-json-simple.version>1.1.1</google-json-simple.version>
+		
 		<google-guava.version>20.0</google-guava.version>
 		<google-drive-sdk.version>1.25.0</google-drive-sdk.version>
 		<jjwt.version>0.6.0</jjwt.version>
-		<commons-io.version>2.5</commons-io.version>
-		<aspectj.version>1.7.4</aspectj.version>
-		<commons-compress.version>1.19</commons-compress.version>
+		
 		<bouncycastle.version>1.52</bouncycastle.version>
 		<globus.version>1.0</globus.version>
 		<tika.version>1.24.1</tika.version>
@@ -155,14 +160,19 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
-				<version>2.6</version>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commons-lang3.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>${commons-io.version}</version>
+			</dependency>
+			<dependency>
+    			<groupId>org.apache.commons</groupId>
+    			<artifactId>commons-compress</artifactId>
+    			<version>${commons-compress.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
@@ -293,11 +303,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
-				<artifactId>jargon-conveyor</artifactId>
-				<version>${jargon-conveyor.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-user-tagging</artifactId>
 				<version>${jargon.version}</version>
 			</dependency>
@@ -365,11 +370,6 @@
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
 				<version>3.1.0</version>
-			</dependency>
-			<dependency>
-    			<groupId>org.apache.commons</groupId>
-    			<artifactId>commons-compress</artifactId>
-    			<version>${commons-compress.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
