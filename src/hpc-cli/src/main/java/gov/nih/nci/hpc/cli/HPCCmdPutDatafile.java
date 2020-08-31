@@ -113,7 +113,7 @@ public class HPCCmdPutDatafile extends HPCCmdClient {
 					HpcLocalFileProcessor fileProcess;
 					fileProcess = new HpcLocalFileProcessor(dataObject);
 					fileProcess.process(filePathAttr, path.toString(), null, destinationPath, logFile,
-							logRecordsFile, false, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), false, metadataFile);
+							logRecordsFile, false, false, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), false, metadataFile);
 				}
 			}  catch (RecordProcessingException e) {
 				createErrorLog();

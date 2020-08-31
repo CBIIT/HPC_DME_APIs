@@ -1565,6 +1565,7 @@ function dm_show_register_directory_usage {
   -l[FILES_LIST]          Register the files mentioned in the FILE_LIST only. Each line in the FILES_LIST file contains a relative path to the source-path.
                           All collections should be registered before using this option.
   -m                      Register metadata only. Do not register files.
+  -x                      Extract metadata automatically from files.
   -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
   -t[NUM_THREADS]         The number of threads to use while uploading files to the archive. This number should be between [1, 32].
@@ -1591,7 +1592,7 @@ function dm_register_directory {
     archiveType=S3
     checksum=true
 
-    while getopts ":a:b:cde:i:l:hmp:st:" option
+    while getopts ":a:b:cde:i:l:hmp:st:x" option
     do
       case "${option}" in
         a)
@@ -1639,6 +1640,9 @@ function dm_register_directory {
           ;;
         m)
           metadata_only=1
+          ;;
+        x)
+          extract_metadata=1
           ;;
         s)
           skip_confirmation=1
@@ -1745,9 +1749,14 @@ function dm_register_directory {
 
     if [ "$metadata_only" ]
     then
-      command_args+=" --metadata true "
+      command_args+=" --metadataOnly true "
     fi
 
+	if [ "$extract_metadata" ]
+    then
+      command_args+=" --extractMetadata true "
+    fi
+	
     #Add all other options
     command_args+=" --threads $numthreads"
     command_args+=" --archiveType $archiveType"

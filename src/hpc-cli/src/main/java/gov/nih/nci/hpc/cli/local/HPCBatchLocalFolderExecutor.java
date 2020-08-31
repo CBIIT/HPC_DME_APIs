@@ -80,6 +80,7 @@ public class HPCBatchLocalFolderExecutor {
     boolean success = false;
     boolean testRun = false;
     boolean metadataOnly = false;
+    boolean extractMetadata = false;
     boolean checksum = true;
     boolean confirmation = true;
     String localPath = (String) criteriaMap.get("filePath");
@@ -110,7 +111,10 @@ public class HPCBatchLocalFolderExecutor {
         .equalsIgnoreCase("true")) {
       metadataOnly = true;
     }
-
+    if (criteriaMap.get("extractMetadata") != null && criteriaMap.get("extractMetadata")
+        .equalsIgnoreCase("true")) {
+      extractMetadata = true;
+    }
     if (criteriaMap.get("test") != null && criteriaMap.get("test").equalsIgnoreCase("true")) {
       testRun = true;
     }
@@ -187,7 +191,7 @@ public class HPCBatchLocalFolderExecutor {
           folderProcessor = new HpcLocalFolderProcessor(connection);
           folderProcessor.process(folder, localPath, fileBasePath, destinationBasePath, logFile,
               errorRecordsFile,
-              metadataOnly, true, checksum, null);
+              metadataOnly, extractMetadata, true, checksum, null);
         } catch (IOException e) {
           logger.error(e.getMessage(), e);
           System.out.println("Failed to process collection " + folder.getAbsolutePath()
