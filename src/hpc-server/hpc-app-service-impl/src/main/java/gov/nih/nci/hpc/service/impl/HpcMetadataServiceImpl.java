@@ -695,6 +695,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (!extractedMetadata) {
 			metadataEntries.add(generateMetadataUpdatedMetadata());
 		}
+		
+		logger.error("ERAN: " + extractedMetadata + " " + metadataEntries);
 
 		// Update the metadata.
 		dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
