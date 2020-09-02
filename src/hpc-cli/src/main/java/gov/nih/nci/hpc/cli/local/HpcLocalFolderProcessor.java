@@ -47,7 +47,7 @@ public class HpcLocalFolderProcessor extends HpcLocalEntityProcessor {
   @Override
   public boolean process(HpcPathAttributes entity, String localPath, String filePathBaseName,
       String destinationBasePath,
-      String logFile, String recordFile, boolean metadataOnly, boolean directUpload,
+      String logFile, String recordFile, boolean metadataOnly, boolean extractMetadata, boolean directUpload,
       boolean checksum, String metadataFile)
       throws RecordProcessingException {
     this.filePath4LogFile = logFile;

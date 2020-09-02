@@ -46,7 +46,7 @@ public class HpcLocalDirectoryListProcessor {
   public boolean run(List<HpcPathAttributes> files, String filePath, String filePathBaseName,
       String destinationBasePath,
       String logFile, String recordFile, boolean testRun, boolean confirmation,
-      boolean metadataOnly, boolean checksum) {
+      boolean metadataOnly, boolean extractMetadata, boolean checksum) {
     this.logFile = logFile;
     this.recordFile = recordFile;
     boolean success = true;
@@ -62,12 +62,12 @@ public class HpcLocalDirectoryListProcessor {
               HpcLocalFileProcessor fileProcess = new HpcLocalFileProcessor(connection);
               fileProcess.process(file, filePath, filePathBaseName, destinationBasePath, logFile,
                   recordFile,
-                  metadataOnly, false, checksum, null);
+                  metadataOnly, extractMetadata, false, checksum, null);
             } else {
               HpcLocalFolderProcessor folderProcess = new HpcLocalFolderProcessor(connection);
               folderProcess.process(file, filePath, filePathBaseName, destinationBasePath, logFile,
                   recordFile,
-                  metadataOnly, false, checksum, null);
+                  metadataOnly, extractMetadata, false, checksum, null);
             }
 
           } catch (RecordProcessingException e) {
