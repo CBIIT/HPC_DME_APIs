@@ -94,11 +94,6 @@
 		<form class="form-horizontal" id="downloadFilesForm"
 			th:object="${hpcDownloadDatafile}" method="PUT">
 			<div class="panel panel-default">
-			    <div class="panel-heading">
-                    <h2>
-                        <i class="fa fa-list-alt red"></i><strong>Download</strong>
-                    </h2>
-                </div>
                 <div th:if="${error != null}">
 					<div class="alert alert-error">
 						<a class="close" data-dismiss="alert">�</a> <label
