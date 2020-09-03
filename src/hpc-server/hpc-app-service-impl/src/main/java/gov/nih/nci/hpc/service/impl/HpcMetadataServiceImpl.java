@@ -452,7 +452,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			String configurationId, String collectionType) throws HpcException {
 		// Update the data object's metadata.
 		updateDataObjectMetadata(path, new ArrayList<HpcMetadataEntry>(extractedMetadataEntries), configurationId,
-				collectionType);
+				collectionType, true);
 
 		// Set the extracted-metadata-attributes system generated metadata to have all
 		// the attributes
@@ -678,7 +678,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 	@Override
 	public void updateDataObjectMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId,
-			String collectionType) throws HpcException {
+			String collectionType, boolean extractedMetadata) throws HpcException {
 		// Input validation.
 		if (path == null || !isValidMetadataEntries(metadataEntries)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -690,8 +690,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 				metadataEntries, collectionType);
 
 		// Update the 'metadata updated' system-metadata to record the time of this
-		// metadata update.
-		metadataEntries.add(generateMetadataUpdatedMetadata());
+		// metadata update. This is skipped for updated the data object w/ extracted
+		// metadata (performed during registration).
+		if (!extractedMetadata) {
+			metadataEntries.add(generateMetadataUpdatedMetadata());
+		}
 
 		// Update the metadata.
 		dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,

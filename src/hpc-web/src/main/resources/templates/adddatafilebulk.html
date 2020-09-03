@@ -142,13 +142,6 @@
 												Use Globus with DME</a> in the User Guide.
 										</p>
 									</div>
-									<div class="form-group drive" style="margin-left: 0px">
-										<button type="button" class="btn btn-primary"
-											id="driveAuthlink"
-											onClick="return refreshAttributes('Drive')">Authorize 
-											DME to Access Your Google Drive</button>
-									</div>
-									<div th:if="${authorized != null}" class="alert-success"><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
 									<br/>
 									<div class="panel-heading hidden">
 										<div class="col-md-3">
@@ -217,6 +210,14 @@
 															</td></tr>
 															<tr class="drive">
 															<td colspan="2">
+															<div th:if="${authorized != null}" class="alert-success" style="margin-left: 13px" ><i class="fa fa-check">&nbsp;</i>Access Token successfully generated</div>
+															<div class="form-group" style="margin-left: 13px">
+																<button type="button" class="btn btn-primary"
+																	id="driveAuthlink"
+																	onClick="return refreshAttributes('Drive')">Authorize 
+																	DME to Access Your Google Drive</button>
+															</div>
+															
 															<div class="col-sm-12 column" id="driveDiv">
 																<a href="" id="pickerLink" onclick="loadUploadPicker();return false;">Select
 																	Data from Google Drive</a>

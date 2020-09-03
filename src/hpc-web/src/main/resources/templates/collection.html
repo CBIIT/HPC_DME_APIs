@@ -89,9 +89,6 @@
 			   <div class="panel-heading" th:if="${collection != null}">
 			    <h2 th:switch="${userpermission}">
 			     <div th:case="'READ'">
-			      <i class="fa fa-list-alt red"></i>
-			      <strong>Collection</strong>
-                  &nbsp;&nbsp;
                    <a  class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
@@ -116,9 +113,6 @@
 				</div>
 
 			    <div th:case="'WRITE'">
-				  <i class="fa fa-list-alt red"></i>
-                  <strong>Collection</strong>
-                  &nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
@@ -147,9 +141,6 @@
 				 </div>
 
 				 <div th:case="'OWN'">
-				 <i class="fa fa-list-alt red"></i>
-                  <strong>Collection</strong>
-                  &nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
