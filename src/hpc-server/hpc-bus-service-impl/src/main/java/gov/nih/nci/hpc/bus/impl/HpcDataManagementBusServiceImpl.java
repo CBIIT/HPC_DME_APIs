@@ -2297,7 +2297,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String message = null;
 		try {
 			metadataService.updateDataObjectMetadata(path, metadataEntries,
-					systemGeneratedMetadata.getConfigurationId(), collectionType);
+					systemGeneratedMetadata.getConfigurationId(), collectionType, false);
 
 		} catch (HpcException e) {
 			// Data object metadata update failed. Capture this in the audit record.
