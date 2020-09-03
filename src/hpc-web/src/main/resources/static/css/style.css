@@ -902,6 +902,13 @@ div[data-role="editor-toolbar"] {
     color: #797979 !important;
 }
 
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #97BDD6;
+}
+
 .dropdown-menu > li.disabled > a {
 	color: #d7d7d7 !important;
 }
@@ -5107,4 +5114,12 @@ span.customSelect.changed {
   margin-top: -5px;
   border-width: 5px 5px 5px 0;
   border-right-color: #b3d7ff;
+}
+
+.picker-dialog-bg {
+    z-index: 20000 !important;
+}
+
+.picker-dialog {
+    z-index: 20001 !important;
 }
