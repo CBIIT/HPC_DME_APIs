@@ -5108,3 +5108,11 @@ span.customSelect.changed {
   border-width: 5px 5px 5px 0;
   border-right-color: #b3d7ff;
 }
+
+.picker-dialog-bg {
+    z-index: 20000 !important;
+}
+
+.picker-dialog {
+    z-index: 20001 !important;
+}
