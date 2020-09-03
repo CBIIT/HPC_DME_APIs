@@ -442,11 +442,64 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		return getDetailedPaths(prepareQuery(GET_DETAILED_DATA_OBJECT_PATHS_SQL, toQuery(paths), null, null, null));
 	}
 
+
 	@Override
 	public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername,
 			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException {
 		return getCount(prepareQuery(GET_DATA_OBJECT_COUNT_SQL,
 				toQuery(dataObjectSQL, compoundMetadataQuery, defaultLevelFilter), dataManagementUsername, null, null));
+	}
+
+
+	@Override
+	public List<String> getDataObjectParentPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery,
+			String dataManagementUsername, int offset, int limit, HpcMetadataQueryLevelFilter defaultLevelFilter)
+			throws HpcException {
+
+		List<String> fullPaths = getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, path,
+				toQuery(dataObjectSQL, compoundMetadataQuery, defaultLevelFilter), dataManagementUsername, offset,
+				limit));
+
+		if (CollectionUtils.isEmpty(fullPaths))
+			return new ArrayList<>();
+
+		//Convert the data object paths to collection paths
+		List<String> paths = new ArrayList<>();
+		for(String fullPath: fullPaths) {
+			String colPath = fullPath.substring(0, path.lastIndexOf('/'));
+			if(!paths.contains(colPath)) {
+				paths.add(colPath);
+			}
+		}
+
+		return paths;
+	}
+
+
+	@Override
+	public List<HpcSearchMetadataEntryForCollection> getDetailedDataObjectParentPaths(String path,
+			HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername, int offset, int limit,
+			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException {
+
+
+		List<String> fullPaths = getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, path,
+				toQuery(dataObjectSQL, compoundMetadataQuery, defaultLevelFilter), dataManagementUsername, offset,
+				limit));
+
+		if (CollectionUtils.isEmpty(fullPaths))
+			return new ArrayList<>();
+
+		//Convert the data object paths to collection paths
+		List<String> paths = new ArrayList<>();
+		for(String fullPath: fullPaths) {
+			String colPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+			if(!paths.contains(colPath)) {
+				paths.add(colPath);
+			}
+		}
+
+		return getDetailedPathsForCollection(
+				prepareQuery(GET_DETAILED_COLLECTION_PATHS_SQL, toQuery(paths), null, null, null));
 	}
 
 	@Override

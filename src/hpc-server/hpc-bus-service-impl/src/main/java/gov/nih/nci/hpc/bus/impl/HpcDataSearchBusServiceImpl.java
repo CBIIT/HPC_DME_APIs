@@ -185,6 +185,59 @@ public class HpcDataSearchBusServiceImpl implements HpcDataSearchBusService {
 				toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
 	}
 
+
+	@Override
+	public HpcCollectionListDTO getDataObjectParents(String path, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+			throws HpcException {
+		// Input validation.
+		if (compoundMetadataQueryDTO == null) {
+			throw new HpcException("Null compound metadata query", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		boolean detailedResponse = compoundMetadataQueryDTO.getDetailedResponse() != null
+				&& compoundMetadataQueryDTO.getDetailedResponse();
+		int page = compoundMetadataQueryDTO.getPage() != null ? compoundMetadataQueryDTO.getPage() : 1;
+		int pageSize = compoundMetadataQueryDTO.getPageSize() != null ? compoundMetadataQueryDTO.getPageSize() : 0;
+		boolean totalCount = compoundMetadataQueryDTO.getTotalCount() != null
+				&& compoundMetadataQueryDTO.getTotalCount();
+
+		// Execute the query and package the results in a DTO.
+		int count = 0;
+		HpcCollectionListDTO collectionsDTO = null;
+		if (!detailedResponse) {
+			List<String> collectionPaths = dataSearchService
+					.getDataObjectParentPaths(path, compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+			collectionsDTO = toCollectionListDTO(collectionPaths, detailedResponse);
+			count = collectionPaths.size();
+		} else {
+			List<HpcSearchMetadataEntryForCollection> collectionPaths = dataSearchService
+					.getDetailedDataObjectParentPaths(path, compoundMetadataQueryDTO.getCompoundQuery(), page, pageSize);
+			collectionsDTO = toDetailedCollectionListDTO(collectionPaths);
+			count = collectionsDTO.getCollections().size();
+		}
+
+		// Set page, limit and total count.
+		collectionsDTO.setPage(page);
+		int limit = dataSearchService.getSearchResultsPageSize(pageSize);
+		collectionsDTO.setLimit(limit);
+
+		if (totalCount) {
+			collectionsDTO.setTotalCount((page == 1 && count < limit) ? count
+					: dataSearchService.getCollectionCount(compoundMetadataQueryDTO.getCompoundQuery()));
+		}
+
+		return collectionsDTO;
+	}
+
+
+	@Override
+	public HpcCollectionListDTO getDataObjectParents(String queryName, Boolean detailedResponse, Integer page,
+			Integer pageSize, Boolean totalCount) throws HpcException {
+		return getDataObjectParents(null,
+				toCompoundMetadataQueryDTO(queryName, detailedResponse, page, pageSize, totalCount));
+	}
+
+
 	@Override
 	public void addQuery(String queryName, String userId, HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
 			throws HpcException {
