@@ -15,14 +15,14 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_ARCHIVED",
-			"subjectFormat": "DME Data Transfer Upload Request Completed at %1$s",
+			"subjectFormat": "DME Data Registration Request Completed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your upload request is completed.<br/>Source path: %1$s<br/>Target path: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your data registration request is completed.<br/>Source path: %1$s<br/>Target path: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "SOURCE_LOCATION",
@@ -36,7 +36,7 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_FAILED",
-			"subjectFormat": "DME Data Transfer Upload Request Failed at %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"subjectFormat": "DME Data Registration Request Failed at %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
@@ -57,10 +57,10 @@
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_URL_EXPIRED",
-			"subjectFormat": "DME Data Transfer Upload URL Expired",
+			"subjectFormat": "DME Data Registration URL Expired",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data upload URL expired. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your data registration URL expired. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
