@@ -279,14 +279,14 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getEndPointName());
-				location.setFileId(downloadFile.getEndPointLocation());
+				location.setFileId(downloadFile.getEndPointLocation().trim());
 				HpcGlobusDownloadDestination globusDownloadDestination = new HpcGlobusDownloadDestination();
 				globusDownloadDestination.setDestinationLocation(location);
 				dto.setGlobusDownloadDestination(globusDownloadDestination);
 			}  else if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("s3")) {
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getBucketName());
-				location.setFileId(downloadFile.getS3Path());
+				location.setFileId(downloadFile.getS3Path().trim());
 				HpcS3DownloadDestination destination = new HpcS3DownloadDestination();
 				destination.setDestinationLocation(location);
 				HpcS3Account account = new HpcS3Account();
@@ -300,7 +300,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
                 HpcGoogleDriveDownloadDestination destination = new HpcGoogleDriveDownloadDestination();
                 HpcFileLocation location = new HpcFileLocation();
                 location.setFileContainerId("MyDrive");
-                location.setFileId(downloadFile.getDrivePath());
+                location.setFileId(downloadFile.getDrivePath().trim());
                 destination.setDestinationLocation(location);
                 destination.setAccessToken(accessToken);
                 dto.setGoogleDriveDownloadDestination(destination);
