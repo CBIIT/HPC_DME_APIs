@@ -70,14 +70,14 @@
 		},
 		{
 			"eventType": "BULK_DATA_OBJECT_REGISTRATION_COMPLETED",
-			"subjectFormat": "DME Bulk Data Object Registration Request Completed at %1$s",
+			"subjectFormat": "DME Bulk Data Registration Request Completed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your bulk data registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
@@ -91,14 +91,14 @@
 		},
 		{
 			"eventType": "BULK_DATA_OBJECT_REGISTRATION_FAILED",
-			"subjectFormat": "DME Bulk Data Object Registration Request Failed at %1$s",
+			"subjectFormat": "DME Bulk Data Registration Request Failed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk registration failed. <br/>Task ID: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your bulk data registration failed. <br/>Task ID: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
