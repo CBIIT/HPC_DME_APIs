@@ -54,7 +54,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 
 	private static final String GET_USER_SQL = "select * from HPC_USER where USER_ID = ?";
 
-	private static final String GET_USERS_SQL = "select * from HPC_USER where ?";
+	private static final String GET_USERS_SQL = "select * from HPC_USER where 1 = ?";
 
 	private static final String GET_USERS_SQL_BY_ROLE = "SELECT USER_ID, FIRST_NAME, LAST_NAME, DOC, DEFAULT_CONFIGURATION_ID, "
 			+ "ACTIVE, CREATED, LAST_UPDATED, ACTIVE_UPDATED_BY " + "FROM HPC_USER u, r_user_main r where "
@@ -76,7 +76,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 
 	private static final String GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER = " and lower(DEFAULT_CONFIGURATION_ID) = lower(?) ";
 
-	private static final String GET_USERS_ACTIVE_FILTER = " and ACTIVE = true ";
+	private static final String GET_USERS_ACTIVE_FILTER = " and ACTIVE = 'Y' ";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -192,7 +192,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 		List<Object> args = new ArrayList<>();
 
 		sqlQueryBuilder.append(GET_USERS_SQL);
-		args.add(true);
+		args.add("1");
 
 		if (nciUserId != null) {
 			sqlQueryBuilder.append(GET_USERS_USER_ID_FILTER);
@@ -272,7 +272,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 		List<Object> args = new ArrayList<>();
 
 		sqlQueryBuilder.append(GET_USERS_SQL);
-		args.add(true);
+		args.add("1");
 
 		if (nciUserIdPattern != null) {
 			sqlQueryBuilder.append(" and (");
