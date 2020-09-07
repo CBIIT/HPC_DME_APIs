@@ -51,7 +51,8 @@
 	src="js/jquery/3.1.1/jquery.min.js"></script>
 <script
 	src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
-	
+<script src="js/clipboard.min.js"></script>
+
 <script th:inline="javascript">
 /*<![CDATA[*/
     var attributeNames = [[${attributeNames}]];
@@ -89,9 +90,6 @@
 			   <div class="panel-heading" th:if="${collection != null}">
 			    <h2 th:switch="${userpermission}">
 			     <div th:case="'READ'">
-			      <i class="fa fa-list-alt red"></i>
-			      <strong>Collection</strong>
-                  &nbsp;&nbsp;
                    <a  class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
@@ -116,9 +114,6 @@
 				</div>
 
 			    <div th:case="'WRITE'">
-				  <i class="fa fa-list-alt red"></i>
-                  <strong>Collection</strong>
-                  &nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
@@ -147,9 +142,6 @@
 				 </div>
 
 				 <div th:case="'OWN'">
-				 <i class="fa fa-list-alt red"></i>
-                  <strong>Collection</strong>
-                  &nbsp;&nbsp;
                   <a class="btn btn-link btn-sm"
                      th:href="@{../download(type=collection,path=${collection.getCollection().getCollectionName()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
@@ -212,9 +204,12 @@
 									</div>
                                     <div class="form-group" style="word-break: break-all;">
 										<div class="col-md-12 form-group">
-											<label for="Name">Path:</label> <label
+											<label for="Name">Path:</label> <label id="pathLabel"
 												for="${collection.getCollection().getCollectionName()}"
 												th:text="${collection.getCollection().getCollectionName()}"></label>
+											<button class="copy-btn" data-toggle="tooltip" data-placement="bottom" title="Copy to clipboard" data-clipboard-target="#pathLabel">
+											    <img src="img/clippy.svg" width="13" alt="Copy to clipboard"/>
+											</button>
 										</div>
 										<div class="col-md-12 form-group">
 											<label for="Name">Parent Name:</label> <label
@@ -244,7 +239,7 @@
 										  
 										  <div th:if="${action == 'edit'}">
 										    <input type="hidden" name="action" id="action" value="edit"/>
-											<input type="hidden" name="path" id="action" th:value="${collection.getCollection().getCollectionName()}"/>
+											<input type="hidden" name="path" id="hiddenPath" th:value="${collection.getCollection().getCollectionName()}"/>
 											<tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
 											  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
 											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null and metadataItem.isMandatory()}">
@@ -294,7 +289,7 @@
 													<button class="btn btn-md btn-primary"
 														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 													<button type="submit" class="btn btn-md btn-primary"
-														id="primaryButton" th:disabled="${collection.getSelfMetadataEntries() == null} ?'disabled' : 'false'">Update</button>
+														id="primaryButton2" th:disabled="${collection.getSelfMetadataEntries() == null} ?'disabled' : 'false'">Update</button>
 													<button type="submit" class="btn btn-primary"
 														id="cancel" onClick="cancelEdit()">Cancel</button>
 												</div>
@@ -397,18 +392,28 @@
 	<!-- bootstrap -->
 	<script src="js/bootstrap.min.js"></script>
 
-	<script src="js/jquery-ui-1.10.4.min.js"></script>
 	<script src="js/jquery.scrollTo.min.js"></script>
 	<script src="js/jquery.nicescroll.js" type="text/javascript"></script>
 	<script src="assets/jquery-knob/js/jquery.knob.js"></script>
 	<script src="js/jquery.sparkline.js" type="text/javascript"></script>
 	<script src="js/jquery.customSelect.min.js"></script>
-
+	
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
 	<script type="text/javascript">
 	/*<![CDATA[*/
 
+	$('.copy-btn').tooltip({
+	    trigger : 'hover'
+	});
+	var clipboard = new ClipboardJS('.copy-btn');
+	
+	clipboard.on('success', function(e) {
+		$('.copy-btn').tooltip('hide').attr('data-original-title', 'Copied!').tooltip('fixTitle').tooltip('show');
+	    $('.copy-btn').attr('data-original-title', 'Copy to clipboard');
+	    e.clearSelection();
+	});
+	
 	var rowId = 1;
 
 	function addMetadata() {
