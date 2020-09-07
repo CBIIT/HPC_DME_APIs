@@ -64,7 +64,7 @@
 	<!-- HPC DAO Implementation Beans -->
 	
 	<!-- TODO: Remove after Oracle migration -->
-	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" />
+	<!--  <bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" /> -->
 	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" />
 	<bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataDownloadDAOImpl" />
 	<bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataRegistrationDAOImpl" />
@@ -84,7 +84,7 @@
 	<bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcCatalogDAOImpl" />
 	<!-- TODO: END -->
 	
-	<!--  <bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserDAOImpl" /> -->
+	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserDAOImpl" /> 
 	<!-- <bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcSystemAccountDAOImpl" /> -->
 	<!-- <bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataDownloadDAOImpl" /> -->
 	<!-- <bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataRegistrationDAOImpl" /> -->
