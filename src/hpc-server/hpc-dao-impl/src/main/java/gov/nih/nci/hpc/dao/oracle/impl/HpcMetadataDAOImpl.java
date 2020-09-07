@@ -195,9 +195,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
-	// TODO: Remove after Oracle migration
-	@Qualifier("hpcOracleJdbcTemplate")
-	// TODO: END
+	@Qualifier("hpcPostgreSQLJdbcTemplate")
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Row mappers.
@@ -456,13 +454,62 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	}
 
 	@Override
+	public List<String> getDataObjectParentPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery,
+			String dataManagementUsername, int offset, int limit, HpcMetadataQueryLevelFilter defaultLevelFilter)
+			throws HpcException {
+
+		List<String> fullPaths = getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, path,
+				toQuery(dataObjectSQL, compoundMetadataQuery, defaultLevelFilter), dataManagementUsername, offset,
+				limit));
+
+		if (CollectionUtils.isEmpty(fullPaths))
+			return new ArrayList<>();
+
+		// Convert the data object paths to collection paths
+		List<String> paths = new ArrayList<>();
+		for (String fullPath : fullPaths) {
+			String colPath = fullPath.substring(0, path.lastIndexOf('/'));
+			if (!paths.contains(colPath)) {
+				paths.add(colPath);
+			}
+		}
+
+		return paths;
+	}
+
+	@Override
+	public List<HpcSearchMetadataEntryForCollection> getDetailedDataObjectParentPaths(String path,
+			HpcCompoundMetadataQuery compoundMetadataQuery, String dataManagementUsername, int offset, int limit,
+			HpcMetadataQueryLevelFilter defaultLevelFilter) throws HpcException {
+
+		List<String> fullPaths = getPaths(prepareQuery(GET_DATA_OBJECT_PATHS_SQL, path,
+				toQuery(dataObjectSQL, compoundMetadataQuery, defaultLevelFilter), dataManagementUsername, offset,
+				limit));
+
+		if (CollectionUtils.isEmpty(fullPaths))
+			return new ArrayList<>();
+
+		// Convert the data object paths to collection paths
+		List<String> paths = new ArrayList<>();
+		for (String fullPath : fullPaths) {
+			String colPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+			if (!paths.contains(colPath)) {
+				paths.add(colPath);
+			}
+		}
+
+		return getDetailedPathsForCollection(
+				prepareQuery(GET_DETAILED_COLLECTION_PATHS_SQL, toQuery(paths), null, null, null));
+	}
+
+	@Override
 	public List<HpcMetadataEntry> getCollectionMetadata(String path, int minLevel) throws HpcException {
 		try {
 			return jdbcTemplate.query(GET_COLLECTION_METADATA_SQL, metadataEntryRowMapper, path, minLevel);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection hierarchical metadata: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -473,7 +520,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get data object hierarchical metadata: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -501,7 +548,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection/data-object Paths: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -528,10 +575,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			}
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		} catch (SQLException e) {
 			throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -543,7 +590,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 					ids.toArray(), browseMetadataRowMapper);
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get browse metadata : " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
-					HpcIntegratedSystem.ORACLE, e);
+					HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -793,7 +840,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection/data-object Paths: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -810,7 +857,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get data-object Detailed Paths: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -828,7 +875,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get collection Detailed Paths: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -845,7 +892,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to count collection/data-object: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 
@@ -894,7 +941,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get metadata attributes: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
-					HpcIntegratedSystem.ORACLE, e);
+					HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
 }
