@@ -5,7 +5,7 @@
 			"subjectFormat": "DME Data Upload received in staging archive",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data upload request is stored in staging archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%2$s/subscribe\">here</a>",
+			"textFormat": "Your data upload request is stored in staging archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -26,7 +26,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your data registration request is completed.<br/>Source path: %1$s<br/>Target path: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%3$s/subscribe\">here</a>",
+			"textFormat": "Your data registration request is completed.<br/>Source path: %1$s<br/>Target path: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "SOURCE_LOCATION",
@@ -51,7 +51,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your data registration failed. <br/>Data path: %1$s <br/>Reason for failure: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%3$s/subscribe\">here</a>",
+			"textFormat": "Your data registration failed. <br/>Data path: %1$s <br/>Reason for failure: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -72,7 +72,7 @@
 			"subjectFormat": "DME Data Registration URL Expired",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data registration URL expired. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%2$s/subscribe\">here</a>",
+			"textFormat": "Your data registration URL expired. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -93,7 +93,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk data registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%3$s/subscribe\">here</a>",
+			"textFormat": "Your bulk data registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
@@ -118,7 +118,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk data registration failed. <br/>Task ID: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%2$s/subscribe\">here</a>",
+			"textFormat": "Your bulk data registration failed. <br/>Task ID: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
@@ -143,7 +143,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%4$s/subscribe\">here</a>",
+			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%4$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -176,7 +176,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%5$s/subscribe\">here</a>",
+			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -226,7 +226,7 @@
 		 <br/>\t > 500MB and < 1GB:  %14$s
 		 <br/>\t > 1GB and < 10GB:  %15$s
 		 <br/>\t > 10GB:  %16$s
-		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%17$s/subscribe\">here</a>",
+		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%17$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
@@ -325,7 +325,7 @@
 		 <br/>\t > 500MB and < 1GB:  %14$s
 		 <br/>\t > 1GB and < 10GB:  %15$s
 		 <br/>\t > 10GB:  %16$s
-		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%19$s/subscribe\">here</a>",
+		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%19$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
@@ -410,7 +410,7 @@
 			"subjectFormat": "DME collection updated",
 			"subjectArguments": [
 			],
-			"textFormat": "Collection %1$s was updated.<br/> %2$s.<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"%3$s/subscribe\">here</a>",
+			"textFormat": "Collection %1$s was updated.<br/> %2$s.<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "COLLECTION_PATH",

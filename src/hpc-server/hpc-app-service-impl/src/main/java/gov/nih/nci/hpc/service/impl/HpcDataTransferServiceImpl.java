@@ -1164,15 +1164,19 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// of all successful download items.
 		int effectiveTransferSpeed = 0;
 		int completedItems = 0;
+		long totalSize = 0;
 		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
 			if (item.getResult() != null && item.getResult().equals(HpcDownloadResult.COMPLETED)
 					&& item.getEffectiveTransferSpeed() != null) {
 				effectiveTransferSpeed += item.getEffectiveTransferSpeed();
 				completedItems++;
-			}
+			} 
+			// Compute the total size of the collection
+			totalSize = totalSize + item.getSize();
 		}
 		taskResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
-
+		taskResult.setSize(totalSize);
+		
 		// Persist to DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 	}

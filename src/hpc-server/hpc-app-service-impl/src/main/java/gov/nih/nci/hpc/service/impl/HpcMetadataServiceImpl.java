@@ -24,6 +24,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_ST
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DME_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
@@ -63,6 +64,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
@@ -77,6 +79,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcSelfMetadataEntries;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 
 /**
@@ -94,6 +97,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
+	//The Data Management Service
+	@Autowired
+	private HpcDataManagementService dataManagementService = null;
 
 	// The Data Management Proxy instance.
 	@Autowired
@@ -197,8 +203,15 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
-		// Generate a collection ID and add it as metadata.
+
+		// Generate a UUID and add it as metadata.
 		metadataEntries.add(generateIdMetadata());
+
+
+		HpcCollection hpcCollection = dataManagementService.getCollection(path, false);
+		int collectionId = hpcCollection.getCollectionId();
+		metadataEntries.add(generateDmeIdMetadata(collectionId));
+
 
 		// Create the Metadata-Updated metadata.
 		metadataEntries.add(generateMetadataUpdatedMetadata());
@@ -233,6 +246,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		Map<String, String> metadataMap = toMap(systemGeneratedMetadataEntries);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = new HpcSystemGeneratedMetadata();
 		systemGeneratedMetadata.setObjectId(metadataMap.get(ID_ATTRIBUTE));
+		systemGeneratedMetadata.setObjectId(metadataMap.get(DME_ID_ATTRIBUTE));
 		systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
 		systemGeneratedMetadata.setRegistrarName(metadataMap.get(REGISTRAR_NAME_ATTRIBUTE));
 		systemGeneratedMetadata.setConfigurationId(metadataMap.get(CONFIGURATION_ID_ATTRIBUTE));
@@ -783,6 +797,18 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	private HpcMetadataEntry generateIdMetadata() {
 		return toMetadataEntry(ID_ATTRIBUTE, keyGenerator.generateKey());
 	}
+
+
+	/**
+	 * Generate the global DME ID metadata.
+	 *
+	 * @return The Generated global DME ID metaData
+	 */
+	private HpcMetadataEntry generateDmeIdMetadata(int collectionId) {
+		return toMetadataEntry(DME_ID_ATTRIBUTE, "NCI-DME-MS01-" + collectionId);
+	}
+
+
 
 	/**
 	 * Generate Metadata Updated Metadata.
