@@ -5,24 +5,28 @@
 			"subjectFormat": "DME Data Upload received in staging archive",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data upload request is stored in staging archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your data upload request is stored in staging archive. <br/>It will post to permanent archive soon. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
 					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "1"
 				}
 			]
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_ARCHIVED",
-			"subjectFormat": "DME Data Transfer Upload Request Completed at %1$s",
+			"subjectFormat": "DME Data Registration Request Completed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your upload request is completed.<br/>Source path: %1$s<br/>Target path: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your data registration request is completed.<br/>Source path: %1$s<br/>Target path: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "SOURCE_LOCATION",
@@ -31,19 +35,23 @@
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
 					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
 				}
 			]
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_FAILED",
-			"subjectFormat": "DME Data Transfer Upload Request Failed at %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"subjectFormat": "DME Data Registration Request Failed at %1$s<br/>",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your data registration failed. <br/>Data path: %1$s <br/>Reason for failure: %2$s",
+			"textFormat": "Your data registration failed. <br/>Data path: %1$s <br/>Reason for failure: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -52,32 +60,40 @@
 				{
 					"payloadEntryAttribute": "ERROR_MESSAGE",
 					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
 				}
 			]
 		},
 		{
 			"eventType": "DATA_TRANSFER_UPLOAD_URL_EXPIRED",
-			"subjectFormat": "DME Data Transfer Upload URL Expired",
+			"subjectFormat": "DME Data Registration URL Expired",
 			"subjectArguments": [
 			],
-			"textFormat": "Your data upload URL expired. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your data registration URL expired. <br/>Data path: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
 					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "1"
 				}
 			]
 		},
 		{
 			"eventType": "BULK_DATA_OBJECT_REGISTRATION_COMPLETED",
-			"subjectFormat": "DME Bulk Data Object Registration Request Completed at %1$s",
+			"subjectFormat": "DME Bulk Data Registration Request Completed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your bulk data registration request is completed.<br/>Task ID: %1$s <br/>Registration Items: %2$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
@@ -86,23 +102,31 @@
 				{
 					"payloadEntryAttribute": "REGISTRATION_ITEMS",
 					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
 				}
 			]
 		},
 		{
 			"eventType": "BULK_DATA_OBJECT_REGISTRATION_FAILED",
-			"subjectFormat": "DME Bulk Data Object Registration Request Failed at %1$s",
+			"subjectFormat": "DME Bulk Data Registration Request Failed at %1$s",
 			"subjectArguments": [
 				{
 					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
 					"index": "0"
 				}
 			],
-			"textFormat": "Your bulk registration failed. <br/>Task ID: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your bulk data registration failed. <br/>Task ID: %1$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%2$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
 					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "1"
 				}
 			]
 		},
@@ -119,7 +143,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your download request is completed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%4$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -132,6 +156,10 @@
 				{
 					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
 					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "3"
 				}
 			]
 		},
@@ -148,7 +176,7 @@
 					"index": "1"
 				}
 			],
-			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Your download request failed.<br/>Source path: %1$s<br/>Target path: %2$s <br/>Task ID: %3$s<br/>Reason for failure: %4$s<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%5$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
@@ -165,6 +193,10 @@
 				{
 					"payloadEntryAttribute": "ERROR_MESSAGE",
 					"index": "3"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "4"
 				}
 			]
 		},
@@ -194,7 +226,7 @@
 		 <br/>\t > 500MB and < 1GB:  %14$s
 		 <br/>\t > 1GB and < 10GB:  %15$s
 		 <br/>\t > 10GB:  %16$s
-		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%17$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
@@ -259,6 +291,10 @@
 				{
 					"payloadEntryAttribute": "FILE_SIZE_OVER_10_GB",
 					"index": "15"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "16"
 				}
 			]
 		},
@@ -289,7 +325,7 @@
 		 <br/>\t > 500MB and < 1GB:  %14$s
 		 <br/>\t > 1GB and < 10GB:  %15$s
 		 <br/>\t > 10GB:  %16$s
-		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+		 <br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%19$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "REPORT_GENERATED_ON",
@@ -362,6 +398,10 @@
 				{
 					"payloadEntryAttribute": "TO_DATE",
 					"index": "17"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "18"
 				}
 			]
 		},
@@ -370,7 +410,7 @@
 			"subjectFormat": "DME collection updated",
 			"subjectArguments": [
 			],
-			"textFormat": "Collection %1$s was updated.<br/> %2$s.<br/><br/>You are receiving this email because you subscribed to this notification from DME. To unsubscribe click <a href=\"https://hpcdmeweb.nci.nih.gov/subscribe\">here</a>",
+			"textFormat": "Collection %1$s was updated.<br/> %2$s.<br/><br/>You are receiving this email because you subscribed to this notification from DME. <br/><a href=\"%3$s/subscribe\">Unsubscribe</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "COLLECTION_PATH",
@@ -379,6 +419,10 @@
 				{
 					"payloadEntryAttribute": "UPDATE_DESCRIPTION",
 					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
 				}
 			]
 		},
@@ -388,15 +432,19 @@
 			"subjectArguments": [
 			],
 			"textFormat": "Hello %1$s %2$s,<br/><br/>
-			A user account has been created for you in the Data Management Environment (DME) and data has been made available to you. You can now access and download this data through the <a href=\"https://hpcdmeweb.nci.nih.gov/browse\">DME GUI</a>. For downloading instructions, refer to <a href=\"https://wiki.nci.nih.gov/x/_QuKFg\">Downloading Data via the GUI</a><br/><br/>You can also search, share, and upload data as described in the <a href=\"https://wiki.nci.nih.gov/x/xKE7Fg\">DME User Guide</a>.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
+			A user account has been created for you in the Data Management Environment (DME) and data has been made available to you. You can now access and download this data through the <a href=\"%3$s/browse\">DME GUI</a>. For downloading instructions, refer to <a href=\"https://wiki.nci.nih.gov/x/_QuKFg\">Downloading Data via the GUI</a><br/><br/>You can also search, share, and upload data as described in the <a href=\"https://wiki.nci.nih.gov/x/xKE7Fg\">DME User Guide</a>.<br/><br/>For questions, contact NCIDataVault@mail.nih.gov.<br/><br/>",
 			"textArguments": [
-			{
+				{
 					"payloadEntryAttribute": "FIRST_NAME",
 					"index": "0"
 				},
 				{
 					"payloadEntryAttribute": "LAST_NAME",
 					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
 				}
 			]
 		},

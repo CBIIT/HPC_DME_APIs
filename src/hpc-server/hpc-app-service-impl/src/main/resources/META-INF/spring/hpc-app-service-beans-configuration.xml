@@ -64,6 +64,7 @@
 	</bean>
 	<bean id="hpcNotificationFormatter" class="gov.nih.nci.hpc.service.impl.HpcNotificationFormatter" >
 		<constructor-arg value="${hpc.service.notification.formatsPath}" />
+		<constructor-arg value="${hpc.service.dataManagement.defaultBaseUiURL}" />
 	</bean>
 	<bean id="hpcMimeMessagePreparator" class="gov.nih.nci.hpc.service.impl.HpcMimeMessagePreparator" />
 	<bean id="hpcEmailNotificationSender" class="gov.nih.nci.hpc.service.impl.HpcEmailNotificationSenderImpl" />

@@ -49,6 +49,7 @@ public class HpcNotificationFormatter {
   private Map<HpcSystemAdminNotificationType, HpcNotificationFormat>
       systemAdminNotificationFormats = new HashMap<>();
 
+  private String defaultBaseUiURL = null;
   //---------------------------------------------------------------------//
   // Constructors
   //---------------------------------------------------------------------//
@@ -69,8 +70,9 @@ public class HpcNotificationFormatter {
    * @param notificationFormatPath The path to the notification formats JSON file.
    * @throws HpcException on spring configuration error.
    */
-  public HpcNotificationFormatter(String notificationFormatPath) throws HpcException {
+  public HpcNotificationFormatter(String notificationFormatPath, String defaultBaseUiURL) throws HpcException {
     initNotificationFormats(notificationFormatPath);
+    this.defaultBaseUiURL = defaultBaseUiURL;
   }
 
   //---------------------------------------------------------------------//
@@ -93,6 +95,12 @@ public class HpcNotificationFormatter {
       throw new HpcException(
           "Notification format not found for: " + eventType, HpcErrorType.UNEXPECTED_ERROR);
     }
+    
+    //Add environment specific URL
+    HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
+    payloadEntry.setAttribute("BASE_UI_URL");
+    payloadEntry.setValue(defaultBaseUiURL);
+    payloadEntries.add(payloadEntry);
 
     return format(format.getTextFormat(), format.getTextArguments(), payloadEntries);
   }
