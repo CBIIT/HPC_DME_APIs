@@ -59,41 +59,38 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	public static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "insert into public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" ( "
-			+ "\"ID\", \"USER_ID\", \"UI_URL\", \"STATUS\", \"ITEMS\", \"CREATED\") " + "values (?, ?, ?, ?, ?, ?) "
-			+ "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
-			+ "\"STATUS\"=excluded.\"STATUS\", " + "\"UI_URL\"=excluded.\"UI_URL\", " + "\"ITEMS\"=excluded.\"ITEMS\", "
-			+ "\"CREATED\"=excluded.\"CREATED\"";
+	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_TASK using dual on (ID = ?) "
+			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, ITEMS = ? CREATED = ? "
+			+ "when not matched then insert (ID, USER_ID, UI_URL, STATUS, ITEMS, CREATED) "
+			+ "values (?, ?, ?, ?, ?, ?)";
 
-	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "select * from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" where \"ID\" = ?";
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK where ID = ?";
 
-	public static final String DELETE_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "delete from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" where \"ID\" = ?";
+	private static final String DELETE_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "delete from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK where ID = ?";
 
-	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL = "select * from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" where \"STATUS\" = ? "
-			+ "order by \"CREATED\"";
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK where STATUS = ? "
+			+ "order by CREATED";
 
-	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_FOR_USER_SQL = "select * from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_TASK\" where \"USER_ID\" = ? "
-			+ "order by \"CREATED\"";
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_FOR_USER_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK where USER_ID = ? "
+			+ "order by CREATED";
 
-	public static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "insert into public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" ( "
-			+ "\"ID\", \"USER_ID\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", \"ITEMS\", \"CREATED\", \"COMPLETED\") "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?) "
-			+ "on conflict(\"ID\") do update set \"USER_ID\"=excluded.\"USER_ID\", "
-			+ "\"RESULT\"=excluded.\"RESULT\", " + "\"MESSAGE\"=excluded.\"MESSAGE\", "
-			+ "\"EFFECTIVE_TRANSFER_SPEED\"=excluded.\"EFFECTIVE_TRANSFER_SPEED\", " + "\"ITEMS\"=excluded.\"ITEMS\", "
-			+ "\"CREATED\"=excluded.\"CREATED\", " + "\"COMPLETED\"=excluded.\"COMPLETED\"";
+	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT using dual on (ID = ?) "
+			+ "when matched then update set USER_ID = ?, RESULT = ?, MESSAGE = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
+			+ "ITEMS = ?, CREATED = ?, COMPLETED = ? "
+			+ "when not matched then insert (ID, USER_ID, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, ITEMS, "
+			+ "CREATED, COMPLETED) values (?, ?, ?, ?, ?, ?, ?, ?) ";
 
-	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "select * from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" where \"ID\" = ?";
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT where ID = ?";
 
-	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL = "select * from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" where \"USER_ID\" = ? "
-			+ "order by \"CREATED\" desc limit ? offset ?";
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT where USER_ID = ? "
+			+ "order by CREATED desc limit ? offset ?";
 
-	public static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_SQL = "select count(*) from public.\"HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT\" where \"USER_ID\" = ?";
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_SQL = "select count(*) from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT where USER_ID = ?";
 
-	public static final String INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL = "insert into public.\"HPC_DATA_OBJECT_REGISTRATION_RESULT\" ("
-			+ "\"ID\", \"PATH\", \"USER_ID\", \"UPLOAD_METHOD\", \"RESULT\", \"MESSAGE\", \"EFFECTIVE_TRANSFER_SPEED\", "
-			+ "\"DATA_TRANSFER_REQUEST_ID\", \"SOURCE_LOCATION_FILE_ID\", \"SOURCE_LOCATION_FILE_CONTAINER_ID\", "
-			+ "\"SOURCE_LOCATION_FILE_CONTAINER_NAME\", \"CREATED\", \"COMPLETED\") "
+	private static final String INSERT_DATA_OBJECT_REGISTRATION_RESULT_SQL = "insert into HPC_DATA_OBJECT_REGISTRATION_RESULT ("
+			+ "ID, PATH, USER_ID, UPLOAD_METHOD, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, "
+			+ "DATA_TRANSFER_REQUEST_ID, SOURCE_LOCATION_FILE_ID, SOURCE_LOCATION_FILE_CONTAINER_ID, "
+			+ "SOURCE_LOCATION_FILE_CONTAINER_NAME, CREATED, COMPLETED) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	// ---------------------------------------------------------------------//
@@ -173,10 +170,14 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 				dataObjectListRegistrationTask.setId(UUID.randomUUID().toString());
 			}
 
+			String items = toJSON(dataObjectListRegistrationTask.getItems());
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL, dataObjectListRegistrationTask.getId(),
 					dataObjectListRegistrationTask.getUserId(), dataObjectListRegistrationTask.getUiURL(),
-					dataObjectListRegistrationTask.getStatus().value(),
-					toJSON(dataObjectListRegistrationTask.getItems()), dataObjectListRegistrationTask.getCreated());
+					dataObjectListRegistrationTask.getStatus().value(), items,
+					dataObjectListRegistrationTask.getCreated(), dataObjectListRegistrationTask.getId(),
+					dataObjectListRegistrationTask.getUserId(), dataObjectListRegistrationTask.getUiURL(),
+					dataObjectListRegistrationTask.getStatus().value(), items,
+					dataObjectListRegistrationTask.getCreated());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a bulk data object registration request: " + e.getMessage(),
@@ -227,10 +228,14 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 	public void upsertBulkDataObjectRegistrationResult(HpcBulkDataObjectRegistrationResult registrationResult)
 			throws HpcException {
 		try {
+			String items = toJSON(registrationResult.getItems());
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
 					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
-					registrationResult.getEffectiveTransferSpeed(), toJSON(registrationResult.getItems()),
-					registrationResult.getCreated(), registrationResult.getCompleted());
+					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
+					registrationResult.getCompleted(), registrationResult.getId(), registrationResult.getUserId(),
+					registrationResult.getResult(), registrationResult.getMessage(),
+					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
+					registrationResult.getCompleted());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a bulk data object registration result: " + e.getMessage(),
