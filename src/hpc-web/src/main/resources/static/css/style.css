@@ -5123,3 +5123,12 @@ span.customSelect.changed {
 .picker-dialog {
     z-index: 20001 !important;
 }
+
+button.copy-btn {
+	border: none;
+    background-color: #fff;
+}
+
+button.copy-btn > img {
+	filter: invert(40%) sepia(97%) saturate(5634%) hue-rotate(202deg) brightness(109%) contrast(104%);
+}
