@@ -54,7 +54,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 
 	private static final String GET_USER_SQL = "select * from HPC_USER where USER_ID = ?";
 
-	private static final String GET_USERS_SQL = "select * from HPC_USER where 1 = ?";
+	private static final String GET_USERS_SQL = "select * from HPC_USER where '1' = ?";
 
 	private static final String GET_USERS_SQL_BY_ROLE = "SELECT USER_ID, FIRST_NAME, LAST_NAME, DOC, DEFAULT_CONFIGURATION_ID, "
 			+ "ACTIVE, CREATED, LAST_UPDATED, ACTIVE_UPDATED_BY " + "FROM HPC_USER u, r_user_main r where "
@@ -76,7 +76,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 
 	private static final String GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER = " and lower(DEFAULT_CONFIGURATION_ID) = lower(?) ";
 
-	private static final String GET_USERS_ACTIVE_FILTER = " and ACTIVE = 'Y' ";
+	private static final String GET_USERS_ACTIVE_FILTER = " and ACTIVE = '1' ";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
