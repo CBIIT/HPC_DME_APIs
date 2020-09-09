@@ -67,7 +67,7 @@
 	<!--  <bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" /> -->
 	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" />
 	<bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataDownloadDAOImpl" />
-	<bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataRegistrationDAOImpl" />
+	<!-- <bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataRegistrationDAOImpl" />  -->
 	<bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementAuditDAOImpl" />
 	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" />
 	<bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEventDAOImpl" />
@@ -87,7 +87,7 @@
 	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserDAOImpl" /> 
 	<!-- <bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcSystemAccountDAOImpl" /> -->
 	<!-- <bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataDownloadDAOImpl" /> -->
-	<!-- <bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataRegistrationDAOImpl" /> -->
+	<bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataRegistrationDAOImpl" />
 	<!-- <bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementAuditDAOImpl" /> -->
 	<!-- <bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcNotificationDAOImpl" /> -->
 	<!-- <bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcEventDAOImpl" /> -->
