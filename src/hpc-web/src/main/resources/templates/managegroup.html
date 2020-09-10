@@ -121,15 +121,8 @@
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading">
-								<div class="col-md-3">
-								<h2 align="left">
-									<i class="fa fa-list-alt red"></i><strong>Search Existing Group</strong>
-								</h2>
-								</div>
-								<div class="col-md-3 col-md-offset-6">
-								<h2>
-									<strong> <a  id="creategrouplink" class="btn btn-link btn-sm" th:href="@{/creategroup}">Create New Group &nbsp;<i class="fa fa-group" aria-hidden="true"></i></a></strong>
-								</h2>
+								<div class="pull-right">
+									<a id="creategrouplink" class="btn btn-link btn-sm" th:href="@{/creategroup}"><i class="fa fa-group" aria-hidden="true"></i>&nbsp;Create Group</a>
 								</div>
 							</div>
 							<div th:if="${error != null}">
@@ -163,6 +156,9 @@
 												th:object="${hpcWebGroup}" th:action="@{/group}"
 												method="POST">
 												<div class="panel panel-default">
+													<div class="panel-heading">
+														<h2>Search Group</h2>
+													</div>
 													<div class="panel-body">
 														<table>
 															<tr>
