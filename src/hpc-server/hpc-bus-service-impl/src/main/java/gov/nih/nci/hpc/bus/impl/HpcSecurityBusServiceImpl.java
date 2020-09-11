@@ -956,9 +956,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    *
    * @param nciUserId The NCI user ID.
    * @param firstName The user's first name.
-   * @param firstName The user's last name.
-   * @param firstName The user's DOC.
-   * @param firstName The user's role.
+   * @param lastName The user's last name.
    */
   private void sendUserRegisteredNotification(String nciUserId, String firstName, String lastName) {
     List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();
