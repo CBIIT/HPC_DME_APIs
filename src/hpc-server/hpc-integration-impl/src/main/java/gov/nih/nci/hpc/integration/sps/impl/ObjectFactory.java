@@ -78,6 +78,7 @@ public class ObjectFactory {
     
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Attribute }{@code >}}
+     * @param value the value
      * @return JAXBElement of type Attribute
      */
     @XmlElementDecl(namespace = "http://www.ca.com/siteminder/authaz/2010/04/15/authaz.xsd", name = "attribute")
@@ -87,6 +88,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizationResult }{@code >}}
+     * @param value the value
      * @return JAXBElement of type AuthorizationResult
      */
     @XmlElementDecl(namespace = "http://www.ca.com/siteminder/authaz/2010/04/15/authaz.xsd", name = "authorizationResult")
@@ -96,6 +98,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Authorize }{@code >}}
+     * @param value the value
      * @return JAXBElement of type Authorize
      */
     @XmlElementDecl(namespace = "http://www.ca.com/siteminder/authaz/2010/04/15/authaz.xsd", name = "authorize")
@@ -105,6 +108,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizeResponse }{@code >}}
+     * @param value the value
      * @return JAXBElement of type AuthorizeResponse
      */
     @XmlElementDecl(namespace = "http://www.ca.com/siteminder/authaz/2010/04/15/authaz.xsd", name = "authorizeResponse")
