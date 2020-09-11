@@ -180,9 +180,10 @@ public interface HpcDataManagementBusService {
 	 * @param page       The requested results page.
 	 * @param totalCount If set to true, return the total count of completed tasks.
 	 *                   All active tasks are always returned.
+	 * @param allUsers   group admin or system administrators requesting for all users
 	 * @return A summary of download tasks for the request invoker
 	 */
-	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount) throws HpcException;
+	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers) throws HpcException;
 
 	/**
 	 * Set collection permissions.
@@ -320,9 +321,10 @@ public interface HpcDataManagementBusService {
 	 * @param page       The requested results page.
 	 * @param totalCount If set to true, return the total count of completed tasks.
 	 *                   All active tasks are always returned.
+	 * @param allUsers   group admin or system administrators requesting for all users
 	 * @return A summary of registration tasks for the request invoker
 	 */
-	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount) throws HpcException;
+	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount, boolean allUsers) throws HpcException;
 
 	/**
 	 * Get Data Object.

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 public class HpcTask {
 	@JsonView(Views.Public.class)
+    protected String userId;
+	@JsonView(Views.Public.class)
     protected String taskId;
 	@JsonView(Views.Public.class)
     protected String path;
@@ -19,6 +21,12 @@ public class HpcTask {
     protected String status;
 
 	
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 	public String getStatus() {
 		return status;
 	}

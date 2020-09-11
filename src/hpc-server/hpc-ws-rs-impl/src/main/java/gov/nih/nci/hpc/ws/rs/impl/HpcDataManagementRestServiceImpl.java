@@ -460,7 +460,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO registrationSummary = null;
 		try {
 			registrationSummary = dataManagementBusService.getRegistrationSummary(page != null ? page : 1,
-					totalCount != null ? totalCount : false);
+					totalCount != null ? totalCount : false, false);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -473,6 +473,24 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 				true);
 	}
 
+	@Override
+	public Response getAllRegistrationSummary(Integer page, Boolean totalCount) {
+	    gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO registrationSummary = null;
+	    try {
+	        registrationSummary = dataManagementBusService.getRegistrationSummary(page != null ? page : 1,
+	                totalCount != null ? totalCount : false, true);
+
+	    } catch (HpcException e) {
+	            return errorResponse(e);
+	    }
+
+	    return okResponse(
+	            registrationSummary.getActiveTasks().isEmpty() && registrationSummary.getCompletedTasks().isEmpty()
+	                    ? null
+	                    : registrationSummary,
+	            true);
+	}
+	   
 	@Deprecated
 	@Override
 	public Response getDataObjectV1(String path, Boolean includeAcl) {
@@ -688,7 +706,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		HpcDownloadSummaryDTO downloadSummary = null;
 		try {
 			downloadSummary = dataManagementBusService.getDownloadSummary(page != null ? page : 1,
-					totalCount != null ? totalCount : false);
+					totalCount != null ? totalCount : false, false);
 
 		} catch (HpcException e) {
 			return errorResponse(e);
@@ -699,6 +717,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 						: downloadSummary,
 				true);
 	}
+	
+	@Override
+    public Response getAllDownloadSummary(Integer page, Boolean totalCount) {
+        HpcDownloadSummaryDTO downloadSummary = null;
+        try {
+            downloadSummary = dataManagementBusService.getDownloadSummary(page != null ? page : 1,
+                    totalCount != null ? totalCount : false, true);
+
+        } catch (HpcException e) {
+            return errorResponse(e);
+        }
+
+        return okResponse(
+                downloadSummary.getActiveTasks().isEmpty() && downloadSummary.getCompletedTasks().isEmpty() ? null
+                        : downloadSummary,
+                true);
+    }
 
 	@Override
 	public Response getDataManagementModels() {

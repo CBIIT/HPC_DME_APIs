@@ -124,4 +124,66 @@ public interface HpcDataRegistrationDAO {
    */
   public void insertDataObjectRegistrationResult(
       HpcDataObjectRegistrationResult registrationResult) throws HpcException;
+
+  /**
+   * Get bulk data object Registration tasks for a doc.
+   *
+   * @param doc The doc to query for.
+   * @return A list of active bulk data object registration tasks.
+   * @throws HpcException on database error.
+   */
+  public List<HpcBulkDataObjectRegistrationTask> getBulkDataObjectRegistrationTasksForDoc(String doc)
+      throws HpcException;
+
+  /**
+   * Get all bulk data object Registration tasks.
+   *
+   * @return A list of active bulk data object registration tasks.
+   * @throws HpcException on database error.
+   */
+  public List<HpcBulkDataObjectRegistrationTask> getAllBulkDataObjectRegistrationTasks()
+      throws HpcException;
+
+  /**
+   * Get a bulk data object registration results for a doc.
+   *
+   * @param doc The doc to query for.
+   * @param offset Skip that many download-results in the returned results.
+   * @param limit No more than 'limit' download-results will be returned.
+   * 
+   * @return A list of completed bulk data object registration tasks.
+   * @throws HpcException on database error.
+   */
+  public List<HpcBulkDataObjectRegistrationResult> getBulkDataObjectRegistrationResultsForDoc(
+      String doc, int offset, int limit) throws HpcException;
+
+  /**
+   * Get all bulk data object registration results.
+   *
+   * @param offset Skip that many download-results in the returned results.
+   * @param limit No more than 'limit' download-results will be returned.
+   * 
+   * @return A list of completed bulk data object registration tasks.
+   * @throws HpcException on database error.
+   */
+  public List<HpcBulkDataObjectRegistrationResult> getAllBulkDataObjectRegistrationResults(
+      int offset, int limit) throws HpcException;
+
+  /**
+   * Get bulk data object registration results count for a doc.
+   *
+   * @param doc The doc to query for.
+   * @return A total count of completed registration tasks.
+   * @throws HpcException on database error.
+   */
+  public int getBulkDataObjectRegistrationResultsCountForDoc(String doc) throws HpcException;
+
+  /**
+   * Get all bulk data object registration results count.
+   *
+   * @return A total count of completed registration tasks.
+   * @throws HpcException on database error.
+   */
+  public int getAllBulkDataObjectRegistrationResultsCount() throws HpcException;
+
 }

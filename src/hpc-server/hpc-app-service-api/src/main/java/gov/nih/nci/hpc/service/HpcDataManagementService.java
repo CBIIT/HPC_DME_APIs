@@ -392,10 +392,11 @@ public interface HpcDataManagementService {
    * Get active registration tasks for a user.
    *
    * @param userId The user ID to query for.
+   * @param doc  doc of group admin or all for system administrators
    * @return A list of active registration requests.
    * @throws HpcException on service failure.
    */
-  public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId)
+  public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId, String doc)
       throws HpcException;
 
   /**
@@ -403,20 +404,22 @@ public interface HpcDataManagementService {
    *
    * @param userId The user ID to query for.
    * @param page The requested results page.
+   * @param doc  doc of group admin or all for system administrators
    * @return A list of completed download requests.
    * @throws HpcException on service failure.
    */
-  public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page)
+  public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc)
       throws HpcException;
 
   /**
    * Get registration results (all completed download requests) count for a user.
    *
    * @param userId The user ID to query for.
+   * @param doc  doc of group admin or all for system administrators
    * @return A total count of completed registration requests.
    * @throws HpcException on service failure.
    */
-  public int getRegistrationResultsCount(String userId) throws HpcException;
+  public int getRegistrationResultsCount(String userId, String doc) throws HpcException;
 
   /**
    * Get the registration results page size.

@@ -62,6 +62,7 @@ public interface HpcDataDownloadDAO {
 	 *
 	 * @param id      The data object download task ID to update.
 	 * @param filters list of query filters (combined w/ 'or').
+	 * @param toStatus status to update to.
 	 * @return true if the status was updated.
 	 * @throws HpcException on database error.
 	 */
@@ -246,4 +247,76 @@ public interface HpcDataDownloadDAO {
 	 * @throws HpcException on database error.
 	 */
 	public int getDownloadResultsCount(String userId) throws HpcException;
+
+    /**
+     * Get data object download requests for a doc.
+     *
+     * @param doc The user ID to query for.
+     * @return A list of active data object download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getDataObjectDownloadRequestsForDoc(String doc) throws HpcException;
+
+    /**
+     * Get all data object download requests.
+     *
+     * @return A list of active data object download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getAllDataObjectDownloadRequests() throws HpcException;
+	
+    /**
+     * Get collection download requests for a doc.
+     *
+     * @param doc The doc to query for.
+     * @return A list of active collection download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getCollectionDownloadRequestsForDoc(String doc) throws HpcException;
+
+    /**
+     * Get all collection download requests.
+     *
+     * @return A list of active collection download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getAllCollectionDownloadRequests() throws HpcException;
+
+    /**
+     * Get download results for a doc.
+     *
+     * @param doc The doc to query for.
+     * @param offset Skip that many download-results in the returned results.
+     * @param limit  No more than 'limit' download-results will be returned.
+     * @return A list of completed download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getDownloadResultsForDoc(String doc, int offset, int limit) throws HpcException;
+
+    /**
+     * Get all download results.
+     *
+     * @param offset Skip that many download-results in the returned results.
+     * @param limit  No more than 'limit' download-results will be returned.
+     * @return A list of completed download requests.
+     * @throws HpcException on database error.
+     */
+    public List<HpcUserDownloadRequest> getAllDownloadResults(int offset, int limit) throws HpcException;
+
+	/**
+     * Get download results count for a doc.
+     *
+     * @param doc The doc to query for.
+     * @return A total count of completed download requests.
+     * @throws HpcException on database error.
+     */
+    public int getDownloadResultsCountForDoc(String doc) throws HpcException;
+    
+    /**
+     * Get all download results count.
+     *
+     * @return A total count of completed download requests.
+     * @throws HpcException on database error.
+     */
+    public int getAllDownloadResultsCount() throws HpcException;
 }
