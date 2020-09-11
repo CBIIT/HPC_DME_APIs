@@ -1328,7 +1328,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                        destination.
 	 * @param s3DownloadDestination           The user requested S3 download
 	 *                                        destination.
-	 * @param appendPathToDownloadDestination If true, the (full) object path will
+	 * @param googleDriveDownloadDestination  The user requested Google Drive
+     *                                        download destination.
+     * @param appendPathToDownloadDestination If true, the (full) object path will
 	 *                                        be used in the destination path,
 	 *                                        otherwise just the object name will be
 	 *                                        used.
