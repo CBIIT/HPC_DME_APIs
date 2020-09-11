@@ -1182,20 +1182,45 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public List<HpcUserDownloadRequest> getDownloadRequests(String userId) throws HpcException {
-		List<HpcUserDownloadRequest> downloadRequests = dataDownloadDAO.getDataObjectDownloadRequests(userId);
-		downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequests(userId));
+	public List<HpcUserDownloadRequest> getDownloadRequests(String userId, String doc) throws HpcException {
+		List<HpcUserDownloadRequest> downloadRequests = null;
+		if (doc == null) {
+		    downloadRequests = dataDownloadDAO.getDataObjectDownloadRequests(userId);
+		    downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequests(userId));
+		} else if (doc.equals("ALL")) {
+		    downloadRequests = dataDownloadDAO.getAllDataObjectDownloadRequests();
+		    downloadRequests.addAll(dataDownloadDAO.getAllCollectionDownloadRequests());
+		} else {
+		    downloadRequests = dataDownloadDAO.getDataObjectDownloadRequestsForDoc(doc);
+		    downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequestsForDoc(doc));
+		}
 		return downloadRequests;
 	}
 
 	@Override
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page) throws HpcException {
-		return dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page), pagination.getPageSize());
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc) throws HpcException {
+	    List<HpcUserDownloadRequest> downloadResults = null;
+	    if (doc == null) {
+	        downloadResults = dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page), pagination.getPageSize());
+	    } else if (doc.equals("ALL")) {
+	        downloadResults = dataDownloadDAO.getAllDownloadResults(pagination.getOffset(page), pagination.getPageSize());
+        } else {
+            downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, pagination.getOffset(page), pagination.getPageSize());
+        }
+		return downloadResults;
 	}
 
 	@Override
-	public int getDownloadResultsCount(String userId) throws HpcException {
-		return dataDownloadDAO.getDownloadResultsCount(userId);
+	public int getDownloadResultsCount(String userId, String doc) throws HpcException {
+	    int count = 0;
+  	    if (doc == null) {
+  	        count = dataDownloadDAO.getDownloadResultsCount(userId);
+        } else if (doc.equals("ALL")) {
+            count = dataDownloadDAO.getAllDownloadResultsCount();
+        } else {
+            count = dataDownloadDAO.getDownloadResultsCountForDoc(doc);
+        }
+		return count;
 	}
 
 	@Override
