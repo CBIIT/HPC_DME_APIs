@@ -784,20 +784,46 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId) throws HpcException {
-		return dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
+	public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId, String doc) throws HpcException {
+  	    List<HpcBulkDataObjectRegistrationTask> registrationTasks = null;
+        if (doc == null) {
+            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
+        } else if (doc.equals("ALL")) {
+            registrationTasks = dataRegistrationDAO.getAllBulkDataObjectRegistrationTasks();
+        } else {
+            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasksForDoc(doc);
+        }
+        return registrationTasks;
 	}
 
 	@Override
-	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page)
+	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc)
 			throws HpcException {
-		return dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId, pagination.getOffset(page),
-				pagination.getPageSize());
+  	    List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
+        if (doc == null) {
+            registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId, pagination.getOffset(page),
+                pagination.getPageSize());
+        } else if (doc.equals("ALL")) {
+            registrationResults = dataRegistrationDAO.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page),
+                pagination.getPageSize());
+        } else {
+            registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResultsForDoc(doc, pagination.getOffset(page),
+                pagination.getPageSize());
+        }
+		return registrationResults;
 	}
 
 	@Override
-	public int getRegistrationResultsCount(String userId) throws HpcException {
-		return dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
+	public int getRegistrationResultsCount(String userId, String doc) throws HpcException {
+  	  int count = 0;
+        if (doc == null) {
+            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
+        } else if (doc.equals("ALL")) {
+            count = dataRegistrationDAO.getAllBulkDataObjectRegistrationResultsCount();
+        } else {
+            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCountForDoc(doc);
+        }
+        return count;
 	}
 
 	@Override

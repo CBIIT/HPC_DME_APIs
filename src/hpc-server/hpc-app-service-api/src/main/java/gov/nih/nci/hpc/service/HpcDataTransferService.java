@@ -599,29 +599,32 @@ public interface HpcDataTransferService {
 	 * Get active download requests for a user.
 	 *
 	 * @param userId The user ID to query for.
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A list of active download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadRequests(String userId) throws HpcException;
+	public List<HpcUserDownloadRequest> getDownloadRequests(String userId, String doc) throws HpcException;
 
 	/**
 	 * Get download results (all completed download requests) for a user.
 	 *
 	 * @param userId The user ID to query for.
 	 * @param page   The requested results page.
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page) throws HpcException;
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc) throws HpcException;
 
 	/**
 	 * Get download results (all completed download requests) count for a user.
 	 *
 	 * @param userId The user ID to query for.
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A total count of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public int getDownloadResultsCount(String userId) throws HpcException;
+	public int getDownloadResultsCount(String userId, String doc) throws HpcException;
 
 	/**
 	 * Get the download results page size.

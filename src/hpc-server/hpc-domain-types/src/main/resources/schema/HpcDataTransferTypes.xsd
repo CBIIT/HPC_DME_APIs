@@ -473,6 +473,7 @@
 
 	<xsd:complexType name="HpcUserDownloadRequest">
 		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" minOccurs="0" />
 			<xsd:element name="taskId" type="xsd:string" />
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="type"
