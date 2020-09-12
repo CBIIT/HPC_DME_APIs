@@ -105,13 +105,19 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Set a data object download task in-process value.
 	 *
-	 * @param id         The data object download task ID.
-	 * @param inProcess  The value to set.
+	 * @param id        The data object download task ID.
+	 * @param inProcess The value to set.
 	 * @throws HpcException on database error.
 	 */
-	public void setDataObjectDownloadTaskInProcess(String id, boolean inProcess)
-			throws HpcException;
-	
+	public void setDataObjectDownloadTaskInProcess(String id, boolean inProcess) throws HpcException;
+
+	/**
+	 * Reset all data object download tasks in-process value to false.
+	 *
+	 * @throws HpcException on database error.
+	 */
+	public void resetDataObjectDownloadTaskInProcess() throws HpcException;
+
 	/**
 	 * Set a data object download task processed value.
 	 *

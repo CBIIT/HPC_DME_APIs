@@ -955,9 +955,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public void resetDataObjectDownloadTasksInProcess() throws HpcException {
+		dataDownloadDAO.resetDataObjectDownloadTaskInProcess();
+	}
+
+	@Override
 	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
 			throws HpcException {
-		// Only set in-process to true if this task in a RECEIVED status, and the in-process not already true.
+		// Only set in-process to true if this task in a RECEIVED status, and the
+		// in-process not already true.
 		if (!inProcess || (inProcess && !downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
 			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess);
