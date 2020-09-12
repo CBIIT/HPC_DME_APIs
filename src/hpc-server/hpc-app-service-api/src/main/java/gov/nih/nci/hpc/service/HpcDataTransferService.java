@@ -414,9 +414,11 @@ public interface HpcDataTransferService {
 	 * stamp.
 	 *
 	 * @param downloadTask The download task to mark processed.
+	 * @param inProcess Indicator whether the task is being actively processed.
 	 * @throws HpcException on service failure.
 	 */
-	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			boolean inProcess) throws HpcException;
 
 	/**
 	 * Update a data object download task. % Complete is calculated and any change
