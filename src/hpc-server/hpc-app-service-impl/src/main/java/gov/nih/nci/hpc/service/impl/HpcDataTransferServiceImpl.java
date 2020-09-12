@@ -1172,7 +1172,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				completedItems++;
 			} 
 			// Compute the total size of the collection
-			totalSize = totalSize + item.getSize();
+			totalSize = totalSize + Optional.ofNullable(item.getSize()).orElse(0L);
 		}
 		taskResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
 		taskResult.setSize(totalSize);
