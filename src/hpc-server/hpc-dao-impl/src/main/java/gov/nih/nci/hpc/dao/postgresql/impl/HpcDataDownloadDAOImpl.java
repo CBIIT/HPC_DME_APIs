@@ -101,7 +101,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER = " or (\"DATA_TRANSFER_STATUS\" = ? and \"DESTINATION_TYPE\" = ?)";
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" set \"IN_PROCESS\" = ? where \"ID\" = ?";
-	
+
+	private static final String RESET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" set \"IN_PROCESS\" = true where \"IN_PROCESS\" = false";
+
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_PROCESSED_SQL = "update public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" set \"PROCESSED\" = ? where \"ID\" = ?";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_SQL = "select * from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where \"ID\" = ?";
@@ -633,27 +635,34 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
-	public void setDataObjectDownloadTaskInProcess(String id, boolean inProcess)
-			throws HpcException {
+	public void setDataObjectDownloadTaskInProcess(String id, boolean inProcess) throws HpcException {
 		try {
 			jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL, inProcess, id);
 
 		} catch (DataAccessException e) {
-			throw new HpcException(
-					"Failed to set a data object download task w/ in-process value: " + e.getMessage(),
+			throw new HpcException("Failed to set a data object download task w/ in-process value: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
-	
+
 	@Override
-	public void setDataObjectDownloadTaskProcessed(String id, Calendar processed)
-			throws HpcException {
+	public void resetDataObjectDownloadTaskInProcess() throws HpcException {
+		try {
+			jdbcTemplate.update(RESET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to reset data object download tasks in-process value: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+
+	@Override
+	public void setDataObjectDownloadTaskProcessed(String id, Calendar processed) throws HpcException {
 		try {
 			jdbcTemplate.update(SET_DATA_OBJECT_DOWNLOAD_TASK_PROCESSED_SQL, processed, id);
 
 		} catch (DataAccessException e) {
-			throw new HpcException(
-					"Failed to set a data object download task w/ processed value: " + e.getMessage(),
+			throw new HpcException("Failed to set a data object download task w/ processed value: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}

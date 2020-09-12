@@ -519,15 +519,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@HpcExecuteAsSystemAccount
 	public void restartDataObjectDownloadTasks() throws HpcException {
 		// Iterate through all the data object download tasks that are in-progress w/ S3
-		// transfer, or received w/ Globus transfer.
+		// transfer.
 		for (HpcDataObjectDownloadTask downloadTask : dataTransferService.getDataObjectDownloadTasks()) {
 			try {
-				if ((downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
-						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))
-						|| ((downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
-								|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE))
-								&& downloadTask.getDataTransferStatus()
-										.equals(HpcDataTransferDownloadStatus.IN_PROGRESS))) {
+				if ((downloadTask.getDataTransferType().equals(HpcDataTransferType.S_3)
+						|| downloadTask.getDataTransferType().equals(HpcDataTransferType.GOOGLE_DRIVE))
+						&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.IN_PROGRESS)) {
 					logger.info("Resetting download task: {}", downloadTask.getId());
 					dataTransferService.resetDataObjectDownloadTask(downloadTask);
 				}
@@ -536,6 +533,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				logger.error("Failed to restart data-object download task: " + downloadTask.getId(), e);
 			}
 		}
+		
+		// Set all in-process indicator to false;
+		dataTransferService.resetDataObjectDownloadTasksInProcess();
 	}
 
 	@Override
@@ -1061,7 +1061,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							} finally {
 								try {
 									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
-									
+
 								} catch (HpcException e) {
 									logger.error(
 											"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",

@@ -408,6 +408,13 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+	
+	/**
+	 * Reset all download tasks in-process indicator to false
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void resetDataObjectDownloadTasksInProcess() throws HpcException;
 
 	/**
 	 * Mark a data object download task as processed by updating the processed time
