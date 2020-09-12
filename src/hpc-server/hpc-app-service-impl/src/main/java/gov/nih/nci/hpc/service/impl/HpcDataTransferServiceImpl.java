@@ -2064,6 +2064,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		downloadTask.setInProcess(false);
 		downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
 		downloadTask.setPercentComplete(0);
 		downloadTask.setSize(downloadRequest.getSize());
@@ -2524,6 +2525,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					// received.
 					downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
 					downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+					downloadTask.setInProcess(false);
 
 					// Persist the download task.
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
