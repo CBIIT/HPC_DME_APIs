@@ -246,7 +246,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		Map<String, String> metadataMap = toMap(systemGeneratedMetadataEntries);
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = new HpcSystemGeneratedMetadata();
 		systemGeneratedMetadata.setObjectId(metadataMap.get(ID_ATTRIBUTE));
-		systemGeneratedMetadata.setObjectId(metadataMap.get(DME_ID_ATTRIBUTE));
+		systemGeneratedMetadata.setDmeDataId(metadataMap.get(DME_ID_ATTRIBUTE));
 		systemGeneratedMetadata.setRegistrarId(metadataMap.get(REGISTRAR_ID_ATTRIBUTE));
 		systemGeneratedMetadata.setRegistrarName(metadataMap.get(REGISTRAR_NAME_ATTRIBUTE));
 		systemGeneratedMetadata.setConfigurationId(metadataMap.get(CONFIGURATION_ID_ATTRIBUTE));
