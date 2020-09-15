@@ -466,7 +466,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		//Convert the data object paths to collection paths
 		List<String> paths = new ArrayList<>();
 		for(String fullPath: fullPaths) {
-			String colPath = fullPath.substring(0, path.lastIndexOf('/'));
+			String colPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
 			if(!paths.contains(colPath)) {
 				paths.add(colPath);
 			}
