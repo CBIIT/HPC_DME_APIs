@@ -728,7 +728,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} catch (HpcException e) {
 			logger.error("Failed to get cancellation request for task ID: " + taskId, e);
-			return false;
+			//If it can not find the collection download task, it is cancelled and removed from the table.
+			return true;
 		}
 	}
 
