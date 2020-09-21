@@ -102,7 +102,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" set \"IN_PROCESS\" = ? where \"ID\" = ?";
 
-	private static final String RESET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" set \"IN_PROCESS\" = true where \"IN_PROCESS\" = false";
+	private static final String RESET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" set \"IN_PROCESS\" = false where \"IN_PROCESS\" = true";
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_PROCESSED_SQL = "update public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" set \"PROCESSED\" = ? where \"ID\" = ?";
 
