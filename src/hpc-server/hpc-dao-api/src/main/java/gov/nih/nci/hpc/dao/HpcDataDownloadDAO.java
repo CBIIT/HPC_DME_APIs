@@ -217,6 +217,14 @@ public interface HpcDataDownloadDAO {
 	public void setCollectionDownloadTaskInProcess(String id, boolean inProcess) throws HpcException;
 
 	/**
+	 * Reset a collection download task in-process value.
+	 *
+	 * @param id        The collection download task ID.
+	 * @throws HpcException on database error.
+	 */
+	public void resetCollectionDownloadTaskInProcess(String id) throws HpcException;
+
+	/**
 	 * Set a collection download task cancellation request.
 	 *
 	 * @param id                  The collection download task ID.
