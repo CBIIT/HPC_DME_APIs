@@ -215,6 +215,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"IN_PROCESS\" = ? where \"ID\" = ?";
 
+	private static final String RESET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL = "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"IN_PROCESS\" = false, \"DESTINATION_OVERWRITE\" = true where \"ID\" = ?";
+
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "update public.\"HPC_COLLECTION_DOWNLOAD_TASK\" set \"CANCELLATION_REQUESTED\" = ? where \"ID\" = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "select \"CANCELLATION_REQUESTED\" from public.\"HPC_COLLECTION_DOWNLOAD_TASK\" where \"ID\" = ?";
@@ -846,6 +848,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to set a collection download task w/ in-process value: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
+		}
+	}
+	
+	@Override
+	public void resetCollectionDownloadTaskInProcess(String id) throws HpcException {
+		try {
+			jdbcTemplate.update(RESET_COLLECTION_DOWNLOAD_TASK_IN_PROCESS_SQL, id);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to reset collection download tasks in-process value: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.POSTGRESQL, e);
 		}
 	}
