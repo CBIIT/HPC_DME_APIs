@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+import gov.nih.nci.hpc.dao.HpcGroupDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -34,6 +36,7 @@ import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -81,6 +84,9 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
 
   // The User DAO instance.
   @Autowired private HpcUserDAO userDAO = null;
+  
+//The User DAO instance.
+ @Autowired private HpcGroupDAO groupDAO = null;
 
   // The System Account DAO instance.
   @Autowired private HpcSystemAccountDAO systemAccountDAO = null;
@@ -318,6 +324,106 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     return dataManagementProxy.getUserRole(
         dataManagementAuthenticator.getAuthenticatedToken(), nciUserId);
   }
+
+
+  @Override
+  public void addGroup(String name) throws HpcException {
+    // Input validation.
+
+    // Check if the group already exists.
+	HpcGroup group = getGroup(name);
+    if (group != null && group.getActive()) {
+      throw new HpcException(
+          "Group already exists: name = " + name,
+          HpcRequestRejectReason.USER_ALREADY_EXISTS);
+    }
+
+    // Get the service invoker.
+    HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    if (invoker == null) {
+      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+    }
+
+    // Create the User domain object.
+    group = new HpcGroup();
+    group.setName(name);
+    group.setDoc(invoker.getNciAccount().getDoc());
+    group.setCreated(Calendar.getInstance());
+    group.setActive(true);
+
+    // Persist to the DB.
+    group.setActiveUpdatedBy(
+            invoker.getNciAccount() == null
+                ? invoker.getDataManagementAccount().getUsername()
+                : invoker.getNciAccount().getUserId());
+    group.setLastUpdated(Calendar.getInstance());
+    groupDAO.upsertGroup(group);
+  }
+
+
+  @Override
+  public void updateGroup(String name, boolean active) throws HpcException {
+    // Input validation.
+
+	  HpcGroup group = getGroup(name);
+    // Check if the group already exists.
+    if (group == null || !group.getActive()) {
+      throw new HpcException(
+          "Group does not exist or is inactive: name = " + name,
+          HpcRequestRejectReason.USER_ALREADY_EXISTS);
+    }
+
+    // Get the service invoker.
+    HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    if (invoker == null) {
+      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+    }
+
+    // Update the Group domain object.
+    group.setActive(active);
+    group.setActiveUpdatedBy(
+        invoker.getNciAccount() == null
+            ? invoker.getDataManagementAccount().getUsername()
+            : invoker.getNciAccount().getUserId());
+    group.setLastUpdated(Calendar.getInstance());
+
+    // Persist to the DB.
+    groupDAO.updateGroup(group);
+  }
+
+  @Override
+  public void deleteGroup(String name) throws HpcException {
+    // Input validation.
+
+	HpcGroup group = getGroup(name);
+    // Check if the group exists.
+    if (group == null || !group.getActive()) {
+      throw new HpcException(
+          "Group does not exists or is already inactive: name = " + name,
+          HpcRequestRejectReason.USER_ALREADY_EXISTS);
+    }
+
+    // Get the service invoker.
+    HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+    if (invoker == null) {
+      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+    }
+
+    // Delete from DB.
+    groupDAO.deleteGroup(name);
+  }
+
+
+  @Override
+  public HpcGroup getGroup(String name) throws HpcException {
+    // Input validation.
+    if (name == null) {
+      throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    return groupDAO.getGroup(name);
+  }
+
 
   @Override
   public HpcRequestInvoker getRequestInvoker() {
