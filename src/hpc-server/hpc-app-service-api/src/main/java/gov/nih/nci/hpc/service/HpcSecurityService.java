@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.service;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
@@ -135,6 +136,40 @@ public interface HpcSecurityService {
   public HpcUserRole getUserRole(String nciUserId) throws HpcException;
 
   /**
+   * Add a group to the system.
+   *
+   * @param name the name of the group to add.
+   * @throws HpcException
+   */
+  public void addGroup(String name) throws HpcException;
+
+  /**
+   * Update a group in the system.
+   *
+   * @param name The name of the group to update
+   * @param active True if the group is to stay active, else false.
+   * @throws HpcException
+   */
+  public void updateGroup(String name, boolean active) throws HpcException;
+
+  /**
+   * Delete a group from the system.
+   *
+   * @param name The name of the group to delete
+   * @throws HpcException
+   */
+  public void deleteGroup(String name) throws HpcException;
+
+  /**
+   * Retrieve a group from the system.
+   *
+   * @param name The name of the group to retrieve
+   * @return
+   * @throws HpcException
+   */
+  public HpcGroup getGroup(String name) throws HpcException;
+
+  /**
    * Get the request invoker (user).
    *
    * @return The request invoker.
@@ -252,4 +287,5 @@ public boolean authenticateSso(String nciUserId, String smSession) throws HpcExc
    * @throws HpcException on service failure.
    */
   public HpcNciAccount getUserFirstLastNameFromAD(String username) throws HpcException;
+
 }
