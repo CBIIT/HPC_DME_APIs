@@ -335,7 +335,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     if (group != null && group.getActive()) {
       throw new HpcException(
           "Group already exists: name = " + name,
-          HpcRequestRejectReason.USER_ALREADY_EXISTS);
+          HpcRequestRejectReason.GROUP_ALREADY_EXISTS);
     }
 
     // Get the service invoker.
@@ -370,7 +370,7 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     if (group == null || !group.getActive()) {
       throw new HpcException(
           "Group does not exist or is inactive: name = " + name,
-          HpcRequestRejectReason.USER_ALREADY_EXISTS);
+          HpcRequestRejectReason.GROUP_DOES_NOT_EXIST);
     }
 
     // Get the service invoker.
@@ -399,8 +399,8 @@ public class HpcSecurityServiceImpl implements HpcSecurityService {
     // Check if the group exists.
     if (group == null || !group.getActive()) {
       throw new HpcException(
-          "Group does not exists or is already inactive: name = " + name,
-          HpcRequestRejectReason.USER_ALREADY_EXISTS);
+          "Group does not exist or is already inactive: name = " + name,
+          HpcRequestRejectReason.GROUP_DOES_NOT_EXIST);
     }
 
     // Get the service invoker.

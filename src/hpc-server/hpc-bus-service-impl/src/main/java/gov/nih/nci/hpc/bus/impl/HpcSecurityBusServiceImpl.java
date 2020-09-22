@@ -641,7 +641,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       if(doc==null || !doc.contentEquals(user.getDoc())) {
         String msg = "No privileges to add users to " + groupName + " group";
         logger.error(user.getUserId() + ":" + msg);
-        throw new HpcException(msg, HpcErrorType.REQUEST_REJECTED);
+        throw new HpcException(msg, HpcRequestRejectReason.NOT_AUTHORIZED);
       }
     }
 
@@ -703,6 +703,18 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
     // Input validation.
     if (groupName == null) {
       throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    // Do not allow if the this user is a group admin but his doc does not match the group's DOC
+    HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
+    if (requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+      HpcNciAccount user = requestInvoker.getNciAccount();
+      String doc = securityService.getGroup(groupName).getDoc();
+      if(doc==null || !doc.contentEquals(user.getDoc())) {
+        String msg = "No privileges to delete " + groupName + " group";
+        logger.error(user.getUserId() + ":" + msg);
+        throw new HpcException(msg, HpcRequestRejectReason.NOT_AUTHORIZED);
+      }
     }
 
     // Delete the group.
