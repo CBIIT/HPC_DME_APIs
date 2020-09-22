@@ -545,7 +545,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, true)
 				.forEach(downloadTask -> {
 					try {
-						dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
+						dataTransferService.resetCollectionDownloadTaskInProgress(downloadTask.getId());
 
 					} catch (HpcException e) {
 						logger.error("Failed to restart collection download task: " + downloadTask.getId(), e);

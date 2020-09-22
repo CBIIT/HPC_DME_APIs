@@ -591,6 +591,14 @@ public interface HpcDataTransferService {
 	public void setCollectionDownloadTaskInProgress(String taskId, boolean inProcess) throws HpcException;
 
 	/**
+	 * Reset collection download task in-progress
+	 *
+	 * @param taskId    The collection download task ID..
+	 * @throws HpcException on database error.
+	 */
+	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException;
+
+	/**
 	 * Complete a collection download task: 1. Update task info in DB with results
 	 * info.
 	 *
