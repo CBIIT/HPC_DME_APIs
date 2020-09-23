@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.dao.oracle.impl;
 
 import gov.nih.nci.hpc.dao.HpcGroupDAO;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 
 import java.util.ArrayList;
 import java.util.List;
