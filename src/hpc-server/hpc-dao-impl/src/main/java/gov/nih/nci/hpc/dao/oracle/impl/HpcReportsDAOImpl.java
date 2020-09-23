@@ -84,7 +84,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "max(to_number(meta_attr_value, '9999999999999999999')) maxSize, "
 			+ "avg(to_number(meta_attr_value, '9999999999999999999')) avgSize " + "from r_report_source_file_size";
 
-	private static final String TOTAL_NUM_OF_USERS_SQL = "SELECT count(*) totalUsers FROM public.\"HPC_USER\"";
+	private static final String TOTAL_NUM_OF_USERS_SQL = "SELECT count(*) totalUsers FROM \"HPC_USER\"";
 
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects";
 
@@ -98,7 +98,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "avg(to_number(meta_attr_value, '9999999999999999999')) avgSize "
 			+ "from r_report_source_file_size where CAST(create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String TOTAL_NUM_OF_USERS_BY_DATE_SQL = "SELECT count(*) totalUsers FROM public.\"HPC_USER\" where \"CREATED\" BETWEEN ? and ?";
+	private static final String TOTAL_NUM_OF_USERS_BY_DATE_SQL = "SELECT count(*) totalUsers FROM \"HPC_USER\" where \"CREATED\" BETWEEN ? and ?";
 
 	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DATE_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects "
 			+ "where CAST(create_ts as double precision) BETWEEN ? AND ?";
@@ -114,9 +114,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "from r_report_source_file_size a, r_report_registered_by_doc b "
 			+ "where a.object_id = b.object_id and b.\"DOC\"=?";
 
-	private static final String TOTAL_NUM_OF_USERS_BY_DOC_SQL = "SELECT count(*) totalUsers FROM public.\"HPC_USER\" where \"DOC\"=?";
+	private static final String TOTAL_NUM_OF_USERS_BY_DOC_SQL = "SELECT count(*) totalUsers FROM \"HPC_USER\" where \"DOC\"=?";
 
-	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_SQL = "SELECT count(distinct a.data_id) totalObjs FROM r_report_data_objects a, public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_SQL = "SELECT count(distinct a.data_id) totalObjs FROM r_report_data_objects a, \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
 			+ "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" and b.\"DOC\"=?";
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_SQL = "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
@@ -133,9 +133,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "from r_report_source_file_size a, r_report_registered_by_doc b "
 			+ "where a.object_id = b.object_id and b.\"DOC\"=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String TOTAL_NUM_OF_USERS_BY_DOC_DATE_SQL = "SELECT count(*) totalUsers FROM public.\"HPC_USER\" where \"DOC\"=? and \"CREATED\" BETWEEN ?  AND ?";
+	private static final String TOTAL_NUM_OF_USERS_BY_DOC_DATE_SQL = "SELECT count(*) totalUsers FROM \"HPC_USER\" where \"DOC\"=? and \"CREATED\" BETWEEN ?  AND ?";
 
-	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects a, public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b  "
+	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_DOC_DATE_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects a, \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b  "
 			+ "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" and b.\"DOC\"=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_DATE_SQL = "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
@@ -188,10 +188,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "from r_report_source_file_size a, r_report_registered_by_basepath b "
 			+ "where a.object_id = b.object_id and b.\"BASE_PATH\"=?";
 
-	private static final String TOTAL_NUM_OF_USERS_BY_BASEPATH_SQL = "SELECT count(*) totalUsers FROM public.\"HPC_USER\" a,  public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+	private static final String TOTAL_NUM_OF_USERS_BY_BASEPATH_SQL = "SELECT count(*) totalUsers FROM \"HPC_USER\" a,  \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
 			+ "where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and b.\"BASE_PATH\"=?";
 
-	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_BASEPATH_SQL = "SELECT count(distinct a.data_id) totalObjs FROM r_report_data_objects a, public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_BASEPATH_SQL = "SELECT count(distinct a.data_id) totalObjs FROM r_report_data_objects a, \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
 			+ "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" and b.\"BASE_PATH\"=?";
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_BASEPATH_SQL = "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
@@ -208,10 +208,10 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "from r_report_source_file_size a, r_report_registered_by_basepath b "
 			+ "where a.object_id = b.object_id and b.\"BASE_PATH\"=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String TOTAL_NUM_OF_USERS_BY_BASEPATH_DATE_SQL = "SELECT count(*) totalUsers FROM public.\"HPC_USER\" a,  public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
+	private static final String TOTAL_NUM_OF_USERS_BY_BASEPATH_DATE_SQL = "SELECT count(*) totalUsers FROM \"HPC_USER\" a,  \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b "
 			+ "where a.\"DEFAULT_CONFIGURATION_ID\"=b.\"ID\" and b.\"BASE_PATH\"=? and a.\"CREATED\" BETWEEN ?  AND ?";
 
-	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_BASEPATH_DATE_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects a, public.\"HPC_DATA_MANAGEMENT_CONFIGURATION\" b  "
+	private static final String TOTAL_NUM_OF_DATA_OBJECTS_BY_BASEPATH_DATE_SQL = "SELECT count(distinct data_id) totalObjs FROM r_report_data_objects a, \"HPC_DATA_MANAGEMENT_CONFIGURATION\" b  "
 			+ "where a.meta_attr_name='configuration_id' and a.meta_attr_value=b.\"ID\" and b.\"BASE_PATH\"=? and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
 	private static final String TOTAL_NUM_OF_COLLECTIONS_BY_NAME_BASEPATH_DATE_SQL = "select a.meta_attr_value attr, count(a.coll_id) cnt from r_report_collection_type a,  "
@@ -262,9 +262,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 			+ "FROM r_report_data_objects a, r_report_collection_path b "
 			+ "where a.data_id = b.object_id and (b.coll_name like ? or b.coll_name = ?) and CAST(a.create_ts as double precision) BETWEEN ? AND ?";
 
-	private static final String USERS_SQL = "select \"USER_ID\" from public.\"HPC_USER\"";
+	private static final String USERS_SQL = "select \"USER_ID\" from \"HPC_USER\"";
 
-	private static final String DOCS_SQL = "select distinct meta_attr_value from public.r_meta_main where meta_attr_name='registered_by_doc'";
+	private static final String DOCS_SQL = "select distinct meta_attr_value from r_meta_main where meta_attr_name='registered_by_doc'";
 
 	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
 
@@ -803,8 +803,8 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 				Iterator<String> iter = listEntry.keySet().iterator();
 				while (iter.hasNext()) {
 					String name = iter.next();
-					if (name.equals("cnt")) {
-						Long value = (Long) listEntry.get(name);
+					if (name.equalsIgnoreCase("cnt")) {
+						java.math.BigDecimal value = (java.math.BigDecimal) listEntry.get(name);
 						count = value.toString();
 					} else
 						type = (String) listEntry.get(name);
