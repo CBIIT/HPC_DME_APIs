@@ -6,19 +6,26 @@ import gov.nih.nci.hpc.cli.domain.HpcMetadataAttributes;
 import gov.nih.nci.hpc.cli.domain.HpcServerConnection;
 import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import gov.nih.nci.hpc.cli.util.HpcPathAttributes;
-import gov.nih.nci.hpc.cli.util.Paths;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.easybatch.core.processor.RecordProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 public abstract class HpcLocalEntityProcessor {
   protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -29,7 +36,7 @@ public abstract class HpcLocalEntityProcessor {
 	}
 
 	public abstract boolean process(HpcPathAttributes entity, String localPath, String filePathBaseName, String destinationBasePath,
-			String logFile, String recordFile, boolean metadataOnly, boolean directUpload, boolean checksum, String metadataFile)
+			String logFile, String recordFile, boolean metadataOnly, boolean extractMetadata, boolean directUpload, boolean checksum, String metadataFile)
 			throws RecordProcessingException;
 
   protected List<HpcMetadataEntry> getMetadata(HpcPathAttributes file, boolean metadataOnly, String externalMetadataFile)
@@ -131,5 +138,30 @@ public abstract class HpcLocalEntityProcessor {
 
 		return parentCollectionMetadataEntries;
 	}
+	
+	protected List<HpcMetadataEntry> extractMetadataFromFile(File dataObjectFile) throws HpcCmdException {
+      Parser parser = new AutoDetectParser();
+      Metadata extractedMetadata = new Metadata();
+
+      try (InputStream dataObjectInputStream = new FileInputStream(dataObjectFile)) {
+          // Extract metadata from the file.
+          parser.parse(dataObjectInputStream, new BodyContentHandler(), extractedMetadata, new ParseContext());
+
+          // Map the Tika extracted metadata to HPC metadata entry list.
+          List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+          for (String name : extractedMetadata.names()) {
+              HpcMetadataEntry metadataEntry = new HpcMetadataEntry();
+              metadataEntry.setAttribute(name);
+              metadataEntry.setValue(extractedMetadata.get(name));
+              metadataEntries.add(metadataEntry);
+          }
+
+          return metadataEntries;
+
+      } catch (IOException | SAXException | TikaException e) {
+          throw new HpcCmdException("Failed to extract metadata from file");
+
+      }
+  }
 
 }

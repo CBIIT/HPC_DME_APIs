@@ -599,16 +599,18 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Add requester as a user if he is a group admin. This is to enable the check
-    // to restrict addition of users to other groups by this group admin.
-    HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
-    if (requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-      groupMembersRequest.getAddUserIds().add(requestInvoker.getNciAccount().getUserId());
-    }
+    //Add the group to the system
+    securityService.addGroup(groupName);
 
     return executeGroupAdminAsSystemAccount(() -> {
-      // Add the group.
-      dataManagementSecurityService.addGroup(groupName);
+      try {
+          // Add the group to iRODS.
+          dataManagementSecurityService.addGroup(groupName);
+      } catch(Exception e) {
+          logger.error("Unable to add group, name: " + groupName, e);
+          securityService.deleteGroup(groupName);
+          throw e;
+      }
 
       // Optionally add members.
       return updateGroupMembers(groupName, groupMembersRequest);
@@ -631,17 +633,19 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
           HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
-    // Do not allow if this user is a group admin but not a member of this group
-    List<String> userIds = dataManagementSecurityService.getGroupMembers(groupName);
+    // Do not allow if the this user is a group admin but his doc does not match the group's DOC
     HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
     if (requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
-      if (userIds == null || !userIds.contains(requestInvoker.getNciAccount().getUserId())) {
+      HpcNciAccount user = requestInvoker.getNciAccount();
+      String doc = securityService.getGroup(groupName).getDoc();
+      if(doc==null || !doc.contentEquals(user.getDoc())) {
         String msg = "No privileges to add users to " + groupName + " group";
-        logger.error(requestInvoker.getNciAccount().getUserId() + ":" + msg);
-        throw new HpcException(msg, HpcErrorType.REQUEST_REJECTED);
+        logger.error(user.getUserId() + ":" + msg);
+        throw new HpcException(msg, HpcRequestRejectReason.NOT_AUTHORIZED);
       }
     }
 
+    securityService.updateGroup(groupName, true);
 
     return executeGroupAdminAsSystemAccount(() ->
     // Add/Delete group members.
@@ -701,8 +705,23 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
       throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
     }
 
+    // Do not allow if the this user is a group admin but his doc does not match the group's DOC
+    HpcRequestInvoker requestInvoker = securityService.getRequestInvoker();
+    if (requestInvoker.getUserRole().equals(HpcUserRole.GROUP_ADMIN)) {
+      HpcNciAccount user = requestInvoker.getNciAccount();
+      String doc = securityService.getGroup(groupName).getDoc();
+      if(doc==null || !doc.contentEquals(user.getDoc())) {
+        String msg = "No privileges to delete " + groupName + " group";
+        logger.error(user.getUserId() + ":" + msg);
+        throw new HpcException(msg, HpcRequestRejectReason.NOT_AUTHORIZED);
+      }
+    }
+
     // Delete the group.
     executeGroupAdminAsSystemAccount(() -> dataManagementSecurityService.deleteGroup(groupName));
+
+    //Inactivate the group in the system
+    securityService.updateGroup(groupName, false);
   }
 
 
@@ -956,9 +975,7 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
    *
    * @param nciUserId The NCI user ID.
    * @param firstName The user's first name.
-   * @param firstName The user's last name.
-   * @param firstName The user's DOC.
-   * @param firstName The user's role.
+   * @param lastName The user's last name.
    */
   private void sendUserRegisteredNotification(String nciUserId, String firstName, String lastName) {
     List<HpcEventPayloadEntry> payloadEntries = new ArrayList<>();

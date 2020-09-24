@@ -170,6 +170,7 @@
 	<xsd:complexType
 		name="HpcBulkDataObjectRegistrationTaskDTO">
 		<xsd:sequence>
+			<xsd:element name="userId" type="xsd:string" minOccurs="0" />
 			<xsd:element name="taskId" type="xsd:string" />
 			<xsd:element name="taskStatus"
 				type="hpc-domain-datamanagement:HpcBulkDataObjectRegistrationTaskStatus" />

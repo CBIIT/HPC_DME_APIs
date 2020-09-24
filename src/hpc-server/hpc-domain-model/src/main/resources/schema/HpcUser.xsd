@@ -35,7 +35,20 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-	
+
+	<xsd:element name="HpcGroup">
+		<xsd:complexType>
+			<xsd:sequence>
+			    <xsd:element name="name" type="xsd:string" />
+				<xsd:element name="doc" type="xsd:string" />
+				<xsd:element name="active" type="xsd:boolean" />
+				<xsd:element name="activeUpdatedBy" type="xsd:string" />
+				<xsd:element name="created" type="xsd:dateTime" />
+				<xsd:element name="lastUpdated" type="xsd:dateTime" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
 	<xsd:complexType name="HpcDataTransferAuthenticatedToken">
 		<xsd:sequence>
 			<xsd:element name="dataTransferType" type="hpc-domain-datatransfer:HpcDataTransferType" />

@@ -109,7 +109,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
   @Override
   public boolean process(HpcPathAttributes entity, String filePath, String filePathBaseName,
       String destinationBasePath,
-      String logFile, String recordFile, boolean metadataOnly, boolean directUpload,
+      String logFile, String recordFile, boolean metadataOnly, boolean extractMetadata, boolean directUpload,
       boolean checksum, String metadataFile)
       throws RecordProcessingException {
     logger.debug("HpcPathAttributes {}", entity);
@@ -119,6 +119,7 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("logFile {}", logFile);
     logger.debug("recordFile {}", recordFile);
     logger.debug("metadataOnly {}", metadataOnly);
+    logger.debug("extractMetadata {}", extractMetadata);
     logger.debug("directUpload {}", directUpload);
     logger.debug("checksum {}", checksum);
     
@@ -148,6 +149,13 @@ public class HpcLocalFileProcessor extends HpcLocalEntityProcessor {
     logger.debug("metadataEntries {}", metadataEntries);
 
     dataObject.getMetadataEntries().addAll(metadataEntries);
+    
+    // Extract metadata from file
+    if(extractMetadata) {
+      List<HpcMetadataEntry> extractedMetadataEntries = extractMetadataFromFile(new File(entity.getAbsolutePath()));
+      dataObject.getExtractedMetadataEntries().addAll(extractedMetadataEntries);
+    }
+    
     if (!metadataOnly) {
       dataObject.setCreateParentCollections(true);
       List<HpcMetadataEntry> parentCollectionMetadataEntries = new ArrayList<HpcMetadataEntry>();
