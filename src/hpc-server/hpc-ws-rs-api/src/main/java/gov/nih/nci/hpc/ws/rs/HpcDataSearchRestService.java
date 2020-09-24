@@ -61,23 +61,29 @@ public interface HpcDataSearchRestService {
       @QueryParam("pageSize") Integer pageSize,
       @QueryParam("totalCount") Boolean totalCount);
 
+
   /**
    * Get data objects by compound metadata query.
    *
-   * @param compoundMetadataQuery A compund metadata query DTO.
+   * @param returnParent If true, return the parent collections instead
+   * 					 of the data objects themselves.
+   * @param compoundMetadataQuery A compound metadata query DTO.
    * @return The REST service response w/ HpcDataObjectListDTO entity.
    */
   @POST
   @Path("/dataObject/query")
   @Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
-  public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQuery);
-  
-  
+  public Response queryDataObjects(@QueryParam("returnParent") Boolean returnParent,
+		  HpcCompoundMetadataQueryDTO compoundMetadataQuery);
+
+
   /**
    * Get data objects within the requested path by compound metadata query.
    *
    * @param path The path to search in.
+   * @param returnParent If true, return the parent collections instead the
+   * 					 of data objects themselves.
    * @param compoundMetadataQuery A compound metadata query DTO.
    * @return The REST service response w/ HpcDataObjectListDTO entity.
    */
@@ -87,6 +93,7 @@ public interface HpcDataSearchRestService {
   @Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
   public Response queryDataObjectsInPath(
 	  @PathParam("path") String path,
+	  @QueryParam("returnParent") Boolean returnParent,
       HpcCompoundMetadataQueryDTO compoundMetadataQuery);
   
 
@@ -97,8 +104,10 @@ public interface HpcDataSearchRestService {
    * @param detailedResponse If set to true, return entity details (attributes + metadata).
    * @param page The requested results page.
    * @param pageSize The requested page size.
-   * @param totalCount If set to true, return the total count of collections matching the query
-   *     regardless of the limit on returned entities.
+   * @param totalCount If set to true, return the total count of collections matching
+   *                   the query regardless of the limit on returned entities.
+   * @param returnParent If true, return the parent collections instead of the
+   * 					 data objects themselves.
    * @return The REST service response w/ HpcDataObjectListDTO entity.
    */
   @GET
@@ -109,7 +118,8 @@ public interface HpcDataSearchRestService {
       @QueryParam("detailedResponse") Boolean detailedResponse,
       @QueryParam("page") Integer page,
       @QueryParam("pageSize") Integer pageSize,
-      @QueryParam("totalCount") Boolean totalCount);
+      @QueryParam("totalCount") Boolean totalCount,
+      @QueryParam("returnParent") Boolean returnParent);
   
   
 

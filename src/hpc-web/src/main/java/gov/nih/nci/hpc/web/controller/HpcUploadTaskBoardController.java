@@ -28,19 +28,14 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.fasterxml.jackson.annotation.JsonView;
-
-import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcRegistrationSummaryDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationTaskDTO;
+import org.springframework.web.bind.annotation.RequestParam;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcTask;
-import gov.nih.nci.hpc.web.model.Views;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
 /**
@@ -62,6 +57,8 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 	private String queryURL;
 	@Value("${gov.nih.nci.hpc.server.bulkregistration}")
 	private String queryServiceURL;
+	@Value("${gov.nih.nci.hpc.server.bulkregistration.all}")
+	private String queryAllServiceURL;
 
 	/**
 	 * GET action to display dashboard page
@@ -74,10 +71,12 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q, @RequestParam(required = false) String queryAll, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
+		model.addAttribute("queryAll", queryAll == null ? false : true);
+		model.addAttribute("canQueryAll", HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session));
 		String authToken = (String) session.getAttribute("hpcUserToken");
 
 		if (authToken == null) {
@@ -104,12 +103,13 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
       paramsMap.set("page", Integer.toString(page));
       paramsMap.set("totalCount", Boolean.TRUE.toString());
 			HpcRegistrationSummaryDTO registrations = HpcClientUtil
-        .getRegistrationSummary(authToken, this.queryServiceURL, paramsMap,
+        .getRegistrationSummary(authToken, (queryAll == null ? queryServiceURL : queryAllServiceURL), paramsMap,
         this.sslCertPath, this.sslCertPassword);
 			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 			if (registrations.getActiveTasks() != null && !registrations.getActiveTasks().isEmpty())
 				for (HpcBulkDataObjectRegistrationTaskDTO registration : registrations.getActiveTasks()) {
 					HpcTask task = new HpcTask();
+					task.setUserId(registration.getUserId());
 					task.setTaskId(registration.getTaskId());
 					if(registration.getTaskStatus() != null)
 						task.setStatus(registration.getTaskStatus().value());
@@ -129,6 +129,7 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 				}
 			for (HpcBulkDataObjectRegistrationTaskDTO registration : registrations.getCompletedTasks()) {
 				HpcTask task = new HpcTask();
+				task.setUserId(registration.getUserId());
 				task.setTaskId(registration.getTaskId());
 				if(registration.getTaskStatus() != null)
 					task.setStatus(registration.getTaskStatus().value());

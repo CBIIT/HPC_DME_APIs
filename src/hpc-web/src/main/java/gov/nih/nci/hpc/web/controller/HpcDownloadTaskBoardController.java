@@ -24,6 +24,8 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadSummaryDTO;
@@ -31,6 +33,7 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcTask;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
 
 /**
@@ -52,7 +55,9 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 	private String queryURL;
 	@Value("${gov.nih.nci.hpc.server.download}")
 	private String queryServiceURL;
-
+	@Value("${gov.nih.nci.hpc.server.download.all}")
+	private String queryAllServiceURL;
+	
 	/**
 	 * GET action to display dashboard page
 	 * 
@@ -64,10 +69,12 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
+	public String home(@RequestBody(required = false) String q,  @RequestParam(required = false) String queryAll, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		model.addAttribute("queryURL", queryURL);
 		model.addAttribute("collectionURL", collectionURL);
+		model.addAttribute("queryAll", queryAll == null ? false : true);
+		model.addAttribute("canQueryAll", HpcIdentityUtil.iUserSystemAdminOrGroupAdmin(session));
 		String authToken = (String) session.getAttribute("hpcUserToken");
 
 		if (authToken == null) {
@@ -90,7 +97,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				page = Integer.parseInt(pageStr);
 			}
 			
-			String serviceURL = queryServiceURL + "?page=" + page + "&totalCount=true";
+			String serviceURL = (queryAll == null ? queryServiceURL : queryAllServiceURL) + "?page=" + page + "&totalCount=true";
 			HpcDownloadSummaryDTO downloads = HpcClientUtil.getDownloadSummary(authToken, serviceURL, sslCertPath,
 					sslCertPassword);
 
@@ -98,6 +105,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 			if (downloads.getActiveTasks() != null && !downloads.getActiveTasks().isEmpty())
 				for (HpcUserDownloadRequest download : downloads.getActiveTasks()) {
 					HpcTask task = new HpcTask();
+					task.setUserId(download.getUserId());
 					task.setTaskId(download.getTaskId());
 					task.setPath(download.getPath());
 					task.setType(download.getType().name());
@@ -110,6 +118,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 				}
 			for (HpcUserDownloadRequest download : downloads.getCompletedTasks()) {
 				HpcTask task = new HpcTask();
+				task.setUserId(download.getUserId());
 				task.setTaskId(download.getTaskId());
 				task.setPath(download.getPath());
 				task.setType(download.getType().name());

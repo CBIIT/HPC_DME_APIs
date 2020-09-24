@@ -103,6 +103,7 @@
     var currentPageSize = "[[${currentPageSize}]]";
     var currentPage = [[${currentPage}]];
     var totalPages = "[[${totalPages}]]";
+    var queryAll = "[[${queryAll}]]";
 /*]]>*/
 </script>
 <script>
@@ -117,7 +118,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
     enablePaginationControls: false,
     treeRowHeaderAlwaysVisible: false,
     columnDefs: [
-                 { field: 'taskId', width:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="downloadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
+    			 { field: 'userId', width:150, displayName: 'User ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'  },
+    			 { field: 'taskId', width:300, displayName: 'Task ID', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP"><a href="downloadtask?taskId={{row.entity.taskId}}&amp;type={{row.entity.type}}">{{COL_FIELD CUSTOM_FILTERS}}</a></div>'  },
                  { field: 'path', width:200, displayName : 'Path' },
                  { field: 'type', width:200, displayName : 'Type', cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{grid.appScope.toTitleCase(row.entity.type)}}</div>'},
                  { field: 'result', width:200, displayName: 'Transfer Result'},
@@ -133,6 +135,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
   };
   $scope.gridOptions1.totalItems = totalRows;
   $scope.gridOptions1.data = results;
+  if(queryAll == "false")
+  	$scope.gridOptions1.columnDefs[0].visible = false;
 
   $scope.expandAll = function(){
 	    $scope.gridApi.treeBase.expandAllRows();
@@ -158,6 +162,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 	    return data.toLowerCase().replace(/_/g, ' ').replace(/(^|\s)\S/g, function(t) { return t.toUpperCase() });
 	  };
 }]);
+
 </script>
 
 </head>
@@ -173,7 +178,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-share-alt"></i> Manage Download Tasks
+							<i class="fa fa-share-alt"></i> Download Tasks
 						</h3>
 					</div>
 				</div>
@@ -183,10 +188,25 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading">
-								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Download
+								<div class="col-md-3">
+								<h2 th:if="${queryAll}">
+									<i class="fa fa-list-alt red"></i><strong>All
 										Tasks</strong>
 								</h2>
+								<h2 th:if="${!queryAll}">
+									<i class="fa fa-list-alt red"></i><strong>My
+										Tasks</strong>
+								</h2>
+								</div>
+								<div th:if="${canQueryAll}" class="col-md-3 col-md-offset-6">
+								<h2 style="color: rgb(121, 121, 121)">
+									<strong>Display All Tasks</strong>
+								</h2>
+								<label class="switch">
+								  <input type="checkbox" id="allcheckbox" th:checked="${queryAll}" onclick="displayAll()"/>
+								  <span class="slider round"></span>
+								</label>
+								</div>
 							</div>
 							<!--panel-body start-->
 							<div class="panel-body">
@@ -243,18 +263,37 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 		$('#sub-menu-manage').addClass("active");
 	});
 	
+	function displayAll()
+	{
+		var checkBox = document.getElementById("allcheckbox");
+		if (checkBox.checked == true){
+			window.location.href = "/downloadtasks?queryAll=true";
+		} else {
+			window.location.href = "/downloadtasks";
+		}
+	}
+	
     function updatePage(action)
     {
-		if(action == "next")
-		 	window.location.href = "/downloadtasks?page=" + (parseInt(currentPage) +1);
+    	var checkBox = document.getElementById("allcheckbox");
+		if(action == "next" && checkBox != null && checkBox.checked == true)
+		 	window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) +1);
+		else if (action == "next")
+			window.location.href = "/downloadtasks?page=" + (parseInt(currentPage) +1);
+		else if(action == "previous" && checkBox != null && checkBox.checked == true)
+			window.location.href = "/downloadtasks?queryAll=true&page=" + (parseInt(currentPage) - 1);
 		else if(action == "previous")
 			window.location.href = "/downloadtasks?page=" + (parseInt(currentPage) - 1);
+		else if(action == "first" && checkBox != null && checkBox.checked == true)
+			window.location.href = "/downloadtasks?queryAll=true&page=1";
 		else if(action == "first")
 			window.location.href = "/downloadtasks?page=1";
+		else if(action == "last" && checkBox != null && checkBox.checked == true)
+			window.location.href = "/downloadtasks?queryAll=true&page=" + totalPages;
 		else if(action == "last")
-			window.location.href = "/downloadtasks?&page=" + totalPages;
+			window.location.href = "/downloadtasks?page=" + totalPages;
     }
-	
+    
 	if(currentPage == "1")
 	{
 		$('#btnPrevious').addClass('disabled');

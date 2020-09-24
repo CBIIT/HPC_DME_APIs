@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
@@ -274,18 +275,22 @@ public interface HpcMetadataService {
       HpcDataTransferType dataTransferType, Calendar dataTransferStarted,
       Calendar dataTransferCompleted, Long sourceSize, String linkSourcePath) throws HpcException;
 
-  /**
-   * Update a data object's metadata.
-   *
-   * @param path The data object path.
-   * @param metadataEntries The metadata entries to update.
-   * @param configurationId The configuration to apply validation rules. Metadata validation rules
-   *        are configuration specific.
-   * @param collectionType The collection type containing the data object.
-   * @throws HpcException on service failure.
-   */
+	/**
+	 * Update a data object's metadata.
+	 *
+	 * @param path              The data object path.
+	 * @param metadataEntries   The metadata entries to update.
+	 * @param configurationId   The configuration to apply validation rules.
+	 *                          Metadata validation rules are configuration
+	 *                          specific.
+	 * @param collectionType    The collection type containing the data object.
+	 * @param extractedMetadata True if the data object is updated w/ extracted
+	 *                          metadata (this is optionally performed during data
+	 *                          object registration)
+	 * @throws HpcException on service failure.
+	 */
   public void updateDataObjectMetadata(String path, List<HpcMetadataEntry> metadataEntries,
-      String configurationId, String collectionType) throws HpcException;
+      String configurationId, String collectionType, boolean extractedMetadata) throws HpcException;
 
   /**
    * Get metadata of a data object.

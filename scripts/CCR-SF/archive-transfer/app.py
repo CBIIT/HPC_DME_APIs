@@ -250,12 +250,16 @@ def register_object(filepath, type, tarfile_name, has_parent, fullpath, sf_audit
 
         #Proceed to register only if the file to upload exists
         if (filesize != 0):
-            #deleted_file = 1
-            #logging.info("Deleting file " + archive_path)
-            #deleted_file = os.system("dm_delete_datafile " + archive_path)
-            #if deleted_file > 0:
-            #    logging.info("Could not delete archived file: " + archive_path)
-
+            deleted_file = 1
+            logging.info("Deleting file " + archive_path)
+            try:
+                deleted_file = os.system("dm_delete_datafile " + archive_path)
+                if deleted_file > 0:
+                    logging.info("Could not delete archived file: " + archive_path)
+                else:
+                    logging.info("Deleted archived file: " + archive_path);
+            except:
+                print("Error deleting file " + archive_path);
             response_header = "presignedURL-registration-response-header.tmp"
             os.system("rm - f " + response_header + " 2>/dev/null")
             os.system(command)

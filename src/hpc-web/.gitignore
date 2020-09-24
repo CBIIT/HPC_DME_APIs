@@ -7,3 +7,4 @@
 
 hpcweb.log.*
 /bin/
+/tokens/

@@ -126,7 +126,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							<i class="fa fa-lock"></i> User
+							<i class="fa fa-lock"></i> Manage User
 						</h3>
 					</div>
 				</div>
@@ -136,15 +136,8 @@
 					<div class="col-lg-9 col-md-12">
 						<div class="panel panel-default">
 							<div class="panel-heading">
-								<div class="col-md-3">
-								<h2 align="left">
-									<i class="fa fa-list-alt red"></i><strong>Manage User</strong>
-								</h2>
-								</div>
-								<div class="col-md-3 col-md-offset-6">
-								<h2>
-									<strong> <a data-toggle="modal" id="createuserlink" class="btn btn-link btn-sm" th:href="@{/createuser}" data-target="#createuserModal">Create User &nbsp;<i class="fa fa-user" aria-hidden="true"></i></a></strong>
-								</h2>
+								<div class="pull-right">
+									<a data-toggle="modal" id="createuserlink" class="btn btn-link btn-sm" th:href="@{/createuser}" data-target="#createuserModal"><i class="fa fa-user-plus" aria-hidden="true"></i>&nbsp;Create User</a>
 								</div>
 							</div>
 							<div th:if="${error != null}">
@@ -178,6 +171,9 @@
 												th:object="${hpcWebUser}" th:action="@{/user}"
 												method="POST">
 												<div class="panel panel-default">
+													<div class="panel-heading">
+														<h2>Search User</h2>
+													</div>
 													<div class="panel-body">
 														<table>
 															<tr>
