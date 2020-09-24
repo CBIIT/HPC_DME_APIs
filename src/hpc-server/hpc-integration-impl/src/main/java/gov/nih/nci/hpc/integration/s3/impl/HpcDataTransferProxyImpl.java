@@ -465,7 +465,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
    * @param progressListener (Optional) a progress listener for async notification on transfer
    *        completion.
    * @param metadataEntries The metadata entries to attach to the data-object in S3 archive.
-   * @param uploadMethod The upload method (source) - AWS S3 or Google Drive
    * @return A data object upload response.
    * @throws HpcException on data transfer system failure.
    */

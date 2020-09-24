@@ -43,6 +43,7 @@ public class HpcMetadataValidator {
 
   // System generated metadata attributes.
   public static final String ID_ATTRIBUTE = "uuid";
+  public static final String DME_ID_ATTRIBUTE = "dme_data_id";
   public static final String REGISTRAR_ID_ATTRIBUTE = "registered_by";
   public static final String REGISTRAR_NAME_ATTRIBUTE = "registered_by_name";
   public static final String CONFIGURATION_ID_ATTRIBUTE = "configuration_id";
@@ -99,7 +100,7 @@ public class HpcMetadataValidator {
         SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, CHECKSUM_ATTRIBUTE,
         METADATA_UPDATED_ATTRIBUTE, REGISTRATION_COMPLETION_EVENT_ATTRIBUTE,
         LINK_SOURCE_PATH_ATTRIBUTE, EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE);
-    List<String> collectionAttributes = Arrays.asList(ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE,
+    List<String> collectionAttributes = Arrays.asList(ID_ATTRIBUTE, DME_ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE,
         REGISTRAR_NAME_ATTRIBUTE, CONFIGURATION_ID_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
 
     systemGeneratedMetadataAttributes.addAll(attributes);

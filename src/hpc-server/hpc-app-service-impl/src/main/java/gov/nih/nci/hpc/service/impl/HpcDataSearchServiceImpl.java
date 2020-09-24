@@ -191,6 +191,7 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
         compoundMetadataQuery, dataManagementUsername, defaultCollectionLevelFilter);
   }
 
+
   @Override
   public List<String> getDataObjectPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
       throws HpcException {
@@ -224,8 +225,8 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
            defaultDataObjectLevelFilter));
     
   }
-  
-  
+
+
   @Override
   public List<HpcSearchMetadataEntry> getDetailedDataObjectPaths(String path,
 		  HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
@@ -258,12 +259,13 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
             finalPageSize,
             defaultDataObjectLevelFilter);
     for(HpcSearchMetadataEntry hpcSearchMetadataEntry: hpcSearchMetadataEntries) {
-    	hpcSearchMetadataEntry.setCollectionName(toRelativePath(hpcSearchMetadataEntry.getCollectionName()));
-    	hpcSearchMetadataEntry.setAbsolutePath(toRelativePath(hpcSearchMetadataEntry.getAbsolutePath()));
+       hpcSearchMetadataEntry.setCollectionName(toRelativePath(hpcSearchMetadataEntry.getCollectionName()));
+       hpcSearchMetadataEntry.setAbsolutePath(toRelativePath(hpcSearchMetadataEntry.getAbsolutePath()));
     }
     return hpcSearchMetadataEntries;
   }
-  
+
+
   @Override
   public int getDataObjectCount(HpcCompoundMetadataQuery compoundMetadataQuery)
       throws HpcException {
@@ -282,6 +284,80 @@ public class HpcDataSearchServiceImpl implements HpcDataSearchService {
     return metadataDAO.getDataObjectCount(
         compoundMetadataQuery, dataManagementUsername, defaultDataObjectLevelFilter);
   }
+
+
+  @Override
+  public List<String> getDataObjectParentPaths(String path, HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
+      throws HpcException {
+    // Input validation.
+    HpcDomainValidationResult validationResult =
+        isValidCompoundMetadataQuery(compoundMetadataQuery);
+    if (!validationResult.getValid()) {
+      throw new HpcException(
+          "Invalid compound metadata query: " + validationResult.getMessage(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
+    if(pageSize != 0) {
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
+    }
+
+    // Use the hierarchical metadata views to perform the search.
+    String dataManagementUsername =
+        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    return toRelativePaths(
+        metadataDAO.getDataObjectParentPaths(
+            path,compoundMetadataQuery,
+            dataManagementUsername,
+            finalOffset,
+            finalPageSize,
+            defaultCollectionLevelFilter));
+  }
+
+
+  @Override
+  public List<HpcSearchMetadataEntryForCollection> getDetailedDataObjectParentPaths(
+		  String path, HpcCompoundMetadataQuery compoundMetadataQuery, int page, int pageSize)
+      throws HpcException {
+    // Input validation.
+    HpcDomainValidationResult validationResult =
+        isValidCompoundMetadataQuery(compoundMetadataQuery);
+    if (!validationResult.getValid()) {
+      throw new HpcException(
+          "Invalid compound metadata query: " + validationResult.getMessage(),
+          HpcErrorType.INVALID_REQUEST_INPUT);
+    }
+
+    //If pageSize is specified, replace the default defined
+    int finalPageSize = pagination.getPageSize();
+    int finalOffset = pagination.getOffset(page);
+    if(pageSize != 0) {
+      finalPageSize = (pageSize <= pagination.getMaxPageSize() ? pageSize : pagination.getMaxPageSize());
+      finalOffset = (page - 1) * finalPageSize;
+    }
+
+    // Use the hierarchical metadata views to perform the search.
+    String dataManagementUsername =
+        HpcRequestContext.getRequestInvoker().getDataManagementAccount().getUsername();
+    List<HpcSearchMetadataEntryForCollection> hpcSearchMetadataEntries = metadataDAO.getDetailedDataObjectParentPaths(
+            path,
+            compoundMetadataQuery,
+            dataManagementUsername,
+            finalOffset,
+            finalPageSize,
+            defaultDataObjectLevelFilter);
+    for(HpcSearchMetadataEntryForCollection hpcSearchMetadataEntry: hpcSearchMetadataEntries) {
+        hpcSearchMetadataEntry.setCollectionName(toRelativePath(hpcSearchMetadataEntry.getCollectionName()));
+        hpcSearchMetadataEntry.setAbsolutePath(toRelativePath(hpcSearchMetadataEntry.getAbsolutePath()));
+        hpcSearchMetadataEntry.setCollectionParentName(toRelativePath(hpcSearchMetadataEntry.getCollectionParentName()));
+    }
+    return hpcSearchMetadataEntries;
+  }
+
 
   @Override
   public int getSearchResultsPageSize(int pageSize) {

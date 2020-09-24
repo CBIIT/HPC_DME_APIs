@@ -44,6 +44,11 @@
       <script src="https://use.fontawesome.com/d8c7e3a713.js"></script>
       
     <![endif]-->
+<style>
+.datepicker { 
+    z-index: 1002 !important;
+}
+</style>
 <script th:inline="javascript">
 /*<![CDATA[*/
     var selected = [[${reportRequest.getReportType()}]];
@@ -217,7 +222,7 @@
 						<input type="hidden" id="actionType" name="actionType" />
 					</form>
 				</div>
-				<div style="width: 800px; height: 800px; overflow-y: scroll;"
+				<div style="width: 800px; height: 800px; overflow-y: scroll; margin-left: 15%;"
 					th:if="${reports != null}">
 					<table class="table">
 						<caption th:text="${reportName}">Basic Table Layout</caption>
@@ -334,17 +339,19 @@
   $('#fromDate').datepicker({
 	    format: 'mm/dd/yyyy',
 	    defaultDate: 'now',
-        autoclose: true	    
-	});
+	}).on('change', function(){
+        $('.datepicker').hide();
+    });
  
   if($('#fromDate').val() == '')
   	$('#fromDate').datepicker('setDate', new Date());
   
   $('#toDate').datepicker({
 	    format: 'mm/dd/yyyy',
-	    defaultDate: 'now',
-        autoclose: true	    
-	}); 
+	    defaultDate: 'now'    
+	}).on('change', function(){
+        $('.datepicker').hide();
+    });
   
   if($('#toDate').val() == '')
   	$('#toDate').datepicker('setDate', new Date());
