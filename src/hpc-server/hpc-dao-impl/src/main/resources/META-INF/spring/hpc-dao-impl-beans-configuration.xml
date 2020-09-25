@@ -65,42 +65,52 @@
 	
 	<!-- TODO: Remove after Oracle migration -->
 	<!--  <bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" /> -->
-	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" />
+	<!-- <bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" /> -->
 	<bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataDownloadDAOImpl" />
 	<!-- <bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataRegistrationDAOImpl" />  -->
+<<<<<<< HEAD
 	<bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementAuditDAOImpl" />
 	<!--  <bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" /> -->
+=======
+	<!-- <bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementAuditDAOImpl" /> -->
+	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" />
+>>>>>>> 16b9cd8ef6a52743c337d377943b3509ee86e8be
 	<!--  <bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEventDAOImpl" /> -->
-	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcReportsDAOImpl">
+	<!--  <bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
-	</bean>
+	</bean> -->
 	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcMetadataDAOImpl" />
 	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserNamedQueryDAOImpl" />
 	<bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserBookmarkDAOImpl" />
-	<bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcGroupDAOImpl" />
+	<!--  <bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcGroupDAOImpl" /> -->
 	<!--  <bean id="hpcDataManagementConfigurationDAO" 
 	      class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementConfigurationDAOImpl" 
 	      init-method="dbConnect"/> -->
-	<bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcCatalogDAOImpl" />
+	<!--<bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcCatalogDAOImpl" /> -->
 	<!-- TODO: END -->
 	
 	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserDAOImpl" /> 
-	<!-- <bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcSystemAccountDAOImpl" /> -->
+	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcSystemAccountDAOImpl" />
 	<!-- <bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataDownloadDAOImpl" /> -->
 	<bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataRegistrationDAOImpl" />
+<<<<<<< HEAD
 	<!-- <bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementAuditDAOImpl" /> -->
 	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcNotificationDAOImpl" />
+=======
+	<bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementAuditDAOImpl" /> 
+	<!-- <bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcNotificationDAOImpl" /> -->
+>>>>>>> 16b9cd8ef6a52743c337d377943b3509ee86e8be
 	<bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcEventDAOImpl" />
-	<!-- <bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl">
+	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
-	</bean> -->
+	</bean>
 	<!-- <bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl" /> -->
 	<!-- <bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl" /> -->
 	<!-- <bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserBookmarkDAOImpl" /> -->
-	<!-- <bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGroupDAOImpl" /> -->
+	<bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGroupDAOImpl" /> 
 	<bean id="hpcDataManagementConfigurationDAO" 
 	      class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementConfigurationDAOImpl" 
 	      init-method="dbConnect"/>
-	<!-- <bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcCatalogDAOImpl" /> -->
+	 <bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcCatalogDAOImpl" /> 
 
 </beans>

@@ -10,6 +10,11 @@
 
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import gov.nih.nci.hpc.dao.HpcGroupDAO;
+import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +24,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-
-import gov.nih.nci.hpc.dao.HpcGroupDAO;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -39,7 +39,7 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String GET_GROUPS_SQL = "select user_name from public.r_user_main where "
+	private static final String GET_GROUPS_SQL = "select user_name from r_user_main where "
 			+ "user_type_name = 'rodsgroup' and user_name <> 'rodsadmin'";
 
 	// Get all groups to which the given user belongs
