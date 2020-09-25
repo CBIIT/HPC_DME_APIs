@@ -55,19 +55,36 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String UPSERT_USER_QUERY_SQL = "insert into public.\"HPC_USER_QUERY\" ( "
+/*	private static final String UPSERT_USER_QUERY_SQL = "insert into \"HPC_USER_QUERY\" ( "
 			+ "\"USER_ID\", \"QUERY_NAME\", \"QUERY\", \"DETAILED_RESPONSE\", "
 			+ "\"TOTAL_COUNT\", \"QUERY_TYPE\", \"CREATED\", \"UPDATED\" ) " + "values (?, ?, ?, ?, ?, ?, ?, ?) "
 			+ "on conflict(\"USER_ID\", \"QUERY_NAME\") do update "
 			+ "set \"QUERY\"=excluded.\"QUERY\", \"DETAILED_RESPONSE\"=excluded.\"DETAILED_RESPONSE\", "
 			+ "\"TOTAL_COUNT\"=excluded.\"TOTAL_COUNT\", \"QUERY_TYPE\"=excluded.\"QUERY_TYPE\", "
 			+ "\"CREATED\"=excluded.\"CREATED\", \"UPDATED\"=excluded.\"UPDATED\"";
+*/	
+	private static final String UPSERT_USER_QUERY_SQL = "MERGE INTO HPC_USER_QUERY Q1 "+
+							"USING ( "+
+							    " SELECT ? \"USER_ID\", ? \"QUERY_NAME\", ? \"QUERY\", ? \"DETAILED_RESPONSE\", "+ 
+							          " ? \"TOTAL_COUNT\", ? \"QUERY_TYPE\", ? \"CREATED\", ? \"UPDATED\" "+
+							    "FROM DUAL "+
+							") Q2 "+
+							"ON (Q1.\"USER_ID\"=Q2.\"USER_ID\" AND Q1.\"QUERY_NAME\"=Q2.\"QUERY_NAME\") "+
+							"WHEN MATCHED THEN "+
+							    "UPDATE SET Q1.\"QUERY\"=Q2.\"QUERY\", Q1.\"DETAILED_RESPONSE\"=Q2.\"DETAILED_RESPONSE\", "+ 
+							            "Q1.\"TOTAL_COUNT\"=Q2.\"TOTAL_COUNT\", Q1.\"QUERY_TYPE\"=Q2.\"QUERY_TYPE\", "+ 
+							            "Q1.\"CREATED\"=Q2.\"CREATED\", Q1.\"UPDATED\"=Q2.\"UPDATED\" "+
+							"WHEN NOT MATCHED THEN "+
+							    "INSERT (\"USER_ID\", \"QUERY_NAME\", \"QUERY\", \"DETAILED_RESPONSE\", "+ 
+							            "\"TOTAL_COUNT\", \"QUERY_TYPE\", \"CREATED\", \"UPDATED\") "+
+							    "VALUES (Q2.\"USER_ID\", Q2.\"QUERY_NAME\", Q2.\"QUERY\", Q2.\"DETAILED_RESPONSE\", "+ 
+							            "Q2.\"TOTAL_COUNT\", Q2.\"QUERY_TYPE\", Q2.\"CREATED\", Q2.\"UPDATED\") "; 
 
-	private static final String DELETE_USER_QUERY_SQL = "delete from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
+	private static final String DELETE_USER_QUERY_SQL = "delete from \"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
 
-	private static final String GET_USER_QUERIES_SQL = "select * from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ?";
+	private static final String GET_USER_QUERIES_SQL = "select * from \"HPC_USER_QUERY\" where \"USER_ID\" = ?";
 
-	private static final String GET_USER_QUERY_SQL = "select * from public.\"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
+	private static final String GET_USER_QUERY_SQL = "select * from \"HPC_USER_QUERY\" where \"USER_ID\" = ? and \"QUERY_NAME\" = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
