@@ -408,15 +408,24 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+	
+	/**
+	 * Reset all download tasks in-process indicator to false
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void resetDataObjectDownloadTasksInProcess() throws HpcException;
 
 	/**
 	 * Mark a data object download task as processed by updating the processed time
 	 * stamp.
 	 *
 	 * @param downloadTask The download task to mark processed.
+	 * @param inProcess Indicator whether the task is being actively processed.
 	 * @throws HpcException on service failure.
 	 */
-	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
+	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
+			boolean inProcess) throws HpcException;
 
 	/**
 	 * Update a data object download task. % Complete is calculated and any change
@@ -582,6 +591,14 @@ public interface HpcDataTransferService {
 	public void setCollectionDownloadTaskInProgress(String taskId, boolean inProcess) throws HpcException;
 
 	/**
+	 * Reset collection download task in-progress
+	 *
+	 * @param taskId    The collection download task ID..
+	 * @throws HpcException on database error.
+	 */
+	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException;
+
+	/**
 	 * Complete a collection download task: 1. Update task info in DB with results
 	 * info.
 	 *
@@ -599,29 +616,32 @@ public interface HpcDataTransferService {
 	 * Get active download requests for a user.
 	 *
 	 * @param userId The user ID to query for.
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A list of active download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadRequests(String userId) throws HpcException;
+	public List<HpcUserDownloadRequest> getDownloadRequests(String userId, String doc) throws HpcException;
 
 	/**
 	 * Get download results (all completed download requests) for a user.
 	 *
 	 * @param userId The user ID to query for.
 	 * @param page   The requested results page.
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page) throws HpcException;
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc) throws HpcException;
 
 	/**
 	 * Get download results (all completed download requests) count for a user.
 	 *
 	 * @param userId The user ID to query for.
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A total count of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
-	public int getDownloadResultsCount(String userId) throws HpcException;
+	public int getDownloadResultsCount(String userId, String doc) throws HpcException;
 
 	/**
 	 * Get the download results page size.
