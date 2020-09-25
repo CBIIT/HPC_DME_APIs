@@ -44,18 +44,18 @@ public class HpcCatalogDAOImpl implements HpcCatalogDAO {
 
 	private static final String GET_CATALOG_BASEPATH_EQUAL_SQL = " \"BASE_PATH\" = ?";
 	
-    private static final String GET_CATALOG_IDS_SQL = "select distinct object_id from \"r_catalog_meta_main\" ";
+    private static final String GET_CATALOG_IDS_SQL = "select distinct object_id from r_catalog_meta_main ";
 
     private static final String GET_CATALOG_ID_IN_SQL = " object_id in (";
     
     private static final String GET_CATALOG_ID_IN_END_SQL = ") order by \"DOC\", \"BASE_PATH\", object_path";
 
-	private static final String LIMIT_OFFSET_SQL = " order by object_id limit ? offset ?";
+	private static final String LIMIT_OFFSET_SQL = " order by object_id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
     private static final String GET_CATALOG_SQL = "select \"DOC\", \"BASE_PATH\", object_path, meta_attr_name, meta_attr_value, meta_attr_unit "
-        + "from \"r_catalog_meta_main\" ";
+        + "from r_catalog_meta_main ";
 
-	private static final String GET_CATALOG_COUNT_SQL = "select count(distinct object_id) from \"r_catalog_meta_main\" ";
+	private static final String GET_CATALOG_COUNT_SQL = "select count(distinct object_id) from r_catalog_meta_main ";
 	
 
 	// ---------------------------------------------------------------------//
@@ -123,8 +123,8 @@ public class HpcCatalogDAOImpl implements HpcCatalogDAO {
            args.add(criteria.getBasePath());
         }
         sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
-        args.add(limit);
         args.add(offset);
+        args.add(limit);
         sqlQueryBuilder.append(GET_CATALOG_ID_IN_END_SQL);
         
         try {
