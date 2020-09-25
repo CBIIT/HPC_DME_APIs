@@ -67,14 +67,8 @@
 	<!--  <bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" /> -->
 	<!-- <bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" /> -->
 	<bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataDownloadDAOImpl" />
-	<!-- <bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataRegistrationDAOImpl" />  -->
-<<<<<<< HEAD
-	<bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementAuditDAOImpl" />
+	<!--  <bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementAuditDAOImpl" /> -->
 	<!--  <bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" /> -->
-=======
-	<!-- <bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataManagementAuditDAOImpl" /> -->
-	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" />
->>>>>>> 16b9cd8ef6a52743c337d377943b3509ee86e8be
 	<!--  <bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEventDAOImpl" /> -->
 	<!--  <bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
@@ -93,13 +87,8 @@
 	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcSystemAccountDAOImpl" />
 	<!-- <bean id="hpcDataDownloadDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataDownloadDAOImpl" /> -->
 	<bean id="hpcDataRegistrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataRegistrationDAOImpl" />
-<<<<<<< HEAD
-	<!-- <bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementAuditDAOImpl" /> -->
 	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcNotificationDAOImpl" />
-=======
 	<bean id="hpcDataManagementAuditDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementAuditDAOImpl" /> 
-	<!-- <bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcNotificationDAOImpl" /> -->
->>>>>>> 16b9cd8ef6a52743c337d377943b3509ee86e8be
 	<bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcEventDAOImpl" />
 	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
