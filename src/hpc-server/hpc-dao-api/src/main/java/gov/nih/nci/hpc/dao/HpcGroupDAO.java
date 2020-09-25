@@ -10,8 +10,11 @@
 
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.exception.HpcException;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -39,7 +42,45 @@ public interface HpcGroupDAO
      */
     public List<String> getGroups(String groupPattern) throws HpcException;
 
+    /**
+     * Get list of groups that a user belongs to
+     * @param userId The userId
+     * @return
+     * @throws HpcException
+     */
 	public List<String> getUserGroups(String userId) throws HpcException;
+
+	/**
+	 * Add a new group to the system
+	 *
+	 * @param group The group domain object
+	 * @throws HpcException
+	 */
+	public void upsertGroup(HpcGroup group) throws HpcException;
+
+	/**
+	 * Update a group in the system
+	 *
+	 * @param group The group domain object
+	 * @throws HpcException
+	 */
+	public void updateGroup(HpcGroup group) throws HpcException;
+
+	/**
+	 * Delete the group from the system
+	 * @param name
+	 * @throws HpcException
+	 */
+	public void deleteGroup(String name) throws HpcException;
+
+	/**
+	 * Get a group
+	 * @param name The name of the group
+	 * @return
+	 * @throws HpcException
+	 */
+	public HpcGroup getGroup(String name) throws HpcException;
+
 }
 
  

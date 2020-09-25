@@ -101,9 +101,6 @@
 				<div class="panel-heading" th:if="${hpcDatafile != null}">
 				<h2 th:switch="${userpermission}">
 				 <div th:case="'READ'">
-				  <i class="fa fa-list-alt red"></i>
-				  <strong>Data file</strong>
-                  &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
                      th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
@@ -127,9 +124,6 @@
 				 </div>
 
 				 <div th:case="'WRITE'">
-				 <i class="fa fa-list-alt red"></i>
-                  <strong>Data file</strong>
-                  &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
                      th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
@@ -158,9 +152,6 @@
 				 </div>
 
 				 <div th:case="'OWN'">
-				 <i class="fa fa-list-alt red"></i>
-                  <strong>Data file</strong>
-                  &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
                      th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>
@@ -189,9 +180,6 @@
 				 </div>
 
 				 <div th:case="'DELETE'">
-				  <i class="fa fa-list-alt red"></i>
-                  <strong>Data file</strong>
-                  &nbsp;&nbsp;
                   <a id="downloadlink" class="btn btn-link btn-sm"
                      th:href="@{../download(type=datafile,downloadFilePath=${hpcDatafile.getDataObject().getAbsolutePath()})}">
                     <i class="fa fa-download" title="Download" aria-hidden="true"></i>

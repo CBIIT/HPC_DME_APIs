@@ -65,9 +65,13 @@
 				<!--Title start-->
 				<div class="row">
 					<div class="col-lg-12">
-						<h3 class="page-header">
-							<i class="fa fa-laptop"></i> Data Objects (Collection)
-								Download Task Details
+						<h3 th:if="${taskType == 'DATA_OBJECT_LIST'}" class="page-header">
+							<i class="fa fa-laptop"></i> Data Object
+								Download
+						</h3>
+						<h3 th:if="${taskType != 'DATA_OBJECT_LIST'}" class="page-header">
+							<i class="fa fa-laptop"></i> Collection
+								Download
 						</h3>
 					</div>
 				</div>

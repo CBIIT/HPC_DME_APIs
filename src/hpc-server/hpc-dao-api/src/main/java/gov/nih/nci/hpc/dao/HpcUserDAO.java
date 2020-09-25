@@ -37,7 +37,7 @@ public interface HpcUserDAO
     /**
      * Delete the user from the repository.
      *
-     * @param user The user to be deleted.
+     * @param userId The user to be deleted.
      * @throws HpcException on database error.
      */
     void deleteUser(String userId) throws HpcException;
