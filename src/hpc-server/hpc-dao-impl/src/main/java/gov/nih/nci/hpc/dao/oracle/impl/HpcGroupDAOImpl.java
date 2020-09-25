@@ -10,20 +10,25 @@
 
 package gov.nih.nci.hpc.dao.oracle.impl;
 
-import gov.nih.nci.hpc.dao.HpcGroupDAO;
-import gov.nih.nci.hpc.exception.HpcException;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
-
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+
+import gov.nih.nci.hpc.dao.HpcGroupDAO;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
@@ -39,7 +44,19 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String GET_GROUPS_SQL = "select user_name from r_user_main where "
+	private static final String UPSERT_GROUP_SQL = "merge into HPC_GROUP using dual on (GROUP_NAME = ?) "
+			+ "when matched then update set DOC = ?, ACTIVE, CREATED = ?, LAST_UPDATED = ?, ACTIVE_UPDATED_BY = ? "
+			+ "when not matched then insert (GROUP_NAME, DOC, ACTIVE, CREATED, LAST_UPDATED, ACTIVE_UPDATED_BY) "
+			+ "values (?, ?, ?, ?, ?, ?) ";
+
+	private static final String UPDATE_GROUP_SQL = "update HPC_GROUP set "
+			+ "ACTIVE = ?, LAST_UPDATED = ?, ACTIVE_UPDATED_BY = ? where GROUP_NAME = ?";
+
+	private static final String DELETE_GROUP_SQL = "delete from HPC_GROUP where GROUP_NAME = ?";
+
+	private static final String GET_GROUP_SQL = "select * from HPC_GROUP where GROUP_NAME = ?";
+
+	private static final String GET_GROUPS_SQL = "select user_name from public.r_user_main where "
 			+ "user_type_name = 'rodsgroup' and user_name <> 'rodsadmin'";
 
 	// Get all groups to which the given user belongs
@@ -62,6 +79,26 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 
 	// Row mapper.
 	private SingleColumnRowMapper<String> rowMapper = new SingleColumnRowMapper<>();
+	private RowMapper<HpcGroup> groupRowMapper = (rs, rowNum) -> {
+		HpcGroup group = new HpcGroup();
+		group.setName(rs.getString("GROUP_NAME"));
+		group.setDoc(rs.getString("DOC"));
+		Calendar created = Calendar.getInstance();
+		created.setTime(rs.getDate("CREATED"));
+		group.setCreated(created);
+
+		Calendar lastUpdated = Calendar.getInstance();
+		lastUpdated.setTime(rs.getDate("LAST_UPDATED"));
+		group.setLastUpdated(lastUpdated);
+
+		group.setActive(rs.getBoolean("ACTIVE"));
+		group.setActiveUpdatedBy(rs.getString("ACTIVE_UPDATED_BY"));
+
+		return group;
+	};
+
+	// The logger instance.
+	private static final Logger logger = LoggerFactory.getLogger(HpcGroupDAOImpl.class.getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -81,6 +118,56 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 	// ---------------------------------------------------------------------//
 	// HpcGroupDAO Interface Implementation
 	// ---------------------------------------------------------------------//
+
+	@Override
+	public void upsertGroup(HpcGroup group) throws HpcException {
+		try {
+			jdbcTemplate.update(UPSERT_GROUP_SQL, group.getName(), group.getDoc(), group.getActive(),
+					group.getCreated(), group.getLastUpdated(), group.getActiveUpdatedBy(), group.getName(),
+					group.getDoc(), group.getActive(), group.getCreated(), group.getLastUpdated(),
+					group.getActiveUpdatedBy());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to upsert a user: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void updateGroup(HpcGroup group) throws HpcException {
+		try {
+			jdbcTemplate.update(UPDATE_GROUP_SQL, group.getActive(), group.getLastUpdated(), group.getActiveUpdatedBy(),
+					group.getName());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to update a group: " + group.getName(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void deleteGroup(String name) throws HpcException {
+		try {
+			jdbcTemplate.update(DELETE_GROUP_SQL, name);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to delete group " + name + ": " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public HpcGroup getGroup(String name) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_GROUP_SQL, groupRowMapper, name);
+		} catch (IncorrectResultSizeDataAccessException e) {
+			logger.error("Multiple groups with the same name found", e);
+			return null;
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get a group: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
 
 	@Override
 	public List<String> getGroups(String groupPattern) throws HpcException {
@@ -124,5 +211,4 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
-
 }

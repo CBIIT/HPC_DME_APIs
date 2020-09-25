@@ -93,6 +93,20 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			+ "SOURCE_LOCATION_FILE_CONTAINER_NAME, CREATED, COMPLETED) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_FOR_DOC_SQL = "select TASK.* from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK TASK, public.HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC= ?  "
+			+ "order by CREATED";
+
+	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL = "select * from public.HPC_BULK_DATA_OBJECT_REGISTRATION_TASK order by CREATED";
+
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_FOR_DOC_SQL = "select TASK.* from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC = ? "
+			+ "order by CREATED desc limit ? offset ?";
+
+	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT order by CREATED desc limit ? offset ?";
+
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_FOR_DOC_SQL = "select count(*) from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC = ?";
+
+	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_SQL = "select count(*) from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT ";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -319,6 +333,80 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to insert a data object registration result: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcBulkDataObjectRegistrationTask> getBulkDataObjectRegistrationTasksForDoc(String doc)
+			throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_FOR_DOC_SQL,
+					bulkDataObjectRegistrationTaskRowMapper, doc);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get bulk data object registration tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcBulkDataObjectRegistrationTask> getAllBulkDataObjectRegistrationTasks() throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_ALL_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL,
+					bulkDataObjectRegistrationTaskRowMapper);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get bulk data object registration tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcBulkDataObjectRegistrationResult> getBulkDataObjectRegistrationResultsForDoc(String doc, int offset,
+			int limit) throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_FOR_DOC_SQL,
+					bulkDataObjectRegistrationResultRowMapper, doc, limit, offset);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get bulk data object rwegistration results: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcBulkDataObjectRegistrationResult> getAllBulkDataObjectRegistrationResults(int offset, int limit)
+			throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL,
+					bulkDataObjectRegistrationResultRowMapper, limit, offset);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get bulk data object rwegistration results: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public int getBulkDataObjectRegistrationResultsCountForDoc(String doc) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_FOR_DOC_SQL,
+					Integer.class, doc);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to count download results: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public int getAllBulkDataObjectRegistrationResultsCount() throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_SQL, Integer.class);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to count download results: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
