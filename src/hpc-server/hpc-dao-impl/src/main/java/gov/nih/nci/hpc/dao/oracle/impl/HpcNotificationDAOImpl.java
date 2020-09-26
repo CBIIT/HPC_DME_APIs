@@ -82,7 +82,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 			+ "values (?, ?, ?, ?, ?) ";
 
 	private static final String GET_DELIVERY_RECEIPTS_SQL = "select * from HPC_NOTIFICATION_DELIVERY_RECEIPT where USER_ID = ? "
-			+ "order by EVENT_ID desc limit ? offset ?";
+			+ "order by EVENT_ID desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_DELIVERY_RECEIPT_SQL = "select * from HPC_NOTIFICATION_DELIVERY_RECEIPT where USER_ID = ? and EVENT_ID = ?";
 
@@ -310,8 +310,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 	public List<HpcNotificationDeliveryReceipt> getDeliveryReceipts(String userId, int offset, int limit)
 			throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_DELIVERY_RECEIPTS_SQL, notificationDeliveryReceiptRowMapper, userId, limit,
-					offset);
+			return jdbcTemplate.query(GET_DELIVERY_RECEIPTS_SQL, notificationDeliveryReceiptRowMapper, userId, offset,
+					limit);
 
 		} catch (IncorrectResultSizeDataAccessException notFoundEx) {
 			return null;

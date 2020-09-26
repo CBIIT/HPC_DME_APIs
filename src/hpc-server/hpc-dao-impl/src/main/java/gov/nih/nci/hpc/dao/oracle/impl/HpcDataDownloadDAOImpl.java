@@ -97,11 +97,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK order by PRIORITY, CREATED";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? "
-			+ "and (PROCESSED < ? or PROCESSED is null) and CREATED < ? order by PRIORITY, CREATED limit 1";
+			+ "and (PROCESSED < ? or PROCESSED is null) and CREATED < ? order by PRIORITY, CREATED fetch next 1 rows only";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
 			+ "DATA_TRANSFER_STATUS = ? and DATA_TRANSFER_TYPE = ? and (PROCESSED < ? or PROCESSED is null) and CREATED < ? order by PRIORITY, "
-			+ "CREATED limit 1";
+			+ "CREATED fetch next 1 rows only";
 
 	private static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "merge into HPC_DOWNLOAD_TASK_RESULT using dual on (ID = ?) "
 			+ "when matched then update set USER_ID = ?, PATH = ?, DATA_TRANSFER_REQUEST_ID = ?, DATA_TRANSFER_TYPE = ?, "
@@ -143,7 +143,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "null as RESULT, ITEMS from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
 
 	private static final String GET_DOWNLOAD_RESULTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS "
-			+ "from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = true order by CREATED desc limit ? offset ?";
+			+ "from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = true order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1'";
 
@@ -162,10 +162,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_DOWNLOAD_RESULTS_FOR_DOC_SQL = "select TASK.USER_ID, ID, PATH, TASK.CREATED, TYPE, COMPLETED, RESULT, ITEMS "
 			+ "from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? and "
-			+ "COMPLETION_EVENT = '1' order by CREATED desc limit ? offset ?";
+			+ "COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_ALL_DOWNLOAD_RESULTS_SQL = "select USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS "
-			+ "from HPC_DOWNLOAD_TASK_RESULT where COMPLETION_EVENT = '1' order by CREATED desc limit ? offset ?";
+			+ "from HPC_DOWNLOAD_TASK_RESULT where COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_FOR_DOC_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT TASK, HPC_USER USER1 where "
 			+ "USER1.USER_ID = TASK.USER_ID and USER1.DOC = ? and COMPLETION_EVENT = '1'";
@@ -911,7 +911,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	@Override
 	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int offset, int limit) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_DOWNLOAD_RESULTS_SQL, userDownloadRequestRowMapper, userId, limit, offset);
+			return jdbcTemplate.query(GET_DOWNLOAD_RESULTS_SQL, userDownloadRequestRowMapper, userId, offset, limit);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get download results: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
@@ -978,8 +978,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	public List<HpcUserDownloadRequest> getDownloadResultsForDoc(String doc, int offset, int limit)
 			throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_DOWNLOAD_RESULTS_FOR_DOC_SQL, userDownloadRequestRowMapper, doc, limit,
-					offset);
+			return jdbcTemplate.query(GET_DOWNLOAD_RESULTS_FOR_DOC_SQL, userDownloadRequestRowMapper, doc, offset,
+					limit);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get download results: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
@@ -990,7 +990,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	@Override
 	public List<HpcUserDownloadRequest> getAllDownloadResults(int offset, int limit) throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_ALL_DOWNLOAD_RESULTS_SQL, userDownloadRequestRowMapper, limit, offset);
+			return jdbcTemplate.query(GET_ALL_DOWNLOAD_RESULTS_SQL, userDownloadRequestRowMapper, offset, limit);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get download results: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
