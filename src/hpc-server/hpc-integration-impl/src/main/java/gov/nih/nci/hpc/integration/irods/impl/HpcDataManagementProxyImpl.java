@@ -387,6 +387,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			return toHpcDataObject(
 					irodsConnection.getDataObjectAO(authenticatedToken).findByAbsolutePath(getAbsolutePath(path)));
 
+		} catch (DataNotFoundException dnf) {
+			return null;
+
 		} catch (Exception e) {
 			throw new HpcException("Failed to get Data Object: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
 					null, e);
