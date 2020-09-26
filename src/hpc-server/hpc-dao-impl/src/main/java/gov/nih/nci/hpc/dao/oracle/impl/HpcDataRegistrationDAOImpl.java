@@ -83,7 +83,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT where ID = ?";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT where USER_ID = ? "
-			+ "order by CREATED desc limit ? offset ?";
+			+ "order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_SQL = "select count(*) from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT where USER_ID = ?";
 
@@ -99,9 +99,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL = "select * from public.HPC_BULK_DATA_OBJECT_REGISTRATION_TASK order by CREATED";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_FOR_DOC_SQL = "select TASK.* from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC = ? "
-			+ "order by CREATED desc limit ? offset ?";
+			+ "order by CREATED desc offset ? rows fetch next ? rows only";
 
-	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT order by CREATED desc limit ? offset ?";
+	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_COUNT_FOR_DOC_SQL = "select count(*) from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC = ?";
 
@@ -290,7 +290,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			int limit) throws HpcException {
 		try {
 			return jdbcTemplate.query(GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL,
-					bulkDataObjectRegistrationResultRowMapper, userId, limit, offset);
+					bulkDataObjectRegistrationResultRowMapper, userId, offset, limit);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get bulk data object rwegistration results: " + e.getMessage(),
@@ -366,7 +366,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			int limit) throws HpcException {
 		try {
 			return jdbcTemplate.query(GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_FOR_DOC_SQL,
-					bulkDataObjectRegistrationResultRowMapper, doc, limit, offset);
+					bulkDataObjectRegistrationResultRowMapper, doc, offset, limit);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get bulk data object rwegistration results: " + e.getMessage(),
@@ -379,7 +379,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			throws HpcException {
 		try {
 			return jdbcTemplate.query(GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL,
-					bulkDataObjectRegistrationResultRowMapper, limit, offset);
+					bulkDataObjectRegistrationResultRowMapper, offset, limit);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get bulk data object rwegistration results: " + e.getMessage(),
