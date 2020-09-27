@@ -229,13 +229,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
 						metadataEntry.getUnit());
-				try {
-					collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
-
-				} catch (DataNotFoundException e) {
-					// Metadata was not found to update. Add it.
-					irodsConnection.getCollectionAO(authenticatedToken).addAVUMetadata(absolutePath, avuData);
-				}
+				collectionAO.setAVUMetadata(absolutePath, avuData);
 			}
 
 		} catch (JargonException e) {
