@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.dao.oracle.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -262,14 +263,14 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 			eventPayloadEntries.forEach(eventPayloadEntry -> eventPayloadMap.put(eventPayloadEntry.getAttribute(),
 					eventPayloadEntry.getValue()));
 
-			List<String> userIds = new ArrayList<>();
+			HashSet<String> userIds = new HashSet<>();
 			jdbcTemplate.query(GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL, userTriggerRowMapper, eventType.value())
 					.forEach(userTrigger -> {
 						boolean match = true;
 
 						for (HpcEventPayloadEntry triggerPayloadEntry : userTrigger.notificationTrigger
 								.getPayloadEntries()) {
-							String value = eventPayloadMap.get(triggerPayloadEntry.getValue());
+							String value = eventPayloadMap.get(triggerPayloadEntry.getAttribute());
 							if (value == null || !value.equals(triggerPayloadEntry.getValue())) {
 								match = false;
 								break;
@@ -280,7 +281,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 							userIds.add(userTrigger.userId);
 						}
 					});
-			return userIds;
+			return new ArrayList<String>(userIds);
 
 		} catch (IncorrectResultSizeDataAccessException notFoundEx) {
 			return null;
