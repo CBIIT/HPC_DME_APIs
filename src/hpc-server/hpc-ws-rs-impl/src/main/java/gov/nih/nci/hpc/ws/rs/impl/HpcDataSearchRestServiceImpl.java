@@ -108,61 +108,99 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
         true);
   }
 
-  @Override
-  public Response queryDataObjects(HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
-    HpcDataObjectListDTO dataObjects = null;
-    try {
-      dataObjects = dataSearchBusService.getDataObjects(null, compoundMetadataQuery);
 
+  @Override
+  public Response queryDataObjects(Boolean returnParent, HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
+    HpcDataObjectListDTO dataObjects = null;
+
+    try {
+		if(returnParent != null && returnParent) {
+			HpcCollectionListDTO collections = null;
+
+			collections = dataSearchBusService.getDataObjectParents(null, compoundMetadataQuery);
+
+			return okResponse(
+	            !collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
+	                ? collections
+	                : null,
+	            true);
+		} else {
+			dataObjects = dataSearchBusService.getDataObjects(null, compoundMetadataQuery);
+			return okResponse(
+                !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
+                ? dataObjects
+                : null,
+                true);
+		}
     } catch (HpcException e) {
       return errorResponse(e);
     }
-
-    return okResponse(
-        !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
-            ? dataObjects
-            : null,
-        true);
   }
+
 
   @Override
   public Response queryDataObjects(String queryName, Boolean detailedResponse, Integer page,
-      Integer pageSize, Boolean totalCount) {
-    HpcDataObjectListDTO dataObjects = null;
-    try {
-      dataObjects = dataSearchBusService.getDataObjects(decodeString(queryName), detailedResponse,
-          page, pageSize, totalCount);
+      Integer pageSize, Boolean totalCount, Boolean returnParent) {
 
-    } catch (HpcException e) {
-      return errorResponse(e);
-    }
+	try {
+		if(returnParent != null && returnParent) {
+			HpcCollectionListDTO collections = null;
 
-    return okResponse(
-        !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
-            ? dataObjects
-            : null,
-        true);
+			collections = dataSearchBusService.getDataObjectParents(decodeString(queryName), detailedResponse,
+	          page, pageSize, totalCount);
+
+			return okResponse(
+	            !collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
+	                ? collections
+	                : null,
+	            true);
+		} else {
+			HpcDataObjectListDTO dataObjects = null;
+			dataObjects = dataSearchBusService.getDataObjects(decodeString(queryName), detailedResponse,
+					page, pageSize, totalCount);
+
+			return okResponse(
+					!dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
+					? dataObjects
+					: null,
+            true);
+		}
+	} catch(Exception e) {
+		return errorResponse(e);
+	}
   }
 
 
   @Override
-  public Response queryDataObjectsInPath(String path,
+  public Response queryDataObjectsInPath(String path, Boolean returnParent,
       HpcCompoundMetadataQueryDTO compoundMetadataQuery) {
-    HpcDataObjectListDTO dataObjects = null;
 
     try {
-      dataObjects =
-          dataSearchBusService.getDataObjects(toNormalizedPath(path), compoundMetadataQuery);
+        if(returnParent != null && returnParent) {
+			HpcCollectionListDTO collections = null;
 
+			collections = dataSearchBusService.getDataObjectParents(toNormalizedPath(path),
+					compoundMetadataQuery);
+
+			return okResponse(
+	            !collections.getCollections().isEmpty() || !collections.getCollectionPaths().isEmpty()
+	                ? collections
+	                : null,
+	            true);
+        } else {
+            HpcDataObjectListDTO dataObjects = null;
+            dataObjects =
+                dataSearchBusService.getDataObjects(toNormalizedPath(path), compoundMetadataQuery);
+
+            return okResponse(
+                !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
+                ? dataObjects
+                : null,
+                true);
+        }
     } catch (HpcException e) {
       return errorResponse(e);
     }
-
-    return okResponse(
-        !dataObjects.getDataObjects().isEmpty() || !dataObjects.getDataObjectPaths().isEmpty()
-            ? dataObjects
-            : null,
-        true);
   }
 
 

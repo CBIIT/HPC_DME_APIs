@@ -14,17 +14,20 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.commons.lang.StringUtils;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
@@ -784,20 +787,46 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId) throws HpcException {
-		return dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
+	public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId, String doc) throws HpcException {
+  	    List<HpcBulkDataObjectRegistrationTask> registrationTasks = null;
+        if (doc == null) {
+            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
+        } else if (doc.equals("ALL")) {
+            registrationTasks = dataRegistrationDAO.getAllBulkDataObjectRegistrationTasks();
+        } else {
+            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasksForDoc(doc);
+        }
+        return registrationTasks;
 	}
 
 	@Override
-	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page)
+	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc)
 			throws HpcException {
-		return dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId, pagination.getOffset(page),
-				pagination.getPageSize());
+  	    List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
+        if (doc == null) {
+            registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId, pagination.getOffset(page),
+                pagination.getPageSize());
+        } else if (doc.equals("ALL")) {
+            registrationResults = dataRegistrationDAO.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page),
+                pagination.getPageSize());
+        } else {
+            registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResultsForDoc(doc, pagination.getOffset(page),
+                pagination.getPageSize());
+        }
+		return registrationResults;
 	}
 
 	@Override
-	public int getRegistrationResultsCount(String userId) throws HpcException {
-		return dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
+	public int getRegistrationResultsCount(String userId, String doc) throws HpcException {
+  	  int count = 0;
+        if (doc == null) {
+            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
+        } else if (doc.equals("ALL")) {
+            count = dataRegistrationDAO.getAllBulkDataObjectRegistrationResultsCount();
+        } else {
+            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCountForDoc(doc);
+        }
+        return count;
 	}
 
 	@Override

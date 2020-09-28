@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS public."HPC_GROUP";
+
 create table irods."HPC_GROUP"
 (
     "GROUP_NAME"                  VARCHAR2(250) not null
@@ -5,9 +7,9 @@ create table irods."HPC_GROUP"
             primary key,
     "CREATED"                  timestamp,
     "LAST_UPDATED"             timestamp,
-    "DOC"                      clob,
+    "DOC"                      VARCHAR(50),
     "ACTIVE"                   char(1),
-    "ACTIVE_UPDATED_BY"        clob
+    "ACTIVE_UPDATED_BY"        VARCHAR(250)
 );
 
 comment on table "HPC_GROUP" is 'HPC-DME Groups';
