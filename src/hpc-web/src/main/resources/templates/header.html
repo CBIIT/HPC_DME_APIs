@@ -52,8 +52,8 @@
 					</ul></li>
 					
 					<li class="nav-item versionNumber"><a href="">
-						<span th:if="${session.env != 'PROD'}" th:text="'version: '+${session.version}+' ('+${session.env}+')'"></span>
-						<span th:if="${session.env == 'PROD'}" th:text="'version'+${session.version}"></span>
+						<span th:if="${session.env == 'Local' or session.env == 'DEV' or session.env == 'UAT'}" th:text="'version: '+${session.version}+' ('+${session.env}+')'"></span>
+						<span th:if="${session.env == 'PROD'}" th:text="'version: '+${session.version}"></span>
 						</a></li>
 				<!-- user login dropdown end -->
 				</ul>
@@ -103,7 +103,7 @@
 							<ul class="sub dropdown-menu" aria-labelledby="manage_dropdown">
 									<li><a class="" th:href="@{/subscribe}">Notifications</a></li>
 									<li><a class="" th:href="@{/downloadtasks}">Download Tasks</a></li>
-									<li><a class="" th:href="@{/uploadtasks}">Upload Tasks</a></li>
+									<li><a class="" th:href="@{/uploadtasks}">Registration Tasks</a></li>
 							</ul></li>
 						<li id="sub-menu-reports" class="sub-menu" th:if="${session} != null and ${session.hpcUser.getUserRole()} == 'SYSTEM_ADMIN' or ${session.hpcUser.getUserRole()} == 'GROUP_ADMIN'">
 						    <a th:href="@{/reports}" class=""> <i

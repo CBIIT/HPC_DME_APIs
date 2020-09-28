@@ -18,7 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.commons.lang.StringUtils;
+
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -26,12 +27,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+import gov.nih.nci.hpc.dao.HpcGroupDAO;
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.dao.HpcUserDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.model.HpcAuthenticationTokenClaims;
+import gov.nih.nci.hpc.domain.model.HpcGroup;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
@@ -52,578 +56,621 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+
 /**
  * HPC Security Application Service Implementation.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
 public class HpcSecurityServiceImpl implements HpcSecurityService {
-  //---------------------------------------------------------------------//
-  // Constants
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Constants
+	// ---------------------------------------------------------------------//
 
-  // Authentication Token claim attributes.
-  private static final String TOKEN_SUBJECT = "HPCAuthenticationToken";
-  private static final String USER_ID_TOKEN_CLAIM = "UserName";
-  private static final String DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM = "DataManagementAccount";
-  private static final String DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM =
-      "DataManagementAccountExpiration";
+	// Authentication Token claim attributes.
+	private static final String TOKEN_SUBJECT = "HPCAuthenticationToken";
+	private static final String USER_ID_TOKEN_CLAIM = "UserName";
+	private static final String DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM = "DataManagementAccount";
+	private static final String DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM = "DataManagementAccountExpiration";
 
-  // JSON attributes. Used to create a JSON out of HpcIntegratedSystemAccount object.
-  private static final String INTEGRATED_SYSTEM_JSON_ATTRIBUTE = "integratedSystem";
-  private static final String USER_NAME_JSON_ATTRIBUTE = "username";
-  private static final String PASSWORD_JSON_ATTRIBUTE = "password";
-  private static final String PROPERTIES_JSON_ATTRIBUTE = "properties";
+	// JSON attributes. Used to create a JSON out of HpcIntegratedSystemAccount
+	// object.
+	private static final String INTEGRATED_SYSTEM_JSON_ATTRIBUTE = "integratedSystem";
+	private static final String USER_NAME_JSON_ATTRIBUTE = "username";
+	private static final String PASSWORD_JSON_ATTRIBUTE = "password";
+	private static final String PROPERTIES_JSON_ATTRIBUTE = "properties";
 
-  //---------------------------------------------------------------------//
-  // Instance members
-  //---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
 
-  // The User DAO instance.
-  @Autowired private HpcUserDAO userDAO = null;
+	// The User DAO instance.
+	@Autowired
+	private HpcUserDAO userDAO = null;
 
-  // The System Account DAO instance.
-  @Autowired private HpcSystemAccountDAO systemAccountDAO = null;
+//The User DAO instance.
+	@Autowired
+	private HpcGroupDAO groupDAO = null;
 
-  // The LDAP authenticator instance.
-  @Autowired private HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
+	// The System Account DAO instance.
+	@Autowired
+	private HpcSystemAccountDAO systemAccountDAO = null;
 
-  //The SPS authorization instance.
-  @Autowired private HpcSpsAuthorizationProxy spsAuthorizationProxy = null;
- 
-  @Autowired private HpcDataManagementProxy dataManagementProxy = null;
+	// The LDAP authenticator instance.
+	@Autowired
+	private HpcLdapAuthenticationProxy ldapAuthenticationProxy = null;
 
-  // System Accounts locator.
-  @Autowired private HpcSystemAccountLocator systemAccountLocator = null;
+	// The SPS authorization instance.
+	@Autowired
+	private HpcSpsAuthorizationProxy spsAuthorizationProxy = null;
 
-  // The Data Management Authenticator.
-  @Autowired private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
+	@Autowired
+	private HpcDataManagementProxy dataManagementProxy = null;
 
-  // The Data Management Configuration Locator.
-  @Autowired
-  private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
+	// System Accounts locator.
+	@Autowired
+	private HpcSystemAccountLocator systemAccountLocator = null;
 
-  // The authentication token signature key.
-  @Value("${hpc.service.security.authenticationTokenSignatureKey}")
-  private String authenticationTokenSignatureKey = null;
+	// The Data Management Authenticator.
+	@Autowired
+	private HpcDataManagementAuthenticator dataManagementAuthenticator = null;
 
-  // The authentication token expiration period in minutes.
-  @Value("${hpc.service.security.authenticationTokenExpirationPeriod}")
-  private int authenticationTokenExpirationPeriod = 0;
-  
-  //The authentication token expiration period in minutes.
-  @Value("${hpc.service.security.authenticationTokenExpirationPeriodSso}")
-  private int authenticationTokenExpirationPeriodSso = 0;
+	// The Data Management Configuration Locator.
+	@Autowired
+	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocator = null;
 
-  // The data management account expiration period in minutes.
-  @Value("${hpc.service.security.dataManagementAccountExpirationPeriod}")
-  private int dataManagementExpirationPeriod = 0;
+	// The authentication token signature key.
+	@Value("${hpc.service.security.authenticationTokenSignatureKey}")
+	private String authenticationTokenSignatureKey = null;
 
-  // The logger instance.
-  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	// The authentication token expiration period in minutes.
+	@Value("${hpc.service.security.authenticationTokenExpirationPeriod}")
+	private int authenticationTokenExpirationPeriod = 0;
 
-  //---------------------------------------------------------------------//
-  // Methods
-  //---------------------------------------------------------------------//
+	// The authentication token expiration period in minutes.
+	@Value("${hpc.service.security.authenticationTokenExpirationPeriodSso}")
+	private int authenticationTokenExpirationPeriodSso = 0;
 
-  //---------------------------------------------------------------------//
-  // HpcSecurityService Interface Implementation
-  //---------------------------------------------------------------------//
+	// The data management account expiration period in minutes.
+	@Value("${hpc.service.security.dataManagementAccountExpirationPeriod}")
+	private int dataManagementExpirationPeriod = 0;
 
-  @Override
-  public void addUser(HpcNciAccount nciAccount) throws HpcException {
-    // Input validation.
-    if (!isValidNciAccount(nciAccount)) {
-      throw new HpcException("Invalid add user input", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-    if (!dataManagementConfigurationLocator.getDocs().contains(nciAccount.getDoc())) {
-      throw new HpcException(
-          "Invalid DOC: "
-              + nciAccount.getDoc()
-              + ". Valid values: "
-              + Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
-          HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
 
-    String defaultConfigurationId = nciAccount.getDefaultConfigurationId();
-    if (defaultConfigurationId != null
-        && dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
-      throw new HpcException(
-          "Invalid Configuration ID. Valid values: "
-              + Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
-          HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+	// ---------------------------------------------------------------------//
+	// HpcSecurityService Interface Implementation
+	// ---------------------------------------------------------------------//
 
-    // Check if the user already exists.
-    if (getUser(nciAccount.getUserId()) != null) {
-      throw new HpcException(
-          "User already exists: nciUserId = " + nciAccount.getUserId(),
-          HpcRequestRejectReason.USER_ALREADY_EXISTS);
-    }
+	@Override
+	public void addUser(HpcNciAccount nciAccount) throws HpcException {
+		// Input validation.
+		if (!isValidNciAccount(nciAccount)) {
+			throw new HpcException("Invalid add user input", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
-    // Get the service invoker.
-    HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
-    if (invoker == null) {
-      throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
-    }
+		if (!dataManagementConfigurationLocator.getDocs().contains(nciAccount.getDoc())) {
+			throw new HpcException(
+					"Invalid DOC: " + nciAccount.getDoc() + ". Valid values: "
+							+ Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
-    // Create the User domain object.
-    HpcUser user = new HpcUser();
+		String defaultConfigurationId = nciAccount.getDefaultConfigurationId();
+		if (defaultConfigurationId != null && dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
+			throw new HpcException(
+					"Invalid Configuration ID. Valid values: "
+							+ Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
-    user.setNciAccount(nciAccount);
-    user.setCreated(Calendar.getInstance());
-    user.setActive(true);
-    user.setActiveUpdatedBy(
-        invoker.getNciAccount() == null
-            ? invoker.getDataManagementAccount().getUsername()
-            : invoker.getNciAccount().getUserId());
+		// Check if the user already exists.
+		if (getUser(nciAccount.getUserId()) != null) {
+			throw new HpcException("User already exists: nciUserId = " + nciAccount.getUserId(),
+					HpcRequestRejectReason.USER_ALREADY_EXISTS);
+		}
 
-    // Persist to the DB.
-    upsert(user);
-  }
+		// Get the service invoker.
+		HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+		if (invoker == null) {
+			throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+		}
 
-  @Override
-  public void updateUser(
-      String nciUserId,
-      String firstName,
-      String lastName,
-      String doc,
-      String defaultConfigurationId,
-      boolean active)
-      throws HpcException {
-    // Input validation.
-    if (StringUtils.isEmpty(nciUserId)) {
-      throw new HpcException("Null or empty nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+		// Create the User domain object.
+		HpcUser user = new HpcUser();
 
-    // Get the user.
-    HpcUser user = getUser(nciUserId);
-    if (user == null) {
-      throw new HpcException(
-          "User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
-    }
+		user.setNciAccount(nciAccount);
+		user.setCreated(Calendar.getInstance());
+		user.setActive(true);
+		user.setActiveUpdatedBy(invoker.getNciAccount() == null ? invoker.getDataManagementAccount().getUsername()
+				: invoker.getNciAccount().getUserId());
 
-    // Create the User domain object.
-    if (!StringUtils.isEmpty(firstName)) {
-      user.getNciAccount().setFirstName(firstName);
-    }
-
-    if (!StringUtils.isEmpty(lastName)) {
-      user.getNciAccount().setLastName(lastName);
-    }
-
-    if (!StringUtils.isEmpty(doc)) {
-      if (!dataManagementConfigurationLocator.getDocs().contains(doc)) {
-        throw new HpcException(
-            "Invalid DOC: "
-                + doc
-                + ". Valid values: "
-                + Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
-            HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-      user.getNciAccount().setDoc(doc);
-    }
-
-    if (!StringUtils.isEmpty(defaultConfigurationId)) {
-      if (dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
-        throw new HpcException(
-            "Invalid Configuration ID. Valid values: "
-                + Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
-            HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-      user.getNciAccount().setDefaultConfigurationId(defaultConfigurationId);
-    } else user.getNciAccount().setDefaultConfigurationId(null);
-
-    if (user.getActive() != active) {
-      user.setActive(active);
-      // Active indicator has changed. Update the invoker (admin) who changed it.
-      HpcRequestInvoker invoker = getRequestInvoker();
-      if (invoker == null) {
-        throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
-      }
-      user.setActiveUpdatedBy(invoker.getNciAccount().getUserId());
-    }
-    user.setLastUpdated(Calendar.getInstance());
-
-    // Persist to the DB.
-    upsert(user);
-  }
-
-
-  @Override
-  public void deleteUser(String nciUserId) throws HpcException {
-      // Input validation.
-      if (StringUtils.isEmpty(nciUserId)) {
-          throw new HpcException("Null or empty nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
-      }
-
-      // Get the user.
-	  HpcUser user = getUser(nciUserId);
-      if (user == null) {
-		  throw new HpcException(
-              "User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
-      }
-
-      userDAO.deleteUser(nciUserId);
-  }
-
-
-  @Override
-  public HpcUser getUser(String nciUserId) throws HpcException {
-    // Input validation.
-    if (nciUserId == null) {
-      throw new HpcException("Null NCI user ID", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    return userDAO.getUser(nciUserId);
-  }
-
-  @Override
-  public List<HpcUser> getUsers(
-      String nciUserId,
-      String firstNamePattern,
-      String lastNamePattern,
-      String doc,
-      String defaultConfigurationId,
-      boolean active,
-      boolean query)
-      throws HpcException {
-	if (query)
-		return userDAO.queryUsers(
-		        nciUserId, firstNamePattern, lastNamePattern, doc, defaultConfigurationId, active);
-    return userDAO.getUsers(
-        nciUserId, firstNamePattern, lastNamePattern, doc, defaultConfigurationId, active);
-  }
-
-
-  @Override
-  public List<HpcUser> getUsersByRole(
-      String role,
-      String doc,
-      String defaultConfigurationId,
-      boolean active)
-      throws HpcException {
-	  	return userDAO.getUsersByRole(role, doc, defaultConfigurationId, active);
-  }
-
-
-  @Override
-  public HpcUserRole getUserRole(String nciUserId) throws HpcException {
-    // Input validation.
-    if (nciUserId == null) {
-      throw new HpcException("Null NCI user ID", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    return dataManagementProxy.getUserRole(
-        dataManagementAuthenticator.getAuthenticatedToken(), nciUserId);
-  }
-
-  @Override
-  public HpcRequestInvoker getRequestInvoker() {
-    return HpcRequestContext.getRequestInvoker();
-  }
-
-  @Override
-  public void setRequestInvoker(
-      HpcNciAccount nciAccount,
-      boolean ldapAuthentication,
-      HpcAuthenticationType authenticationType,
-      HpcIntegratedSystemAccount dataManagementAccount)
-      throws HpcException {
-    // Input validation.
-    if (nciAccount == null || authenticationType == null || dataManagementAccount == null) {
-      throw new HpcException("Failed to set request invoker", HpcErrorType.UNEXPECTED_ERROR);
-    }
-
-    HpcRequestInvoker invoker = new HpcRequestInvoker();
-    invoker.setNciAccount(nciAccount);
-    invoker.setDataManagementAccount(dataManagementAccount);
-    invoker.setLdapAuthentication(ldapAuthentication);
-    invoker.setAuthenticationType(authenticationType);
-
-    HpcRequestContext.setRequestInvoker(invoker);
-  }
-
-  @Override
-  public <T> T executeAsSystemAccount(
-      Optional<Boolean> ldapAuthentication, HpcSystemAccountFunction<T> systemAccountFunction)
-      throws HpcException {
-    // Get the current request invoker, and authentication type.
-    HpcRequestInvoker currentRequestInvoker = getRequestInvoker();
-
-    // Switch to system account if needed.
-    boolean switchToSystemAccount =
-        !HpcAuthenticationType.SYSTEM_ACCOUNT.equals(currentRequestInvoker.getAuthenticationType());
-    if (switchToSystemAccount) {
-      setSystemRequestInvoker(
-          ldapAuthentication.orElse(currentRequestInvoker.getLdapAuthentication()));
-    }
-
-    // Execute the function as system account.
-    try {
-      return systemAccountFunction.execute();
-
-    } finally {
-      // If we switched to system account. May need to close the connection to data management.
-      if (switchToSystemAccount) {
-        if (getRequestInvoker().getDataManagementAuthenticatedToken() != null) {
-          // Data management system account was used, so need to close this connection.
-          dataManagementProxy.disconnect(getRequestInvoker().getDataManagementAuthenticatedToken());
-        }
-
-        // Switch back to the original request invoker.
-        HpcRequestContext.setRequestInvoker(currentRequestInvoker);
-      }
-    }
-  }
-
-  @Override
-  public void executeAsSystemAccount(
-      Optional<Boolean> ldapAuthentication, HpcSystemAccountFunctionNoReturn systemAccountFunction)
-      throws HpcException {
-    executeAsSystemAccount(ldapAuthentication, () -> { systemAccountFunction.execute(); return null; });
-  }
-
-  @Override
-  public boolean authenticate(String userName, String password) throws HpcException {
-    // Input validation.
-    if (userName == null || userName.trim().length() == 0) {
-      throw new HpcException(
-          "User name cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-    if (password == null || password.trim().length() == 0) {
-      throw new HpcException(
-          "Password cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
-
-    return ldapAuthenticationProxy.authenticate(userName, password);
-  }
-
-  @Override
-  public boolean authenticateSso(String nciUserId, String smSession) throws HpcException {
-	// Input validation.
-	if (smSession == null || smSession.trim().length() == 0) {
-	      throw new HpcException(
-	      "SM session cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		// Persist to the DB.
+		upsert(user);
 	}
+
+	@Override
+	public void updateUser(String nciUserId, String firstName, String lastName, String doc,
+			String defaultConfigurationId, boolean active) throws HpcException {
+		// Input validation.
+		if (StringUtils.isEmpty(nciUserId)) {
+			throw new HpcException("Null or empty nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the user.
+		HpcUser user = getUser(nciUserId);
+		if (user == null) {
+			throw new HpcException("User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+		}
+
+		// Create the User domain object.
+		if (!StringUtils.isEmpty(firstName)) {
+			user.getNciAccount().setFirstName(firstName);
+		}
+
+		if (!StringUtils.isEmpty(lastName)) {
+			user.getNciAccount().setLastName(lastName);
+		}
+
+		if (!StringUtils.isEmpty(doc)) {
+			if (!dataManagementConfigurationLocator.getDocs().contains(doc)) {
+				throw new HpcException(
+						"Invalid DOC: " + doc + ". Valid values: "
+								+ Arrays.toString(dataManagementConfigurationLocator.getDocs().toArray()),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			user.getNciAccount().setDoc(doc);
+		}
+
+		if (!StringUtils.isEmpty(defaultConfigurationId)) {
+			if (dataManagementConfigurationLocator.get(defaultConfigurationId) == null) {
+				throw new HpcException(
+						"Invalid Configuration ID. Valid values: "
+								+ Arrays.toString(dataManagementConfigurationLocator.keySet().toArray()),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			user.getNciAccount().setDefaultConfigurationId(defaultConfigurationId);
+		} else
+			user.getNciAccount().setDefaultConfigurationId(null);
+
+		if (user.getActive() != active) {
+			user.setActive(active);
+			// Active indicator has changed. Update the invoker (admin) who changed it.
+			HpcRequestInvoker invoker = getRequestInvoker();
+			if (invoker == null) {
+				throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+			}
+			user.setActiveUpdatedBy(invoker.getNciAccount().getUserId());
+		}
+		user.setLastUpdated(Calendar.getInstance());
+
+		// Persist to the DB.
+		upsert(user);
+	}
+
+	@Override
+	public void deleteUser(String nciUserId) throws HpcException {
+		// Input validation.
+		if (StringUtils.isEmpty(nciUserId)) {
+			throw new HpcException("Null or empty nciUserId", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the user.
+		HpcUser user = getUser(nciUserId);
+		if (user == null) {
+			throw new HpcException("User not found: " + nciUserId, HpcRequestRejectReason.INVALID_NCI_ACCOUNT);
+		}
+
+		userDAO.deleteUser(nciUserId);
+	}
+
+	@Override
+	public HpcUser getUser(String nciUserId) throws HpcException {
+		// Input validation.
+		if (nciUserId == null) {
+			throw new HpcException("Null NCI user ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		return userDAO.getUser(nciUserId);
+	}
+
+	@Override
+	public List<HpcUser> getUsers(String nciUserId, String firstNamePattern, String lastNamePattern, String doc,
+			String defaultConfigurationId, boolean active, boolean query) throws HpcException {
+		if (query)
+			return userDAO.queryUsers(nciUserId, firstNamePattern, lastNamePattern, doc, defaultConfigurationId,
+					active);
+		return userDAO.getUsers(nciUserId, firstNamePattern, lastNamePattern, doc, defaultConfigurationId, active);
+	}
+
+	@Override
+	public List<HpcUser> getUsersByRole(String role, String doc, String defaultConfigurationId, boolean active)
+			throws HpcException {
+		return userDAO.getUsersByRole(role, doc, defaultConfigurationId, active);
+	}
+
+	@Override
+	public HpcUserRole getUserRole(String nciUserId) throws HpcException {
+		// Input validation.
+		if (nciUserId == null) {
+			throw new HpcException("Null NCI user ID", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		return dataManagementProxy.getUserRole(dataManagementAuthenticator.getAuthenticatedToken(), nciUserId);
+	}
+
+	@Override
+	public void addGroup(String name) throws HpcException {
+		// Input validation.
+
+		// Check if the group already exists.
+		HpcGroup group = getGroup(name);
+		if (group != null && group.getActive()) {
+			throw new HpcException("Group already exists: name = " + name, HpcRequestRejectReason.GROUP_ALREADY_EXISTS);
+		}
+
+		// Get the service invoker.
+		HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+		if (invoker == null) {
+			throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		// Create the User domain object.
+		group = new HpcGroup();
+		group.setName(name);
+		group.setDoc(invoker.getNciAccount().getDoc());
+		group.setCreated(Calendar.getInstance());
+		group.setActive(true);
+
+		// Persist to the DB.
+		group.setActiveUpdatedBy(invoker.getNciAccount() == null ? invoker.getDataManagementAccount().getUsername()
+				: invoker.getNciAccount().getUserId());
+		group.setLastUpdated(Calendar.getInstance());
+		groupDAO.upsertGroup(group);
+	}
+
+	@Override
+	public void updateGroup(String name, boolean active) throws HpcException {
+		// Input validation.
+
+		HpcGroup group = getGroup(name);
+		// Check if the group already exists.
+		if (group == null || !group.getActive()) {
+			throw new HpcException("Group does not exist or is inactive: name = " + name,
+					HpcRequestRejectReason.GROUP_DOES_NOT_EXIST);
+		}
+
+		// Get the service invoker.
+		HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+		if (invoker == null) {
+			throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		// Update the Group domain object.
+		group.setActive(active);
+		group.setActiveUpdatedBy(invoker.getNciAccount() == null ? invoker.getDataManagementAccount().getUsername()
+				: invoker.getNciAccount().getUserId());
+		group.setLastUpdated(Calendar.getInstance());
+
+		// Persist to the DB.
+		groupDAO.updateGroup(group);
+	}
+
+	@Override
+	public void deleteGroup(String name) throws HpcException {
+		// Input validation.
+
+		HpcGroup group = getGroup(name);
+		// Check if the group exists.
+		if (group == null || !group.getActive()) {
+			throw new HpcException("Group does not exist or is already inactive: name = " + name,
+					HpcRequestRejectReason.GROUP_DOES_NOT_EXIST);
+		}
+
+		// Get the service invoker.
+		HpcRequestInvoker invoker = HpcRequestContext.getRequestInvoker();
+		if (invoker == null) {
+			throw new HpcException("Unknown service invoker", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		// Delete from DB.
+		groupDAO.deleteGroup(name);
+	}
+
+	@Override
+	public HpcGroup getGroup(String name) throws HpcException {
+		// Input validation.
+		if (name == null) {
+			throw new HpcException("Null group name", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		return groupDAO.getGroup(name);
+	}
+
+	@Override
+	public HpcRequestInvoker getRequestInvoker() {
+		return HpcRequestContext.getRequestInvoker();
+	}
+
+	@Override
+	public void setRequestInvoker(HpcNciAccount nciAccount, boolean ldapAuthentication,
+			HpcAuthenticationType authenticationType, HpcIntegratedSystemAccount dataManagementAccount)
+			throws HpcException {
+		// Input validation.
+		if (nciAccount == null || authenticationType == null || dataManagementAccount == null) {
+			throw new HpcException("Failed to set request invoker", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		HpcRequestInvoker invoker = new HpcRequestInvoker();
+		invoker.setNciAccount(nciAccount);
+		invoker.setDataManagementAccount(dataManagementAccount);
+		invoker.setLdapAuthentication(ldapAuthentication);
+		invoker.setAuthenticationType(authenticationType);
+
+		HpcRequestContext.setRequestInvoker(invoker);
+	}
+
+	@Override
+	public <T> T executeAsSystemAccount(Optional<Boolean> ldapAuthentication,
+			HpcSystemAccountFunction<T> systemAccountFunction) throws HpcException {
+		// Get the current request invoker, and authentication type.
+		HpcRequestInvoker currentRequestInvoker = getRequestInvoker();
+
+		// Switch to system account if needed.
+		boolean switchToSystemAccount = !HpcAuthenticationType.SYSTEM_ACCOUNT
+				.equals(currentRequestInvoker.getAuthenticationType());
+		if (switchToSystemAccount) {
+			setSystemRequestInvoker(ldapAuthentication.orElse(currentRequestInvoker.getLdapAuthentication()));
+		}
+
+		// Execute the function as system account.
+		try {
+			return systemAccountFunction.execute();
+
+		} finally {
+			// If we switched to system account. May need to close the connection to data
+			// management.
+			if (switchToSystemAccount) {
+				if (getRequestInvoker().getDataManagementAuthenticatedToken() != null) {
+					// Data management system account was used, so need to close this connection.
+					dataManagementProxy.disconnect(getRequestInvoker().getDataManagementAuthenticatedToken());
+				}
+
+				// Switch back to the original request invoker.
+				HpcRequestContext.setRequestInvoker(currentRequestInvoker);
+			}
+		}
+	}
+
+	@Override
+	public void executeAsSystemAccount(Optional<Boolean> ldapAuthentication,
+			HpcSystemAccountFunctionNoReturn systemAccountFunction) throws HpcException {
+		executeAsSystemAccount(ldapAuthentication, () -> {
+			systemAccountFunction.execute();
+			return null;
+		});
+	}
+
+	@Override
+	public boolean authenticate(String userName, String password) throws HpcException {
+		// Input validation.
+		if (userName == null || userName.trim().length() == 0) {
+			throw new HpcException("User name cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (password == null || password.trim().length() == 0) {
+			throw new HpcException("Password cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		return ldapAuthenticationProxy.authenticate(userName, password);
+	}
+
+	@Override
+	public boolean authenticateSso(String nciUserId, String smSession) throws HpcException {
+		// Input validation.
+		if (smSession == null || smSession.trim().length() == 0) {
+			throw new HpcException("SM session cannot be null or empty", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		return spsAuthorizationProxy.authorize(nciUserId, smSession,
 				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getUsername(),
 				systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS).getPassword());
-	  }
-  
-  @Override
-  public void addSystemAccount(
-      HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType, String classifier)
-      throws HpcException {
-    // Input validation.
-    if (!isValidIntegratedSystemAccount(account)) {
-      throw new HpcException("Invalid system account input", HpcErrorType.INVALID_REQUEST_INPUT);
-    }
+	}
 
-    if(!account.getIntegratedSystem().equals(HpcIntegratedSystem.GLOBUS) &&
-    	systemAccountDAO.getSystemAccount(account.getIntegratedSystem()) != null &&
-    	!systemAccountDAO.getSystemAccount(account.getIntegratedSystem()).isEmpty()) {
-    	systemAccountDAO.update(account, dataTransferType, classifier);
-    } else {
-    	systemAccountDAO.upsert(account, dataTransferType, classifier);
-    }
+	@Override
+	public void addSystemAccount(HpcIntegratedSystemAccount account, HpcDataTransferType dataTransferType,
+			String classifier) throws HpcException {
+		// Input validation.
+		if (!isValidIntegratedSystemAccount(account)) {
+			throw new HpcException("Invalid system account input", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
-    // Refresh the system accounts cache.
-    systemAccountLocator.reload();
-  }
-  
+		if (!account.getIntegratedSystem().equals(HpcIntegratedSystem.GLOBUS)
+				&& systemAccountDAO.getSystemAccount(account.getIntegratedSystem()) != null
+				&& !systemAccountDAO.getSystemAccount(account.getIntegratedSystem()).isEmpty()) {
+			systemAccountDAO.update(account, dataTransferType, classifier);
+		} else {
+			systemAccountDAO.upsert(account, dataTransferType, classifier);
+		}
 
-  @Override
-  public String createAuthenticationToken(HpcAuthenticationType authenticationType, HpcAuthenticationTokenClaims authenticationTokenClaims)
-      throws HpcException {
-    // Prepare the Claims Map.
-    Map<String, Object> claims = new HashMap<>();
-    claims.put(USER_ID_TOKEN_CLAIM, authenticationTokenClaims.getUserId());
-    claims.put(
-        DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM,
-        toJSON(authenticationTokenClaims.getDataManagementAccount()));
+		// Refresh the system accounts cache.
+		systemAccountLocator.reload();
+	}
 
-    // Calculate the data management account expiration date.
-    Calendar dataManagementAccountExpiration = Calendar.getInstance();
-    dataManagementAccountExpiration.add(Calendar.MINUTE, dataManagementExpirationPeriod);
-    claims.put(
-        DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, dataManagementAccountExpiration.getTime());
+	@Override
+	public String createAuthenticationToken(HpcAuthenticationType authenticationType,
+			HpcAuthenticationTokenClaims authenticationTokenClaims) throws HpcException {
+		// Prepare the Claims Map.
+		Map<String, Object> claims = new HashMap<>();
+		claims.put(USER_ID_TOKEN_CLAIM, authenticationTokenClaims.getUserId());
+		claims.put(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, toJSON(authenticationTokenClaims.getDataManagementAccount()));
 
-    // Calculate the expiration date.
-    Calendar tokenExpiration = Calendar.getInstance();
-    if(authenticationType.equals(HpcAuthenticationType.SM)) {
-    	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriodSso);
-    } else {
-    	tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
-    }
+		// Calculate the data management account expiration date.
+		Calendar dataManagementAccountExpiration = Calendar.getInstance();
+		dataManagementAccountExpiration.add(Calendar.MINUTE, dataManagementExpirationPeriod);
+		claims.put(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, dataManagementAccountExpiration.getTime());
 
-    return Jwts.builder()
-        .setSubject(TOKEN_SUBJECT)
-        .setClaims(claims)
-        .setExpiration(tokenExpiration.getTime())
-        .signWith(SignatureAlgorithm.HS256, authenticationTokenSignatureKey)
-        .compact();
-  }
+		// Calculate the expiration date.
+		Calendar tokenExpiration = Calendar.getInstance();
+		if (authenticationType.equals(HpcAuthenticationType.SM)) {
+			tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriodSso);
+		} else {
+			tokenExpiration.add(Calendar.MINUTE, authenticationTokenExpirationPeriod);
+		}
 
-  @Override
-  public HpcAuthenticationTokenClaims parseAuthenticationToken(String authenticationToken)
-      throws HpcException {
-    try {
-      Jws<Claims> jwsClaims =
-          Jwts.parser()
-              .setSigningKey(authenticationTokenSignatureKey)
-              .parseClaimsJws(authenticationToken);
+		return Jwts.builder().setSubject(TOKEN_SUBJECT).setClaims(claims).setExpiration(tokenExpiration.getTime())
+				.signWith(SignatureAlgorithm.HS256, authenticationTokenSignatureKey).compact();
+	}
 
-      // Extract the claims.
-      HpcAuthenticationTokenClaims tokenClaims = new HpcAuthenticationTokenClaims();
-      tokenClaims.setUserId(jwsClaims.getBody().get(USER_ID_TOKEN_CLAIM, String.class));
-      tokenClaims.setDataManagementAccount(
-          fromJSON(jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, String.class)));
+	@Override
+	public HpcAuthenticationTokenClaims parseAuthenticationToken(String authenticationToken) throws HpcException {
+		try {
+			Jws<Claims> jwsClaims = Jwts.parser().setSigningKey(authenticationTokenSignatureKey)
+					.parseClaimsJws(authenticationToken);
 
-      // Check if the data management account expired.
-      Date dataManagementAccountExpiration =
-          jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, Date.class);
-      if (dataManagementAccountExpiration.before(new Date())) {
-        // Data management account expired. Remove its properties.
-        tokenClaims.getDataManagementAccount().getProperties().clear();
-      }
+			// Extract the claims.
+			HpcAuthenticationTokenClaims tokenClaims = new HpcAuthenticationTokenClaims();
+			tokenClaims.setUserId(jwsClaims.getBody().get(USER_ID_TOKEN_CLAIM, String.class));
+			tokenClaims.setDataManagementAccount(
+					fromJSON(jwsClaims.getBody().get(DATA_MANAGEMENT_ACCOUNT_TOKEN_CLAIM, String.class)));
 
-      return tokenClaims;
+			// Check if the data management account expired.
+			Date dataManagementAccountExpiration = jwsClaims.getBody()
+					.get(DATA_MANAGEMENT_ACCOUNT_EXPIRATION_TOKEN_CLAIM, Date.class);
+			if (dataManagementAccountExpiration.before(new Date())) {
+				// Data management account expired. Remove its properties.
+				tokenClaims.getDataManagementAccount().getProperties().clear();
+			}
 
-    } catch (SignatureException se) {
-      logger.error("Untrusted Token: " + se);
-      return null;
+			return tokenClaims;
 
-    } catch (Exception e) {
-      logger.error("Invalid Token: " + e);
-      return null;
-    }
-  }
-  
-  
-  @Override 
-  public void refreshDataManagementConfigurations() throws HpcException {
-	  this.dataManagementConfigurationLocator.reload();
-  }
+		} catch (SignatureException se) {
+			logger.error("Untrusted Token: " + se);
+			return null;
 
-  @Override
-  public HpcNciAccount getUserFirstLastNameFromAD(String username) throws HpcException {
-	  
-  	return ldapAuthenticationProxy.getUserFirstLastName(username);
-  }
-  
-  //---------------------------------------------------------------------//
-  // Helper Methods
-  //---------------------------------------------------------------------//
+		} catch (Exception e) {
+			logger.error("Invalid Token: " + e);
+			return null;
+		}
+	}
 
-  /**
-   * Persist user to the DB.
-   *
-   * @param user The user to be persisted.
-   * @throws HpcException on service failure.
-   */
-  private void upsert(HpcUser user) throws HpcException {
-    user.setLastUpdated(Calendar.getInstance());
-    userDAO.upsertUser(user);
-  }
+	@Override
+	public void refreshDataManagementConfigurations() throws HpcException {
+		this.dataManagementConfigurationLocator.reload();
+	}
 
-  /**
-   * Convert an integrated-system account to a JSON string
-   *
-   * @param integratedSystemAccount The integrated system account.
-   * @return A JSON representation of integrated system account.
-   */
-  @SuppressWarnings("unchecked")
-  private String toJSON(HpcIntegratedSystemAccount integratedSystemAccount) {
-    if (integratedSystemAccount == null) {
-      return "";
-    }
+	@Override
+	public HpcNciAccount getUserFirstLastNameFromAD(String username) throws HpcException {
 
-    JSONObject jsonIntegratedSystemAccount = new JSONObject();
-    jsonIntegratedSystemAccount.put(
-        INTEGRATED_SYSTEM_JSON_ATTRIBUTE, integratedSystemAccount.getIntegratedSystem().value());
-    jsonIntegratedSystemAccount.put(
-        USER_NAME_JSON_ATTRIBUTE, integratedSystemAccount.getUsername());
-    jsonIntegratedSystemAccount.put(PASSWORD_JSON_ATTRIBUTE, integratedSystemAccount.getPassword());
-    JSONObject jsonIntegratedSystemAccountProperties = new JSONObject();
-    for (HpcIntegratedSystemAccountProperty property : integratedSystemAccount.getProperties()) {
-      jsonIntegratedSystemAccountProperties.put(property.getName(), property.getValue());
-    }
-    jsonIntegratedSystemAccount.put(
-        PROPERTIES_JSON_ATTRIBUTE, jsonIntegratedSystemAccountProperties);
+		return ldapAuthenticationProxy.getUserFirstLastName(username);
+	}
 
-    return jsonIntegratedSystemAccount.toJSONString();
-  }
+	// ---------------------------------------------------------------------//
+	// Helper Methods
+	// ---------------------------------------------------------------------//
 
-  /**
-   * Convert JSON string to HpcIntegratedSystemAccount.
-   *
-   * @param jsonIntegratedSystemAccountStr The integrated system account JSON String.
-   * @return An integrated system account object
-   */
-  private HpcIntegratedSystemAccount fromJSON(String jsonIntegratedSystemAccountStr) {
-    if (StringUtils.isEmpty(jsonIntegratedSystemAccountStr)) {
-      return null;
-    }
+	/**
+	 * Persist user to the DB.
+	 *
+	 * @param user The user to be persisted.
+	 * @throws HpcException on service failure.
+	 */
+	private void upsert(HpcUser user) throws HpcException {
+		user.setLastUpdated(Calendar.getInstance());
+		userDAO.upsertUser(user);
+	}
 
-    // Parse the JSON string.
-    JSONObject jsonIntegratedSystemAccount = null;
-    try {
-      jsonIntegratedSystemAccount =
-          (JSONObject) (new JSONParser().parse(jsonIntegratedSystemAccountStr));
+	/**
+	 * Convert an integrated-system account to a JSON string
+	 *
+	 * @param integratedSystemAccount The integrated system account.
+	 * @return A JSON representation of integrated system account.
+	 */
+	@SuppressWarnings("unchecked")
+	private String toJSON(HpcIntegratedSystemAccount integratedSystemAccount) {
+		if (integratedSystemAccount == null) {
+			return "";
+		}
 
-    } catch (ParseException e) {
-      return null;
-    }
+		JSONObject jsonIntegratedSystemAccount = new JSONObject();
+		jsonIntegratedSystemAccount.put(INTEGRATED_SYSTEM_JSON_ATTRIBUTE,
+				integratedSystemAccount.getIntegratedSystem().value());
+		jsonIntegratedSystemAccount.put(USER_NAME_JSON_ATTRIBUTE, integratedSystemAccount.getUsername());
+		jsonIntegratedSystemAccount.put(PASSWORD_JSON_ATTRIBUTE, integratedSystemAccount.getPassword());
+		JSONObject jsonIntegratedSystemAccountProperties = new JSONObject();
+		for (HpcIntegratedSystemAccountProperty property : integratedSystemAccount.getProperties()) {
+			jsonIntegratedSystemAccountProperties.put(property.getName(), property.getValue());
+		}
+		jsonIntegratedSystemAccount.put(PROPERTIES_JSON_ATTRIBUTE, jsonIntegratedSystemAccountProperties);
 
-    // Instantiate the integrated system account object.
-    HpcIntegratedSystemAccount integratedSystemAccount = new HpcIntegratedSystemAccount();
-    integratedSystemAccount.setIntegratedSystem(
-        HpcIntegratedSystem.fromValue(
-            jsonIntegratedSystemAccount.get(INTEGRATED_SYSTEM_JSON_ATTRIBUTE).toString()));
-    integratedSystemAccount.setUsername(
-        jsonIntegratedSystemAccount.get(USER_NAME_JSON_ATTRIBUTE).toString());
-    integratedSystemAccount.setPassword(
-        jsonIntegratedSystemAccount.get(PASSWORD_JSON_ATTRIBUTE).toString());
+		return jsonIntegratedSystemAccount.toJSONString();
+	}
 
-    // Map account properties from JSON.
-    JSONObject jsonProperties =
-        (JSONObject) jsonIntegratedSystemAccount.get(PROPERTIES_JSON_ATTRIBUTE);
-    for (Object propertyName : jsonProperties.keySet()) {
-      HpcIntegratedSystemAccountProperty property = new HpcIntegratedSystemAccountProperty();
-      property.setName(propertyName.toString());
-      property.setValue(jsonProperties.get(propertyName).toString());
-      integratedSystemAccount.getProperties().add(property);
-    }
+	/**
+	 * Convert JSON string to HpcIntegratedSystemAccount.
+	 *
+	 * @param jsonIntegratedSystemAccountStr The integrated system account JSON
+	 *                                       String.
+	 * @return An integrated system account object
+	 */
+	private HpcIntegratedSystemAccount fromJSON(String jsonIntegratedSystemAccountStr) {
+		if (StringUtils.isEmpty(jsonIntegratedSystemAccountStr)) {
+			return null;
+		}
 
-    return integratedSystemAccount;
-  }
+		// Parse the JSON string.
+		JSONObject jsonIntegratedSystemAccount = null;
+		try {
+			jsonIntegratedSystemAccount = (JSONObject) (new JSONParser().parse(jsonIntegratedSystemAccountStr));
 
-  /**
-   * Set the service call invoker in the request context using system account.
-   *
-   * @param ldapAuthentication Indicator whether LDAP authentication is turned on/off.
-   * @throws HpcException on service failure.
-   */
-  private void setSystemRequestInvoker(boolean ldapAuthentication) throws HpcException {
-    HpcIntegratedSystemAccount dataManagementAccount =
-        systemAccountLocator.getSystemAccount(HpcIntegratedSystem.IRODS);
-    if (dataManagementAccount == null) {
-      throw new HpcException(
-          "System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR);
-    }
+		} catch (ParseException e) {
+			return null;
+		}
 
-    HpcRequestInvoker invoker = new HpcRequestInvoker();
-    invoker.setNciAccount(null);
-    invoker.setDataManagementAccount(dataManagementAccount);
-    invoker.setDataManagementAuthenticatedToken(null);
-    invoker.setLdapAuthentication(ldapAuthentication);
-    invoker.setAuthenticationType(HpcAuthenticationType.SYSTEM_ACCOUNT);
+		// Instantiate the integrated system account object.
+		HpcIntegratedSystemAccount integratedSystemAccount = new HpcIntegratedSystemAccount();
+		integratedSystemAccount.setIntegratedSystem(HpcIntegratedSystem
+				.fromValue(jsonIntegratedSystemAccount.get(INTEGRATED_SYSTEM_JSON_ATTRIBUTE).toString()));
+		integratedSystemAccount.setUsername(jsonIntegratedSystemAccount.get(USER_NAME_JSON_ATTRIBUTE).toString());
+		integratedSystemAccount.setPassword(jsonIntegratedSystemAccount.get(PASSWORD_JSON_ATTRIBUTE).toString());
 
-    HpcRequestContext.setRequestInvoker(invoker);
-  }
+		// Map account properties from JSON.
+		JSONObject jsonProperties = (JSONObject) jsonIntegratedSystemAccount.get(PROPERTIES_JSON_ATTRIBUTE);
+		for (Object propertyName : jsonProperties.keySet()) {
+			HpcIntegratedSystemAccountProperty property = new HpcIntegratedSystemAccountProperty();
+			property.setName(propertyName.toString());
+			property.setValue(jsonProperties.get(propertyName).toString());
+			integratedSystemAccount.getProperties().add(property);
+		}
 
+		return integratedSystemAccount;
+	}
+
+	/**
+	 * Set the service call invoker in the request context using system account.
+	 *
+	 * @param ldapAuthentication Indicator whether LDAP authentication is turned
+	 *                           on/off.
+	 * @throws HpcException on service failure.
+	 */
+	private void setSystemRequestInvoker(boolean ldapAuthentication) throws HpcException {
+		HpcIntegratedSystemAccount dataManagementAccount = systemAccountLocator
+				.getSystemAccount(HpcIntegratedSystem.IRODS);
+		if (dataManagementAccount == null) {
+			throw new HpcException("System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		HpcRequestInvoker invoker = new HpcRequestInvoker();
+		invoker.setNciAccount(null);
+		invoker.setDataManagementAccount(dataManagementAccount);
+		invoker.setDataManagementAuthenticatedToken(null);
+		invoker.setLdapAuthentication(ldapAuthentication);
+		invoker.setAuthenticationType(HpcAuthenticationType.SYSTEM_ACCOUNT);
+
+		HpcRequestContext.setRequestInvoker(invoker);
+	}
 
 }

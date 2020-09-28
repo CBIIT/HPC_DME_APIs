@@ -674,8 +674,13 @@ function dm_get_item {
     local TOTAL_PATH=$(echo "$TOTAL_PATH" | sed "s#\/\/*#\/#g")
     local ITEM_TYPE="$( cut -d '/' -f 1 <<< "$TOTAL_PATH" )"
     local DME_ARCHIVE_PATH="$( cut -d '/' -f 2- <<< "$TOTAL_PATH" )"
-   
-    curl -G -X GET "$SERVER/$ITEM_TYPE/$(urlencode $DME_ARCHIVE_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
+    
+    if [ "$ITEM_TYPE" == "dataObject" ]
+    then
+   		curl -G -X GET "$SERVER/v2/$ITEM_TYPE/$(urlencode $DME_ARCHIVE_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status
+    else
+    	curl -G -X GET "$SERVER/$ITEM_TYPE/$(urlencode $DME_ARCHIVE_PATH)"  $CONFIG  -D $RESPONSE_HEADER -o $RESPONSE_MSG -s 2> $HPC_DM_UTILS/temp/curl-status 
+    fi
     check_connection $RESPONSE_HEADER
 }
 
@@ -1565,6 +1570,7 @@ function dm_show_register_directory_usage {
   -l[FILES_LIST]          Register the files mentioned in the FILE_LIST only. Each line in the FILES_LIST file contains a relative path to the source-path.
                           All collections should be registered before using this option.
   -m                      Register metadata only. Do not register files.
+  -x                      Extract metadata automatically from files.
   -s                      Skip confirmation prompt and register directly
   -h                      Print this message 
   -t[NUM_THREADS]         The number of threads to use while uploading files to the archive. This number should be between [1, 32].
@@ -1591,7 +1597,7 @@ function dm_register_directory {
     archiveType=S3
     checksum=true
 
-    while getopts ":a:b:cde:i:l:hmp:st:" option
+    while getopts ":a:b:cde:i:l:hmp:st:x" option
     do
       case "${option}" in
         a)
@@ -1639,6 +1645,9 @@ function dm_register_directory {
           ;;
         m)
           metadata_only=1
+          ;;
+        x)
+          extract_metadata=1
           ;;
         s)
           skip_confirmation=1
@@ -1745,9 +1754,14 @@ function dm_register_directory {
 
     if [ "$metadata_only" ]
     then
-      command_args+=" --metadata true "
+      command_args+=" --metadataOnly true "
     fi
 
+	if [ "$extract_metadata" ]
+    then
+      command_args+=" --extractMetadata true "
+    fi
+	
     #Add all other options
     command_args+=" --threads $numthreads"
     command_args+=" --archiveType $archiveType"

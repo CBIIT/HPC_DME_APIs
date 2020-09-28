@@ -48,17 +48,17 @@ public class HpcEventDAOImpl implements HpcEventDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String INSERT_EVENT_SQL = "insert into public.\"HPC_EVENT\" ( "
-			+ "\"USER_IDS\", \"TYPE\", \"PAYLOAD\", \"CREATED\") " + "values (?, ?, ?, ?)";
+	private static final String INSERT_EVENT_SQL = "insert into HPC_EVENT ( "
+			+ "USER_IDS, TYPE, PAYLOAD, CREATED) values (?, ?, ?, ?)";
 
-	private static final String GET_EVENTS_SQL = "select * from public.\"HPC_EVENT\"";
+	private static final String GET_EVENTS_SQL = "select * from HPC_EVENT";
 
-	private static final String DELETE_EVENT_SQL = "delete from public.\"HPC_EVENT\" where \"ID\" = ?";
+	private static final String DELETE_EVENT_SQL = "delete from HPC_EVENT where ID = ?";
 
-	private static final String INSERT_EVENT_HISTORY_SQL = "insert into public.\"HPC_EVENT_HISTORY\" ( "
-			+ "\"ID\", \"USER_IDS\", \"TYPE\", \"PAYLOAD\", \"CREATED\") " + "values (?, ?, ?, ?, ?)";
+	private static final String INSERT_EVENT_HISTORY_SQL = "insert into HPC_EVENT_HISTORY ( "
+			+ "ID, USER_IDS, TYPE, PAYLOAD, CREATED) values (?, ?, ?, ?, ?)";
 
-	private static final String GET_EVENT_HISTORY_SQL = "select * from public.\"HPC_EVENT_HISTORY\" where \"ID\" = ?";
+	private static final String GET_EVENT_HISTORY_SQL = "select * from HPC_EVENT_HISTORY where ID = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members

@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -533,6 +533,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				logger.error("Failed to restart data-object download task: " + downloadTask.getId(), e);
 			}
 		}
+		
+		// Set all in-process indicator to false;
+		dataTransferService.resetDataObjectDownloadTasksInProcess();
 	}
 
 	@Override
@@ -542,7 +545,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, true)
 				.forEach(downloadTask -> {
 					try {
-						dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
+						dataTransferService.resetCollectionDownloadTaskInProgress(downloadTask.getId());
 
 					} catch (HpcException e) {
 						logger.error("Failed to restart collection download task: " + downloadTask.getId(), e);
@@ -1013,9 +1016,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				HpcDataObjectDownloadTask downloadTask = downloadTasks.get(0);
 				try {
 					// First mark the task as picked up in this run so we don't pick up the same
-					// record.
+					// record. For tasks in RECEIVED status (which are processed concurrently in
+					// separate threads),
+					// we set their in-process indicator to true so they are not picked up by
+					// another thread.
 					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
-					dataTransferService.markProcessedDataObjectDownloadTask(downloadTask);
+					dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, true);
 
 					switch (downloadTask.getDataTransferStatus()) {
 					case RECEIVED:
@@ -1052,6 +1058,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										"download task: {} - Failed to execute as system account [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
 										downloadTask.getDestinationType(), e);
+							} finally {
+								try {
+									dataTransferService.markProcessedDataObjectDownloadTask(downloadTask, false);
+
+								} catch (HpcException e) {
+									logger.error(
+											"download task: {} - Failed to reset in-process indicator [transfer-type={}, destination-type={}]",
+											downloadTask.getId(), downloadTask.getDataTransferType(),
+											downloadTask.getDestinationType(), e);
+								}
 							}
 
 						}, dataObjectDownloadTaskExecutor);
@@ -1328,6 +1344,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *                                        destination.
 	 * @param s3DownloadDestination           The user requested S3 download
 	 *                                        destination.
+	 * @param googleDriveDownloadDestination  The user requested Google Drive
+	 *                                        download destination.
 	 * @param appendPathToDownloadDestination If true, the (full) object path will
 	 *                                        be used in the destination path,
 	 *                                        otherwise just the object name will be

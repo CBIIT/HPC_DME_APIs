@@ -266,6 +266,10 @@
 					value="${hpc.ws.rs.auth.data-management.move-collection}" />
 				<entry key="moveDataObject"
 					value="${hpc.ws.rs.auth.data-management.move-data-object}" />
+				<entry key="getAllDownloadSummary"
+					value="${hpc.ws.rs.auth.data-management.get-all-download-summary}" />
+				<entry key="getAllRegistrationSummary"
+					value="${hpc.ws.rs.auth.data-management.get-all-registration-summary}" />
 
 				<!-- Data Search Service Authorizations -->
 				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />

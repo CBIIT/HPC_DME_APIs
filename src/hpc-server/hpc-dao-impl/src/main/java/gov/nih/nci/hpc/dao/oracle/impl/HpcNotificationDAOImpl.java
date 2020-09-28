@@ -10,8 +10,13 @@
 
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,46 +52,42 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String UPSERT_SUBSCRIPTION_SQL = "insert into public.\"HPC_NOTIFICATION_SUBSCRIPTION\" ( "
-			+ "\"USER_ID\", \"EVENT_TYPE\", \"NOTIFICATION_DELIVERY_METHODS\") " + "values (?, ?, ?::text[]) "
-			+ "on conflict(\"USER_ID\", \"EVENT_TYPE\") do update set "
-			+ "\"NOTIFICATION_DELIVERY_METHODS\"=excluded.\"NOTIFICATION_DELIVERY_METHODS\"";
+	private static final String UPSERT_SUBSCRIPTION_SQL = "merge into HPC_NOTIFICATION_SUBSCRIPTION using dual on (USER_ID = ? and EVENT_TYPE = ?) "
+			+ "when matched then update set NOTIFICATION_DELIVERY_METHODS = ? "
+			+ "when not matched then insert (USER_ID, EVENT_TYPE, NOTIFICATION_DELIVERY_METHODS) values (?, ?, ?)";
 
-	private static final String DELETE_SUBSCRIPTION_SQL = "delete from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" "
-			+ "where \"USER_ID\" = ? and \"EVENT_TYPE\" = ?";
+	private static final String DELETE_SUBSCRIPTION_SQL = "delete from HPC_NOTIFICATION_SUBSCRIPTION "
+			+ "where USER_ID = ? and EVENT_TYPE = ?";
 
-	private static final String GET_SUBSCRIPTIONS_SQL = "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ?";
+	private static final String GET_SUBSCRIPTIONS_SQL = "select * from HPC_NOTIFICATION_SUBSCRIPTION where USER_ID = ?";
 
-	private static final String GET_SUBSCRIPTION_SQL = "select * from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ? and \"EVENT_TYPE\" = ?";
+	private static final String GET_SUBSCRIPTION_SQL = "select * from HPC_NOTIFICATION_SUBSCRIPTION where USER_ID = ? and EVENT_TYPE = ?";
 
-	private static final String GET_SUBSCRIPTION_ID_SQL = "select \"ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"USER_ID\" = ? and \"EVENT_TYPE\" = ?";
+	private static final String GET_SUBSCRIPTION_ID_SQL = "select ID from HPC_NOTIFICATION_SUBSCRIPTION where USER_ID = ? and EVENT_TYPE = ?";
 
-	private static final String INSERT_TRIGGER_SQL = "insert into public.\"HPC_NOTIFICATION_TRIGGER\" ( "
-			+ "\"NOTIFICATION_SUBSCRIPTION_ID\", \"NOTIFICATION_TRIGGER\") values (?, ?::text[])";
+	private static final String INSERT_TRIGGER_SQL = "insert into HPC_NOTIFICATION_TRIGGER ( "
+			+ "NOTIFICATION_SUBSCRIPTION_ID, NOTIFICATION_TRIGGER) values (?, ?)";
 
-	private static final String GET_TRIGGER_SQL = "select * from public.\"HPC_NOTIFICATION_TRIGGER\" where \"NOTIFICATION_SUBSCRIPTION_ID\" = ?";
+	private static final String GET_TRIGGER_SQL = "select * from HPC_NOTIFICATION_TRIGGER where NOTIFICATION_SUBSCRIPTION_ID = ?";
 
-	private static final String DELETE_TRIGGER_SQL = "delete from public.\"HPC_NOTIFICATION_TRIGGER\" where \"NOTIFICATION_SUBSCRIPTION_ID\" = ?";
+	private static final String DELETE_TRIGGER_SQL = "delete from HPC_NOTIFICATION_TRIGGER where NOTIFICATION_SUBSCRIPTION_ID = ?";
 
-	private static final String GET_SUBSCRIBED_USERS_SQL = "select \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" where \"EVENT_TYPE\" = ?";
+	private static final String GET_SUBSCRIBED_USERS_SQL = "select USER_ID from HPC_NOTIFICATION_SUBSCRIPTION where EVENT_TYPE = ?";
 
-	private static final String GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL = "select distinct \"USER_ID\" from public.\"HPC_NOTIFICATION_SUBSCRIPTION\" subscription "
-			+ "join public.\"HPC_NOTIFICATION_TRIGGER\" trigger "
-			+ "on subscription.\"ID\" = trigger.\"NOTIFICATION_SUBSCRIPTION_ID\" "
-			+ "where subscription.\"EVENT_TYPE\" = ? and trigger.\"NOTIFICATION_TRIGGER\" <@ ?::text[]";
+	private static final String GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL = "select s.USER_ID, t.NOTIFICATION_TRIGGER from HPC_NOTIFICATION_SUBSCRIPTION s "
+			+ "join HPC_NOTIFICATION_TRIGGER t on s.ID = t.NOTIFICATION_SUBSCRIPTION_ID where s.EVENT_TYPE = ? ";
 
-	private static final String UPSERT_DELIVERY_RECEIPT_SQL = "insert into public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" ( "
-			+ "\"EVENT_ID\", \"USER_ID\", \"NOTIFICATION_DELIVERY_METHOD\", \"DELIVERY_STATUS\", \"DELIVERED\") "
-			+ "values (?, ?, ?, ?, ?) "
-			+ "on conflict(\"EVENT_ID\", \"USER_ID\", \"NOTIFICATION_DELIVERY_METHOD\") do update "
-			+ "set \"DELIVERY_STATUS\"=excluded.\"DELIVERY_STATUS\", \"DELIVERED\"=excluded.\"DELIVERED\"";
+	private static final String UPSERT_DELIVERY_RECEIPT_SQL = "merge into HPC_NOTIFICATION_DELIVERY_RECEIPT  using dual on (EVENT_ID = ? and USER_ID = ? and NOTIFICATION_DELIVERY_METHO = ?) "
+			+ "when matched then update set DELIVERY_STATUS = ?, DELIVERED = ? "
+			+ "when not matched then insert (EVENT_ID, USER_ID, NOTIFICATION_DELIVERY_METHOD, DELIVERY_STATUS, DELIVERED) "
+			+ "values (?, ?, ?, ?, ?) ";
 
-	private static final String GET_DELIVERY_RECEIPTS_SQL = "select * from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? "
-			+ "order by \"EVENT_ID\" desc limit ? offset ?";
+	private static final String GET_DELIVERY_RECEIPTS_SQL = "select * from HPC_NOTIFICATION_DELIVERY_RECEIPT where USER_ID = ? "
+			+ "order by EVENT_ID desc offset ? rows fetch next ? rows only";
 
-	private static final String GET_DELIVERY_RECEIPT_SQL = "select * from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? and \"EVENT_ID\" = ?";
+	private static final String GET_DELIVERY_RECEIPT_SQL = "select * from HPC_NOTIFICATION_DELIVERY_RECEIPT where USER_ID = ? and EVENT_ID = ?";
 
-	private static final String GET_DELIVERY_RECEIPTS_COUNT_SQL = "select count(*) from public.\"HPC_NOTIFICATION_DELIVERY_RECEIPT\" where \"USER_ID\" = ? ";
+	private static final String GET_DELIVERY_RECEIPTS_COUNT_SQL = "select count(*) from HPC_NOTIFICATION_DELIVERY_RECEIPT where USER_ID = ? ";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -104,8 +105,9 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 		HpcNotificationSubscription notificationSubscription = new HpcNotificationSubscription();
 		notificationSubscription.setId(rs.getInt("ID"));
 		notificationSubscription.setEventType(HpcEventType.fromValue(rs.getString("EVENT_TYPE")));
-		String[] deliveryMethods = (String[]) rs.getArray("NOTIFICATION_DELIVERY_METHODS").getArray();
-		for (String deliveryMethod : deliveryMethods) {
+
+		String deliveryMethods = rs.getString("NOTIFICATION_DELIVERY_METHODS");
+		for (String deliveryMethod : deliveryMethods.split(",")) {
 			notificationSubscription.getNotificationDeliveryMethods()
 					.add(HpcNotificationDeliveryMethod.fromValue(deliveryMethod));
 		}
@@ -113,13 +115,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 		return notificationSubscription;
 	};
 	private RowMapper<HpcNotificationTrigger> notificationTriggerRowMapper = (rs, rowNum) -> {
-		HpcNotificationTrigger notificationTrigger = new HpcNotificationTrigger();
-		String[] triggers = (String[]) rs.getArray("NOTIFICATION_TRIGGER").getArray();
-		for (String trigger : triggers) {
-			notificationTrigger.getPayloadEntries().add(fromString(trigger));
-		}
-
-		return notificationTrigger;
+		return fromNotificationTriggerString(rs.getString("NOTIFICATION_TRIGGER"));
 	};
 	private RowMapper<HpcNotificationDeliveryReceipt> notificationDeliveryReceiptRowMapper = (rs, rowNum) -> {
 		HpcNotificationDeliveryReceipt notificationDelivertReceipt = new HpcNotificationDeliveryReceipt();
@@ -134,8 +130,14 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 
 		return notificationDelivertReceipt;
 	};
+	private RowMapper<HpcUserTrigger> userTriggerRowMapper = (rs, rowNum) -> {
+		HpcUserTrigger userTrigger = new HpcUserTrigger();
+		userTrigger.notificationTrigger = fromNotificationTriggerString(rs.getString("NOTIFICATION_TRIGGER"));
+		userTrigger.userId = rs.getString("USER_ID");
+		return userTrigger;
+	};
 	private SingleColumnRowMapper<String> userIdRowMapper = new SingleColumnRowMapper<>();
-	private SingleColumnRowMapper<Integer> notificationIdRowMapper = new SingleColumnRowMapper<>();
+	private SingleColumnRowMapper<BigDecimal> notificationIdRowMapper = new SingleColumnRowMapper<>();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -162,16 +164,17 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 			throws HpcException {
 		try {
 			String eventType = notificationSubscription.getEventType().value();
-			jdbcTemplate.update(UPSERT_SUBSCRIPTION_SQL, userId, eventType,
-					deliveryMethodsToSQLTextArray(notificationSubscription.getNotificationDeliveryMethods()));
+			String deliveryMethods = toDeliveryMethodsString(notificationSubscription.getNotificationDeliveryMethods());
+			jdbcTemplate.update(UPSERT_SUBSCRIPTION_SQL, userId, eventType, deliveryMethods, userId, eventType,
+					deliveryMethods);
 
 			// Update the notification triggers.
-			Integer notificationId = jdbcTemplate.queryForObject(GET_SUBSCRIPTION_ID_SQL, notificationIdRowMapper,
+			BigDecimal notificationId = jdbcTemplate.queryForObject(GET_SUBSCRIPTION_ID_SQL, notificationIdRowMapper,
 					userId, eventType);
 			jdbcTemplate.update(DELETE_TRIGGER_SQL, notificationId);
 			for (HpcNotificationTrigger trigger : notificationSubscription.getNotificationTriggers()) {
 				jdbcTemplate.update(INSERT_TRIGGER_SQL, notificationId,
-						payloadEntriesToSQLTextArray(trigger.getPayloadEntries()));
+						toEventPayloadEntriesString(trigger.getPayloadEntries()));
 			}
 
 		} catch (DataAccessException e) {
@@ -256,8 +259,29 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 	public List<String> getSubscribedUsers(HpcEventType eventType, List<HpcEventPayloadEntry> eventPayloadEntries)
 			throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL, userIdRowMapper, eventType.value(),
-					payloadEntriesToSQLTextArray(eventPayloadEntries));
+			Map<String, String> eventPayloadMap = new Hashtable<>();
+			eventPayloadEntries.forEach(eventPayloadEntry -> eventPayloadMap.put(eventPayloadEntry.getAttribute(),
+					eventPayloadEntry.getValue()));
+
+			HashSet<String> userIds = new HashSet<>();
+			jdbcTemplate.query(GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL, userTriggerRowMapper, eventType.value())
+					.forEach(userTrigger -> {
+						boolean match = true;
+
+						for (HpcEventPayloadEntry triggerPayloadEntry : userTrigger.notificationTrigger
+								.getPayloadEntries()) {
+							String value = eventPayloadMap.get(triggerPayloadEntry.getAttribute());
+							if (value == null || !value.equals(triggerPayloadEntry.getValue())) {
+								match = false;
+								break;
+							}
+						}
+
+						if (match) {
+							userIds.add(userTrigger.userId);
+						}
+					});
+			return new ArrayList<String>(userIds);
 
 		} catch (IncorrectResultSizeDataAccessException notFoundEx) {
 			return null;
@@ -273,6 +297,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 		try {
 			jdbcTemplate.update(UPSERT_DELIVERY_RECEIPT_SQL, deliveryReceipt.getEventId(), deliveryReceipt.getUserId(),
 					deliveryReceipt.getNotificationDeliveryMethod().value(), deliveryReceipt.getDeliveryStatus(),
+					deliveryReceipt.getDelivered(), deliveryReceipt.getEventId(), deliveryReceipt.getUserId(),
+					deliveryReceipt.getNotificationDeliveryMethod().value(), deliveryReceipt.getDeliveryStatus(),
 					deliveryReceipt.getDelivered());
 
 		} catch (DataAccessException e) {
@@ -285,8 +311,8 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 	public List<HpcNotificationDeliveryReceipt> getDeliveryReceipts(String userId, int offset, int limit)
 			throws HpcException {
 		try {
-			return jdbcTemplate.query(GET_DELIVERY_RECEIPTS_SQL, notificationDeliveryReceiptRowMapper, userId, limit,
-					offset);
+			return jdbcTemplate.query(GET_DELIVERY_RECEIPTS_SQL, notificationDeliveryReceiptRowMapper, userId, offset,
+					limit);
 
 		} catch (IncorrectResultSizeDataAccessException notFoundEx) {
 			return null;
@@ -331,24 +357,22 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 	// Helper Methods
 	// ---------------------------------------------------------------------//
 
+	// Prepared query.
+	private class HpcUserTrigger {
+		private String userId = null;
+		private HpcNotificationTrigger notificationTrigger = null;
+	}
+
 	/**
-	 * Map a collection of delivery methods to a SQL text array.
+	 * Map a collection of delivery methods to a comma separated string
 	 * 
 	 * @param deliveryMethods A list of delivery methods.
-	 * @return array of text values.
+	 * @return comma separated string
 	 */
-	private String deliveryMethodsToSQLTextArray(List<HpcNotificationDeliveryMethod> deliveryMethods) {
-		StringBuilder deliveryMethodsArray = new StringBuilder();
-		deliveryMethodsArray.append("{");
-		for (HpcNotificationDeliveryMethod deliveryMethod : deliveryMethods) {
-			if (deliveryMethodsArray.length() > 1) {
-				deliveryMethodsArray.append(",");
-			}
-			deliveryMethodsArray.append("\"" + deliveryMethod.value() + "\"");
-		}
-		deliveryMethodsArray.append("}");
-
-		return deliveryMethodsArray.toString();
+	private String toDeliveryMethodsString(List<HpcNotificationDeliveryMethod> deliveryMethods) {
+		StringBuilder deliveryMethodsStr = new StringBuilder();
+		deliveryMethods.forEach(deliveryMethod -> deliveryMethodsStr.append(deliveryMethod.value() + ","));
+		return deliveryMethodsStr.toString();
 	}
 
 	/**
@@ -357,30 +381,28 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 	 * @param payloadEntries A list of payload entries.
 	 * @return SQL text array string.
 	 */
-	private String payloadEntriesToSQLTextArray(List<HpcEventPayloadEntry> payloadEntries) {
-		StringBuilder payloadEntriesArray = new StringBuilder();
-		payloadEntriesArray.append("{");
-		for (HpcEventPayloadEntry payloadEntry : payloadEntries) {
-			if (payloadEntriesArray.length() > 1) {
-				payloadEntriesArray.append(",");
-			}
-			payloadEntriesArray.append("\"" + payloadEntry.getAttribute() + "=" + payloadEntry.getValue() + "\"");
-		}
-		payloadEntriesArray.append("}");
-
-		return payloadEntriesArray.toString();
+	private String toEventPayloadEntriesString(List<HpcEventPayloadEntry> payloadEntries) {
+		StringBuilder payloadEntriesStr = new StringBuilder();
+		payloadEntries.forEach(payloadEntry -> payloadEntriesStr
+				.append(payloadEntry.getAttribute() + "=" + payloadEntry.getValue() + ","));
+		return payloadEntriesStr.toString();
 	}
 
 	/**
-	 * Construct a payload entry object from string.
+	 * Construct a HpcNotificationTrigger object from string.
 	 * 
-	 * @param payloadEntryStr The payload entry string.
-	 * @return payload entry object
+	 * @param notificationTriggerStr The notification trigger string.
+	 * @return HpcNotificationTrigger object
 	 */
-	private HpcEventPayloadEntry fromString(String payloadEntryStr) {
-		HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
-		payloadEntry.setAttribute(payloadEntryStr.substring(0, payloadEntryStr.indexOf('=')));
-		payloadEntry.setValue(payloadEntryStr.substring(payloadEntryStr.indexOf('=') + 1));
-		return payloadEntry;
+	private HpcNotificationTrigger fromNotificationTriggerString(String notificationTriggerStr) {
+		HpcNotificationTrigger notificationTrigger = new HpcNotificationTrigger();
+		for (String trigger : notificationTriggerStr.split(",")) {
+			HpcEventPayloadEntry payloadEntry = new HpcEventPayloadEntry();
+			payloadEntry.setAttribute(trigger.substring(0, trigger.indexOf('=')));
+			payloadEntry.setValue(trigger.substring(trigger.indexOf('=') + 1));
+			notificationTrigger.getPayloadEntries().add(payloadEntry);
+		}
+
+		return notificationTrigger;
 	}
 }

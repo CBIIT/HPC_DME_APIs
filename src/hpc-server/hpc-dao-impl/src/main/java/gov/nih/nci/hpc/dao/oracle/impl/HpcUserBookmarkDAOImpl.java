@@ -42,19 +42,18 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String UPSERT_USER_BOOKMARK_SQL = "insert into public.\"HPC_USER_BOOKMARK\" ( "
-			+ "\"USER_ID\", \"BOOKMARK_NAME\", \"PATH\", \"BOOKMARK_GROUP\", " + "\"CREATED\", \"UPDATED\" ) "
-			+ "values (?, ?, ?, ?, ?, ?) " + "on conflict(\"USER_ID\", \"BOOKMARK_NAME\") do update "
-			+ "set \"PATH\"=excluded.\"PATH\", \"BOOKMARK_GROUP\"=excluded.\"BOOKMARK_GROUP\", "
-			+ "\"CREATED\"=excluded.\"CREATED\", \"UPDATED\"=excluded.\"UPDATED\"";
+	private static final String UPSERT_USER_BOOKMARK_SQL = "merge into HPC_USER_BOOKMARK using dual on (USER_ID = ? and BOOKMARK_NAME = ?) "
+			+ "when matched then update set PATH = ?, BOOKMARK_GROUP = ?, CREATED = ?, UPDATED = ? "
+			+ "when not matched then insert (USER_ID, BOOKMARK_NAME, PATH, BOOKMARK_GROUP, CREATED, UPDATED ) "
+			+ "values (?, ?, ?, ?, ?, ?) ";
 
-	private static final String DELETE_USER_BOOKMARK_SQL = "delete from public.\"HPC_USER_BOOKMARK\" where \"USER_ID\" = ? and \"BOOKMARK_NAME\" = ?";
+	private static final String DELETE_USER_BOOKMARK_SQL = "delete from HPC_USER_BOOKMARK where USER_ID = ? and BOOKMARK_NAME = ?";
 
-	private static final String GET_USER_BOOKMARKS_SQL = "select * from public.\"HPC_USER_BOOKMARK\" where \"USER_ID\" = ?";
+	private static final String GET_USER_BOOKMARKS_SQL = "select * from HPC_USER_BOOKMARK where USER_ID = ?";
 
-	private static final String GET_USER_BOOKMARK_SQL = "select * from public.\"HPC_USER_BOOKMARK\" where \"USER_ID\" = ? and \"BOOKMARK_NAME\" = ?";
+	private static final String GET_USER_BOOKMARK_SQL = "select * from HPC_USER_BOOKMARK where USER_ID = ? and BOOKMARK_NAME = ?";
 
-	private static final String GET_USER_BOOKMARKS_BY_PATH_SQL = "select * from public.\"HPC_USER_BOOKMARK\" where \"USER_ID\" = ? and \"PATH\" =?";
+	private static final String GET_USER_BOOKMARKS_BY_PATH_SQL = "select * from HPC_USER_BOOKMARK where USER_ID = ? and PATH = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -108,7 +107,8 @@ public class HpcUserBookmarkDAOImpl implements HpcUserBookmarkDAO {
 	public void upsertBookmark(String nciUserId, HpcBookmark bookmark) throws HpcException {
 		try {
 			jdbcTemplate.update(UPSERT_USER_BOOKMARK_SQL, nciUserId, bookmark.getName(), bookmark.getPath(),
-					bookmark.getGroup(), bookmark.getCreated(), bookmark.getUpdated());
+					bookmark.getGroup(), bookmark.getCreated(), bookmark.getUpdated(), nciUserId, bookmark.getName(),
+					bookmark.getPath(), bookmark.getGroup(), bookmark.getCreated(), bookmark.getUpdated());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a user bookmark " + e.getMessage(), HpcErrorType.DATABASE_ERROR,

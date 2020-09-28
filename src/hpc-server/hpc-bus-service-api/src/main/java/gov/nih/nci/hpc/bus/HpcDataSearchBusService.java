@@ -76,7 +76,35 @@ public interface HpcDataSearchBusService {
   public HpcDataObjectListDTO getDataObjects(
       String queryName, Boolean detailedResponse, Integer page, Integer pageSize, Boolean totalCount)
       throws HpcException;
-  
+
+
+  /**
+   * Get parent collections of the data objects searched by compound metadata query.
+   *
+   * @param compoundMetadataQueryDTO The compound metadata query DTO.
+   * @param path The path to search in if specified.
+   * @return A list of Data Object DTO.
+   * @throws HpcException on service failure.
+   */
+  public HpcCollectionListDTO getDataObjectParents(String path,
+	        HpcCompoundMetadataQueryDTO compoundMetadataQueryDTO)
+			throws HpcException;
+
+
+  /**
+   * Get parent collections of the data objects searched by named query.
+   *
+   * @param queryName The query name.
+   * @param detailedResponse If set to true, return entity details (attributes + metadata).
+   * @param page The requested results page.
+   * @param pageSize (Optional) The page size specified by the user. If not specified, it will take the default.
+   * @param totalCount If set to true, return the total count of collections matching the query
+   *     regardless of the limit on returned entities.
+   * @return A list of Data Object DTO.
+   * @throws HpcException on service failure.
+   */
+  public HpcCollectionListDTO getDataObjectParents(String queryName, Boolean detailedResponse,
+		  Integer page, Integer pageSize, Boolean totalCount) throws HpcException;
 
   /**
    * Add a named query for a user.

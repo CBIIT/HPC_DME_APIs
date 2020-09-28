@@ -31,6 +31,8 @@ public interface HpcCatalogDAO
      * Get catalog entries for the specified criteria. 
      *
      * @param criteria The user specified criteria.
+     * @param offset Skip that many records in the returned results.
+     * @param limit No more than 'limit' records will be returned.
      * @return List of meta data catalog entries.
      * @throws HpcException on database error.
      */

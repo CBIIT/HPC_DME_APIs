@@ -34,6 +34,7 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 		String filePath = criteriaMap.get("filePath");
 		String destinationBasePath = criteriaMap.get("destinationBasePath");
 		String metadata = criteriaMap.get("metadata");
+		String extractMetadataStr = criteriaMap.get("extractMetadata");
 		String checksumStr = criteriaMap.get("checksum");
 		boolean checksum = true;
 		if(checksumStr != null && checksumStr.equalsIgnoreCase("false"))
@@ -41,6 +42,7 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 		
 		String archiveType = criteriaMap.get("archiveType");
 		boolean metadataOnly = metadata != null && metadata.equals("true");
+		boolean extractMetadata = extractMetadataStr != null && extractMetadataStr.equals("true");
 		System.out.println("Processing " + dataObject.getDataFilePathAttrs().getAbsolutePath());
 		logger.debug("Processing " + dataObject.getDataFilePathAttrs().getAbsolutePath());
 		try {
@@ -50,11 +52,11 @@ public class HPCBatchLocalFileRecordProcessor implements RecordProcessor {
 				HpcLocalFileProcessor fileProcess;
 				fileProcess = new HpcLocalFileProcessor(dataObject);
 				fileProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
-						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, null);
+						dataObject.getErrorRecordsFile(), metadataOnly, extractMetadata, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, null);
 			} else {
 				HpcLocalFolderProcessor folderProcess = new HpcLocalFolderProcessor(dataObject.getConnection());
 				folderProcess.process(pathAttr, filePath, filePathBaseName, destinationBasePath, dataObject.getLogFile(),
-						dataObject.getErrorRecordsFile(), metadataOnly, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, null);
+						dataObject.getErrorRecordsFile(), metadataOnly, extractMetadata, (archiveType != null && archiveType.equalsIgnoreCase("POSIX") ? false : true), checksum, null);
 			}
 		} catch (RecordProcessingException e) {
 		  logger.error("RecordProcessingException " + e.getMessage());

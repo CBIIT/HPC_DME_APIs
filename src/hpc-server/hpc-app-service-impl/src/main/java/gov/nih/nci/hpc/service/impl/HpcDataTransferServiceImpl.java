@@ -728,7 +728,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} catch (HpcException e) {
 			logger.error("Failed to get cancellation request for task ID: " + taskId, e);
-			return false;
+			//If it can not find the collection download task, it is cancelled and removed from the table.
+			return true;
 		}
 	}
 
@@ -955,10 +956,25 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException {
-		downloadTask.setProcessed(Calendar.getInstance());
-		downloadTask.setInProcess(true);
-		dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
+	public void resetDataObjectDownloadTasksInProcess() throws HpcException {
+		dataDownloadDAO.resetDataObjectDownloadTaskInProcess();
+	}
+
+	@Override
+	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
+			throws HpcException {
+		// Only set in-process to true if this task in a RECEIVED status, and the
+		// in-process not already true.
+		if (!inProcess || (inProcess && !downloadTask.getInProcess()
+				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
+			dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess);
+		}
+
+		Calendar processed = Calendar.getInstance();
+		dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
+
+		downloadTask.setProcessed(processed);
+		downloadTask.setInProcess(inProcess);
 	}
 
 	@Override
@@ -1123,6 +1139,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public void setCollectionDownloadTaskInProgress(String taskId, boolean inProcess) throws HpcException {
 		dataDownloadDAO.setCollectionDownloadTaskInProcess(taskId, inProcess);
 	}
+	
+	@Override
+	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException {
+		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
+	}
 
 	@Override
 	public void completeCollectionDownloadTask(HpcCollectionDownloadTask downloadTask, HpcDownloadResult result,
@@ -1164,34 +1185,66 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// of all successful download items.
 		int effectiveTransferSpeed = 0;
 		int completedItems = 0;
+		long totalSize = 0;
 		for (HpcCollectionDownloadTaskItem item : downloadTask.getItems()) {
 			if (item.getResult() != null && item.getResult().equals(HpcDownloadResult.COMPLETED)
 					&& item.getEffectiveTransferSpeed() != null) {
 				effectiveTransferSpeed += item.getEffectiveTransferSpeed();
 				completedItems++;
 			}
+			// Compute the total size of the collection
+			totalSize = totalSize + Optional.ofNullable(item.getSize()).orElse(0L);
 		}
 		taskResult.setEffectiveTransferSpeed(completedItems > 0 ? effectiveTransferSpeed / completedItems : null);
+		taskResult.setSize(totalSize);
 
 		// Persist to DB.
 		dataDownloadDAO.upsertDownloadTaskResult(taskResult);
 	}
 
 	@Override
-	public List<HpcUserDownloadRequest> getDownloadRequests(String userId) throws HpcException {
-		List<HpcUserDownloadRequest> downloadRequests = dataDownloadDAO.getDataObjectDownloadRequests(userId);
-		downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequests(userId));
+	public List<HpcUserDownloadRequest> getDownloadRequests(String userId, String doc) throws HpcException {
+		List<HpcUserDownloadRequest> downloadRequests = null;
+		if (doc == null) {
+			downloadRequests = dataDownloadDAO.getDataObjectDownloadRequests(userId);
+			downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequests(userId));
+		} else if (doc.equals("ALL")) {
+			downloadRequests = dataDownloadDAO.getAllDataObjectDownloadRequests();
+			downloadRequests.addAll(dataDownloadDAO.getAllCollectionDownloadRequests());
+		} else {
+			downloadRequests = dataDownloadDAO.getDataObjectDownloadRequestsForDoc(doc);
+			downloadRequests.addAll(dataDownloadDAO.getCollectionDownloadRequestsForDoc(doc));
+		}
 		return downloadRequests;
 	}
 
 	@Override
-	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page) throws HpcException {
-		return dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page), pagination.getPageSize());
+	public List<HpcUserDownloadRequest> getDownloadResults(String userId, int page, String doc) throws HpcException {
+		List<HpcUserDownloadRequest> downloadResults = null;
+		if (doc == null) {
+			downloadResults = dataDownloadDAO.getDownloadResults(userId, pagination.getOffset(page),
+					pagination.getPageSize());
+		} else if (doc.equals("ALL")) {
+			downloadResults = dataDownloadDAO.getAllDownloadResults(pagination.getOffset(page),
+					pagination.getPageSize());
+		} else {
+			downloadResults = dataDownloadDAO.getDownloadResultsForDoc(doc, pagination.getOffset(page),
+					pagination.getPageSize());
+		}
+		return downloadResults;
 	}
 
 	@Override
-	public int getDownloadResultsCount(String userId) throws HpcException {
-		return dataDownloadDAO.getDownloadResultsCount(userId);
+	public int getDownloadResultsCount(String userId, String doc) throws HpcException {
+		int count = 0;
+		if (doc == null) {
+			count = dataDownloadDAO.getDownloadResultsCount(userId);
+		} else if (doc.equals("ALL")) {
+			count = dataDownloadDAO.getAllDownloadResultsCount();
+		} else {
+			count = dataDownloadDAO.getDownloadResultsCountForDoc(doc);
+		}
+		return count;
 	}
 
 	@Override
@@ -2023,6 +2076,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setS3ArchiveConfigurationId(downloadRequest.getS3ArchiveConfigurationId());
 		downloadTask.setCreated(Calendar.getInstance());
 		downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+		downloadTask.setInProcess(false);
 		downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
 		downloadTask.setPercentComplete(0);
 		downloadTask.setSize(downloadRequest.getSize());
@@ -2483,6 +2537,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					// received.
 					downloadTask.setDataTransferType(HpcDataTransferType.GLOBUS);
 					downloadTask.setDataTransferStatus(HpcDataTransferDownloadStatus.RECEIVED);
+					downloadTask.setInProcess(false);
 
 					// Persist the download task.
 					dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
