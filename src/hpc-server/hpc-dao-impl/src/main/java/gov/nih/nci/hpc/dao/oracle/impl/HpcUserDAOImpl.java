@@ -44,44 +44,39 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String UPSERT_USER_SQL = "insert into public.\"HPC_USER\" ( "
-			+ "\"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", \"DEFAULT_CONFIGURATION_ID\", "
-			+ "\"ACTIVE\", \"CREATED\", \"LAST_UPDATED\", \"ACTIVE_UPDATED_BY\") "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?) "
-			+ "on conflict(\"USER_ID\") do update set \"FIRST_NAME\"=excluded.\"FIRST_NAME\", "
-			+ "\"DOC\"=excluded.\"DOC\", " + "\"DEFAULT_CONFIGURATION_ID\"=excluded.\"DEFAULT_CONFIGURATION_ID\", "
-			+ "\"LAST_NAME\"=excluded.\"LAST_NAME\", " + "\"ACTIVE\"=excluded.\"ACTIVE\", "
-			+ "\"ACTIVE_UPDATED_BY\"=excluded.\"ACTIVE_UPDATED_BY\", " + "\"CREATED\"=excluded.\"CREATED\", "
-			+ "\"LAST_UPDATED\"=excluded.\"LAST_UPDATED\"";
+	private static final String UPSERT_USER_SQL = "merge into HPC_USER using dual on (USER_ID = ?) "
+			+ "when matched then update set FIRST_NAME = ?, LAST_NAME = ?, DOC = ?, "
+			+ "DEFAULT_CONFIGURATION_ID = ?, ACTIVE = ?, CREATED = ?, LAST_UPDATED = ?, ACTIVE_UPDATED_BY = ? "
+			+ "when not matched then insert (USER_ID, FIRST_NAME, LAST_NAME, DOC, DEFAULT_CONFIGURATION_ID, ACTIVE, "
+			+ "CREATED, LAST_UPDATED, ACTIVE_UPDATED_BY) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-	private static final String DELETE_USER_SQL = "delete from public.\"HPC_USER\" where \"USER_ID\" = ?";
+	private static final String DELETE_USER_SQL = "delete from HPC_USER where USER_ID = ?";
 
-	private static final String GET_USER_SQL = "select * from public.\"HPC_USER\" where \"USER_ID\" = ?";
+	private static final String GET_USER_SQL = "select * from HPC_USER where USER_ID = ?";
 
-	private static final String GET_USERS_SQL = "select * from public.\"HPC_USER\" where ?";
+	private static final String GET_USERS_SQL = "select * from HPC_USER where '1' = ?";
 
-	private static final String GET_USERS_SQL_BY_ROLE = "SELECT \"USER_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"DOC\", \"DEFAULT_CONFIGURATION_ID\", "
-			+ "\"ACTIVE\", \"CREATED\", \"LAST_UPDATED\", \"ACTIVE_UPDATED_BY\" "
-			+ "FROM public.\"HPC_USER\" u, public.\"r_user_main\" r where "
-			+ "u.\"USER_ID\" = r.\"user_name\" and r.\"user_type_name\" = ? ";
+	private static final String GET_USERS_SQL_BY_ROLE = "SELECT USER_ID, FIRST_NAME, LAST_NAME, DOC, DEFAULT_CONFIGURATION_ID, "
+			+ "ACTIVE, CREATED, LAST_UPDATED, ACTIVE_UPDATED_BY " + "FROM HPC_USER u, r_user_main r where "
+			+ "u.USER_ID = r.user_name and r.user_type_name = ? ";
 
-	private static final String GET_USERS_USER_ID_FILTER = " and lower(\"USER_ID\") = lower(?) ";
+	private static final String GET_USERS_USER_ID_FILTER = " and lower(USER_ID) = lower(?) ";
 
-	private static final String GET_USERS_USER_ID_PATTERN_FILTER = " lower(\"USER_ID\") like lower(?) ";
+	private static final String GET_USERS_USER_ID_PATTERN_FILTER = " lower(USER_ID) like lower(?) ";
 
-	private static final String GET_USERS_FIRST_NAME_PATTERN_FILTER = " and lower(\"FIRST_NAME\") like lower(?) ";
+	private static final String GET_USERS_FIRST_NAME_PATTERN_FILTER = " and lower(FIRST_NAME) like lower(?) ";
 
-	private static final String GET_USERS_FIRST_NAME_PATTERN_FILTER_OR = " lower(\"FIRST_NAME\") like lower(?) ";
+	private static final String GET_USERS_FIRST_NAME_PATTERN_FILTER_OR = " lower(FIRST_NAME) like lower(?) ";
 
-	private static final String GET_USERS_LAST_NAME_PATTERN_FILTER = " and lower(\"LAST_NAME\") like lower(?) ";
+	private static final String GET_USERS_LAST_NAME_PATTERN_FILTER = " and lower(LAST_NAME) like lower(?) ";
 
-	private static final String GET_USERS_LAST_NAME_PATTERN_FILTER_OR = " lower(\"LAST_NAME\") like lower(?) ";
+	private static final String GET_USERS_LAST_NAME_PATTERN_FILTER_OR = " lower(LAST_NAME) like lower(?) ";
 
-	private static final String GET_USERS_DOC_FILTER = " and lower(\"DOC\") = lower(?) ";
+	private static final String GET_USERS_DOC_FILTER = " and lower(DOC) = lower(?) ";
 
-	private static final String GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER = " and lower(\"DEFAULT_CONFIGURATION_ID\") = lower(?) ";
+	private static final String GET_USERS_DEFAULT_CONFIGURATION_ID_FILTER = " and lower(DEFAULT_CONFIGURATION_ID) = lower(?) ";
 
-	private static final String GET_USERS_ACTIVE_FILTER = " and \"ACTIVE\" = true ";
+	private static final String GET_USERS_ACTIVE_FILTER = " and ACTIVE = '1' ";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -152,7 +147,10 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 			jdbcTemplate.update(UPSERT_USER_SQL, user.getNciAccount().getUserId(), user.getNciAccount().getFirstName(),
 					user.getNciAccount().getLastName(), user.getNciAccount().getDoc(),
 					user.getNciAccount().getDefaultConfigurationId(), user.getActive(), user.getCreated(),
-					user.getLastUpdated(), user.getActiveUpdatedBy());
+					user.getLastUpdated(), user.getActiveUpdatedBy(), user.getNciAccount().getUserId(),
+					user.getNciAccount().getFirstName(), user.getNciAccount().getLastName(),
+					user.getNciAccount().getDoc(), user.getNciAccount().getDefaultConfigurationId(), user.getActive(),
+					user.getCreated(), user.getLastUpdated(), user.getActiveUpdatedBy());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a user: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
@@ -194,7 +192,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 		List<Object> args = new ArrayList<>();
 
 		sqlQueryBuilder.append(GET_USERS_SQL);
-		args.add(true);
+		args.add("1");
 
 		if (nciUserId != null) {
 			sqlQueryBuilder.append(GET_USERS_USER_ID_FILTER);
@@ -274,7 +272,7 @@ public class HpcUserDAOImpl implements HpcUserDAO {
 		List<Object> args = new ArrayList<>();
 
 		sqlQueryBuilder.append(GET_USERS_SQL);
-		args.add(true);
+		args.add("1");
 
 		if (nciUserIdPattern != null) {
 			sqlQueryBuilder.append(" and (");

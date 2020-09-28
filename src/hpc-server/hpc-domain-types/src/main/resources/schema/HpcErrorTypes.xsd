@@ -44,6 +44,7 @@
 			<!-- User Service Request Reject Reasons -->
 			<xsd:enumeration value="USER_ALREADY_EXISTS" />
 			<xsd:enumeration value="GROUP_ALREADY_EXISTS" />
+			<xsd:enumeration value="GROUP_DOES_NOT_EXIST" />
 			<xsd:enumeration value="API_NOT_SUPPORTED" />
 
 			<!-- Data Management Request Reject Reasons -->

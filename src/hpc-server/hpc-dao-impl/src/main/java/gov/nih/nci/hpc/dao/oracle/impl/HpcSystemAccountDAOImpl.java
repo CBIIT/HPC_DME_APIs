@@ -36,16 +36,13 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String UPSERT_SQL = "insert into public.\"HPC_SYSTEM_ACCOUNT\" ( "
-			+ "\"USERNAME\", \"PASSWORD\", \"SYSTEM\", \"DATA_TRANSFER_TYPE\", \"CLASSIFIER\") "
-			+ "values (?, ?, ?, ?, ?)";
+	private static final String UPSERT_SQL = "insert into HPC_SYSTEM_ACCOUNT ( "
+			+ "USERNAME, PASSWORD, SYSTEM, DATA_TRANSFER_TYPE, CLASSIFIER) values (?, ?, ?, ?, ?)";
 
-	private static final String UPDATE_SQL = "update public.\"HPC_SYSTEM_ACCOUNT\" set "
-			+ "\"USERNAME\" = ?, \"PASSWORD\" = ?, \"DATA_TRANSFER_TYPE\" = ?, \"CLASSIFIER\" = ? "
-			+ " where \"SYSTEM\" = ?";
+	private static final String UPDATE_SQL = "update HPC_SYSTEM_ACCOUNT set USERNAME = ?, PASSWORD = ?, DATA_TRANSFER_TYPE = ?, CLASSIFIER = ? where SYSTEM = ?";
 
-	private static final String GET_BY_SYSTEM_SQL = "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"SYSTEM\" = ?";
-	private static final String GET_BY_DATA_TRANSFER_TYPE_SQL = "select * from public.\"HPC_SYSTEM_ACCOUNT\" where \"DATA_TRANSFER_TYPE\" = ?";
+	private static final String GET_BY_SYSTEM_SQL = "select * from HPC_SYSTEM_ACCOUNT where SYSTEM = ?";
+	private static final String GET_BY_DATA_TRANSFER_TYPE_SQL = "select * from HPC_SYSTEM_ACCOUNT where DATA_TRANSFER_TYPE = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members

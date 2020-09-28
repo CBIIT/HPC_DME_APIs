@@ -159,18 +159,20 @@ app
         	window.location = (node.collection ? "/collection" : "/datafile") + "?action=view&path=" +
             percentEncodePath(node.fullPath) + "&source=browse&init";
         }]);
-        contextMenuData.push(['Add Collection', function() { 
-        	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Add Data File', function() { 
-        	window.location = "/addDatafile?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Add Bulk', function() { 
-        	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
-        }]);
-        contextMenuData.push(['Refresh Node', function() { 
-        	refreshNode(node);
-        }]);
+        if(node.collection) {
+	        contextMenuData.push(['Add Collection', function() { 
+	        	window.location = "/addCollection?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Add Data File', function() { 
+	        	window.location = "/addDatafile?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Add Bulk', function() { 
+	        	window.location = "/addbulk?parent=" + percentEncodePath(node.fullPath) + "&source=browse&init";
+	        }]);
+	        contextMenuData.push(['Refresh Node', function() { 
+	        	refreshNode(node);
+	        }]);
+        }
 
         
         return contextMenuData
@@ -307,12 +309,9 @@ div.ui-grid-cell-contents.folder {
 					<div class="col-md-12" style="word-break:break-all">
 						<div class="panel panel-default">
 							<div class="panel-heading">
-								<div class="col-md-3">
-								<h2>
-									<i class="fa fa-list-alt red"></i><strong>Browse</strong>
-								</h2>
+								<div class="col-md-4">
 								</div>
-								<div class="col-md-3 col-md-offset-6">
+								<div class="col-md-3">
 								<h2>
 									<strong> <a id="refreshBrowse" class="btn btn-link btn-sm" th:href="@{/browse?refresh}"><i class="fa fa-folder" title="Browse to home" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="bookmarks" class="btn btn-link btn-sm" th:href="@{/bookmarks}" data-target="#bookmarksTarget"><i class="fa fa-star" title="Bookmarks" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;<a data-toggle="modal" id="browsepartial" class="btn btn-link btn-sm" th:href="@{/browse?partial}" data-target="#browsePartial"><i class="fa fa-sitemap" title="Browse to path" aria-hidden="true"></i></a></strong>
 								</h2>
