@@ -77,7 +77,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO {
 	private static final String GET_SUBSCRIBED_USERS_WITH_TRIGGER_SQL = "select s.USER_ID, t.NOTIFICATION_TRIGGER from HPC_NOTIFICATION_SUBSCRIPTION s "
 			+ "join HPC_NOTIFICATION_TRIGGER t on s.ID = t.NOTIFICATION_SUBSCRIPTION_ID where s.EVENT_TYPE = ? ";
 
-	private static final String UPSERT_DELIVERY_RECEIPT_SQL = "merge into HPC_NOTIFICATION_DELIVERY_RECEIPT  using dual on (EVENT_ID = ? and USER_ID = ? and NOTIFICATION_DELIVERY_METHO = ?) "
+	private static final String UPSERT_DELIVERY_RECEIPT_SQL = "merge into HPC_NOTIFICATION_DELIVERY_RECEIPT using dual on (EVENT_ID = ? and USER_ID = ? and NOTIFICATION_DELIVERY_METHOD = ?) "
 			+ "when matched then update set DELIVERY_STATUS = ?, DELIVERED = ? "
 			+ "when not matched then insert (EVENT_ID, USER_ID, NOTIFICATION_DELIVERY_METHOD, DELIVERY_STATUS, DELIVERED) "
 			+ "values (?, ?, ?, ?, ?) ";
