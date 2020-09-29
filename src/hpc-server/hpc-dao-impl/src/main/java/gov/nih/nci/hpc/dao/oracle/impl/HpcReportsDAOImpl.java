@@ -266,7 +266,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String DOCS_SQL = "select distinct meta_attr_value from r_meta_main where meta_attr_name='registered_by_doc'";
 
-	private static final String REFRESH_VIEW_SQL_TEMPLATE = "begin\n dbms_mview.refresh('%s');\n end";
+	private static final String REFRESH_VIEW_SQL_TEMPLATE = "begin\n dbms_mview.refresh('%s');\n end;";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
