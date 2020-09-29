@@ -266,7 +266,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String DOCS_SQL = "select distinct meta_attr_value from r_meta_main where meta_attr_name='registered_by_doc'";
 
-	private static final String REFRESH_VIEW_SQL = "refresh materialized view concurrently";
+	private static final String REFRESH_VIEW_SQL_TEMPLATE = "begin\n dbms_mview.refresh('%s');\n end";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -953,20 +953,20 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	@Override
 	public void refreshViews() throws HpcException {
 		try {
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_meta_main");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_source_file_size");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_doc");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_basepath");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_collection_type");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by_doc");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by_basepath");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_data_objects");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_coll_registered_by_path");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_path");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_collection_path");
-			jdbcTemplate.execute(REFRESH_VIEW_SQL + " r_report_registered_by_audit");
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_meta_main"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_source_file_size"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_registered_by_doc"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_registered_by_basepath"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_registered_by"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_coll_registered_by"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_collection_type"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_coll_registered_by_doc"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_coll_registered_by_basepath"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_data_objects"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_coll_registered_by_path"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_registered_by_path"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_collection_path"));
+			jdbcTemplate.execute(String.format(REFRESH_VIEW_SQL_TEMPLATE, "r_report_registered_by_audit"));
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to refresh report views: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
