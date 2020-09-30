@@ -137,7 +137,8 @@
 													</tr>										
 													
 													<tr>
-														<td><label for="Name">Collection Path:</label></td>
+														<td><label for="Name">Collection Path:</label><a href="#" id="collectionPathPopover" data-toggle="popover">
+																	<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 														<td><input type="text" name="path" id="path"
 															size="60" th:value="${collectionPath}" /></td>
 													</tr>
@@ -277,6 +278,12 @@
 	<script type="text/javascript">
 	//<![CDATA[	
 	var rowId = 0;
+	
+	$("#collectionPathPopover").popover({
+        title: '<h6 class="custom-title"><span class="glyphicon glyphicon-info-sign"></span>Collection Path</h6>',
+        content: 'Enter the full path including the base path selected above.',
+        html: true
+    }); 
 	
 	function addMetadata() {
 		rowId++;
