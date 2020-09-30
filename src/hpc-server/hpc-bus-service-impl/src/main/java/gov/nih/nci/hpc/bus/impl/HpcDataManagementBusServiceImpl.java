@@ -1728,7 +1728,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Create parent collections if requested and needed to.
 		if (createParentCollections != null && createParentCollections) {
 			String parentCollectionPath = path.substring(0, path.lastIndexOf('/'));
-			if (!dataManagementService.isPathParentDirectory(path)) {
+			if (!dataManagementService.isPathParentDirectory(path) || parentCollectionMetadataEntriesExist(
+					parentCollectionPath, parentCollectionsBulkMetadataEntries)) {
+				// If parent collection does not exist, or parent collection
+				// exists, but parent collection metadata is supplied
 				// Create a parent collection registration request DTO.
 				HpcCollectionRegistrationDTO collectionRegistration = new HpcCollectionRegistrationDTO();
 				collectionRegistration.getMetadataEntries().addAll(
@@ -1738,9 +1741,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 				// Register the parent collection.
 				registerCollection(parentCollectionPath, collectionRegistration, userId, userName, configurationId);
+				}
 			}
 		}
-	}
 
 	/**
 	 * Perform user permission requests on an entity (collection or data object)
@@ -2563,6 +2566,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Return 'system' default.
 		return metadataService.getDefaultCollectionMetadataEntries();
+	}
+	
+	/**
+	 * Check if specific path in the bulk metadata entries is exists.
+	 *
+	 * @param parentCollectionPath The parent collection path to provide metadata
+	 *                             entries for.
+	 * @param bulkMetadataEntries  Bulk metadata entries to search in.
+	 * @return true if the path exists in the bulk metadata entries.
+	 */
+	private boolean parentCollectionMetadataEntriesExist(String parentCollectionPath,
+			HpcBulkMetadataEntries bulkMetadataEntries) {
+		if (bulkMetadataEntries != null) {
+			// Search for the parent collection metadata entries by path.
+			for (HpcBulkMetadataEntry bulkMetadataEntry : bulkMetadataEntries.getPathsMetadataEntries()) {
+				if (parentCollectionPath.equals(toNormalizedPath(bulkMetadataEntry.getPath()))) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
