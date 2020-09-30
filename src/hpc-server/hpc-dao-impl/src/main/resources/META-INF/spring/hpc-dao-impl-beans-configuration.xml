@@ -73,7 +73,7 @@
 	<!--  <bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
 	</bean> -->
-	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcMetadataDAOImpl" />
+	<!-- <bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcMetadataDAOImpl" />  -->
 	<!-- <bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserNamedQueryDAOImpl" /> -->
 	<!-- <bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserBookmarkDAOImpl" /> nciUserId, bookmark.getName(), bookmark.getPath(),
 					bookmark.getGroup(), bookmark.getCreated(), bookmark.getUpdated() -->
@@ -94,7 +94,7 @@
 	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl">
 		<constructor-arg value="${hpc.integration.irods.basePath}" index="0" />
 	</bean>
-	<!-- <bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl" /> -->
+	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl" />
 	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl" />
 	<bean id="hpcUserBookmarkDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserBookmarkDAOImpl" />
 	<bean id="hpcGroupDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcGroupDAOImpl" /> 
