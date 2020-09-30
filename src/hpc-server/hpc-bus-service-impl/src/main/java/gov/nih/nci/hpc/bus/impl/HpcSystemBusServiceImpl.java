@@ -533,7 +533,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				logger.error("Failed to restart data-object download task: " + downloadTask.getId(), e);
 			}
 		}
-		
+
 		// Set all in-process indicator to false;
 		dataTransferService.resetDataObjectDownloadTasksInProcess();
 	}
@@ -974,17 +974,21 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 	}
 
+	// TODO: Remove after Oracle migration
+
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void refreshMetadataViews() throws HpcException {
-		metadataService.refreshViews();
+		// metadataService.refreshViews();
 	}
 
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void refreshReportViews() throws HpcException {
-		reportsService.refreshViews();
+		// reportsService.refreshViews();
 	}
+
+	// TODO: END
 
 	@Override
 	public void closeConnection() {
