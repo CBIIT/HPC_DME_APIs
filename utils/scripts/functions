@@ -1819,6 +1819,9 @@ function dm_show_register_globus_directory_usage {
   -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
   -p[PATTERN_TYPE]        The type of the regex pattern in the include/exclude files. Valid options are "Simple" and "RegEx". The default pattern is "Simple"
   -h                      Print this message 
+  
+dm_register_globus_directory has been deprecated. Use Bulk Data Files Registration (V2) API.
+  
 EOF
   echo "$usage"
 }
