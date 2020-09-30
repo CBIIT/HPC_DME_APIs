@@ -56,51 +56,51 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	private static final String GET_COLLECTION_IDS_EQUAL_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and collection.meta_attr_value = ?";
+	private static final String GET_COLLECTION_IDS_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and collection.meta_attr_value = ?";
 
-	private static final String GET_COLLECTION_IDS_NOT_EQUAL_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and collection.meta_attr_value <> ?";
+	private static final String GET_COLLECTION_IDS_NOT_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and collection.meta_attr_value <> ?";
 
-	private static final String GET_COLLECTION_IDS_LIKE_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and lower(collection.meta_attr_value) like lower(?)";
+	private static final String GET_COLLECTION_IDS_LIKE_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and lower(collection.meta_attr_value) like lower(?)";
 
-	private static final String GET_COLLECTION_IDS_NUM_LESS_THAN_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and num_less_than(collection.meta_attr_value, ?) = true";
+	private static final String GET_COLLECTION_IDS_NUM_LESS_THAN_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and num_less_than(collection.meta_attr_value, ?) = true";
 
-	private static final String GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and num_less_or_equal(collection.meta_attr_value, ?) = true";
+	private static final String GET_COLLECTION_IDS_NUM_LESS_OR_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and num_less_or_equal(collection.meta_attr_value, ?) = true";
 
-	private static final String GET_COLLECTION_IDS_NUM_GREATER_THAN_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and num_greater_than(collection.meta_attr_value, ?) = true";
+	private static final String GET_COLLECTION_IDS_NUM_GREATER_THAN_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and num_greater_than(collection.meta_attr_value, ?) = true";
 
-	private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and num_greater_or_equal(collection.meta_attr_value, ?) = true";
+	private static final String GET_COLLECTION_IDS_NUM_GREATER_OR_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and num_greater_or_equal(collection.meta_attr_value, ?) = true";
 
-	private static final String GET_COLLECTION_IDS_TIMESTAMP_LESS_THAN_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and timestamp_less_than(collection.meta_attr_value, ?, ?) = true";
+	private static final String GET_COLLECTION_IDS_TIMESTAMP_LESS_THAN_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and timestamp_less_than(collection.meta_attr_value, ?, ?) = true";
 
-	private static final String GET_COLLECTION_IDS_TIMESTAMP_GREATER_THAN_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and timestamp_greater_than(collection.meta_attr_value, ?, ?) = true";
+	private static final String GET_COLLECTION_IDS_TIMESTAMP_GREATER_THAN_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and timestamp_greater_than(collection.meta_attr_value, ?, ?) = true";
 
-	private static final String GET_COLLECTION_IDS_TIMESTAMP_LESS_OR_EQUAL_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and timestamp_less_or_equal(collection.meta_attr_value, ?, ?) = true";
+	private static final String GET_COLLECTION_IDS_TIMESTAMP_LESS_OR_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and timestamp_less_or_equal(collection.meta_attr_value, ?, ?) = true";
 
-	private static final String GET_COLLECTION_IDS_TIMESTAMP_GREATER_OR_EQUAL_SQL = " exists(select 1 from \"r_coll_hierarchy_meta_main\" collection where collection.object_id=collection1.object_id and timestamp_greater_or_equal(collection.meta_attr_value, ?, ?) = true";
+	private static final String GET_COLLECTION_IDS_TIMESTAMP_GREATER_OR_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=collection1.object_id and timestamp_greater_or_equal(collection.meta_attr_value, ?, ?) = true";
 
 	private static final String GET_COLLECTION_EXACT_ATTRIBUTE_MATCH_FILTER = " and collection.meta_attr_name = ?";
 
-	private static final String GET_DATA_OBJECT_IDS_EQUAL_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and dataObject.meta_attr_value = ?";
+	private static final String GET_DATA_OBJECT_IDS_EQUAL_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and dataObject.meta_attr_value = ?";
 
-	private static final String GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and dataObject.meta_attr_value <> ?";
+	private static final String GET_DATA_OBJECT_IDS_NOT_EQUAL_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and dataObject.meta_attr_value <> ?";
 
-	private static final String GET_DATA_OBJECT_IDS_LIKE_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and lower(dataObject.meta_attr_value) like lower(?)";
+	private static final String GET_DATA_OBJECT_IDS_LIKE_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and lower(dataObject.meta_attr_value) like lower(?)";
 
-	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and num_less_than(dataObject.meta_attr_value, ?) = true";
+	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_THAN_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and num_less_than(dataObject.meta_attr_value, ?) = true";
 
-	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and num_less_or_equal(dataObject.meta_attr_value, ?) = true";
+	private static final String GET_DATA_OBJECT_IDS_NUM_LESS_OR_EQUAL_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and num_less_or_equal(dataObject.meta_attr_value, ?) = true";
 
-	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_THAN_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and num_greater_than(dataObject.meta_attr_value, ?) = true";
+	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_THAN_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and num_greater_than(dataObject.meta_attr_value, ?) = true";
 
-	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
+	private static final String GET_DATA_OBJECT_IDS_NUM_GREATER_OR_EQUAL_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and num_greater_or_equal(dataObject.meta_attr_value, ?) = true";
 
-	private static final String GET_DATA_OBJECT_IDS_TIMESTAMP_LESS_THAN_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and timestamp_less_than(dataObject.meta_attr_value, ?, ?) = true";
+	private static final String GET_DATA_OBJECT_IDS_TIMESTAMP_LESS_THAN_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and timestamp_less_than(dataObject.meta_attr_value, ?, ?) = true";
 
-	private static final String GET_DATA_OBJECT_IDS_TIMESTAMP_GREATER_THAN_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and timestamp_greater_than(dataObject.meta_attr_value, ?, ?) = true";
+	private static final String GET_DATA_OBJECT_IDS_TIMESTAMP_GREATER_THAN_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and timestamp_greater_than(dataObject.meta_attr_value, ?, ?) = true";
 
-	private static final String GET_DATA_OBJECT_IDS_TIMESTAMP_LESS_OR_EQUAL_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and timestamp_less_or_equal(dataObject.meta_attr_value, ?, ?) = true";
+	private static final String GET_DATA_OBJECT_IDS_TIMESTAMP_LESS_OR_EQUAL_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and timestamp_less_or_equal(dataObject.meta_attr_value, ?, ?) = true";
 
-	private static final String GET_DATA_OBJECT_IDS_TIMESTAMP_GREATER_OR_EQUAL_SQL = " exists(select 1 from \"r_data_hierarchy_meta_main\" dataObject where dataObject.object_id=dataObject1.object_id and timestamp_greater_or_equal(dataObject.meta_attr_value, ?, ?) = true";
+	private static final String GET_DATA_OBJECT_IDS_TIMESTAMP_GREATER_OR_EQUAL_SQL = " exists(select 1 from r_data_hierarchy_meta_main dataObject where dataObject.object_id=dataObject1.object_id and timestamp_greater_or_equal(dataObject.meta_attr_value, ?, ?) = true";
 
 	private static final String GET_DATA_OBJECT_EXACT_ATTRIBUTE_MATCH_FILTER = " and dataObject.meta_attr_name = ?";
 
@@ -126,42 +126,42 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String COLLECTION_LEVEL_LABEL_NOT_EQUAL_FILTER = " and collection.level_label <> ?)";
 	private static final String COLLECTION_LEVEL_LABEL_LIKE_FILTER = " and collection.level_label like ?)";
 
-	private static final String USER_ACCESS_SQL = "(select distinct access.object_id from public.\"r_objt_access\" access join public.\"r_user_main\" account "
+	private static final String USER_ACCESS_SQL = "(select distinct access.object_id from r_objt_access access join r_user_main account "
 			+ "using (user_id) where account.user_name = ? union "
-			+ "select distinct access.object_id from public.\"r_objt_access\" access join "
-			+ "public.\"r_user_group\" user_group on (access.user_id = user_group.group_user_id) "
+			+ "select distinct access.object_id from r_objt_access access join "
+			+ "r_user_group user_group on (access.user_id = user_group.group_user_id) "
 			+ "where user_group.group_user_id in (select user_group.group_user_id from "
-			+ "public.\"r_user_group\" user_group join public.\"r_user_main\" account using (user_id) where "
+			+ "r_user_group user_group join r_user_main account using (user_id) where "
 			+ "account.user_name = ?))";
 
-	private static final String LIMIT_OFFSET_SQL = " order by object_path limit ? offset ?";
+	private static final String LIMIT_OFFSET_SQL = " order by object_path offset ? rows fetch next ? rows only";
 
-	private static final String GET_COLLECTION_PATHS_SQL = "select distinct object_path from \"r_coll_hierarchy_meta_main\" collection1 where ";
+	private static final String GET_COLLECTION_PATHS_SQL = "select distinct object_path from r_coll_hierarchy_meta_main collection1 where ";
 
 	private static final String GET_DETAILED_COLLECTION_PATHS_SQL = "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
 			+ "coll.coll_owner_zone, coll.coll_map_id, coll.coll_inheritance, coll.r_comment, "
 			+ "coll.coll_info1, coll.coll_info2, coll.create_ts, coll.r_comment, coll.coll_type, "
 			+ "mv.meta_attr_name, mv.meta_attr_value, mv.level, mv.level_label, mv.coll_id "
-			+ "from \"r_coll_hierarchy_meta_main\" mv, public.\"r_coll_main\" coll "
+			+ "from r_coll_hierarchy_meta_main mv, r_coll_main coll "
 			+ "where mv.object_id = coll.coll_id and mv.object_path in ";
 
-	private static final String GET_COLLECTION_COUNT_SQL = "select count(distinct object_id) from \"r_coll_hierarchy_meta_main\" collection1 where ";
+	private static final String GET_COLLECTION_COUNT_SQL = "select count(distinct object_id) from r_coll_hierarchy_meta_main collection1 where ";
 
-	private static final String GET_DATA_OBJECT_PATHS_SQL = "select distinct object_path from \"r_data_hierarchy_meta_main\" dataObject1 where ";
+	private static final String GET_DATA_OBJECT_PATHS_SQL = "select distinct object_path from r_data_hierarchy_meta_main dataObject1 where ";
 
 	private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL = "select mv.object_id, coll.coll_id, coll.coll_name, mv.object_path, data.data_size, "
 			+ "data.data_path, data.data_owner_name, data.create_ts, mv.meta_attr_name, "
 			+ "mv.meta_attr_value, mv.level, mv.level_label "
-			+ "from \"r_data_hierarchy_meta_main\" mv, public.\"r_data_main\" data, public.\"r_coll_main\" coll "
+			+ "from r_data_hierarchy_meta_main mv, r_data_main data, r_coll_main coll "
 			+ "where mv.object_id = data.data_id and data.coll_id = coll.coll_id and mv.object_path in ";
 
-	private static final String GET_DATA_OBJECT_COUNT_SQL = "select count(distinct object_id) from \"r_data_hierarchy_meta_main\" dataObject1 where ";
+	private static final String GET_DATA_OBJECT_COUNT_SQL = "select count(distinct object_id) from r_data_hierarchy_meta_main dataObject1 where ";
 
-	private static final String GET_COLLECTION_METADATA_SQL = "select meta_attr_name,  meta_attr_value, meta_attr_unit, level, level_label "
-			+ "from \"r_coll_hierarchy_meta_main\" where object_path = ? and level >= ? order by level";
+	private static final String GET_COLLECTION_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, level, level_label "
+			+ "from r_coll_hierarchy_meta_main where object_path = ? and level >= ? order by level";
 
 	private static final String GET_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, level, level_label "
-			+ "from \"r_data_hierarchy_meta_main\" where object_path = ? and level >= ? order by level";
+			+ "from r_data_hierarchy_meta_main where object_path = ? and level >= ? order by level";
 
 	private static final String PREPARE_REFRESH_VIEW_SQL = "select internal.prepare_hierarchy_meta_view_refresh()";
 
@@ -170,11 +170,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String REFRESH_VIEW_SQL = "select internal.refresh_hierarchy_meta_view()";
 
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select collection.level_label, collection.meta_attr_name "
-			+ "from \"r_coll_hierarchy_meta_attr_name\" collection, unnest(collection.object_ids) as object_id "
+			+ "from r_coll_hierarchy_meta_attr_name collection, unnest(collection.object_ids) as object_id "
 			+ "where object_id in " + USER_ACCESS_SQL + " GROUP BY level_label, meta_attr_name";
 
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select dataObject.level_label, dataObject.meta_attr_name "
-			+ "from \"r_data_hierarchy_meta_attr_name\" dataObject, unnest(dataObject.object_ids) as object_id "
+			+ "from r_data_hierarchy_meta_attr_name dataObject, unnest(dataObject.object_ids) as object_id "
 			+ "where object_id in " + USER_ACCESS_SQL + " GROUP BY level_label, meta_attr_name";
 
 	private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL = "with top_collection as ("
@@ -187,7 +187,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = " group by level_label order by level_label";
 
-	private static final String GET_METADATA_MODIFIED_AT_SQL = "select max(cast(modify_ts as bigint)) from public.\"r_objt_metamap\" where object_id = ?";
+	private static final String GET_METADATA_MODIFIED_AT_SQL = "select max(cast(modify_ts as bigint)) from r_objt_metamap where object_id = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -667,8 +667,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		if (offset != null && limit != null) {
 			sqlQueryBuilder.append(LIMIT_OFFSET_SQL);
-			args.add(limit);
 			args.add(offset);
+			args.add(limit);
 		}
 
 		HpcPreparedQuery preparedQuery = new HpcPreparedQuery();
