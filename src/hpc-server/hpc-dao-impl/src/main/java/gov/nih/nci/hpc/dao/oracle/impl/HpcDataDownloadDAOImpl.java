@@ -143,7 +143,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "null as RESULT, ITEMS from HPC_COLLECTION_DOWNLOAD_TASK where USER_ID = ? order by CREATED";
 
 	private static final String GET_DOWNLOAD_RESULTS_SQL = "select null as USER_ID, ID, PATH, CREATED, TYPE, COMPLETED, RESULT, ITEMS "
-			+ "from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = true order by CREATED desc offset ? rows fetch next ? rows only";
+			+ "from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1' order by CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_DOWNLOAD_RESULTS_COUNT_SQL = "select count(*) from HPC_DOWNLOAD_TASK_RESULT where USER_ID = ? and COMPLETION_EVENT = '1'";
 
