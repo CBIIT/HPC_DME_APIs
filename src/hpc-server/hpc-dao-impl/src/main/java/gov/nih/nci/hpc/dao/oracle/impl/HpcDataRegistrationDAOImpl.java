@@ -781,7 +781,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 						.decrypt(Base64.getDecoder().decode(jsonS3UploadSource.get("accountAccessKey").toString())));
 				s3Account.setSecretKey(encryptor
 						.decrypt(Base64.getDecoder().decode(jsonS3UploadSource.get("accountSecretKey").toString())));
-				s3Account.setRegion(jsonS3UploadSource.get("region").toString());
+				Object region = jsonS3UploadSource.get("region");
+				s3Account.setRegion(region != null ? region.toString() : null);
 				s3UploadSource.setAccount(s3Account);
 			}
 			request.setS3UploadSource(s3UploadSource);
