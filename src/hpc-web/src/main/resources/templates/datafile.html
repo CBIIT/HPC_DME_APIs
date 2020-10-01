@@ -355,7 +355,9 @@
 										</thead>
 										<tbody th:if="${hpcDatafile.getSelfSystemMetadataEntries() != null}">
 											<tr th:each="metadataItem : ${hpcDatafile.getSelfSystemMetadataEntries()}">
-												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
+												<td><label th:text="${metadataItem.getAttrName()}"></label>
+													<a id="checksumHelp" href="#" data-toggle="tooltip" data-html="true" data-placement="right" th:if="${metadataItem.getAttrName() == 'checksum'}">
+													<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 												<td style="word-break: break-all;"><label for="${metadataItem.getAttrName()}"
 												  th:text="${metadataItem.getAttrValue()}"></label></td>
 											</tr>
@@ -417,6 +419,12 @@
 
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
+	<script>
+		$(document).ready(function(){
+			$('#checksumHelp').prop("title", "Checksum can either be the MD5 digest or the entity tag (ETag). For multipart uploads the ETag is the MD5 hexdigest of each part's MD5 digest concatenated together, followed by the number of parts separated by a dash.");
+  			$('[data-toggle="tooltip"]').tooltip();
+		});
+	</script>
 	<script type="text/javascript">
 	/*<![CDATA[*/
 	
