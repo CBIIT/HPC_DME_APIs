@@ -22,8 +22,6 @@ hpc.default.globus.endpoint=
 #############################################################################
 # Please use caution changing following properties. They don't change usually
 #############################################################################
-hpc.collection.service=collection
-hpc.dataobject.service=dataObject
 #Log files directory
 hpc.error-log.dir=/tmp
 #Number of thread to run data file import from a CSV file
@@ -38,10 +36,8 @@ upload.buffer.size=10000000
 #hpc.multipart.threadpoolsize=10
 #hpc.multipart.threshold=1074790400
 #hpc.multipart.chunksize=1073741824
-# JAR version
 ###HPC CLI Logging START####
 #ERROR, WARN, INFO, DEBUG
 hpc.log.level=ERROR
 hpc.log.file=/tmp/hpc-cli.log
 ###HPC CLI Logging END####
-hpc.jar.version=hpc-cli-2.2.0.jar
