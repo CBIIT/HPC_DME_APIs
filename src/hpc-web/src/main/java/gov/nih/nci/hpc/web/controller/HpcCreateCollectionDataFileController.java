@@ -816,6 +816,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				if(savedEntry.getAttrName().equals(configEntry.getAttrName())) {
 					savedEntry.setMandatory(configEntry.isMandatory());
 					savedEntry.setValidValues(configEntry.getValidValues());
+					savedEntry.setDescription(configEntry.getDescription());
 					break;
 				}
 			}
