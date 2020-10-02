@@ -341,13 +341,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
 			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_SQL);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_DATE_SQL, dates);
+			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_DATE_SQL, (Object[]) dates);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_DOC_SQL, docArg);
+			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_DOC_SQL, (Object[]) docArg);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
 			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_DOC_DATE_SQL, docDateArgs);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_USER_SQL, userArg);
+			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_USER_SQL, (Object[]) userArg);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
 			totals = jdbcTemplate.queryForMap(SUM_OF_DATA_BY_USER_DATE_SQL, userDateArgs);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH))
@@ -361,7 +361,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 		String[] returnVal = new String[] { "0", "0", "0" };
 		if (totals != null) {
-			Iterator values = totals.values().iterator();
+			Iterator<Object> values = totals.values().iterator();
 			Double totalSize = 0d;
 			Double maxSize = 0d;
 			Double avgSize = 0d;
@@ -423,13 +423,13 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY))
 			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_SQL);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE))
-			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_AND_DATE_SQL, dates);
+			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_AND_DATE_SQL, (Object[]) dates);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC))
-			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_SQL, docArg);
+			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_SQL, (Object[]) docArg);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE))
 			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_DOC_DATE_SQL, docDateArgs);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER))
-			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_SQL, userArg);
+			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_SQL, (Object[]) userArg);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_USER_BY_DATE_RANGE))
 			list = jdbcTemplate.queryForList(TOTAL_NUM_OF_COLLECTIONS_BY_NAME_USER_DATE_SQL, userDateArgs);
 		else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH))
@@ -521,8 +521,7 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		List<Map<String, Object>> results = null;
 		if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY)) {
 			FILE_RANGE_FROM = " from r_report_source_file_size a ";
-			return jdbcTemplate.query(FILE_RANGE_SELECT + FILE_RANGE_FROM + FILE_RANGE_GROUP, fileSizeRangeRowMapper,
-					null);
+			return jdbcTemplate.query(FILE_RANGE_SELECT + FILE_RANGE_FROM + FILE_RANGE_GROUP, fileSizeRangeRowMapper);
 		} else if (criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_DATE_RANGE)) {
 			FILE_RANGE_FROM = " from r_report_source_file_size a ";
 			FILE_RANGE_WHERE = " where CAST(a.create_ts as double precision) BETWEEN ? AND ? ";
