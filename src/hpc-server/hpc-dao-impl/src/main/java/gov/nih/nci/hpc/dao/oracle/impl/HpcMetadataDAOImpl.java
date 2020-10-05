@@ -126,10 +126,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String COLLECTION_LEVEL_LABEL_NOT_EQUAL_FILTER = " and collection.level_label <> ?)";
 	private static final String COLLECTION_LEVEL_LABEL_LIKE_FILTER = " and collection.level_label like ?)";
 
-	private static final String USER_ACCESS_SQL = "(select distinct access.object_id from r_objt_access access join r_user_main account "
+	private static final String USER_ACCESS_SQL = "(select distinct user_access.object_id from r_objt_access user_access join r_user_main account "
 			+ "using (user_id) where account.user_name = ? union "
-			+ "select distinct access.object_id from r_objt_access access join "
-			+ "r_user_group user_group on (access.user_id = user_group.group_user_id) "
+			+ "select distinct user_access.object_id from r_objt_access user_access join "
+			+ "r_user_group user_group on (user_access.user_id = user_group.group_user_id) "
 			+ "where user_group.group_user_id in (select user_group.group_user_id from "
 			+ "r_user_group user_group join r_user_main account using (user_id) where "
 			+ "account.user_name = ?))";
