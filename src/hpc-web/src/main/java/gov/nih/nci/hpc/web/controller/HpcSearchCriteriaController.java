@@ -9,9 +9,6 @@
  */
 package gov.nih.nci.hpc.web.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -21,11 +18,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -41,12 +39,9 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;
@@ -59,26 +54,19 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQuery;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDocDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcMetadataAttributesListDTO;
 import gov.nih.nci.hpc.dto.datasearch.HpcCompoundMetadataQueryDTO;
 import gov.nih.nci.hpc.dto.security.HpcGroup;
 import gov.nih.nci.hpc.dto.security.HpcGroupListDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
-import gov.nih.nci.hpc.web.model.HpcCollectionSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcCompoundQuery;
-import gov.nih.nci.hpc.web.model.HpcDatafileSearchResultDetailed;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcMetadataHierarchy;
 import gov.nih.nci.hpc.web.model.HpcSaveSearch;
 import gov.nih.nci.hpc.web.model.HpcSearch;
-import gov.nih.nci.hpc.web.model.HpcSearchResult;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcCompoundSearchBuilder;
 import gov.nih.nci.hpc.web.util.HpcEncryptionUtil;
@@ -277,6 +265,57 @@ public class HpcSearchCriteriaController extends AbstractHpcController {
 			return search.isDetailed() ? "dataobjectsearchresultdetail" : "dataobjectsearchresult";
 	}
 
+	@RequestMapping(value = "/export", method = RequestMethod.POST)
+	@SuppressWarnings("unchecked")
+	public String export(@Valid @ModelAttribute("hpcSearch") HpcSearch search, Model model, HttpSession session,
+			HttpServletRequest request, HttpServletResponse response) {
+
+		HpcSearch hpcSearch = null;
+		if (search == null || (search.getActionType() != null && search.getActionType().equals("pagination"))) {
+			HpcSearchUtil.cacheSelectedRows(session, request, model);
+			hpcSearch = (HpcSearch) session.getAttribute("hpcSearch");
+			hpcSearch.setPageNumber(search.getPageNumber());
+			hpcSearch.setPageSize(search.getPageSize());
+			search = hpcSearch;
+		}
+		try {
+			session.removeAttribute("searchresults");
+			Map<String, String> hierarchy = (Map<String, String>) session.getAttribute("hierarchies");
+
+			HpcCompoundMetadataQueryDTO compoundQuery = constructCriteria(hierarchy,
+					hpcSearch != null ? hpcSearch : search);
+			if (search.isDetailed())
+				compoundQuery.setDetailedResponse(true);
+
+			String authToken = (String) session.getAttribute("hpcUserToken");
+			String serviceURL = compoundDataObjectSearchServiceURL;
+			if (search.getSearchType() != null && search.getSearchType().equals("collection"))
+				serviceURL = compoundCollectionSearchServiceURL;
+
+			WebClient client = HpcClientUtil.getWebClient(serviceURL, sslCertPath, sslCertPassword);
+			client.header("Authorization", "Bearer " + authToken);
+
+			HpcSearch exportSearch = hpcSearch != null ? hpcSearch : search;
+			int pageNumber = 1;
+			int totalPages = 1;
+			do {
+				compoundQuery.setPage(pageNumber++);
+				compoundQuery.setPageSize(100);
+				Response restResponse = client.invoke("POST", compoundQuery);
+				if (restResponse.getStatus() == 200) {
+					HpcSearchUtil.processResponseResults(hpcSearch != null ? hpcSearch : search, restResponse, model, session);
+					totalPages = (int) session.getAttribute("totalPages");
+				}
+			} while (pageNumber <= totalPages);
+			HpcSearchUtil.exportResponseResults(exportSearch.getSearchType(), session, request, response);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "forward:/criteria";
+		}
+		return null;
+	}
+	
 	private HpcCompoundMetadataQueryDTO constructCriteria(Map<String, String> hierarchy, HpcSearch search) {
 		HpcCompoundMetadataQueryDTO dto = new HpcCompoundMetadataQueryDTO();
 		dto.setTotalCount(true);
