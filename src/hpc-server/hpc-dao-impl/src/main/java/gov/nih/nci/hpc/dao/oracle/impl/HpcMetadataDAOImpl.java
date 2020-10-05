@@ -104,19 +104,19 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_DATA_OBJECT_EXACT_ATTRIBUTE_MATCH_FILTER = " and dataObject.meta_attr_name = ?";
 
-	private static final String DATA_OBJECT_LEVEL_EQUAL_FILTER = " and dataObject.level = ?)";
-	private static final String DATA_OBJECT_LEVEL_NOT_EQUAL_FILTER = " and dataObject.level <> ?)";
-	private static final String DATA_OBJECT_LEVEL_NUM_LESS_THAN_FILTER = " and dataObject.level < ?)";
-	private static final String DATA_OBJECT_LEVEL_NUM_LESS_OR_EQUAL_FILTER = " and dataObject.level <= ?)";
-	private static final String DATA_OBJECT_LEVEL_NUM_GREATER_THAN_FILTER = " and dataObject.level > ?)";
-	private static final String DATA_OBJECT_LEVEL_NUM_GREATER_OR_EQUAL_FILTER = " and dataObject.level >= ?)";
+	private static final String DATA_OBJECT_LEVEL_EQUAL_FILTER = " and dataObject.data_level = ?)";
+	private static final String DATA_OBJECT_LEVEL_NOT_EQUAL_FILTER = " and dataObject.data_level <> ?)";
+	private static final String DATA_OBJECT_LEVEL_NUM_LESS_THAN_FILTER = " and dataObject.data_level < ?)";
+	private static final String DATA_OBJECT_LEVEL_NUM_LESS_OR_EQUAL_FILTER = " and dataObject.data_level <= ?)";
+	private static final String DATA_OBJECT_LEVEL_NUM_GREATER_THAN_FILTER = " and dataObject.data_level > ?)";
+	private static final String DATA_OBJECT_LEVEL_NUM_GREATER_OR_EQUAL_FILTER = " and dataObject.data_level >= ?)";
 
-	private static final String COLLECTION_LEVEL_EQUAL_FILTER = " and collection.level = ?)";
-	private static final String COLLECTION_LEVEL_NOT_EQUAL_FILTER = " and collection.level <> ?)";
-	private static final String COLLECTION_LEVEL_NUM_LESS_THAN_FILTER = " and collection.level < ?)";
-	private static final String COLLECTION_LEVEL_NUM_LESS_OR_EQUAL_FILTER = " and collection.level <= ?)";
-	private static final String COLLECTION_LEVEL_NUM_GREATER_THAN_FILTER = " and collection.level > ?)";
-	private static final String COLLECTION_LEVEL_NUM_GREATER_OR_EQUAL_FILTER = " and collection.level >= ?)";
+	private static final String COLLECTION_LEVEL_EQUAL_FILTER = " and collection.data_level = ?)";
+	private static final String COLLECTION_LEVEL_NOT_EQUAL_FILTER = " and collection.data_level <> ?)";
+	private static final String COLLECTION_LEVEL_NUM_LESS_THAN_FILTER = " and collection.data_level < ?)";
+	private static final String COLLECTION_LEVEL_NUM_LESS_OR_EQUAL_FILTER = " and collection.data_level <= ?)";
+	private static final String COLLECTION_LEVEL_NUM_GREATER_THAN_FILTER = " and collection.data_level > ?)";
+	private static final String COLLECTION_LEVEL_NUM_GREATER_OR_EQUAL_FILTER = " and collection.data_level >= ?)";
 
 	private static final String DATA_OBJECT_LEVEL_LABEL_EQUAL_FILTER = " and dataObject.level_label = ?)";
 	private static final String DATA_OBJECT_LEVEL_LABEL_NOT_EQUAL_FILTER = " and dataObject.level_label <> ?)";
@@ -141,7 +141,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DETAILED_COLLECTION_PATHS_SQL = "select mv.object_id, coll.coll_name, mv.object_path, coll.parent_coll_name, coll.coll_owner_name, "
 			+ "coll.coll_owner_zone, coll.coll_map_id, coll.coll_inheritance, coll.r_comment, "
 			+ "coll.coll_info1, coll.coll_info2, coll.create_ts, coll.r_comment, coll.coll_type, "
-			+ "mv.meta_attr_name, mv.meta_attr_value, mv.level, mv.level_label, mv.coll_id "
+			+ "mv.meta_attr_name, mv.meta_attr_value, mv.data_level, mv.level_label, mv.coll_id "
 			+ "from r_coll_hierarchy_meta_main mv, r_coll_main coll "
 			+ "where mv.object_id = coll.coll_id and mv.object_path in ";
 
@@ -151,17 +151,17 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String GET_DETAILED_DATA_OBJECT_PATHS_SQL = "select mv.object_id, coll.coll_id, coll.coll_name, mv.object_path, data.data_size, "
 			+ "data.data_path, data.data_owner_name, data.create_ts, mv.meta_attr_name, "
-			+ "mv.meta_attr_value, mv.level, mv.level_label "
+			+ "mv.meta_attr_value, mv.data_level, mv.level_label "
 			+ "from r_data_hierarchy_meta_main mv, r_data_main data, r_coll_main coll "
 			+ "where mv.object_id = data.data_id and data.coll_id = coll.coll_id and mv.object_path in ";
 
 	private static final String GET_DATA_OBJECT_COUNT_SQL = "select count(distinct object_id) from r_data_hierarchy_meta_main dataObject1 where ";
 
-	private static final String GET_COLLECTION_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, level, level_label "
-			+ "from r_coll_hierarchy_meta_main where object_path = ? and level >= ? order by level";
+	private static final String GET_COLLECTION_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
+			+ "from r_coll_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
 
-	private static final String GET_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, level, level_label "
-			+ "from r_data_hierarchy_meta_main where object_path = ? and level >= ? order by level";
+	private static final String GET_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
+			+ "from r_data_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
 
 	private static final String PREPARE_REFRESH_VIEW_SQL = "select internal.prepare_hierarchy_meta_view_refresh()";
 
@@ -226,7 +226,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		String unit = rs.getString("META_ATTR_UNIT");
 		metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
 
-		Long level = rs.getLong("LEVEL");
+		Long level = rs.getLong("DATA_LEVEL");
 		metadataEntry.setLevel(level != null ? level.intValue() : null);
 		metadataEntry.setLevelLabel(rs.getString("LEVEL_LABEL"));
 
