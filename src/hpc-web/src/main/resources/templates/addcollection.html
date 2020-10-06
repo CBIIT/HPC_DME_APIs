@@ -279,9 +279,19 @@
 	//<![CDATA[	
 	var rowId = 0;
 	
+	if(document.getElementById("zAttrStr_collection_type") != null && $('#zAttrStr_collection_type option').length == 2 && document.getElementById("zAttrStr_collection_type").value == "_select_null") {
+		$("#zAttrStr_collection_type option:first").remove();
+		$("#zAttrStr_collection_type").val($("#zAttrStr_collection_type option:first").val()).change();
+	}
+	if($('#zAttrStr_collection_type option').length == 2) {
+		$("#zAttrStr_collection_type option:first").remove();
+		$('#zAttrStr_collection_type').attr('readonly', 'readonly');
+	}
+	
+	
 	$("#collectionPathPopover").popover({
         title: '<h6 class="custom-title"><span class="glyphicon glyphicon-info-sign"></span>Collection Path</h6>',
-        content: 'Enter the full path including the base path selected above.',
+        content: 'Enter the full path including the base path.',
         html: true
     }); 
 	
