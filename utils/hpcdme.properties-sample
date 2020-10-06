@@ -1,13 +1,13 @@
 #HPC DME Server URL
 #Production server settings
-#hpc.server.url=https://hpcdmeapi.nci.nih.gov:8080
-#hpc.ssl.keystore.path=hpc-client/keystore/keystore-prod.jks
-#hpc.ssl.keystore.password=< Configure Me >
+hpc.server.url=https://hpcdmeapi.nci.nih.gov:8080
+hpc.ssl.keystore.path=hpc-client/keystore/keystore-prod.jks
+hpc.ssl.keystore.password=< Configure Me >
 
 #UAT server settings
-hpc.server.url=https://fr-s-hpcdm-uat-p.ncifcrf.gov:7738/hpc-server
-hpc.ssl.keystore.path=hpc-client/keystore/keystore-uat.jks
-hpc.ssl.keystore.password=< Configure Me >
+#hpc.server.url=https://fr-s-hpcdm-uat-p.ncifcrf.gov:7738/hpc-server
+#hpc.ssl.keystore.path=hpc-client/keystore/keystore-uat.jks
+#hpc.ssl.keystore.password=< Configure Me >
 
 #Proxy Settings
 #hpc.server.proxy.url=10.1.200.240
@@ -19,11 +19,18 @@ hpc.user=menons2
 #default globus endpoint to be used in registration and download
 hpc.default.globus.endpoint=
 
-#############################################################################
-# Please use caution changing following properties. They don't change usually
-#############################################################################
 #Log files directory
 hpc.error-log.dir=/tmp
+
+###HPC CLI Logging START####
+#ERROR, WARN, INFO, DEBUG
+hpc.log.level=ERROR
+hpc.log.file=/tmp/hpc-cli.log
+###HPC CLI Logging END####
+
+###############################################################################
+# Please use caution changing following properties. They usually do not change.
+###############################################################################
 #Number of thread to run data file import from a CSV file
 hpc.job.thread.count=1
 #HPC DME Login token file location
@@ -36,8 +43,3 @@ upload.buffer.size=10000000
 #hpc.multipart.threadpoolsize=10
 #hpc.multipart.threshold=1074790400
 #hpc.multipart.chunksize=1073741824
-###HPC CLI Logging START####
-#ERROR, WARN, INFO, DEBUG
-hpc.log.level=ERROR
-hpc.log.file=/tmp/hpc-cli.log
-###HPC CLI Logging END####
