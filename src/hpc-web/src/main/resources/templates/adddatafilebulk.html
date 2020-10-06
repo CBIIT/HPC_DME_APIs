@@ -262,7 +262,7 @@
 																	<td><input type="file" name="hpcMetaDatafile"
 																		id="hpcMetaDatafile" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/></td>
 															</tr>
-															
+															<tr><td colspan="2">&nbsp;</td></tr>
 											</table>
 										</div>
 									</div>
@@ -302,6 +302,7 @@
 													<a href="#" id="regexPopover" data-toggle="popover"><img style="width: 25px; height: 25px;" src="img/help.png"/></a>
 													</td>
 												</tr>
+												<tr><td colspan="2">&nbsp;</td></tr>
 											</table>
 										</div>
 									</div>
@@ -361,6 +362,7 @@
 														</table>
 													</td>
 												</tr>
+												<tr><td colspan="2">&nbsp;</td></tr>
 											</table>
 										</div>
 									</div>
@@ -474,7 +476,8 @@
 										th:disabled="${create == true} ?'false' : 'disabled'">Register</button>
 									<button type="submit" class="btn btn-md btn-primary"
 										id="dryRunButton" onClick="return validateDryRun()"
-										th:disabled="${create == true} ?'false' : 'disabled'">Dry Run</button>
+										th:disabled="${create == true} ?'false' : 'disabled'" 
+										title="Check this to see list of file(s)/folder(s) will register.">Dry Run</button>
 									<button type="button" class="btn btn-default" id="cancel"
 										onClick="cancelEdit()">Cancel</button>
 								</div>
