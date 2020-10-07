@@ -105,6 +105,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Multiple upload source error message.
 	private static final String MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE = "Multiple upload source and/or generate upload request provided";
 
+	//Credentials are needed download error message.
+	private static final String CREDENTIALS_NEEDED_ERROR_MESSAGE = "Credentials are needed";
+	
 	// Google Drive 'My Drive' ID.
 	private static final String MY_GOOGLE_DRIVE_ID = "MyDrive";
 
@@ -764,6 +767,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 		}
 
+		// If it's a failed data-object download task to a Globus destination,
+		// and the error message is credentials are needed, set status so other items can be cancelled.
+		if (result.equals(HpcDownloadResult.FAILED)
+				&& downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
+				&& message != null && message.contains(CREDENTIALS_NEEDED_ERROR_MESSAGE)) {
+			result = HpcDownloadResult.FAILED_CREDENTIALS_NEEDED;
+            message = message
+                + ". Check if guest collection was created on a public endpoint.";
+        }
+		
 		// Delete the staged download file.
 		if (downloadTask.getDownloadFilePath() != null) {
 			logger.info("download task: {} - Delete file at scratch space: {}", downloadTask.getId(),
