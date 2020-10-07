@@ -712,6 +712,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								logger.info("collection download task: {} - detected permission denied [{}]",
 										downloadTask.getId(), downloadTask.getType().value());
 							}
+							
+							if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED)) {
+								// This item failed because of credentials are needed.
+								// Cancel any pending download items (i.e. items in RECEIVED state).
+								dataTransferService.cancelCollectionDownloadTask(downloadTask);
+								logger.info("collection download task: {} - detected credentials are needed [{}]",
+										downloadTask.getId(), downloadTask.getType().value());
+							}
 
 						} else {
 							// Update the progress on this download item.
@@ -2036,7 +2044,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				if (downloadItemStatus != null && !downloadItemStatus.getInProgress()) {
 					// First download item completed. Set the abort indicator.
 					abortCollection = downloadItemStatus.getResult().getResult()
-							.equals(HpcDownloadResult.FAILED_PERMISSION_DENIED);
+							.equals(HpcDownloadResult.FAILED_PERMISSION_DENIED) ||
+							downloadItemStatus.getResult().getResult()
+							.equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED);
 					return abortCollection;
 				}
 			}
