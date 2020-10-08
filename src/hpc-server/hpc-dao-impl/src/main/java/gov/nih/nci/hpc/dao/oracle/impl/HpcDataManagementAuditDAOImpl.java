@@ -42,11 +42,10 @@ public class HpcDataManagementAuditDAOImpl implements HpcDataManagementAuditDAO 
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
-	public static final String INSERT_SQL = "insert into \"HPC_DATA_MANAGEMENT_AUDIT\" ( "
-			+ "\"USER_ID\", \"PATH\", \"REQUEST_TYPE\", \"METADATA_BEFORE\", "
-			+ "\"METADATA_AFTER\", \"ARCHIVE_FILE_CONTAINER_ID\","
-			+ "\"ARCHIVE_FILE_ID\", \"DATA_MANAGEMENT_STATUS\", \"DATA_TRANSFER_STATUS\","
-			+ "\"MESSAGE\", \"COMPLETED\") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	public static final String INSERT_SQL = "insert into HPC_DATA_MANAGEMENT_AUDIT ( "
+			+ "USER_ID PATH, REQUEST_TYPE, METADATA_BEFORE, " + "METADATA_AFTER, ARCHIVE_FILE_CONTAINER_ID,"
+			+ "ARCHIVE_FILE_ID, DATA_MANAGEMENT_STATUS, DATA_TRANSFER_STATUS,"
+			+ "MESSAGE, COMPLETED) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
