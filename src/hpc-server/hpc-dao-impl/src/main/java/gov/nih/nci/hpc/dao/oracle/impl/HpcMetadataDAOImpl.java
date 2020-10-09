@@ -131,8 +131,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 			+ "select distinct user_access.object_id from r_objt_access user_access join "
 			+ "r_user_group user_group on (user_access.user_id = user_group.group_user_id) "
 			+ "where user_group.group_user_id in (select user_group.group_user_id from "
-			+ "r_user_group user_group join r_user_main account using (user_id) where "
-			+ "account.user_name = ?))";
+			+ "r_user_group user_group join r_user_main account using (user_id) where " + "account.user_name = ?))";
 
 	private static final String LIMIT_OFFSET_SQL = " order by object_path offset ? rows fetch next ? rows only";
 
@@ -169,21 +168,33 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String REFRESH_VIEW_SQL = "select internal.refresh_hierarchy_meta_view()";
 
-	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select collection.level_label, collection.meta_attr_name "
-			+ "from r_coll_hierarchy_meta_attr_name collection, unnest(collection.object_ids) as object_id "
-			+ "where object_id in " + USER_ACCESS_SQL + " GROUP BY level_label, meta_attr_name";
+	/*
+	 * private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL =
+	 * "select collection.level_label, collection.meta_attr_name " +
+	 * "from r_coll_hierarchy_meta_attr_name collection, unnest(collection.object_ids) as object_id "
+	 * + "where object_id in " + USER_ACCESS_SQL +
+	 * " GROUP BY level_label, meta_attr_name";
+	 */
 
-	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select dataObject.level_label, dataObject.meta_attr_name "
-			+ "from r_data_hierarchy_meta_attr_name dataObject, unnest(dataObject.object_ids) as object_id "
-			+ "where object_id in " + USER_ACCESS_SQL + " GROUP BY level_label, meta_attr_name";
+	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main "
+			+ "where object_id in " + USER_ACCESS_SQL;
 
-	private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL = "with top_collection as ("
-			+ GET_COLLECTION_METADATA_ATTRIBUTES_SQL
-			+ ") select level_label, array_agg(distinct meta_attr_name) as attributes " + "FROM top_collection";
+	/*
+	 * private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL =
+	 * "select dataObject.level_label, dataObject.meta_attr_name " +
+	 * "from r_data_hierarchy_meta_attr_name dataObject, unnest(dataObject.object_ids) as object_id "
+	 * + "where object_id in " + USER_ACCESS_SQL +
+	 * " GROUP BY level_label, meta_attr_name";
+	 */
 
-	private static final String GET_DATA_OBJECT_METADATA_AGGREGATE_SQL = "with top_dataObject as ("
-			+ GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL
-			+ ") select level_label, array_agg(distinct meta_attr_name) as attributes " + "FROM top_dataObject";
+	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main "
+			+ "where object_id in " + USER_ACCESS_SQL;
+
+	private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL = "select level_label, listagg(meta_attr_name, ',')  within group (order by meta_attr_name) "
+			+ "as attributes from (" + GET_COLLECTION_METADATA_ATTRIBUTES_SQL + ")";
+
+	private static final String GET_DATA_OBJECT_METADATA_AGGREGATE_SQL = "select level_label, listagg(meta_attr_name, ',')  within group (order by meta_attr_name) "
+			+ "as attributes from (" + GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL + ")";
 
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = " group by level_label order by level_label";
 
@@ -209,11 +220,10 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 		// Extract the metadata attributes for this level. Defensive coding to exclude
 		// any null values.
-		String[] metadataAttributes = (String[]) rs.getArray("ATTRIBUTES").getArray();
-		int metadataAttributesSize = metadataAttributes.length;
-		for (int i = 0; i < metadataAttributesSize; i++) {
-			if (metadataAttributes[i] != null) {
-				metadataLevelAttributes.getMetadataAttributes().add(metadataAttributes[i]);
+		String attributes = rs.getString("ATTRIBUTES");
+		if (!StringUtils.isEmpty(attributes)) {
+			for (String attribute : attributes.split(",")) {
+				metadataLevelAttributes.getMetadataAttributes().add(attribute);
 			}
 		}
 
