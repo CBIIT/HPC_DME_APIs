@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.ui.Model;
 
@@ -43,6 +45,14 @@ public class HpcSearchUtil {
 			processCollectionResults(search, restResponse, model, session);
 		else
 			processDataObjectResults(search, restResponse, model, session);
+	}
+	
+	public static void exportResponseResults(String searchType, HttpSession session, HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		if (searchType.equalsIgnoreCase("collection"))
+			exportCollectionResults(session, request, response);
+		else
+			exportDataObjectResults(session, request, response);
 	}
 
 	private static void processCollectionResults(HpcSearch search, Response restResponse, Model model, HttpSession session)
@@ -90,6 +100,15 @@ public class HpcSearchUtil {
 
 			}
 			model.addAttribute("searchresults", returnResults);
+			List<HpcCollectionSearchResultDetailed> collectionResults = (List<HpcCollectionSearchResultDetailed>) session.getAttribute("searchresults");
+			if(collectionResults == null) {
+				session.setAttribute("searchresults", returnResults);
+				session.setAttribute("totalPages", getTotalPages(collections.getTotalCount(), collections.getLimit()));
+			}
+			else {
+				collectionResults.addAll(returnResults);
+				session.setAttribute("searchresults", collectionResults);
+			}
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "collection");
 			model.addAttribute("totalCount", collections.getTotalCount());
@@ -155,6 +174,16 @@ public class HpcSearchUtil {
 
 			}
 			model.addAttribute("searchresults", returnResults);
+			List<HpcDatafileSearchResultDetailed> datafileResults = (List<HpcDatafileSearchResultDetailed>) session.getAttribute("searchresults");
+			if(datafileResults == null) {
+				session.setAttribute("searchresults", returnResults);
+				session.setAttribute("totalPages", getTotalPages(dataObjects.getTotalCount(), dataObjects.getLimit()));
+			}
+			else {
+				datafileResults.addAll(returnResults);
+				session.setAttribute("searchresults", datafileResults);
+			}
+			
 			model.addAttribute("detailed", "yes");
 			model.addAttribute("searchType", "datafile");
 			model.addAttribute("totalCount", dataObjects.getTotalCount());
@@ -241,4 +270,101 @@ public class HpcSearchUtil {
 	{
 		session.removeAttribute("hpcSelectedDatafileList");
 	}
+	
+	public static void exportCollectionResults(HttpSession session, HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		
+		List<HpcCollectionSearchResultDetailed> collectionResults = (List<HpcCollectionSearchResultDetailed>) session.getAttribute("searchresults");
+		
+		List<String> headers = new ArrayList<String>();
+		if (CollectionUtils.isNotEmpty(collectionResults)) {
+			List<List<String>> rows = new ArrayList<>();
+			headers.add("path");
+			for (HpcCollectionSearchResultDetailed collection : collectionResults) {
+				List<String> result = new ArrayList<String>();
+				result.add(collection.getPath());
+				if (collection != null && collection.getMetadataEntries() != null
+						&& !collection.getMetadataEntries().getSelfMetadataEntries().isEmpty()) {
+					for (String header : headers) {
+						boolean found = false;
+						for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
+							if (header.equals(entry.getAttribute())) {
+								result.add(entry.getValue());
+								found = true;
+							}
+						}
+						if(!found && !header.equals("path"))
+							result.add("");
+					}
+					for (HpcMetadataEntry entry : collection.getMetadataEntries().getSelfMetadataEntries()) {
+						if(!headers.contains(entry.getAttribute())) {
+							headers.add(entry.getAttribute());
+							result.add(entry.getValue());
+						}
+					}
+				}
+				rows.add(result);
+			}
+			ExcelExportProc proc = new ExcelExportProc();
+			proc.setReportName("Export Search Results");
+			proc.setHeaders(headers);
+			proc.setData(rows);
+			proc.setFileName("export_search_results_");
+			proc.setExtension(".xls");
+			proc.setMimeType("application/vnd.ms-excel");
+			proc.setFieldSeparator("\t");
+			
+			proc.doExport(request, response); 
+		}
+		
+	}
+	
+	public static void exportDataObjectResults(HttpSession session, HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		
+		List<HpcDatafileSearchResultDetailed> datafileResults = (List<HpcDatafileSearchResultDetailed>) session.getAttribute("searchresults");
+		
+		List<String> headers = new ArrayList<String>();
+		if (CollectionUtils.isNotEmpty(datafileResults)) {
+			List<List<String>> rows = new ArrayList<>();
+			headers.add("path");
+			for (HpcDatafileSearchResultDetailed datafile : datafileResults) {
+				List<String> result = new ArrayList<String>();
+				result.add(datafile.getPath());
+				if (datafile != null && datafile.getMetadataEntries() != null
+						&& !datafile.getMetadataEntries().getSelfMetadataEntries().isEmpty()) {
+					for (String header : headers) {
+						boolean found = false;
+						for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries()) {
+							if (header.equals(entry.getAttribute())) {
+								result.add(entry.getValue());
+								found = true;
+							}
+						}
+						if(!found && !header.equals("path"))
+							result.add("");
+					}
+					for (HpcMetadataEntry entry : datafile.getMetadataEntries().getSelfMetadataEntries()) {
+						if(!headers.contains(entry.getAttribute())) {
+							headers.add(entry.getAttribute());
+							result.add(entry.getValue());
+						}
+					}
+				}
+				rows.add(result);
+			}
+			ExcelExportProc proc = new ExcelExportProc();
+			proc.setReportName("Export Search Results");
+			proc.setHeaders(headers);
+			proc.setData(rows);
+			proc.setFileName("export_search_results_");
+			proc.setExtension(".xls");
+			proc.setMimeType("application/vnd.ms-excel");
+			proc.setFieldSeparator("\t");
+			
+			proc.doExport(request, response); 
+		}
+		
+	}
+
 }

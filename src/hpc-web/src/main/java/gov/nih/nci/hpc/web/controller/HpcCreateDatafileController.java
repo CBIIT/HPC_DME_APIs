@@ -166,16 +166,9 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			return;
 		}
 
-		if (parentPath == null || parentPath.isEmpty()) {
-			String[] basePathValues = request.getParameterValues("basePath");
-			String basePath = null;
-			if (basePathValues == null || basePathValues.length == 0)
-				basePath = (String) request.getAttribute("basePath");
-			else
-				basePath = basePathValues[0];
-			model.addAttribute("datafilePath", basePath);
-		} else
+		if (parentPath != null && !parentPath.isEmpty())
 			model.addAttribute("datafilePath", parentPath);
+			
 	}
 
 	/**
@@ -360,8 +353,6 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 		populateBasePaths(request, session, model, path);
 		populateCollectionTypes(session, model, basePath, null);
 		String collectionType = getParentCollectionType(request, session);
-		if (path != null && !path.equals(basePath))
-			model.addAttribute("datafilePath", basePath);
 		populateFormAttributes(request, session, model, basePath,
 				collectionType, refresh, true);
 		model.addAttribute("create", true);

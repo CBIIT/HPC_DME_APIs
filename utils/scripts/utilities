@@ -165,7 +165,7 @@ function get_server {
 #Get the jar filename from the config file
 function get_jar {
 
-    local PROPERTIES_FILE=$HPC_DM_UTILS/hpcdme.properties
+    local PROPERTIES_FILE=$HPC_DM_UTILS/version
     local JAR_FILE=$(get_value $PROPERTIES_FILE hpc.jar.version)
 
     if [ -z "$JAR_FILE" ]

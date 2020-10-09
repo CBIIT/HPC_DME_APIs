@@ -241,7 +241,8 @@
 										    <input type="hidden" name="action" id="action" value="edit"/>
 											<input type="hidden" name="path" id="hiddenPath" th:value="${collection.getCollection().getCollectionName()}"/>
 											<tr th:each="metadataItem : ${collection.getSelfMetadataEntries()}">
-											  <td><label th:text="${metadataItem.getAttrName()}"></label></td>
+											  <td><label th:text="${metadataItem.getAttrName()}"></label><a href="#" data-toggle="tooltip" data-placement="right" data-html="true" th:if="${!#strings.isEmpty(metadataItem.getDescription())}" th:title="${metadataItem.getDescription()}">
+														<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() == null and metadataItem.isMandatory()}">
 											    <input type="text" class="form-control" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}" 
 											      th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
@@ -290,7 +291,7 @@
 														id="primaryButton" onClick="return addMetadata()">Add Metadata</button>
 													<button type="submit" class="btn btn-md btn-primary"
 														id="primaryButton2" th:disabled="${collection.getSelfMetadataEntries() == null} ?'disabled' : 'false'">Update</button>
-													<button type="submit" class="btn btn-primary"
+													<button type="submit" class="btn btn-default"
 														id="cancel" onClick="cancelEdit()">Cancel</button>
 												</div>
 												<input type="hidden" name="actionType" id="actionType"/>
@@ -400,6 +401,11 @@
 	
 	<!--custome script for all page-->
 	<script src="js/scripts.js"></script>
+	<script>
+		$(document).ready(function(){
+  			$('[data-toggle="tooltip"]').tooltip();
+		});
+	</script>
 	<script type="text/javascript">
 	/*<![CDATA[*/
 

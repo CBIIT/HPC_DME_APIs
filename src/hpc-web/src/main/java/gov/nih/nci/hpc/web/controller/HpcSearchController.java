@@ -10,8 +10,8 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
@@ -211,6 +211,35 @@ public class HpcSearchController extends AbstractHpcController {
 			return "dashboard";
 	}
 
+	@RequestMapping(value = "/export", method = RequestMethod.POST)
+	@SuppressWarnings("unchecked")
+	public String export(@Valid @ModelAttribute("hpcSearch") HpcSearch search, Model model, HttpSession session,
+			HttpServletRequest request, HttpServletResponse response, BindingResult bindingResult) {
+
+		HpcNamedCompoundMetadataQueryDTO query = null;
+
+		try {
+			session.removeAttribute("searchresults");
+			HpcSearch exportSearch = search;
+			int pageNumber = 1;
+			int totalPages = 1;
+			do {
+				exportSearch.setPageNumber(pageNumber++);
+				exportSearch.setPageSize(100);
+				query = processSearch(search, session, request, model, bindingResult);
+				totalPages = (int) session.getAttribute("totalPages");
+			} while (pageNumber <= totalPages);
+			String searchType = query != null && query.getNamedCompoundQuery().getCompoundQueryType().equals(HpcCompoundMetadataQueryType.COLLECTION) ? "collection" : "datafile";
+			HpcSearchUtil.exportResponseResults(searchType, session, request, response);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "forward:/search";
+		}
+		return null;
+	}
+	
+	
 	private HpcNamedCompoundMetadataQueryDTO processSearch(HpcSearch search, HttpSession session,
 			HttpServletRequest request, Model model, BindingResult bindingResult)
 			throws JsonParseException, IOException {

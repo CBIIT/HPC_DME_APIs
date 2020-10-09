@@ -137,7 +137,8 @@
 													</tr>										
 													
 													<tr>
-														<td><label for="Name">Collection Path:</label></td>
+														<td><label for="Name">Collection Path:</label><a href="#" id="collectionPathPopover" data-toggle="popover">
+																	<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 														<td><input type="text" name="path" id="path"
 															size="60" th:value="${collectionPath}" /></td>
 													</tr>
@@ -230,7 +231,7 @@
 									<button type="submit" class="btn btn-md btn-primary"
 										id="primaryCreateButton" onClick="return validate()" 
 										th:disabled="${create == true} ?'false' : 'disabled'">Register Collection</button>
-									<button type="button" class="btn btn-primary"
+									<button type="button" class="btn btn-default"
 										id="cancel" onClick="cancelEdit()">Cancel</button>
 								</div>
 								</form>
@@ -277,6 +278,22 @@
 	<script type="text/javascript">
 	//<![CDATA[	
 	var rowId = 0;
+	
+	if(document.getElementById("zAttrStr_collection_type") != null && $('#zAttrStr_collection_type option').length == 2 && document.getElementById("zAttrStr_collection_type").value == "_select_null") {
+		$("#zAttrStr_collection_type option:first").remove();
+		$("#zAttrStr_collection_type").val($("#zAttrStr_collection_type option:first").val()).change();
+	}
+	if($('#zAttrStr_collection_type option').length == 2) {
+		$("#zAttrStr_collection_type option:first").remove();
+		$('#zAttrStr_collection_type').attr('readonly', 'readonly');
+	}
+	
+	
+	$("#collectionPathPopover").popover({
+        title: '<h6 class="custom-title"><span class="glyphicon glyphicon-info-sign"></span>Collection Path</h6>',
+        content: 'Enter the full path including the base path.',
+        html: true
+    }); 
 	
 	function addMetadata() {
 		rowId++;

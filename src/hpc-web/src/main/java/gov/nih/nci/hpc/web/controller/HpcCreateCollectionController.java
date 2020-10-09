@@ -147,7 +147,6 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 			String path, String parent, boolean refresh) {
 		if (parent == null) {
 			populateBasePaths(request, session, model, path);
-			model.addAttribute("collectionPath", basePath);
 		} else
 			setCollectionPath(model, request, parent);
 		populateCollectionTypes(session, model, basePath, parent);
@@ -328,7 +327,6 @@ public class HpcCreateCollectionController extends HpcCreateCollectionDataFileCo
 				basePath = (String) request.getAttribute("basePath");
 			else
 				basePath = basePathValues[0];
-			model.addAttribute("collectionPath", basePath);
 		} else
 			model.addAttribute("collectionPath", parentPath);
 	}
