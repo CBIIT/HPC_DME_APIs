@@ -816,6 +816,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				if(savedEntry.getAttrName().equals(configEntry.getAttrName())) {
 					savedEntry.setMandatory(configEntry.isMandatory());
 					savedEntry.setValidValues(configEntry.getValidValues());
+					savedEntry.setDescription(configEntry.getDescription());
 					break;
 				}
 			}
@@ -860,16 +861,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			return;
 		}
 
-		if (parentPath == null || parentPath.isEmpty()) {
-			String[] basePathValues = request.getParameterValues("basePath");
-			String basePath = null;
-			if (basePathValues == null || basePathValues.length == 0)
-				basePath = (String) request.getAttribute("basePath");
-			else
-				basePath = basePathValues[0];
-			model.addAttribute("collectionPath", basePath);
-		} else
+		if (parentPath != null && !parentPath.isEmpty())
 			model.addAttribute("collectionPath", parentPath);
+			
 	}
 
 	protected HpcCollectionRegistrationDTO constructRequest(HttpServletRequest request, HttpSession session,
