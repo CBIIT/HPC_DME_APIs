@@ -20,7 +20,7 @@ import javax.validation.Valid;
 import gov.nih.nci.hpc.web.util.HpcCollectionUtil;
 import gov.nih.nci.hpc.web.util.HpcEncryptionUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
