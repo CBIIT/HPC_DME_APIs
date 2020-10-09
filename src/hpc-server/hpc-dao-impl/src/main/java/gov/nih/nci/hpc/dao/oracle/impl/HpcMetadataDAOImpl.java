@@ -168,24 +168,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	private static final String REFRESH_VIEW_SQL = "select internal.refresh_hierarchy_meta_view()";
 
-	/*
-	 * private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL =
-	 * "select collection.level_label, collection.meta_attr_name " +
-	 * "from r_coll_hierarchy_meta_attr_name collection, unnest(collection.object_ids) as object_id "
-	 * + "where object_id in " + USER_ACCESS_SQL +
-	 * " GROUP BY level_label, meta_attr_name";
-	 */
-
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main "
 			+ "where object_id in " + USER_ACCESS_SQL;
-
-	/*
-	 * private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL =
-	 * "select dataObject.level_label, dataObject.meta_attr_name " +
-	 * "from r_data_hierarchy_meta_attr_name dataObject, unnest(dataObject.object_ids) as object_id "
-	 * + "where object_id in " + USER_ACCESS_SQL +
-	 * " GROUP BY level_label, meta_attr_name";
-	 */
 
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main "
 			+ "where object_id in " + USER_ACCESS_SQL;
