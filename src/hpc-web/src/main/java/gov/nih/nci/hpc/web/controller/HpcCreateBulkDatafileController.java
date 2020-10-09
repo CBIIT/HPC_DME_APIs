@@ -231,11 +231,6 @@ public class HpcCreateBulkDatafileController extends HpcCreateCollectionDataFile
 				basePath = (String) request.getAttribute("basePath");
 			else
 				basePath = basePathValues[0];
-			if(basePath != null && !basePath.equals("_select_null"))
-			{
-				model.addAttribute("datafilePath", basePath);
-				session.setAttribute("datafilePath", basePath);
-			}
 		} else {
 			model.addAttribute("datafilePath", parentPath);
 			session.setAttribute("datafilePath", parentPath);

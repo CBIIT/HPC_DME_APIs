@@ -200,7 +200,7 @@ function dm_show_register_collection_usage {
   Register an empty collection
   [-D REST-response]          Optionally specify the filename to capture the REST response
   [-o output-file]            Optionally specify the filename to capture the error output. This is empty if the command is successful
-  [description.json]          Path to the JSON file containing the metadata for the new collection. Omit this parameter if the source is a Globus endpoint or S3 bucket
+  [description.json]          Path to the JSON file containing the metadata for the new collection.
   [archive-path]              Destination path in the archive
 
 For detailed information on creating a collection, refer to the following page: 
@@ -1819,8 +1819,13 @@ function dm_show_register_globus_directory_usage {
   -i[INCLUDE_FILE_PATH]   Include the files that match at least one of the patterns specified in INCLUDE_FILE_PATH
   -p[PATTERN_TYPE]        The type of the regex pattern in the include/exclude files. Valid options are "Simple" and "RegEx". The default pattern is "Simple"
   -h                      Print this message 
+  
 EOF
-  echo "$usage"
+  read -d  '' message <<- EOF
+dm_register_globus_directory has been deprecated. Use Bulk Data Files Registration (V2) API.
+  
+EOF
+  echo "$message"
 }
 
 

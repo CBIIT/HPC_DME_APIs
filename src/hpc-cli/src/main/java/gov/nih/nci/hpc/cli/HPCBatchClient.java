@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +85,8 @@ public abstract class HPCBatchClient {
 		logger.debug("globus.nexus.url "+globusNexusURL);
 		globusURL = configProperties.getProperty("globus.url");
 		logger.debug("globus.url "+globusURL);
-		hpcDataService = configProperties.getProperty("hpc.dataobject.service");
+		hpcDataService = StringUtils.isBlank(configProperties.getProperty("hpc.dataobject.service")) ? "dataObject"
+				: configProperties.getProperty("hpc.dataobject.service");
 		logger.debug("hpc.dataobject.service "+hpcDataService);
 		hpcCertPath = configProperties.getProperty("hpc.ssl.keystore.path");
 		logger.debug("hpc.ssl.keystore.path "+hpcCertPath);
@@ -98,7 +100,8 @@ public abstract class HPCBatchClient {
 		logger.debug("hpc.login.token "+tokenFile);
 		globusLoginFile = configProperties.getProperty("hpc.globus.login.token");
         logger.debug("hpc.globus.login.token "+globusLoginFile);
-		hpcCollectionService = configProperties.getProperty("hpc.collection.service");
+		hpcCollectionService = StringUtils.isBlank(configProperties.getProperty("hpc.collection.service"))
+				? "collection" : configProperties.getProperty("hpc.collection.service");
         logger.debug("hpc.collection.service "+hpcCollectionService);
 		String bufferSizeStr = configProperties.getProperty("upload.buffer.size");
         logger.debug("upload.buffer.size "+bufferSizeStr);

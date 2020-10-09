@@ -145,7 +145,8 @@
 															</tr>
 
 															<tr>
-																<td><label for="Name">Data File Path:</label></td>
+																<td><label for="Name">Data File Path:</label><a href="#" id="dataFilePathPopover" data-toggle="popover">
+																	<img style="width: 25px; height: 25px;" src="img/help.png"/></a></td>
 																<td><input type="text" name="path" id="path"
 																	size="60" th:value="${datafilePath}" /></td>
 															</tr>
@@ -288,7 +289,7 @@
 									<button type="submit" class="btn btn-md btn-primary"
 										id="primaryCreateButton" onClick="return validate()"
 										th:disabled="${create == true} ?'false' : 'disabled'">Register</button>
-									<button type="button" class="btn btn-primary" id="cancel"
+									<button type="button" class="btn btn-default" id="cancel"
 										onClick="cancelEdit()">Cancel</button>
 								</div>
 							</form>
@@ -336,6 +337,12 @@
 	//<![CDATA[	
 	
 	var rowId = 0;
+	
+	$("#dataFilePathPopover").popover({
+        title: '<h6 class="custom-title"><span class="glyphicon glyphicon-info-sign"></span>Data File Path</h6>',
+        content: 'Enter the full path including the base path.',
+        html: true
+    }); 
 	
 	$("#hpcDatafile").change(function (e) {
 	    //Append the file name to the data file path

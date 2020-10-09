@@ -305,6 +305,7 @@
 			<xsd:enumeration value="COMPLETED" />
 			<xsd:enumeration value="FAILED" />
 			<xsd:enumeration value="FAILED_PERMISSION_DENIED" />
+			<xsd:enumeration value="FAILED_CREDENTIALS_NEEDED" />
 			<xsd:enumeration value="CANCELED" />
 		</xsd:restriction>
 	</xsd:simpleType>
