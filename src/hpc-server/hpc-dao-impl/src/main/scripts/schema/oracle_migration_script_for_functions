@@ -1,97 +1,132 @@
-create or replace FUNCTION irods.num_greater_or_equal(attr_value varchar2, value varchar2) RETURN BOOLEAN
+create FUNCTION       num_greater_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
 IS
     num_attr_value    NUMBER;
     num_value    NUMBER;
 BEGIN
     num_attr_value := CAST(attr_value AS NUMBER);
     num_value := CAST(value AS NUMBER);
-    RETURN num_attr_value >= num_value;
+    IF (num_attr_value >= num_value) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
 EXCEPTION
     WHEN others THEN
-        RETURN FALSE;
+        RETURN '0';
 END;
 
 
-create or replace function irods.num_greater_than(attr_value varchar2, value varchar2) RETURN BOOLEAN
+create function       num_greater_than(attr_value varchar2, value varchar2) RETURN CHAR
  IS
     num_attr_value  NUMBER;
     num_value NUMBER;
 BEGIN
     num_attr_value := CAST(attr_value AS NUMBER);
     num_value := CAST(value AS NUMBER);
-    RETURN num_attr_value > num_value;
+    if (num_attr_value > num_value) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
 EXCEPTION
     WHEN others THEN
-        RETURN FALSE;
+        RETURN '0';
 END;
 
 
-create or replace function irods.num_less_or_equal(attr_value varchar2, value varchar2) RETURN BOOLEAN
+create function       num_less_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
  IS
     num_attr_value  NUMBER;
     num_value NUMBER;
 BEGIN
     num_attr_value := CAST(attr_value AS NUMBER);
     num_value := CAST(value AS NUMBER);
-    RETURN num_attr_value <= num_value;
+    IF (num_attr_value <= num_value) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
 EXCEPTION
     WHEN others THEN
-        RETURN FALSE;
+        RETURN '0';
 END;
 
 
-create or replace function irods.num_less_than(attr_value varchar2, value varchar2) RETURN BOOLEAN
+create function       num_less_than(attr_value varchar2, value varchar2) RETURN CHAR
  IS
     num_attr_value  NUMBER;
     num_value NUMBER;
 BEGIN
     num_attr_value := CAST(attr_value AS NUMBER);
     num_value := CAST(value AS NUMBER);
-    RETURN num_attr_value < num_value;
+    IF (num_attr_value < num_value) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
 EXCEPTION
     WHEN others THEN
-        RETURN FALSE;
+        RETURN '0';
 END;
 
-create or replace function irods.timestamp_less_than(attr_value varchar2, value varchar2) RETURN BOOLEAN
+
+create function       timestamp_greater_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
  IS
 
 BEGIN
-    RETURN to_timestamp(attr_value) < to_timestamp(value);
+    IF (to_timestamp(attr_value) >= to_timestamp(value)) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
 EXCEPTION
     WHEN others THEN
-        RETURN FALSE;
+        RETURN '0';
 END;
 
 
-create or replace function irods.timestamp_greater_than(attr_value varchar2, value varchar2) RETURN BOOLEAN
+create function       timestamp_greater_than(attr_value varchar2, value varchar2) RETURN CHAR
  IS
 
 BEGIN
-    RETURN to_timestamp(attr_value) > to_timestamp(value);
+    IF (to_timestamp(attr_value) > to_timestamp(value)) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
 EXCEPTION
     WHEN others THEN
-        RETURN FALSE;
+        RETURN '0';
 END;
 
 
-create or replace function irods.timestamp_less_or_equal(attr_value varchar2, value varchar2) RETURN BOOLEAN
+create function       timestamp_less_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
  IS
 
 BEGIN
-    RETURN to_timestamp(attr_value) <= to_timestamp(value);
+    IF (to_timestamp(attr_value) <= to_timestamp(value)) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
 EXCEPTION
     WHEN others THEN
-        RETURN FALSE;
+        RETURN '0';
 END;
 
 
-create or replace function irods.timestamp_greater_or_equal(attr_value varchar2, value varchar2) RETURN BOOLEAN
+create function       timestamp_less_than(attr_value varchar2, value varchar2) RETURN CHAR
  IS
 
 BEGIN
-    RETURN to_timestamp(attr_value) >= to_timestamp(value);
+    IF (to_timestamp(attr_value) < to_timestamp(value)) THEN
+        RETURN '1';
+    ELSE
+        RETURN '0';
+    end if;
 EXCEPTION
     WHEN others THEN
-        RETURN FALSE;
+        RETURN '0';
 END;
+
+
