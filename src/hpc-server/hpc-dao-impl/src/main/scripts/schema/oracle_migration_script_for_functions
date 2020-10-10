@@ -70,11 +70,11 @@ EXCEPTION
 END;
 
 
-create function       timestamp_greater_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
+create function       timestamp_greater_or_equal(attr_value varchar2, value varchar2, format varchar2) RETURN CHAR
  IS
 
 BEGIN
-    IF (to_timestamp(attr_value) >= to_timestamp(value)) THEN
+    IF (to_timestamp(attr_value, format) >= to_timestamp(value, format)) THEN
         RETURN '1';
     ELSE
         RETURN '0';
@@ -85,11 +85,11 @@ EXCEPTION
 END;
 
 
-create function       timestamp_greater_than(attr_value varchar2, value varchar2) RETURN CHAR
+create function       timestamp_greater_than(attr_value varchar2, value varchar2, format varchar2) RETURN CHAR
  IS
 
 BEGIN
-    IF (to_timestamp(attr_value) > to_timestamp(value)) THEN
+    IF (to_timestamp(attr_value, format) > to_timestamp(value, format)) THEN
         RETURN '1';
     ELSE
         RETURN '0';
@@ -100,11 +100,11 @@ EXCEPTION
 END;
 
 
-create function       timestamp_less_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
+create function       timestamp_less_or_equal(attr_value varchar2, value varchar2, format varchar2) RETURN CHAR
  IS
 
 BEGIN
-    IF (to_timestamp(attr_value) <= to_timestamp(value)) THEN
+    IF (to_timestamp(attr_value, format) <= to_timestamp(value, format)) THEN
         RETURN '1';
     ELSE
         RETURN '0';
@@ -115,11 +115,11 @@ EXCEPTION
 END;
 
 
-create function       timestamp_less_than(attr_value varchar2, value varchar2) RETURN CHAR
+create function       timestamp_less_than(attr_value varchar2, value varchar2, format varchar2) RETURN CHAR
  IS
 
 BEGIN
-    IF (to_timestamp(attr_value) < to_timestamp(value)) THEN
+    IF (to_timestamp(attr_value, format) < to_timestamp(value, format)) THEN
         RETURN '1';
     ELSE
         RETURN '0';
@@ -128,5 +128,4 @@ EXCEPTION
     WHEN others THEN
         RETURN '0';
 END;
-
 
