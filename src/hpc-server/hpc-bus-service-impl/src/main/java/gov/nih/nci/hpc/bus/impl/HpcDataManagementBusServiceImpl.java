@@ -277,7 +277,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} finally {
 				// Add an audit record of this deletion attempt.
 				dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
-						metadataService.getCollectionMetadataEntries(path), null, updated, null, message);
+						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
 			}
 
 			addCollectionUpdatedEvent(path, false, false, userId);
@@ -579,7 +579,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_COLLECTION, metadataEntries, null,
-					null, deleted, null, message);
+					null, deleted, null, message, null);
 		}
 	}
 
@@ -1383,7 +1383,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Add an audit record of this deletion attempt.
 		dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_DATA_OBJECT, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
-				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage());
+				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null);
 
 		return dataObjectDeleteResponse;
 	}
@@ -2325,7 +2325,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
 					metadataService.getDataObjectMetadataEntries(path), systemGeneratedMetadata.getArchiveLocation(),
-					updated, null, message);
+					updated, null, message, null);
 		}
 
 		// Optionally re-generate the upload request URL.
