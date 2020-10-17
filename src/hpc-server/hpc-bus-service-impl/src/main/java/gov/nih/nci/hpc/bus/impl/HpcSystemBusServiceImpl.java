@@ -77,7 +77,6 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
-import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
@@ -117,10 +116,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// Metadata Application Service Instance
 	@Autowired
 	private HpcMetadataService metadataService = null;
-
-	// Reports Application Service Instance
-	@Autowired
-	private HpcReportService reportsService = null;
 
 	// The collection download task executor.
 	@Autowired
@@ -712,7 +707,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								logger.info("collection download task: {} - detected permission denied [{}]",
 										downloadTask.getId(), downloadTask.getType().value());
 							}
-							
+
 							if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED)) {
 								// This item failed because of credentials are needed.
 								// Cancel any pending download items (i.e. items in RECEIVED state).
@@ -2048,9 +2043,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				if (downloadItemStatus != null && !downloadItemStatus.getInProgress()) {
 					// First download item completed. Set the abort indicator.
 					abortCollection = downloadItemStatus.getResult().getResult()
-							.equals(HpcDownloadResult.FAILED_PERMISSION_DENIED) ||
-							downloadItemStatus.getResult().getResult()
-							.equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED);
+							.equals(HpcDownloadResult.FAILED_PERMISSION_DENIED)
+							|| downloadItemStatus.getResult().getResult()
+									.equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED);
 					return abortCollection;
 				}
 			}
