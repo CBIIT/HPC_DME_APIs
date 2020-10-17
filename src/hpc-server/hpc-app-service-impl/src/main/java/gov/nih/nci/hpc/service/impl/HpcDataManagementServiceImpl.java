@@ -418,14 +418,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message) {
+			Boolean dataTransferStatus, String message, String userId) {
 		// Input validation.
-		if (path == null || requestType == null || metadataBefore == null) {
+		String nciUserId = HpcRequestContext.getRequestInvoker().getNciAccount() == null ? userId
+				: HpcRequestContext.getRequestInvoker().getNciAccount().getUserId();
+
+		if (path == null || requestType == null || metadataBefore == null || StringUtils.isBlank(nciUserId)) {
 			return;
 		}
 
 		try {
-			dataManagementAuditDAO.insert(HpcRequestContext.getRequestInvoker().getNciAccount().getUserId(), path,
+			dataManagementAuditDAO.insert(nciUserId, path,
 					requestType, metadataBefore, metadataAfter, archiveLocation, dataManagementStatus,
 					dataTransferStatus, message, Calendar.getInstance());
 
