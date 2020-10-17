@@ -106,11 +106,12 @@ public interface HpcDataManagementService {
    * @param dataManagementStatus Data management (iRODS) request completion status.
    * @param dataTransferStatus (Optional) Data transfer (Cleversafe) request completion status.
    * @param message (Optional) Error message if the request failed.
+   * @param userId (Optional) userId if not executed in a user thread.
    */
   public void addAuditRecord(String path, HpcAuditRequestType requestType,
       HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
       HpcFileLocation archiveLocation, boolean dataManagementStatus, Boolean dataTransferStatus,
-      String message);
+      String message, String userId);
 
   /**
    * Set collection permission for a subject (user or group).
