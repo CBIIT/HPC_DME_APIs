@@ -8,7 +8,7 @@ create materialized view log on r_objt_metamap
 
 create materialized view log on r_data_main with sequence, rowid (data_id, coll_id, create_ts) including new values;
 
-create materialized view log on r_coll_main with sequence, rowid (coll_id, create_ts) including new values;
+create materialized view log on r_coll_main with sequence, rowid (coll_id, coll_name, create_ts) including new values;
 
 create materialized view log on "HPC_DATA_MANAGEMENT_CONFIGURATION" with sequence, rowid ("DOC", "ID", "BASE_PATH") including new values;
 
@@ -291,14 +291,20 @@ create unique index r_report_source_file_size_uidx1
 
 
 
-create materialized view irods.r_report_meta_main as
-SELECT a.meta_attr_value,
+create materialized view irods.r_report_meta_main
+    build immediate
+    refresh fast on commit
+    enable query rewrite as
+SELECT a.rowid as arowid,
+       b.rowid as browid,
+       a.meta_attr_value,
        a.meta_attr_name,
        a.meta_id,
        b.object_id,
        a.create_ts
-FROM r_meta_main a
-         JOIN r_objt_metamap b ON a.meta_id = b.meta_id;
+FROM r_meta_main a,
+     r_objt_metamap b
+WHERE a.meta_id = b.meta_id;
 
 
 create unique index r_report_meta_main_uidx1
@@ -501,39 +507,58 @@ create unique index r_report_collection_type_uidx1
 
 
 
-create materialized view irods.r_report_coll_registered_by_path as
-SELECT DISTINCT c.coll_name,
-                a.meta_attr_name,
-                a.meta_attr_value,
-                c.coll_id,
-                b.meta_id,
-                c.create_ts
+create materialized view irods.r_report_coll_registered_by_path
+    build immediate
+    refresh fast on commit
+    enable query rewrite as
+SELECT cast(c.coll_name as varchar2(1000)) as coll_name,
+       cast(a.meta_attr_name as varchar2(1000)) meta_attr_name,
+       cast(a.meta_attr_value as varchar2(2700)) meta_attr_value,
+       c.coll_id,
+       b.meta_id,
+       cast(c.create_ts as varchar2(32)) as create_ts,
+       count(*)
 FROM r_meta_main a,
      r_objt_metamap b,
      r_coll_main c
 WHERE a.meta_id = b.meta_id
-  AND b.object_id = c.coll_id;
-
+  AND b.object_id = c.coll_id
+GROUP BY cast(c.coll_name as varchar2(1000)),
+         cast(a.meta_attr_name as varchar2(1000)),
+         cast(a.meta_attr_value as varchar2(2700)),
+         c.coll_id,
+         b.meta_id,
+         cast(c.create_ts as varchar2(32));
 
 create unique index r_report_coll_registered_by_path_uidx1
     on irods.r_report_coll_registered_by_path (meta_attr_name, coll_id, coll_name);
 
 
 
-create materialized view irods.r_report_registered_by_path as
-SELECT DISTINCT d.coll_name,
-                a.meta_attr_name,
-                a.meta_attr_value,
-                b.object_id,
-                b.meta_id,
-                c.create_ts
+create materialized view irods.r_report_registered_by_path
+    build immediate
+    refresh fast on commit
+    enable query rewrite as
+SELECT cast(d.coll_name as varchar2(1000)) as coll_name,
+                cast(a.meta_attr_name as varchar2(1000)) as meta_attr_name,
+       cast(a.meta_attr_value as varchar2(2700)) as meta_attr_value,
+                b.object_id as object_id,
+                b.meta_id as meta_id,
+       cast(c.create_ts as varchar2(32)) as create_ts,
+       count(*)
 FROM r_meta_main a,
      r_objt_metamap b,
      r_data_main c,
      r_coll_main d
 WHERE a.meta_id = b.meta_id
   AND b.object_id = c.data_id
-  AND c.coll_id = d.coll_id;
+  AND c.coll_id = d.coll_id
+GROUP BY cast(d.coll_name as varchar2(1000)),
+                cast(a.meta_attr_name as varchar2(1000)),
+       cast(a.meta_attr_value as varchar2(2700)),
+                b.object_id,
+                b.meta_id,
+       cast(c.create_ts as varchar2(32));
 
 
 create unique index r_report_registered_by_path_uidx1
@@ -629,8 +654,8 @@ SELECT data.data_id,
        transfermethod.meta_attr_value                         AS "DATA_TRANSFER_METHOD",
        transfertype.meta_attr_value                           AS "DATA_TRANSFER_TYPE",
        sourceendpoint.meta_attr_value                         AS "SOURCE_ENDPOINT",
-       cast(created.meta_attr_value as timestamp)   AS "CREATED",
-       cast(completed.meta_attr_value as timestamp) AS "COMPLETED"
+       to_timestamp(created.meta_attr_value,'MM-DD-YYYY HH24:MI:SS') AS "CREATED",
+       to_timestamp(created.meta_attr_value,'MM-DD-YYYY HH24:MI:SS') AS "COMPLETED"
 FROM r_data_main data
          JOIN r_report_registered_by_basepath basepath ON data.data_id = basepath.object_id
          JOIN r_report_registered_by_doc doc ON data.data_id = doc.object_id
