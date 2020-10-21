@@ -286,7 +286,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 		Integer id = rs.getInt("id");
 		metadataEntry.setId(id != null ? id.intValue() : null);
 		metadataEntry.setPath(rs.getString("path"));
-		Long size = rs.getLong("size");
+		Long size = rs.getLong("data_size");
 		metadataEntry.setDataSize(size != null ? size.longValue() : null);
 		if (rs.getTimestamp("uploaded") != null) {
 			Calendar cal = Calendar.getInstance();
