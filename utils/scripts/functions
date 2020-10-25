@@ -1288,14 +1288,16 @@ function dm_download_dataobject_presigned {
   local CONFIG=$(get_config)
   local SERVER=$(get_server)
   local CODE=0
+  local SUFFIX=`date +"%Y%m%d%H%M%S"_$RANDOM`
   if [ -z "$RESPONSE_STATUS" ]
     then
-      RESPONSE_STATUS=download-dataobject-response-header.tmp
+      RESPONSE_STATUS=download-dataobject-response-header-$SUFFIX.tmp
   fi
   
-  local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header.tmp
-  local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=download-dataobject-response-message.tmp
-  local RESPONSE_MESSAGE=download-dataobject-response-message.tmp
+  
+  local RESPONSE_HEADER_OBTAIN_PRESIGNED=obtain-presigned-url-response-header-$SUFFIX.tmp
+  local RESPONSE_MESSAGE_OBTAIN_PRESIGNED=download-dataobject-response-message-$SUFFIX.tmp
+  local RESPONSE_MESSAGE=download-dataobject-response-message-$SUFFIX.tmp
 
   curl -H "Content-Type: application/json" -H "Accept: application/json" \
       $CONFIG -d @$TEMPLATE \
