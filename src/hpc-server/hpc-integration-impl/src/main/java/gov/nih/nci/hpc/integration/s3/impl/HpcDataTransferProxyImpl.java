@@ -59,7 +59,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
@@ -75,7 +74,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// Constants
 	// ---------------------------------------------------------------------//
 
-	// The expiration of streaming data request from Cleversafe to AWS S3.
+	// The expiration of streaming data request from 3rd Party S3 Archive
+	// (Cleversafe, Cloudian, etc) to AWS S3.
 	private static final int S3_STREAM_EXPIRATION = 96;
 
 	// ---------------------------------------------------------------------//
@@ -156,6 +156,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 		} else if (uploadRequest.getSourceFile() != null) {
 			// Upload a file
+			logger.info("ERAN: {}", s3Connection.getS3Provider(authenticatedToken.toString()));
 			return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(), archiveDestinationLocation,
 					progressListener, baseArchiveDestination.getType(), metadataEntries);
 		} else {
@@ -239,11 +240,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (AmazonServiceException ase) {
 			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
-					HpcIntegratedSystem.CLEVERSAFE, ase);
+					s3Connection.getS3Provider(authenticatedToken), ase);
 
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
-					HpcIntegratedSystem.CLEVERSAFE, ace);
+					s3Connection.getS3Provider(authenticatedToken), ace);
 		}
 	}
 
@@ -258,11 +259,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (AmazonServiceException ase) {
 			throw new HpcException("[S3] Failed to delete file: " + deleteRequest, HpcErrorType.DATA_TRANSFER_ERROR,
-					HpcIntegratedSystem.CLEVERSAFE, ase);
+					s3Connection.getS3Provider(authenticatedToken), ase);
 
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to delete file: " + deleteRequest, HpcErrorType.DATA_TRANSFER_ERROR,
-					HpcIntegratedSystem.CLEVERSAFE, ace);
+					s3Connection.getS3Provider(authenticatedToken), ace);
 		}
 	}
 
@@ -288,12 +289,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				return pathAttributes;
 			} else {
 				throw new HpcException("[S3] Failed to get object metadata: " + ase.getMessage(),
-						HpcErrorType.DATA_TRANSFER_ERROR, ase);
+						HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), ase);
 			}
 
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to get object metadata: " + ace.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, ace);
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), ace);
 		}
 
 		if (fileExists) {
@@ -315,7 +316,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				pathAttributes.setExists(directoryExists);
 			} catch (AmazonClientException ace) {
 				throw new HpcException("[S3] Failed to list object: " + ace.getMessage(),
-						HpcErrorType.DATA_TRANSFER_ERROR, ace);
+						HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), ace);
 			}
 		}
 
@@ -352,11 +353,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (AmazonServiceException ase) {
 			throw new HpcException("[S3] Failed to list objects: " + ase.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
-					ase);
+					s3Connection.getS3Provider(authenticatedToken), ase);
 
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to list objects: " + ace.getMessage(), HpcErrorType.DATA_TRANSFER_ERROR,
-					ace);
+					s3Connection.getS3Provider(authenticatedToken), ace);
 		}
 	}
 
@@ -375,8 +376,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					.completeMultipartUpload(completeMultipartUploadRequest).getETag();
 
 		} catch (AmazonClientException e) {
-			throw new HpcException("[S3] Failed to complete a multipart upload: " + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, e);
+			throw new HpcException(
+					"[S3] Failed to complete a multipart upload to " + archiveLocation.getFileContainerId() + ":"
+							+ archiveLocation.getFileId() + ". multi-part-upload-id = " + multipartUploadId
+							+ ", number-of-parts = " + uploadPartETags.size() + " - " + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
 		}
 	}
 
@@ -424,7 +428,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to upload file.", HpcErrorType.DATA_TRANSFER_ERROR,
-					HpcIntegratedSystem.CLEVERSAFE, ace);
+					s3Connection.getS3Provider(authenticatedToken), ace);
 
 		} catch (InterruptedException ie) {
 			Thread.currentThread().interrupt();
@@ -533,8 +537,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				// Attach a progress listener.
 				s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
-				logger.info("S3 upload AWS->Cleversafe [{}] started. Source size - {} bytes. Read limit - {}",
-						sourceDestinationLogMessage, size, request.getRequestClientOptions().getReadLimit());
+				logger.info("S3 upload AWS->{} [{}] started. Source size - {} bytes. Read limit - {}",
+						s3Connection.getS3Provider(authenticatedToken).toString(), sourceDestinationLogMessage, size,
+						request.getRequestClientOptions().getReadLimit());
 
 				// Wait for the result. This ensures the input stream to the URL remains opened
 				// and
@@ -642,7 +647,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					.initiateMultipartUpload(initiateMultipartUploadRequest).getUploadId());
 		} catch (AmazonClientException e) {
 			throw new HpcException("[S3] Failed to initiate a multipart upload: " + initiateMultipartUploadRequest,
-					HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, e);
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
 		}
 
 		// Calculate the URL expiration date.
@@ -666,7 +671,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			} catch (AmazonClientException e) {
 				throw new HpcException("[S3] Failed to create a pre-signed URL for part: " + partNumber,
-						HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, e);
+						HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
 			}
 
 			multipartUpload.getParts().add(uploadPartURL);
@@ -735,7 +740,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to download file: [" + ace.getMessage() + "]",
-					HpcErrorType.DATA_TRANSFER_ERROR, HpcIntegratedSystem.CLEVERSAFE, ace);
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), ace);
 
 		} catch (InterruptedException ie) {
 			Thread.currentThread().interrupt();
@@ -776,7 +781,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 
 		// Generate a download pre-signed URL for the requested data file from the
-		// Cleversafe archive.
+		// 3rd party S3 archive (Cleversafe, Cloudian, etc).
 		String sourceURL = generateDownloadRequestURL(authenticatedToken, archiveLocation, S3_STREAM_EXPIRATION);
 
 		// Use AWS transfer manager to download the file.
@@ -829,7 +834,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						+ destinationLocation.getFileId();
 				s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
-				logger.info("S3 download Cleversafe->AWS [{}] started. Source size - {} bytes. Read limit - {}",
+				logger.info("S3 download Archive->AWS [{}] started. Source size - {} bytes. Read limit - {}",
 						sourceDestinationLogMessage, fileSize, request.getRequestClientOptions().getReadLimit());
 
 				// Wait for the result. This ensures the input stream to the URL remains opened
