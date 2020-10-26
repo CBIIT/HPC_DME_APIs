@@ -45,7 +45,7 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 
 	// SQL Queries.
 	private static final String UPSERT_GROUP_SQL = "merge into HPC_GROUP using dual on (GROUP_NAME = ?) "
-			+ "when matched then update set DOC = ?, ACTIVE, CREATED = ?, LAST_UPDATED = ?, ACTIVE_UPDATED_BY = ? "
+			+ "when matched then update set DOC = ?, ACTIVE = ?, CREATED = ?, LAST_UPDATED = ?, ACTIVE_UPDATED_BY = ? "
 			+ "when not matched then insert (GROUP_NAME, DOC, ACTIVE, CREATED, LAST_UPDATED, ACTIVE_UPDATED_BY) "
 			+ "values (?, ?, ?, ?, ?, ?) ";
 
