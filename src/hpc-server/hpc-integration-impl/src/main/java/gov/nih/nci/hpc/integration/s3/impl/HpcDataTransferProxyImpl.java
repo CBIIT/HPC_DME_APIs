@@ -156,7 +156,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			}
 		} else if (uploadRequest.getSourceFile() != null) {
 			// Upload a file
-			logger.info("ERAN: {}", s3Connection.getS3Provider(authenticatedToken.toString()));
 			return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(), archiveDestinationLocation,
 					progressListener, baseArchiveDestination.getType(), metadataEntries);
 		} else {
