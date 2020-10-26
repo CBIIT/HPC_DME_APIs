@@ -56,7 +56,7 @@ public class HpcGroupDAOImpl implements HpcGroupDAO {
 
 	private static final String GET_GROUP_SQL = "select * from HPC_GROUP where GROUP_NAME = ?";
 
-	private static final String GET_GROUPS_SQL = "select user_name from public.r_user_main where "
+	private static final String GET_GROUPS_SQL = "select user_name from r_user_main where "
 			+ "user_type_name = 'rodsgroup' and user_name <> 'rodsadmin'";
 
 	// Get all groups to which the given user belongs
