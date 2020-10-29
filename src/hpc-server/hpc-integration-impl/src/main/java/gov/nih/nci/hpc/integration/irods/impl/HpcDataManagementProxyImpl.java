@@ -696,7 +696,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	@Override
 	public boolean groupExists(Object authenticatedToken, String groupName) throws HpcException {
 		try {
-			return irodsConnection.getUserGroupAO(authenticatedToken).findByName(groupName) == null;
+			List<String> groupNames = irodsConnection.getUserGroupAO(authenticatedToken).findUserGroupNames(groupName,
+					false);
+			return groupNames != null ? !groupNames.isEmpty() : false;
 
 		} catch (Exception e) {
 			throw new HpcException("Failed to get a group: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR,
