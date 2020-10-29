@@ -1,3 +1,47 @@
+CREATE PROCEDURE refresh_report_meta_view AS
+
+BEGIN
+
+	DBMS_MVIEW.REFRESH('R_REPORT_COLL_META_MAIN,
+	                R_REPORT_COLL_REGISTERED_BY,
+	                R_REPORT_COLL_REGISTERED_BY_BASEPATH,
+	                R_REPORT_COLL_REGISTERED_BY_DOC,
+	                R_REPORT_COLL_REGISTERED_BY_BASEPATH,
+	                R_REPORT_COLLECTION_PATH,
+	                R_REPORT_COLLECTION_TYPE,
+	                R_REPORT_DATA_META_MAIN,
+	                R_REPORT_DATA_OBJECTS,
+	                R_REPORT_META_MAIN,
+	                R_REPORT_META_MAP,
+	                R_REPORT_REGISTERED_BY,
+	                R_REPORT_REGISTERED_BY_AUDIT,
+	                R_REPORT_REGISTERED_BY_BASEPATH,
+	                R_REPORT_REGISTERED_BY_DOC,
+	                R_REPORT_REGISTERED_BY_PATH,
+	                R_REPORT_SOURCE_FILE_SIZE,
+	                R_REPORT_COLL_REGISTERED_BY',
+	                METHOD => 'C', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
+
+
+END;
+
+
+
+CREATE PROCEDURE refresh_hierarchy_meta_view AS
+
+BEGIN
+
+	DBMS_MVIEW.REFRESH('R_COLL_HIERARCHY_META_MAIN,
+	                R_COLL_HIERARCHY_METAMAP,
+	                R_COLL_HIERARCHY_META_MAIN,
+	                R_DATA_HIERARCHY_METAMAP',
+	                METHOD => 'C',  ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
+
+
+END;
+
+
+
 create FUNCTION       num_greater_or_equal(attr_value varchar2, value varchar2) RETURN CHAR
 IS
     num_attr_value    NUMBER;
