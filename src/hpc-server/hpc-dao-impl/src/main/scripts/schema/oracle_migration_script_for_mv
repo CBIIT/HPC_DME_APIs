@@ -1,21 +1,4 @@
-create materialized view log on r_meta_main
-    with sequence, rowid (meta_attr_value,meta_attr_name,meta_id,create_ts)
-    including new values;
-
-create materialized view log on r_objt_metamap
-    with sequence, rowid (meta_id,object_id)
-    including new values;
-
-create materialized view log on r_data_main with sequence, rowid (data_id, coll_id, create_ts) including new values;
-
-create materialized view log on r_coll_main with sequence, rowid (coll_id, coll_name, create_ts) including new values;
-
-create materialized view log on "HPC_DATA_MANAGEMENT_CONFIGURATION" with sequence, rowid ("DOC", "ID", "BASE_PATH") including new values;
-
-create materialized view irods.r_report_registered_by
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_registered_by as
 SELECT  a.meta_attr_name,
         a.meta_attr_value,
         b.object_id,
@@ -81,7 +64,6 @@ comment on column irods.r_data_hierarchy_metamap.coll_id is 'Collection (in the 
 
 comment on column irods.r_data_hierarchy_metamap.data_level is 'The level of the metadata in the hierarchy, starting with 1 at the data-object level';
 
-
 create unique index r_data_hierarchy_metamap_unique
     on irods.r_data_hierarchy_metamap (object_id, meta_id, data_level);
 
@@ -123,7 +105,6 @@ comment on column irods.r_data_hierarchy_meta_main.meta_attr_name is 'Metadata a
 comment on column irods.r_data_hierarchy_meta_main.meta_attr_value is 'Metadata value: r_meta_main.meta_attr_value';
 
 comment on column irods.r_data_hierarchy_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
-
 
 create unique index r_data_hierarchy_meta_main_unique
     on irods.r_data_hierarchy_meta_main (object_id, meta_id, data_level);
@@ -224,7 +205,6 @@ comment on column irods.r_coll_hierarchy_meta_main.meta_attr_value is 'Metadata 
 
 comment on column irods.r_coll_hierarchy_meta_main.meta_attr_unit is 'Metadata unit: r_meta_main.meta_attr_unit';
 
-
 create unique index r_coll_hierarchy_meta_main_unique
     on irods.r_coll_hierarchy_meta_main (object_id, meta_id, data_level);
 
@@ -242,35 +222,7 @@ create index r_coll_hierarchy_meta_main_metadata_query_level_label
 
 
 
-create materialized view irods.r_data_hierarchy_meta_attr_name as
-SELECT r_data_hierarchy_meta_main.level_label,
-       r_data_hierarchy_meta_main.meta_attr_name,
-       LISTAGG(r_data_hierarchy_meta_main.object_id) AS object_ids
-FROM r_data_hierarchy_meta_main
-GROUP BY r_data_hierarchy_meta_main.level_label, r_data_hierarchy_meta_main.meta_attr_name;
-
-
-create unique index r_data_hierarchy_meta_attr_name_unique
-    on irods.r_data_hierarchy_meta_attr_name (level_label, meta_attr_name);
-
-create materialized view irods.r_coll_hierarchy_meta_attr_name as
-SELECT r_coll_hierarchy_meta_main.level_label,
-       r_coll_hierarchy_meta_main.meta_attr_name,
-       LISTAGG(r_coll_hierarchy_meta_main.object_id) AS object_ids
-FROM r_coll_hierarchy_meta_main
-GROUP BY r_coll_hierarchy_meta_main.level_label, r_coll_hierarchy_meta_main.meta_attr_name;
-
-
-create unique index r_coll_hierarchy_meta_attr_name_unique
-    on irods.r_coll_hierarchy_meta_attr_name (level_label, meta_attr_name);
-
-
-
-drop materialized view irods.r_report_source_file_size;
-create materialized view irods.r_report_source_file_size
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_source_file_size as
 SELECT a.rowid as arowid,
        b.rowid as browid,
        c.rowid as crowid,
@@ -290,11 +242,7 @@ create unique index r_report_source_file_size_uidx1
     on irods.r_report_source_file_size (meta_attr_value, meta_attr_name, object_id);
 
 
-
-create materialized view irods.r_report_meta_main
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_meta_main as
 SELECT a.rowid as arowid,
        b.rowid as browid,
        a.meta_attr_value,
@@ -311,11 +259,7 @@ create unique index r_report_meta_main_uidx1
     on irods.r_report_meta_main (meta_attr_value, meta_attr_name, meta_id, object_id);
 
 
-
-create materialized view irods.r_report_data_objects
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_data_objects as
 SELECT a.rowid arowid,
        b.rowid browid,
        c.rowid crowid,
@@ -327,17 +271,13 @@ FROM r_data_main a,
      r_objt_metamap b,
      r_meta_main c
 WHERE
-      a.data_id = b.object_id and b.meta_id = c.meta_id;
+        a.data_id = b.object_id and b.meta_id = c.meta_id;
 
 create unique index r_report_data_objects_uidx1
     on irods.r_report_data_objects (meta_attr_name, meta_attr_value, data_id);
 
 
-
-create materialized view irods.r_report_coll_registered_by
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_coll_registered_by as
 SELECT a.meta_attr_name,
        a.meta_attr_value,
        c.coll_id,
@@ -359,11 +299,7 @@ create unique index r_report_coll_registered_by_uidx1
     on irods.r_report_coll_registered_by (meta_attr_name, meta_attr_value, coll_id);
 
 
-
-create materialized view irods.r_report_coll_registered_by_doc
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_coll_registered_by_doc as
 SELECT d."DOC",
        a.meta_attr_name,
        a.meta_attr_value,
@@ -385,17 +321,13 @@ GROUP BY d."DOC",
          c.coll_id,
          b.meta_id,
          c.create_ts;
-		 
-		 
+
+
 create unique index r_report_coll_registered_by_doc_uidx1
     on irods.r_report_coll_registered_by_doc (meta_attr_name, meta_attr_value, coll_id, "DOC");
 
 
-
-create materialized view irods.r_report_registered_by_doc
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_registered_by_doc as
 SELECT d."DOC",
        a.meta_attr_name,
        a.meta_attr_value,
@@ -423,11 +355,7 @@ create unique index r_report_registered_by_doc_uidx1
     on irods.r_report_registered_by_doc (meta_attr_name, meta_attr_value, object_id, "DOC");
 
 
-
-create materialized view irods.r_report_registered_by_basepath
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_registered_by_basepath as
 SELECT d."BASE_PATH",
        a.meta_attr_name,
        a.meta_attr_value,
@@ -453,11 +381,7 @@ create unique index r_report_registered_by_basepath_uidx1
     on irods.r_report_registered_by_basepath (meta_attr_name, meta_attr_value, object_id, "BASE_PATH");
 
 
-
-create materialized view irods.r_report_coll_registered_by_basepath
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_coll_registered_by_basepath as
 SELECT d."BASE_PATH",
        a.meta_attr_name,
        a.meta_attr_value,
@@ -484,11 +408,7 @@ create unique index r_report_coll_registered_by_basepath_uidx1
     on irods.r_report_coll_registered_by_basepath (meta_attr_name, meta_attr_value, coll_id, "BASE_PATH");
 
 
-
-create materialized view irods.r_report_collection_type
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_collection_type as
 SELECT a.rowid as arowid,
        b.rowid as browid,
        c.rowid as crowid,
@@ -506,11 +426,7 @@ create unique index r_report_collection_type_uidx1
     on irods.r_report_collection_type (meta_attr_name, meta_attr_value, object_id);
 
 
-
-create materialized view irods.r_report_coll_registered_by_path
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_coll_registered_by_path as
 SELECT cast(c.coll_name as varchar2(1000)) as coll_name,
        cast(a.meta_attr_name as varchar2(1000)) meta_attr_name,
        cast(a.meta_attr_value as varchar2(2700)) meta_attr_value,
@@ -534,16 +450,12 @@ create unique index r_report_coll_registered_by_path_uidx1
     on irods.r_report_coll_registered_by_path (meta_attr_name, coll_id, coll_name);
 
 
-
-create materialized view irods.r_report_registered_by_path
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_registered_by_path as
 SELECT cast(d.coll_name as varchar2(1000)) as coll_name,
-                cast(a.meta_attr_name as varchar2(1000)) as meta_attr_name,
+       cast(a.meta_attr_name as varchar2(1000)) as meta_attr_name,
        cast(a.meta_attr_value as varchar2(2700)) as meta_attr_value,
-                b.object_id as object_id,
-                b.meta_id as meta_id,
+       b.object_id as object_id,
+       b.meta_id as meta_id,
        cast(c.create_ts as varchar2(32)) as create_ts,
        count(*)
 FROM r_meta_main a,
@@ -554,24 +466,20 @@ WHERE a.meta_id = b.meta_id
   AND b.object_id = c.data_id
   AND c.coll_id = d.coll_id
 GROUP BY cast(d.coll_name as varchar2(1000)),
-                cast(a.meta_attr_name as varchar2(1000)),
-       cast(a.meta_attr_value as varchar2(2700)),
-                b.object_id,
-                b.meta_id,
-       cast(c.create_ts as varchar2(32));
+         cast(a.meta_attr_name as varchar2(1000)),
+         cast(a.meta_attr_value as varchar2(2700)),
+         b.object_id,
+         b.meta_id,
+         cast(c.create_ts as varchar2(32));
 
 
 create unique index r_report_registered_by_path_uidx1
     on irods.r_report_registered_by_path (meta_attr_name, object_id, coll_name);
 
-
-create materialized view irods.r_report_collection_path
-    build immediate
-    refresh fast on commit
-    enable query rewrite as
+create materialized view irods.r_report_collection_path as
 SELECT d.coll_name,
-                b.object_id,
-                c.create_ts,
+       b.object_id,
+       c.create_ts,
        count(*)
 FROM r_meta_main a,
      r_objt_metamap b,
@@ -592,10 +500,10 @@ create unique index r_report_collection_path_uidx1
 
 create materialized view irods.r_catalog_meta_main as
 With config_meta(meta_id, meta_namespace,meta_attr_name, meta_attr_value,meta_attr_unit, r_comment,
-create_ts, modify_ts,object_id, meta_id_1,create_ts_1, modify_ts_1) as
- (SELECT * from r_meta_main meta_main_1
-         JOIN r_objt_metamap metamap ON cast(meta_main_1.meta_attr_name as varchar2(250)) = cast('configuration_id' as varchar2(50)) AND
-                                        metamap.meta_id = meta_main_1.meta_id)
+                 create_ts, modify_ts,object_id, meta_id_1,create_ts_1, modify_ts_1) as
+         (SELECT * from r_meta_main meta_main_1
+                            JOIN r_objt_metamap metamap ON cast(meta_main_1.meta_attr_name as varchar2(250)) = cast('configuration_id' as varchar2(50)) AND
+                                                           metamap.meta_id = meta_main_1.meta_id)
 
 SELECT config."DOC",
        config."BASE_PATH",
