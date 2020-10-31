@@ -77,6 +77,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 
 /**
@@ -116,6 +117,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// Metadata Application Service Instance
 	@Autowired
 	private HpcMetadataService metadataService = null;
+
+	// Reports Application Service Instance
+	@Autowired
+	private HpcReportService reportService = null;
 
 	// The collection download task executor.
 	@Autowired
@@ -977,21 +982,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 	}
 
-	// TODO: Remove after Oracle migration
-
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void refreshMetadataViews() throws HpcException {
-		// metadataService.refreshViews();
+		metadataService.refreshViews();
 	}
 
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void refreshReportViews() throws HpcException {
-		// reportsService.refreshViews();
+		reportService.refreshViews();
 	}
-
-	// TODO: END
 
 	@Override
 	public void closeConnection() {

@@ -10,9 +10,6 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -162,12 +159,6 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DATA_OBJECT_METADATA_SQL = "select meta_attr_name, meta_attr_value, meta_attr_unit, data_level, level_label "
 			+ "from r_data_hierarchy_meta_main where object_path = ? and data_level >= ? order by data_level";
 
-	private static final String PREPARE_REFRESH_VIEW_SQL = "select internal.prepare_hierarchy_meta_view_refresh()";
-
-	private static final String CLEANUP_REFRESH_VIEW_SQL = "select internal.cleanup_hierarchy_meta_view_refresh()";
-
-	private static final String REFRESH_VIEW_SQL = "select internal.refresh_hierarchy_meta_view()";
-
 	private static final String GET_COLLECTION_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_coll_hierarchy_meta_main "
 			+ "where object_id in " + USER_ACCESS_SQL;
 
@@ -183,6 +174,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = " group by level_label order by level_label";
 
 	private static final String GET_METADATA_MODIFIED_AT_SQL = "select max(cast(modify_ts as bigint)) from r_objt_metamap where object_id = ?";
+
+	private static final String REFRESH_VIEWS_SQL = "call REFRESH_HIERARCHY_META_VIEW()";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -551,30 +544,11 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	@Override
 	public void refreshViews() throws HpcException {
 		try {
-			Connection conn = jdbcTemplate.getDataSource().getConnection();
-			try {
-				conn.setAutoCommit(false);
-				Statement statement = conn.createStatement();
-				// In case previous refresh is unsuccessful
-				conn.createStatement();
-				statement.execute(CLEANUP_REFRESH_VIEW_SQL);
-				conn.commit();
-				// Create internal tables in preparation for the refresh
-				statement.execute(PREPARE_REFRESH_VIEW_SQL);
-				conn.commit();
-				// Refresh the views
-				statement.execute(REFRESH_VIEW_SQL);
-				conn.commit();
-				conn.setAutoCommit(true);
-			} finally {
-				conn.close();
-			}
+			jdbcTemplate.execute(REFRESH_VIEWS_SQL);
+
 		} catch (DataAccessException e) {
-			throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
-		} catch (SQLException e) {
-			throw new HpcException("Failed to refresh materialized views: " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+			throw new HpcException("Failed to refresh metadata views: " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
+					HpcIntegratedSystem.ORACLE, e);
 		}
 	}
 
