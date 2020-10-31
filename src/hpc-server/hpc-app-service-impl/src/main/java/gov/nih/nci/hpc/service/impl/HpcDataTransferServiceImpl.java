@@ -16,6 +16,8 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -2057,7 +2059,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setPath(downloadRequest.getPath());
 		HpcFileLocation destinationLocation = new HpcFileLocation();
 		destinationLocation.setFileContainerId("Synchronous Download");
-		destinationLocation.setFileId("");
+		destinationLocation.setFileId("Synchronous Download");
 		taskResult.setDestinationLocation(destinationLocation);
 		taskResult.setResult(HpcDownloadResult.COMPLETED);
 		taskResult.setType(HpcDownloadTaskType.DATA_OBJECT);
