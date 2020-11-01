@@ -1,26 +1,3 @@
-create materialized view irods.r_report_registered_by as
-SELECT  a.meta_attr_name,
-        a.meta_attr_value,
-        b.object_id,
-        b.meta_id,
-        c.create_ts,
-        count(*)
-FROM r_meta_main a,
-     r_objt_metamap b,
-     r_data_main c
-WHERE a.meta_id = b.meta_id
-  AND b.object_id = c.data_id
-  AND cast(a.meta_attr_name as varchar2(250)) = cast('registered_by' as varchar2(50))
-group by  a.meta_attr_name,
-          a.meta_attr_value,
-          b.object_id,
-          b.meta_id,
-          c.create_ts;
-
-create unique index r_report_registered_by_uidx1
-    on irods.r_report_registered_by (meta_attr_name, meta_attr_value, object_id);
-
-
 create materialized view irods.r_data_hierarchy_metamap as
 WITH r_data_hierarchy(parent_coll_name, coll_name, coll_id, object_id, object_path, data_level) AS (
     SELECT data_coll.coll_name,
@@ -222,6 +199,16 @@ create index r_coll_hierarchy_meta_main_metadata_query_level_label
 
 
 
+create materialized view r_report_coll_meta_main as
+SELECT a.meta_attr_value AS attr,
+       a.meta_attr_name,
+       a.meta_id         AS cnt
+FROM r_meta_main a
+         JOIN r_objt_metamap b ON a.meta_id = b.meta_id
+         JOIN r_coll_main c ON b.object_id = c.coll_id;
+
+
+
 create materialized view irods.r_report_source_file_size as
 SELECT a.rowid as arowid,
        b.rowid as browid,
@@ -242,6 +229,17 @@ create unique index r_report_source_file_size_uidx1
     on irods.r_report_source_file_size (meta_attr_value, meta_attr_name, object_id);
 
 
+
+create materialized view r_report_data_meta_main as
+SELECT a.meta_attr_value AS attr,
+       a.meta_attr_name,
+       a.meta_id         AS cnt
+FROM r_meta_main a
+         JOIN r_objt_metamap b ON a.meta_id = b.meta_id
+         JOIN r_data_main c ON b.object_id = c.data_id;
+
+
+
 create materialized view irods.r_report_meta_main as
 SELECT a.rowid as arowid,
        b.rowid as browid,
@@ -257,6 +255,13 @@ WHERE a.meta_id = b.meta_id;
 
 create unique index r_report_meta_main_uidx1
     on irods.r_report_meta_main (meta_attr_value, meta_attr_name, meta_id, object_id);
+
+
+create materialized view r_report_meta_map as
+SELECT DISTINCT a.object_id
+FROM r_objt_metamap a
+         JOIN r_meta_main b ON a.meta_id = b.meta_id
+         JOIN r_data_main c ON a.object_id = c.data_id;
 
 
 create materialized view irods.r_report_data_objects as
@@ -325,6 +330,31 @@ GROUP BY d."DOC",
 
 create unique index r_report_coll_registered_by_doc_uidx1
     on irods.r_report_coll_registered_by_doc (meta_attr_name, meta_attr_value, coll_id, "DOC");
+
+
+
+create materialized view irods.r_report_registered_by as
+SELECT  a.meta_attr_name,
+        a.meta_attr_value,
+        b.object_id,
+        b.meta_id,
+        c.create_ts,
+        count(*)
+FROM r_meta_main a,
+     r_objt_metamap b,
+     r_data_main c
+WHERE a.meta_id = b.meta_id
+  AND b.object_id = c.data_id
+  AND cast(a.meta_attr_name as varchar2(250)) = cast('registered_by' as varchar2(50))
+group by  a.meta_attr_name,
+          a.meta_attr_value,
+          b.object_id,
+          b.meta_id,
+          c.create_ts;
+
+create unique index r_report_registered_by_uidx1
+    on irods.r_report_registered_by (meta_attr_name, meta_attr_value, object_id);
+
 
 
 create materialized view irods.r_report_registered_by_doc as
