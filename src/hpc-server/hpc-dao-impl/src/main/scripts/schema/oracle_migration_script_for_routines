@@ -18,8 +18,7 @@ BEGIN
 	                R_REPORT_REGISTERED_BY_BASEPATH,
 	                R_REPORT_REGISTERED_BY_DOC,
 	                R_REPORT_REGISTERED_BY_PATH,
-	                R_REPORT_SOURCE_FILE_SIZE,
-	                R_REPORT_COLL_REGISTERED_BY',
+	                R_REPORT_SOURCE_FILE_SIZE',
 	                METHOD => 'C', ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
 
 
@@ -33,7 +32,7 @@ BEGIN
 
 	DBMS_MVIEW.REFRESH('R_COLL_HIERARCHY_META_MAIN,
 	                R_COLL_HIERARCHY_METAMAP,
-	                R_COLL_HIERARCHY_META_MAIN,
+	                R_DATA_HIERARCHY_META_MAIN,
 	                R_DATA_HIERARCHY_METAMAP',
 	                METHOD => 'C',  ATOMIC_REFRESH => FALSE, OUT_OF_PLACE => TRUE);
 
