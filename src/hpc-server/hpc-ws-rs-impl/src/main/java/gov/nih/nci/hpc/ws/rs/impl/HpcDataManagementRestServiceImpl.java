@@ -394,7 +394,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	public Response registerDataObjects(HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) {
 		Response response = registerDataObjects(toV2(bulkDataObjectRegistrationRequest));
 
-		if (response.getEntity() != null && response
+		if (response
 				.getEntity() instanceof gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO) {
 			HpcBulkDataObjectRegistrationResponseDTO registrationResponse = toV1(
 					(gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO) response
@@ -428,7 +428,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	@Override
 	public Response getDataObjectsRegistrationStatusV1(String taskId) {
 		Response response = getDataObjectsRegistrationStatus(taskId);
-		if (response.getEntity() != null && response
+		if (response.getEntity() == null || response
 				.getEntity() instanceof gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO) {
 			return okResponse(
 					toV1((gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO) response
@@ -456,11 +456,12 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	@Override
 	public Response getRegistrationSummaryV1(Integer page, Boolean totalCount) {
 		Response response = getRegistrationSummary(page, totalCount);
-		if (response.getEntity() != null
-				&& response.getEntity() instanceof gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO) {
+		if (response.getEntity() == null
+				|| response.getEntity() instanceof gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO) {
 			return okResponse(
 					toV1((gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO) response.getEntity()), true);
 		}
+
 		return response;
 	}
 
