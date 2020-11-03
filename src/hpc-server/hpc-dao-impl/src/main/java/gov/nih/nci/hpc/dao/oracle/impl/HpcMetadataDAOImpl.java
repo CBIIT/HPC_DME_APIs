@@ -554,10 +554,17 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 
 	@Override
 	public List<HpcCollectionListingEntry> getBrowseMetadataByIds(List<Integer> ids) throws HpcException {
+		List<HpcCollectionListingEntry> entries = new ArrayList<>();
 		try {
-			String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
-			return jdbcTemplate.query(String.format("SELECT * FROM r_browse_meta_main WHERE id IN (%s)", inSql),
-					ids.toArray(), browseMetadataRowMapper);
+			List<Integer> queryIds = new ArrayList<>();
+			for (int i = 0; i < ids.size(); i += 1000) {
+				queryIds.clear();
+				queryIds.addAll(ids.subList(i, ids.size() < i + 1000 ? ids.size() : i + 1000));
+				String inSql = String.join(",", Collections.nCopies(queryIds.size(), "?"));
+				entries.addAll(jdbcTemplate.query(String.format("SELECT * FROM r_browse_meta_main WHERE id IN (%s)", inSql),
+					queryIds.toArray(), browseMetadataRowMapper));
+			}
+			return entries;
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get browse metadata : " + e.getMessage(), HpcErrorType.DATABASE_ERROR,
 					HpcIntegratedSystem.ORACLE, e);
