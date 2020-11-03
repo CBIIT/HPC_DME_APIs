@@ -1,3 +1,3 @@
 500
 DATA_TRANSFER_ERROR
-[GLOBUS] Endpoint doesn't exist or is inactive. Make sure the endpoint UUID is correct and active: 1ff48f94-05f1-11e8-a6ad-0a448319c2f8XXXXXXXXXX
+[GLOBUS] Endpoint doesn't exist or is inactive. Make sure the endpoint UUID is correct and active: 928d52a6-7ce8-11e9-b7fe-0a37f382de32XXXXXXXXXX
