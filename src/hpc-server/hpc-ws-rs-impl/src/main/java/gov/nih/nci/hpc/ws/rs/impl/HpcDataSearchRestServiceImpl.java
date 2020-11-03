@@ -165,7 +165,7 @@ public class HpcDataSearchRestServiceImpl extends HpcRestServiceImpl
 					: null,
             true);
 		}
-	} catch(Exception e) {
+	} catch(HpcException e) {
 		return errorResponse(e);
 	}
   }
