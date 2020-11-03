@@ -80,6 +80,9 @@ IFS=$'\n' read -rd '' -a METADATA_ARRAY <<<"$SYSTEM_METADATA"
 
 for system_attribute in "${METADATA_ARRAY[@]}"
 do
-    check_attribute "$RESPONSE_MSG" "\"$system_attribute\""
+	if [ $system_attribute != "extracted_metadata_attributes" ]
+	then
+    	check_attribute "$RESPONSE_MSG" "\"$system_attribute\""
+    fi
 done
 
