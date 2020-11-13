@@ -93,10 +93,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			+ "SOURCE_LOCATION_FILE_CONTAINER_NAME, CREATED, COMPLETED) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_FOR_DOC_SQL = "select TASK.* from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK TASK, public.HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC= ?  "
+	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_FOR_DOC_SQL = "select TASK.* from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC= ?  "
 			+ "order by CREATED";
 
-	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL = "select * from public.HPC_BULK_DATA_OBJECT_REGISTRATION_TASK order by CREATED";
+	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK order by CREATED";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_FOR_DOC_SQL = "select TASK.* from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC = ? "
 			+ "order by CREATED desc offset ? rows fetch next ? rows only";
