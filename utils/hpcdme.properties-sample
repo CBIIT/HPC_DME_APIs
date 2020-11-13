@@ -28,9 +28,6 @@ hpc.log.level=ERROR
 hpc.log.file=/tmp/hpc-cli.log
 ###HPC CLI Logging END####
 
-###############################################################################
-# Please use caution changing following properties. They usually do not change.
-###############################################################################
 #Number of thread to run data file import from a CSV file
 hpc.job.thread.count=1
 #HPC DME Login token file location
