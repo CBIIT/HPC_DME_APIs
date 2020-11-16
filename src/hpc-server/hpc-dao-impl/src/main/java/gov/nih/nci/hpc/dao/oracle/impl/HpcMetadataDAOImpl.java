@@ -165,11 +165,13 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL = "select distinct level_label, meta_attr_name from r_data_hierarchy_meta_main "
 			+ "where object_id in " + USER_ACCESS_SQL;
 
-	private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL = "select level_label, listagg(meta_attr_name, ',')  within group (order by meta_attr_name) "
-			+ "as attributes from (" + GET_COLLECTION_METADATA_ATTRIBUTES_SQL + ")";
+	private static final String GET_COLLECTION_METADATA_AGGREGATE_SQL = "select level_label, rtrim(xmlagg(xmlelement(e, meta_attr_name, ',').extract('//text()') "
+			+ "order by meta_attr_name).getClobVal(),',') as attributes from (" + GET_COLLECTION_METADATA_ATTRIBUTES_SQL
+			+ ")";
 
-	private static final String GET_DATA_OBJECT_METADATA_AGGREGATE_SQL = "select level_label, listagg(meta_attr_name, ',')  within group (order by meta_attr_name) "
-			+ "as attributes from (" + GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL + ")";
+	private static final String GET_DATA_OBJECT_METADATA_AGGREGATE_SQL = "select level_label, rtrim(xmlagg(xmlelement(e, meta_attr_name, ',').extract('//text()') "
+			+ "order by meta_attr_name).getClobVal(),',') as attributes from ("
+			+ GET_DATA_OBJECT_METADATA_ATTRIBUTES_SQL + ")";
 
 	private static final String GET_METADATA_ATTRIBUTES_GROUP_ORDER_BY_SQL = " group by level_label order by level_label";
 
@@ -561,8 +563,9 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 				queryIds.clear();
 				queryIds.addAll(ids.subList(i, ids.size() < i + 1000 ? ids.size() : i + 1000));
 				String inSql = String.join(",", Collections.nCopies(queryIds.size(), "?"));
-				entries.addAll(jdbcTemplate.query(String.format("SELECT * FROM r_browse_meta_main WHERE id IN (%s)", inSql),
-					queryIds.toArray(), browseMetadataRowMapper));
+				entries.addAll(
+						jdbcTemplate.query(String.format("SELECT * FROM r_browse_meta_main WHERE id IN (%s)", inSql),
+								queryIds.toArray(), browseMetadataRowMapper));
 			}
 			return entries;
 		} catch (DataAccessException e) {
