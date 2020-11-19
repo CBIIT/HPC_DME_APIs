@@ -690,8 +690,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			return dataHierarchy.getIsDataObjectContainer();
 		else {
 			List<HpcDataHierarchy> subs = dataHierarchy.getSubCollectionsHierarchies();
-			for (HpcDataHierarchy sub : subs)
-				return isDataObjectContainer(collectionType, sub);
+			for (HpcDataHierarchy sub : subs) {
+				if(isDataObjectContainer(collectionType, sub))
+					return true;
+			}
 		}
 		return false;
 	}
