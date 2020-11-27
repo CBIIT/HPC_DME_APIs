@@ -183,16 +183,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 					? roleFromString(userRegistrationRequest.getUserRole())
 					: HpcUserRole.USER;
 
-			// GROUP_ADMIN not supported by current Jargon API version. Respond with a
-			// workaround.
-			if (role == HpcUserRole.GROUP_ADMIN) {
-				throw new HpcException(
-						"GROUP_ADMIN currently not supported by the API. "
-								+ "Create the account with a USER role, and then run "
-								+ "'iadmin moduser' command to change the user's role to GROUP_ADMIN",
-						HpcRequestRejectReason.API_NOT_SUPPORTED);
-			}
-
 			// If the invoker is a GroupAdmin, then user being created must belong to their
 			// DOC
 			HpcRequestInvoker invoker = securityService.getRequestInvoker();
@@ -267,15 +257,6 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 				? roleFromString(userUpdateRequest.getUserRole())
 				: currentUserRole;
 		boolean active = userUpdateRequest.getActive() != null ? userUpdateRequest.getActive() : user.getActive();
-
-		// GROUP_ADMIN not supported by current Jargon API version. Respond with a
-		// workaround.
-		if (updateRole == HpcUserRole.GROUP_ADMIN) {
-			throw new HpcException(
-					"GROUP_ADMIN currently not supported by the API. "
-							+ "Run 'iadmin moduser' command to change the user's role to GROUP_ADMIN",
-					HpcRequestRejectReason.API_NOT_SUPPORTED);
-		}
 
 		// Update the data management (IRODS) account.
 		dataManagementSecurityService.updateUser(nciUserId, updateFirstName, updateLastName, updateRole);
