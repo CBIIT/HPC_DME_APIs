@@ -1001,8 +1001,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			return HpcUserRole.SYSTEM_ADMIN;
 		case RODS_USER:
 			return HpcUserRole.USER;
-		case RODS_UNKNOWN:
-			// Current Jargon API doesn't support GROUP_ADMIN. This is a workaround
+		case GROUP_ADMIN:
 			return HpcUserRole.GROUP_ADMIN;
 		default:
 			return HpcUserRole.NONE;
@@ -1020,9 +1019,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		case SYSTEM_ADMIN:
 			return UserTypeEnum.RODS_ADMIN;
 		case USER:
-		case GROUP_ADMIN:
-			// Current Jargon API doesn't support GROUP_ADMIN. This is a workaround.
 			return UserTypeEnum.RODS_USER;
+		case GROUP_ADMIN:
+			return UserTypeEnum.GROUP_ADMIN;
 		default:
 			return UserTypeEnum.RODS_UNKNOWN;
 		}
