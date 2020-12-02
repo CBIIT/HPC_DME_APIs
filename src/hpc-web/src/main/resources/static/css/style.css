@@ -319,10 +319,6 @@ table tr th { color: #688a7e;}
     display: inline;
 }
 
-ul.navbar-nav li.sub-menu{
-    width: 120px;
-}
-
 ul.sidebar-menu , ul.sidebar-menu li ul.sub{
     margin: -2px 0 0;
     padding: 0;
@@ -605,23 +601,26 @@ ul.sidebar-menu li.active a i {
     border-radius: 0px;
     margin-bottom: 0px;
     border: none;
-  height: 60px;
-  line-height: 60px;
+  height: 50px;
+  line-height: 50px;
 }
-
-
 
 header #toolTitle {
   background-color: #2a72a5;
   color: #fff;
   font-weight: bold;
   padding-left: 5em;
-  min-height: 60px;
+  min-height: 50px;
+  height: 50px;
+}
+
+header .navbar-header {
+  height: 50px;
 }
 
 header #toolTitle a {
   color: inherit;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
 }
 
@@ -959,7 +958,7 @@ div[data-role="editor-toolbar"] {
     padding: 8px;
     background: none;
     font-size: 13px !important;
-    line-height: 50px;
+    line-height: 40px;
 }
 .top-nav.top-menu > li {
     margin-left: 10px;
@@ -1922,7 +1921,7 @@ div[data-role="editor-toolbar"] {
 
 #main-content {
 	position: absolute;
-    top: 210px;
+    top: 188px;
     bottom: 0px;
     overflow: auto;
     width: 100%;

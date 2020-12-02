@@ -3,14 +3,10 @@
 <body>
 	<div th:fragment="header">
 		<!-- container section start -->
-		<header class="header white-bg">
-			<div class="toggle-nav">
-				<div class="icon-reorder tooltips"
-					data-original-title="Toggle Navigation" data-placement="bottom"></div>
-			</div>
+		<header class="header" style="background-color: #2a72a5;">
 
 			<!--logo start-->
-			<div class="col order-first">
+			<div class="col order-first" style="background-color: #fff;">
 				<a href="#" aria-label="image link"> <img
 					src="/img/nci_logo.png" class="logoImg"
 					alt="National Cancer Institute"/></a>
@@ -27,8 +23,8 @@
 					</button>
 				  <a th:href="@{/}" >Data Management Environment</a>
 				</div>
-				<div id="appNav" class="collapse navbar-collapse">
-				<ul class="nav navbar-nav pull-right top-menu top-nav">
+				<div id="appNav" class="col-sm-6 col-md-7 col-lg-5 pull-right collapse navbar-collapse">
+				<ul class="nav navbar-nav top-menu top-nav">
 				<!-- user login dropdown start-->
 
 					<li class="nav-item" role="tab"><a data-toggle="dropdown"
