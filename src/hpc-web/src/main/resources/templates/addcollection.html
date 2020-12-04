@@ -279,11 +279,11 @@
 	//<![CDATA[	
 	var rowId = 0;
 	
-	if(document.getElementById("zAttrStr_collection_type") != null && $('#zAttrStr_collection_type option').length == 2 && document.getElementById("zAttrStr_collection_type").value == "_select_null") {
+	if((document.getElementById("basePath") == null || document.getElementById("basePath").value != "_select_null") && document.getElementById("zAttrStr_collection_type") != null && $('#zAttrStr_collection_type option').length == 2 && document.getElementById("zAttrStr_collection_type").value == "_select_null") {
 		$("#zAttrStr_collection_type option:first").remove();
 		$("#zAttrStr_collection_type").val($("#zAttrStr_collection_type option:first").val()).change();
 	}
-	if($('#zAttrStr_collection_type option').length == 2) {
+	if((document.getElementById("basePath") == null || document.getElementById("basePath").value != "_select_null") && $('#zAttrStr_collection_type option').length == 2) {
 		$("#zAttrStr_collection_type option:first").remove();
 		$('#zAttrStr_collection_type').attr('readonly', 'readonly');
 	}
