@@ -381,6 +381,7 @@
 									<table class="table table-bordered  col-md-12">
 										<thead>
 											<tr>
+												<th>Collection Type</th>
 												<th>Attribute Name</th>
 												<th>Value</th>
 											</tr>
@@ -388,6 +389,7 @@
 										<tbody th:if="${hpcDatafile.getParentMetadataEntries() != null}">
 											<tr
 												th:each="metadataItem : ${hpcDatafile.getParentMetadataEntries()}">
+												<td><label th:text="${metadataItem.getLevelLabel()}"></label></td>
 												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
 												<td><label for="${metadataItem.getAttrName()}"
 													th:text="${metadataItem.getAttrValue()}"></label></td>

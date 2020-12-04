@@ -336,12 +336,14 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
+			attrEntry.setLevelLabel(entry.getLevelLabel());
 			attrEntry.setSystemAttr(systemAttrs.contains(entry.getAttribute()));
             attrEntry.setEncrypted(isEncryptedAttribute(entry.getAttribute(), null, rules));
            
 			if(!attrEntry.isEncrypted())
 			    model.getParentMetadataEntries().add(attrEntry);
 		}
+		
 		return model;
 	}
 	
