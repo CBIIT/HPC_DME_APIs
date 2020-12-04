@@ -146,6 +146,7 @@
         $scope.gridOptions1.data = results;
         $scope.selectedRows = [];
         $scope.source = source;
+        $scope.tableHeight = 'height: 600px';
 
         $scope.selectAll = function() {
           $scope.gridApi.selection.selectAllRows();
@@ -155,6 +156,29 @@
           $scope.gridApi.treeBase.expandAllRows();
         };
 
+        function getTableHeight(totalPage, currentPage, pageSize, dataLen) {  
+            var rowHeight = 30; // row height  
+            var headerHeight = 60; // header height  
+            var footerHeight = 60; // bottom scroll bar height  
+            var totalH = 0;  
+            if (totalPage > 1) {  
+                if (currentPage < totalPage) {  
+                    totalH = pageSize * rowHeight + headerHeight + footerHeight;  
+                } else {  
+                    var lastPageSize = dataLen % pageSize;  
+                    if (lastPageSize === 0) {  
+                        totalH = pageSize * rowHeight + headerHeight + footerHeight;  
+                    } else {  
+                        totalH = lastPageSize * rowHeight + headerHeight + footerHeight;  
+                    }  
+                }  
+                console.log(totalH);  
+            } else {  
+                totalH = dataLen * rowHeight + headerHeight + footerHeight;  
+            }  
+            return 'height: ' + (totalH) + 'px';  
+          }  
+
         $scope.gridOptions1.onRegisterApi = function(gridApi) {
           //set gridApi on scope
           $scope.gridApi = gridApi;
@@ -162,7 +186,8 @@
             $scope.currentPage = currentPage;
             $scope.totalRows = totalRows;
             $scope.currentPageSize = currentPageSize;
-
+  	        $scope.tableHeight = getTableHeight($scope.totalPage, $scope.currentPage, $scope.pageSize, $scope.gridOptions1.data.length); 
+  	    
             $interval(function() {
               if(hpcSelectedDatafileList != null)
               {
@@ -392,14 +417,7 @@
       } ]);
 /*]]>*/
 </script>
-<style>
-/*style.css*/
-.gridStyle {
-	border: 1px solid rgb(212, 212, 212);
-	width: 800px;
-	height: 400px
-}
-</style>
+
 </head>
 <body th:attr="ng-init='searchresults=\'' + ${searchresults} +'\''">
 	<section id="container" class="">
@@ -488,7 +506,8 @@
 								<div >
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
-										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true"></div>
+										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true"
+										style="{{tableHeight}}"></div>
 										
 								</div>
 							</div>
