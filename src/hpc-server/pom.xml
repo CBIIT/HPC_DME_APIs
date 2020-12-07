@@ -42,7 +42,7 @@
         <aspectj.version>1.9.6</aspectj.version>
 		<amazon-aws.version>1.11.827</amazon-aws.version>
 		<jackson.version>2.11.2</jackson.version>
-		<jargon.version>4.3.1.0-RELEASE</jargon.version>
+		<jargon.version>4.3.2.0-RELEASE</jargon.version>
 		<google-json-simple.version>1.1.1</google-json-simple.version>
 		<google-guava.version>20.0</google-guava.version>
 		<google-drive-sdk.version>1.25.0</google-drive-sdk.version>
@@ -400,7 +400,8 @@
 			<name>dice.repository</name>
 			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
 			<releases>
-				<enabled>true</enabled>
+				<!--  TODO: enable after Jargon fix issue w/ recursive collection permission setting -->
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
