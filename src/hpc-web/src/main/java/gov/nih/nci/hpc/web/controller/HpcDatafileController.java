@@ -123,6 +123,11 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
                 
 				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
 				
+				if (dataFile.getPermission().equals(HpcPermission.NONE)) {
+					throw new HpcWebException(
+				            "File does not exist or you do not have READ access.");
+				}
+				
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules());
 				hpcDatafile.setPath(path);
