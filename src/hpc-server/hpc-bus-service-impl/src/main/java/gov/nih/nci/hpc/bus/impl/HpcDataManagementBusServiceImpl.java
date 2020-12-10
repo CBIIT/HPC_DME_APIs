@@ -1107,9 +1107,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (includeAcl) {
 			// Set the permission.
 			HpcSubjectPermission subjectPermission = dataManagementService.getDataObjectPermission(path);
-			if (subjectPermission != null) {
-				dataObjectDTO.setPermission(subjectPermission.getPermission());
-			}
+			dataObjectDTO
+					.setPermission(subjectPermission != null ? subjectPermission.getPermission() : HpcPermission.NONE);
 		}
 
 		return dataObjectDTO;
@@ -1139,8 +1138,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())));
 
 		if (includeAcl) {
-			// Set the permission
-			dataObjectDTO.setPermission(dataManagementService.getDataObjectPermission(path).getPermission());
+			// Set the permission.
+			HpcSubjectPermission subjectPermission = dataManagementService.getDataObjectPermission(path);
+			dataObjectDTO
+					.setPermission(subjectPermission != null ? subjectPermission.getPermission() : HpcPermission.NONE);
 		}
 
 		return dataObjectDTO;
