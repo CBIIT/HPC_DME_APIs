@@ -125,7 +125,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 				
 				if (dataFile.getPermission().equals(HpcPermission.NONE)) {
 					throw new HpcWebException(
-				            "File does not exist or you do not have READ access.");
+				            "You do not have READ access to " + path + ".");
 				}
 				
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
