@@ -72,8 +72,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, S3_ARCHIVE_CONFIGURATION_ID, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, "
 			+ "DATA_TRANSFER_STATUS, DOWNLOAD_FILE_PATH, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, GOOGLE_DRIVE_ACCESS_TOKEN, "
-			+ "COMPLETION_EVENT, PERCENT_COMPLETE, DATA_SIZE, CREATED, PROCESSED, IN_PROCESS) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "COMPLETION_EVENT, PERCENT_COMPLETE, DATA_SIZE, CREATED, PROCESSED, IN_PROCESS, PRIORITY) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
@@ -94,10 +94,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK order by PRIORITY, CREATED";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? "
-			+ "and (PROCESSED < ? or PROCESSED is null) and CREATED < ? order by PRIORITY, CREATED fetch next 1 rows only";
+			+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
-			+ "DATA_TRANSFER_STATUS = ? and DATA_TRANSFER_TYPE = ? and (PROCESSED < ? or PROCESSED is null) and CREATED < ? order by PRIORITY, "
+			+ "DATA_TRANSFER_STATUS = ? and DATA_TRANSFER_TYPE = ? and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, "
 			+ "CREATED fetch next 1 rows only";
 
 	private static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "merge into HPC_DOWNLOAD_TASK_RESULT using dual on (ID = ?) "
@@ -179,6 +179,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set CANCELLATION_REQUESTED = ? where ID = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "select CANCELLATION_REQUESTED from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
+
+	private static final String GET_MAX_DOWNLOAD_TASK_PRIORITY_SQL = "select COALESCE(max(priority), 99) from HPC_DATA_OBJECT_DOWNLOAD_TASK where CONFIGURATION_ID = ?";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -483,7 +485,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getCompletionEvent(), dataObjectDownloadTask.getPercentComplete(),
 					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
 					dataObjectDownloadTask.getProcessed(),
-					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false));
+					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
+					this.getMaxDownloadTaskPriority(dataObjectDownloadTask.getConfigurationId()) + 1);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
@@ -585,10 +588,10 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			if (dataTransferType != null) {
 				return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL,
 						dataObjectDownloadTaskRowMapper, dataTransferStatus.value(), dataTransferType.value(),
-						timestamp, timestamp);
+						timestamp);
 			}
 			return jdbcTemplate.query(GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL, dataObjectDownloadTaskRowMapper,
-					dataTransferStatus.value(), timestamp, timestamp);
+					dataTransferStatus.value(), timestamp);
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get data object download tasks: " + e.getMessage(),
@@ -1135,5 +1138,23 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			}
 		}
 		return paths;
+	}
+
+	/**
+	 * Get the max download task priority in the download task table for a given
+	 * configuration ID.
+	 * 
+	 * @param configurationId The data management configuration ID.
+	 * @return The max priority
+	 * @throws HpcException On SQL error
+	 */
+	private long getMaxDownloadTaskPriority(String configurationId) throws HpcException {
+		try {
+			return jdbcTemplate.queryForObject(GET_MAX_DOWNLOAD_TASK_PRIORITY_SQL, Integer.class, configurationId);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get max download task priority: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
 	}
 }
