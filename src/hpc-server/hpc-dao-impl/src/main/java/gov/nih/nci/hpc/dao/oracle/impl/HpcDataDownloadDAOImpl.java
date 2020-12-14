@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.dao.oracle.impl;
 
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,6 +30,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.support.SqlLobValue;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
+import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
@@ -115,12 +119,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String UPSERT_COLLECTION_DOWNLOAD_TASK_SQL = "merge into HPC_COLLECTION_DOWNLOAD_TASK  using dual on (ID = ?) "
 			+ "when matched then update set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_OVERWRITE = ?, S3_ACCOUNT_ACCESS_KEY = ?, S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, "
-			+ "GOOGLE_DRIVE_ACCESS_TOKEN = ?, APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, ITEMS = ?, STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, "
+			+ "GOOGLE_DRIVE_ACCESS_TOKEN = ?, APPEND_PATH_TO_DOWNLOAD_DESTINATION = ?, STATUS = ?, TYPE = ?, DATA_OBJECT_PATHS = ?, "
 			+ "COLLECTION_PATHS = ?, CREATED = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, DESTINATION_LOCATION_FILE_ID, "
 			+ "DESTINATION_OVERWRITE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, GOOGLE_DRIVE_ACCESS_TOKEN, "
-			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION, ITEMS, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED) "
+			+ "APPEND_PATH_TO_DOWNLOAD_DESTINATION, STATUS, TYPE, DATA_OBJECT_PATHS, COLLECTION_PATHS, CREATED) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+
+	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ITEMS = ? where ID = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
 
@@ -191,9 +197,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
+	// Lob handler
+	private LobHandler lobHandler = new DefaultLobHandler();
+
 	// Encryptor.
 	@Autowired
-	HpcEncryptor encryptor = null;
+	private HpcEncryptor encryptor = null;
 
 	// HpcDataObjectDownloadTask table to object mapper.
 	private RowMapper<HpcDataObjectDownloadTask> dataObjectDownloadTaskRowMapper = (rs, rowNum) -> {
@@ -711,22 +720,26 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 						.encrypt(collectionDownloadTask.getGoogleDriveDownloadDestination().getAccessToken());
 			}
 
-			String items = toJSON(collectionDownloadTask.getItems());
 			jdbcTemplate.update(UPSERT_COLLECTION_DOWNLOAD_TASK_SQL, collectionDownloadTask.getId(),
 					collectionDownloadTask.getUserId(), collectionDownloadTask.getPath(),
 					collectionDownloadTask.getConfigurationId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), destinationOverwrite, s3AccountAccessKey, s3AccountSecretKey,
 					s3AccountRegion, googleDriveAccessToken,
-					collectionDownloadTask.getAppendPathToDownloadDestination(), items,
+					collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated(),
 					collectionDownloadTask.getId(), collectionDownloadTask.getUserId(),
 					collectionDownloadTask.getPath(), collectionDownloadTask.getConfigurationId(),
 					destinationLocation.getFileContainerId(), destinationLocation.getFileId(), destinationOverwrite,
 					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, googleDriveAccessToken,
-					collectionDownloadTask.getAppendPathToDownloadDestination(), items,
+					collectionDownloadTask.getAppendPathToDownloadDestination(),
 					collectionDownloadTask.getStatus().value(), collectionDownloadTask.getType().value(),
 					dataObjectPaths, collectionPaths, collectionDownloadTask.getCreated());
+
+			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_ITEMS_SQL,
+					new Object[] { new SqlLobValue(toJSON(collectionDownloadTask.getItems()), lobHandler),
+							collectionDownloadTask.getId() },
+					new int[] { Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a collection download request: " + e.getMessage(),
