@@ -107,12 +107,14 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "merge into HPC_DOWNLOAD_TASK_RESULT using dual on (ID = ?) "
 			+ "when matched then update set USER_ID = ?, PATH = ?, DATA_TRANSFER_REQUEST_ID = ?, DATA_TRANSFER_TYPE = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_NAME = ?, DESTINATION_LOCATION_FILE_ID = ?, "
-			+ "DESTINATION_TYPE = ?, RESULT = ?, TYPE = ?, MESSAGE = ?, ITEMS = ?, COMPLETION_EVENT = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
+			+ "DESTINATION_TYPE = ?, RESULT = ?, TYPE = ?, MESSAGE = ?, COMPLETION_EVENT = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
 			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
-			+ "DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, ITEMS, COMPLETION_EVENT, "
+			+ "DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
 			+ "EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+
+	private static final String UPDATE_DOWNLOAD_TASK_RESULT_ITEMS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ? where ID = ?";
 
 	private static final String GET_DOWNLOAD_TASK_RESULT_SQL = "select * from HPC_DOWNLOAD_TASK_RESULT where ID = ? and TYPE = ?";
 
@@ -641,7 +643,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	@Override
 	public void upsertDownloadTaskResult(HpcDownloadTaskResult taskResult) throws HpcException {
 		try {
-			String items = toJSON(taskResult.getItems());
 			String dataTransferType = taskResult.getDataTransferType() != null
 					? taskResult.getDataTransferType().value()
 					: null;
@@ -652,16 +653,20 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
-					taskResult.getType().value(), taskResult.getMessage(), items, taskResult.getCompletionEvent(),
+					taskResult.getType().value(), taskResult.getMessage(), taskResult.getCompletionEvent(),
 					taskResult.getEffectiveTransferSpeed(), taskResult.getSize(), taskResult.getCreated(),
 					taskResult.getCompleted(), taskResult.getId(), taskResult.getUserId(), taskResult.getPath(),
 					taskResult.getDataTransferRequestId(), dataTransferType,
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
-					taskResult.getType().value(), taskResult.getMessage(), items, taskResult.getCompletionEvent(),
+					taskResult.getType().value(), taskResult.getMessage(), taskResult.getCompletionEvent(),
 					taskResult.getEffectiveTransferSpeed(), taskResult.getSize(), taskResult.getCreated(),
 					taskResult.getCompleted());
+
+			jdbcTemplate.update(UPDATE_DOWNLOAD_TASK_RESULT_ITEMS_SQL,
+					new Object[] { new SqlLobValue(toJSON(taskResult.getItems()), lobHandler), taskResult.getId() },
+					new int[] { Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a download task result: " + e.getMessage(),
