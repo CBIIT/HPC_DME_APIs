@@ -541,7 +541,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		// Add each pair of the from-status and destination-type as a filter to the
 		// query.
 		if (filters != null && !filters.isEmpty()) {
-			sqlQueryBuilder.append(" and (false");
+			sqlQueryBuilder.append(" and (1 = 0");
 			filters.forEach(filter -> {
 				sqlQueryBuilder.append(UPDATE_DATA_OBJECT_DOWNLOAD_TASK_STATUS_FILTER);
 				args.add(filter.getStatus().value());
