@@ -186,6 +186,19 @@ CREATE TABLE "IRODS"."HPC_EVENT_HISTORY"
 )
 ;
 
+CREATE TABLE "IRODS"."HPC_GROUP"
+(
+    GROUP_NAME        VARCHAR2(250) not null
+        constraint "HPC_GROUP_pkey"
+            primary key,
+    CREATED           TIMESTAMP(6),
+    LAST_UPDATED      TIMESTAMP(6),
+    DOC               VARCHAR2(50),
+    ACTIVE            CHAR,
+    ACTIVE_UPDATED_BY VARCHAR2(250)
+)
+;
+
 CREATE TABLE "IRODS"."HPC_NOTIFICATION_DELIVERY_RECEIPT"
 (
    EVENT_ID number(10) NOT NULL,
