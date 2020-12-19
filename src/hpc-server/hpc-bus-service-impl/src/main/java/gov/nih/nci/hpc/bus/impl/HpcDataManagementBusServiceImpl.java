@@ -60,10 +60,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
@@ -824,7 +824,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					// Transfer the data file.
 					uploadResponse = dataTransferService.uploadDataObject(
 							dataObjectRegistration.getGlobusUploadSource(), dataObjectRegistration.getS3UploadSource(),
-							dataObjectRegistration.getGoogleDriveUploadSource(), dataObjectFile,
+							dataObjectRegistration.getGoogleDriveUploadSource(), dataObjectRegistration.getFileSystemUploadSource(), dataObjectFile,
 							generateUploadRequestURL, dataObjectRegistration.getUploadParts(),
 							generateUploadRequestURL ? dataObjectRegistration.getChecksum() : null, path,
 							dataObjectMetadataEntry.getValue(), userId, dataObjectRegistration.getCallerObjectId(),
@@ -2277,7 +2277,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			googleDriveUploadSource.setAccessToken(googleDriveAccessToken);
 			dataObjectRegistration.setGoogleDriveUploadSource(googleDriveUploadSource);
 		} else {
-			HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+			HpcUploadSource globusUploadSource = new HpcUploadSource();
 			globusUploadSource.setSourceLocation(source);
 			dataObjectRegistration.setGlobusUploadSource(globusUploadSource);
 		}
@@ -2344,7 +2344,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 
 			// Re-generate the upload request URL.
-			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null,
+			HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null, null, null,
 					true, uploadParts, checksum, path, systemGeneratedMetadata.getObjectId(), userId, callerObjectId,
 					systemGeneratedMetadata.getConfigurationId());
 
@@ -2675,9 +2675,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (dataObjectFile != null || dataObjectRegistration.getGenerateUploadRequestURL() != null
 				|| dataObjectRegistration.getGlobusUploadSource() != null
 				|| dataObjectRegistration.getS3UploadSource() != null
+				|| dataObjectRegistration.getFileSystemUploadSource() != null
 				|| dataObjectRegistration.getCallerObjectId() != null) {
 			throw new HpcException(
-					"S3 / Globus / Generate Upload URL / data attachment provided with link registration request",
+					"S3 / Globus / File System / Generate Upload URL / data attachment provided with link registration request",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 

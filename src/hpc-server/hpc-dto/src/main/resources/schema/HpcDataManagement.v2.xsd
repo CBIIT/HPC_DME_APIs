@@ -34,11 +34,13 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="globusUploadSource"
-					type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
+					type="hpc-domain-datatransfer:HpcUploadSource" />
 				<xsd:element name="s3UploadSource"
 					type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 				<xsd:element name="googleDriveUploadSource"
 					type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+				<xsd:element name="fileSystemUploadSource"
+					type="hpc-domain-datatransfer:HpcUploadSource" />
 				<xsd:element name="generateUploadRequestURL"
 					type="xsd:boolean" minOccurs="0" />
 				<xsd:element name="extractMetadata"
@@ -99,7 +101,7 @@
 		<xsd:sequence>
 			<xsd:element name="path" type="xsd:string" />
 			<xsd:element name="globusUploadSource"
-				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
+				type="hpc-domain-datatransfer:HpcUploadSource" />
 			<xsd:element name="s3UploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="googleDriveUploadSource"

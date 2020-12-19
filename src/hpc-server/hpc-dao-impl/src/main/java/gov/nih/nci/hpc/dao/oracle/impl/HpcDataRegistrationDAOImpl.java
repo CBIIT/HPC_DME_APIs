@@ -33,9 +33,9 @@ import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
@@ -456,7 +456,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			}
 			if (request.getGlobusUploadSource() != null) {
 				JSONObject jsonGlobusUploadSource = new JSONObject();
-				HpcGlobusUploadSource globusUploadSource = request.getGlobusUploadSource();
+				HpcUploadSource globusUploadSource = request.getGlobusUploadSource();
 				jsonGlobusUploadSource.put("sourceFileContainerId",
 						globusUploadSource.getSourceLocation().getFileContainerId());
 				jsonGlobusUploadSource.put("sourceFileId", globusUploadSource.getSourceLocation().getFileId());
@@ -749,7 +749,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		// DB
 		// with the old structure.
 		if (jsonRequest.get("sourceFileContainerId") != null && jsonRequest.get("sourceFileId") != null) {
-			HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+			HpcUploadSource globusUploadSource = new HpcUploadSource();
 			HpcFileLocation source = new HpcFileLocation();
 			source.setFileContainerId(jsonRequest.get("sourceFileContainerId").toString());
 			source.setFileId(jsonRequest.get("sourceFileId").toString());
@@ -759,7 +759,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 		if (jsonRequest.get("globusUploadSource") != null) {
 			JSONObject jsonGlobusUploadSource = (JSONObject) jsonRequest.get("globusUploadSource");
-			HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+			HpcUploadSource globusUploadSource = new HpcUploadSource();
 			HpcFileLocation source = new HpcFileLocation();
 			source.setFileContainerId(jsonGlobusUploadSource.get("sourceFileContainerId").toString());
 			source.setFileId(jsonGlobusUploadSource.get("sourceFileId").toString());

@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -32,7 +33,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
@@ -40,6 +40,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -58,6 +59,8 @@ public interface HpcDataTransferService {
 	 * @param globusUploadSource       (Optional) The Globus upload source.
 	 * @param s3UploadSource           (Optional) The S3 upload source.
 	 * @param googleDriveUploadSource  (Optional) The Google Drive upload source.
+	 * @param fileSystemUploadSource   (Optional) The File System (DME Server NAS)
+	 *                                 upload source.
 	 * @param sourceFile               (Optional) The source file.
 	 * @param generateUploadRequestURL Generate an upload URL (so caller can
 	 *                                 directly upload file into archive).
@@ -74,10 +77,11 @@ public interface HpcDataTransferService {
 	 * @return A data object upload response.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
-			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource, File sourceFile,
-			boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum, String path,
-			String dataObjectId, String userId, String callerObjectId, String configurationId) throws HpcException;
+	public HpcDataObjectUploadResponse uploadDataObject(HpcUploadSource globusUploadSource,
+			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+			HpcUploadSource fileSystemUploadSource, File sourceFile, boolean generateUploadRequestURL,
+			Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId, String userId,
+			String callerObjectId, String configurationId) throws HpcException;
 
 	/**
 	 * Complete a multipart upload.
@@ -408,7 +412,7 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
-	
+
 	/**
 	 * Reset all download tasks in-process indicator to false
 	 *
@@ -421,11 +425,11 @@ public interface HpcDataTransferService {
 	 * stamp.
 	 *
 	 * @param downloadTask The download task to mark processed.
-	 * @param inProcess Indicator whether the task is being actively processed.
+	 * @param inProcess    Indicator whether the task is being actively processed.
 	 * @throws HpcException on service failure.
 	 */
-	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
-			boolean inProcess) throws HpcException;
+	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
+			throws HpcException;
 
 	/**
 	 * Update a data object download task. % Complete is calculated and any change
@@ -593,7 +597,7 @@ public interface HpcDataTransferService {
 	/**
 	 * Reset collection download task in-progress
 	 *
-	 * @param taskId    The collection download task ID..
+	 * @param taskId The collection download task ID..
 	 * @throws HpcException on database error.
 	 */
 	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException;
@@ -616,7 +620,7 @@ public interface HpcDataTransferService {
 	 * Get active download requests for a user.
 	 *
 	 * @param userId The user ID to query for.
-	 * @param doc  doc of group admin or all for system administrators
+	 * @param doc    doc of group admin or all for system administrators
 	 * @return A list of active download requests.
 	 * @throws HpcException on service failure.
 	 */
@@ -627,7 +631,7 @@ public interface HpcDataTransferService {
 	 *
 	 * @param userId The user ID to query for.
 	 * @param page   The requested results page.
-	 * @param doc  doc of group admin or all for system administrators
+	 * @param doc    doc of group admin or all for system administrators
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
@@ -637,7 +641,7 @@ public interface HpcDataTransferService {
 	 * Get download results (all completed download requests) count for a user.
 	 *
 	 * @param userId The user ID to query for.
-	 * @param doc  doc of group admin or all for system administrators
+	 * @param doc    doc of group admin or all for system administrators
 	 * @return A total count of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
