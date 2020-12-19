@@ -76,7 +76,7 @@
 		name="HpcDataObjectRegistrationRequest">
 		<xsd:sequence>
 			<xsd:element name="globusUploadSource"
-				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
+				type="hpc-domain-datatransfer:HpcUploadSource" />
 			<xsd:element name="s3UploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="googleDriveUploadSource"

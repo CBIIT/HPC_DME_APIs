@@ -153,6 +153,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// Prepared query to get data objects that have their data in temporary archive.
 	private List<HpcMetadataQuery> dataTransferInTemporaryArchiveQuery = new ArrayList<>();
 
+	// Prepared query to get data objects that have their data placed in file system
+	// for an upload.
+	private List<HpcMetadataQuery> dataTransferInFileSystemQuery = new ArrayList<>();
+
 	// List of subjects (user-id / group-name) that permission update is not
 	// allowed.
 	private List<String> systemAdminSubjects = new ArrayList<>();
@@ -217,6 +221,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// Prepare the query to get data objects in temporary archive.
 		dataTransferInTemporaryArchiveQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
 				HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE.value()));
+
+		// Prepare the query to get data objects with files staged in file system for
+		// upload.
+		dataTransferInFileSystemQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
+				HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.IN_FILE_SYSTEM.value()));
 
 		// Populate the list of system admin subjects (user-id / group-name). Set
 		// permission is not
@@ -428,9 +437,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		try {
-			dataManagementAuditDAO.insert(nciUserId, path,
-					requestType, metadataBefore, metadataAfter, archiveLocation, dataManagementStatus,
-					dataTransferStatus, message, Calendar.getInstance());
+			dataManagementAuditDAO.insert(nciUserId, path, requestType, metadataBefore, metadataAfter, archiveLocation,
+					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance());
 
 		} catch (HpcException e) {
 			logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);
@@ -628,6 +636,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
+	public List<HpcDataObject> getDataObjectsUploadInFileSystem() throws HpcException {
+		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+				dataTransferInFileSystemQuery);
+	}
+
+	@Override
 	public List<HpcDataObject> getDataObjectLinks(String path) throws HpcException {
 		List<HpcMetadataQuery> dataObjectLinksQuery = new ArrayList<>();
 		dataObjectLinksQuery.add(toMetadataQuery(LINK_SOURCE_PATH_ATTRIBUTE, HpcMetadataQueryOperator.EQUAL, path));
@@ -791,45 +805,45 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId, String doc) throws HpcException {
-  	    List<HpcBulkDataObjectRegistrationTask> registrationTasks = null;
-        if (doc == null) {
-            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
-        } else if (doc.equals("ALL")) {
-            registrationTasks = dataRegistrationDAO.getAllBulkDataObjectRegistrationTasks();
-        } else {
-            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasksForDoc(doc);
-        }
-        return registrationTasks;
+		List<HpcBulkDataObjectRegistrationTask> registrationTasks = null;
+		if (doc == null) {
+			registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
+		} else if (doc.equals("ALL")) {
+			registrationTasks = dataRegistrationDAO.getAllBulkDataObjectRegistrationTasks();
+		} else {
+			registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasksForDoc(doc);
+		}
+		return registrationTasks;
 	}
 
 	@Override
 	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc)
 			throws HpcException {
-  	    List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
-        if (doc == null) {
-            registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId, pagination.getOffset(page),
-                pagination.getPageSize());
-        } else if (doc.equals("ALL")) {
-            registrationResults = dataRegistrationDAO.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page),
-                pagination.getPageSize());
-        } else {
-            registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResultsForDoc(doc, pagination.getOffset(page),
-                pagination.getPageSize());
-        }
+		List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
+		if (doc == null) {
+			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId,
+					pagination.getOffset(page), pagination.getPageSize());
+		} else if (doc.equals("ALL")) {
+			registrationResults = dataRegistrationDAO
+					.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page), pagination.getPageSize());
+		} else {
+			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResultsForDoc(doc,
+					pagination.getOffset(page), pagination.getPageSize());
+		}
 		return registrationResults;
 	}
 
 	@Override
 	public int getRegistrationResultsCount(String userId, String doc) throws HpcException {
-  	  int count = 0;
-        if (doc == null) {
-            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
-        } else if (doc.equals("ALL")) {
-            count = dataRegistrationDAO.getAllBulkDataObjectRegistrationResultsCount();
-        } else {
-            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCountForDoc(doc);
-        }
-        return count;
+		int count = 0;
+		if (doc == null) {
+			count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
+		} else if (doc.equals("ALL")) {
+			count = dataRegistrationDAO.getAllBulkDataObjectRegistrationResultsCount();
+		} else {
+			count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCountForDoc(doc);
+		}
+		return count;
 	}
 
 	@Override

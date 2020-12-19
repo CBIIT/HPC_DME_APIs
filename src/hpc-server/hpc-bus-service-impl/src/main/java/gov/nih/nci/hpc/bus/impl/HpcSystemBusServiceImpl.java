@@ -52,10 +52,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
@@ -166,8 +166,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Transfer the data file.
 				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(
-						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, false,
-						null, null, path, systemGeneratedMetadata.getObjectId(),
+						toGlobusUploadSource(systemGeneratedMetadata.getSourceLocation()), null, null, null, null,
+						false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
 
@@ -391,7 +391,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						toGoogleDriveUploadSource(systemGeneratedMetadata.getDataTransferMethod(),
 								systemGeneratedMetadata.getSourceLocation(), systemGeneratedMetadata.getSourceURL(),
 								systemGeneratedMetadata.getSourceSize()),
-						null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+						null, null, false, null, null, path, systemGeneratedMetadata.getObjectId(),
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
 
@@ -417,63 +417,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				.getDataObjectsUploadInTemporaryArchive();
 		logger.info("{} Data Objects Upload In Temporary Archive: {}", dataObjectsInTemporaryArchive.size(),
 				dataObjectsInTemporaryArchive);
-		for (HpcDataObject dataObject : dataObjectsInTemporaryArchive) {
-			String path = dataObject.getAbsolutePath();
-			logger.info("Process Temporary Archive for: {}", path);
-			HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
-			try {
-				// Get the data object system generated metadata.
-				systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+		uploadDataObjectsFile(dataObjectsInTemporaryArchive, true);
+	}
 
-				// Get the file associated with the data object in the temporary archive.
-				File file = dataTransferService.getArchiveFile(systemGeneratedMetadata.getConfigurationId(),
-						systemGeneratedMetadata.getS3ArchiveConfigurationId(),
-						systemGeneratedMetadata.getDataTransferType(),
-						systemGeneratedMetadata.getArchiveLocation().getFileId());
-
-				// Transfer the data file from the temporary archive into the archive.
-				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null,
-						file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
-						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
-						systemGeneratedMetadata.getConfigurationId());
-
-				// Generate archive (Cleversafe) system generated metadata.
-				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
-						uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
-						systemGeneratedMetadata.getConfigurationId(),
-						systemGeneratedMetadata.getS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
-						systemGeneratedMetadata.getRegistrarId());
-
-				// Delete the file.
-				if (!FileUtils.deleteQuietly(file)) {
-					logger.error("Failed to delete file: " + systemGeneratedMetadata.getArchiveLocation().getFileId());
-				}
-
-				// Update system metadata of the data object.
-				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
-						uploadResponse.getDataTransferRequestId(), checksum, uploadResponse.getDataTransferStatus(),
-						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted(), null,
-						null);
-
-				// Data transfer upload completed successfully. Add an event if needed.
-				if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
-					addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path,
-							uploadResponse.getDataTransferStatus(), systemGeneratedMetadata.getSourceLocation(),
-							uploadResponse.getDataTransferCompleted(), uploadResponse.getDataTransferType(),
-							systemGeneratedMetadata.getConfigurationId(), HpcDataTransferType.GLOBUS);
-				}
-
-				// Record a registration result.
-				systemGeneratedMetadata.setDataTransferCompleted(uploadResponse.getDataTransferCompleted());
-				dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata, true, null);
-
-			} catch (HpcException e) {
-				logger.error("Failed to transfer data from temporary archive:" + path, e);
-
-				// Process the data object registration failure.
-				processDataObjectRegistrationFailure(path, e.getMessage());
-			}
-		}
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void processFileSystemUpload() throws HpcException {
+		// Iterate through the data objects that their data staged in file system for an
+		// upload.
+		List<HpcDataObject> dataObjectsInFileSystem = dataManagementService.getDataObjectsUploadInFileSystem();
+		logger.info("{} Data Objects Upload from File System: {}", dataObjectsInFileSystem.size(),
+				dataObjectsInFileSystem);
+		uploadDataObjectsFile(dataObjectsInFileSystem, false);
 	}
 
 	@Override
@@ -1859,8 +1814,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 * @param sourceLocation The source location to package.
 	 * @return The packaged Globus upload source.
 	 */
-	private HpcGlobusUploadSource toGlobusUploadSource(HpcFileLocation sourceLocation) {
-		HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+	private HpcUploadSource toGlobusUploadSource(HpcFileLocation sourceLocation) {
+		HpcUploadSource globusUploadSource = new HpcUploadSource();
 		globusUploadSource.setSourceLocation(sourceLocation);
 		return globusUploadSource;
 	}
@@ -1972,6 +1927,87 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		logger.info("After updateS3UploadStatus(): upload-in-progress {}", path);
 		return false;
+	}
+
+	/**
+	 * Upload a data object file that is located on the local DME server file system
+	 * to the archive.
+	 *
+	 * @param dataObjects           The list of data objects to upload the
+	 *                              associated file to the archive object.
+	 * @param deleteFileAfterUpload Indicator whether to delete the (source) file
+	 *                              after upload
+	 * @throws HpcException If failed to upload a file
+	 */
+	private void uploadDataObjectsFile(List<HpcDataObject> dataObjects, boolean deleteFileAfterUpload)
+			throws HpcException {
+		for (HpcDataObject dataObject : dataObjects) {
+			String path = dataObject.getAbsolutePath();
+			logger.info("Process Temporary Archive for: {}", path);
+			HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
+			try {
+				// Get the data object system generated metadata.
+				systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+				File file = null;
+				if (systemGeneratedMetadata.getDataTransferStatus()
+						.equals(HpcDataTransferUploadStatus.IN_TEMPORARY_ARCHIVE)) {
+					// Get the file associated with the data object in the temporary archive.
+					file = dataTransferService.getArchiveFile(systemGeneratedMetadata.getConfigurationId(),
+							systemGeneratedMetadata.getS3ArchiveConfigurationId(),
+							systemGeneratedMetadata.getDataTransferType(),
+							systemGeneratedMetadata.getArchiveLocation().getFileId());
+				} else if (systemGeneratedMetadata.getDataTransferStatus()
+						.equals(HpcDataTransferUploadStatus.IN_FILE_SYSTEM)) {
+					file = new File(systemGeneratedMetadata.getArchiveLocation().getFileId());
+				} else {
+					throw new HpcException("Unexpected data object upload status for file upload task: "
+							+ systemGeneratedMetadata.getDataTransferStatus(), HpcErrorType.UNEXPECTED_ERROR);
+				}
+
+				// Transfer the data file from the temporary archive into the archive.
+				HpcDataObjectUploadResponse uploadResponse = dataTransferService.uploadDataObject(null, null, null,
+						null, file, false, null, null, path, systemGeneratedMetadata.getObjectId(),
+						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
+						systemGeneratedMetadata.getConfigurationId());
+
+				// Generate archive (Cleversafe) system generated metadata.
+				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+						uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
+						systemGeneratedMetadata.getConfigurationId(),
+						systemGeneratedMetadata.getS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
+						systemGeneratedMetadata.getRegistrarId());
+
+				// Delete the file.
+				if (deleteFileAfterUpload && !FileUtils.deleteQuietly(file)) {
+					logger.error("Failed to delete file: " + systemGeneratedMetadata.getArchiveLocation().getFileId());
+				}
+
+				// Update system metadata of the data object.
+				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
+						uploadResponse.getDataTransferRequestId(), checksum, uploadResponse.getDataTransferStatus(),
+						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted(), null,
+						null);
+
+				// Data transfer upload completed successfully. Add an event if needed.
+				if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
+					addDataTransferUploadEvent(systemGeneratedMetadata.getRegistrarId(), path,
+							uploadResponse.getDataTransferStatus(), systemGeneratedMetadata.getSourceLocation(),
+							uploadResponse.getDataTransferCompleted(), uploadResponse.getDataTransferType(),
+							systemGeneratedMetadata.getConfigurationId(), HpcDataTransferType.GLOBUS);
+				}
+
+				// Record a registration result.
+				systemGeneratedMetadata.setDataTransferCompleted(uploadResponse.getDataTransferCompleted());
+				dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata, true, null);
+
+			} catch (HpcException e) {
+				logger.error("Failed to transfer data from temporary archive / file system:" + path, e);
+
+				// Process the data object registration failure.
+				processDataObjectRegistrationFailure(path, e.getMessage());
+			}
+		}
 	}
 
 	// Collection download breaker. This class is used to determine if processing

@@ -16,8 +16,9 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileStore;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,7 +30,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +64,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
@@ -72,6 +71,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -107,9 +107,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Multiple upload source error message.
 	private static final String MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE = "Multiple upload source and/or generate upload request provided";
 
-	//Credentials are needed download error message.
+	// Credentials are needed download error message.
 	private static final String CREDENTIALS_NEEDED_ERROR_MESSAGE = "Credentials are needed";
-	
+
 	// Google Drive 'My Drive' ID.
 	private static final String MY_GOOGLE_DRIVE_ID = "MyDrive";
 
@@ -232,11 +232,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public HpcDataObjectUploadResponse uploadDataObject(HpcGlobusUploadSource globusUploadSource,
-			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource, File sourceFile,
-			boolean generateUploadRequestURL, Integer uploadParts, String uploadRequestURLChecksum, String path,
-			String dataObjectId, String userId, String callerObjectId, String configurationId) throws HpcException {
-		// Input Validation. One and only one of the first 4 parameters is expected to
+	public HpcDataObjectUploadResponse uploadDataObject(HpcUploadSource globusUploadSource,
+			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+			HpcUploadSource fileSystemUploadSource, File sourceFile, boolean generateUploadRequestURL,
+			Integer uploadParts, String uploadRequestURLChecksum, String path, String dataObjectId, String userId,
+			String callerObjectId, String configurationId) throws HpcException {
+		// Input Validation. One and only one of the first 5 parameters is expected to
 		// be provided.
 
 		// Validate data-object-id provided.
@@ -246,15 +247,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate an upload source was provided.
 		if (globusUploadSource == null && s3UploadSource == null && googleDriveUploadSource == null
-				&& sourceFile == null && !generateUploadRequestURL) {
+				&& fileSystemUploadSource == null && sourceFile == null && !generateUploadRequestURL) {
 			throw new HpcException("No data transfer source or data attachment provided or upload URL requested",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate Globus upload source.
 		if (globusUploadSource != null) {
-			if (s3UploadSource != null || googleDriveUploadSource != null || sourceFile != null
-					|| generateUploadRequestURL) {
+			if (s3UploadSource != null || googleDriveUploadSource != null || fileSystemUploadSource != null
+					|| sourceFile != null || generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(globusUploadSource.getSourceLocation())) {
@@ -264,7 +265,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate S3 upload source.
 		if (s3UploadSource != null) {
-			if (googleDriveUploadSource != null || sourceFile != null || generateUploadRequestURL) {
+			if (googleDriveUploadSource != null || fileSystemUploadSource != null || sourceFile != null
+					|| generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(s3UploadSource.getSourceLocation())) {
@@ -285,7 +287,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate Google Drive upload source.
 		if (googleDriveUploadSource != null) {
-			if (sourceFile != null || generateUploadRequestURL) {
+			if (fileSystemUploadSource != null || sourceFile != null || generateUploadRequestURL) {
 				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 			if (!isValidFileLocation(googleDriveUploadSource.getSourceLocation())) {
@@ -304,6 +306,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 			if (googleDriveUploadSource.getAccount() != null) {
 				throw new HpcException("AWS S3 account provided in Google Drive upload source location",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+
+		// Validate Google Drive upload source.
+		if (fileSystemUploadSource != null) {
+			if (sourceFile != null || generateUploadRequestURL) {
+				throw new HpcException(MULTIPLE_UPLOAD_SOURCE_ERROR_MESSAGE, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			if (!isValidFileLocation(fileSystemUploadSource.getSourceLocation())) {
+				throw new HpcException("Invalid File System upload source location",
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
@@ -328,7 +341,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		// Validate source location exists and accessible.
 		Long sourceSize = validateUploadSourceFileLocation(globusUploadSource, s3UploadSource, googleDriveUploadSource,
-				sourceFile, configurationId);
+				fileSystemUploadSource, sourceFile, configurationId);
 
 		// Create an upload request.
 		HpcDataObjectUploadRequest uploadRequest = new HpcDataObjectUploadRequest();
@@ -339,6 +352,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		uploadRequest.setGlobusUploadSource(globusUploadSource);
 		uploadRequest.setS3UploadSource(s3UploadSource);
 		uploadRequest.setGoogleDriveUploadSource(googleDriveUploadSource);
+		uploadRequest.setFileSystemUploadSource(fileSystemUploadSource);
 		uploadRequest.setSourceFile(sourceFile);
 		uploadRequest.setUploadRequestURLChecksum(uploadRequestURLChecksum);
 		uploadRequest.setGenerateUploadRequestURL(generateUploadRequestURL);
@@ -414,14 +428,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.getBaseArchiveDestination();
 
 		// There are 4 methods of downloading data object:
-		// 1. Synchronous download via REST API. Supported by Cleversafe & POSIX
+		// 1. Synchronous download via REST API. Supported by S3 & POSIX
 		// archives.
-		// 2. Asynchronous download using Globus. Supported by Cleversafe (in a 2-hop
+		// 2. Asynchronous download using Globus. Supported by S3 (in a 2-hop
 		// solution) & POSIX archives.
-		// 3. Asynchronous download via streaming data object from Cleversafe to user
-		// provided S3 bucket. Supported by Cleversafe archive only.
-		// 4. Asynchronous download via streaming data object from Cleversafe to user
-		// provided Google Drive. Supported by Cleversafe archive only.
+		// 3. Asynchronous download via streaming data object from S3 Archive to user
+		// provided S3 bucket. Supported by S3 archive only.
+		// 4. Asynchronous download via streaming data object from S3 Archive to user
+		// provided Google Drive. Supported by S3 archive only.
 		if (globusDownloadDestination == null && s3DownloadDestination == null
 				&& googleDriveDownloadDestination == null) {
 			// This is a synchronous download request.
@@ -435,17 +449,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			performGlobusAsynchronousDownload(downloadRequest, response);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && globusDownloadDestination != null) {
-			// This is an asynchronous download request from a Cleversafe archive to a
+			// This is an asynchronous download request from a S3 archive to a
 			// Globus destination. It is performed in 2-hops.
 			perform2HopDownload(downloadRequest, response, baseArchiveDestination);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && s3DownloadDestination != null) {
-			// This is an asynchronous download request from a Cleversafe archive to a AWS
+			// This is an asynchronous download request from a S3 archive to a AWS
 			// S3 destination.
 			performS3AsynchronousDownload(downloadRequest, response, baseArchiveDestination);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && googleDriveDownloadDestination != null) {
-			// This is an asynchronous download request from a Cleversafe archive to a
+			// This is an asynchronous download request from a S3 archive to a
 			// Google Drive destination.
 			performGoogleDriveAsynchronousDownload(downloadRequest, response, baseArchiveDestination);
 
@@ -522,8 +536,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcDataTransferUploadReport getDataTransferUploadStatus(HpcDataTransferType dataTransferType,
-			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId) throws HpcException { // Input
-																															// Validation.
+			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+		// Input validation.
 		if (dataTransferRequestId == null) {
 			throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -539,8 +553,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	@Override
 	public HpcDataTransferDownloadReport getDataTransferDownloadStatus(HpcDataTransferType dataTransferType,
-			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId) throws HpcException { // Input
-																															// Validation.
+			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+		// Input validation.
 		if (dataTransferRequestId == null) {
 			throw new HpcException("Null data transfer request ID", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -733,7 +747,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		} catch (HpcException e) {
 			logger.error("Failed to get cancellation request for task ID: " + taskId, e);
-			//If it can not find the collection download task, it is cancelled and removed from the table.
+			// If it can not find the collection download task, it is cancelled and removed
+			// from the table.
 			return true;
 		}
 	}
@@ -770,15 +785,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		// If it's a failed data-object download task to a Globus destination,
-		// and the error message is credentials are needed, set status so other items can be cancelled.
+		// and the error message is credentials are needed, set status so other items
+		// can be cancelled.
 		if (result.equals(HpcDownloadResult.FAILED)
-				&& downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)
-				&& message != null && message.contains(CREDENTIALS_NEEDED_ERROR_MESSAGE)) {
+				&& downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS) && message != null
+				&& message.contains(CREDENTIALS_NEEDED_ERROR_MESSAGE)) {
 			result = HpcDownloadResult.FAILED_CREDENTIALS_NEEDED;
-            message = message
-                + ". Check if guest collection was created on a public endpoint.";
-        }
-		
+			message = message + ". Check if guest collection was created on a public endpoint.";
+		}
+
 		// Delete the staged download file.
 		if (downloadTask.getDownloadFilePath() != null) {
 			logger.info("download task: {} - Delete file at scratch space: {}", downloadTask.getId(),
@@ -903,7 +918,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				return;
 			}
 
-			// Set the first hop transfer to be from Cleversafe to the server's Globus
+			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
 			downloadRequest.setArchiveLocation(metadataService
 					.getDataObjectSystemGeneratedMetadata(downloadRequest.getPath()).getArchiveLocation());
@@ -1154,7 +1169,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public void setCollectionDownloadTaskInProgress(String taskId, boolean inProcess) throws HpcException {
 		dataDownloadDAO.setCollectionDownloadTaskInProcess(taskId, inProcess);
 	}
-	
+
 	@Override
 	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException {
 		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
@@ -1538,6 +1553,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			return uploadResponse;
 		}
 
+		if (uploadRequest.getFileSystemUploadSource() != null) {
+			// The upload from a file system source is done in a scheduled task
+			HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
+			uploadResponse.setDataTransferType(dataTransferType);
+			uploadResponse.setSourceSize(uploadRequest.getSourceSize());
+			uploadResponse.setUploadSource(uploadRequest.getFileSystemUploadSource().getSourceLocation());
+			uploadResponse.setDataTransferStarted(Calendar.getInstance());
+			uploadResponse.setDataTransferStatus(HpcDataTransferUploadStatus.IN_FILE_SYSTEM);
+			uploadResponse.setDataTransferMethod(HpcDataTransferUploadMethod.FILE_SYSTEM);
+			return uploadResponse;
+		}
+
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
@@ -1586,6 +1613,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @param globusUploadSource      The Globus source to validate.
 	 * @param s3UploadSource          The S3 source to validate.
 	 * @param googleDriveUploadSource The Google Drive source to validate.
+	 * @param fileSystemUploadSource  The File System (DME server NAS) source to
+	 *                                validate.
 	 * @param sourceFile              The source file to validate.
 	 * @param configurationId         The configuration ID (needed to determine the
 	 *                                archive connection config).
@@ -1593,9 +1622,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @throws HpcException if the upload source location doesn't exist, or not
 	 *                      accessible, or it's a directory.
 	 */
-	private Long validateUploadSourceFileLocation(HpcGlobusUploadSource globusUploadSource,
-			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource, File sourceFile,
-			String configurationId) throws HpcException {
+	private Long validateUploadSourceFileLocation(HpcUploadSource globusUploadSource,
+			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
+			HpcUploadSource fileSystemploadSource, File sourceFile, String configurationId) throws HpcException {
 		if (sourceFile != null) {
 			return sourceFile.length();
 		}
@@ -1620,6 +1649,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			sourceFileLocation = googleDriveUploadSource.getSourceLocation();
 			pathAttributes = getPathAttributes(googleDriveUploadSource.getAccessToken(),
 					googleDriveUploadSource.getSourceLocation(), true);
+
+		} else if (fileSystemploadSource != null) {
+			sourceFileLocation = fileSystemploadSource.getSourceLocation();
+			pathAttributes = getPathAttributes(sourceFileLocation);
 
 		} else {
 			// No source to validate. It's a request to generate an upload URL.
@@ -1897,13 +1930,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (uploadRequest.getGlobusUploadSource() != null) {
 			// It's an asynchronous upload request w/ Globus. This is supported by both
-			// Cleversafe and POSIX archives.
+			// S3 and POSIX archives.
 			return HpcDataTransferType.GLOBUS;
 		}
 
 		if (uploadRequest.getS3UploadSource() != null) {
-			// It's an asynchronous upload request from AWS S3. This is only supported
-			// Cleversafe
+			// It's an asynchronous upload request from AWS S3. This is only supported S3
 			// archive.
 			if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
 				throw new HpcException("S3 upload source not supported by POSIX archive",
@@ -1914,8 +1946,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (uploadRequest.getGoogleDriveUploadSource() != null) {
 			// It's an asynchronous upload request from Google Drive. This is only supported
-			// Cleversafe
-			// archive.
+			// S3 archive.
 			if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
 				throw new HpcException("Google Drive upload source not supported by POSIX archive",
 						HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1926,14 +1957,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			return HpcDataTransferType.S_3;
 		}
 
-		if (uploadRequest.getSourceFile() != null) {
-			// It's a synchrnous upload request - use the configured archive (S3/Cleversafe
-			// or Globus/POSIX).
+		if (uploadRequest.getSourceFile() != null || uploadRequest.getFileSystemUploadSource() != null) {
+			// Sync and file system uploads supported by both S3 & POSIX archives. Use the
+			// configured archive data transfer.
 			return archiveDataTransferType;
 		}
 		if (uploadRequest.getGenerateUploadRequestURL()) {
-			// It's a request to generate upload URL. This is only supported Cleversafe
-			// archive.
+			// It's a request to generate upload URL. This is only supported S3 archive.
 			if (archiveDataTransferType.equals(HpcDataTransferType.GLOBUS)) {
 				throw new HpcException("Generate upload URL not supported by POSIX archive",
 						HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1987,7 +2017,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Perform a synchronous download from either a Cleversafe or POSIX archive.
+	 * Perform a synchronous download from either a S3 or POSIX archive.
 	 *
 	 * @param downloadRequest           The data object download request.
 	 * @param response                  The download response object. This method
@@ -2114,8 +2144,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	/**
-	 * Perform a download request to user's provided AWS S3 destination from
-	 * Cleversafe archive.
+	 * Perform a download request to user's provided AWS S3 destination from S3
+	 * archive.
 	 *
 	 * @param downloadRequest        The data object download request.
 	 * @param response               The download response object. This method sets
@@ -2131,7 +2161,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService,
 				this);
 
-		// Perform the S3 download (From Cleversafe to User's AWS S3 bucket).
+		// Perform the S3 download (From S3 Archive to User's AWS S3 bucket).
 		try {
 			dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
 					getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
@@ -2154,7 +2184,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	/**
 	 * Perform a download request to user's provided Google Drive destination from
-	 * Cleversafe archive.
+	 * S3 archive.
 	 *
 	 * @param downloadRequest        The data object download request.
 	 * @param response               The download response object. This method sets
@@ -2170,12 +2200,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcStreamingDownload googleDriveDownload = new HpcStreamingDownload(downloadRequest, dataDownloadDAO,
 				eventService, this);
 
-		// Generate a download URL from the Cleversafe archive.
+		// Generate a download URL from the S3 archive.
 		downloadRequest.setArchiveLocationURL(generateDownloadRequestURL(downloadRequest.getPath(),
 				downloadRequest.getArchiveLocation(), HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
 				downloadRequest.getS3ArchiveConfigurationId()));
 
-		// Perform the download (From Cleversafe to User's Google Drive).
+		// Perform the download (From S3 Archive to User's Google Drive).
 		try {
 			dataTransferProxies.get(HpcDataTransferType.GOOGLE_DRIVE).downloadDataObject(null, downloadRequest,
 					baseArchiveDestination, googleDriveDownload);
@@ -2220,7 +2250,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		response.setDestinationLocation(
 				secondHopDownload.getDownloadTask().getGlobusDownloadDestination().getDestinationLocation());
 
-		// Perform the first hop download (From Cleversafe to local file system).
+		// Perform the first hop download (From S3 Archive to DME Server local file
+		// system).
 		try {
 			if (canPerfom2HopDownload(secondHopDownload)) {
 				dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
@@ -2262,7 +2293,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 */
 	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) {
 		try {
-			long freeSpace = 1000 * FileSystemUtils.freeSpaceKb(secondHopDownload.getSourceFile().getAbsolutePath());
+			long freeSpace = Files
+					.size(FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()));
 			if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
 				// Not enough space disk space to perform the first hop download. Log an error
 				// and reset the
@@ -2385,6 +2417,45 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		logger.info("checkIfTransferCanBeLaunched: About to return");
 
 		return transferAcceptanceResponse.canAcceptTransfer();
+	}
+
+	/**
+	 * Get path attributes of local file (on the DME server file system)
+	 *
+	 * @param fileLocation The local file location
+	 * @return The path attributes
+	 * @throws HpcException on service failure.
+	 */
+	private HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) throws HpcException {
+		// Input validation.
+		if (!isValidFileLocation(fileLocation)) {
+			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		try {
+			HpcPathAttributes pathAttributes = new HpcPathAttributes();
+			pathAttributes.setIsDirectory(false);
+			pathAttributes.setIsFile(false);
+			pathAttributes.setSize(0);
+			pathAttributes.setIsAccessible(true);
+
+			Path path = FileSystems.getDefault().getPath(fileLocation.getFileId());
+			pathAttributes.setExists(Files.exists(path));
+			if (pathAttributes.getExists()) {
+				pathAttributes.setIsAccessible(Files.isReadable(path));
+				pathAttributes.setIsDirectory(Files.isDirectory(path));
+				pathAttributes.setIsFile(Files.isRegularFile(path));
+			}
+			if (pathAttributes.getIsFile()) {
+				pathAttributes.setSize(Files.size(path));
+			}
+
+			return pathAttributes;
+
+		} catch (IOException e) {
+			throw new HpcException("Failed to get local file attributes: [" + e.getMessage() + "] " + fileLocation,
+					HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
 	}
 
 	private String token2String(Object pToken) {
