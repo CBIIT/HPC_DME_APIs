@@ -33,7 +33,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDirectoryScanPathMap;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
@@ -363,7 +363,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 				HpcFileLocation source = new HpcFileLocation();
 				source.setFileContainerId(globusEndpoint);
 				source.setFileId(globusEndpointPath + fileName);
-				HpcGlobusUploadSource globusSource = new HpcGlobusUploadSource();
+				HpcUploadSource globusSource = new HpcUploadSource();
 				globusSource.setSourceLocation(source);
 				file.setGlobusUploadSource(globusSource);
 				file.setCreateParentCollections(true);

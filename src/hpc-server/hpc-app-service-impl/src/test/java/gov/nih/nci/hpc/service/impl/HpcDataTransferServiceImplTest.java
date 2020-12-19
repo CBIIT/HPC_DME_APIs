@@ -50,283 +50,279 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
 @RunWith(MockitoJUnitRunner.class)
 public class HpcDataTransferServiceImplTest {
 
-  // ---------------------------------------------------------------------//
-  // Instance members
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
 
-  // The app service under test.
-  // @InjectMocks
-  private HpcDataTransferService dataTransferService = null;
+	// The app service under test.
+	// @InjectMocks
+	private HpcDataTransferService dataTransferService = null;
 
-  // Expected exception rule.
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+	// Expected exception rule.
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
-  // Mocks.
-  @Mock
-  private HpcDataTransferProxy dataTransferProxyMock = null;
-  @Mock
-  private HpcDataManagementConfigurationLocator dataManagementConfigurationLocatorMock = null;
-  @Mock
-  private HpcSystemAccountLocator systemAccountLocatorMock = null;
-  @Mock
-  private HpcDataDownloadDAO dataDownloadDAOMock = null;
+	// Mocks.
+	@Mock
+	private HpcDataTransferProxy dataTransferProxyMock = null;
+	@Mock
+	private HpcDataManagementConfigurationLocator dataManagementConfigurationLocatorMock = null;
+	@Mock
+	private HpcSystemAccountLocator systemAccountLocatorMock = null;
+	@Mock
+	private HpcDataDownloadDAO dataDownloadDAOMock = null;
 
-  // ---------------------------------------------------------------------//
-  // Unit Tests
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Unit Tests
+	// ---------------------------------------------------------------------//
 
-  /**
-   * {@link HpcDataTransferService#uploadDataObject(gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource, gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource, java.io.File, boolean, String, String, String, String, String)}
-   */
-  /*
-   * Test scenario: No upload source or request provided. Expected: HpcException -
-   * "No data transfer source or data attachment provided or upload URL requested"
-   */
-  @Test
-  public void testUploadDataObjectNoSourceOrAttachment() throws HpcException {
-    expectedException.expect(HpcException.class);
-    expectedException.expectMessage(
-        "No data transfer source or data attachment provided or upload URL requested");
+	/**
+	 * {@link HpcDataTransferService#uploadDataObject(gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource, gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource, java.io.File, boolean, String, String, String, String, String)}
+	 */
+	/*
+	 * Test scenario: No upload source or request provided. Expected: HpcException -
+	 * "No data transfer source or data attachment provided or upload URL requested"
+	 */
+	@Test
+	public void testUploadDataObjectNoSourceOrAttachment() throws HpcException {
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("No data transfer source or data attachment provided or upload URL requested");
 
-    dataTransferService.uploadDataObject(null, null, null, null, false, null, null, null, "testObjectId", null,
-        null, null);
-  }
+		dataTransferService.uploadDataObject(null, null, null, null, null, false, null, null, null, "testObjectId",
+				null, null, null);
+	}
 
-  /**
-   * {@link HpcDataTransferService#uploadDataObject(gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource, gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource, java.io.File, boolean, String, String, String, String, String)}
-   */
-  /*
-   * Test scenario: Invalid S3 upload source. Expected: HpcException - "Invalid S3 upload source"
-   */
-  @Test
-  public void testUploadDataObjectInvalidS3UploadSource() throws HpcException {
-    expectedException.expect(HpcException.class);
-    expectedException.expectMessage("Invalid S3 upload source");
+	/**
+	 * {@link HpcDataTransferService#uploadDataObject(gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource, gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource, java.io.File, boolean, String, String, String, String, String)}
+	 */
+	/*
+	 * Test scenario: Invalid S3 upload source. Expected: HpcException -
+	 * "Invalid S3 upload source"
+	 */
+	@Test
+	public void testUploadDataObjectInvalidS3UploadSource() throws HpcException {
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid S3 upload source");
 
-    HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
-    dataTransferService.uploadDataObject(null, s3UploadSource, null, null, false, null, null, null, "dataObjectId",
-        null, null, null);
-  }
+		HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
+		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, false, null, null, null,
+				"dataObjectId", null, null, null);
+	}
 
-  /**
-   * {@link HpcDataTransferService#uploadDataObject(gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource, gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource, java.io.File, boolean, String, String, String, String, String)}
-   */
-  /*
-   * Test scenario: Successful upload from AWS S3 source. Expected: HpcDataObjectUploadResponse
-   * response.
-   */
-  @Test
-  public void testS3UploadDataObject() throws HpcException {
-    // Prepare test data.
-    HpcFileLocation sourceLocation = new HpcFileLocation();
-    sourceLocation.setFileContainerId("testSourceFileContainerId");
-    sourceLocation.setFileId("testSourceFileId");
+	/**
+	 * {@link HpcDataTransferService#uploadDataObject(gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource, gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource, java.io.File, boolean, String, String, String, String, String)}
+	 */
+	/*
+	 * Test scenario: Successful upload from AWS S3 source. Expected:
+	 * HpcDataObjectUploadResponse response.
+	 */
+	@Test
+	public void testS3UploadDataObject() throws HpcException {
+		// Prepare test data.
+		HpcFileLocation sourceLocation = new HpcFileLocation();
+		sourceLocation.setFileContainerId("testSourceFileContainerId");
+		sourceLocation.setFileId("testSourceFileId");
 
-    HpcS3Account s3Account = new HpcS3Account();
-    s3Account.setAccessKey("testAccessKey");
-    s3Account.setSecretKey("testSecretKey");
-    s3Account.setRegion("testRegion");
+		HpcS3Account s3Account = new HpcS3Account();
+		s3Account.setAccessKey("testAccessKey");
+		s3Account.setSecretKey("testSecretKey");
+		s3Account.setRegion("testRegion");
 
-    HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
-    s3UploadSource.setSourceLocation(sourceLocation);
-    s3UploadSource.setAccount(s3Account);
+		HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
+		s3UploadSource.setSourceLocation(sourceLocation);
+		s3UploadSource.setAccount(s3Account);
 
-    HpcDataManagementConfiguration dmc = new HpcDataManagementConfiguration();
-    dmc.setS3UploadConfigurationId("S3_CONFIG_ID");
+		HpcDataManagementConfiguration dmc = new HpcDataManagementConfiguration();
+		dmc.setS3UploadConfigurationId("S3_CONFIG_ID");
 
-    // Mock setup.
-    HpcPathAttributes pathAttributes = new HpcPathAttributes();
-    pathAttributes.setIsAccessible(true);
-    pathAttributes.setExists(true);
-    pathAttributes.setIsDirectory(false);
-    pathAttributes.setSize(123456789L);
-    when(dataTransferProxyMock.getPathAttributes(anyObject(), same(sourceLocation), eq(true)))
-        .thenReturn(pathAttributes);
-    when(dataManagementConfigurationLocatorMock.getArchiveDataTransferType(anyObject()))
-        .thenReturn(HpcDataTransferType.S_3);
-    when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
-        .thenReturn(new HpcIntegratedSystemAccount());
-    when(systemAccountLocatorMock.getSystemAccount(anyObject()))
-        .thenReturn(new HpcIntegratedSystemAccount());
-    when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
-    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
-        anyObject(), anyObject())).thenReturn(new HpcDataTransferConfiguration());
-    when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dmc);
+		// Mock setup.
+		HpcPathAttributes pathAttributes = new HpcPathAttributes();
+		pathAttributes.setIsAccessible(true);
+		pathAttributes.setExists(true);
+		pathAttributes.setIsDirectory(false);
+		pathAttributes.setSize(123456789L);
+		when(dataTransferProxyMock.getPathAttributes(anyObject(), same(sourceLocation), eq(true)))
+				.thenReturn(pathAttributes);
+		when(dataManagementConfigurationLocatorMock.getArchiveDataTransferType(anyObject()))
+				.thenReturn(HpcDataTransferType.S_3);
+		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+				.thenReturn(new HpcIntegratedSystemAccount());
+		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
+				.thenReturn(new HpcDataTransferConfiguration());
+		when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dmc);
 
-    // Run the test.
-    dataTransferService.uploadDataObject(null, s3UploadSource, null, null, false, null, null,
-        "/test/path", "testUserId", "testCallerId", "testConfigId", "testObjectId");
-  }
+		// Run the test.
+		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, false, null, null, "/test/path",
+				"testUserId", "testCallerId", "testConfigId", "testObjectId");
+	}
 
-  /**
-   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
-   */
-  /*
-   * Test scenario: null dataTransferType Expected: HpcException -
-   * "Invalid generate download URL request"
-   */
-  @Test
-  public void testGenerateDownloadRequestURLNullDataTransferType() throws HpcException {
-    expectedException.expect(HpcException.class);
-    expectedException.expectMessage("Invalid generate download URL request");
+	/**
+	 * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+	 */
+	/*
+	 * Test scenario: null dataTransferType Expected: HpcException -
+	 * "Invalid generate download URL request"
+	 */
+	@Test
+	public void testGenerateDownloadRequestURLNullDataTransferType() throws HpcException {
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid generate download URL request");
 
-    dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), null, 2000, "", "");
-  }
+		dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), null, 2000, "", "");
+	}
 
-  /**
-   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
-   */
-  /*
-   * Test scenario: Invalid archiveLocation Expected: HpcException -
-   * "Invalid generate download URL request"
-   */
-  @Test
-  public void testGenerateDownloadRequestURLInvalidArchiveLocation() throws HpcException {
-    expectedException.expect(HpcException.class);
-    expectedException.expectMessage("Invalid generate download URL request");
+	/**
+	 * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+	 */
+	/*
+	 * Test scenario: Invalid archiveLocation Expected: HpcException -
+	 * "Invalid generate download URL request"
+	 */
+	@Test
+	public void testGenerateDownloadRequestURLInvalidArchiveLocation() throws HpcException {
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid generate download URL request");
 
-    dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(),
-        HpcDataTransferType.S_3, 1000, "", "");
-  }
+		dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), HpcDataTransferType.S_3,
+				1000, "", "");
+	}
 
-  /**
-   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
-   */
-  /*
-   * Test scenario: Successful Expected: A download URL - "https://downloadURL"
-   */
-  @Test
-  public void testGenerateDownloadRequestURL() throws HpcException {
-    // Mock setup.
-    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
-        anyObject(), anyObject())).thenReturn(new HpcDataTransferConfiguration());
-    when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
-        .thenReturn(new HpcIntegratedSystemAccount());
-    when(systemAccountLocatorMock.getSystemAccount(anyObject()))
-        .thenReturn(new HpcIntegratedSystemAccount());
-    when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
-    when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject()))
-        .thenReturn("https://downloadURL");
+	/**
+	 * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+	 */
+	/*
+	 * Test scenario: Successful Expected: A download URL - "https://downloadURL"
+	 */
+	@Test
+	public void testGenerateDownloadRequestURL() throws HpcException {
+		// Mock setup.
+		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
+				.thenReturn(new HpcDataTransferConfiguration());
+		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+				.thenReturn(new HpcIntegratedSystemAccount());
+		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+		when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject()))
+				.thenReturn("https://downloadURL");
 
-    HpcFileLocation archiveLocation = new HpcFileLocation();
-    archiveLocation.setFileContainerId("test");
-    archiveLocation.setFileId("test");
+		HpcFileLocation archiveLocation = new HpcFileLocation();
+		archiveLocation.setFileContainerId("test");
+		archiveLocation.setFileId("test");
 
-    String downloadURL = dataTransferService.generateDownloadRequestURL("", "user-id", archiveLocation,
-        HpcDataTransferType.S_3, 1000, "", "");
+		String downloadURL = dataTransferService.generateDownloadRequestURL("", "user-id", archiveLocation,
+				HpcDataTransferType.S_3, 1000, "", "");
 
-    // Assert expected result.
-    assertEquals(downloadURL, "https://downloadURL");
-  }
+		// Assert expected result.
+		assertEquals(downloadURL, "https://downloadURL");
+	}
 
-  /**
-   * {@link HpcDataTransferService#downloadDataObject(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination, gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination, HpcDataTransferType, String, String, boolean, long)}
-   */
-  /*
-   * Test scenario: null dataTransferType Expected: HpcException - "Invalid data transfer request"
-   */
-  @Test
-  public void testDownloadDataObjectNullDataTransferType() throws HpcException {
-    expectedException.expect(HpcException.class);
-    expectedException.expectMessage("Invalid data transfer request");
+	/**
+	 * {@link HpcDataTransferService#downloadDataObject(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination, gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination, HpcDataTransferType, String, String, boolean, long)}
+	 */
+	/*
+	 * Test scenario: null dataTransferType Expected: HpcException -
+	 * "Invalid data transfer request"
+	 */
+	@Test
+	public void testDownloadDataObjectNullDataTransferType() throws HpcException {
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid data transfer request");
 
-    dataTransferService.downloadDataObject("", null, null, null, null, null, null, "", "", "",
-        false, 0L);
-  }
+		dataTransferService.downloadDataObject("", null, null, null, null, null, null, "", "", "", false, 0L);
+	}
 
-  /**
-   * {@link HpcDataTransferService#downloadDataObject(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination, gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination, HpcDataTransferType, String, String, boolean, long)}
-   */
-  /*
-   * Test scenario: Invalid archiveLocation Expected: HpcException - "Invalid data transfer request"
-   */
-  @Test
-  public void testDownloadDataObjectInvalidArchiveLocation() throws HpcException {
-    expectedException.expect(HpcException.class);
-    expectedException.expectMessage("Invalid data transfer request");
+	/**
+	 * {@link HpcDataTransferService#downloadDataObject(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination, gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination, HpcDataTransferType, String, String, boolean, long)}
+	 */
+	/*
+	 * Test scenario: Invalid archiveLocation Expected: HpcException -
+	 * "Invalid data transfer request"
+	 */
+	@Test
+	public void testDownloadDataObjectInvalidArchiveLocation() throws HpcException {
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid data transfer request");
 
-    dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null,
-        HpcDataTransferType.S_3, "", "", "", false, 0L);
-  }
-  
-  /**
-   * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
-   */
-  /*
-   * Test scenario: Successful download to AWS S3 destination Expected:
-   * HpcDataObjectDownloadResponse object w/ download task ID
-   */
-  @Test
-  public void testS3DownloadDataObject() throws HpcException {
-    // Mock setup.
-    HpcArchive baseDownloadSource = new HpcArchive();
-    baseDownloadSource.setType(HpcArchiveType.ARCHIVE);
-    HpcFileLocation baseDownloadSourceFileLocation = new HpcFileLocation();
-    baseDownloadSourceFileLocation.setFileContainerId("testBaseDownloadSource");
-    baseDownloadSourceFileLocation.setFileId("testBaseDownloadSource");
-    baseDownloadSource.setFileLocation(baseDownloadSourceFileLocation);
-    HpcDataTransferConfiguration dataTransferConfig = new HpcDataTransferConfiguration();
-    dataTransferConfig.setBaseDownloadSource(baseDownloadSource);
-    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
-        anyObject(), anyObject())).thenReturn(dataTransferConfig);
-    when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(),
-        anyObject(), anyObject())).thenReturn(dataTransferConfig);
+		dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null,
+				HpcDataTransferType.S_3, "", "", "", false, 0L);
+	}
 
-    when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
-        .thenReturn(new HpcIntegratedSystemAccount());
-    when(systemAccountLocatorMock.getSystemAccount(anyObject()))
-        .thenReturn(new HpcIntegratedSystemAccount());
-    when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
+	/**
+	 * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
+	 */
+	/*
+	 * Test scenario: Successful download to AWS S3 destination Expected:
+	 * HpcDataObjectDownloadResponse object w/ download task ID
+	 */
+	@Test
+	public void testS3DownloadDataObject() throws HpcException {
+		// Mock setup.
+		HpcArchive baseDownloadSource = new HpcArchive();
+		baseDownloadSource.setType(HpcArchiveType.ARCHIVE);
+		HpcFileLocation baseDownloadSourceFileLocation = new HpcFileLocation();
+		baseDownloadSourceFileLocation.setFileContainerId("testBaseDownloadSource");
+		baseDownloadSourceFileLocation.setFileId("testBaseDownloadSource");
+		baseDownloadSource.setFileLocation(baseDownloadSourceFileLocation);
+		HpcDataTransferConfiguration dataTransferConfig = new HpcDataTransferConfiguration();
+		dataTransferConfig.setBaseDownloadSource(baseDownloadSource);
+		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
+				.thenReturn(dataTransferConfig);
+		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
+				.thenReturn(dataTransferConfig);
 
-    // Prepare test data.
-    HpcFileLocation archiveLocation = new HpcFileLocation();
-    archiveLocation.setFileContainerId("testArchiveFileContainerId");
-    archiveLocation.setFileId("testArchiveFileId");
+		when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
+				.thenReturn(new HpcIntegratedSystemAccount());
+		when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		when(dataTransferProxyMock.authenticate(anyObject(), anyObject())).thenReturn("token");
 
-    HpcFileLocation destinationLocation = new HpcFileLocation();
-    destinationLocation.setFileContainerId("testDestinationFileContainerId");
-    destinationLocation.setFileId("testDestinationFileId");
+		// Prepare test data.
+		HpcFileLocation archiveLocation = new HpcFileLocation();
+		archiveLocation.setFileContainerId("testArchiveFileContainerId");
+		archiveLocation.setFileId("testArchiveFileId");
 
-    HpcS3Account s3Account = new HpcS3Account();
-    s3Account.setAccessKey("testAccessKey");
-    s3Account.setSecretKey("testSecretKey");
-    s3Account.setRegion("testRegion");
+		HpcFileLocation destinationLocation = new HpcFileLocation();
+		destinationLocation.setFileContainerId("testDestinationFileContainerId");
+		destinationLocation.setFileId("testDestinationFileId");
 
-    HpcS3DownloadDestination s3loadDestination = new HpcS3DownloadDestination();
-    s3loadDestination.setDestinationLocation(destinationLocation);
-    s3loadDestination.setAccount(s3Account);
+		HpcS3Account s3Account = new HpcS3Account();
+		s3Account.setAccessKey("testAccessKey");
+		s3Account.setSecretKey("testSecretKey");
+		s3Account.setRegion("testRegion");
 
-    // Run the test.
-    HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(
-        "/test/path", archiveLocation, null, s3loadDestination, null, null, HpcDataTransferType.S_3,
-        "testConfigId", "", "testUserId", false, 0L);
+		HpcS3DownloadDestination s3loadDestination = new HpcS3DownloadDestination();
+		s3loadDestination.setDestinationLocation(destinationLocation);
+		s3loadDestination.setAccount(s3Account);
 
-    // Assert expected result.
-    assertNull(downloadResponse.getDownloadTaskId());
-    assertEquals(downloadResponse.getDestinationLocation().getFileContainerId(),
-        destinationLocation.getFileContainerId());
-    assertEquals(downloadResponse.getDestinationLocation().getFileId(),
-        destinationLocation.getFileId());
-  }
+		// Run the test.
+		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject("/test/path",
+				archiveLocation, null, s3loadDestination, null, null, HpcDataTransferType.S_3, "testConfigId", "",
+				"testUserId", false, 0L);
 
-  // ---------------------------------------------------------------------//
-  // Helper Methods
-  // ---------------------------------------------------------------------//
+		// Assert expected result.
+		assertNull(downloadResponse.getDownloadTaskId());
+		assertEquals(downloadResponse.getDestinationLocation().getFileContainerId(),
+				destinationLocation.getFileContainerId());
+		assertEquals(downloadResponse.getDestinationLocation().getFileId(), destinationLocation.getFileId());
+	}
 
-  @Before
-  public void init() throws HpcException {
-    Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new HashMap<>();
-    dataTransferProxies.put(HpcDataTransferType.GLOBUS, dataTransferProxyMock);
-    dataTransferProxies.put(HpcDataTransferType.S_3, dataTransferProxyMock);
+	// ---------------------------------------------------------------------//
+	// Helper Methods
+	// ---------------------------------------------------------------------//
 
-    HpcDataTransferServiceImpl dataTransferServiceImpl =
-        new HpcDataTransferServiceImpl(dataTransferProxies, "/test/download/directory");
-    dataTransferServiceImpl
-        .setDataManagementConfigurationLocator(dataManagementConfigurationLocatorMock);
-    dataTransferServiceImpl.setSystemAccountLocator(systemAccountLocatorMock);
-    dataTransferServiceImpl.setDataDownloadDAO(dataDownloadDAOMock);
+	@Before
+	public void init() throws HpcException {
+		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new HashMap<>();
+		dataTransferProxies.put(HpcDataTransferType.GLOBUS, dataTransferProxyMock);
+		dataTransferProxies.put(HpcDataTransferType.S_3, dataTransferProxyMock);
 
-    dataTransferService = dataTransferServiceImpl;
-  }
+		HpcDataTransferServiceImpl dataTransferServiceImpl = new HpcDataTransferServiceImpl(dataTransferProxies,
+				"/test/download/directory");
+		dataTransferServiceImpl.setDataManagementConfigurationLocator(dataManagementConfigurationLocatorMock);
+		dataTransferServiceImpl.setSystemAccountLocator(systemAccountLocatorMock);
+		dataTransferServiceImpl.setDataDownloadDAO(dataDownloadDAOMock);
+
+		dataTransferService = dataTransferServiceImpl;
+	}
 }

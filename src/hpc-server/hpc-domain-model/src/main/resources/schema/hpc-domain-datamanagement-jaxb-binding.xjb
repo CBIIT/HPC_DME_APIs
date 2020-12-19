@@ -177,8 +177,8 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcGoogleDriveDownloadDestination']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination" />
       </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusUploadSource']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource" />
+      <jxb:bindings node="//xsd:complexType[@name='HpcUploadSource']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcStreamingUploadSource']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource" />

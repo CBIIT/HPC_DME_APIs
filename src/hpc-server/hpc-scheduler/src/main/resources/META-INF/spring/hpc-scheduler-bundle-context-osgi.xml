@@ -30,6 +30,7 @@
 		<prop key="hpc.scheduler.cron.processDataTranferUploadStreamingStopped.delay">17 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processDataTranferUploadReceived.delay">5 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.processTemporaryArchive.delay">20 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.processFileSystemUpload.delay">22 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeCanceledDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.startGlobusDataObjectDownloadTasks.delay">30 0/1 * * * ?</prop>
