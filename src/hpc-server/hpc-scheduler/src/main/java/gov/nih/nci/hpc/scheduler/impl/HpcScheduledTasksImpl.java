@@ -91,7 +91,7 @@ public class HpcScheduledTasksImpl {
 	}
 
 	/**
-	 * Process data objects in temporary archive task. This tasks transfers data
+	 * Process data objects in temporary archive task. This tasks uploads data objects
 	 * from the temporary archive to the (permanent) archive and complete data
 	 * object registration.
 	 */
@@ -100,6 +100,16 @@ public class HpcScheduledTasksImpl {
 		executeTask("processTemporaryArchiveTask()", systemBusService::processTemporaryArchive);
 	}
 
+	/**
+	 * Process data objects in file system task. This tasks uploads data objects
+	 * from the local DME file system (NAS) to the archive and complete data
+	 * object registration.
+	 */
+	@Scheduled(cron = "${hpc.scheduler.cron.processFileSystemUpload.delay}")
+	private void processFileSystemUploadTask() {
+		executeTask("processFileSystemUploadTask()", systemBusService::processFileSystemUpload);
+	}
+	
 	/**
 	 * Start Data Object Download Tasks that are in RECEIVED state for Globus
 	 * transfer.
