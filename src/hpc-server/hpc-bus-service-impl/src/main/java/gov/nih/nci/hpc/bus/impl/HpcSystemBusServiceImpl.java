@@ -1959,7 +1959,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							systemGeneratedMetadata.getArchiveLocation().getFileId());
 				} else if (systemGeneratedMetadata.getDataTransferStatus()
 						.equals(HpcDataTransferUploadStatus.IN_FILE_SYSTEM)) {
-					file = new File(systemGeneratedMetadata.getArchiveLocation().getFileId());
+					file = new File(systemGeneratedMetadata.getSourceLocation().getFileId());
 				} else {
 					throw new HpcException("Unexpected data object upload status for file upload task: "
 							+ systemGeneratedMetadata.getDataTransferStatus(), HpcErrorType.UNEXPECTED_ERROR);
