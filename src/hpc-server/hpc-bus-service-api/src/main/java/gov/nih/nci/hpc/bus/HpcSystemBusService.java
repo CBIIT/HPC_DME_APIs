@@ -65,12 +65,19 @@ public interface HpcSystemBusService {
   public void processDataTranferUploadStreamingStopped() throws HpcException;
 
   /**
-   * Transfer data objects currently in temporary archive to the (permanent) archive, and complete
+   * Upload data objects currently in temporary archive to the (permanent) archive, and complete
    * the registration process.
    *
    * @throws HpcException on service failure.
    */
   public void processTemporaryArchive() throws HpcException;
+  
+  /**
+   * Upload data objects currently staged on DME server file system (NAS) to the archive 
+   *
+   * @throws HpcException on service failure.
+   */
+  public void processFileSystemUpload() throws HpcException;
 
   /**
    * Start all received data objects download tasks for Globus and process to make them in progress.

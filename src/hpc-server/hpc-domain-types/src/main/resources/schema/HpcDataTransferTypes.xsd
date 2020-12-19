@@ -31,6 +31,7 @@
 			<xsd:enumeration value="URL_GENERATED" />
 			<xsd:enumeration value="STREAMING_IN_PROGRESS" />
 			<xsd:enumeration value="STREAMING_STOPPED" />
+			<xsd:enumeration value="IN_FILE_SYSTEM" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -42,6 +43,7 @@
 			<xsd:enumeration value="SYNC" />
 			<xsd:enumeration value="URL_SINGLE_PART" />
 			<xsd:enumeration value="URL_MULTI_PART" />
+			<xsd:enumeration value="FILE_SYSTEM" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -127,7 +129,7 @@
 	<xsd:complexType name="HpcFile" />
 	<xsd:complexType name="HpcInputStream" />
 
-	<xsd:complexType name="HpcGlobusUploadSource">
+	<xsd:complexType name="HpcUploadSource">
 		<xsd:sequence>
 			<xsd:element name="sourceLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
@@ -187,11 +189,13 @@
 			<xsd:element name="callerObjectId" type="xsd:string" />
 			<xsd:element name="userId" type="xsd:string" />
 			<xsd:element name="globusUploadSource"
-				type="hpc-domain-datatransfer:HpcGlobusUploadSource" />
+				type="hpc-domain-datatransfer:HpcUploadSource" />
 			<xsd:element name="s3UploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
 			<xsd:element name="googleDriveUploadSource"
 				type="hpc-domain-datatransfer:HpcStreamingUploadSource" />
+			<xsd:element name="fileSystemUploadSource"
+				type="hpc-domain-datatransfer:HpcUploadSource" />
 			<xsd:element name="sourceFile"
 				type="hpc-domain-datatransfer:HpcFile" />
 			<xsd:element name="generateUploadRequestURL"
