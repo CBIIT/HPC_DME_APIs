@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -908,7 +908,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		if (dataObjectRegistration.getSource() != null
 				&& !StringUtils.isEmpty(dataObjectRegistration.getSource().getFileContainerId())
 				&& !StringUtils.isEmpty(dataObjectRegistration.getSource().getFileId())) {
-			HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+			HpcUploadSource globusUploadSource = new HpcUploadSource();
 			globusUploadSource.setSourceLocation(dataObjectRegistration.getSource());
 			v2DataObjectRegistration.setGlobusUploadSource(globusUploadSource);
 		}
@@ -942,7 +942,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 			v2DataObjectRegistrationItem.setPath(dataObjectRegistrationItem.getPath());
 			v2DataObjectRegistrationItem.getDataObjectMetadataEntries()
 					.addAll(dataObjectRegistrationItem.getDataObjectMetadataEntries());
-			HpcGlobusUploadSource globusUploadSource = new HpcGlobusUploadSource();
+			HpcUploadSource globusUploadSource = new HpcUploadSource();
 			globusUploadSource.setSourceLocation(dataObjectRegistrationItem.getSource());
 			v2DataObjectRegistrationItem.setGlobusUploadSource(globusUploadSource);
 			v2BulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().add(v2DataObjectRegistrationItem);
