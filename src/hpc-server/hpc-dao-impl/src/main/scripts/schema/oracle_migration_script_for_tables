@@ -95,35 +95,63 @@ CREATE TABLE "IRODS"."HPC_DATA_MANAGEMENT_CONFIGURATION"
 ;
 
 
-
-CREATE TABLE "IRODS"."HPC_DATA_OBJECT_DOWNLOAD_TASK"
+create table HPC_DATA_OBJECT_DOWNLOAD_TASK
 (
-   ID VARCHAR2(50) PRIMARY KEY NOT NULL,
-   USER_ID VARCHAR2(50),
-   PATH VARCHAR2(2700),
-   CONFIGURATION_ID VARCHAR2(50),
-   DATA_TRANSFER_REQUEST_ID VARCHAR2(50),
-   DATA_TRANSFER_TYPE VARCHAR2(50),
-   DATA_TRANSFER_STATUS VARCHAR2(50),
-   DOWNLOAD_FILE_PATH VARCHAR2(2700),
-   ARCHIVE_LOCATION_FILE_CONTAINER_ID VARCHAR2(50),
-   ARCHIVE_LOCATION_FILE_ID VARCHAR2(2700),
-   DESTINATION_LOCATION_FILE_CONTAINER_ID VARCHAR2(50),
-   DESTINATION_LOCATION_FILE_ID VARCHAR2(2700),
-   COMPLETION_EVENT char(1),
-   PERCENT_COMPLETE number(10),
-   DATA_SIZE number(19),
-   CREATED timestamp,
-   DESTINATION_TYPE VARCHAR2(50),
-   S3_ACCOUNT_ACCESS_KEY blob,
-   S3_ACCOUNT_SECRET_KEY blob,
-   S3_ACCOUNT_REGION VARCHAR2(50),
-   PRIORITY number(10) DEFAULT 100,
-   S3_ARCHIVE_CONFIGURATION_ID VARCHAR2(50),
-   PROCESSED timestamp,
-   GOOGLE_DRIVE_ACCESS_TOKEN blob
-)
-;
+    ID                                     VARCHAR2(50)           not null
+        primary key,
+    USER_ID                                VARCHAR2(50),
+    PATH                                   VARCHAR2(2700),
+    CONFIGURATION_ID                       VARCHAR2(50),
+    DATA_TRANSFER_REQUEST_ID               VARCHAR2(50),
+    DATA_TRANSFER_TYPE                     VARCHAR2(50),
+    DATA_TRANSFER_STATUS                   VARCHAR2(50),
+    DOWNLOAD_FILE_PATH                     VARCHAR2(2700),
+    ARCHIVE_LOCATION_FILE_CONTAINER_ID     VARCHAR2(50),
+    ARCHIVE_LOCATION_FILE_ID               VARCHAR2(2700),
+    DESTINATION_LOCATION_FILE_CONTAINER_ID VARCHAR2(50),
+    DESTINATION_LOCATION_FILE_ID           VARCHAR2(2700),
+    COMPLETION_EVENT                       CHAR,
+    PERCENT_COMPLETE                       NUMBER(10),
+    DATA_SIZE                              NUMBER(19),
+    CREATED                                TIMESTAMP(6),
+    DESTINATION_TYPE                       VARCHAR2(50),
+    S3_ACCOUNT_ACCESS_KEY                  BLOB,
+    S3_ACCOUNT_SECRET_KEY                  BLOB,
+    S3_ACCOUNT_REGION                      VARCHAR2(50),
+    PRIORITY                               NUMBER(10) default 100,
+    S3_ARCHIVE_CONFIGURATION_ID            VARCHAR2(50),
+    PROCESSED                              TIMESTAMP(6),
+    GOOGLE_DRIVE_ACCESS_TOKEN              BLOB,
+    IN_PROCESS                             CHAR       default '0' not null
+);
+
+comment on table "HPC_DATA_OBJECT_DOWNLOAD_TASK" is 'Active data object download tasks';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."ID" is 'The download task ID';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."USER_ID" is 'The user ID who submitted the download request';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."CONFIGURATION_ID" is 'The configuration ID to use in downloading the data object';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_REQUEST_ID" is 'The data transfer (S3 or Globus) request ID that is currently in progress';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_TYPE" is 'The data transfer (S3 or Globus) that is currently in progress';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_TRANSFER_STATUS" is 'The data transfer status (S3 or Globus)';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DOWNLOAD_FILE_PATH" is 'The file path used in the 2-hop download';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."ARCHIVE_LOCATION_FILE_CONTAINER_ID" is 'The archive location container ID of the data object to be downloaded';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."ARCHIVE_LOCATION_FILE_ID" is 'The archive location file ID of the data object to be downloaded';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_CONTAINER_ID" is 'The download destination container ID';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_ID" is 'The download destination file ID';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."COMPLETION_EVENT" is 'An indicator whether a completion event needs to be generated when the task is completed';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."PERCENT_COMPLETE" is 'The download task completion %';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DATA_SIZE" is 'The data object size';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."CREATED" is 'The date and time the task was created';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."DESTINATION_TYPE" is 'The download destination type - either Globus or S3';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_ACCESS_KEY" is 'The S3 destination account access key';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_SECRET_KEY" is 'The S3 destination account secret key';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ACCOUNT_REGION" is 'The S3 destination account region';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."PRIORITY" is 'The download task priority';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."S3_ARCHIVE_CONFIGURATION_ID" is 'The S3 Archive configuration ID to use if downloading from S3 Archive';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."PROCESSED" is 'The date and time the task was processed';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" is 'The Google Drive Access Token';
+comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."IN_PROCESS" is 'An indicator whether this task is in-process, i.e. a thread is working on submitting it';
+
+
 
 CREATE TABLE "IRODS"."HPC_DATA_OBJECT_REGISTRATION_RESULT"
 (
@@ -286,6 +314,14 @@ CREATE TABLE "IRODS"."HPC_USER_BOOKMARK"
    CONSTRAINT HPC_USER_BOOKMARK_pkey PRIMARY KEY (USER_ID,BOOKMARK_NAME)
 )
 ;
+comment on table "HPC_USER_BOOKMARK" is 'User bookmarks';
+comment on column "HPC_USER_BOOKMARK"."USER_ID" is 'The user ID that owns this bookmark';
+comment on column "HPC_USER_BOOKMARK"."BOOKMARK_NAME" is 'The bookmark name';
+comment on column "HPC_USER_BOOKMARK"."BOOKMARK_GROUP" is 'The bookmark group';
+comment on column "HPC_USER_BOOKMARK"."PATH" is 'The bookmark path';
+comment on column "HPC_USER_BOOKMARK"."CREATED" is 'The date / time the bookmark was created';
+comment on column "HPC_USER_BOOKMARK"."UPDATED" is 'The date / time the bookmark was updated';
+
 
 CREATE TABLE "IRODS"."HPC_USER_QUERY"
 (
