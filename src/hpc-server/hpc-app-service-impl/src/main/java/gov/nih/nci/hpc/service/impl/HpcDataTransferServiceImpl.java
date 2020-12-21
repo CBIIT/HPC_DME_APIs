@@ -2294,7 +2294,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private boolean canPerfom2HopDownload(HpcSecondHopDownload secondHopDownload) {
 		try {
 			long freeSpace = Files
-					.size(FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()));
+					.getFileStore(FileSystems.getDefault().getPath(secondHopDownload.getSourceFile().getAbsolutePath()))
+					.getUsableSpace();
 			if (secondHopDownload.getDownloadTask().getSize() > freeSpace) {
 				// Not enough space disk space to perform the first hop download. Log an error
 				// and reset the
