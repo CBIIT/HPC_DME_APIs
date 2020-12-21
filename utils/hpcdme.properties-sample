@@ -5,7 +5,7 @@ hpc.ssl.keystore.path=hpc-client/keystore/keystore-prod.jks
 hpc.ssl.keystore.password=< Configure Me >
 
 #UAT server settings
-#hpc.server.url=https://fr-s-hpcdm-uat-p.ncifcrf.gov:7738/hpc-server
+#hpc.server.url=https://fsdmel-dsapi01t.ncifcrf.gov:7738/hpc-server
 #hpc.ssl.keystore.path=hpc-client/keystore/keystore-uat.jks
 #hpc.ssl.keystore.password=< Configure Me >
 
