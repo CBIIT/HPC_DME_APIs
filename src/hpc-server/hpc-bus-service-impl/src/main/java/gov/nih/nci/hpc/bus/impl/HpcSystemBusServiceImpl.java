@@ -1943,7 +1943,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			throws HpcException {
 		for (HpcDataObject dataObject : dataObjects) {
 			String path = dataObject.getAbsolutePath();
-			logger.info("Process Temporary Archive for: {}", path);
+			logger.info("Upload data from Temporary Archive / File System for: {}", path);
 			HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
 			try {
 				// Get the data object system generated metadata.
@@ -2002,7 +2002,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				dataManagementService.addDataObjectRegistrationResult(path, systemGeneratedMetadata, true, null);
 
 			} catch (HpcException e) {
-				logger.error("Failed to transfer data from temporary archive / file system:" + path, e);
+				logger.error("Failed to transfer data from temporary archive / file system: " + path, e);
 
 				// Process the data object registration failure.
 				processDataObjectRegistrationFailure(path, e.getMessage());
