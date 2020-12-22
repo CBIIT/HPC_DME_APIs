@@ -10,6 +10,7 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Calendar;
@@ -27,6 +28,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.support.SqlLobValue;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
+import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
@@ -60,9 +64,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 	// SQL Queries.
 	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_TASK using dual on (ID = ?) "
-			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, ITEMS = ?, CREATED = ? "
-			+ "when not matched then insert (ID, USER_ID, UI_URL, STATUS, ITEMS, CREATED) "
-			+ "values (?, ?, ?, ?, ?, ?)";
+			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, CREATED = ? "
+			+ "when not matched then insert (ID, USER_ID, UI_URL, STATUS, CREATED) " + "values (?, ?, ?, ?, ?)";
+
+	private static final String UPDATE_BULK_DATA_OBJECT_REGISTRATION_TASK_ITEMS_SQL = "update HPC_BULK_DATA_OBJECT_REGISTRATION_TASK set ITEMS = ? where ID = ?";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK where ID = ?";
 
@@ -121,6 +126,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 	@Qualifier("hpcOracleJdbcTemplate")
 	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
+
+	// Lob handler
+	private LobHandler lobHandler = new DefaultLobHandler();
 
 	// HpcBulkDataObjectRegistrationTask table to object mapper.
 	private RowMapper<HpcBulkDataObjectRegistrationTask> bulkDataObjectRegistrationTaskRowMapper = (rs, rowNum) -> {
@@ -184,14 +192,17 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 				dataObjectListRegistrationTask.setId(UUID.randomUUID().toString());
 			}
 
-			String items = toJSON(dataObjectListRegistrationTask.getItems());
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL, dataObjectListRegistrationTask.getId(),
 					dataObjectListRegistrationTask.getUserId(), dataObjectListRegistrationTask.getUiURL(),
-					dataObjectListRegistrationTask.getStatus().value(), items,
-					dataObjectListRegistrationTask.getCreated(), dataObjectListRegistrationTask.getId(),
-					dataObjectListRegistrationTask.getUserId(), dataObjectListRegistrationTask.getUiURL(),
-					dataObjectListRegistrationTask.getStatus().value(), items,
+					dataObjectListRegistrationTask.getStatus().value(), dataObjectListRegistrationTask.getCreated(),
+					dataObjectListRegistrationTask.getId(), dataObjectListRegistrationTask.getUserId(),
+					dataObjectListRegistrationTask.getUiURL(), dataObjectListRegistrationTask.getStatus().value(),
 					dataObjectListRegistrationTask.getCreated());
+
+			jdbcTemplate.update(UPDATE_BULK_DATA_OBJECT_REGISTRATION_TASK_ITEMS_SQL,
+					new Object[] { new SqlLobValue(toJSON(dataObjectListRegistrationTask.getItems()), lobHandler),
+							dataObjectListRegistrationTask.getId() },
+					new int[] { Types.CLOB, Types.VARCHAR });
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a bulk data object registration request: " + e.getMessage(),
