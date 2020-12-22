@@ -240,7 +240,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 					// Metadata was not found to update. Add it.
 					collectionAO.addAVUMetadata(absolutePath, avuData);
 				}
-				// collectionAO.setAVUMetadata(absolutePath, avuData);
 			}
 
 		} catch (JargonException e) {
@@ -291,7 +290,6 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 					// Metadata was not found to update. Add it.
 					dataObjectAO.addAVUMetadata(absolutePath, avuData);
 				}
-				// dataObjectAO.setAVUMetadata(absolutePath, avuData);
 			}
 
 		} catch (JargonException e) {
