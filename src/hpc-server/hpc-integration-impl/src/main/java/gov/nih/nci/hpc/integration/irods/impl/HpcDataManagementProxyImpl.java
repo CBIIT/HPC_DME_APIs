@@ -80,6 +80,9 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	@Autowired
 	private HpcIRODSConnection irodsConnection = null;
 
+	// Default metadata unit value
+	private static String DEFAULT_METADATA_UNIT = "EMPTY_ATTR_UNIT";
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -207,7 +210,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						Optional.ofNullable(metadataEntry.getUnit()).orElse("")));
+						Optional.ofNullable(metadataEntry.getUnit()).orElse(DEFAULT_METADATA_UNIT)));
 			}
 
 			if (!avuDatas.isEmpty()) {
@@ -229,7 +232,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			CollectionAO collectionAO = irodsConnection.getCollectionAO(authenticatedToken);
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						Optional.ofNullable(metadataEntry.getUnit()).orElse(""));
+						Optional.ofNullable(metadataEntry.getUnit()).orElse(DEFAULT_METADATA_UNIT));
 				try {
 					collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 
@@ -254,7 +257,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						Optional.ofNullable(metadataEntry.getUnit()).orElse("")));
+						Optional.ofNullable(metadataEntry.getUnit()).orElse(DEFAULT_METADATA_UNIT)));
 			}
 
 			if (!avuDatas.isEmpty()) {
@@ -279,7 +282,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			DataObjectAO dataObjectAO = irodsConnection.getDataObjectAO(authenticatedToken);
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						Optional.ofNullable(metadataEntry.getUnit()).orElse(""));
+						Optional.ofNullable(metadataEntry.getUnit()).orElse(DEFAULT_METADATA_UNIT));
 				try {
 					dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 
@@ -886,7 +889,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 				metadataEntry.setAttribute(irodsMetadataEntry.getAvuAttribute());
 				metadataEntry.setValue(irodsMetadataEntry.getAvuValue());
 				String unit = irodsMetadataEntry.getAvuUnit();
-				metadataEntry.setUnit(!StringUtils.isEmpty(unit) ? unit : null);
+				metadataEntry.setUnit(!StringUtils.isEmpty(unit) && !unit.equals(DEFAULT_METADATA_UNIT) ? unit : null);
 				metadataEntries.add(metadataEntry);
 			}
 		}
