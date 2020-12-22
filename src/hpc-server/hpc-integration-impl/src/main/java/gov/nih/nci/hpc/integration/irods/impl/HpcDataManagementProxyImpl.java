@@ -210,7 +210,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						Optional.ofNullable(metadataEntry.getUnit()).orElse(DEFAULT_METADATA_UNIT)));
+						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit()
+								: DEFAULT_METADATA_UNIT));
 			}
 
 			if (!avuDatas.isEmpty()) {
@@ -257,7 +258,8 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						Optional.ofNullable(metadataEntry.getUnit()).orElse(DEFAULT_METADATA_UNIT)));
+						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit()
+								: DEFAULT_METADATA_UNIT));
 			}
 
 			if (!avuDatas.isEmpty()) {
