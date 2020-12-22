@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
@@ -206,7 +207,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						metadataEntry.getUnit()));
+						Optional.ofNullable(metadataEntry.getUnit()).orElse("")));
 			}
 
 			if (!avuDatas.isEmpty()) {
@@ -228,8 +229,15 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			CollectionAO collectionAO = irodsConnection.getCollectionAO(authenticatedToken);
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						metadataEntry.getUnit());
-				collectionAO.setAVUMetadata(absolutePath, avuData);
+						Optional.ofNullable(metadataEntry.getUnit()).orElse(""));
+				try {
+					collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
+
+				} catch (DataNotFoundException e) {
+					// Metadata was not found to update. Add it.
+					collectionAO.addAVUMetadata(absolutePath, avuData);
+				}
+				// collectionAO.setAVUMetadata(absolutePath, avuData);
 			}
 
 		} catch (JargonException e) {
@@ -246,7 +254,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				avuDatas.add(AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						metadataEntry.getUnit()));
+						Optional.ofNullable(metadataEntry.getUnit()).orElse("")));
 			}
 
 			if (!avuDatas.isEmpty()) {
@@ -271,8 +279,15 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			DataObjectAO dataObjectAO = irodsConnection.getDataObjectAO(authenticatedToken);
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						metadataEntry.getUnit());
-				dataObjectAO.setAVUMetadata(absolutePath, avuData);
+						Optional.ofNullable(metadataEntry.getUnit()).orElse(""));
+				try {
+					dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
+
+				} catch (DataNotFoundException e) {
+					// Metadata was not found to update. Add it.
+					dataObjectAO.addAVUMetadata(absolutePath, avuData);
+				}
+				// dataObjectAO.setAVUMetadata(absolutePath, avuData);
 			}
 
 		} catch (JargonException e) {
@@ -871,7 +886,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 				metadataEntry.setAttribute(irodsMetadataEntry.getAvuAttribute());
 				metadataEntry.setValue(irodsMetadataEntry.getAvuValue());
 				String unit = irodsMetadataEntry.getAvuUnit();
-				metadataEntry.setUnit(unit != null && !unit.isEmpty() ? unit : null);
+				metadataEntry.setUnit(!StringUtils.isEmpty(unit) ? unit : null);
 				metadataEntries.add(metadataEntry);
 			}
 		}
