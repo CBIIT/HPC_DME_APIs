@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Optional;
 
 import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.DuplicateDataException;
@@ -233,7 +232,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			CollectionAO collectionAO = irodsConnection.getCollectionAO(authenticatedToken);
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						Optional.ofNullable(metadataEntry.getUnit()).orElse(DEFAULT_METADATA_UNIT));
+						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
 				try {
 					collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 
@@ -284,7 +283,7 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			DataObjectAO dataObjectAO = irodsConnection.getDataObjectAO(authenticatedToken);
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						Optional.ofNullable(metadataEntry.getUnit()).orElse(DEFAULT_METADATA_UNIT));
+						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
 				try {
 					dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 
