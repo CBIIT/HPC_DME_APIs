@@ -99,12 +99,12 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_TASKS_FOR_DOC_SQL = "select TASK.* from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC= ?  "
-			+ "order by CREATED";
+			+ "order by TASK.CREATED";
 
 	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_TASKS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_TASK order by CREATED";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULTS_FOR_DOC_SQL = "select TASK.* from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT TASK, HPC_USER USER1 where USER1.USER_ID=TASK.USER_ID and USER1.DOC = ? "
-			+ "order by CREATED desc offset ? rows fetch next ? rows only";
+			+ "order by TASK.CREATED desc offset ? rows fetch next ? rows only";
 
 	private static final String GET_ALL_BULK_DATA_OBJECT_REGISTRATION_RESULTS_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT order by CREATED desc offset ? rows fetch next ? rows only";
 
