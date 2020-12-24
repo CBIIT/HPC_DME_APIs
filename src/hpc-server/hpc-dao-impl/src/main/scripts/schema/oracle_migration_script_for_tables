@@ -10,6 +10,25 @@ CREATE TABLE "IRODS"."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"
    EFFECTIVE_TRANSFER_SPEED number(10)
 )
 ;
+comment on table IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT" is 'Bulk data object registration task results';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."ID" is 'The bulk registration task ID';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."USER_ID" is 'The user ID who submitted the request';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."RESULT" is 'Task success/failure indicator';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."MESSAGE" is 'An error message if the task failed';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."ITEMS" is 'The list individual data object registrations included in this bulk registration request, in JSON format';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."CREATED" is 'The data/time the bulk registration request was submitted';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."COMPLETED" is 'The data/time the bulk registration request was completed';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."EFFECTIVE_TRANSFER_SPEED" is 'The upload effective transfer speed in bytes per second';
+
+
 
 CREATE TABLE "IRODS"."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"
 (
@@ -21,6 +40,21 @@ CREATE TABLE "IRODS"."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"
    UI_URL VARCHAR2(2000)
 )
 ;
+comment on table IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK" is 'Bulk data object registration tasks';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."ID" is 'The bulk registration task ID';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."USER_ID" is 'The user ID who submitted the request';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."STATUS" is 'The bulk registration task status';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."ITEMS" is 'The list individual data object registrations included in this bulk registration request, in JSON format';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."CREATED" is 'The data/time the bulk registration request was submitted';
+
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."UI_URL" is 'The UI URL to view the task by id';
+
+
 
 CREATE TABLE "IRODS"."HPC_CATALOG_ATTRIBUTE"
 (
@@ -29,6 +63,13 @@ CREATE TABLE "IRODS"."HPC_CATALOG_ATTRIBUTE"
    CONSTRAINT HPC_CATALOG_ATTRIBUTE_pkey PRIMARY KEY (level_label,meta_attr_name)
 )
 ;
+comment on table IRODS."HPC_CATALOG_ATTRIBUTE" is 'Catalog metadata attributes';
+
+comment on column IRODS."HPC_CATALOG_ATTRIBUTE".level_label is 'Collection level of the metadata attribute';
+
+comment on column IRODS."HPC_CATALOG_ATTRIBUTE".meta_attr_name is 'The metadata attribute name';
+
+
 
 CREATE TABLE "IRODS"."HPC_COLLECTION_DOWNLOAD_TASK"
 (
@@ -38,7 +79,7 @@ CREATE TABLE "IRODS"."HPC_COLLECTION_DOWNLOAD_TASK"
    PATH VARCHAR2(2700),
    CONFIGURATION_ID VARCHAR2(50),
    DATA_OBJECT_PATHS CLOB,
-   DESTINATION_LOCATION_FILE_CONTAINER_ID VARCHAR2(50),
+   DESTINATION_LOCATION_FILE_CONTAINER_ID VARCHAR2(200),
    DESTINATION_LOCATION_FILE_ID VARCHAR2(2700),
    DESTINATION_OVERWRITE char(1),
    S3_ACCOUNT_ACCESS_KEY blob,
@@ -55,6 +96,51 @@ CREATE TABLE "IRODS"."HPC_COLLECTION_DOWNLOAD_TASK"
    IN_PROCESS char(1) DEFAULT '0' NOT NULL
 )
 ;
+comment on table IRODS."HPC_COLLECTION_DOWNLOAD_TASK" is 'Active collection or bulk download tasks';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."ID" is 'The download task ID';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."USER_ID" is 'The user ID who submitted the download request';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."TYPE" is 'The type of the request - collection or bulk (list of data objects)';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."PATH" is 'The collection path to download';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."CONFIGURATION_ID" is 'The configuration ID to use in downloading the collection';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."DATA_OBJECT_PATHS" is 'The list of data object paths to download';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_CONTAINER_ID" is 'The download destination container ID';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_LOCATION_FILE_ID" is 'The download destination file ID';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."DESTINATION_OVERWRITE" is 'An indicator whether files at the download destination will be overwritten if they exist';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_ACCESS_KEY" is 'The S3 destination account access key';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_SECRET_KEY" is 'The S3 destination account secret key';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."S3_ACCOUNT_REGION" is 'The S3 destination account region';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."STATUS" is 'The download task status';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."ITEMS" is 'The download items included in this collection / bulk download request';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."CREATED" is 'The date and time the task was created';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."PRIORITY" is 'The download task priority';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."COLLECTION_PATHS" is 'The list of collection paths to download';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."APPEND_PATH_TO_DOWNLOAD_DESTINATION" is 'An indicator whether to use the full object path at the download destination, or file name only';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."CANCELLATION_REQUESTED" is 'A request to cancel the download was submitted';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" is 'The Google Drive Access Token';
+
+comment on column IRODS."HPC_COLLECTION_DOWNLOAD_TASK"."IN_PROCESS" is 'An indicator whether this task is in-process, i.e. individual file download tasks are submitted';
+
+
 
 CREATE TABLE "IRODS"."HPC_DATA_MANAGEMENT_AUDIT"
 (
@@ -71,6 +157,30 @@ CREATE TABLE "IRODS"."HPC_DATA_MANAGEMENT_AUDIT"
    COMPLETED timestamp NOT NULL
 )
 ;
+comment on table IRODS."HPC_DATA_MANAGEMENT_AUDIT" is 'Data management audit of collection/data-objects update and delete requests';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."USER_ID" is 'The user ID who submitted the request';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."PATH" is 'The collection or data object path';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."REQUEST_TYPE" is 'The request that is recorded for an audit';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."METADATA_BEFORE" is 'The collection/data-object metadata before the change';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."METADATA_AFTER" is 'The collection/data-object metadata after the change';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."ARCHIVE_FILE_CONTAINER_ID" is 'The data object archive file container ID';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."ARCHIVE_FILE_ID" is 'The data object archive file ID';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."DATA_MANAGEMENT_STATUS" is 'Data management (iRODS) success/fail indicator';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."DATA_TRANSFER_STATUS" is 'Data transfer (Cleversafe) success/fail indicator';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."MESSAGE" is 'Error message if the operation failed (iRODS or Cleversafe)';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_AUDIT"."COMPLETED" is 'The date/time the request was completed';
+
 
 
 CREATE TABLE "IRODS"."HPC_DATA_MANAGEMENT_CONFIGURATION"
@@ -93,6 +203,40 @@ CREATE TABLE "IRODS"."HPC_DATA_MANAGEMENT_CONFIGURATION"
    S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID VARCHAR2(50)
 )
 ;
+comment on table IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION" is 'The data management configurations supported by HPC-DME';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."ID" is 'The configuration ID';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."BASE_PATH" is 'The base path to apply this configuration to';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."DOC" is 'The DOC that own this configuration';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."DATA_HIERARCHY" is 'The data hierarchy policy';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."COLLECTION_METADATA_VALIDATION_RULES" is 'The collection metadata validation rules';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."DATA_OBJECT_METADATA_VALIDATION_RULES" is 'The data object metadata validation rules';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_URL" is 'The Globus authentication URL';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_ARCHIVE_ENDPOINT" is 'The Globus archive endpoint ID';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_ARCHIVE_PATH" is 'The Globus archive endpoint path';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_ARCHIVE_DIRECTORY" is 'The Globus archive directory (direct file system access to the endpoint)';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_ARCHIVE_TYPE" is 'The Globus archiove type (ARCHIVE or TEMPORARY_ARCHIVE)';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_DOWNLOAD_ENDPOINT" is 'The Globus download endpoint ID';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_DOWNLOAD_PATH" is 'The Globus download endpoint path';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."GLOBUS_DOWNLOAD_DIRECTORY" is 'The Globus download directory (direct file system access to the endpoint)';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_UPLOAD_ARCHIVE_CONFIGURATION_ID" is 'The S3 archive to be used for uploading new files for this DOC';
+
+comment on column IRODS."HPC_DATA_MANAGEMENT_CONFIGURATION"."S3_DEFAULT_DOWNLOAD_ARCHIVE_CONFIGURATION_ID" is 'The default (was first) S3 archive to use for downloading files for this DOC';
+
 
 
 create table HPC_DATA_OBJECT_DOWNLOAD_TASK
@@ -106,9 +250,9 @@ create table HPC_DATA_OBJECT_DOWNLOAD_TASK
     DATA_TRANSFER_TYPE                     VARCHAR2(50),
     DATA_TRANSFER_STATUS                   VARCHAR2(50),
     DOWNLOAD_FILE_PATH                     VARCHAR2(2700),
-    ARCHIVE_LOCATION_FILE_CONTAINER_ID     VARCHAR2(50),
+    ARCHIVE_LOCATION_FILE_CONTAINER_ID     VARCHAR2(200),
     ARCHIVE_LOCATION_FILE_ID               VARCHAR2(2700),
-    DESTINATION_LOCATION_FILE_CONTAINER_ID VARCHAR2(50),
+    DESTINATION_LOCATION_FILE_CONTAINER_ID VARCHAR2(200),
     DESTINATION_LOCATION_FILE_ID           VARCHAR2(2700),
     COMPLETION_EVENT                       CHAR,
     PERCENT_COMPLETE                       NUMBER(10),
@@ -152,6 +296,7 @@ comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."GOOGLE_DRIVE_ACCESS_TOKEN" is
 comment on column "HPC_DATA_OBJECT_DOWNLOAD_TASK"."IN_PROCESS" is 'An indicator whether this task is in-process, i.e. a thread is working on submitting it';
 
 
+
 CREATE TABLE "IRODS"."HPC_DATA_OBJECT_REGISTRATION_RESULT"
 (
    ID VARCHAR2(50) PRIMARY KEY NOT NULL,
@@ -163,12 +308,41 @@ CREATE TABLE "IRODS"."HPC_DATA_OBJECT_REGISTRATION_RESULT"
    EFFECTIVE_TRANSFER_SPEED number(10),
    DATA_TRANSFER_REQUEST_ID VARCHAR(50),
    SOURCE_LOCATION_FILE_ID VARCHAR2(2700),
-   SOURCE_LOCATION_FILE_CONTAINER_ID VARCHAR2(50),
+   SOURCE_LOCATION_FILE_CONTAINER_ID VARCHAR2(200),
    SOURCE_LOCATION_FILE_CONTAINER_NAME VARCHAR2(250),
    CREATED timestamp NOT NULL,
    COMPLETED timestamp NOT NULL
 )
 ;
+comment on table IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT" is 'Data object registration task results';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."ID" is 'The registered data object ID';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."PATH" is 'The registered data object path';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."USER_ID" is 'The user ID who submitted the request';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."UPLOAD_METHOD" is 'The upload method used w/ the registration request';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."RESULT" is 'Registration success/failure indicator';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."MESSAGE" is 'An error message if the registration failed';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."EFFECTIVE_TRANSFER_SPEED" is 'The upload effective transfer speed in bytes per second';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."DATA_TRANSFER_REQUEST_ID" is 'The data transfer (Globus, S3, etc) request ID';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."SOURCE_LOCATION_FILE_ID" is 'The file ID on the upload source endpoint';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."SOURCE_LOCATION_FILE_CONTAINER_ID" is 'The upload source container ID';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."SOURCE_LOCATION_FILE_CONTAINER_NAME" is 'The upload source container name';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."CREATED" is 'The data/time the bulk registration request was submitted';
+
+comment on column IRODS."HPC_DATA_OBJECT_REGISTRATION_RESULT"."COMPLETED" is 'The data/time the bulk registration request was completed';
+
+
 
 CREATE TABLE "IRODS"."HPC_DOWNLOAD_TASK_RESULT"
 (
@@ -178,7 +352,7 @@ CREATE TABLE "IRODS"."HPC_DOWNLOAD_TASK_RESULT"
    PATH VARCHAR2(2700),
    DATA_TRANSFER_REQUEST_ID VARCHAR2(50),
    DATA_TRANSFER_TYPE VARCHAR2(50),
-   DESTINATION_LOCATION_FILE_CONTAINER_ID VARCHAR2(50) NOT NULL,
+   DESTINATION_LOCATION_FILE_CONTAINER_ID VARCHAR2(200) NOT NULL,
    DESTINATION_LOCATION_FILE_ID VARCHAR2(2700),
    RESULT VARCHAR2(50) NOT NULL,
    MESSAGE VARCHAR2(4000),
@@ -192,6 +366,43 @@ CREATE TABLE "IRODS"."HPC_DOWNLOAD_TASK_RESULT"
    DESTINATION_LOCATION_FILE_CONTAINER_NAME VARCHAR2(250)
 )
 ;
+comment on table IRODS."HPC_DOWNLOAD_TASK_RESULT" is 'Download task (single file, collection, bulk) results';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."ID" is 'The download task ID';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."USER_ID" is 'The user ID who submitted the download request';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."TYPE" is 'The type of the request - data object, collection or bulk (list of data objects)';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."PATH" is 'The data object or collection path requested';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DATA_TRANSFER_REQUEST_ID" is 'The data transfer (S3 or Globus) request ID that was last used';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DATA_TRANSFER_TYPE" is 'The data transfer (S3 or Globus) that was last used';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_CONTAINER_ID" is 'The download destination container ID';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_ID" is 'The download destination file ID';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."RESULT" is 'The download task success/fail indicator';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."MESSAGE" is 'An error message in case the task failed';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."ITEMS" is 'The download items included in this collection / bulk download request';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."CREATED" is 'The date and time the task was created';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."COMPLETED" is 'The date and time the task was completed';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."EFFECTIVE_TRANSFER_SPEED" is 'The download effective transfer speed in bytes per second';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_TYPE" is 'The download destination type - either Globus or S3';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DATA_SIZE" is 'The data object size';
+
+comment on column IRODS."HPC_DOWNLOAD_TASK_RESULT"."DESTINATION_LOCATION_FILE_CONTAINER_NAME" is 'The download destination container name';
+
+
 
 CREATE TABLE "IRODS"."HPC_EVENT"
 (
@@ -202,6 +413,19 @@ CREATE TABLE "IRODS"."HPC_EVENT"
    CREATED timestamp NOT NULL
 )
 ;
+comment on table IRODS."HPC_EVENT" is 'Active events';
+
+comment on column IRODS."HPC_EVENT"."ID" is 'The event ID';
+
+comment on column IRODS."HPC_EVENT"."USER_IDS" is 'A list of user ID that are subscribed to be notified for this event';
+
+comment on column IRODS."HPC_EVENT"."TYPE" is 'The event type';
+
+comment on column IRODS."HPC_EVENT"."PAYLOAD" is 'The event payload';
+
+comment on column IRODS."HPC_EVENT"."CREATED" is 'The date/time the event was created';
+
+
 
 CREATE TABLE "IRODS"."HPC_EVENT_HISTORY"
 (
@@ -212,6 +436,19 @@ CREATE TABLE "IRODS"."HPC_EVENT_HISTORY"
    CREATED timestamp NOT NULL
 )
 ;
+comment on table IRODS."HPC_EVENT_HISTORY" is 'Event history - i.e. events that processed';
+
+comment on column IRODS."HPC_EVENT_HISTORY"."ID" is 'The event ID';
+
+comment on column IRODS."HPC_EVENT_HISTORY"."USER_IDS" is 'A list of user ID that are subscribed to be notified for this event';
+
+comment on column IRODS."HPC_EVENT_HISTORY"."TYPE" is 'The event type';
+
+comment on column IRODS."HPC_EVENT_HISTORY"."PAYLOAD" is 'The event payload';
+
+comment on column IRODS."HPC_EVENT_HISTORY"."CREATED" is 'The date/time the event was created';
+
+
 
 CREATE TABLE "IRODS"."HPC_GROUP"
 (
@@ -225,6 +462,21 @@ CREATE TABLE "IRODS"."HPC_GROUP"
     ACTIVE_UPDATED_BY VARCHAR2(250)
 )
 ;
+comment on table IRODS."HPC_GROUP" is 'HPC-DME Groups';
+
+comment on column IRODS."HPC_GROUP"."GROUP_NAME" is 'The group name';
+
+comment on column IRODS."HPC_GROUP"."CREATED" is 'The date / time the group was created';
+
+comment on column IRODS."HPC_GROUP"."LAST_UPDATED" is 'The date / time the group was updated';
+
+comment on column IRODS."HPC_GROUP"."DOC" is 'The DOC the group belongs to';
+
+comment on column IRODS."HPC_GROUP"."ACTIVE" is 'User active indicator';
+
+comment on column IRODS."HPC_GROUP"."ACTIVE_UPDATED_BY" is 'The administrator user ID that activated this group';
+
+
 
 CREATE TABLE "IRODS"."HPC_NOTIFICATION_DELIVERY_RECEIPT"
 (
@@ -236,6 +488,18 @@ CREATE TABLE "IRODS"."HPC_NOTIFICATION_DELIVERY_RECEIPT"
    CONSTRAINT HPC_NOTIFICATION_DELIVERY_RECEIPT_pkey PRIMARY KEY (EVENT_ID,USER_ID,NOTIFICATION_DELIVERY_METHOD)
 )
 ;
+comment on table IRODS."HPC_NOTIFICATION_DELIVERY_RECEIPT" is 'Notification delivery receipts - i.e. a list of all notifications the system sent out';
+
+comment on column IRODS."HPC_NOTIFICATION_DELIVERY_RECEIPT"."EVENT_ID" is 'The event ID that notification was sent for';
+
+comment on column IRODS."HPC_NOTIFICATION_DELIVERY_RECEIPT"."USER_ID" is 'The user ID that was notified';
+
+comment on column IRODS."HPC_NOTIFICATION_DELIVERY_RECEIPT"."NOTIFICATION_DELIVERY_METHOD" is 'The notification delivery method';
+
+comment on column IRODS."HPC_NOTIFICATION_DELIVERY_RECEIPT"."DELIVERY_STATUS" is 'Notification delivery success / failure indicator';
+
+comment on column IRODS."HPC_NOTIFICATION_DELIVERY_RECEIPT"."DELIVERED" is 'The data / time the delivery attempt was performed';
+
 
 
 CREATE TABLE "IRODS"."HPC_NOTIFICATION_SUBSCRIPTION"
@@ -246,6 +510,17 @@ CREATE TABLE "IRODS"."HPC_NOTIFICATION_SUBSCRIPTION"
     NOTIFICATION_DELIVERY_METHODS VARCHAR(250) NOT NULL
 )
 ;
+comment on table IRODS."HPC_NOTIFICATION_SUBSCRIPTION" is 'Notification subscriptions';
+
+comment on column IRODS."HPC_NOTIFICATION_SUBSCRIPTION"."ID" is 'The notification subscription ID';
+
+comment on column IRODS."HPC_NOTIFICATION_SUBSCRIPTION"."USER_ID" is 'The user ID that is subscribed for this notification';
+
+comment on column IRODS."HPC_NOTIFICATION_SUBSCRIPTION"."EVENT_TYPE" is 'The event type to trigger the notification';
+
+comment on column IRODS."HPC_NOTIFICATION_SUBSCRIPTION"."NOTIFICATION_DELIVERY_METHODS" is 'The delivery methods the user would like to receive notifications';
+
+
 
 CREATE UNIQUE INDEX HPC_NOTIFICATION_SUBSCRIPTION_unique ON "IRODS"."HPC_NOTIFICATION_SUBSCRIPTION"
 (
@@ -253,6 +528,8 @@ CREATE UNIQUE INDEX HPC_NOTIFICATION_SUBSCRIPTION_unique ON "IRODS"."HPC_NOTIFIC
   EVENT_TYPE
 )
 ;
+
+
 CREATE TABLE "IRODS"."HPC_NOTIFICATION_TRIGGER"
 (
    NOTIFICATION_SUBSCRIPTION_ID number(10),
@@ -264,6 +541,13 @@ ADD CONSTRAINT HPC_NOTIFICATION_TRIGGER_NOTIFICATION_SUBSCRIPTION_ID_fkey
 FOREIGN KEY (NOTIFICATION_SUBSCRIPTION_ID)
 REFERENCES "IRODS"."HPC_NOTIFICATION_SUBSCRIPTION"(ID) ON DELETE CASCADE
 ;
+comment on table IRODS."HPC_NOTIFICATION_TRIGGER" is 'Notification triggers - rules to determine if the notification needs to be sent';
+
+comment on column IRODS."HPC_NOTIFICATION_TRIGGER"."NOTIFICATION_SUBSCRIPTION_ID" is 'The notification subscription ID to apply the trigger rules';
+
+comment on column IRODS."HPC_NOTIFICATION_TRIGGER"."NOTIFICATION_TRIGGER" is 'A list of rules that operate on event payload data to determine if the notification should be sent';
+
+
 
 CREATE TABLE "IRODS"."HPC_S3_ARCHIVE_CONFIGURATION"
 (
@@ -276,6 +560,23 @@ CREATE TABLE "IRODS"."HPC_S3_ARCHIVE_CONFIGURATION"
    UPLOAD_REQUEST_URL_EXPIRATION number(10) NOT NULL
 )
 ;
+comment on table IRODS."HPC_S3_ARCHIVE_CONFIGURATION" is 'The S3 archive configurations (per DOC) supported by HPC-DME';
+
+comment on column IRODS."HPC_S3_ARCHIVE_CONFIGURATION"."ID" is 'The S3 Configuration ID';
+
+comment on column IRODS."HPC_S3_ARCHIVE_CONFIGURATION"."PROVIDER" is 'The S3 Provider - Cleversafe, Cloudian, AWS, etc';
+
+comment on column IRODS."HPC_S3_ARCHIVE_CONFIGURATION"."DATA_MANAGEMENT_CONFIGURATION_ID" is 'The DM config that own this S3 archive configuration';
+
+comment on column IRODS."HPC_S3_ARCHIVE_CONFIGURATION"."URL_OR_REGION" is 'The S3 archive URL for 3rd Party S3 Provide, or region for AWS';
+
+comment on column IRODS."HPC_S3_ARCHIVE_CONFIGURATION"."BUCKET" is 'The S3 archive bucket';
+
+comment on column IRODS."HPC_S3_ARCHIVE_CONFIGURATION"."OBJECT_ID" is 'The S3 archive object id prefix';
+
+comment on column IRODS."HPC_S3_ARCHIVE_CONFIGURATION"."UPLOAD_REQUEST_URL_EXPIRATION" is 'The expiration period (in hours) to set when S3 upload request URL is generated';
+
+
 
 CREATE TABLE "IRODS"."HPC_SYSTEM_ACCOUNT"
 (
@@ -287,6 +588,21 @@ CREATE TABLE "IRODS"."HPC_SYSTEM_ACCOUNT"
    PASSWORD blob NOT NULL
 )
 ;
+omment on table IRODS."HPC_SYSTEM_ACCOUNT" is 'System accounts';
+
+comment on column IRODS."HPC_SYSTEM_ACCOUNT"."ID" is 'PK column; the unique ID value for the system account record';
+
+comment on column IRODS."HPC_SYSTEM_ACCOUNT"."SYSTEM" is 'The system';
+
+comment on column IRODS."HPC_SYSTEM_ACCOUNT"."CLASSIFIER" is 'A classifier to be more specific at finer grainer than which system';
+
+comment on column IRODS."HPC_SYSTEM_ACCOUNT"."DATA_TRANSFER_TYPE" is 'The data transfer type (S3 for Cleversafe etc)';
+
+comment on column IRODS."HPC_SYSTEM_ACCOUNT"."USERNAME" is 'The user name';
+
+comment on column IRODS."HPC_SYSTEM_ACCOUNT"."PASSWORD" is 'The password';
+
+
 
 CREATE TABLE "IRODS"."HPC_USER"
 (
@@ -301,6 +617,27 @@ CREATE TABLE "IRODS"."HPC_USER"
    DEFAULT_CONFIGURATION_ID VARCHAR2(50)
 )
 ;
+comment on table IRODS."HPC_USER" is 'HPC-DME Users';
+
+comment on column IRODS."HPC_USER"."USER_ID" is 'The user ID';
+
+comment on column IRODS."HPC_USER"."FIRST_NAME" is 'The user first name';
+
+comment on column IRODS."HPC_USER"."LAST_NAME" is 'The user last name';
+
+comment on column IRODS."HPC_USER"."DOC" is 'The DOC the user belongs to';
+
+comment on column IRODS."HPC_USER"."CREATED" is 'The date / time the user was created';
+
+comment on column IRODS."HPC_USER"."LAST_UPDATED" is 'The date / time the user was updated';
+
+comment on column IRODS."HPC_USER"."ACTIVE" is 'User active indicator';
+
+comment on column IRODS."HPC_USER"."ACTIVE_UPDATED_BY" is 'The administrator user ID that activated this user';
+
+comment on column IRODS."HPC_USER"."DEFAULT_CONFIGURATION_ID" is 'The default configuration ID associated with the user';
+
+
 
 CREATE TABLE "IRODS"."HPC_USER_BOOKMARK"
 (
@@ -322,6 +659,7 @@ comment on column "HPC_USER_BOOKMARK"."CREATED" is 'The date / time the bookmark
 comment on column "HPC_USER_BOOKMARK"."UPDATED" is 'The date / time the bookmark was updated';
 
 
+
 CREATE TABLE "IRODS"."HPC_USER_QUERY"
 (
    USER_ID VARCHAR2(50) NOT NULL,
@@ -335,4 +673,19 @@ CREATE TABLE "IRODS"."HPC_USER_QUERY"
    CONSTRAINT HPC_USER_QUERY_pkey PRIMARY KEY (USER_ID,QUERY_NAME)
 )
 ;
+comment on table IRODS."HPC_USER_QUERY" is 'User queries';
+
+comment on column IRODS."HPC_USER_QUERY"."USER_ID" is 'The user ID that owns this query';
+
+comment on column IRODS."HPC_USER_QUERY"."QUERY" is 'The compound metadata query';
+
+comment on column IRODS."HPC_USER_QUERY"."DETAILED_RESPONSE" is 'Detailed response indicator to request when using this query';
+
+comment on column IRODS."HPC_USER_QUERY"."TOTAL_COUNT" is 'Total count parameter to set when using this query';
+
+comment on column IRODS."HPC_USER_QUERY"."QUERY_TYPE" is 'The query type - collection or data object';
+
+comment on column IRODS."HPC_USER_QUERY"."CREATED" is 'The date / time the query was created';
+
+comment on column IRODS."HPC_USER_QUERY"."UPDATED" is 'The date / time the query was updated';
 
