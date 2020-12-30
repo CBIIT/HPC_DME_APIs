@@ -196,9 +196,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
-	// TODO: Remove after Oracle migration
-	@Qualifier("hpcOracleJdbcTemplate")
-	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Lob handler

@@ -85,17 +85,17 @@
 	<bean id="hpcJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<constructor-arg ref="hpcDataSource" />
 	</bean>
-	<bean id="hpcPostgreSQLEncryptor" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEncryptor">
+	<bean id="hpcOracleEncryptor" class="gov.nih.nci.hpc.dao.oracle.impl.HpcEncryptor">
 		<constructor-arg value="***128-bit-key**" />
 	</bean>
-	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserDAOImpl" />
-	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcSystemAccountDAOImpl" />
-	<bean id="hpcDataObjectDownloadCleanupDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcDataObjectDownloadCleanupDAOImpl" />
-	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcNotificationDAOImpl" />
-	<bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcEventDAOImpl" />
-	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcReportsDAOImpl" />
-	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcMetadataDAOImpl" />
-	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.postgresql.impl.HpcUserNamedQueryDAOImpl" />
+	<bean id="hpcUserDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserDAOImpl" />
+	<bean id="hpcSystemAccountDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcSystemAccountDAOImpl" />
+	<bean id="hpcDataObjectDownloadCleanupDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataObjectDownloadCleanupDAOImpl" />
+	<bean id="hpcNotificationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcNotificationDAOImpl" />
+	<bean id="hpcEventDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcEventDAOImpl" />
+	<bean id="hpcReportDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcReportsDAOImpl" />
+	<bean id="hpcMetadataDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcMetadataDAOImpl" />
+	<bean id="hpcUserNamedQueryDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcUserNamedQueryDAOImpl" />
 	
 </beans>
 

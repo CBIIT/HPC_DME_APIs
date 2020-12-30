@@ -66,9 +66,6 @@ public class HpcEventDAOImpl implements HpcEventDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
-	// TODO: Remove after Oracle migration
-	@Qualifier("hpcOracleJdbcTemplate")
-	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
