@@ -72,9 +72,6 @@ public class HpcUserNamedQueryDAOImpl implements HpcUserNamedQueryDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
-	// TODO: Remove after Oracle migration
-	@Qualifier("hpcOracleJdbcTemplate")
-	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
