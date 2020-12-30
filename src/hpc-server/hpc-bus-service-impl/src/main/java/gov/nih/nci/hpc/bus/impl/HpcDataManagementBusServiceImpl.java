@@ -612,15 +612,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers) throws HpcException {
+	public HpcDownloadSummaryDTO getDownloadSummary(int page, boolean totalCount, boolean allUsers)
+			throws HpcException {
 		// Get the request invoker user-id.
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 		String doc = null;
 		if (allUsers) {
-		  if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
-		    doc = "ALL";
-		  else
-		    doc = securityService.getRequestInvoker().getNciAccount().getDoc();
+			if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
+				doc = "ALL";
+			else
+				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
 		}
 
 		// Populate the DTO with active and completed download requests for this user.
@@ -1047,25 +1048,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	@Override
-	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount, boolean allUsers) throws HpcException {
+	public HpcRegistrationSummaryDTO getRegistrationSummary(int page, boolean totalCount, boolean allUsers)
+			throws HpcException {
 		// Get the request invoker user-id.
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 		String doc = null;
-        if (allUsers) {
-          if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
-            doc = "ALL";
-          else
-            doc = securityService.getRequestInvoker().getNciAccount().getDoc();
-        }
-        
+		if (allUsers) {
+			if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
+				doc = "ALL";
+			else
+				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
+		}
+
 		// Populate the DTO with active and completed registration requests for this
 		// user.
-        final boolean addUserId = doc == null ? false : true;
+		final boolean addUserId = doc == null ? false : true;
 		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
-		dataManagementService.getRegistrationTasks(userId, doc)
-				.forEach(task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId)));
-		dataManagementService.getRegistrationResults(userId, page, doc).forEach(
-				result -> registrationSummary.getCompletedTasks().add(toBulkDataObjectRegistrationTaskDTO(result, addUserId)));
+		dataManagementService.getRegistrationTasks(userId, doc).forEach(
+				task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId)));
+		dataManagementService.getRegistrationResults(userId, page, doc).forEach(result -> registrationSummary
+				.getCompletedTasks().add(toBulkDataObjectRegistrationTaskDTO(result, addUserId)));
 
 		int limit = dataManagementService.getRegistrationResultsPageSize();
 		registrationSummary.setPage(page);
@@ -1073,8 +1075,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		if (totalCount) {
 			int count = registrationSummary.getCompletedTasks().size();
-			registrationSummary.setTotalCount(
-					(page == 1 && count < limit) ? count : dataManagementService.getRegistrationResultsCount(userId, doc));
+			registrationSummary.setTotalCount((page == 1 && count < limit) ? count
+					: dataManagementService.getRegistrationResultsCount(userId, doc));
 		}
 
 		return registrationSummary;
@@ -1103,8 +1105,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				metadataService.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries())));
 
 		if (includeAcl) {
-			// Set the permission
-			dataObjectDTO.setPermission(dataManagementService.getDataObjectPermission(path).getPermission());
+			// Set the permission.
+			HpcSubjectPermission subjectPermission = dataManagementService.getDataObjectPermission(path);
+			dataObjectDTO
+					.setPermission(subjectPermission != null ? subjectPermission.getPermission() : HpcPermission.NONE);
 		}
 
 		return dataObjectDTO;
@@ -1134,8 +1138,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries().getSystemMetadataEntries())));
 
 		if (includeAcl) {
-			// Set the permission
-			dataObjectDTO.setPermission(dataManagementService.getDataObjectPermission(path).getPermission());
+			// Set the permission.
+			HpcSubjectPermission subjectPermission = dataManagementService.getDataObjectPermission(path);
+			dataObjectDTO
+					.setPermission(subjectPermission != null ? subjectPermission.getPermission() : HpcPermission.NONE);
 		}
 
 		return dataObjectDTO;
@@ -1741,9 +1747,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 				// Register the parent collection.
 				registerCollection(parentCollectionPath, collectionRegistration, userId, userName, configurationId);
-				}
 			}
 		}
+	}
 
 	/**
 	 * Perform user permission requests on an entity (collection or data object)
@@ -2356,16 +2362,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Convert a bulk registration task DTO from a registration task domain object.
 	 *
-	 * @param task bulk registration task domain object to convert The data object
-	 *             path.
+	 * @param task      bulk registration task domain object to convert The data
+	 *                  object path.
 	 * @param addUserId flag to populate userId
 	 * @return a bulk registration task DTO.
 	 */
 	private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
 			HpcBulkDataObjectRegistrationTask task, boolean addUserId) {
 		HpcBulkDataObjectRegistrationTaskDTO taskDTO = new HpcBulkDataObjectRegistrationTaskDTO();
-		if(addUserId)
-		   taskDTO.setUserId(task.getUserId());
+		if (addUserId)
+			taskDTO.setUserId(task.getUserId());
 		taskDTO.setTaskId(task.getId());
 		taskDTO.setCreated(task.getCreated());
 		taskDTO.setTaskStatus(task.getStatus());
@@ -2377,15 +2383,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Return a bulk registration task DTO from a registration result domain object.
 	 *
-	 * @param result bulk registration result domain object to convert to DTO.
+	 * @param result    bulk registration result domain object to convert to DTO.
 	 * @param addUserId flag to populate userId
 	 * @return a bulk registration task DTO.
 	 */
 	private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
 			HpcBulkDataObjectRegistrationResult result, boolean addUserId) {
 		HpcBulkDataObjectRegistrationTaskDTO taskDTO = new HpcBulkDataObjectRegistrationTaskDTO();
-		if(addUserId)
-          taskDTO.setUserId(result.getUserId());
+		if (addUserId)
+			taskDTO.setUserId(result.getUserId());
 		taskDTO.setTaskId(result.getId());
 		taskDTO.setCreated(result.getCreated());
 		taskDTO.setCompleted(result.getCompleted());
@@ -2567,7 +2573,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Return 'system' default.
 		return metadataService.getDefaultCollectionMetadataEntries();
 	}
-	
+
 	/**
 	 * Check if specific path in the bulk metadata entries is exists.
 	 *

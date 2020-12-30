@@ -1,0 +1,60 @@
+{
+    "collectionType": "PI_Lab",
+    "isDataObjectContainer": false,
+
+    "subCollections": [{
+        "collectionType": "Project",
+        "isDataObjectContainer": false,
+
+        "subCollections": [{
+                "collectionType": "Platform",
+                "isDataObjectContainer": false,
+
+                "subCollections": [{
+                        "collectionType": "Run",
+                        "isDataObjectContainer": true,
+                        "subCollections": [{
+                                "collectionType": "Raw_Data",
+                                "isDataObjectContainer": true,
+                                "subCollections": [{
+                                    "collectionType": "Documentation",
+                                    "isDataObjectContainer": true
+                                }]
+                            },
+                            {
+                                "collectionType": "Preprocessed_Data",
+                                "isDataObjectContainer": true,
+                                "subCollections": [{
+                                    "collectionType": "Documentation",
+                                    "isDataObjectContainer": true
+                                }]
+                            }
+                        ]
+                    },
+                    {
+                        "collectionType": "Processed_Data",
+                        "isDataObjectContainer": true,
+
+                        "subCollections": [{
+                            "collectionType": "Documentation",
+                            "isDataObjectContainer": true
+                        }]
+                    }
+                ]
+            },
+            {
+                "collectionType": "Analysis",
+                "isDataObjectContainer": true,
+
+                "subCollections": [{
+                    "collectionType": "Documentation",
+                    "isDataObjectContainer": true
+                }]
+            },
+            {
+                "collectionType": "Metadata",
+                "isDataObjectContainer": true
+            }
+        ]
+    }]
+}

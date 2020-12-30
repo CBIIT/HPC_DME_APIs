@@ -20,7 +20,7 @@ import javax.validation.Valid;
 import gov.nih.nci.hpc.web.util.HpcCollectionUtil;
 import gov.nih.nci.hpc.web.util.HpcEncryptionUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -336,12 +336,14 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
+			attrEntry.setLevelLabel(entry.getLevelLabel());
 			attrEntry.setSystemAttr(systemAttrs.contains(entry.getAttribute()));
             attrEntry.setEncrypted(isEncryptedAttribute(entry.getAttribute(), null, rules));
            
 			if(!attrEntry.isEncrypted())
 			    model.getParentMetadataEntries().add(attrEntry);
 		}
+		
 		return model;
 	}
 	

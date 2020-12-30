@@ -9,18 +9,22 @@
  */
 package gov.nih.nci.hpc.web;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcModelBuilder;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,6 +55,8 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     protected String version;
     @Value("${app.env:}")
     protected String env;
+    @Value("${dme.token.expiration.period:120}")
+    private int tokenExpirationPeriod;
     
     @Autowired
     private HpcModelBuilder hpcModelBuilder;
@@ -71,10 +77,12 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 
 		HttpSession session = request.getSession();
 		String userId = (String) session.getAttribute("hpcUserId");
+		String smUser = request.getHeader("SM_USER");
+		Date tokenExpiration = (Date) session.getAttribute("tokenExpiration");
 
-        if (StringUtils.isBlank(userId)) {
-            //Expired session
-            userId = request.getHeader("SM_USER");
+        if (StringUtils.isBlank(userId) || StringUtils.isNotBlank(smUser) && isTokenExpired(tokenExpiration)) {
+            //Expired session or token expiration
+            userId = smUser;
 
             if (StringUtils.isBlank(userId)) {
 			    //SM Header not available, redirect to login page
@@ -107,6 +115,11 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
     	                throw new HpcAuthorizationException("You are not authorized to view this page.");
     	            }
     	            
+    	            // Calculate the token expiration date.
+    	    		Calendar tokenExpirationDate = Calendar.getInstance();
+    	    		tokenExpirationDate.add(Calendar.MINUTE, tokenExpirationPeriod);
+    	    		session.setAttribute("tokenExpiration", tokenExpirationDate.getTime());
+
     	            session.setAttribute("hpcUserId", userId);
     	            session.setAttribute("hpcUser", user);
     	            session.setAttribute("env", env);
@@ -135,5 +148,10 @@ public class HpcUserInterceptor extends HandlerInterceptorAdapter {
 	            .map(Cookie::getValue)
 	            .orElse(null);
 	    return "";
+	}
+	
+	private boolean isTokenExpired(Date tokenExpiration) {
+		// Check the expiration date.
+		return tokenExpiration == null || tokenExpiration.before(new Date());
 	}
 }

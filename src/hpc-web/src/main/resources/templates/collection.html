@@ -77,9 +77,9 @@
 				<!--Title start-->
 				<div class="row">
 					<div class="col-lg-12">
-						<h3 class="page-header">
+						<h4>
 							<i class="fa fa-folder"></i> Collection
-						</h3>
+						</h4>
 					</div>
 				</div>
 				<!--Title End-->
@@ -342,6 +342,7 @@
 									<table class="table table-bordered  col-md-12">
 										<thead>
 											<tr>
+												<th>Collection Type</th>
 												<th>Attribute Name</th>
 												<th>Value</th>
 											</tr>
@@ -349,6 +350,7 @@
 										<tbody th:if="${collection.getParentMetadataEntries() != null}">
 											<tr
 												th:each="metadataItem : ${collection.getParentMetadataEntries()}">
+												<td><label th:text="${metadataItem.getLevelLabel()}"></label></td>
 												<td><label th:text="${metadataItem.getAttrName()}"></label></td>
 												<td><label for="${metadataItem.getAttrName()}"
 													th:text="${metadataItem.getAttrValue()}"></label></td>

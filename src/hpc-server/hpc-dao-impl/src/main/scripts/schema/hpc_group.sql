@@ -1,14 +1,15 @@
 DROP TABLE IF EXISTS public."HPC_GROUP";
-create table PUBLIC."HPC_GROUP"
+
+create table irods."HPC_GROUP"
 (
-    "GROUP_NAME"                  text not null
+    "GROUP_NAME"                  VARCHAR2(250) not null
         constraint "HPC_GROUP_pkey"
             primary key,
     "CREATED"                  timestamp,
     "LAST_UPDATED"             timestamp,
-    "DOC"                      text,
-    "ACTIVE"                   boolean,
-    "ACTIVE_UPDATED_BY"        text
+    "DOC"                      VARCHAR(50),
+    "ACTIVE"                   char(1),
+    "ACTIVE_UPDATED_BY"        VARCHAR(250)
 );
 
 comment on table "HPC_GROUP" is 'HPC-DME Groups';
@@ -24,8 +25,4 @@ comment on column "HPC_GROUP"."DOC" is 'The DOC the group belongs to';
 comment on column "HPC_GROUP"."ACTIVE" is 'User active indicator';
 
 comment on column "HPC_GROUP"."ACTIVE_UPDATED_BY" is 'The administrator user ID that activated this group';
-
-
-alter table "HPC_GROUP"
-    owner to irods;
 

@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,7 +120,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	// Reports Application Service Instance
 	@Autowired
-	private HpcReportService reportsService = null;
+	private HpcReportService reportService = null;
 
 	// The collection download task executor.
 	@Autowired
@@ -533,7 +533,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				logger.error("Failed to restart data-object download task: " + downloadTask.getId(), e);
 			}
 		}
-		
+
 		// Set all in-process indicator to false;
 		dataTransferService.resetDataObjectDownloadTasksInProcess();
 	}
@@ -712,7 +712,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								logger.info("collection download task: {} - detected permission denied [{}]",
 										downloadTask.getId(), downloadTask.getType().value());
 							}
-							
+
 							if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED)) {
 								// This item failed because of credentials are needed.
 								// Cancel any pending download items (i.e. items in RECEIVED state).
@@ -991,7 +991,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Override
 	@HpcExecuteAsSystemAccount
 	public void refreshReportViews() throws HpcException {
-		reportsService.refreshViews();
+		reportService.refreshViews();
 	}
 
 	@Override
@@ -2044,9 +2044,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				if (downloadItemStatus != null && !downloadItemStatus.getInProgress()) {
 					// First download item completed. Set the abort indicator.
 					abortCollection = downloadItemStatus.getResult().getResult()
-							.equals(HpcDownloadResult.FAILED_PERMISSION_DENIED) ||
-							downloadItemStatus.getResult().getResult()
-							.equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED);
+							.equals(HpcDownloadResult.FAILED_PERMISSION_DENIED)
+							|| downloadItemStatus.getResult().getResult()
+									.equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED);
 					return abortCollection;
 				}
 			}
