@@ -1,0 +1,141 @@
+{
+   "metadataValidationRules": [{
+         "attribute": "collection_type",
+         "mandatory": true,
+         "validValues": [
+            "PI_Lab",
+            "Project",
+            "Platform",
+            "Run",
+            "Raw_Data",
+            "Preprocessed_Data",
+            "Processed_Data",
+            "Analysis",
+            "Documentation",
+            "Metadata"
+         ],
+         "ruleEnabled": true
+      },
+      {  
+            "attribute":"pi_name",
+            "mandatory":true,
+            "collectionTypes":[  
+               "PI_Lab"
+            ],
+            "ruleEnabled":true,
+            "description":"First and Last name of the PI"
+         },
+         {  
+            "attribute":"affiliation",
+            "mandatory":true,
+            "collectionTypes":[  
+               "PI_Lab"
+            ],
+            "ruleEnabled":true,
+            "description":"Organization to which the PI is affiliated"
+         },
+         {  
+            "attribute":"project_title",
+            "mandatory":true,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true,
+            "description":"Title of the project"
+         },
+         {  
+            "attribute":"project_description",
+            "mandatory":true,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true,
+            "description":"Similar to an abstract; include details such as type of patients, trial phase, target genes under study, drugs being tested"
+         },
+         {
+            "attribute":"origin",
+            "mandatory":true,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true,
+            "description":"Origin of the project"
+         },
+         {
+            "attribute":"method",
+            "mandatory":true,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true,
+            "description":"method/assay type/data type such as RNA-Seq, Chip-Seq, Exome-Seq, ATAC-Seq, Whole Genome etc"
+         },
+         {
+            "attribute":"start_date",
+            "mandatory":true,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true,
+            "description":"Start date of the project"
+         },
+         {  
+            "attribute":"summary_of_datasets",
+            "mandatory":true,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true,
+            "description":"Summarize details about the samples represented in this dataset. For example, are these cell lines or clinical samples?  How many samples and of what types per case/individual?  What is the tissue type, normal, tumor, metastasis?  What fixative methods? etc. "
+         },
+         {
+            "attribute":"organism",
+            "mandatory":true,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true,
+            "description":"Source organism e.g. Homon Sapiens (Human)"
+         },
+         {
+            "attribute":"access",
+            "mandatory":true,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "validValues":[  
+               "Closed Access",
+               "Controlled Access",
+               "Open Access"
+            ],
+            "ruleEnabled":true,
+            "description":"<b>Closed access</b>:  data catalog entry will not be exposed.<br/>
+<b>Controlled access</b>: data catalog entry will be exposed; access to full data sets is by permission only.<br/>
+<b>Open access</b>: data catalog entry will be exposed; access to full data does not require permission."
+         },
+          {  
+            "attribute":"project_affiliation",
+            "mandatory":false,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true
+         },
+         {  
+            "attribute":"project_poc",
+            "mandatory":false,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true
+         },
+         {  
+            "attribute":"publication_status",
+            "mandatory":false,
+            "collectionTypes":[  
+               "Project"
+            ],
+            "ruleEnabled":true
+         }
+   ]
+}

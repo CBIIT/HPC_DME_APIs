@@ -3,7 +3,7 @@ package gov.nih.nci.hpc.web.model;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.cxf.xjc.runtime.JAXBToStringStyle;
 
 import gov.nih.nci.hpc.domain.metadata.HpcCompoundMetadataQuery;

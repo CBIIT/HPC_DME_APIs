@@ -690,8 +690,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			return dataHierarchy.getIsDataObjectContainer();
 		else {
 			List<HpcDataHierarchy> subs = dataHierarchy.getSubCollectionsHierarchies();
-			for (HpcDataHierarchy sub : subs)
-				return isDataObjectContainer(collectionType, sub);
+			for (HpcDataHierarchy sub : subs) {
+				if(isDataObjectContainer(collectionType, sub))
+					return true;
+			}
 		}
 		return false;
 	}
@@ -791,7 +793,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		if (collectionType != null && !collectionType.isEmpty())
 			model.addAttribute("collection_type", collectionType);
 		else
-			model.addAttribute("collection_type", "Folder");
+			model.addAttribute("collection_type", "_select_null");
 
 		// if (!path.isEmpty())
 		// model.addAttribute("collectionPath", path);

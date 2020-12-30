@@ -13,9 +13,11 @@ package gov.nih.nci.hpc.service.impl;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import gov.nih.nci.hpc.domain.databrowse.HpcBookmark;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;

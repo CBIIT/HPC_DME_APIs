@@ -6,6 +6,7 @@ public class HpcMetadataAttrEntry {
 	private String attrName;
 	private String attrValue;
 	private String attrUnit;
+	private String levelLabel;
 	private boolean systemAttr;
 	private boolean encrypted;
 	private boolean mandatory;
@@ -53,6 +54,14 @@ public class HpcMetadataAttrEntry {
 
 	public void setAttrUnit(String attrUnit) {
 		this.attrUnit = attrUnit;
+	}
+
+	public String getLevelLabel() {
+		return levelLabel;
+	}
+
+	public void setLevelLabel(String levelLabel) {
+		this.levelLabel = levelLabel;
 	}
 
 	public boolean isSystemAttr() {
