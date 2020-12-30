@@ -22,17 +22,6 @@
 
 	<!-- HPC Application Services OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-		<!-- TODO: Remove after Oracle migration -->
-		<prop key="hpc.dao.postgresql.dbName">postgres</prop>
-		<prop key="hpc.dao.postgresql.host">localhost</prop>
-		<prop key="hpc.dao.postgresql.port">5432</prop>
-		<prop key="hpc.dao.postgresql.username">postgres</prop>
-		<prop key="hpc.dao.postgresql.password">pwd</prop>
-		<prop key="hpc.dao.postgresql.url">jdbc:postgresql://${hpc.dao.postgresql.host}:${hpc.dao.postgresql.port}/${hpc.dao.postgresql.dbName}</prop>
-		<prop key="hpc.dao.postgresql.maxActive">8</prop>
-		<prop key="hpc.dao.postgresql.encryptor.key">***128-bit-key**</prop>
-		<!-- TODO: END -->
-		
 		<prop key="hpc.dao.oracle.dbName">icat</prop>
 		<prop key="hpc.dao.oracle.host">fr-s-oracle-da.ncifcrf.gov</prop>
 		<prop key="hpc.dao.oracle.port">1524</prop>

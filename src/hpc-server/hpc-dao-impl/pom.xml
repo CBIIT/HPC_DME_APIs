@@ -34,15 +34,9 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Export-Package />
 						<Private-Package>
-							<!-- TODO: Remove after Oracle migration -->
-							gov.nih.nci.hpc.dao.postgresql.impl,
-							<!--  TODO: END -->
 							gov.nih.nci.hpc.dao.oracle.impl
 						</Private-Package>
 						<Import-Package>
-							<!-- TODO: Remove after Oracle migration -->
-							org.postgresql,
-							<!-- TODO: END -->
 							oracle.jdbc.driver,
 							*
 						</Import-Package>
@@ -69,12 +63,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		<!-- TODO: Remove after Oracle migration -->
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
-		<!-- TODO: END -->
 		<dependency>
    			<groupId>com.oracle.database.jdbc</groupId>
     		<artifactId>ojdbc8</artifactId>

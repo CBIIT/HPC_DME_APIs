@@ -274,9 +274,6 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
-	// TODO: Remove after Oracle migration
-	@Qualifier("hpcOracleJdbcTemplate")
-	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
 	// The logger instance.
