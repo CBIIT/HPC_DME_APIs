@@ -1624,7 +1624,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 */
 	private Long validateUploadSourceFileLocation(HpcUploadSource globusUploadSource,
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
-			HpcUploadSource fileSystemploadSource, File sourceFile, String configurationId) throws HpcException {
+			HpcUploadSource fileSystemUploadSource, File sourceFile, String configurationId) throws HpcException {
 		if (sourceFile != null) {
 			return sourceFile.length();
 		}
@@ -1650,8 +1650,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			pathAttributes = getPathAttributes(googleDriveUploadSource.getAccessToken(),
 					googleDriveUploadSource.getSourceLocation(), true);
 
-		} else if (fileSystemploadSource != null) {
-			sourceFileLocation = fileSystemploadSource.getSourceLocation();
+		} else if (fileSystemUploadSource != null) {
+			sourceFileLocation = fileSystemUploadSource.getSourceLocation();
 			pathAttributes = getPathAttributes(sourceFileLocation);
 
 		} else {
