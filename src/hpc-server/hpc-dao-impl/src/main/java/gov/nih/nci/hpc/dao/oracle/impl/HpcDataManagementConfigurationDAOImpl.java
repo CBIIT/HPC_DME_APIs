@@ -56,9 +56,6 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 
 	// The Spring JDBC Template instance.
 	@Autowired
-	// TODO: Remove after Oracle migration
-	@Qualifier("hpcOracleJdbcTemplate")
-	// TODO: END
 	private JdbcTemplate jdbcTemplate = null;
 
 	// HpcDataManagementConfiguration Table to Object mapper.
