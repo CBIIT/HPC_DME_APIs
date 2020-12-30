@@ -23,10 +23,10 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_RE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STARTED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_TYPE_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DME_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ID_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.METADATA_UPDATED_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.REGISTRAR_NAME_ATTRIBUTE;
@@ -36,6 +36,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
@@ -63,8 +65,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
+
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
-import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
@@ -97,7 +99,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
-	//The Data Management Service
+	// The Data Management Service
 	@Autowired
 	private HpcDataManagementService dataManagementService = null;
 
@@ -203,15 +205,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
 
-
 		// Generate a UUID and add it as metadata.
 		metadataEntries.add(generateIdMetadata());
 
-
-		HpcCollection hpcCollection = dataManagementService.getCollection(path, false);
-		int collectionId = hpcCollection.getCollectionId();
-		metadataEntries.add(generateDmeIdMetadata(collectionId));
-
+		// Generate and add DME ID metadata.
+		metadataEntries.add(generateDmeIdMetadata(dataManagementService.getCollection(path, false).getCollectionId()));
 
 		// Create the Metadata-Updated metadata.
 		metadataEntries.add(generateMetadataUpdatedMetadata());
@@ -798,17 +796,15 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		return toMetadataEntry(ID_ATTRIBUTE, keyGenerator.generateKey());
 	}
 
-
 	/**
 	 * Generate the global DME ID metadata.
-	 *
+	 * 
+	 * @param collectionId The (iRODs) collection ID.
 	 * @return The Generated global DME ID metaData
 	 */
 	private HpcMetadataEntry generateDmeIdMetadata(int collectionId) {
 		return toMetadataEntry(DME_ID_ATTRIBUTE, "NCI-DME-MS01-" + collectionId);
 	}
-
-
 
 	/**
 	 * Generate Metadata Updated Metadata.
