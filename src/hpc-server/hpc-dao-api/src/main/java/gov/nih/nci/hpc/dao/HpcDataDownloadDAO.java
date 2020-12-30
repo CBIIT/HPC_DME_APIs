@@ -121,8 +121,8 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Set a data object download task processed value.
 	 *
-	 * @param id         The data object download task ID.
-	 * @param processewd The processed time.
+	 * @param id        The data object download task ID.
+	 * @param processed The processed time.
 	 * @throws HpcException on database error.
 	 */
 	public void setDataObjectDownloadTaskProcessed(String id, Calendar processed) throws HpcException;
@@ -219,7 +219,7 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Reset a collection download task in-process value.
 	 *
-	 * @param id        The collection download task ID.
+	 * @param id The collection download task ID.
 	 * @throws HpcException on database error.
 	 */
 	public void resetCollectionDownloadTaskInProcess(String id) throws HpcException;
