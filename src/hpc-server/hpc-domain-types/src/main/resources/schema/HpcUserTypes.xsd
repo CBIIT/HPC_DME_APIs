@@ -23,6 +23,7 @@
 			<xsd:enumeration value="IRODS" />
 			<xsd:enumeration value="CLEVERSAFE" />
 			<xsd:enumeration value="LDAP" />
+			<xsd:enumeration value="ORACLE" />
 			<xsd:enumeration value="POSTGRESQL" />
 			<xsd:enumeration value="CLOUDIAN" />
 			<xsd:enumeration value="AWS" />

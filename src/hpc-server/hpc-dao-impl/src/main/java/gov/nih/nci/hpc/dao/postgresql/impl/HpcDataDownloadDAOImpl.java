@@ -27,6 +27,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -186,7 +187,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "null as \"RESULT\", null as \"ITEMS\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" TASK, public.\"HPC_USER\" USER1 where USER1.\"USER_ID\"=TASK.\"USER_ID\" and "
 			+ "USER1.\"DOC\"= ? and \"COMPLETION_EVENT\" = true order by \"CREATED\"";
 
-	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select \"ID\", \"PATH\", \"CREATED\", 'DATA_OBJECT' as \"TYPE\", null as \"COMPLETED\", "
+	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_REQUESTS_SQL = "select \"USER_ID\", \"ID\", \"PATH\", \"CREATED\", 'DATA_OBJECT' as \"TYPE\", null as \"COMPLETED\", "
 			+ "null as \"RESULT\", null as \"ITEMS\" from public.\"HPC_DATA_OBJECT_DOWNLOAD_TASK\" where "
 			+ "\"COMPLETION_EVENT\" = true order by \"CREATED\"";
 
@@ -227,6 +228,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	// The Spring JDBC Template instance.
 	@Autowired
+	@Qualifier("hpcPostgreSQLJdbcTemplate")
 	private JdbcTemplate jdbcTemplate = null;
 
 	// Encryptor.
