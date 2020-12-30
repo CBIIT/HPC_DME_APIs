@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -122,6 +122,11 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
                 HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
                 
 				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
+				
+				if (dataFile.getPermission().equals(HpcPermission.NONE)) {
+					throw new HpcWebException(
+				            "You do not have READ access to " + path + ".");
+				}
 				
 				HpcDatafileModel hpcDatafile = buildHpcDataObject(dataFile,
 						modelDTO.getDataObjectSystemGeneratedMetadataAttributeNames(), basePathRules.getCollectionMetadataValidationRules());
@@ -294,6 +299,7 @@ public class HpcDatafileController extends HpcCreateCollectionDataFileController
 			attrEntry.setAttrName(entry.getAttribute());
 			attrEntry.setAttrValue(entry.getValue());
 			attrEntry.setAttrUnit(entry.getUnit());
+			attrEntry.setLevelLabel(entry.getLevelLabel());
 			attrEntry.setSystemAttr(systemAttrs.contains(entry.getAttribute()));
             attrEntry.setEncrypted(isEncryptedAttribute(entry.getAttribute(), null, rules));
            

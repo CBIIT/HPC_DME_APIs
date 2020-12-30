@@ -131,6 +131,7 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
   $scope.selectedRows = [];
   $scope.currentPage = currentPage;
   $scope.source = source;
+  $scope.tableHeight = 'height: 600px';
 
   $scope.selectAll = function() {
   	$scope.gridApi.selection.selectAllRows();
@@ -140,6 +141,30 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
   	$scope.gridApi.treeBase.expandAllRows();
   };
 
+  function getTableHeight(totalPage, currentPage, pageSize, dataLen) {  
+	    var rowHeight = 30; // row height  
+	    var headerHeight = 60; // header height  
+	    var footerHeight = 60; // bottom scroll bar height  
+	    var totalH = 0;  
+	    if (totalPage > 1) {  
+	        if (currentPage < totalPage) {  
+	            totalH = pageSize * rowHeight + headerHeight + footerHeight;  
+	        } else {  
+	            var lastPageSize = dataLen % pageSize;  
+	            if (lastPageSize === 0) {  
+	                totalH = pageSize * rowHeight + headerHeight + footerHeight;  
+	            } else {  
+	                totalH = lastPageSize * rowHeight + headerHeight + footerHeight;  
+	            }  
+	        }  
+	        console.log(totalH);  
+	    } else {  
+	        totalH = dataLen * rowHeight + headerHeight + footerHeight;  
+	    }  
+	    return 'height: ' + (totalH) + 'px';  
+	  }  
+
+
   $scope.gridOptions1.onRegisterApi = function(gridApi) {
           //set gridApi on scope
           $scope.gridApi = gridApi;
@@ -147,7 +172,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
             $scope.currentPage = currentPage;
             $scope.totalRows = totalRows;
             $scope.currentPageSize = currentPageSize;
-      
+            $scope.tableHeight = getTableHeight($scope.totalPage, $scope.currentPage, $scope.pageSize, $scope.gridOptions1.data.length); 
+            
       $interval(function() {
           if(hpcSelectedDatafileList != null)
           {
@@ -341,14 +367,6 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 /*]]>*/
 </script>
 
-<style>
-/*style.css*/
-.gridStyle {
-	border: 1px solid rgb(212, 212, 212);
-	width: 800px;
-	height: 400px
-}
-</style>
 </head>
 <body th:attr="ng-init='searchresults=\'' + ${searchresults} +'\''">
 	<section id="container" class="">
@@ -359,9 +377,9 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 				<!--Title start-->
 				<div class="row">
 					<div class="col-lg-12">
-						<h3 class="page-header">
+						<h4>
 							<i class="fa fa-search"></i> Search
-						</h3>
+						</h4>
 					</div>
 				</div>
 				<!--Title End-->
@@ -418,7 +436,8 @@ app.controller('MainCtrl', ['$scope', '$http', '$interval', 'uiGridGroupingConst
 								<div ng-controller="MainCtrl">
 									<div id="grid1" ui-grid="gridOptions1" ui-grid-exporter="true" ui-grid-cellNav="true"
 										ui-grid-pagination="true" ui-grid-grouping="true"
-										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true"></div>
+										ui-grid-resize-columns="true" ui-grid-move-columns="true" ui-grid-selection="true"
+										style="{{tableHeight}}"></div>
 								</div>
 							</div>
 						</div>

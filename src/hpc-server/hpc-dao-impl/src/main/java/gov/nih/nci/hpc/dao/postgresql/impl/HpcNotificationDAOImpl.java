@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -109,6 +110,7 @@ public class HpcNotificationDAOImpl implements HpcNotificationDAO
 	
 	// The Spring JDBC Template instance.
 	@Autowired
+	@Qualifier("hpcPostgreSQLJdbcTemplate")
 	private JdbcTemplate jdbcTemplate = null;
 	
 	// Row mappers.
