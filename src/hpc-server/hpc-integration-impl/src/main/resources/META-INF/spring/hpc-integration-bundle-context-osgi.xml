@@ -23,7 +23,7 @@
 
 	<!-- HPC Integration OSGi Properties -->
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
-	      <prop key="hpc.integration.irods.host">fr-s-hpcdm-gp-d.ncifcrf.gov</prop>
+	      <prop key="hpc.integration.irods.host">fsdmel-irods01d.ncifcrf.gov</prop>
 	      <prop key="hpc.integration.irods.port">1247</prop>
 	      <prop key="hpc.integration.irods.zone">tempZone</prop>
 	      <prop key="hpc.integration.irods.resource">demoResc</prop>
