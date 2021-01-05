@@ -275,6 +275,24 @@ public class HpcMetadataValidator {
             "Missing mandatory metadata: " + metadataValidationRule.getAttribute(),
             HpcErrorType.INVALID_REQUEST_INPUT);
       }
+      
+    //Check if there is a dependency on a controllerAttribute and that exists
+      String controllerAttribute = metadataValidationRule.getControllerAttribute();
+      if(!StringUtils.isEmpty(controllerAttribute) && 
+    		  metadataEntriesMap.containsKey(controllerAttribute)) {
+    	  //A controller attribute exists, hence this attribute should be present if 
+    	  //- no required value is defined for this controller attribute,
+    	  //- or a required value is defined and that value is present 
+    	  String controllerValue = metadataValidationRule.getControllerValue();
+    	  if((StringUtils.isEmpty(controllerValue) || 
+              metadataEntriesMap.get(controllerAttribute).matches(controllerValue)) &&
+    		  (!metadataEntriesMap.containsKey(metadataValidationRule.getAttribute()))) {   		  
+    		      throw new HpcException(
+    		      "Missing controlled metadata: " + metadataValidationRule.getAttribute(),
+    		      HpcErrorType.INVALID_REQUEST_INPUT);
+    			  
+    	  } 
+      }
 
       // Validate the metadata value is valid.
       if (metadataValidationRule.getValidValues() != null
