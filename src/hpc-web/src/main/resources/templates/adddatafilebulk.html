@@ -757,6 +757,7 @@
 			globusHelpLinksDiv.style.display = "none";
 			$(".drive").addClass("hidden");
 			$("#primaryCreateButton").prop("disabled", false);
+			$("#dryRunButton").prop("disabled", false);
 			$(".s3").removeClass("hidden");
 		} else if (value == "drive"){
 			$(".s3").addClass("hidden");
@@ -765,9 +766,11 @@
 			$(".drive").removeClass("hidden");
 			if(authorized != null) {
 				$("#primaryCreateButton").prop('disabled', false);
+				$("#dryRunButton").prop('disabled', false);
 				$("#driveAuthlink").addClass('disabled');
 			} else {
 				$("#primaryCreateButton").prop('disabled', true);
+				$("#dryRunButton").prop('disabled', true);
 			}
 		}
 	}
