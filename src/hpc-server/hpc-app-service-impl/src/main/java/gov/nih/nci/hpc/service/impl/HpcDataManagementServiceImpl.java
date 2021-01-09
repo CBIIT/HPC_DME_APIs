@@ -1015,15 +1015,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		if (registrationRequest.getGoogleDriveUploadSource() != null) {
 			uploadSourceCount++;
 		}
+		if (registrationRequest.getFileSystemUploadSource() != null) {
+			uploadSourceCount++;
+		}
 		if (registrationRequest.getLinkSourcePath() != null) {
 			uploadSourceCount++;
 		}
 		if (uploadSourceCount > 1) {
-			throw new HpcException("Multiple (Globus/S3/Google Drive/Link) upload source provided for: " + path,
+			throw new HpcException(
+					"Multiple (Globus/S3/Google Drive/File System/Link) upload source provided for: " + path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if (uploadSourceCount == 0) {
-			throw new HpcException("No Globus/S3/Google Drive/Link upload source provided for: " + path,
+			throw new HpcException("No Globus/S3/Google Drive/File System/Link upload source provided for: " + path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -1053,6 +1057,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				throw new HpcException("Invalid Google Drive account in registration request for: " + path,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
+		}
+
+		if (registrationRequest.getFileSystemUploadSource() != null
+				&& !isValidFileLocation(registrationRequest.getFileSystemUploadSource().getSourceLocation())) {
+			throw new HpcException("Invalid File System upload source in registration request for: " + path,
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 	}
 }

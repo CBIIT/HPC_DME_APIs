@@ -19,16 +19,21 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -159,10 +164,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	// The max sync download file size.
 	@Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
-	Long maxSyncDownloadFileSize = null;
+	private Long maxSyncDownloadFileSize = null;
 
 	// cancelCollectionDownloadTaskItems() query filter
-	List<HpcDataObjectDownloadTaskStatusFilter> cancelCollectionDownloadTaskItemsFilter = new ArrayList<>();
+	private List<HpcDataObjectDownloadTaskStatusFilter> cancelCollectionDownloadTaskItemsFilter = new ArrayList<>();
+
+	// Date formatter to format files last-modified date
+	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -189,7 +197,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		this.downloadDirectory = downloadDirectory;
 
 		// Instantiate the cancel collection download items query filter.
-		// We cancel any collection task item that is in RTECEIVED state, or a task that
+		// We cancel any collection task item that is in RECEIVED state, or a task that
 		// is IN_PROGRESS
 		// to GLOBUS destination.
 		HpcDataObjectDownloadTaskStatusFilter filter = new HpcDataObjectDownloadTaskStatusFilter();
@@ -625,6 +633,39 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) throws HpcException {
+		// Input validation.
+		if (!isValidFileLocation(fileLocation)) {
+			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		try {
+			HpcPathAttributes pathAttributes = new HpcPathAttributes();
+			pathAttributes.setIsDirectory(false);
+			pathAttributes.setIsFile(false);
+			pathAttributes.setSize(0);
+			pathAttributes.setIsAccessible(true);
+
+			Path path = FileSystems.getDefault().getPath(fileLocation.getFileId());
+			pathAttributes.setExists(Files.exists(path));
+			if (pathAttributes.getExists()) {
+				pathAttributes.setIsAccessible(Files.isReadable(path));
+				pathAttributes.setIsDirectory(Files.isDirectory(path));
+				pathAttributes.setIsFile(Files.isRegularFile(path));
+			}
+			if (pathAttributes.getIsFile()) {
+				pathAttributes.setSize(Files.size(path));
+			}
+
+			return pathAttributes;
+
+		} catch (IOException e) {
+			throw new HpcException("Failed to get local file attributes: [" + e.getMessage() + "] " + fileLocation,
+					HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
+	}
+
+	@Override
 	public List<HpcDirectoryScanItem> scanDirectory(HpcDataTransferType dataTransferType, HpcS3Account s3Account,
 			String googleDriveAccessToken, HpcFileLocation directoryLocation, String configurationId,
 			String s3ArchiveConfigurationId, List<String> includePatterns, List<String> excludePatterns,
@@ -633,31 +674,43 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (!HpcDomainValidator.isValidFileLocation(directoryLocation)) {
 			throw new HpcException("Invalid directory location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		if (!dataTransferType.equals(HpcDataTransferType.S_3) && s3Account != null) {
-			throw new HpcException("S3 account provided for Non S3 data transfer", HpcErrorType.UNEXPECTED_ERROR);
-		}
-		if (!dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE)
-				&& !StringUtils.isEmpty(googleDriveAccessToken)) {
-			throw new HpcException("Google Drive access token provided for Non Google Drive data transfer",
-					HpcErrorType.UNEXPECTED_ERROR);
-		}
-
-		// If an S3 account or Google Drive access token was provided, then we use it to
-		// get
-		// authenticated token,
-		// otherwise, we use a system account token.
-		Object authenticatedToken = null;
-		if (s3Account != null) {
-			authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(s3Account);
-		} else if (!StringUtils.isEmpty(googleDriveAccessToken)) {
-			authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(googleDriveAccessToken);
+		if (dataTransferType == null) {
+			if ((!StringUtils.isEmpty(googleDriveAccessToken) || s3Account != null
+					|| !StringUtils.isEmpty(s3ArchiveConfigurationId))) {
+				throw new HpcException("S3 account / Google Drive token provided File System scan",
+						HpcErrorType.UNEXPECTED_ERROR);
+			}
 		} else {
-			authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
+			if (!dataTransferType.equals(HpcDataTransferType.S_3) && s3Account != null) {
+				throw new HpcException("S3 account provided for Non S3 data transfer", HpcErrorType.UNEXPECTED_ERROR);
+			}
+			if (!dataTransferType.equals(HpcDataTransferType.GOOGLE_DRIVE)
+					&& !StringUtils.isEmpty(googleDriveAccessToken)) {
+				throw new HpcException("Google Drive access token provided for Non Google Drive data transfer",
+						HpcErrorType.UNEXPECTED_ERROR);
+			}
 		}
+		List<HpcDirectoryScanItem> scanItems = null;
+		if (dataTransferType == null) {
+			// Scan a directory in local DME server NAS.
+			scanItems = scanDirectory(directoryLocation);
+		} else {
+			// Globus / S3 / Google Drive scan.
 
-		// Scan the directory to get a list of all files.
-		List<HpcDirectoryScanItem> scanItems = dataTransferProxies.get(dataTransferType)
-				.scanDirectory(authenticatedToken, directoryLocation);
+			// If an S3 account or Google Drive access token was provided, then we use it to
+			// get authenticated token, otherwise, we use a system account token.
+			Object authenticatedToken = null;
+			if (s3Account != null) {
+				authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(s3Account);
+			} else if (!StringUtils.isEmpty(googleDriveAccessToken)) {
+				authenticatedToken = dataTransferProxies.get(dataTransferType).authenticate(googleDriveAccessToken);
+			} else {
+				authenticatedToken = getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId);
+			}
+
+			// Scan the directory to get a list of all files.
+			scanItems = dataTransferProxies.get(dataTransferType).scanDirectory(authenticatedToken, directoryLocation);
+		}
 
 		// Filter the list based on provided patterns.
 		filterScanItems(scanItems, includePatterns, excludePatterns, patternType, dataTransferType);
@@ -1876,10 +1929,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			throw new HpcException("Null directory scan pattern type", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// If Globus performed the directory scan, then all the items start with '/'.
+		// If Globus performed the directory scan or scan on local DME server NAS, then
+		// all the items start with '/'.
 		// We will make sure the pattern also starts with '/'. S3 items don't start with
 		// '/'
-		boolean prefixPattern = dataTransferType.equals(HpcDataTransferType.GLOBUS);
+		boolean prefixPattern = dataTransferType == null || dataTransferType.equals(HpcDataTransferType.GLOBUS);
 
 		// Compile include patterns.
 		List<Pattern> compiledIncludePatterns = pattern.compile(includePatterns, patternType, prefixPattern);
@@ -2420,43 +2474,38 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return transferAcceptanceResponse.canAcceptTransfer();
 	}
 
-	/**
-	 * Get path attributes of local file (on the DME server file system)
+	/*
+	 * Scan a directory on a local DME server NAS
 	 *
-	 * @param fileLocation The local file location
-	 * @return The path attributes
-	 * @throws HpcException on service failure.
+	 * @param directoryLocation The directory to scan.
+	 * 
+	 * @return a list of scanned directory items.
+	 * 
+	 * @throw HpcException On internal error
 	 */
-	private HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) throws HpcException {
-		// Input validation.
-		if (!isValidFileLocation(fileLocation)) {
-			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
+	private List<HpcDirectoryScanItem> scanDirectory(HpcFileLocation directoryLocation) throws HpcException {
+		List<HpcDirectoryScanItem> directoryScanItems = new ArrayList<>();
 
-		try {
-			HpcPathAttributes pathAttributes = new HpcPathAttributes();
-			pathAttributes.setIsDirectory(false);
-			pathAttributes.setIsFile(false);
-			pathAttributes.setSize(0);
-			pathAttributes.setIsAccessible(true);
-
-			Path path = FileSystems.getDefault().getPath(fileLocation.getFileId());
-			pathAttributes.setExists(Files.exists(path));
-			if (pathAttributes.getExists()) {
-				pathAttributes.setIsAccessible(Files.isReadable(path));
-				pathAttributes.setIsDirectory(Files.isDirectory(path));
-				pathAttributes.setIsFile(Files.isRegularFile(path));
+		try (Stream<Path> pathsStream = Files.walk(Paths.get(directoryLocation.getFileId()))
+				.filter(Files::isRegularFile)) {
+			Iterator<Path> pathsIter = pathsStream.iterator();
+			while (pathsIter.hasNext()) {
+				Path path = pathsIter.next();
+				HpcDirectoryScanItem directoryScanItem = new HpcDirectoryScanItem();
+				directoryScanItem.setFilePath(path.toString());
+				directoryScanItem.setFileName(path.getFileName().toString());
+				directoryScanItem
+						.setLastModified(dateFormat.format(new Date(Files.getLastModifiedTime(path).toMillis())));
+				directoryScanItems.add(directoryScanItem);
 			}
-			if (pathAttributes.getIsFile()) {
-				pathAttributes.setSize(Files.size(path));
-			}
-
-			return pathAttributes;
 
 		} catch (IOException e) {
-			throw new HpcException("Failed to get local file attributes: [" + e.getMessage() + "] " + fileLocation,
-					HpcErrorType.INVALID_REQUEST_INPUT, e);
+			throw new HpcException(
+					"Failed to scan a directory in the file system: [" + e.getMessage() + "] " + directoryLocation,
+					HpcErrorType.UNEXPECTED_ERROR, e);
 		}
+
+		return directoryScanItems;
 	}
 
 	private String token2String(Object pToken) {

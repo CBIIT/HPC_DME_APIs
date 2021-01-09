@@ -158,7 +158,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:complexType name="HpcGlobusScanDirectory">
+	<xsd:complexType name="HpcScanDirectory">
 		<xsd:sequence>
 			<xsd:element name="directoryLocation"
 				type="hpc-domain-datatransfer:HpcFileLocation" />
