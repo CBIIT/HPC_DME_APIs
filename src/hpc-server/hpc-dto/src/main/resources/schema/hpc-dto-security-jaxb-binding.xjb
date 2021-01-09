@@ -87,8 +87,8 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcStreamingUploadSource']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource" />
       </jxb:bindings>
-      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusScanDirectory']">
-         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory" />
+      <jxb:bindings node="//xsd:complexType[@name='HpcScanDirectory']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory" />
       </jxb:bindings>
       <jxb:bindings node="//xsd:complexType[@name='HpcS3ScanDirectory']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory" />

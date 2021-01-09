@@ -282,9 +282,20 @@ public interface HpcDataTransferService {
 			throws HpcException;
 
 	/**
+	 * Get path attributes of local file (on the DME server file system)
+	 *
+	 * @param fileLocation The local file location
+	 * @return The path attributes
+	 * @throws HpcException on service failure.
+	 */
+	public HpcPathAttributes getPathAttributes(HpcFileLocation fileLocation) throws HpcException;
+
+	/**
 	 * Scan a directory (recursively) and return a list of all its files.
 	 *
-	 * @param dataTransferType         The data transfer type.
+	 * @param dataTransferType         (Optional) The data transfer type. If null, a
+	 *                                 directory on the local DME server NAS is
+	 *                                 scanned.
 	 * @param s3Account                (Optional) S3 account to use.
 	 * @param googleDriveAccessToken   (Optional) Google Drive access-token to use.
 	 * @param directoryLocation        The endpoint/directory to scan and get a list

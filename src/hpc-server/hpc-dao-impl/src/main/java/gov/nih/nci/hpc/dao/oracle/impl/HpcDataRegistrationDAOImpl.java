@@ -23,7 +23,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -498,6 +497,14 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 				}
 				jsonRequest.put("googleDriveUploadSource", jsonGoogleDriveUploadSource);
 			}
+			if (request.getFileSystemUploadSource() != null) {
+				JSONObject jsonFileSystemUploadSource = new JSONObject();
+				HpcUploadSource fileSystemUploadSource = request.getFileSystemUploadSource();
+				jsonFileSystemUploadSource.put("sourceFileContainerId",
+						fileSystemUploadSource.getSourceLocation().getFileContainerId());
+				jsonFileSystemUploadSource.put("sourceFileId", fileSystemUploadSource.getSourceLocation().getFileId());
+				jsonRequest.put("fileSystemUploadSource", jsonFileSystemUploadSource);
+			}
 			if (request.getLinkSourcePath() != null) {
 				jsonRequest.put("linkSourcePath", request.getLinkSourcePath());
 			}
@@ -808,6 +815,16 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 						Base64.getDecoder().decode(jsonGoogleDriveUploadSource.get("accessToken").toString())));
 			}
 			request.setGoogleDriveUploadSource(googleDriveUploadSource);
+		}
+
+		if (jsonRequest.get("fileSystemUploadSource") != null) {
+			JSONObject jsonFileSystemUploadSource = (JSONObject) jsonRequest.get("fileSystemUploadSource");
+			HpcUploadSource fileSystemUploadSource = new HpcUploadSource();
+			HpcFileLocation source = new HpcFileLocation();
+			source.setFileContainerId(jsonFileSystemUploadSource.get("sourceFileContainerId").toString());
+			source.setFileId(jsonFileSystemUploadSource.get("sourceFileId").toString());
+			fileSystemUploadSource.setSourceLocation(source);
+			request.setFileSystemUploadSource(fileSystemUploadSource);
 		}
 
 		Object linkSourcePath = jsonRequest.get("linkSourcePath");

@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusScanDirectory;
+import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
@@ -960,7 +960,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 					.addAll(directoryScanRegistrationItem.getExcludePatterns());
 			v2DirectoryScanRegistrationItem.getIncludePatterns()
 					.addAll(directoryScanRegistrationItem.getIncludePatterns());
-			HpcGlobusScanDirectory globusScanDirectory = new HpcGlobusScanDirectory();
+			HpcScanDirectory globusScanDirectory = new HpcScanDirectory();
 			globusScanDirectory.setDirectoryLocation(directoryScanRegistrationItem.getScanDirectoryLocation());
 			v2DirectoryScanRegistrationItem.setGlobusScanDirectory(globusScanDirectory);
 			v2BulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems()
