@@ -1700,6 +1700,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		registrationDTO.setGlobusUploadSource(registrationRequest.getGlobusUploadSource());
 		registrationDTO.setS3UploadSource(registrationRequest.getS3UploadSource());
 		registrationDTO.setGoogleDriveUploadSource(registrationRequest.getGoogleDriveUploadSource());
+		registrationDTO.setFileSystemUploadSource(registrationRequest.getFileSystemUploadSource());
 		registrationDTO.setLinkSourcePath(registrationRequest.getLinkSourcePath());
 		registrationDTO.getMetadataEntries().addAll(registrationRequest.getMetadataEntries());
 		registrationDTO
