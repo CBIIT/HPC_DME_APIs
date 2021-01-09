@@ -103,41 +103,17 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
+        <groupId>com.coderplus.maven.plugins</groupId>
+        <artifactId>copy-rename-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>copy-java-default-cacerts</id>
             <phase>initialize</phase>
             <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${main.resources.dir}</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${JAVA_HOME}/jre/lib/security</directory>
-                  <includes>
-                    <include>${ca.certs.filename}</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>com.coderplus.maven.plugins</groupId>
-        <artifactId>copy-rename-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>rename-java-default-cacerts</id>
-            <phase>generate-sources</phase>
-            <goals>
               <goal>copy</goal>
             </goals>
             <configuration>
-              <sourceFile>${main.resources.dir}/${ca.certs.filename}</sourceFile>
+              <sourceFile>${JAVA_HOME}/jre/lib/security/${ca.certs.filename}</sourceFile>
               <destinationFile>${main.resources.dir}/${ca.certs.jks.filename}</destinationFile>
             </configuration>
           </execution>
