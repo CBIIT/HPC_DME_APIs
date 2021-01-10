@@ -232,10 +232,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					break;
 
 				case IN_TEMPORARY_ARCHIVE:
-					// Data object is in temporary archive. Note - This is a configured Cleversafe
-					// archive.
-					// Globus completed transfer to the temporary archive. File will be uploaded to
-					// Cleversafe next when
+					// Data object is in temporary archive (This is a scratch space on DME server used for 2-hop upload)
+					// Globus completed transfer to the temporary archive. File will be uploaded to S3 Archive next when
 					// the processTemporaryArchive() scheduled task is called.
 
 					// Update data transfer status.
@@ -317,7 +315,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// invoked
 				// the next time around this task is executed, so if this exception was due to a
 				// temp
-				// reason such as Cleversafe not being accessible, it should be resolved within
+				// reason such as S3 archive not being accessible, it should be resolved within
 				// the next
 				// or a subsequent round, and we should then be able to do proper processing
 				// without
@@ -1893,7 +1891,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		if (archivePathAttributes.getExists() && archivePathAttributes.getIsFile()) {
 			// The data object is found in archive. i.e. upload was completed successfully.
 
-			// Update the archive (Cleversafe) data object's system-metadata.
+			// Update the archive data object's system-metadata.
 			logger.info("Before addSystemGeneratedMetadataToDataObject(): {}", path);
 			String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
 					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
@@ -1972,7 +1970,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getRegistrarId(), systemGeneratedMetadata.getCallerObjectId(),
 						systemGeneratedMetadata.getConfigurationId());
 
-				// Generate archive (Cleversafe) system generated metadata.
+				// Generate archive system generated metadata.
 				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
 						uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
 						systemGeneratedMetadata.getConfigurationId(),

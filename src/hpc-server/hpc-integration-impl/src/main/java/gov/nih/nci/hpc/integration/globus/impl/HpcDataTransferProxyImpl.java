@@ -745,7 +745,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveFilePath = archiveDestinationLocation.getFileId().replaceFirst(
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		try {
-			FileUtils.moveFile(sourceFile, new File(archiveFilePath));
+			FileUtils.copyFile(sourceFile, new File(archiveFilePath));
 		} catch (IOException e) {
 			throw new HpcException("Failed to move file to file system storage: " + archiveFilePath,
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
