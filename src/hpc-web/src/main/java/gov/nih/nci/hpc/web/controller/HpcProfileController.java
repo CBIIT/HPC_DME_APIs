@@ -8,10 +8,13 @@ import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.HpcLogin;
 import gov.nih.nci.hpc.web.model.HpcWebUser;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
+import gov.nih.nci.hpc.web.util.HpcModelBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -47,7 +50,10 @@ public class HpcProfileController extends AbstractHpcController {
     private String collectionAclURL;
     @Value("${gov.nih.nci.hpc.server.model}")
     private String hpcModelURL;
-
+    
+    @Autowired
+    private HpcModelBuilder hpcModelBuilder;
+    
     // The logger instance.
     private final Logger logger =
         LoggerFactory.getLogger(this.getClass().getName());
@@ -75,14 +81,12 @@ public class HpcProfileController extends AbstractHpcController {
       HpcDataManagementModelDTO modelDTO = (HpcDataManagementModelDTO)
         session.getAttribute("userDOCModel");
       if (modelDTO == null) {
-          modelDTO = HpcClientUtil.getDOCModel(authToken, this.hpcModelURL,
-            this.sslCertPath, this.sslCertPassword);
+    	//Get DOC Models, go to server only if not available in cache
+          modelDTO = hpcModelBuilder.getDOCModel(authToken, this.hpcModelURL, this.sslCertPath, this.sslCertPassword);
           session.setAttribute("userDOCModel", modelDTO);
       }
       log.info("userDOCModel: " + modelDTO);
 
-      HpcClientUtil.populateBasePaths(session, model, modelDTO, authToken,
-        userId, this.collectionAclURL, this.sslCertPath, this.sslCertPassword);
       final List<String> collPaths = new ArrayList<>();
       for (HpcDocDataManagementRulesDTO docRule : modelDTO.getDocRules()) {
         for (HpcDataManagementRulesDTO rule : docRule.getRules()) {
