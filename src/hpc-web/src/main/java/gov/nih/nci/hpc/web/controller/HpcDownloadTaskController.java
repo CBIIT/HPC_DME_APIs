@@ -188,6 +188,9 @@ public class HpcDownloadTaskController extends AbstractHpcController {
 		  globusDownloadDestination.setDestinationLocation(location);
 		  globusDownloadDestination.setDestinationOverwrite(true);
           dto.setGlobusDownloadDestination(globusDownloadDestination);
+          if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())) {
+            dto.setAppendPathToDownloadDestination(false); 
+          }
         }
         if (downloadTask.getCanceledItems() != null && !downloadTask.getCanceledItems().isEmpty()) {
           for (HpcCollectionDownloadTaskItem item : downloadTask.getCanceledItems())
@@ -197,6 +200,9 @@ public class HpcDownloadTaskController extends AbstractHpcController {
           globusDownloadDestination.setDestinationLocation(location);
           globusDownloadDestination.setDestinationOverwrite(true);
           dto.setGlobusDownloadDestination(globusDownloadDestination);
+          if (taskType.equals(HpcDownloadTaskType.COLLECTION.name())) {
+          	dto.setAppendPathToDownloadDestination(false); 
+          }
         }
         try {
           HpcBulkDataObjectDownloadResponseDTO downloadDTO =
