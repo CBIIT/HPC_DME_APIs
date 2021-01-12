@@ -182,6 +182,9 @@ public class HpcCreateUserController extends AbstractHpcController {
 			roles.add("SYSTEM_ADMIN");
 			roles.add("GROUP_ADMIN");
 			roles.add("USER");
+		} else if (user.getUserRole().equals("GROUP_ADMIN")) {
+			roles.add("GROUP_ADMIN");
+			roles.add("USER");
 		} else
 			roles.add("USER");
 		model.addAttribute("roles", roles);

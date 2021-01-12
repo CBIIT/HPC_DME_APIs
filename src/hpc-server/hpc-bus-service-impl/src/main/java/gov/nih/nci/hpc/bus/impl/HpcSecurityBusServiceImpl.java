@@ -231,13 +231,25 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 		// Get the current user role.
 		HpcUserRole currentUserRole = dataManagementSecurityService.getUserRole(nciUserId);
 
+		// If the invoker is a GroupAdmin, then user being created must belong to their DOC
+		HpcRequestInvoker invoker = securityService.getRequestInvoker();
+		if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
+				&& (!invoker.getNciAccount().getDoc().equals(user.getNciAccount().getDoc())
+						|| !StringUtils.equals(user.getNciAccount().getDoc(), userUpdateRequest.getDoc()))) {
+			String message = "Group Admins can only update user for their DOC";
+			logger.error(message);
+			throw new HpcException(message, HpcRequestRejectReason.INVALID_DOC);
+		}
+		
 		// Determine update values.
-		String updateFirstName = !StringUtils.isEmpty(userUpdateRequest.getFirstName())
+		String updateFirstName = !StringUtils.isEmpty(userUpdateRequest.getFirstName()) && !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
 				? userUpdateRequest.getFirstName()
 				: user.getNciAccount().getFirstName();
-		String updateLastName = !StringUtils.isEmpty(userUpdateRequest.getLastName()) ? userUpdateRequest.getLastName()
+		String updateLastName = !StringUtils.isEmpty(userUpdateRequest.getLastName()) && !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole()) 
+				? userUpdateRequest.getLastName()
 				: user.getNciAccount().getLastName();
-		String updateDoc = !StringUtils.isEmpty(userUpdateRequest.getDoc()) ? userUpdateRequest.getDoc()
+		String updateDoc = !StringUtils.isEmpty(userUpdateRequest.getDoc()) && !HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
+				? userUpdateRequest.getDoc()
 				: user.getNciAccount().getDoc();
 		String updateDefaultConfigurationId = user.getNciAccount().getDefaultConfigurationId();
 		if (userUpdateRequest.getDefaultBasePath() != null) {
@@ -253,13 +265,21 @@ public class HpcSecurityBusServiceImpl implements HpcSecurityBusService {
 			updateDefaultConfigurationId = null;
 		}
 
-		HpcUserRole updateRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole())
+		HpcUserRole updateToRole = !StringUtils.isEmpty(userUpdateRequest.getUserRole())
 				? roleFromString(userUpdateRequest.getUserRole())
 				: currentUserRole;
+				
+		// We don't want group admins to demote any system admin or set user roles to system admin.
+		if (HpcUserRole.GROUP_ADMIN.equals(invoker.getUserRole())
+				&& (currentUserRole == HpcUserRole.SYSTEM_ADMIN || updateToRole == HpcUserRole.SYSTEM_ADMIN)) {
+			updateToRole = currentUserRole;
+		}
+		HpcUserRole updateRole = updateToRole;
+		
 		boolean active = userUpdateRequest.getActive() != null ? userUpdateRequest.getActive() : user.getActive();
 
 		// Update the data management (IRODS) account.
-		dataManagementSecurityService.updateUser(nciUserId, updateFirstName, updateLastName, updateRole);
+		executeGroupAdminAsSystemAccount(() -> dataManagementSecurityService.updateUser(nciUserId, updateFirstName, updateLastName, updateRole));
 
 		// Update User.
 		securityService.updateUser(nciUserId, updateFirstName, updateLastName, updateDoc, updateDefaultConfigurationId,
