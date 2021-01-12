@@ -181,6 +181,9 @@ public class HpcUpdateUserController extends AbstractHpcController {
 			roles.add(SYSTEM_ADMIN);
 			roles.add(GROUP_ADMIN);
 			roles.add(USER);
+		} else if (user.getUserRole().equals(GROUP_ADMIN)) {
+			roles.add(GROUP_ADMIN);
+			roles.add(USER);
 		} else
 			roles.add(USER);
 		model.addAttribute("roles", roles);
@@ -202,9 +205,14 @@ public class HpcUpdateUserController extends AbstractHpcController {
 			for (HpcDocDataManagementRulesDTO docRules : modelDTO.getDocRules()) {
 				String doc = docRules.getDoc();
 				for (HpcDataManagementRulesDTO ruleDTO : docRules.getRules()) {
-					if (user.getDoc().equals(doc))
+					if (user.getDoc().equals(doc)) {
 						docPaths.add(ruleDTO.getBasePath());
-					basePaths.add(doc + ":" + ruleDTO.getBasePath());
+						if(user.getUserRole().equals(GROUP_ADMIN))
+							basePaths.add(doc + ":" + ruleDTO.getBasePath());
+					}
+					if (!user.getUserRole().equals(GROUP_ADMIN)) {
+						basePaths.add(doc + ":" + ruleDTO.getBasePath());
+					}
 				}
 			}
 		}
