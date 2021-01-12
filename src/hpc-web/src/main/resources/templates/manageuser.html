@@ -55,6 +55,7 @@
 	/*<![CDATA[*/
 	var results = "[[${searchresults}]]";
 	var type = "[[${session.hpcUser.userRole}]]";
+	var doc = "[[${session.hpcUser.doc}]]";
 	/*]]>*/
 </script>
 
@@ -89,18 +90,23 @@
 						field : 'userId',
 						width : 120,
 						displayName : 'Edit',
-						cellTemplate : '<div class="ui-grid-cell-contents"><a data-toggle="modal" id="editlink" class="btn btn-link btn-sm" href="../updateuser?userId={{COL_FIELD CUSTOM_FILTERS}}" data-target="#edituserModal">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
+						cellTemplate : '<div ng-if="grid.appScope.showMe(row.entity.doc)" class="ui-grid-cell-contents"><a data-toggle="modal" id="editlink" class="btn btn-link btn-sm" href="../updateuser?userId={{COL_FIELD CUSTOM_FILTERS}}" data-target="#edituserModal">Edit &nbsp;<i class="fa fa-address-card" aria-hidden="true"></i></a></div>'
 					}],
 					onRegisterApi : function(gridApi) {
 						$scope.grid1Api = gridApi;
-						if (type != "'SYSTEM_ADMIN'")
+						if (type != "'SYSTEM_ADMIN'" && type != "'GROUP_ADMIN'")
 					        $scope.gridOptions1.columnDefs[4].visible = false;
 						$("#spinner").hide();
 			            $("#dimmer").hide();
 					}
+				
 				};
 				$scope.gridOptions1.data = results;
 
+				$scope.showMe= function(val) {
+				    return val == doc.replace(/\'/g, "");
+				  };
+				
 			} ]);
 	/*]]>*/
 </script>
