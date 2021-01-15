@@ -86,10 +86,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private static final String INACTIVE_STATUS = "INACTIVE";
 	private static final String SUCCEEDED_STATUS = "SUCCEEDED";
 	private static final String PERMISSION_DENIED_STATUS = "PERMISSION_DENIED";
-	private static final String OK_STATUS = "OK";
-	private static final String QUEUED_STATUS = "Queued";
-	private static final String TIMEOUT_STATUS = "TIMEOUT";
-
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = "ExternalError.DirListingFailed.NotDirectory";
 
 	// ---------------------------------------------------------------------//
@@ -111,6 +107,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// The Globus active tasks queue size.
 	@Value("${hpc.integration.globus.queueSize}")
 	private int globusQueueSize = 0;
+
+	// The list of Globus transfer nice_statuses (comma separated) to exclude from a
+	// deemed 'transfer failure'.
+	@Value("${hpc.integration.globus.excludeFromTransferFailureStatuses}")
+	private String excludeFromTransferFailureStatuses = null;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -709,9 +710,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return true;
 		}
 
-		if (report.status.equals(INACTIVE_STATUS)
-				|| (!StringUtils.isEmpty(report.niceStatus) && !report.niceStatus.equals(OK_STATUS)
-						&& !report.niceStatus.equals(QUEUED_STATUS) && !report.niceStatus.equals(TIMEOUT_STATUS))) {
+		if (report.status.equals(INACTIVE_STATUS) || (!StringUtils.isEmpty(report.niceStatus)
+				&& !StringUtils.containsIgnoreCase(excludeFromTransferFailureStatuses, report.niceStatus))) {
 			// Globus task requires some manual intervention. We cancel it and consider it a
 			// failure.
 			logger.error("Globus transfer deemed failed: globus-task-id: {} [status: {}, rawError: {}, niceStatus: {}]",
