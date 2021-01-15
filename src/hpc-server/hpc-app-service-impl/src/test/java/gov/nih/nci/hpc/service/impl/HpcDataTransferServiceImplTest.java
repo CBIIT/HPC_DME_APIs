@@ -31,6 +31,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
@@ -91,6 +92,7 @@ public class HpcDataTransferServiceImplTest {
 		dataTransferService.uploadDataObject(null, null, null, null, null, false, null, null, null, "testObjectId",
 				null, null, null);
 	}
+
 
 	/**
 	 * {@link HpcDataTransferService#uploadDataObject(gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource, gov.nih.nci.hpc.domain.datatransfer.HpcS3UploadSource, java.io.File, boolean, String, String, String, String, String)}
@@ -230,7 +232,7 @@ public class HpcDataTransferServiceImplTest {
 		expectedException.expect(HpcException.class);
 		expectedException.expectMessage("Invalid data transfer request");
 
-		dataTransferService.downloadDataObject("", null, null, null, null, null, null, "", "", "", false, 0L);
+		dataTransferService.downloadDataObject("", null, null, null, null, null, null, "", "", "", false, 0L, HpcDataTransferUploadStatus.ARCHIVED);
 	}
 
 	/**
@@ -246,9 +248,9 @@ public class HpcDataTransferServiceImplTest {
 		expectedException.expectMessage("Invalid data transfer request");
 
 		dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null,
-				HpcDataTransferType.S_3, "", "", "", false, 0L);
+				HpcDataTransferType.S_3, "", "", "", false, 0L, HpcDataTransferUploadStatus.ARCHIVED);
 	}
-
+  
 	/**
 	 * {@link HpcDataTransferService#generateDownloadRequestURL(String, HpcFileLocation, gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType, String)}generateDownloadRequestURL()
 	 */
@@ -298,7 +300,7 @@ public class HpcDataTransferServiceImplTest {
 		// Run the test.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject("/test/path",
 				archiveLocation, null, s3loadDestination, null, null, HpcDataTransferType.S_3, "testConfigId", "",
-				"testUserId", false, 0L);
+				"testUserId", false, 0L, HpcDataTransferUploadStatus.ARCHIVED);
 
 		// Assert expected result.
 		assertNull(downloadResponse.getDownloadTaskId());
