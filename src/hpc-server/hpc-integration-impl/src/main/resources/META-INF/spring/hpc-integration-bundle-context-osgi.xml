@@ -34,6 +34,7 @@
 	      
 	      <prop key="hpc.integration.globus.globusAuthScope">urn:globus:auth:scope:transfer.api.globus.org:all</prop>
 	      <prop key="hpc.integration.globus.queueSize">90</prop>
+	      <prop key="hpc.integration.globus.excludeFromTransferFailureStatuses">OK,QUEUED,TIME_OUT,ENDPOINT_ERROR</prop>
 	      
 		  <prop key="hpc.integration.globus.retry.maxAttempts">4</prop>
 		  <prop key="hpc.integration.globus.retry.initialInterval">1000</prop>
