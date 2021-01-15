@@ -416,7 +416,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		getDataObjectLinks(sourcePath).forEach(link -> {
 			try {
 				metadataService.updateDataObjectSystemGeneratedMetadata(link.getAbsolutePath(), null, null, null, null,
-						null, null, null, null, destinationPath);
+						null, null, null, null, destinationPath, null);
 			} catch (HpcException e) {
 				logger.error("Failed to point link[{}] to {}", link.getAbsolutePath(), destinationPath);
 			}
@@ -710,7 +710,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
 		return bulkDataObjectRegistrationTask.getId();
 	}
-
+	
 	@Override
 	public List<HpcBulkDataObjectRegistrationTask> getBulkDataObjectRegistrationTasks(
 			HpcBulkDataObjectRegistrationTaskStatus status) throws HpcException {
@@ -773,7 +773,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// Persist to DB.
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
 	}
-
+	
 	@Override
 	public HpcBulkDataObjectRegistrationStatus getBulkDataObjectRegistrationTaskStatus(String taskId)
 			throws HpcException {
@@ -805,45 +805,45 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId, String doc) throws HpcException {
-		List<HpcBulkDataObjectRegistrationTask> registrationTasks = null;
-		if (doc == null) {
-			registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
-		} else if (doc.equals("ALL")) {
-			registrationTasks = dataRegistrationDAO.getAllBulkDataObjectRegistrationTasks();
-		} else {
-			registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasksForDoc(doc);
-		}
-		return registrationTasks;
+  	    List<HpcBulkDataObjectRegistrationTask> registrationTasks = null;
+        if (doc == null) {
+            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
+        } else if (doc.equals("ALL")) {
+            registrationTasks = dataRegistrationDAO.getAllBulkDataObjectRegistrationTasks();
+        } else {
+            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasksForDoc(doc);
+        }
+        return registrationTasks;
 	}
 
 	@Override
 	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc)
 			throws HpcException {
-		List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
-		if (doc == null) {
+  	    List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
+        if (doc == null) {
 			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId,
 					pagination.getOffset(page), pagination.getPageSize());
-		} else if (doc.equals("ALL")) {
+        } else if (doc.equals("ALL")) {
 			registrationResults = dataRegistrationDAO
 					.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page), pagination.getPageSize());
-		} else {
+        } else {
 			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResultsForDoc(doc,
 					pagination.getOffset(page), pagination.getPageSize());
-		}
+        }
 		return registrationResults;
 	}
 
 	@Override
 	public int getRegistrationResultsCount(String userId, String doc) throws HpcException {
-		int count = 0;
-		if (doc == null) {
-			count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
-		} else if (doc.equals("ALL")) {
-			count = dataRegistrationDAO.getAllBulkDataObjectRegistrationResultsCount();
-		} else {
-			count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCountForDoc(doc);
-		}
-		return count;
+  	  int count = 0;
+        if (doc == null) {
+            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
+        } else if (doc.equals("ALL")) {
+            count = dataRegistrationDAO.getAllBulkDataObjectRegistrationResultsCount();
+        } else {
+            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCountForDoc(doc);
+        }
+        return count;
 	}
 
 	@Override
@@ -918,6 +918,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		addDataObjectRegistrationResult(path, dataObjectRegistrationResult, systemGeneratedMetadata.getSourceSize());
 	}
 
+	@Override
 	public void addDataObjectRegistrationResult(String path,
 			HpcDataObjectRegistrationResult dataObjectRegistrationResult, Long size) throws HpcException {
 		if (StringUtils.isEmpty(path)) {
@@ -948,6 +949,71 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		dataRegistrationDAO.insertDataObjectRegistrationResult(dataObjectRegistrationResult);
+	}
+
+	@Override
+	public String tierDataObjects(String userId, String uiURL,
+			List<String> paths) throws HpcException {
+		// Input validation
+		if (StringUtils.isEmpty(userId)) {
+			throw new HpcException("Null / Empty userId in registration list request",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		if (paths.isEmpty()) {
+			throw new HpcException("Empty archive paths", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Create a bulk data object registration task for archival.
+		HpcBulkDataObjectRegistrationTask bulkDataObjectRegistrationTask = new HpcBulkDataObjectRegistrationTask();
+		bulkDataObjectRegistrationTask.setUserId(userId);
+		bulkDataObjectRegistrationTask
+				.setUiURL(!StringUtils.isEmpty(uiURL) ? uiURL : defaultBulkRegistrationStatusUiURL);
+		bulkDataObjectRegistrationTask.setCreated(Calendar.getInstance());
+		bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.TIER_REQUESTED);
+
+		// Iterate through the individual data object paths and add them
+		// as items to the
+		// list registration task.
+		for (String path : paths) {
+
+			// Create a data object registration item.
+			HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
+			HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
+			reqistrationTask.setPath(path);
+			registrationItem.setTask(reqistrationTask);
+
+			bulkDataObjectRegistrationTask.getItems().add(registrationItem);
+		}
+
+		// Persist the registration request.
+		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
+		return bulkDataObjectRegistrationTask.getId();
+	}
+
+	@Override
+	public void completeTierRequestTask(HpcBulkDataObjectRegistrationTask registrationTask,
+			boolean result, String message, Calendar completed) throws HpcException {
+		// Input validation
+		if (registrationTask == null) {
+			throw new HpcException("Invalid data object list registration task", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Cleanup the DB record.
+		dataRegistrationDAO.deleteBulkDataObjectRegistrationTask(registrationTask.getId());
+
+		// Create a registration result object.
+		HpcBulkDataObjectRegistrationResult registrationResult = new HpcBulkDataObjectRegistrationResult();
+		registrationResult.setId(registrationTask.getId());
+		registrationResult.setUserId(registrationTask.getUserId());
+		registrationResult.setResult(result);
+		registrationResult.setMessage(message);
+		registrationResult.setCreated(registrationTask.getCreated());
+		registrationResult.setCompleted(completed);
+		registrationResult.getItems().addAll(registrationTask.getItems());
+		
+		// Persist to DB.
+		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
 	}
 
 	// ---------------------------------------------------------------------//

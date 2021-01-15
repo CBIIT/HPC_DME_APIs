@@ -206,4 +206,64 @@ public interface HpcEventService {
    */
   public void addDataObjectRegistrationEvent(String collectionPath, String userId)
       throws HpcException;
+  
+  /**
+   * Add a tier request completed event.
+   *
+   * @param userId The user ID.
+   * @param registrationTaskId The data registration task ID.
+   * @param registrationItems The data registration items.
+   * @param completed The time the bulk registration task completed.
+   * @throws HpcException on service failure.
+   */
+  public void addTierRequestCompletedEvent(
+      String userId,
+      String registrationTaskId,
+      List<HpcBulkDataObjectRegistrationItem> registrationItems,
+      Calendar completed)
+      throws HpcException;
+
+  /**
+   * Add a tier request failed event.
+   *
+   * @param userId The user ID.
+   * @param registrationTaskId The data registration task ID.
+   * @param completed The time the data registration task failed.
+   * @param errorMessage the upload failed error message.
+   * @throws HpcException on service failure.
+   */
+  public void addTierRequestFailedEvent(
+      String userId, String registrationTaskId, Calendar completed, String errorMessage)
+      throws HpcException;
+
+  /**
+   * Add a restore request completed event.
+   *
+   * @param userId The user ID.
+   * @param restoreTaskId The data registration task ID.
+   * @param path The restore request path.
+   * @param completed The time the bulk registration task completed.
+   * @throws HpcException on service failure.
+   */
+  public void addRestoreRequestCompletedEvent(
+      String userId,
+      String restoreTaskId,
+      String path,
+      Calendar completed)
+      throws HpcException;
+
+  /**
+   * Add a restore request failed event.
+   *
+   * @param userId The user ID.
+   * @param restoreTaskId The data registration task ID.
+   * @param path The restore request path.
+   * @param completed The time the data registration task failed.
+   * @param errorMessage the upload failed error message.
+   * @throws HpcException on service failure.
+   */
+  public void addRestoreRequestFailedEvent(
+      String userId, String restoreTaskId, String path, Calendar completed, String errorMessage)
+      throws HpcException;
+  
 }

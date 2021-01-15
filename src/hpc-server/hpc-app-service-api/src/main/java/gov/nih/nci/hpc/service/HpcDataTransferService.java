@@ -14,7 +14,6 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
@@ -26,6 +25,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
@@ -42,6 +42,8 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -132,6 +134,7 @@ public interface HpcDataTransferService {
 	 * @param completionEvent                If true, an event will be added when
 	 *                                       async download is complete.
 	 * @param size                           The data object's size in bytes.
+	 * @param downloadDataObject             The data transfer status of the data object
 	 * @return A data object download response.
 	 * @throws HpcException on service failure.
 	 */
@@ -139,7 +142,8 @@ public interface HpcDataTransferService {
 			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
 			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
-			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size)
+			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
+			HpcDataTransferUploadStatus downloadDataObject)
 			throws HpcException;
 
 	/**
@@ -423,7 +427,7 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void resetDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask) throws HpcException;
-
+	
 	/**
 	 * Reset all download tasks in-process indicator to false
 	 *
@@ -436,7 +440,7 @@ public interface HpcDataTransferService {
 	 * stamp.
 	 *
 	 * @param downloadTask The download task to mark processed.
-	 * @param inProcess    Indicator whether the task is being actively processed.
+	 * @param inProcess Indicator whether the task is being actively processed.
 	 * @throws HpcException on service failure.
 	 */
 	public void markProcessedDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask, boolean inProcess)
@@ -608,7 +612,7 @@ public interface HpcDataTransferService {
 	/**
 	 * Reset collection download task in-progress
 	 *
-	 * @param taskId The collection download task ID..
+	 * @param taskId    The collection download task ID..
 	 * @throws HpcException on database error.
 	 */
 	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException;
@@ -631,7 +635,7 @@ public interface HpcDataTransferService {
 	 * Get active download requests for a user.
 	 *
 	 * @param userId The user ID to query for.
-	 * @param doc    doc of group admin or all for system administrators
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A list of active download requests.
 	 * @throws HpcException on service failure.
 	 */
@@ -642,7 +646,7 @@ public interface HpcDataTransferService {
 	 *
 	 * @param userId The user ID to query for.
 	 * @param page   The requested results page.
-	 * @param doc    doc of group admin or all for system administrators
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A list of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
@@ -652,7 +656,7 @@ public interface HpcDataTransferService {
 	 * Get download results (all completed download requests) count for a user.
 	 *
 	 * @param userId The user ID to query for.
-	 * @param doc    doc of group admin or all for system administrators
+	 * @param doc  doc of group admin or all for system administrators
 	 * @return A total count of completed download requests.
 	 * @throws HpcException on service failure.
 	 */
@@ -702,4 +706,67 @@ public interface HpcDataTransferService {
 	 * @return True if the upload URL expired, or false otherwise.
 	 */
 	public boolean uploadURLExpired(Calendar urlCreated, String configurationId, String s3ArchiveConfigurationId);
+
+	/**
+	 * Get all data object download task to process given data transfer status.
+	 *
+	 * @param dataTransferStatus The data object download task data transfer status.
+	 * @return Data object download task.
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByStatus(
+			HpcDataTransferDownloadStatus dataTransferStatus)
+			throws HpcException;
+
+	/**
+	 * Create task to tier data object to Glacier
+	 * 
+	 * @param hpcFileLocation The data object location
+	 * @param dataTransferType The data transfer type
+	 * @param configurationId The configuration id
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public void tierDataObject(HpcFileLocation hpcFileLocation, HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
+
+	/**
+	 * Create task to tier collection to Glacier
+	 * 
+	 * @param path The collection path
+	 * @param dataTransferType The data transfer type
+	 *  @param configurationId The configuration id
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public void tierCollection(String path, HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
+
+	/**
+	 * Create task to tier data objects list to Glacier
+	 * 
+	 * @param bulkTierRequest The list of data objects and config id
+	 * @param dataTransferType The data transfer type
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public void tierDataObjects(HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException;
+
+	/**
+	 * Create task to tier collection list to Glacier
+	 * 
+	 * @param bulkTierRequest The list of collections and config id
+	 * @param dataTransferType The data transfer type
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public void tierCollections(HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException;
+
+	/**
+	 * Get data object meta data
+	 * @param fileLocation		The archive file location.
+	 * @param dataTransferType	The data transfer type.
+	 * @param configurationId	The configuration ID.
+	 * @param s3ArchiveConfigurationId	The S3 configuration ID.
+	 * @return list of HpcMetadataEntry
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public List<HpcMetadataEntry> getDataObjectMetadata(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+			String configurationId, String s3ArchiveConfigurationId) throws HpcException;
+
+
 }

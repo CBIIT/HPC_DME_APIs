@@ -514,4 +514,30 @@ public interface HpcDataManagementService {
 	 */
 	public void addDataObjectRegistrationResult(String path,
 			HpcDataObjectRegistrationResult dataObjectRegistrationResult, Long size) throws HpcException;
+
+	/**
+	 * Add data objects tiering task to the DB
+	 * 
+	 * @param userId	The userId of the requester.
+	 * @param uiURL		The UI URL string.
+	 * @param paths		The data object path to be tiered.
+	 * @return taskId	The taskId of the task.
+	 * @throws HpcException on service failure.
+	 */
+	public String tierDataObjects(String userId, String uiURL,
+			List<String> paths) throws HpcException;
+	
+	/**
+	 * Complete a tiering request task: 1. Update task info in DB with results info.
+	 *
+	 * @param registrationTask The registration task to complete.
+	 * @param result The result of the task (true is successful, false is failed).
+	 * @param message (Optional) If the task failed, a message describing the failure.
+	 * @param completed (Optional) The download task completion timestamp.
+	 * @throws HpcException on service failure.
+	 */
+	 public void completeTierRequestTask(
+			HpcBulkDataObjectRegistrationTask registrationTask, boolean result, String message,
+			Calendar completed) throws HpcException;
+
 }
