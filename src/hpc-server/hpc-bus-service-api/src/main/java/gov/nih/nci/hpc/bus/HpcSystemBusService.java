@@ -71,7 +71,7 @@ public interface HpcSystemBusService {
    * @throws HpcException on service failure.
    */
   public void processTemporaryArchive() throws HpcException;
-  
+
   /**
    * Upload data objects currently staged on DME server file system (NAS) to the archive 
    *
@@ -234,6 +234,20 @@ public interface HpcSystemBusService {
    */
   public void refreshReportViews() throws HpcException;
 
+  /**
+   * Complete the tiering request tasks.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void completeTierTasks() throws HpcException;
+  
+  /**
+   * Complete the restore request tasks.
+   *
+   * @throws HpcException on service failure.
+   */
+  public void completeRestoreRequest() throws HpcException;
+  
   /** Close connection to Data Management system for the current service call. */
   public void closeConnection();
 }

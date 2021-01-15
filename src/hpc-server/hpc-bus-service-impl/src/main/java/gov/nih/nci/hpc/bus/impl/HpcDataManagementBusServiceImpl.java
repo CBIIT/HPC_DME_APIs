@@ -71,6 +71,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
+import gov.nih.nci.hpc.domain.model.HpcBulkTierItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
@@ -82,6 +84,8 @@ import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.dto.datamanagement.HpcTierResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectTierRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
@@ -618,10 +622,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 		String doc = null;
 		if (allUsers) {
-			if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
-				doc = "ALL";
-			else
-				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
+		  if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
+		    doc = "ALL";
+		  else
+		    doc = securityService.getRequestInvoker().getNciAccount().getDoc();
 		}
 
 		// Populate the DTO with active and completed download requests for this user.
@@ -863,7 +867,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						// from
 						// the archive.
 						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum, null, null,
-								null, null, null, null);
+								null, null, null, null, null);
 
 						// Automatically extract metadata from the file itself and add to iRODs.
 						if (extractMetadata) {
@@ -1056,16 +1060,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the request invoker user-id.
 		String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 		String doc = null;
-		if (allUsers) {
-			if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
-				doc = "ALL";
-			else
-				doc = securityService.getRequestInvoker().getNciAccount().getDoc();
-		}
-
+        if (allUsers) {
+          if (securityService.getRequestInvoker().getUserRole().equals(HpcUserRole.SYSTEM_ADMIN))
+            doc = "ALL";
+          else
+            doc = securityService.getRequestInvoker().getNciAccount().getDoc();
+        }
+        
 		// Populate the DTO with active and completed registration requests for this
 		// user.
-		final boolean addUserId = doc == null ? false : true;
+        final boolean addUserId = doc == null ? false : true;
 		HpcRegistrationSummaryDTO registrationSummary = new HpcRegistrationSummaryDTO();
 		dataManagementService.getRegistrationTasks(userId, doc).forEach(
 				task -> registrationSummary.getActiveTasks().add(toBulkDataObjectRegistrationTaskDTO(task, addUserId)));
@@ -1189,13 +1193,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				downloadRequest.getS3DownloadDestination() != null,
 				downloadRequest.getGoogleDriveDownloadDestination() != null);
 
+		
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
 				downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
 				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), userId, completionEvent,
-				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0);
+				metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus());
 
 		// Construct and return a DTO.
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
@@ -1265,7 +1270,26 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// 3. Download to S3 destination is supported only from Cleversafe archive (i.e.
 		// not POSIX).
 		// 4. Data Object is archived (i.e. registration completed).
+		// 5. Data Object is not in deep archive or in deep archive but restored
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
+		if (metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.DEEP_ARCHIVE)) {
+			// Get the data object metadata to check for restoration status
+			List<HpcMetadataEntry> metadataEntries = dataTransferService.getDataObjectMetadata(
+					metadata.getArchiveLocation(), metadata.getDataTransferType(), 
+					metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId());
+			
+			String restorationStatus = null;
+			for (HpcMetadataEntry entry: metadataEntries) {
+				if (entry.getAttribute().equals("restoration_status"))
+					restorationStatus = entry.getValue();
+			}
+			
+			if (restorationStatus != null && !restorationStatus.equals("success")) {
+				throw new HpcException("Object is in deep archived state. Download request URL cannot be generated.",
+						HpcRequestRejectReason.FILE_NOT_FOUND);
+			}	
+			
+		}
 
 		// Get the user requesting the download URL.
 		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
@@ -1604,6 +1628,214 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return bulkMoveResponse;
 	}
 
+
+	@Override
+	public HpcTierResponseDTO tierDataObject(String path) throws HpcException {
+		// Input validation.
+		if (path == null) {
+			throw new HpcException("Null path for archive request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate the data object exists.
+		if (dataManagementService.getDataObject(path) == null) {
+			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+		// Validate the file is archived.
+		HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
+		if (dataTransferStatus == null) {
+			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
+		}
+		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+			throw new HpcException("Object is not in archived state. It is in "
+					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+		}
+		
+		List<String> paths = new ArrayList<>();
+		paths.add(path);
+		
+		// Construct and return a DTO.
+		// Submit a archive transfer request.
+		dataTransferService.tierDataObject(metadata.getArchiveLocation(), HpcDataTransferType.S_3, metadata.getConfigurationId());
+
+		// TODO Record the data object requested in audit table for tiering.
+		
+		// Record the archive request in DB.
+		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+		String tierTaskId = dataManagementService.tierDataObjects(invokerNciAccount.getUserId(),
+				"", paths);
+		
+
+		// Create and return a DTO with the request receipt.
+		HpcTierResponseDTO responseDTO = new HpcTierResponseDTO();
+		responseDTO.setTaskId(tierTaskId);
+
+		return responseDTO;
+	}
+
+	@Override
+	public HpcTierResponseDTO tierCollection(String path) throws HpcException {
+		// Input validation.
+		if (path == null) {
+			throw new HpcException("Null path for tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate collection exists.
+		HpcCollection collection = dataManagementService.getCollection(path, true);
+		if (collection == null) {
+			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Verify data objects found under this collection.
+		if (!hasDataObjectsUnderPath(collection)) {
+			// No data objects found under this collection.
+			throw new HpcException("No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Get the System generated metadata.
+		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
+		
+		// Submit a tier transfer request.
+		dataTransferService.tierCollection(path, HpcDataTransferType.S_3, metadata.getConfigurationId());
+		// TODO Record the collection requested in audit table for tiering.
+		
+		List<String> paths = getDataObjectsUnderPath(collection);
+		
+		// Record the tiering request in DB and obtain a task Id
+		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+		String tierTaskId = dataManagementService.tierDataObjects(invokerNciAccount.getUserId(),
+				"", paths);
+				
+		// Create and return a DTO with the request receipt.
+		HpcTierResponseDTO responseDTO = new HpcTierResponseDTO();
+		responseDTO.setTaskId(tierTaskId);
+
+		return responseDTO;
+	}
+
+	@Override
+	public HpcTierResponseDTO tierDataObjectsOrCollections(HpcBulkDataObjectTierRequestDTO tierRequest)
+			throws HpcException {
+		// Input validation.
+		if (tierRequest == null) {
+			throw new HpcException("Null tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		if (tierRequest.getDataObjectPaths().isEmpty() && tierRequest.getCollectionPaths().isEmpty()) {
+			throw new HpcException("No data object or collection paths", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (!tierRequest.getDataObjectPaths().isEmpty() && !tierRequest.getCollectionPaths().isEmpty()) {
+			throw new HpcException("Both data object and collection paths provided",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
+		
+		String tierTaskId = null;
+		List<String> paths = new ArrayList<>();
+		HpcBulkTierRequest bulkTierRequest = new HpcBulkTierRequest();
+		if (!tierRequest.getDataObjectPaths().isEmpty()) {
+			// Submit a request to archive a list of data objects.
+
+			// Validate all data object paths requested exist.
+			for (String path : tierRequest.getDataObjectPaths()) {
+				if (dataManagementService.getDataObject(path) == null) {
+					throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				if (StringUtils.isEmpty(path)) {
+					throw new HpcException("Null / Empty path in registration request", HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+
+				// Validate no multiple registration requests for the same path.
+				if (paths.stream().anyMatch(s -> path.equals(s))) {
+					throw new HpcException("Duplicated path in tiering request list: " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				
+				// Get the System generated metadata.
+				HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+				
+				// Validate the file is archived.
+				HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
+				if (dataTransferStatus == null) {
+					logger.error("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
+					continue;
+				}
+				if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+					logger.error("Object is not in archived state. It is in "
+							+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+					continue;
+				}
+				
+				paths.add(path);
+				HpcBulkTierItem item = new HpcBulkTierItem();
+				item.setPath(metadata.getArchiveLocation().getFileId());
+				item.setConfigurationId(metadata.getConfigurationId());
+				bulkTierRequest.getItems().add(item);
+			}
+						
+			// Submit a data objects tiering task.
+			dataTransferService.tierDataObjects(bulkTierRequest, HpcDataTransferType.S_3);
+			// TODO Record all data object paths requested in audit table for tiering.
+			
+			// Record tiering request in DB
+			tierTaskId = dataManagementService.tierDataObjects(invokerNciAccount.getUserId(),
+					"", paths);
+		} else {
+			// Submit a request to archive a list of collections.
+
+			// Validate all data object paths requested exist.
+			boolean dataObjectExist = false;
+			for (String path : tierRequest.getCollectionPaths()) {
+				HpcCollection collection = dataManagementService.getCollection(path, true);
+				if (collection == null) {
+					throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				// Verify at least one data object found under these collection.
+				if (!dataObjectExist && hasDataObjectsUnderPath(collection)) {
+					dataObjectExist = true;
+				}
+				
+				// Validate no multiple registration requests for the same path.
+				if (paths.stream().anyMatch(s -> path.equals(s))) {
+					throw new HpcException("Duplicated path in tiering request list: " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				
+				paths.addAll(getDataObjectsUnderPath(collection));
+				//TODO For each data object, check if tiering request can be created (Cloudian only)
+				HpcBulkTierItem item = new HpcBulkTierItem();
+				String configurationId = metadataService
+						.getCollectionSystemGeneratedMetadata(path).getConfigurationId();
+				item.setPath(path);
+				item.setConfigurationId(configurationId);
+				bulkTierRequest.getItems().add(item);
+			}
+
+			if (!dataObjectExist) {
+				// No data objects found under the list of collection.
+				throw new HpcException("No data objects found under collections", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+	
+			// Submit a data objects tiering task.
+			dataTransferService.tierCollections(bulkTierRequest, HpcDataTransferType.S_3);
+			// TODO Record all collections requested in audit table for tiering.
+			
+			// Record tiering request in DB
+			tierTaskId = dataManagementService.tierDataObjects(invokerNciAccount.getUserId(),
+					"", paths);
+		}
+
+		// Create and return a DTO with the request receipt.
+		HpcTierResponseDTO responseDTO = new HpcTierResponseDTO();
+		responseDTO.setTaskId(tierTaskId);
+
+		return responseDTO;
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -1750,9 +1982,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 				// Register the parent collection.
 				registerCollection(parentCollectionPath, collectionRegistration, userId, userName, configurationId);
+				}
 			}
 		}
-	}
 
 	/**
 	 * Perform user permission requests on an entity (collection or data object)
@@ -2053,7 +2285,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void updateDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus) {
 		try {
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus, null,
-					null, null, null, null);
+					null, null, null, null, null);
 
 		} catch (HpcException e) {
 			logger.error("Failed to update system metadata: " + path + ". Data transfer status: " + dataTransferStatus,
@@ -2371,7 +2603,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Update data-transfer-status system metadata accordingly.
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
 					HpcDataTransferUploadStatus.URL_GENERATED, null, uploadResponse.getDataTransferStarted(), null,
-					null, null);
+					null, null, null);
 
 			return uploadResponse;
 		}
@@ -2390,8 +2622,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
 			HpcBulkDataObjectRegistrationTask task, boolean addUserId) {
 		HpcBulkDataObjectRegistrationTaskDTO taskDTO = new HpcBulkDataObjectRegistrationTaskDTO();
-		if (addUserId)
-			taskDTO.setUserId(task.getUserId());
+		if(addUserId)
+		   taskDTO.setUserId(task.getUserId());
 		taskDTO.setTaskId(task.getId());
 		taskDTO.setCreated(task.getCreated());
 		taskDTO.setTaskStatus(task.getStatus());
@@ -2403,15 +2635,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	/**
 	 * Return a bulk registration task DTO from a registration result domain object.
 	 *
-	 * @param result    bulk registration result domain object to convert to DTO.
+	 * @param result bulk registration result domain object to convert to DTO.
 	 * @param addUserId flag to populate userId
 	 * @return a bulk registration task DTO.
 	 */
 	private HpcBulkDataObjectRegistrationTaskDTO toBulkDataObjectRegistrationTaskDTO(
 			HpcBulkDataObjectRegistrationResult result, boolean addUserId) {
 		HpcBulkDataObjectRegistrationTaskDTO taskDTO = new HpcBulkDataObjectRegistrationTaskDTO();
-		if (addUserId)
-			taskDTO.setUserId(result.getUserId());
+		if(addUserId)
+          taskDTO.setUserId(result.getUserId());
 		taskDTO.setTaskId(result.getId());
 		taskDTO.setCreated(result.getCreated());
 		taskDTO.setCompleted(result.getCompleted());
@@ -2502,7 +2734,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (dataTransferStatus == null) {
 			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
 		}
-		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)
+				&& !dataTransferStatus.equals(HpcDataTransferUploadStatus.DEEP_ARCHIVE)) {
 			throw new HpcException("Object is not in archived state yet. It is in "
 					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 		}
@@ -2593,7 +2826,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Return 'system' default.
 		return metadataService.getDefaultCollectionMetadataEntries();
 	}
-
+	
 	/**
 	 * Check if specific path in the bulk metadata entries is exists.
 	 *
@@ -2824,6 +3057,27 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				return true;
 		}
 		return false;
+	}
+	
+	private List<String> getDataObjectsUnderPath(HpcCollection collection) throws HpcException {
+		List<String> dataObjectPaths = new ArrayList<>();
+
+		// Iterate through the data objects in the collection and add to list.
+		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
+			dataObjectPaths.add(dataObjectEntry.getPath());
+		}
+
+		// Iterate through the sub-collections and download them.
+		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
+			String subCollectionPath = subCollectionEntry.getPath();
+			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
+			if (subCollection != null) {
+				// add this sub-collection.
+				dataObjectPaths.addAll(getDataObjectsUnderPath(subCollection));
+			}
+		}
+
+		return dataObjectPaths;
 	}
 
 }

@@ -91,6 +91,9 @@
 		<prop key="hpc.ws.rs.auth.data-management.move-data-object">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-all-download-summary">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-all-registration-summary">SYSTEM_ADMIN GROUP_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.data-management.tier-data-object">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.data-management.tier-collection">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.data-management.tier-data-objects">SYSTEM_ADMIN</prop>
 		
 		<prop key="hpc.ws.rs.auth.data-search.query-collections">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-search.query-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>

@@ -32,6 +32,7 @@
 			<xsd:enumeration value="STREAMING_IN_PROGRESS" />
 			<xsd:enumeration value="STREAMING_STOPPED" />
 			<xsd:enumeration value="IN_FILE_SYSTEM" />
+			<xsd:enumeration value="DEEP_ARCHIVE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -63,6 +64,8 @@
 			<xsd:enumeration value="COMPLETED" />
 			<xsd:enumeration value="FAILED" />
 			<xsd:enumeration value="CANCELED" />
+			<xsd:enumeration value="RESTORE_REQUESTED" />
+			<xsd:enumeration value="RESTORED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 

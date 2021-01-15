@@ -495,7 +495,28 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-
+	
+	<!-- Archive DTO -->
+	
+	<xsd:element name="HpcBulkDataObjectTierRequestDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="dataObjectPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="collectionPaths" type="xsd:string"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="HpcTierResponseDTO">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="taskId" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<xsd:element name="HpcDownloadSummaryDTO">
 		<xsd:complexType>
 			<xsd:sequence>

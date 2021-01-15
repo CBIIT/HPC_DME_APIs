@@ -36,7 +36,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
-
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
@@ -65,7 +64,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
-
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
@@ -99,7 +97,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
-	// The Data Management Service
+	//The Data Management Service
 	@Autowired
 	private HpcDataManagementService dataManagementService = null;
 
@@ -204,6 +202,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		}
 
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+
 
 		// Generate a UUID and add it as metadata.
 		metadataEntries.add(generateIdMetadata());
@@ -619,7 +618,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
 			String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType, Calendar dataTransferStarted, Calendar dataTransferCompleted,
-			Long sourceSize, String linkSourcePath) throws HpcException {
+			Long sourceSize, String linkSourcePath, Calendar deepArchiveDate) throws HpcException {
 		// Input validation.
 		if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
 			throw new HpcException("Invalid updated system generated metadata for data object",
@@ -680,6 +679,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (linkSourcePath != null) {
 			// Update the link source path metadata.
 			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
+		}
+		
+		if (deepArchiveDate != null) {
+			// Update the deep archive date metadata.
+			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE,
+					dateFormat.format(deepArchiveDate.getTime())));
 		}
 
 		if (!metadataEntries.isEmpty()) {
@@ -796,15 +801,18 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		return toMetadataEntry(ID_ATTRIBUTE, keyGenerator.generateKey());
 	}
 
+
 	/**
 	 * Generate the global DME ID metadata.
-	 * 
+	 *
 	 * @param collectionId The (iRODs) collection ID.
 	 * @return The Generated global DME ID metaData
 	 */
 	private HpcMetadataEntry generateDmeIdMetadata(int collectionId) {
 		return toMetadataEntry(DME_ID_ATTRIBUTE, "NCI-DME-MS01-" + collectionId);
 	}
+
+
 
 	/**
 	 * Generate Metadata Updated Metadata.

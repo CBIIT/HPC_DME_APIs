@@ -12,6 +12,8 @@ package gov.nih.nci.hpc.bus;
 
 import java.io.File;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcTierResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectTierRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
@@ -470,4 +472,31 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) throws HpcException;
+
+	/**
+	 * Tier a data object to Glacier
+	 * 
+	 * @param path		The data object path
+	 * @return A response DTO containing the taskId for the request
+	 * @throws HpcException on service failure.
+	 */
+	public HpcTierResponseDTO tierDataObject(String path) throws HpcException;
+
+	/**
+	 * Tier a collection to Glacier
+	 * 
+	 * @param path		The collection path
+	 * @return A response DTO containing the taskId for the request
+	 * @throws HpcException on service failure.
+	 */
+	public HpcTierResponseDTO tierCollection(String path) throws HpcException;
+
+	/**
+	 * Tier a list of data objects and/or collections to Glacier.
+	 * 
+	 * @param tierRequest	The request to tier data objects and/or collections
+	 * @return A response DTO containing the taskId for the request
+	 * @throws HpcException on service failure.
+	 */
+	public HpcTierResponseDTO tierDataObjectsOrCollections(HpcBulkDataObjectTierRequestDTO tierRequest) throws HpcException;
 }

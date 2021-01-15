@@ -36,6 +36,10 @@
 			<xsd:enumeration value="USAGE_SUMMARY_BY_USER_BY_WEEKLY_REPORT" />
 			<xsd:enumeration value="USER_REGISTERED" />
 			<xsd:enumeration value="COLLECTION_UPDATED" />
+			<xsd:enumeration value="TIER_REQUEST_COMPLETED" />
+			<xsd:enumeration value="TIER_REQUEST_FAILED" />
+			<xsd:enumeration value="RESTORE_REQUEST_COMPLETED" />
+			<xsd:enumeration value="RESTORE_REQUEST_FAILED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
