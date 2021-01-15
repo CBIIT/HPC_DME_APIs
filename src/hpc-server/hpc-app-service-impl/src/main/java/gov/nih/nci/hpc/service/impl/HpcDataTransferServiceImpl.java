@@ -2088,7 +2088,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcDataObjectDownloadResponse response, HpcArchive baseArchiveDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter) throws HpcException {
 		// Validate max file size not exceeded.
-		if (maxSyncDownloadFileSize != null && downloadRequest.getSize() > maxSyncDownloadFileSize) {
+		if (synchronousDownloadFilter == null && maxSyncDownloadFileSize != null
+				&& downloadRequest.getSize() > maxSyncDownloadFileSize) {
 			throw new HpcException("File size exceeds the sync download limit",
 					HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
 		}
@@ -2121,7 +2122,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						synchronousDownloadFilter.getCompressedArchiveType(),
 						synchronousDownloadFilter.getIncludePatterns(),
 						synchronousDownloadFilter.getPatternType()) > 0) {
+					// Validate max file size not exceeded.
+					if (maxSyncDownloadFileSize != null
+							&& filteredCompressedArchive.length() > maxSyncDownloadFileSize) {
+						throw new HpcException("File size exceeds the sync download limit",
+								HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
+					}
+
 					response.setDestinationFile(filteredCompressedArchive);
+
 				} else {
 					throw new HpcException("Pattern(s) did not match any entry in compressed archive file",
 							HpcErrorType.INVALID_REQUEST_INPUT);
