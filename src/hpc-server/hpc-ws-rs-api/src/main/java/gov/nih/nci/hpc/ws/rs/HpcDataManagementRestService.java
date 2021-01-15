@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
+import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectTierRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
@@ -330,6 +331,7 @@ public interface HpcDataManagementRestService {
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response registerDataObjects(
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
+
 
 	/**
 	 * Get bulk data object registration task status.
@@ -666,4 +668,40 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
+	
+	/**
+	 * Data object tiering request to Glacier.
+	 *
+	 * @param path                   The data object path to tier.
+	 * @return The REST service response w/ HpcDataObjectTierResponseDTO entity.
+	 */
+	@POST
+	@Path("/dataObject/{path:.*}/tier")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8, application/octet-stream")
+	public Response tierDataObject(@PathParam("path") String path);
+	
+	/**
+	 * Tiering a collection to Glacier.
+	 *
+	 * @param path            The collection path.
+	 * @return The REST service response w/ HpcCollectionTierResponseDTO entity.
+	 */
+	@POST
+	@Path("/collection/{path:.*}/tier")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response tierCollection(@PathParam("path") String path);
+	
+	/**
+	 * Tier a list of data objects or a list of collections to Glacier.
+	 *
+	 * @param tierRequest The tiering request.
+	 * @return The REST service response w/ HpcBulkDataObjectTierResponseDTO
+	 *         entity.
+	 */
+	@POST
+	@Path("/tier")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response tierDataObjectsOrCollections(HpcBulkDataObjectTierRequestDTO tierRequest);
+
 }

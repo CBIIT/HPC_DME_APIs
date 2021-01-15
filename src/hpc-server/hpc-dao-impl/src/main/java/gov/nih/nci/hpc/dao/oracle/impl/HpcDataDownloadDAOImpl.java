@@ -97,6 +97,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK order by PRIORITY, CREATED";
 
+	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? ";
+	
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? "
 			+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
 
@@ -587,6 +589,20 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		}
 	}
 
+	@Override
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByStatus(
+			HpcDataTransferDownloadStatus dataTransferStatus)
+			throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_ALL_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL, dataObjectDownloadTaskRowMapper,
+					dataTransferStatus.value());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get data object download tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
 	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
