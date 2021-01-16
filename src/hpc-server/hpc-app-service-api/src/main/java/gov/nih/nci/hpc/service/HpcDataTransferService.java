@@ -45,6 +45,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -761,12 +762,21 @@ public interface HpcDataTransferService {
 	 * @param fileLocation		The archive file location.
 	 * @param dataTransferType	The data transfer type.
 	 * @param configurationId	The configuration ID.
-	 * @param s3ArchiveConfigurationId	The S3 configuration ID.
+	 * @param s3ArchiveConfigurationId	(Optional) The S3 configuration ID.
 	 * @return list of HpcMetadataEntry
 	 * @throws HpcException on data transfer system failure.
 	 */
 	public List<HpcMetadataEntry> getDataObjectMetadata(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 
-
+	/**
+	 * Get the archive provider from configuration Id.
+	 * @param configurationId The configuration ID
+	 * @param s3ArchiveConfigurationId (Optional) The S3 configuration ID.
+	 * @param dataTransferType (S3 or Globus)
+	 * @return HpcIntegratedSystem
+	 * @throws HpcException
+	 */
+	public HpcIntegratedSystem getArchiveProvider(String configurationId, String s3ArchiveConfigurationId,
+			HpcDataTransferType dataTransferType) throws HpcException;
 }

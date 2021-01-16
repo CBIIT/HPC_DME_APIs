@@ -88,6 +88,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
@@ -910,6 +911,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setCreated(downloadTask.getCreated());
 		taskResult.setSize(downloadTask.getSize());
 		taskResult.setCompleted(completed);
+		taskResult.setRestoreRequested(downloadTask.getRestoreRequested());
 
 		// Calculate the effective transfer speed (Bytes per second).
 		taskResult.setEffectiveTransferSpeed(Math.toIntExact(bytesTransferred * 1000
@@ -1488,12 +1490,16 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Get the S3 archive configuration ID.
 		String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(configurationId)
 				.getS3UploadConfigurationId();
-				
+			
+		// Get the data transfer configuration.
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+					
 		String prefix = hpcFileLocation.getFileId();
 		// Create life cycle policy with this data object
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				hpcFileLocation, prefix);
+				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
 
 	}
 
@@ -1519,7 +1525,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Create life cycle policy with this collection
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				hpcFileLocation, prefix);
+				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
 	}
 
 	@Override
@@ -1544,7 +1550,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Create life cycle policy with this collection
 			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
-					hpcFileLocation, prefix);
+					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
 		}
 	}
 
@@ -1570,7 +1576,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Create life cycle policy with this collection
 			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
-					hpcFileLocation, prefix);
+					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
 		}
 	}
 	
@@ -1583,6 +1589,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				fileLocation);
 	}
 
+	@Override
+	public HpcIntegratedSystem getArchiveProvider(String configurationId, String s3ArchiveConfigurationId,
+			HpcDataTransferType dataTransferType) throws HpcException {
+		// Get the data transfer configuration (Globus or S3).
+		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
+				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
+
+
+		return dataTransferConfiguration.getArchiveProvider();
+	}
+
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -2704,6 +2722,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setGlobusDownloadDestination(downloadRequest.getGlobusDestination());
 			downloadTask.setS3DownloadDestination(downloadRequest.getS3Destination());
 			downloadTask.setGoogleDriveDownloadDestination(downloadRequest.getGoogleDriveDestination());
+			downloadTask.setRestoreRequested(true);
 			
 			if (downloadTask.getS3DownloadDestination() != null) {
 				downloadTask.setDataTransferType(HpcDataTransferType.S_3);

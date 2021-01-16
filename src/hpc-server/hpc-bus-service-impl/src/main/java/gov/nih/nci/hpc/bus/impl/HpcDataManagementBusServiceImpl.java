@@ -82,6 +82,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcTierResponseDTO;
@@ -1654,11 +1655,18 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 		}
 		
+		// Validate the request is for Cloudian only.
+		if (!HpcIntegratedSystem.CLOUDIAN.equals(dataTransferService.getArchiveProvider(metadata.getConfigurationId(),
+				metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3))) {
+			throw new HpcException("The tiering API is not supported for this archive provider.",
+					HpcRequestRejectReason.API_NOT_SUPPORTED);
+		}
+
 		List<String> paths = new ArrayList<>();
 		paths.add(path);
 		
 		// Construct and return a DTO.
-		// Submit a archive transfer request.
+		// Submit a tiering request.
 		dataTransferService.tierDataObject(metadata.getArchiveLocation(), HpcDataTransferType.S_3, metadata.getConfigurationId());
 
 		// TODO Record the data object requested in audit table for tiering.
@@ -1702,7 +1710,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		dataTransferService.tierCollection(path, HpcDataTransferType.S_3, metadata.getConfigurationId());
 		// TODO Record the collection requested in audit table for tiering.
 		
-		List<String> paths = getDataObjectsUnderPath(collection);
+		List<String> paths = getDataObjectsUnderPathForTiering(collection);
 		
 		// Record the tiering request in DB and obtain a task Id
 		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
@@ -1769,6 +1777,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 					continue;
 				}
+				// Check if any data objects archived where tiering is not supported.
+				if (!HpcIntegratedSystem.CLOUDIAN.equals(dataTransferService.getArchiveProvider(metadata.getConfigurationId(),
+						metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3))) {
+					logger.error("The tiering API is not supported for this archive provider.",
+							HpcRequestRejectReason.API_NOT_SUPPORTED);
+					continue;
+				}
 				
 				paths.add(path);
 				HpcBulkTierItem item = new HpcBulkTierItem();
@@ -1805,8 +1820,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				
-				paths.addAll(getDataObjectsUnderPath(collection));
-				//TODO For each data object, check if tiering request can be created (Cloudian only)
+				paths.addAll(getDataObjectsUnderPathForTiering(collection));
+
 				HpcBulkTierItem item = new HpcBulkTierItem();
 				String configurationId = metadataService
 						.getCollectionSystemGeneratedMetadata(path).getConfigurationId();
@@ -2653,6 +2668,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		taskDTO.setEffectiveTransferSpeed(
 				effectiveTransferSpeed != null && effectiveTransferSpeed > 0 ? effectiveTransferSpeed : null);
 		populateRegistrationItems(taskDTO, result.getItems());
+		taskDTO.setRequestType(result.getRequestType());
 		return taskDTO;
 	}
 
@@ -3059,21 +3075,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return false;
 	}
 	
-	private List<String> getDataObjectsUnderPath(HpcCollection collection) throws HpcException {
+	private List<String> getDataObjectsUnderPathForTiering(HpcCollection collection) throws HpcException {
 		List<String> dataObjectPaths = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and add to list.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-			dataObjectPaths.add(dataObjectEntry.getPath());
+			// Get the System generated metadata.
+			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(dataObjectEntry.getPath());
+			// Check if any data objects archived where tiering is not supported.
+			if (HpcIntegratedSystem.CLOUDIAN.equals(dataTransferService.getArchiveProvider(
+					metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3))) {
+				dataObjectPaths.add(dataObjectEntry.getPath());
+			}
+			
 		}
 
-		// Iterate through the sub-collections and download them.
+		// Iterate through the sub-collections and add them.
 		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
 			String subCollectionPath = subCollectionEntry.getPath();
 			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
 			if (subCollection != null) {
 				// add this sub-collection.
-				dataObjectPaths.addAll(getDataObjectsUnderPath(subCollection));
+				dataObjectPaths.addAll(getDataObjectsUnderPathForTiering(subCollection));
 			}
 		}
 

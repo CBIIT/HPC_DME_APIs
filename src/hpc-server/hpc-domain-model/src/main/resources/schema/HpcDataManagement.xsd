@@ -45,6 +45,7 @@
 				type="hpc-domain-datatransfer:HpcArchive" />
 			<xsd:element name="uploadRequestURLExpiration"
 				type="xsd:int" minOccurs="0" />
+			<xsd:element name="tieringBucket" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -150,6 +151,7 @@
 			<xsd:element name="items"
 				type="hpc-domain-model:HpcBulkDataObjectRegistrationItem"
 				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="requestType" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

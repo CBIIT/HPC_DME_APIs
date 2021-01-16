@@ -356,11 +356,12 @@ public interface HpcDataTransferProxy {
    *
    * @param authenticatedToken An authenticated token.
    * @param archiveLocation The archive location.
-   * @param prefix The prefix to add 
+   * @param prefix The prefix to add .
+   * @param tieringBucket The bucket name to tier to.
    * @throws HpcException on data transfer system failure.
    */
   public default void putLifecyclePolicy(Object authenticatedToken,
-      HpcFileLocation archiveLocation, String prefix) throws HpcException {
+      HpcFileLocation archiveLocation, String prefix, String tieringBucket) throws HpcException {
     throw new HpcException("putLifecyclePolicy() not supported",
         HpcErrorType.UNEXPECTED_ERROR);
   }
