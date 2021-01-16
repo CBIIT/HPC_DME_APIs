@@ -31,10 +31,10 @@ import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationResponseDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.dto.security.HpcUserDTO;
 import gov.nih.nci.hpc.web.model.AjaxResponseBody;
 import gov.nih.nci.hpc.web.model.HpcLogin;
@@ -55,7 +55,7 @@ import gov.nih.nci.hpc.web.util.MiscUtil;
 @EnableAutoConfiguration
 @RequestMapping("/uploadtask")
 public class HpcUploadTaskController extends AbstractHpcController {
-	@Value("${gov.nih.nci.hpc.server.bulkregistration}")
+	@Value("${gov.nih.nci.hpc.server.v2.bulkregistration}")
 	private String registrationServiceURL;
 
 	/**
@@ -104,8 +104,8 @@ public class HpcUploadTaskController extends AbstractHpcController {
 					retry = true;
 
 				for (HpcDataObjectRegistrationItemDTO dto : failedRequests) {
-					// Source is null for S3 based bulk requests
-					if (dto.getSource() == null) {
+					// Retry is not available for S3 based bulk requests
+					if (dto.getGlobusUploadSource() == null ) {
 						retry = false;
 						break;
 					}

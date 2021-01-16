@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -769,7 +770,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 							s3Account.setAccessKey("****");
 							s3Account.setSecretKey("****");
 						}));
-
+		registrationResult.setRequestType(HpcBulkDataObjectRegistrationRequestType.REGISTRATION_REQUEST.value());
+		
 		// Persist to DB.
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
 	}
@@ -1011,6 +1013,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		registrationResult.setCreated(registrationTask.getCreated());
 		registrationResult.setCompleted(completed);
 		registrationResult.getItems().addAll(registrationTask.getItems());
+		registrationResult.setRequestType(HpcBulkDataObjectRegistrationRequestType.TIER_REQUEST.value());
 		
 		// Persist to DB.
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);

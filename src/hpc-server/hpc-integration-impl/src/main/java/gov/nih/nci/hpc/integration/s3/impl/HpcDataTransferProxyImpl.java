@@ -5,7 +5,10 @@ import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestina
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -91,7 +95,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private static final String CLOUDIAN_TIERING_INFO_HEADER="x-gmt-tieringinfo";
 
 	// Number of days the restored data object will be available.
-	private static final int S3_RESTORE_NUM_DAYS = 2;
+	@Value("${hpc.integration.s3.tieringEndpoint}")
+	private String tieringEndpoint = null;
+
+	// Number of days the restored data object will be available.
+	@Value("${hpc.integration.s3.restoreNumDays}")
+	private int restoreNumDays = 2;
+
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -444,7 +454,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public void putLifecyclePolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix)
+	public void putLifecyclePolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix, String tieringBucket)
 			throws HpcException {
 		// Create a rule to archive objects with the prefix to Glacier
 		// immediately.
@@ -480,11 +490,21 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// Save the configuration.
 			SetBucketLifecycleConfigurationRequest request = new SetBucketLifecycleConfigurationRequest(
 					archiveLocation.getFileContainerId(), configuration);
-			// TODO Make endpoint and tiering bucket configurable.
-			request.putCustomRequestHeader(CLOUDIAN_TIERING_INFO_HEADER,
-					"S3GLACIER%7CEndPoint%3Ahttps%253A%252F%252Fs3.amazonaws.com%2CTieringBucket%3Adme-glacier-test");
+
+			// Add Cloudian custom tiering header
+			String customHeader = "S3GLACIER|EndPoint:"
+					+ URLEncoder.encode(tieringEndpoint, StandardCharsets.UTF_8.toString()) + ",TieringBucket:"
+					+ tieringBucket;
+			String encodedCustomHeader = URLEncoder.encode(customHeader, StandardCharsets.UTF_8.toString());
+			request.putCustomRequestHeader(CLOUDIAN_TIERING_INFO_HEADER, encodedCustomHeader);
+	        
 			s3Client.setBucketLifecycleConfiguration(request);
 
+		} catch (UnsupportedEncodingException e) {
+			throw new HpcException(
+					"[S3] Failed to add a new rule to life cycle policy on bucket "
+							+ archiveLocation.getFileContainerId() + ":" + prefix + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
 		} catch (AmazonServiceException e) {
 			throw new HpcException(
 					"[S3] Failed to add a new rule to life cycle policy on bucket "
@@ -506,7 +526,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
             // Create and submit a request to restore an object from Glacier for configured number of days.
 			RestoreObjectRequest requestRestore = new RestoreObjectRequest(archiveLocation.getFileContainerId(),
-					archiveLocation.getFileId(), S3_RESTORE_NUM_DAYS);
+					archiveLocation.getFileId(), restoreNumDays);
 			s3Client.restoreObjectV2(requestRestore);
 
         } catch (AmazonServiceException e) {

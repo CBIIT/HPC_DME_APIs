@@ -121,6 +121,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3BaseArchiveDestination.setType(HpcArchiveType.ARCHIVE);
 		s3Configuration.setBaseArchiveDestination(s3BaseArchiveDestination);
 		s3Configuration.setUploadRequestURLExpiration(rs.getInt("UPLOAD_REQUEST_URL_EXPIRATION"));
+		s3Configuration.setTieringBucket(rs.getString("TIERING_BUCKET"));
 
 		return s3Configuration;
 	};
