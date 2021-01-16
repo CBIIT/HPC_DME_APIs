@@ -385,6 +385,7 @@
 			<xsd:element name="percentComplete" type="xsd:int" />
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="inProcess" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -415,6 +416,7 @@
 			<xsd:element name="effectiveTransferSpeed" type="xsd:int"
 				minOccurs="0" />
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
+			<xsd:element name="restoreRequested" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 

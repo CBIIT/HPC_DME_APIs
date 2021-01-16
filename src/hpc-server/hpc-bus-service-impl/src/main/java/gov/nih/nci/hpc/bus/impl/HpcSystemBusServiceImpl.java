@@ -824,6 +824,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						HpcEventType eventType = event.getType();
 						HpcNotificationSubscription subscription = notificationService
 								.getNotificationSubscription(userId, eventType);
+						// If event type is restoration or tiering, send out notification regardless of subscription.
+						if (eventType.equals(HpcEventType.RESTORE_REQUEST_COMPLETED)
+								|| eventType.equals(HpcEventType.RESTORE_REQUEST_FAILED)
+								|| eventType.equals(HpcEventType.TIER_REQUEST_COMPLETED)
+								|| eventType.equals(HpcEventType.TIER_REQUEST_FAILED)) {
+							subscription = new HpcNotificationSubscription();
+							subscription.getNotificationDeliveryMethods().add(HpcNotificationDeliveryMethod.EMAIL);
+						}
 						if (subscription != null) {
 							// Iterate through all the delivery methods the user is subscribed to.
 							for (HpcNotificationDeliveryMethod deliveryMethod : subscription

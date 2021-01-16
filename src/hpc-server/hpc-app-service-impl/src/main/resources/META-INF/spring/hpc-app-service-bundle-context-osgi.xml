@@ -40,7 +40,7 @@
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
 		<prop key="hpc.service.dataManagement.systemAdminSubjects">rods rodsadmin</prop>
-		<prop key="hpc.service.dataManagement.defaultBaseUiURL">https://fr-s-hpcdm-gp-d.ncifcrf.gov</prop>
+		<prop key="hpc.service.dataManagement.defaultBaseUiURL">https://fsdmel-dsapi01d.ncifcrf.gov</prop>
 		<prop key="hpc.service.dataManagement.defaultBulkRegistrationStatusUiDeepLink">uploadtask?taskId={task_id}&amp;type=</prop>
 		<prop key="hpc.service.dataManagement.downloadResultsPageSize">100</prop>
 		<prop key="hpc.service.dataManagement.registrationResultsPageSize">100</prop>
