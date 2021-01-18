@@ -203,6 +203,11 @@
 			<xsd:enumeration value="DELETE_DATA_OBJECT" />
 			<xsd:enumeration value="UPDATE_COLLECTION" />
 			<xsd:enumeration value="DELETE_COLLECTION" />
+			<xsd:enumeration value="TIER_DATA_OBJECT" />
+			<xsd:enumeration value="TIER_COLLECTION" />
+			<xsd:enumeration value="RESTORE_DATA_OBJECT" />
+			<xsd:enumeration value="COMPLETE_TIER_DATA_OBJECT" />
+			<xsd:enumeration value="COMPLETE_RESTORE_DATA_OBJECT" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	

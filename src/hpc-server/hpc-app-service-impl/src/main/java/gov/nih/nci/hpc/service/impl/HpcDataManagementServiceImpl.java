@@ -428,7 +428,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId) {
+			Boolean dataTransferStatus, String message, String userId, String filterPrefix) {
 		// Input validation.
 		String nciUserId = HpcRequestContext.getRequestInvoker().getNciAccount() == null ? userId
 				: HpcRequestContext.getRequestInvoker().getNciAccount().getUserId();
@@ -439,7 +439,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		try {
 			dataManagementAuditDAO.insert(nciUserId, path, requestType, metadataBefore, metadataAfter, archiveLocation,
-					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance());
+					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance(), filterPrefix);
 
 		} catch (HpcException e) {
 			logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);

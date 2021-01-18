@@ -282,7 +282,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} finally {
 				// Add an audit record of this deletion attempt.
 				dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_COLLECTION, metadataBefore,
-						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId);
+						metadataService.getCollectionMetadataEntries(path), null, updated, null, message, userId, null);
 			}
 
 			addCollectionUpdatedEvent(path, false, false, userId);
@@ -584,7 +584,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} finally {
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_COLLECTION, metadataEntries, null,
-					null, deleted, null, message, null);
+					null, deleted, null, message, null, null);
 		}
 	}
 
@@ -1417,7 +1417,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Add an audit record of this deletion attempt.
 		dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_DATA_OBJECT, metadataEntries, null,
 				systemGeneratedMetadata.getArchiveLocation(), dataObjectDeleteResponse.getDataManagementDeleteStatus(),
-				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null);
+				dataObjectDeleteResponse.getArchiveDeleteStatus(), dataObjectDeleteResponse.getMessage(), null, null);
 
 		return dataObjectDeleteResponse;
 	}
@@ -1665,14 +1665,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		List<String> paths = new ArrayList<>();
 		paths.add(path);
 		
-		// Construct and return a DTO.
+		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		// Submit a tiering request.
-		dataTransferService.tierDataObject(metadata.getArchiveLocation(), HpcDataTransferType.S_3, metadata.getConfigurationId());
-
-		// TODO Record the data object requested in audit table for tiering.
+		dataTransferService.tierDataObject(invokerNciAccount.getUserId(), path, metadata.getArchiveLocation(), HpcDataTransferType.S_3, metadata.getConfigurationId());
 		
 		// Record the archive request in DB.
-		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		String tierTaskId = dataManagementService.tierDataObjects(invokerNciAccount.getUserId(),
 				"", paths);
 		
@@ -1706,14 +1703,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
 		
+		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		// Submit a tier transfer request.
-		dataTransferService.tierCollection(path, HpcDataTransferType.S_3, metadata.getConfigurationId());
-		// TODO Record the collection requested in audit table for tiering.
+		dataTransferService.tierCollection(invokerNciAccount.getUserId(), path, HpcDataTransferType.S_3, metadata.getConfigurationId());
 		
 		List<String> paths = getDataObjectsUnderPathForTiering(collection);
 		
 		// Record the tiering request in DB and obtain a task Id
-		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		String tierTaskId = dataManagementService.tierDataObjects(invokerNciAccount.getUserId(),
 				"", paths);
 				
@@ -1793,8 +1789,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 						
 			// Submit a data objects tiering task.
-			dataTransferService.tierDataObjects(bulkTierRequest, HpcDataTransferType.S_3);
-			// TODO Record all data object paths requested in audit table for tiering.
+			dataTransferService.tierDataObjects(invokerNciAccount.getUserId(), bulkTierRequest, HpcDataTransferType.S_3);
 			
 			// Record tiering request in DB
 			tierTaskId = dataManagementService.tierDataObjects(invokerNciAccount.getUserId(),
@@ -1836,8 +1831,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 	
 			// Submit a data objects tiering task.
-			dataTransferService.tierCollections(bulkTierRequest, HpcDataTransferType.S_3);
-			// TODO Record all collections requested in audit table for tiering.
+			dataTransferService.tierCollections(invokerNciAccount.getUserId(), bulkTierRequest, HpcDataTransferType.S_3);
 			
 			// Record tiering request in DB
 			tierTaskId = dataManagementService.tierDataObjects(invokerNciAccount.getUserId(),
@@ -2598,7 +2592,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.UPDATE_DATA_OBJECT, metadataBefore,
 					metadataService.getDataObjectMetadataEntries(path), systemGeneratedMetadata.getArchiveLocation(),
-					updated, null, message, null);
+					updated, null, message, null, null);
 		}
 
 		// Optionally re-generate the upload request URL.
