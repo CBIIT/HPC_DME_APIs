@@ -30,6 +30,7 @@ import org.springframework.util.CollectionUtils;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -57,6 +58,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
@@ -965,7 +967,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			.forEach(bulkRegistrationTask -> {
 					
 			// Update status of items in this bulk registration task.
-			bulkRegistrationTask.getItems().forEach(this::updateTierItemStatus);
+			bulkRegistrationTask.getItems().forEach(i -> this.updateTierItemStatus(i, bulkRegistrationTask.getUserId()));
 			
 			// Check if registration task completed.
 			int completedItemsCount = 0;
@@ -2159,6 +2161,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			logger.info("restore request task: {} - still in-progress",
 					downloadTask.getId());
 		} else {
+			HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(downloadTask.getPath());
 			// Determine the download result.
 			HpcDownloadResult result = HpcDownloadResult.FAILED;
 			if (restorationStatus.equals("success")) {	
@@ -2168,12 +2171,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				result = HpcDownloadResult.FAILED;
 			}
 
-			
+			String message = null;
 			if (result.equals(HpcDownloadResult.FAILED)
 					|| downloadTask.getS3DownloadDestination() != null && downloadTask.getS3DownloadDestination()
 							.getDestinationLocation().getFileContainerId().equals("Synchronous Download")) {
 				// toggle the status to RESTORED and populate HPC_EVENT to notify the user for sync download
-				String message = result.equals(HpcDownloadResult.COMPLETED) ? null
+				message = result.equals(HpcDownloadResult.COMPLETED) ? null
 						: downloadTask.getDataTransferType() + " transfer failed ["
 								+ "Restoration request failed" + "].";
 				Calendar completed = Calendar.getInstance();
@@ -2183,13 +2186,15 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Send a restoration completion event
 					addRestoreRequestEvent(downloadTask, result, message, completed);
 				}
-				// TODO Record restore success/failure to audit table for tiering
 			} else {
 				// toggle the status to RECEIVED for async download
 				dataTransferService.resetDataObjectDownloadTask(downloadTask);
-				// TODO Record restore success to audit table for tiering
 			}
-			
+			// Add an audit record for this restore request success/failure
+			HpcMetadataEntries metadataAfter = metadataService.getDataObjectMetadataEntries(downloadTask.getPath());
+			dataManagementService.addAuditRecord(downloadTask.getPath(), HpcAuditRequestType.COMPLETE_RESTORE_DATA_OBJECT,
+					metadataBefore, metadataAfter, null, false, result.equals(HpcDownloadResult.COMPLETED),
+					result.equals(HpcDownloadResult.COMPLETED) ? null : message, downloadTask.getUserId(), null);
 		}
 	}
 	
@@ -2223,7 +2228,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 *
 	 * @param registrationItem The tiering task item to check.
 	 */
-	private void updateTierItemStatus(HpcBulkDataObjectRegistrationItem registrationItem) {
+	private void updateTierItemStatus(HpcBulkDataObjectRegistrationItem registrationItem, String userId) {
 		HpcDataObjectRegistrationTaskItem registrationTask = registrationItem.getTask();
 		try {
 			if (registrationTask.getResult() == null) {
@@ -2246,6 +2251,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Check the storage class.
 				if (storageClass != null && storageClass.equals("GLACIER")) {
 					
+					HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(registrationTask.getPath());
+					
 					// Add/Update system generated metadata to iRODs
 					Calendar deepArchiveDate = Calendar.getInstance();
 					metadataService.updateDataObjectSystemGeneratedMetadata(registrationTask.getPath(), null, null, null,
@@ -2255,6 +2262,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					registrationTask.setResult(true);
 					registrationTask.setCompleted(deepArchiveDate);
 					registrationTask.setPercentComplete(100);
+					
+					// Add an audit record for this restore request success/failure
+					HpcMetadataEntries metadataAfter = metadataService.getDataObjectMetadataEntries(registrationTask.getPath());
+					dataManagementService.addAuditRecord(registrationTask.getPath(), HpcAuditRequestType.COMPLETE_TIER_DATA_OBJECT,
+							metadataBefore, metadataAfter, null, false, registrationTask.getResult(),
+							null, userId, null);
 				}
 			}
 

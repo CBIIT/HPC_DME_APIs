@@ -722,40 +722,45 @@ public interface HpcDataTransferService {
 	/**
 	 * Create task to tier data object to Glacier
 	 * 
+	 * @param userId	The userId of the requester for auditing
+	 * @param path The data object path
 	 * @param hpcFileLocation The data object location
 	 * @param dataTransferType The data transfer type
 	 * @param configurationId The configuration id
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public void tierDataObject(HpcFileLocation hpcFileLocation, HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
+	public void tierDataObject(String userId, String path, HpcFileLocation hpcFileLocation, HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
 
 	/**
 	 * Create task to tier collection to Glacier
 	 * 
+	 * @param userId	The userId of the requester for auditing
 	 * @param path The collection path
 	 * @param dataTransferType The data transfer type
 	 *  @param configurationId The configuration id
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public void tierCollection(String path, HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
+	public void tierCollection(String userId, String path, HpcDataTransferType dataTransferType, String configurationId) throws HpcException;
 
 	/**
 	 * Create task to tier data objects list to Glacier
 	 * 
+	 * @param userId	The userId of the requester for auditing
 	 * @param bulkTierRequest The list of data objects and config id
 	 * @param dataTransferType The data transfer type
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public void tierDataObjects(HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException;
+	public void tierDataObjects(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException;
 
 	/**
 	 * Create task to tier collection list to Glacier
 	 * 
+	 * @param userId	The userId of the requester for auditing
 	 * @param bulkTierRequest The list of collections and config id
 	 * @param dataTransferType The data transfer type
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public void tierCollections(HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException;
+	public void tierCollections(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException;
 
 	/**
 	 * Get data object meta data
