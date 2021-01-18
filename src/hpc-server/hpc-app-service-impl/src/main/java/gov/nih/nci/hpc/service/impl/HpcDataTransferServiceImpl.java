@@ -45,6 +45,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
+import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -81,6 +83,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkTierItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
@@ -137,6 +140,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Data object download DAO.
 	@Autowired
 	private HpcDataDownloadDAO dataDownloadDAO = null;
+	
+	// Audit DAO.
+	@Autowired
+	private HpcDataManagementAuditDAO dataManagementAuditDAO = null;
 
 	// Event service.
 	@Autowired
@@ -1481,9 +1488,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 	
 	@Override
-	public void tierDataObject(HpcFileLocation hpcFileLocation, HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
+	public void tierDataObject(String userId, String path, HpcFileLocation hpcFileLocation, HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
 		// Input Validation.
-		if (!isValidFileLocation(hpcFileLocation)) {
+		if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(path) || StringUtils.isEmpty(configurationId)
+				|| !isValidFileLocation(hpcFileLocation)) {
 			throw new HpcException("Invalid tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -1494,20 +1502,22 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
-					
+			
 		String prefix = hpcFileLocation.getFileId();
 		// Create life cycle policy with this data object
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
-
+		// Add an audit record for tiering request
+		dataManagementAuditDAO.insert(userId, path, HpcAuditRequestType.TIER_DATA_OBJECT, null, null, hpcFileLocation,
+				false, true, null, Calendar.getInstance(), prefix);
 	}
 
 	@Override
-	public void tierCollection(String path, HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
+	public void tierCollection(String userId, String path, HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
 		
 		// Input Validation.
-		if (StringUtils.isEmpty(path)) {
+		if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(path) || StringUtils.isEmpty(configurationId)) {
 			throw new HpcException("Invalid tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		
@@ -1521,17 +1531,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		
 		HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
 				
-		String prefix = hpcFileLocation.getFileId() + path + "/*";
+		String prefix = hpcFileLocation.getFileId() + "/" + path + "/*";
 		// Create life cycle policy with this collection
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
+		// Add an audit record for tiering request
+		dataManagementAuditDAO.insert(userId, path, HpcAuditRequestType.TIER_COLLECTION, null, null, hpcFileLocation,
+				false, true, null, Calendar.getInstance(), prefix);
 	}
 
 	@Override
-	public void tierDataObjects(HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException {
+	public void tierDataObjects(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException {
 		// Input Validation.
-		if (!isValidTierItems(bulkTierRequest)) {
+		if (StringUtils.isEmpty(userId) || !isValidTierItems(bulkTierRequest)) {
 			throw new HpcException("Invalid tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		// Create life cycle policy with these data objects
@@ -1551,13 +1564,17 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
 					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
+			
+			// Add an audit record for tiering requests
+			dataManagementAuditDAO.insert(userId, item.getPath(), HpcAuditRequestType.TIER_DATA_OBJECT, null, null, hpcFileLocation,
+					false, true, null, Calendar.getInstance(), prefix);
 		}
 	}
 
 	@Override
-	public void tierCollections(HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException {
+	public void tierCollections(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException {
 		// Input Validation.
-		if (!isValidTierItems(bulkTierRequest)) {
+		if (StringUtils.isEmpty(userId) || !isValidTierItems(bulkTierRequest)) {
 			throw new HpcException("Invalid archive request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		// Create life cycle policy with these data objects
@@ -1577,6 +1594,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
 					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
+			// Add an audit record for tiering requests
+			dataManagementAuditDAO.insert(userId, item.getPath(), HpcAuditRequestType.TIER_COLLECTION, null, null, hpcFileLocation,
+					false, true, null, Calendar.getInstance(), prefix);
 		}
 	}
 	
@@ -2758,6 +2778,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			
 			// Populate the response object.
 			response.setDownloadTaskId(downloadTask.getId());
+			
+			// Add an audit record for restore request
+			dataManagementAuditDAO.insert(downloadTask.getUserId(), downloadTask.getPath(),
+					HpcAuditRequestType.RESTORE_DATA_OBJECT, null, null, downloadRequest.getArchiveLocation(), false, true,
+					null, Calendar.getInstance(), null);
 			
 		} catch (HpcException e) {
 			throw (e);
