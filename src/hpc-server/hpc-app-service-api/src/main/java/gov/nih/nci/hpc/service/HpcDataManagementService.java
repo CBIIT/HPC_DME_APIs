@@ -118,10 +118,12 @@ public interface HpcDataManagementService {
 	 * @param message              (Optional) Error message if the request failed.
 	 * @param userId               (Optional) userId if not executed in a user
 	 *                             thread.
+	 * @param filterPrefix         (Optional) The tiering filter prefix that was 
+	 *                             applied.
 	 */
 	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId);
+			Boolean dataTransferStatus, String message, String userId, String filterPrefix);
 
 	/**
 	 * Set collection permission for a subject (user or group).

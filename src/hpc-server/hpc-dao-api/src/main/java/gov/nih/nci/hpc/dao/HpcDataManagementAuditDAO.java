@@ -40,12 +40,14 @@ public interface HpcDataManagementAuditDAO
      * @param dataTransferStatus Data transfer (Cleversafe) request completion status.
      * @param message Error message if the request failed.
      * @param completed The time the request was completed.
+     * @param filterPrefix The tiering filter prefix that was applied.
      * @throws HpcException on database error.
      */
     public void insert(String userId, String path, HpcAuditRequestType requestType,
     		           HpcMetadataEntries metadataBefore, HpcMetadataEntries metadataAfter,
     		           HpcFileLocation archiveLocation, boolean dataManagementStatus,
-    		           Boolean dataTransferStatus, String message, Calendar completed) 
+    		           Boolean dataTransferStatus, String message, Calendar completed,
+    		           String filterPrefix) 
     		          throws HpcException;
 }
 

@@ -254,8 +254,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
 					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
-					registrationResult.getCompleted(), registrationResult.getId(), registrationResult.getUserId(),
-					registrationResult.getResult(), registrationResult.getMessage(),
+					registrationResult.getCompleted(), registrationResult.getRequestType(), registrationResult.getId(), 
+					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
 					registrationResult.getCompleted(), registrationResult.getRequestType());
 
