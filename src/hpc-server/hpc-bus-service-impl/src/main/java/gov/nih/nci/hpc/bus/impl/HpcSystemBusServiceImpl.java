@@ -972,7 +972,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// Check if registration task completed.
 			int completedItemsCount = 0;
 			for (HpcBulkDataObjectRegistrationItem registrationItem : bulkRegistrationTask.getItems()) {
-				if (registrationItem.getTask().getResult()) {
+				if (registrationItem.getTask().getResult() == null) {
+					// Task still in progress. Update progress.
+					try {
+						dataManagementService.updateBulkDataObjectRegistrationTask(bulkRegistrationTask);
+
+					} catch (HpcException e) {
+						logger.error("Failed to update data object list task: " + bulkRegistrationTask.getId());
+					}
+					return;
+				}
+				if (registrationItem.getTask().getResult().booleanValue()) {
 					completedItemsCount++;
 				}
 			}
