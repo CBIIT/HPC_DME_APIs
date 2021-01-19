@@ -25,7 +25,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -71,13 +70,13 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "when matched then update set USER_ID = ?, PATH = ?, CONFIGURATION_ID = ?, S3_ARCHIVE_CONFIGURATION_ID = ?, DATA_TRANSFER_REQUEST_ID = ?, "
 			+ "DATA_TRANSFER_TYPE = ?, DATA_TRANSFER_STATUS = ?, DOWNLOAD_FILE_PATH = ?, ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_TYPE = ?, S3_ACCOUNT_ACCESS_KEY = ?, "
-			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ?, COMPLETION_EVENT = ?, PERCENT_COMPLETE = ?, DATA_SIZE = ?, "
-			+ "CREATED = ?, PROCESSED = ?, IN_PROCESS = ? "
+			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ?, "
+			+ "COMPLETION_EVENT = ?, PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, S3_ARCHIVE_CONFIGURATION_ID, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, "
 			+ "DATA_TRANSFER_STATUS, DOWNLOAD_FILE_PATH, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
-			+ "DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, GOOGLE_DRIVE_ACCESS_TOKEN, "
-			+ "COMPLETION_EVENT, PERCENT_COMPLETE, DATA_SIZE, CREATED, PROCESSED, IN_PROCESS, PRIORITY) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, "
+			+ "S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, GOOGLE_DRIVE_ACCESS_TOKEN, COMPLETION_EVENT, PERCENT_COMPLETE, DATA_SIZE, CREATED, PROCESSED, IN_PROCESS, PRIORITY) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
@@ -257,6 +256,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			s3Account.setAccessKey(encryptor.decrypt(s3AccountAccessKey));
 			s3Account.setSecretKey(encryptor.decrypt(s3AccountSecretKey));
 			s3Account.setRegion(rs.getString("S3_ACCOUNT_REGION"));
+			s3Account.setUrl(rs.getString("S3_ACCOUNT_URL"));
+			s3Account.setPathStyleAccessEnabled(rs.getBoolean("S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED"));
 		}
 
 		String googleDriveAccessToken = null;
@@ -448,6 +449,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			byte[] s3AccountAccessKey = null;
 			byte[] s3AccountSecretKey = null;
 			String s3AccountRegion = null;
+			String s3AccountUrl = null;
+			Boolean s3AccountPathStyleAccessEnabled = null;
 			byte[] googleDriveAccessToken = null;
 			if (dataObjectDownloadTask.getGlobusDownloadDestination() != null) {
 				destinationLocation = dataObjectDownloadTask.getGlobusDownloadDestination().getDestinationLocation();
@@ -457,11 +460,15 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				s3AccountAccessKey = encryptor.encrypt(s3Account.getAccessKey());
 				s3AccountSecretKey = encryptor.encrypt(s3Account.getSecretKey());
 				s3AccountRegion = s3Account.getRegion();
+				s3AccountUrl = s3Account.getUrl();
+				s3AccountPathStyleAccessEnabled = s3Account.getPathStyleAccessEnabled();
 			} else if (dataObjectDownloadTask.getGoogleDriveDownloadDestination() != null) {
 				destinationLocation = dataObjectDownloadTask.getGoogleDriveDownloadDestination()
 						.getDestinationLocation();
 				googleDriveAccessToken = encryptor
 						.encrypt(dataObjectDownloadTask.getGoogleDriveDownloadDestination().getAccessToken());
+			} else {
+				throw new HpcException("No download destination in a download task", HpcErrorType.UNEXPECTED_ERROR);
 			}
 
 			jdbcTemplate.update(UPSERT_DATA_OBJECT_DOWNLOAD_TASK_SQL, dataObjectDownloadTask.getId(),
@@ -474,7 +481,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getArchiveLocation().getFileContainerId(),
 					dataObjectDownloadTask.getArchiveLocation().getFileId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), dataObjectDownloadTask.getDestinationType().value(),
-					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, googleDriveAccessToken,
+					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
+					s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
 					dataObjectDownloadTask.getCompletionEvent(), dataObjectDownloadTask.getPercentComplete(),
 					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
 					dataObjectDownloadTask.getProcessed(),
@@ -489,7 +497,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getArchiveLocation().getFileContainerId(),
 					dataObjectDownloadTask.getArchiveLocation().getFileId(), destinationLocation.getFileContainerId(),
 					destinationLocation.getFileId(), dataObjectDownloadTask.getDestinationType().value(),
-					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, googleDriveAccessToken,
+					s3AccountAccessKey, s3AccountSecretKey, s3AccountRegion, s3AccountUrl,
+					s3AccountPathStyleAccessEnabled, googleDriveAccessToken,
 					dataObjectDownloadTask.getCompletionEvent(), dataObjectDownloadTask.getPercentComplete(),
 					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
 					dataObjectDownloadTask.getProcessed(),

@@ -113,7 +113,7 @@ public interface HpcDataManagementService {
 	 *                             archive (prior to deletion).
 	 * @param dataManagementStatus Data management (iRODS) request completion
 	 *                             status.
-	 * @param dataTransferStatus   (Optional) Data transfer (Cleversafe) request
+	 * @param dataTransferStatus   (Optional) Data transfer (archive) request
 	 *                             completion status.
 	 * @param message              (Optional) Error message if the request failed.
 	 * @param userId               (Optional) userId if not executed in a user
