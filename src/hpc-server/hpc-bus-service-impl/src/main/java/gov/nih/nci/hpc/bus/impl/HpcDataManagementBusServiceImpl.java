@@ -849,7 +849,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 											.getS3UploadConfigurationId(),
 									registrationCompletionEvent);
 
-					// Generate archive (Cleversafe) system generated metadata. Note: This is only
+					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
 					if (dataObjectFile != null) {
 						String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
@@ -1179,11 +1179,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to S3 destination is supported only from Cleversafe archive (i.e.
-		// not POSIX).
-		// 4. Download to Google Drive destination is supported only from Cleversafe
-		// archive (i.e. not
-		// POSIX).
+		// 3. Download to S3 destination is supported only from S3 archive.
+		// 4. Download to Google Drive destination is supported only from S3 archive.
 		// 5. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path,
 				downloadRequest.getS3DownloadDestination() != null,
@@ -1262,8 +1259,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to S3 destination is supported only from Cleversafe archive (i.e.
-		// not POSIX).
+		// 3. Download to S3 destination is supported only from S3 archive.
 		// 4. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
 
@@ -2482,15 +2478,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					googleDriveDownloadDestination);
 		}
 
-		// Download to S3 destination is supported only from Cleversafe archive.
+		// Download to S3 destination is supported only from S3 archive.
 		if (s3DownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
 			throw new HpcException("S3 download request is not supported for POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Download to Google Drive destination is supported only from Cleversafe
-		// archive.
+		// Download to Google Drive destination is supported only from S3 archive.
 		if (googleDriveDownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
 			throw new HpcException("Google Drive download request is not supported for POSIX based file system archive",
