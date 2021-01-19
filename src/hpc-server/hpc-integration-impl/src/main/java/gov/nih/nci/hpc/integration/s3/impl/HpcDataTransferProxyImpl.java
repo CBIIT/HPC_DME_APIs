@@ -174,7 +174,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
 					downloadRequest.getFileDestination(), progressListener);
 		} else {
-			// This is a download to AWS S3 destination.
+			// This is a download to S3 destination (either AWS or 3rd Party Provider).
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
 					downloadRequest.getS3Destination(), progressListener);
 		}
@@ -749,7 +749,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	/**
-	 * Download a data object to AWS S3 destination.
+	 * Download a data object to S3 destination (either AWS or 3rd Party Provider).
 	 *
 	 * @param authenticatedToken An authenticated token.
 	 * @param archiveLocation    The data object archive location.

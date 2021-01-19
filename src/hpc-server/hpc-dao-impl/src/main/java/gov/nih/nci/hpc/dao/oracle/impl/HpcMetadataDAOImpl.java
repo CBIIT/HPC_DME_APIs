@@ -18,7 +18,6 @@ import java.util.EnumMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -53,7 +52,7 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	// ---------------------------------------------------------------------//
 
 	// SQL Queries.
- 	private static final String GET_COLLECTION_IDS_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=main1.object_id and collection.meta_attr_value = ?";
+	private static final String GET_COLLECTION_IDS_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=main1.object_id and collection.meta_attr_value = ?";
 
 	private static final String GET_COLLECTION_IDS_NOT_EQUAL_SQL = " exists(select 1 from r_coll_hierarchy_meta_main collection where collection.object_id=main1.object_id and collection.meta_attr_value <> ?";
 
@@ -124,10 +123,8 @@ public class HpcMetadataDAOImpl implements HpcMetadataDAO {
 	private static final String COLLECTION_LEVEL_LABEL_LIKE_FILTER = " and collection.level_label like ?)";
 
 	private static final String USER_ACCESS_SQL = "(select 1 from R_USER_MAIN user_main, R_USER_GROUP groups, R_OBJT_ACCESS obj_access "
-			+ "where user_main.USER_ID=groups.USER_ID "
-			+ "and groups.GROUP_USER_ID=obj_access.USER_ID "
-			+ "and obj_access.object_id = main1.object_id "
-			+ "and user_main.USER_NAME = ?)";
+			+ "where user_main.USER_ID=groups.USER_ID " + "and groups.GROUP_USER_ID=obj_access.USER_ID "
+			+ "and obj_access.object_id = main1.object_id " + "and user_main.USER_NAME = ?)";
 
 	private static final String LIMIT_OFFSET_SQL = " order by object_path offset ? rows fetch next ? rows only";
 
