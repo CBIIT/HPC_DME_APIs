@@ -173,9 +173,6 @@ public class HpcS3Connection {
 	 */
 	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
 			HpcIntegratedSystem s3Provider) throws HpcException {
-
-		// 3rd Party S3 Provider authentication.
-
 		// Create the credential provider based on the configured credentials.
 		BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(username, password);
 		AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
