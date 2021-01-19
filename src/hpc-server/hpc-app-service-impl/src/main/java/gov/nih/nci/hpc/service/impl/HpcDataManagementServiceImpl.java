@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
+import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -1042,9 +1043,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				throw new HpcException("Invalid S3 upload source in registration request for: " + path,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			if (!isValidS3Account(registrationRequest.getS3UploadSource().getAccount())) {
-				throw new HpcException("Invalid S3 account in registration request for: " + path,
-						HpcErrorType.INVALID_REQUEST_INPUT);
+			HpcDomainValidationResult validationResult = isValidS3Account(
+					registrationRequest.getS3UploadSource().getAccount());
+			if (!validationResult.getValid()) {
+				throw new HpcException("Invalid S3 account [ " + validationResult.getMessage()
+						+ "] in registration request for: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
 

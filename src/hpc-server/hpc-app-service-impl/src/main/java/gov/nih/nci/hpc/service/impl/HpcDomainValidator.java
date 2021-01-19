@@ -142,12 +142,28 @@ public class HpcDomainValidator {
 	 * @param s3Account The object to be validated.
 	 * @return true if valid, false otherwise.
 	 */
-	public static boolean isValidS3Account(HpcS3Account s3Account) {
+	public static HpcDomainValidationResult isValidS3Account(HpcS3Account s3Account) {
+		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+		validationResult.setValid(false);
+		
 		if (s3Account == null || StringUtils.isEmpty(s3Account.getAccessKey())
-				|| StringUtils.isEmpty(s3Account.getSecretKey()) || StringUtils.isEmpty(s3Account.getRegion())) {
-			return false;
+				|| StringUtils.isEmpty(s3Account.getSecretKey())) {
+			validationResult.setMessage("Empty S3 account access/secret key");
+			return validationResult;
 		}
-		return true;
+		
+		if(StringUtils.isEmpty(s3Account.getRegion()) && StringUtils.isEmpty(s3Account.getUrl())) {
+			validationResult.setMessage("No region (AWS) or URL (3rd Party S3 Provider) provided");
+			return validationResult;
+		}
+		
+		if(!StringUtils.isEmpty(s3Account.getRegion()) && !StringUtils.isEmpty(s3Account.getUrl())) {
+			validationResult.setMessage("Both region (AWS) or URL (3rd Party S3 Provider) provided");
+			return validationResult;
+		}
+	
+		validationResult.setValid(true);
+		return validationResult;
 	}
 
 	// ---------------------------------------------------------------------//
