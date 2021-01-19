@@ -1531,7 +1531,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		
 		HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
 				
-		String prefix = hpcFileLocation.getFileId() + "/" + path + "/*";
+		String prefix = hpcFileLocation.getFileId() + "/" + path + "/";
 		// Create life cycle policy with this collection
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
@@ -1589,7 +1589,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			
 			HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
 			
-			String prefix = hpcFileLocation.getFileId() + item.getPath() + "/*";
+			String prefix = hpcFileLocation.getFileId() + item.getPath() + "/";
 			// Create life cycle policy with this collection
 			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
