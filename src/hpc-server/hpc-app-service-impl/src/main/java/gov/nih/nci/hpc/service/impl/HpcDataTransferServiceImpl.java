@@ -2779,11 +2779,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Populate the response object.
 			response.setDownloadTaskId(downloadTask.getId());
 			
-			// Add an audit record for restore request
-			dataManagementAuditDAO.insert(downloadTask.getUserId(), downloadTask.getPath(),
-					HpcAuditRequestType.RESTORE_DATA_OBJECT, null, null, downloadRequest.getArchiveLocation(), false, true,
-					null, Calendar.getInstance(), null);
-			
 		} catch (HpcException e) {
 			throw (e);
 		}
@@ -2995,6 +2990,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			downloadTask.setCreated(Calendar.getInstance());
 			downloadTask.setPercentComplete(0);
 			downloadTask.setSize(firstHopDownloadRequest.getSize());
+			if(HpcDataTransferDownloadStatus.RESTORE_REQUESTED.equals(dataTransferDownloadStatus))
+				downloadTask.setRestoreRequested(true);
 
 			dataDownloadDAO.upsertDataObjectDownloadTask(downloadTask);
 		}
