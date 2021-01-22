@@ -270,11 +270,11 @@
 					value="${hpc.ws.rs.auth.data-management.get-all-download-summary}" />
 				<entry key="getAllRegistrationSummary"
 					value="${hpc.ws.rs.auth.data-management.get-all-registration-summary}" />
-				<entry key="archiveDataObject"
+				<entry key="tierDataObject"
 					value="${hpc.ws.rs.auth.data-management.tier-data-object}" />
-				<entry key="archiveCollection"
+				<entry key="tierCollection"
 					value="${hpc.ws.rs.auth.data-management.tier-collection}" />
-				<entry key="archiveDataObjectsOrCollections"
+				<entry key="tierDataObjectsOrCollections"
 					value="${hpc.ws.rs.auth.data-management.tier-data-objects}" />
 					
 				<!-- Data Search Service Authorizations -->
