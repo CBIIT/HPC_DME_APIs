@@ -2200,11 +2200,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// toggle the status to RECEIVED for async download
 				dataTransferService.resetDataObjectDownloadTask(downloadTask);
 			}
-			// Add an audit record for this restore request success/failure
-			HpcMetadataEntries metadataAfter = metadataService.getDataObjectMetadataEntries(downloadTask.getPath());
-			dataManagementService.addAuditRecord(downloadTask.getPath(), HpcAuditRequestType.COMPLETE_RESTORE_DATA_OBJECT,
-					metadataBefore, metadataAfter, null, false, result.equals(HpcDownloadResult.COMPLETED),
-					result.equals(HpcDownloadResult.COMPLETED) ? null : message, downloadTask.getUserId(), null);
 		}
 	}
 	
