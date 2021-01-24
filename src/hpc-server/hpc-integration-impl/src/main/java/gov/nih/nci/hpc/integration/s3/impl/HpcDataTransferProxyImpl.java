@@ -159,7 +159,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(), archiveDestinationLocation,
 					progressListener, baseArchiveDestination.getType(), metadataEntries);
 		} else {
-			// Upload by streaming from AWS S3 or Google Drive source.
+			// Upload by streaming from AWS, 3rd Party S3 Provider, or Google Drive source.
 			return uploadDataObject(authenticatedToken, uploadRequest.getS3UploadSource(),
 					uploadRequest.getGoogleDriveUploadSource(), archiveDestinationLocation,
 					uploadRequest.getSourceSize(), progressListener, metadataEntries);
@@ -452,10 +452,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	/**
-	 * Upload a data object file from AWS S3 or Google Drive source.
+	 * Upload a data object file from AWS, 3rd Party S3 Provider or Google Drive
+	 * source.
 	 *
 	 * @param authenticatedToken         An authenticated token.
-	 * @param s3UploadSource             The S3 upload source.
+	 * @param s3UploadSource             The S3 upload source (AWS or 3rd party
+	 *                                   provider)
 	 * @param googleDriveUploadSource    The Google Drive upload source.
 	 * @param archiveDestinationLocation The archive destination location.
 	 * @param size                       the size of the file to upload.
