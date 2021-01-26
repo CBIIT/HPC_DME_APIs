@@ -481,9 +481,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 							Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getAccessKey())));
 					jsonS3UploadSource.put("accountSecretKey",
 							Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getSecretKey())));
-					jsonS3UploadSource.put("region", s3Account.getRegion());
-					jsonS3UploadSource.put("url", s3Account.getUrl());
-					jsonS3UploadSource.put("pathStyleAccessEnabled", s3Account.getPathStyleAccessEnabled());
+					jsonS3UploadSource.put("accountRegion", s3Account.getRegion());
+					jsonS3UploadSource.put("accountUrl", s3Account.getUrl());
+					jsonS3UploadSource.put("accountPathStyleAccessEnabled", s3Account.getPathStyleAccessEnabled());
 				}
 				jsonRequest.put("s3UploadSource", jsonS3UploadSource);
 			}
@@ -798,11 +798,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 						.decrypt(Base64.getDecoder().decode(jsonS3UploadSource.get("accountAccessKey").toString())));
 				s3Account.setSecretKey(encryptor
 						.decrypt(Base64.getDecoder().decode(jsonS3UploadSource.get("accountSecretKey").toString())));
-				Object region = jsonS3UploadSource.get("region");
+				Object region = jsonS3UploadSource.get("accountRegion");
 				s3Account.setRegion(region != null ? region.toString() : null);
-				Object url = jsonRequest.get("url");
+				Object url = jsonS3UploadSource.get("accountUrl");
 				s3Account.setUrl(url != null ? url.toString() : null);
-				Object pathStyleAccessEnabled = jsonRequest.get("pathStyleAccessEnabled");
+				Object pathStyleAccessEnabled = jsonS3UploadSource.get("accountPathStyleAccessEnabled");
 				s3Account.setPathStyleAccessEnabled(
 						pathStyleAccessEnabled != null ? Boolean.valueOf(pathStyleAccessEnabled.toString()) : null);
 
