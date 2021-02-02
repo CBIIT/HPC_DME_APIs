@@ -1057,6 +1057,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			if (downloadItem.getPercentComplete() != null) {
 				jsonDownloadItem.put("percentComplete", downloadItem.getPercentComplete());
 			}
+			if (downloadItem.getRestoreInProgress() != null) {
+				jsonDownloadItem.put("restoreInProgress", downloadItem.getRestoreInProgress());
+			}
 
 			jsonDownloadItems.add(jsonDownloadItem);
 		}
@@ -1140,6 +1143,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				Object percentComplete = jsonDownloadItem.get("percentComplete");
 				if (percentComplete != null) {
 					downloadItem.setPercentComplete(Integer.valueOf(percentComplete.toString()));
+				}
+				
+				Object restoreInProgress = jsonDownloadItem.get("restoreInProgress");
+				if (restoreInProgress != null) {
+					downloadItem.setRestoreInProgress(restoreInProgress.toString().equals("true"));
 				}
 
 				downloadItems.add(downloadItem);

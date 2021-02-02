@@ -186,14 +186,6 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
 			<xsd:enumeration value="ACTIVE" />
-			<xsd:enumeration value="TIER_REQUESTED" />
-		</xsd:restriction>
-	</xsd:simpleType>
-	
-	<xsd:simpleType name="HpcBulkDataObjectRegistrationRequestType">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="REGISTRATION_REQUEST" />
-			<xsd:enumeration value="TIER_REQUEST" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -203,9 +195,6 @@
 			<xsd:enumeration value="DELETE_DATA_OBJECT" />
 			<xsd:enumeration value="UPDATE_COLLECTION" />
 			<xsd:enumeration value="DELETE_COLLECTION" />
-			<xsd:enumeration value="TIER_DATA_OBJECT" />
-			<xsd:enumeration value="TIER_COLLECTION" />
-			<xsd:enumeration value="COMPLETE_TIER_DATA_OBJECT" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	

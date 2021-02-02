@@ -80,9 +80,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT using dual on (ID = ?) "
 			+ "when matched then update set USER_ID = ?, RESULT = ?, MESSAGE = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
-			+ "ITEMS = ?, CREATED = ?, COMPLETED = ?, REQUEST_TYPE = ? "
+			+ "ITEMS = ?, CREATED = ?, COMPLETED = ?"
 			+ "when not matched then insert (ID, USER_ID, RESULT, MESSAGE, EFFECTIVE_TRANSFER_SPEED, ITEMS, "
-			+ "CREATED, COMPLETED, REQUEST_TYPE) values (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "CREATED, COMPLETED, REQUEST_TYPE) values (?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String GET_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL = "select * from HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT where ID = ?";
 
@@ -160,7 +160,6 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Calendar completed = Calendar.getInstance();
 		completed.setTime(rs.getTimestamp("COMPLETED"));
 		bulkDdataObjectRegistrationResult.setCompleted(completed);
-		bulkDdataObjectRegistrationResult.setRequestType(rs.getString("REQUEST_TYPE"));
 		
 		return bulkDdataObjectRegistrationResult;
 	};
@@ -254,10 +253,10 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
 					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
-					registrationResult.getCompleted(), registrationResult.getRequestType(), registrationResult.getId(), 
+					registrationResult.getCompleted(), registrationResult.getId(), 
 					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
-					registrationResult.getCompleted(), registrationResult.getRequestType());
+					registrationResult.getCompleted());
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a bulk data object registration result: " + e.getMessage(),
@@ -456,66 +455,65 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 			JSONObject jsonRequest = new JSONObject();
 			HpcDataObjectRegistrationRequest request = registrationItem.getRequest();
-			if(request != null) {
-				if (request.getCreateParentCollections() != null) {
-					jsonRequest.put("createParentCollection", request.getCreateParentCollections());
+
+			if (request.getCreateParentCollections() != null) {
+				jsonRequest.put("createParentCollection", request.getCreateParentCollections());
+			}
+			if (request.getCallerObjectId() != null) {
+				jsonRequest.put("callerObjectId", request.getCallerObjectId());
+			}
+			if (request.getGlobusUploadSource() != null) {
+				JSONObject jsonGlobusUploadSource = new JSONObject();
+				HpcUploadSource globusUploadSource = request.getGlobusUploadSource();
+				jsonGlobusUploadSource.put("sourceFileContainerId",
+						globusUploadSource.getSourceLocation().getFileContainerId());
+				jsonGlobusUploadSource.put("sourceFileId", globusUploadSource.getSourceLocation().getFileId());
+				jsonRequest.put("globusUploadSource", jsonGlobusUploadSource);
+			}
+			if (request.getS3UploadSource() != null) {
+				JSONObject jsonS3UploadSource = new JSONObject();
+				HpcStreamingUploadSource s3UploadSource = request.getS3UploadSource();
+				jsonS3UploadSource.put("sourceFileContainerId",
+						s3UploadSource.getSourceLocation().getFileContainerId());
+				jsonS3UploadSource.put("sourceFileId", s3UploadSource.getSourceLocation().getFileId());
+				if (s3UploadSource.getAccount() != null) {
+					HpcS3Account s3Account = s3UploadSource.getAccount();
+					jsonS3UploadSource.put("accountAccessKey",
+							Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getAccessKey())));
+					jsonS3UploadSource.put("accountSecretKey",
+							Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getSecretKey())));
+					jsonS3UploadSource.put("region", s3Account.getRegion());
 				}
-				if (request.getCallerObjectId() != null) {
-					jsonRequest.put("callerObjectId", request.getCallerObjectId());
+				jsonRequest.put("s3UploadSource", jsonS3UploadSource);
+			}
+			if (request.getGoogleDriveUploadSource() != null) {
+				JSONObject jsonGoogleDriveUploadSource = new JSONObject();
+				HpcStreamingUploadSource googleUploadSource = request.getGoogleDriveUploadSource();
+				jsonGoogleDriveUploadSource.put("sourceFileContainerId",
+						googleUploadSource.getSourceLocation().getFileContainerId());
+				jsonGoogleDriveUploadSource.put("sourceFileId", googleUploadSource.getSourceLocation().getFileId());
+				if (googleUploadSource.getAccessToken() != null) {
+					jsonGoogleDriveUploadSource.put("accessToken",
+							Base64.getEncoder().encodeToString(encryptor.encrypt(googleUploadSource.getAccessToken())));
 				}
-				if (request.getGlobusUploadSource() != null) {
-					JSONObject jsonGlobusUploadSource = new JSONObject();
-					HpcUploadSource globusUploadSource = request.getGlobusUploadSource();
-					jsonGlobusUploadSource.put("sourceFileContainerId",
-							globusUploadSource.getSourceLocation().getFileContainerId());
-					jsonGlobusUploadSource.put("sourceFileId", globusUploadSource.getSourceLocation().getFileId());
-					jsonRequest.put("globusUploadSource", jsonGlobusUploadSource);
-				}
-				if (request.getS3UploadSource() != null) {
-					JSONObject jsonS3UploadSource = new JSONObject();
-					HpcStreamingUploadSource s3UploadSource = request.getS3UploadSource();
-					jsonS3UploadSource.put("sourceFileContainerId",
-							s3UploadSource.getSourceLocation().getFileContainerId());
-					jsonS3UploadSource.put("sourceFileId", s3UploadSource.getSourceLocation().getFileId());
-					if (s3UploadSource.getAccount() != null) {
-						HpcS3Account s3Account = s3UploadSource.getAccount();
-						jsonS3UploadSource.put("accountAccessKey",
-								Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getAccessKey())));
-						jsonS3UploadSource.put("accountSecretKey",
-								Base64.getEncoder().encodeToString(encryptor.encrypt(s3Account.getSecretKey())));
-						jsonS3UploadSource.put("region", s3Account.getRegion());
-					}
-					jsonRequest.put("s3UploadSource", jsonS3UploadSource);
-				}
-				if (request.getGoogleDriveUploadSource() != null) {
-					JSONObject jsonGoogleDriveUploadSource = new JSONObject();
-					HpcStreamingUploadSource googleUploadSource = request.getGoogleDriveUploadSource();
-					jsonGoogleDriveUploadSource.put("sourceFileContainerId",
-							googleUploadSource.getSourceLocation().getFileContainerId());
-					jsonGoogleDriveUploadSource.put("sourceFileId", googleUploadSource.getSourceLocation().getFileId());
-					if (googleUploadSource.getAccessToken() != null) {
-						jsonGoogleDriveUploadSource.put("accessToken",
-								Base64.getEncoder().encodeToString(encryptor.encrypt(googleUploadSource.getAccessToken())));
-					}
-					jsonRequest.put("googleDriveUploadSource", jsonGoogleDriveUploadSource);
-				}
-				if (request.getFileSystemUploadSource() != null) {
-					JSONObject jsonFileSystemUploadSource = new JSONObject();
-					HpcUploadSource fileSystemUploadSource = request.getFileSystemUploadSource();
-					jsonFileSystemUploadSource.put("sourceFileContainerId",
-							fileSystemUploadSource.getSourceLocation().getFileContainerId());
-					jsonFileSystemUploadSource.put("sourceFileId", fileSystemUploadSource.getSourceLocation().getFileId());
-					jsonRequest.put("fileSystemUploadSource", jsonFileSystemUploadSource);
-				}
-				if (request.getLinkSourcePath() != null) {
-					jsonRequest.put("linkSourcePath", request.getLinkSourcePath());
-				}
-	
-				jsonRequest.put("metadataEntries", toJSONArray(request.getMetadataEntries()));
-				if (request.getParentCollectionsBulkMetadataEntries() != null) {
-					jsonRequest.put("parentCollectionsBulkMetadataEntries",
-							toJSON(request.getParentCollectionsBulkMetadataEntries()));
-				}
+				jsonRequest.put("googleDriveUploadSource", jsonGoogleDriveUploadSource);
+			}
+			if (request.getFileSystemUploadSource() != null) {
+				JSONObject jsonFileSystemUploadSource = new JSONObject();
+				HpcUploadSource fileSystemUploadSource = request.getFileSystemUploadSource();
+				jsonFileSystemUploadSource.put("sourceFileContainerId",
+						fileSystemUploadSource.getSourceLocation().getFileContainerId());
+				jsonFileSystemUploadSource.put("sourceFileId", fileSystemUploadSource.getSourceLocation().getFileId());
+				jsonRequest.put("fileSystemUploadSource", jsonFileSystemUploadSource);
+			}
+			if (request.getLinkSourcePath() != null) {
+				jsonRequest.put("linkSourcePath", request.getLinkSourcePath());
+			}
+
+			jsonRequest.put("metadataEntries", toJSONArray(request.getMetadataEntries()));
+			if (request.getParentCollectionsBulkMetadataEntries() != null) {
+				jsonRequest.put("parentCollectionsBulkMetadataEntries",
+						toJSON(request.getParentCollectionsBulkMetadataEntries()));
 			}
 
 			JSONObject jsonRegistrationItem = new JSONObject();

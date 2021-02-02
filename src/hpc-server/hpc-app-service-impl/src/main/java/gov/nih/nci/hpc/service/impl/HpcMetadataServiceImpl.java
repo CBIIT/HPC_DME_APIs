@@ -36,7 +36,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
-import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -69,6 +69,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -618,7 +619,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
 			String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType, Calendar dataTransferStarted, Calendar dataTransferCompleted,
-			Long sourceSize, String linkSourcePath, Calendar deepArchiveDate) throws HpcException {
+			Long sourceSize, String linkSourcePath, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException {
 		// Input validation.
 		if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
 			throw new HpcException("Invalid updated system generated metadata for data object",
@@ -681,10 +682,9 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
 		}
 		
-		if (deepArchiveDate != null) {
+		if (deepArchiveStatus != null) {
 			// Update the deep archive date metadata.
-			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE,
-					dateFormat.format(deepArchiveDate.getTime())));
+			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_STATUS_ATTRIBUTE, deepArchiveStatus.value()));
 		}
 
 		if (!metadataEntries.isEmpty()) {

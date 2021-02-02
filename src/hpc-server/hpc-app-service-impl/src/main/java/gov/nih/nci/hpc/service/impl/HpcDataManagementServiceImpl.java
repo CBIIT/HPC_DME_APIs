@@ -14,6 +14,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +32,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
-import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -158,6 +159,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// for an upload.
 	private List<HpcMetadataQuery> dataTransferInFileSystemQuery = new ArrayList<>();
 
+	// Prepared query to get data objects that have tier deep archive in-progress
+	private List<HpcMetadataQuery> deepArchiveInProgressQuery = new ArrayList<>();
+
 	// List of subjects (user-id / group-name) that permission update is not
 	// allowed.
 	private List<String> systemAdminSubjects = new ArrayList<>();
@@ -227,6 +231,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// upload.
 		dataTransferInFileSystemQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
 				HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.IN_FILE_SYSTEM.value()));
+
+		// Prepare the query to get data objects in deep archive status in-progress 
+		deepArchiveInProgressQuery.add(toMetadataQuery(DEEP_ARCHIVE_STATUS_ATTRIBUTE,
+				HpcMetadataQueryOperator.EQUAL, HpcDeepArchiveStatus.IN_PROGRESS.value()));
 
 		// Populate the list of system admin subjects (user-id / group-name). Set
 		// permission is not
@@ -428,7 +436,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public void addAuditRecord(String path, HpcAuditRequestType requestType, HpcMetadataEntries metadataBefore,
 			HpcMetadataEntries metadataAfter, HpcFileLocation archiveLocation, boolean dataManagementStatus,
-			Boolean dataTransferStatus, String message, String userId, String filterPrefix) {
+			Boolean dataTransferStatus, String message, String userId) {
 		// Input validation.
 		String nciUserId = HpcRequestContext.getRequestInvoker().getNciAccount() == null ? userId
 				: HpcRequestContext.getRequestInvoker().getNciAccount().getUserId();
@@ -439,7 +447,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		try {
 			dataManagementAuditDAO.insert(nciUserId, path, requestType, metadataBefore, metadataAfter, archiveLocation,
-					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance(), filterPrefix);
+					dataManagementStatus, dataTransferStatus, message, Calendar.getInstance());
 
 		} catch (HpcException e) {
 			logger.error("Failed to add an audit record", HpcErrorType.DATABASE_ERROR, e);
@@ -770,7 +778,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 							s3Account.setAccessKey("****");
 							s3Account.setSecretKey("****");
 						}));
-		registrationResult.setRequestType(HpcBulkDataObjectRegistrationRequestType.REGISTRATION_REQUEST.value());
 		
 		// Persist to DB.
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
@@ -954,71 +961,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public String tierDataObjects(String userId, String uiURL,
-			List<String> paths) throws HpcException {
-		// Input validation
-		if (StringUtils.isEmpty(userId)) {
-			throw new HpcException("Null / Empty userId in registration list request",
-					HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		if (paths.isEmpty()) {
-			throw new HpcException("Empty archive paths", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Create a bulk data object registration task for archival.
-		HpcBulkDataObjectRegistrationTask bulkDataObjectRegistrationTask = new HpcBulkDataObjectRegistrationTask();
-		bulkDataObjectRegistrationTask.setUserId(userId);
-		bulkDataObjectRegistrationTask
-				.setUiURL(!StringUtils.isEmpty(uiURL) ? uiURL : defaultBulkRegistrationStatusUiURL);
-		bulkDataObjectRegistrationTask.setCreated(Calendar.getInstance());
-		bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.TIER_REQUESTED);
-
-		// Iterate through the individual data object paths and add them
-		// as items to the
-		// list registration task.
-		for (String path : paths) {
-
-			// Create a data object registration item.
-			HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
-			HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
-			reqistrationTask.setPath(path);
-			registrationItem.setTask(reqistrationTask);
-
-			bulkDataObjectRegistrationTask.getItems().add(registrationItem);
-		}
-
-		// Persist the registration request.
-		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
-		return bulkDataObjectRegistrationTask.getId();
+	public List<HpcDataObject> getDataObjectsDeepArchiveInProgress() throws HpcException {
+		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+				deepArchiveInProgressQuery);
 	}
-
-	@Override
-	public void completeTierRequestTask(HpcBulkDataObjectRegistrationTask registrationTask,
-			boolean result, String message, Calendar completed) throws HpcException {
-		// Input validation
-		if (registrationTask == null) {
-			throw new HpcException("Invalid data object list registration task", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Cleanup the DB record.
-		dataRegistrationDAO.deleteBulkDataObjectRegistrationTask(registrationTask.getId());
-
-		// Create a registration result object.
-		HpcBulkDataObjectRegistrationResult registrationResult = new HpcBulkDataObjectRegistrationResult();
-		registrationResult.setId(registrationTask.getId());
-		registrationResult.setUserId(registrationTask.getUserId());
-		registrationResult.setResult(result);
-		registrationResult.setMessage(message);
-		registrationResult.setCreated(registrationTask.getCreated());
-		registrationResult.setCompleted(completed);
-		registrationResult.getItems().addAll(registrationTask.getItems());
-		registrationResult.setRequestType(HpcBulkDataObjectRegistrationRequestType.TIER_REQUEST.value());
-		
-		// Persist to DB.
-		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
-	}
-
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

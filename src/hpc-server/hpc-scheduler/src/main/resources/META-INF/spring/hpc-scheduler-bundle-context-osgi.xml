@@ -43,7 +43,7 @@
 		<prop key="hpc.scheduler.cron.processevents.delay">40 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.refreshMetadataViews.delay">0 0/60 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.refreshReportViews.delay">0 0/60 * * * ?</prop>
-		<prop key="hpc.scheduler.cron.completeTierTasks.delay">15 0/1 * * * ?</prop>
+		<prop key="hpc.scheduler.cron.completeDeepArchiveInProgress.delay">15 0/1 * * * ?</prop>
 		<prop key="hpc.scheduler.cron.completeRestoreRequest.delay">25 0/1 * * * ?</prop>
 	</osgix:cm-properties>
 

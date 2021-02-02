@@ -26,6 +26,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
@@ -136,6 +137,7 @@ public interface HpcDataTransferService {
 	 *                                       async download is complete.
 	 * @param size                           The data object's size in bytes.
 	 * @param downloadDataObject             The data transfer status of the data object
+	 * @param deepArchiveStatus              The deep archive status of the data object
 	 * @return A data object download response.
 	 * @throws HpcException on service failure.
 	 */
@@ -144,7 +146,7 @@ public interface HpcDataTransferService {
 			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size,
-			HpcDataTransferUploadStatus downloadDataObject)
+			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus)
 			throws HpcException;
 
 	/**
@@ -780,7 +782,7 @@ public interface HpcDataTransferService {
 	 * @param s3ArchiveConfigurationId (Optional) The S3 configuration ID.
 	 * @param dataTransferType (S3 or Globus)
 	 * @return HpcIntegratedSystem
-	 * @throws HpcException
+	 * @throws HpcException on data transfer system failure.
 	 */
 	public HpcIntegratedSystem getArchiveProvider(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType) throws HpcException;

@@ -235,11 +235,11 @@ public interface HpcSystemBusService {
   public void refreshReportViews() throws HpcException;
 
   /**
-   * Complete the tiering request tasks.
+   * Complete data objects that are deep archive in progress.
    *
    * @throws HpcException on service failure.
    */
-  public void completeTierTasks() throws HpcException;
+  public void completeDeepArchiveInProgress() throws HpcException;
   
   /**
    * Complete the restore request tasks.

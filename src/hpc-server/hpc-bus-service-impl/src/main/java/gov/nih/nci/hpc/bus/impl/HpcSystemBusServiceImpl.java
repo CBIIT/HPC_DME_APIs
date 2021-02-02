@@ -30,7 +30,6 @@ import org.springframework.util.CollectionUtils;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
 import gov.nih.nci.hpc.bus.aspect.HpcExecuteAsSystemAccount;
-import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
@@ -48,6 +47,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
@@ -826,11 +826,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						HpcEventType eventType = event.getType();
 						HpcNotificationSubscription subscription = notificationService
 								.getNotificationSubscription(userId, eventType);
-						// If event type is restoration or tiering, send out notification regardless of subscription.
+						// If event type is restoration, send out notification regardless of subscription.
 						if (eventType.equals(HpcEventType.RESTORE_REQUEST_COMPLETED)
-								|| eventType.equals(HpcEventType.RESTORE_REQUEST_FAILED)
-								|| eventType.equals(HpcEventType.TIER_REQUEST_COMPLETED)
-								|| eventType.equals(HpcEventType.TIER_REQUEST_FAILED)) {
+								|| eventType.equals(HpcEventType.RESTORE_REQUEST_FAILED)) {
 							subscription = new HpcNotificationSubscription();
 							subscription.getNotificationDeliveryMethods().add(HpcNotificationDeliveryMethod.EMAIL);
 						}
@@ -960,39 +958,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
-	public void completeTierTasks() throws HpcException {
+	public void completeDeepArchiveInProgress() throws HpcException {
 		
-		// Iterate through all the bulk data object registration requests for tiering
-		dataManagementService.getBulkDataObjectRegistrationTasks(HpcBulkDataObjectRegistrationTaskStatus.TIER_REQUESTED)
-			.forEach(bulkRegistrationTask -> {
-					
-			// Update status of items in this bulk registration task.
-			bulkRegistrationTask.getItems().forEach(i -> this.updateTierItemStatus(i, bulkRegistrationTask.getUserId()));
-			
-			// Check if registration task completed.
-			int completedItemsCount = 0;
-			for (HpcBulkDataObjectRegistrationItem registrationItem : bulkRegistrationTask.getItems()) {
-				if (registrationItem.getTask().getResult() == null) {
-					// Task still in progress. Update progress.
-					try {
-						dataManagementService.updateBulkDataObjectRegistrationTask(bulkRegistrationTask);
-
-					} catch (HpcException e) {
-						logger.error("Failed to update data object list task: " + bulkRegistrationTask.getId());
-					}
-					return;
-				}
-				if (registrationItem.getTask().getResult().booleanValue()) {
-					completedItemsCount++;
-				}
-			}
-
-			// Bulk registration task completed.
-			int itemsCount = bulkRegistrationTask.getItems().size();
-			boolean result = completedItemsCount == itemsCount;
-			completeTierRequestTask(bulkRegistrationTask, result, result ? null
-					: completedItemsCount + " items tiered successfully out of " + itemsCount);
-		});
+		// Iterate through all the deep archive status in progress objects
+		List<HpcDataObject> dataObjectsDeepArchiveInProgress = dataManagementService.getDataObjectsDeepArchiveInProgress();
+		dataObjectsDeepArchiveInProgress.forEach(this::updateDeepArchiveStatus);
 	}
 	
 	@Override
@@ -1409,6 +1379,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
+			downloadItem.setRestoreInProgress(dataObjectDownloadResponse.getRestoreInProgress());
 
 		} catch (HpcException e) {
 			// Data object download failed.
@@ -2079,39 +2050,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}
 		}
 	}
-
-	/**
-	 * add tiering request event.
-	 *
-	 * @param registrationTask The bulk registration task.
-	 * @param result           The bulk registration result.
-	 * @param message          A failure message.
-	 * @param completed        The completion time.
-	 */
-	private void addTierRequestEvent(HpcBulkDataObjectRegistrationTask registrationTask, boolean result,
-			String message, Calendar completed) {
-
-		// Format the task ID. If the caller provided a UI URL, then use it to construct
-		// a URL link to view this task on UI.
-		String taskId = registrationTask.getId();
-		if (!StringUtils.isEmpty(registrationTask.getUiURL())) {
-			taskId = "<a href=\"" + registrationTask.getUiURL().replaceAll("\\{task_id\\}", taskId) + "\">" + taskId
-					+ "</a>";
-		}
-
-		try {
-			if (result) {
-				eventService.addTierRequestCompletedEvent(registrationTask.getUserId(), taskId,
-						registrationTask.getItems(), completed);
-			} else {
-				eventService.addTierRequestFailedEvent(registrationTask.getUserId(), taskId, completed,
-						message);
-			}
-
-		} catch (HpcException e) {
-			logger.error("Failed to add a data transfer upload event", e);
-		}
-	}
 	
 	/**
 	 * add restore request event.
@@ -2204,83 +2142,38 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	}
 	
 	/**
-	 * Complete a tiering request task. 1. Update task info in DB with
-	 * results info. 2. Send an event.
+	 * Check and update status of data object that is deep archive in progress
 	 *
-	 * @param registrationTask The registration task to complete.
-	 * @param result           The result of the task (true is successful, false is
-	 *                         failed).
-	 * @param message          (Optional) If the task failed, a message describing
-	 *                         the failure.
+	 * @param dataObject The data object to check.
 	 */
-	private void completeTierRequestTask(HpcBulkDataObjectRegistrationTask registrationTask,
-			boolean result, String message) {
-		Calendar completed = Calendar.getInstance();
-
+	private void updateDeepArchiveStatus(HpcDataObject dataObject) {
 		try {
-			dataManagementService.completeTierRequestTask(registrationTask, result, message, completed);
+			// This deep archive status in progress - check if tiered.
+			String path = dataObject.getAbsolutePath();
+			
+			// Get the System generated metadata.
+			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
+					.getDataObjectSystemGeneratedMetadata(path);
+			
+			// Get the data object metadata.
+			List<HpcMetadataEntry> metadataEntries = dataTransferService.getDataObjectMetadata(
+					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(), 
+					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
+			String storageClass = null;
+			for (HpcMetadataEntry entry: metadataEntries) {
+				if (entry.getAttribute().equals("storage_class"))
+					storageClass = entry.getValue();
+			}
+			// Check the storage class.
+			if (storageClass != null && storageClass.equals("GLACIER")) {
 
-		} catch (HpcException e) {
-			logger.error("Failed to complete data object tiering request", e);
-		}
-
-		// Send an event.
-		addTierRequestEvent(registrationTask, result, message, completed);
-	}
-	
-	/**
-	 * Check and update status of a tiering task item
-	 *
-	 * @param registrationItem The tiering task item to check.
-	 */
-	private void updateTierItemStatus(HpcBulkDataObjectRegistrationItem registrationItem, String userId) {
-		HpcDataObjectRegistrationTaskItem registrationTask = registrationItem.getTask();
-		try {
-			if (registrationTask.getResult() == null) {
-				// This tiering task item in progress - check its status.
-
-				// Get the System generated metadata.
-				HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
-						.getDataObjectSystemGeneratedMetadata(registrationTask.getPath());
-				registrationTask.setSize(systemGeneratedMetadata.getSourceSize());
-				
-				// Get the data object metadata.
-				List<HpcMetadataEntry> metadataEntries = dataTransferService.getDataObjectMetadata(
-						systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(), 
-						systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
-				String storageClass = null;
-				for (HpcMetadataEntry entry: metadataEntries) {
-					if (entry.getAttribute().equals("storage_class"))
-						storageClass = entry.getValue();
-				}
-				// Check the storage class.
-				if (storageClass != null && storageClass.equals("GLACIER")) {
-					
-					HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(registrationTask.getPath());
-					
-					// Add/Update system generated metadata to iRODs
-					Calendar deepArchiveDate = Calendar.getInstance();
-					metadataService.updateDataObjectSystemGeneratedMetadata(registrationTask.getPath(), null, null, null,
-							HpcDataTransferUploadStatus.DEEP_ARCHIVE, null, null, null, null, null, deepArchiveDate);
-
-					// Tiering completed successfully for this item.
-					registrationTask.setResult(true);
-					registrationTask.setCompleted(deepArchiveDate);
-					registrationTask.setPercentComplete(100);
-					
-					// Add an audit record for this restore request success/failure
-					HpcMetadataEntries metadataAfter = metadataService.getDataObjectMetadataEntries(registrationTask.getPath());
-					dataManagementService.addAuditRecord(registrationTask.getPath(), HpcAuditRequestType.COMPLETE_TIER_DATA_OBJECT,
-							metadataBefore, metadataAfter, null, false, registrationTask.getResult(),
-							null, userId, null);
-				}
+				// Add/Update system generated metadata to iRODs
+				metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
+						null, null, null, null, null, null, HpcDeepArchiveStatus.GLACIER);
 			}
 
 		} catch (HpcException e) {
-			logger.error("Failed to check tiering task item status", e);
-			registrationTask.setResult(false);
-			registrationTask.setMessage(e.getMessage());
-			registrationTask.setPercentComplete(null);
+			logger.error("Failed to check deep archive status", e);
 		}
 	}
 
