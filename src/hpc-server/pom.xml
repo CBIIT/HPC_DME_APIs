@@ -59,6 +59,7 @@
 		<module>hpc-bus-service-api</module>
 		<module>hpc-bus-service-impl</module>
 		<module>hpc-scheduler</module>
+		<module>hpc-scheduler-migration</module>
 		<module>hpc-ws-rs-api</module>
 		<module>hpc-ws-rs-impl</module>
 		<module>hpc-ws-rs-test</module>

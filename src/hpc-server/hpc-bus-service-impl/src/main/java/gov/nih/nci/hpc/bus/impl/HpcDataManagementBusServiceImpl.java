@@ -1157,17 +1157,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				securityService.getRequestInvoker().getNciAccount().getUserId(), true);
 	}
 
-	/**
-	 * Download Data Object.
-	 *
-	 * @param path            The data object path.
-	 * @param downloadRequest The download request DTO.
-	 * @param completionEvent If true, an event will be added when async download is
-	 *                        complete.
-	 * @param userId          The user submitting the request.
-	 * @return Download ResponseDTO
-	 * @throws HpcException on service failure.
-	 */
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
 			String userId, boolean completionEvent) throws HpcException {

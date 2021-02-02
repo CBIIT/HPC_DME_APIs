@@ -56,6 +56,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -949,6 +950,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		}
 
 		dataRegistrationDAO.insertDataObjectRegistrationResult(dataObjectRegistrationResult);
+	}
+
+	@Override
+	public HpcDataTransferConfiguration getS3ArchiveConfiguration(String s3ArchiveConfigurationId) throws HpcException {
+		return dataManagementConfigurationLocator.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
 	}
 
 	// ---------------------------------------------------------------------//
