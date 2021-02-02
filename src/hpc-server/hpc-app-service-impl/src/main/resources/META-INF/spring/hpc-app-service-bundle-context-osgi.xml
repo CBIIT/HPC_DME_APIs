@@ -101,7 +101,9 @@
 	<osgi:reference id="hpcDataManagementConfigurationDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO" />
 	<osgi:reference id="hpcCatalogDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcCatalogDAO" />                 
+	                interface="gov.nih.nci.hpc.dao.HpcCatalogDAO" />
+	<osgi:reference id="hpcLifecycleDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcLifecycleDAO" />                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>

@@ -274,21 +274,6 @@ public class HpcEventServiceImpl implements HpcEventService {
     addCollectionUpdatedEvent(path, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE,
         DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE, userId);
   }
-
-  @Override
-  public void addTierRequestCompletedEvent(String userId, String registrationTaskId,
-      List<HpcBulkDataObjectRegistrationItem> registrationItems, Calendar completed)
-      throws HpcException {
-    addDataTransferEvent(userId, HpcEventType.TIER_REQUEST_COMPLETED, null, null,
-        null, registrationTaskId, completed, null, null, null, registrationItems);
-  }
-
-  @Override
-  public void addTierRequestFailedEvent(String userId, String registrationTaskId,
-      Calendar completed, String errorMessage) throws HpcException {
-    addDataTransferEvent(userId, HpcEventType.TIER_REQUEST_FAILED, null, null,
-        null, registrationTaskId, completed, null, null, errorMessage, null);
-  }
   
   @Override
   public void addRestoreRequestCompletedEvent(String userId, String restoreTaskId,

@@ -223,7 +223,7 @@ public class HpcDownloadController extends AbstractHpcController {
 			if (datafiles != null && datafiles.getDataObjects() != null && !datafiles.getDataObjects().isEmpty()) {
 				HpcDataObjectDTO dataFile = datafiles.getDataObjects().get(0);
 				for(HpcMetadataEntry entry : dataFile.getMetadataEntries().getSelfMetadataEntries()) {
-					if(entry.getAttribute().equals("data_transfer_status") && entry.getValue().equals("DEEP_ARCHIVE")) {
+					if(entry.getAttribute().equals("deep_archive_status") && entry.getValue().equals("GLACIER")) {
 						model.addAttribute("restoreMsg", "This object is in deep archive. " +
 								"Download will take additional time to restore from deep archive.");
 						break;

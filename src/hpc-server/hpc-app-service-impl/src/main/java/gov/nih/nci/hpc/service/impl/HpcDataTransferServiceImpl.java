@@ -45,8 +45,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
-import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
-import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
+import gov.nih.nci.hpc.dao.HpcLifecycleDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -65,6 +64,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult;
@@ -73,6 +73,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcLifecycleRequestType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
@@ -83,7 +84,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkTierItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
@@ -143,7 +143,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	
 	// Audit DAO.
 	@Autowired
-	private HpcDataManagementAuditDAO dataManagementAuditDAO = null;
+	private HpcLifecycleDAO lifecycleDAO = null;
 
 	// Event service.
 	@Autowired
@@ -414,7 +414,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDriveDownloadDestination googleDriveDownloadDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String userId, boolean completionEvent, long size, 
-			HpcDataTransferUploadStatus dataTransferStatus)
+			HpcDataTransferUploadStatus dataTransferStatus, HpcDeepArchiveStatus deepArchiveStatus)
 			throws HpcException {
 		// Input Validation.
 		if (dataTransferType == null || !isValidFileLocation(archiveLocation)) {
@@ -458,7 +458,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// provided S3 bucket. Supported by S3 archive only.
 		// 4. Asynchronous download via streaming data object from S3 Archive to user
 		// provided Google Drive. Supported by S3 archive only.
-		if(dataTransferStatus.equals(HpcDataTransferUploadStatus.DEEP_ARCHIVE)) {
+		if(deepArchiveStatus != null && deepArchiveStatus.equals(HpcDeepArchiveStatus.GLACIER)) {
 			// If status is DEEP_ARCHIVE, and object is not restored, submit a restore request
 			// and create a dataObjectDownloadTask with status RESTORE_REQUESTED
 			List<HpcMetadataEntry> metadataEntries = dataTransferProxies.get(HpcDataTransferType.S_3).getDataObjectMetadata(
@@ -1508,9 +1508,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
-		// Add an audit record for tiering request
-		dataManagementAuditDAO.insert(userId, path, HpcAuditRequestType.TIER_DATA_OBJECT, null, null, hpcFileLocation,
-				false, true, null, Calendar.getInstance(), prefix);
+		// Add a record of the lifecycle rule
+		lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_DATA_OBJECT, s3ArchiveConfigurationId,
+				Calendar.getInstance(), prefix);
 	}
 
 	@Override
@@ -1536,9 +1536,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
-		// Add an audit record for tiering request
-		dataManagementAuditDAO.insert(userId, path, HpcAuditRequestType.TIER_COLLECTION, null, null, hpcFileLocation,
-				false, true, null, Calendar.getInstance(), prefix);
+		// Add a record of the lifecycle rule
+		lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_COLLECTION, s3ArchiveConfigurationId,
+				Calendar.getInstance(), prefix);
 	}
 
 	@Override
@@ -1565,9 +1565,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
 					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
 			
-			// Add an audit record for tiering requests
-			dataManagementAuditDAO.insert(userId, item.getPath(), HpcAuditRequestType.TIER_DATA_OBJECT, null, null, hpcFileLocation,
-					false, true, null, Calendar.getInstance(), prefix);
+			// Add a record of the lifecycle rule
+			lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_DATA_OBJECT, s3ArchiveConfigurationId,
+					Calendar.getInstance(), prefix);
 		}
 	}
 
@@ -1594,9 +1594,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
 					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
-			// Add an audit record for tiering requests
-			dataManagementAuditDAO.insert(userId, item.getPath(), HpcAuditRequestType.TIER_COLLECTION, null, null, hpcFileLocation,
-					false, true, null, Calendar.getInstance(), prefix);
+			// Add a record of the lifecycle rule
+			lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_COLLECTION, s3ArchiveConfigurationId,
+					Calendar.getInstance(), prefix);
 		}
 	}
 	
@@ -2778,6 +2778,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			
 			// Populate the response object.
 			response.setDownloadTaskId(downloadTask.getId());
+			response.setRestoreInProgress(true);
 			
 		} catch (HpcException e) {
 			throw (e);

@@ -200,5 +200,8 @@
       <jxb:bindings node="//xsd:complexType[@name='HpcSynchronousDownloadFilter']">
          <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter" />
       </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDeepArchiveStatus']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus" />
+      </jxb:bindings>
    </jxb:bindings>
 </jxb:bindings>
