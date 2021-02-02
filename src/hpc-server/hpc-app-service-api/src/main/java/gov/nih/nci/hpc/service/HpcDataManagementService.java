@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -514,4 +515,13 @@ public interface HpcDataManagementService {
 	 */
 	public void addDataObjectRegistrationResult(String path,
 			HpcDataObjectRegistrationResult dataObjectRegistrationResult, Long size) throws HpcException;
+
+	/**
+	 * Get S3 Archive configuration by ID.
+	 *
+	 * @param s3ArchiveConfigurationId The S3 archive configuration ID.
+	 * @return The S3 configuration for the requested S3 configuration ID.
+	 * @throws HpcException if the configuration was not found.
+	 */
+	public HpcDataTransferConfiguration getS3ArchiveConfiguration(String s3ArchiveConfigurationId) throws HpcException;
 }

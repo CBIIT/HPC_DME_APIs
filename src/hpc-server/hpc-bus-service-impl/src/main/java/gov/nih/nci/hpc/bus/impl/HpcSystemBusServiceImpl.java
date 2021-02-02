@@ -36,6 +36,8 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
@@ -73,6 +75,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcDataMigrationService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
@@ -121,6 +124,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// Reports Application Service Instance
 	@Autowired
 	private HpcReportService reportService = null;
+
+	// Data Migration Application Service Instance.
+	@Autowired
+	private HpcDataMigrationService dataMigrationService = null;
 
 	// The collection download task executor.
 	@Autowired
@@ -232,8 +239,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					break;
 
 				case IN_TEMPORARY_ARCHIVE:
-					// Data object is in temporary archive (This is a scratch space on DME server used for 2-hop upload)
-					// Globus completed transfer to the temporary archive. File will be uploaded to S3 Archive next when
+					// Data object is in temporary archive (This is a scratch space on DME server
+					// used for 2-hop upload)
+					// Globus completed transfer to the temporary archive. File will be uploaded to
+					// S3 Archive next when
 					// the processTemporaryArchive() scheduled task is called.
 
 					// Update data transfer status.
@@ -838,7 +847,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						}
 
 					} catch (Exception e) {
-						logger.error("Failed to deliver notifications to: " + userId);
+						logger.error("Failed to deliver notifications to: {}", userId);
 					}
 				}
 
@@ -846,6 +855,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				eventService.archiveEvent(event);
 			}
 		}
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void processDataObjectMigrationReceived() throws HpcException {
+		dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.RECEIVED, HpcDataMigrationType.DATA_OBJECT)
+				.forEach(dataObjectMigrationTask -> {
+					try {
+						logger.info("Migrating Data Object: task - {}, path - {}", dataObjectMigrationTask.getId(),
+								dataObjectMigrationTask.getPath());
+						dataMigrationService.migrateDataObject(dataObjectMigrationTask);
+					} catch (HpcException e) {
+						logger.error("Failed to migrate data object: task - {}, path - {}",
+								dataObjectMigrationTask.getId(), dataObjectMigrationTask.getPath());
+					}
+				});
 	}
 
 	@Override
