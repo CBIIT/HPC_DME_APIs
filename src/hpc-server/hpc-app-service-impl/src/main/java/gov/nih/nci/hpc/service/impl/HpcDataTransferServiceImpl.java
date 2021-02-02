@@ -1616,7 +1616,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		if (uploadRequest.getFileSystemUploadSource() != null) {
-			// The upload from a file system source is done in a scheduled task
+			// The upload from a file system source is done in a scheduled task.
 			HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
 			uploadResponse.setDataTransferType(dataTransferType);
 			uploadResponse.setSourceSize(uploadRequest.getSourceSize());
