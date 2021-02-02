@@ -279,6 +279,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
 			fileExists = true;
+			if (metadata == null) {
+				logger.error("[S3] Received null object metadata for {}:{}", fileLocation.getFileContainerId(),
+						fileLocation.getFileId());
+			}
 
 		} catch (AmazonServiceException ase) {
 			if (ase.getStatusCode() == 404) {
