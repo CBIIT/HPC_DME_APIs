@@ -474,44 +474,6 @@
 			]
 		},
 		{
-			"eventType": "TIER_REQUEST_COMPLETED",
-			"subjectFormat": "DME Tiering Request Completed at %1$s",
-			"subjectArguments": [
-				{
-					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
-					"index": "0"
-				}
-			],
-			"textFormat": "Tiering request is completed.<br/>Task ID: %1$s <br/>Tiered Items: %2$s<br/>",
-			"textArguments": [
-				{
-					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
-					"index": "0"
-				},
-				{
-					"payloadEntryAttribute": "REGISTRATION_ITEMS",
-					"index": "1"
-				}
-			]
-		},
-		{
-			"eventType": "TIER_REQUEST_FAILED",
-			"subjectFormat": "DME Tiering Request Failed at %1$s",
-			"subjectArguments": [
-				{
-					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
-					"index": "0"
-				}
-			],
-			"textFormat": "Tiering request failed. <br/>Task ID: %1$s<br/>",
-			"textArguments": [
-				{
-					"payloadEntryAttribute": "REGISTRATION_TASK_ID",
-					"index": "0"
-				}
-			]
-		},
-		{
 			"eventType": "RESTORE_REQUEST_COMPLETED",
 			"subjectFormat": "DME Restore Request Completed at %1$s",
 			"subjectArguments": [

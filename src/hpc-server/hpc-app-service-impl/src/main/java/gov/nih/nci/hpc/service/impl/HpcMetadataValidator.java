@@ -70,7 +70,7 @@ public class HpcMetadataValidator {
   public static final String LINK_SOURCE_PATH_ATTRIBUTE = "link_source_path";
   public static final String EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE =
       "extracted_metadata_attributes";
-  public static final String DEEP_ARCHIVE_DATE_ATTRIBUTE = "deep_archive_date";
+  public static final String DEEP_ARCHIVE_STATUS_ATTRIBUTE = "deep_archive_status";
 
   // ---------------------------------------------------------------------//
   // Instance members
@@ -100,7 +100,7 @@ public class HpcMetadataValidator {
         DATA_TRANSFER_STARTED_ATTRIBUTE, DATA_TRANSFER_COMPLETED_ATTRIBUTE,
         SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, CHECKSUM_ATTRIBUTE,
         METADATA_UPDATED_ATTRIBUTE, REGISTRATION_COMPLETION_EVENT_ATTRIBUTE,
-        LINK_SOURCE_PATH_ATTRIBUTE, EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE, DEEP_ARCHIVE_DATE_ATTRIBUTE);
+        LINK_SOURCE_PATH_ATTRIBUTE, EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE, DEEP_ARCHIVE_STATUS_ATTRIBUTE);
     List<String> collectionAttributes = Arrays.asList(ID_ATTRIBUTE, DME_ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE,
         REGISTRAR_NAME_ATTRIBUTE, CONFIGURATION_ID_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
 
