@@ -97,16 +97,12 @@
 											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getTaskStatus().value()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getResult() != null}">
-										<label for="Name" th:unless="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Registration Completed:</label>
-										<label for="Name" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Tier Request Completed:</label>
-										<label id="regComplete"
+										<label for="Name">Registration Completed:</label> <label id="regComplete"
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getResult()}"
 											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getResult()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getResult() == null}">
-										<label for="Name" th:unless="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Registration Request:</label>
-										<label for="Name" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Tier Request:</label>
-										<label id="regComplete">In Progress</label>
+										<label for="Name">Registration Completed:</label> <label id="regComplete">In Progress</label>
 									</div>
 									<div class="col-md-12 form-group" 
 										th:if="${hpcBulkDataObjectRegistrationTaskDTO.getPercentComplete() != null 
@@ -124,16 +120,12 @@
 											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getMessage()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCreated() != null}">
-										<label for="textbox1" th:unless="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Registration Request Created On:</label>
-										<label for="textbox1" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Tier Request Created On:</label>
-										<label
+										<label for="textbox1">Registration Request Created On:</label> <label
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getCreated()}"
 											th:text="${#calendars.format(hpcBulkDataObjectRegistrationTaskDTO.getCreated(),'dd MMMM yyyy HH:mm:ss')}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getCompleted() != null}">
-										<label for="textbox1" th:unless="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Registration Request Completed On:</label>
-										<label for="textbox1" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Tier Request Completed On:</label>
-										<label
+										<label for="textbox1">Registration Request Completed On:</label> <label
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getCompleted()}"
 											th:text="${#calendars.format(hpcBulkDataObjectRegistrationTaskDTO.getCompleted(),'dd MMMM yyyy HH:mm:ss')}"></label>
 									</div>
@@ -205,9 +197,7 @@
 											th:text="${hpcUploadTaskItem.getMessage()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getCompleted() != null}">
-										<label for="textbox1" th:unless="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Registration Failed On:</label>
-										<label for="textbox1" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Tier Failed On:</label>
-										<label
+										<label for="textbox1">Registration Failed On:</label> <label
 											for="${hpcUploadTaskItem.getCompleted()}"
 											th:text="${#calendars.format(hpcUploadTaskItem.getCompleted(),'dd MMMM yyyy HH:mm:ss')}"></label>
 									</div>
@@ -235,9 +225,7 @@
 											th:text="${hpcUploadTaskItem.getMessage()}"></label>
 									</div>
 									<div class="col-md-12 form-group" th:if="${hpcUploadTaskItem.getCompleted() != null}">
-										<label for="textbox1" th:unless="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Registration Request Completed On:</label>
-										<label for="textbox1" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getRequestType() == 'TIER_REQUEST'}">Tier Request Completed On:</label>
-										<label
+										<label for="textbox1">Registration Request Completed On:</label> <label
 											for="${hpcUploadTaskItem.getCompleted()}"
 											th:text="${#calendars.format(hpcUploadTaskItem.getCompleted(),'dd MMMM yyyy HH:mm:ss')}"></label>
 									</div>

@@ -151,7 +151,6 @@
 			<xsd:element name="items"
 				type="hpc-domain-model:HpcBulkDataObjectRegistrationItem"
 				minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="requestType" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

@@ -187,6 +187,45 @@
 								</div>
 
 							</div>
+							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems().size() > 0}">
+								<div class="col-md-3">
+									<h2>
+										<i class="fa fa-list-alt red"></i><strong>Restore In Progress</strong>
+									</h2>
+								</div>
+							</div>
+							<div class="panel-body"
+								th:if="${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems().size() > 0}">
+								<div class="panel panel-default"
+									th:each="hpcCollectionDownloadTaskItem : ${hpcDataObjectsDownloadStatusDTO.getRestoreInProgressItems()}" style="margin-top:5px" >
+									<div class="col-md-12 form-group" style="word-break: break-all;">
+										<label for="Name">Path:</label> 
+										<a th:href="@{/datafile(action=view,path=${hpcCollectionDownloadTaskItem.getPath()})}">
+                      					  <label for="${hpcCollectionDownloadTaskItem.getPath()}" th:text="${hpcCollectionDownloadTaskItem.getPath()}">
+                     					  </label>
+                    					</a>
+									</div>
+									<div class="col-md-12 form-group">
+										<label for="Name">Task ID:</label><a th:href="@{'/downloadtask?type=DATA_OBJECT&amp;taskId=' + ${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}}"> <label
+											for="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"
+											th:text="${hpcCollectionDownloadTaskItem.getDataObjectDownloadTaskId()}"></label></a>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getMessage() != null}">
+										<label for="Name">Message:</label> <label
+											for="${hpcCollectionDownloadTaskItem.getMessage()}"
+											th:text="${hpcCollectionDownloadTaskItem.getMessage()}"></label>
+									</div>
+									<div class="col-md-12 form-group" th:if="${hpcCollectionDownloadTaskItem.getPercentComplete() != null
+												and hpcCollectionDownloadTaskItem.getPercentComplete() > 0}">
+										<div class="progress">
+    										<div class="progress-bar" id="progressBar" role="progressbar" th:attr="aria-valuenow=${hpcCollectionDownloadTaskItem.getPercentComplete()}" aria-valuemin="0" aria-valuemax="100"  th:style="'width:'+ ${hpcCollectionDownloadTaskItem.getPercentComplete()}+'%;'">
+      											<span th:text="${hpcCollectionDownloadTaskItem.getPercentComplete()}"></span>
+    											%
+    										</div>
+  										</div>
+									</div>
+								</div>
+							</div>
 							<div class="panel-heading" th:if="${hpcDataObjectsDownloadStatusDTO.getInProgressItems() != null and hpcDataObjectsDownloadStatusDTO.getInProgressItems().size() > 0}">
 								<div class="col-md-3">
 									<h2>
