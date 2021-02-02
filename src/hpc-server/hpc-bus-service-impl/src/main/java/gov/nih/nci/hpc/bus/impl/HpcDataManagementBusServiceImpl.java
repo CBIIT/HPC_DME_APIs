@@ -912,6 +912,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.orElse(new HpcDataObjectUploadResponse());
 			responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 			responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
+
+			// Update system-generated w/ archive location - this is in case the archive
+			// location changed after regeneration of the upload url(s).
+			if (uploadResponse.getArchiveLocation() != null) {
+				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(), null,
+						null, null, null, null, null, null, null);
+			}
 		}
 
 		return responseDTO;
