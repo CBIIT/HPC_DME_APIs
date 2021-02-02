@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
@@ -268,14 +269,14 @@ public interface HpcMetadataService {
    * @param dataTransferCompleted (Optional) The time data transfer completed.
    * @param sourceSize (Optional) The data source size in bytes.
    * @param linkSourcePath (Optional) linkSourcePath.
-   * @param deepArchiveDate (Optional) The date of deep archival.
+   * @param deepArchiveStatus (Optional) The deep archive status.
    * @throws HpcException on service failure.
    */
   public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
       String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
       HpcDataTransferType dataTransferType, Calendar dataTransferStarted,
       Calendar dataTransferCompleted, Long sourceSize, String linkSourcePath, 
-      Calendar deepArchiveDate) throws HpcException;
+      HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
 
 	/**
 	 * Update a data object's metadata.

@@ -149,7 +149,8 @@
 												th:text="${hpcDataObjectDownloadStatusDTO.getResult()}"></label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getResult() == null}">
-											<label for="Name">Transfer Completed:</label> <label id="regComplete">In Progress</label>
+											<label for="Name">Transfer Completed:</label> <label th:if="${!hpcDataObjectDownloadStatusDTO.getRestoreInProgress()}" id="regComplete">In Progress</label>
+											<label th:if="${hpcDataObjectDownloadStatusDTO.getRestoreInProgress()}" id="regComplete">Restore In Progress</label>
 										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectDownloadStatusDTO.getPercentComplete() != null
 											and hpcDataObjectDownloadStatusDTO.getPercentComplete() > 0}">

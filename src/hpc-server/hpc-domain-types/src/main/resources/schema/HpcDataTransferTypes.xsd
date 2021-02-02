@@ -32,7 +32,6 @@
 			<xsd:enumeration value="STREAMING_IN_PROGRESS" />
 			<xsd:enumeration value="STREAMING_STOPPED" />
 			<xsd:enumeration value="IN_FILE_SYSTEM" />
-			<xsd:enumeration value="DEEP_ARCHIVE" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -95,6 +94,20 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
+	<xsd:simpleType name="HpcDeepArchiveStatus">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="IN_PROGRESS" />
+			<xsd:enumeration value="GLACIER" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="HpcLifecycleRequestType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="TIER_DATA_OBJECT" />
+			<xsd:enumeration value="TIER_COLLECTION" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
 	<xsd:simpleType name="HpcCollectionDownloadTaskStatus">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="RECEIVED" />
@@ -351,6 +364,7 @@
 				type="hpc-domain-datatransfer:HpcFileLocation" />
 			<xsd:element name="destinationFile"
 				type="hpc-domain-datatransfer:HpcFile" />
+			<xsd:element name="restoreInProgress" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -466,6 +480,7 @@
 			<xsd:element name="percentComplete" type="xsd:int"
 				minOccurs="0" />
 			<xsd:element name="size" type="xsd:long" minOccurs="0" />
+			<xsd:element name="restoreInProgress" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 

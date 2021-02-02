@@ -59,5 +59,6 @@
 	      class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataManagementConfigurationDAOImpl" 
 	      init-method="dbConnect"/>
 	 <bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcCatalogDAOImpl" /> 
+	 <bean id="hpcLifecycleDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcLifecycleDAOImpl" /> 
 
 </beans>

@@ -35,7 +35,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.datamanagement.HpcTierResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectTierRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
@@ -788,41 +787,38 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 	@Override
 	public Response tierDataObject(String path) {
-		HpcTierResponseDTO tierResponse = null;
 		try {
-			tierResponse = dataManagementBusService.tierDataObject(path);
+			dataManagementBusService.tierDataObject(path);
 			
 		} catch (HpcException e) {
 			return errorResponse(e);
 		}
 
-		return okResponse(tierResponse, true);
+		return okResponse(null, false);
 	}
 
 	@Override
 	public Response tierCollection(String path) {
-		HpcTierResponseDTO tierResponse = null;
 		try {
-			tierResponse = dataManagementBusService.tierCollection(path);
+			dataManagementBusService.tierCollection(path);
 			
 		} catch (HpcException e) {
 			return errorResponse(e);
 		}
 
-		return okResponse(tierResponse, true);
+		return okResponse(null, false);
 	}
 
 	@Override
 	public Response tierDataObjectsOrCollections(HpcBulkDataObjectTierRequestDTO tierRequest) {
-		HpcTierResponseDTO tierResponse = null;
 		try {
-			tierResponse = dataManagementBusService.tierDataObjectsOrCollections(tierRequest);
+			dataManagementBusService.tierDataObjectsOrCollections(tierRequest);
 			
 		} catch (HpcException e) {
 			return errorResponse(e);
 		}
 
-		return okResponse(tierResponse, true);
+		return okResponse(null, false);
 	}
 	
 	// ---------------------------------------------------------------------//

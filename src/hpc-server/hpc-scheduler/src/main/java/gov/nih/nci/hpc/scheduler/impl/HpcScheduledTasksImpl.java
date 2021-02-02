@@ -207,10 +207,10 @@ public class HpcScheduledTasksImpl {
 	}
 	
 	/** Complete tiering request tasks. */
-	@Scheduled(cron = "${hpc.scheduler.cron.completeTierTasks.delay}")
-	private void completeTierTasksTask() {
-		executeTask("completeTierTasksTask()",
-				systemBusService::completeTierTasks);
+	@Scheduled(cron = "${hpc.scheduler.cron.completeDeepArchiveInProgress.delay}")
+	private void completeDeepArchiveInProgressTask() {
+		executeTask("completeDeepArchiveInProgressTask()",
+				systemBusService::completeDeepArchiveInProgress);
 	}
 	
 	/** Complete restore request tasks. */
