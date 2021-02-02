@@ -177,6 +177,13 @@ public interface HpcSystemBusService {
    * @throws HpcException on service failure.
    */
   public void processEvents() throws HpcException;
+  
+  /**
+   *  Process received data object migration tasks
+   *
+   * @throws HpcException on service failure.
+   */
+  public void processDataObjectMigrationReceived() throws HpcException;
 
   /**
    * Generate summary report event.
