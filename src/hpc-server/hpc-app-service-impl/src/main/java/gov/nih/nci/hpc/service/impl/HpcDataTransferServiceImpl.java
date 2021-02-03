@@ -77,6 +77,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcLifecycleRequestType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
@@ -458,19 +459,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// provided S3 bucket. Supported by S3 archive only.
 		// 4. Asynchronous download via streaming data object from S3 Archive to user
 		// provided Google Drive. Supported by S3 archive only.
-		if(deepArchiveStatus != null && deepArchiveStatus.equals(HpcDeepArchiveStatus.GLACIER)) {
+		if(deepArchiveStatus != null) {
 			// If status is DEEP_ARCHIVE, and object is not restored, submit a restore request
 			// and create a dataObjectDownloadTask with status RESTORE_REQUESTED
-			List<HpcMetadataEntry> metadataEntries = dataTransferProxies.get(HpcDataTransferType.S_3).getDataObjectMetadata(
+			HpcS3ObjectMetadata objectMetadata = dataTransferProxies.get(HpcDataTransferType.S_3).getDataObjectMetadata(
 					getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
 							downloadRequest.getS3ArchiveConfigurationId()),
 					downloadRequest.getArchiveLocation());
 			
-			String restorationStatus = null;
-			for (HpcMetadataEntry entry: metadataEntries) {
-				if (entry.getAttribute().equals("restoration_status"))
-					restorationStatus = entry.getValue();
-			}
+			String restorationStatus = objectMetadata.getRestorationStatus();
 			
 			if (restorationStatus != null && !restorationStatus.equals("success")) {
 				requestObjectRestore(downloadRequest, response, restorationStatus);
@@ -544,14 +541,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public String addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+	public HpcS3ObjectMetadata addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
 			String objectId, String registrarId) throws HpcException {
 		// Add metadata is done by copying the object to itself w/ attached metadata.
 		// Check that the data transfer system can accept transfer requests.
 		boolean globusSyncUpload = dataTransferType.equals(HpcDataTransferType.GLOBUS) && fileLocation != null;
 
-		return dataTransferProxies.get(dataTransferType).setDataObjectMetadata(
+		String checksum = dataTransferProxies.get(dataTransferType).setDataObjectMetadata(
 				!globusSyncUpload ? getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId)
 						: null,
 				fileLocation,
@@ -559,6 +556,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType)
 						.getBaseArchiveDestination(),
 				generateMetadata(objectId, registrarId));
+		
+		HpcS3ObjectMetadata objectMetadata = new HpcS3ObjectMetadata();
+		objectMetadata.setChecksum(checksum);
+		
+		if (dataTransferType.equals(HpcDataTransferType.S_3)
+				&& dataTransferProxies.get(dataTransferType).existsLifecyclePolicy(
+						getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+						fileLocation)) {
+			// Add deep_archive_status in progress
+			objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.IN_PROGRESS);
+		}
+		return objectMetadata;
 	}
 	
 	@Override
@@ -1601,7 +1610,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 	
 	@Override
-	public List<HpcMetadataEntry> getDataObjectMetadata(HpcFileLocation fileLocation,
+	public HpcS3ObjectMetadata getDataObjectMetadata(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 
 		return dataTransferProxies.get(dataTransferType).getDataObjectMetadata(
@@ -1610,14 +1619,14 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcIntegratedSystem getArchiveProvider(String configurationId, String s3ArchiveConfigurationId,
+	public boolean isTieringSupported(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType) throws HpcException {
 		// Get the data transfer configuration (Globus or S3).
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
 
 
-		return dataTransferConfiguration.getArchiveProvider();
+		return HpcIntegratedSystem.CLOUDIAN.equals(dataTransferConfiguration.getArchiveProvider()) || HpcIntegratedSystem.AWS.equals(dataTransferConfiguration.getArchiveProvider());
 	}
 
 	
