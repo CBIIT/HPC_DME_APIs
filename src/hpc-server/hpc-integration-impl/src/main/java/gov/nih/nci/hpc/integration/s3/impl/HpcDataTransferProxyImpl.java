@@ -47,6 +47,7 @@ import com.amazonaws.services.s3.model.RestoreObjectRequest;
 import com.amazonaws.services.s3.model.SetBucketLifecycleConfigurationRequest;
 import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter;
+import com.amazonaws.services.s3.model.lifecycle.LifecycleFilterPredicate;
 import com.amazonaws.services.s3.model.lifecycle.LifecyclePrefixPredicate;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
@@ -62,11 +63,13 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
@@ -409,9 +412,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
+	public HpcS3ObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
 
-		List<HpcMetadataEntry> metadataEntries = new ArrayList();
+		HpcS3ObjectMetadata objectMetadata = new HpcS3ObjectMetadata();
 		// Get metadata for the data-object in the S3 archive.
 		try {
 			ObjectMetadata s3Metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
@@ -419,28 +422,25 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcMetadataEntry entry = new HpcMetadataEntry();
 			entry.setAttribute("storage_class");
 			//x-amz-storage-class is not returned for standard S3 object
-			entry.setValue(s3Metadata.getStorageClass() == null? "STANDARD" : s3Metadata.getStorageClass());
-			metadataEntries.add(entry);
+			if(s3Metadata.getStorageClass() != null)
+				objectMetadata.setDeepArchiveStatus(HpcDeepArchiveStatus.fromValue(s3Metadata.getStorageClass()));
 			
 			// Check the restoration status of the object.
 			Boolean restoreFlag = s3Metadata.getOngoingRestore();
-			HpcMetadataEntry restorationStatusEntry = new HpcMetadataEntry();
-			restorationStatusEntry.setAttribute("restoration_status");
 			if(s3Metadata.getOngoingRestore() == null) {
 				// the x-amz-restore header is not present on the response from the service (eg. no restore request has been received).
 				// Failed.
-				restorationStatusEntry.setValue("not in progress");
+				objectMetadata.setRestorationStatus("not in progress");
 			} else if(s3Metadata.getOngoingRestore() != null && s3Metadata.getOngoingRestore()) {
 				// the x-amz-restore header is present and has a value of true (eg. a restore operation was received and is currently ongoing).
 				// Ongoing
-				restorationStatusEntry.setValue("in progress");
+				objectMetadata.setRestorationStatus("in progress");
 			} else if (s3Metadata.getOngoingRestore() != null && !s3Metadata.getOngoingRestore() && s3Metadata.getRestoreExpirationTime() != null) {
 				// the x-amz-restore header is present and has a value of false (eg the object has been restored and can currently be read from S3).
 				// Completed. Success.
-				restorationStatusEntry.setValue("success");
+				objectMetadata.setRestorationStatus("success");
 			}
-			metadataEntries.add(restorationStatusEntry);
-			
+
 			if(restoreFlag != null)
 				logger.info("Restoration status: %s.\n",
 					restoreFlag ? "in progress" : "not in progress (finished or failed)");
@@ -450,7 +450,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					HpcErrorType.DATA_TRANSFER_ERROR, ace);
 		}
 
-		return metadataEntries;
+		return objectMetadata;
 	}
 
 	@Override
@@ -542,6 +542,44 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 	}
 
+	@Override
+	public boolean existsLifecyclePolicy(Object authenticatedToken, HpcFileLocation archiveLocation)
+			throws HpcException {
+
+		try {
+			AmazonS3 s3Client = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
+
+			// Retrieve the configuration.
+			BucketLifecycleConfiguration configuration = s3Client
+					.getBucketLifecycleConfiguration(archiveLocation.getFileContainerId());
+
+			if (configuration != null) {
+				for (Rule rule : configuration.getRules()) {
+					// Look through filter prefix applied to lifecycle policy
+					boolean hasTransition = false;
+					for (Transition transition: rule.getTransitions()) {
+						if(transition.getStorageClassAsString() != null && !transition.getStorageClassAsString().isEmpty())
+							hasTransition = true;
+					}
+					if(hasTransition && rule.getFilter() != null) {
+						LifecycleFilterPredicate predicate = rule.getFilter().getPredicate();
+				        if (predicate instanceof LifecyclePrefixPredicate) {
+				        	LifecyclePrefixPredicate prefixPredicate = (LifecyclePrefixPredicate) predicate;
+				        	if(archiveLocation.getFileId().contains(prefixPredicate.getPrefix()))
+				        			return true;
+				        }
+					}
+				}
+			} 
+		} catch (AmazonServiceException e) {
+			throw new HpcException(
+					"[S3] Failed to retrieve life cycle policy on bucket "
+							+ archiveLocation.getFileContainerId() + e.getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e);
+		}
+		return false;
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
