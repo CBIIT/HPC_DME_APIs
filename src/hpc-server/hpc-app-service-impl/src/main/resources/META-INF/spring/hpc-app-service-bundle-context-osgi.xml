@@ -24,6 +24,7 @@
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.dataTransfer.downloadDirectory">/mnt/IRODsScratch/data/S3</prop>
 		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize"></prop>
+		<prop key="hpc.service.dataTransfer.maxDeepArchiveInProgressDays">2</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriodSso">120</prop>

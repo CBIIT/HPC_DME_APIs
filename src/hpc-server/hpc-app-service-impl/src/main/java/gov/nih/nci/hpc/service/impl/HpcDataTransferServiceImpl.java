@@ -178,6 +178,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
 	private Long maxSyncDownloadFileSize = null;
 
+	// The max number of days to keep deep archive in progress
+	@Value("${hpc.service.dataTransfer.maxDeepArchiveInProgressDays}")
+	private Integer maxDeepArchiveInProgressDays = null;
+
 	// cancelCollectionDownloadTaskItems() query filter
 	private List<HpcDataObjectDownloadTaskStatusFilter> cancelCollectionDownloadTaskItemsFilter = new ArrayList<>();
 
@@ -1629,6 +1633,18 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		return HpcIntegratedSystem.CLOUDIAN.equals(dataTransferConfiguration.getArchiveProvider()) || HpcIntegratedSystem.AWS.equals(dataTransferConfiguration.getArchiveProvider());
 	}
 
+	@Override
+	public boolean deepArchiveDelayed(Calendar deepArchiveDate) {
+		if (deepArchiveDate == null) {
+			return true;
+		}
+
+		// Check if there is a delay in toggling the status
+		Date expiration = new Date();
+		expiration.setTime(deepArchiveDate.getTimeInMillis() + 1000 * 60 * 60 * maxDeepArchiveInProgressDays * 24);
+		// If delayed, return true
+		return expiration.before(new Date());
+	}
 	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
