@@ -64,6 +64,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -858,7 +859,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					// Generate archive (Cleversafe) system generated metadata. Note: This is only
 					// performed for synchronous data registration.
 					if (dataObjectFile != null) {
-						String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+						HpcS3ObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 								systemGeneratedMetadata.getArchiveLocation(),
 								systemGeneratedMetadata.getDataTransferType(),
 								systemGeneratedMetadata.getConfigurationId(),
@@ -868,8 +869,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						// Update system-generated checksum metadata in iRODS w/ checksum value provided
 						// from
 						// the archive.
-						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum, null, null,
-								null, null, null, null, null);
+						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(), null, null,
+								null, null, null, null, objectMetadata.getDeepArchiveStatus());
 
 						// Automatically extract metadata from the file itself and add to iRODs.
 						if (extractMetadata) {
@@ -1276,17 +1277,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// 4. Data Object is archived (i.e. registration completed).
 		// 5. Data Object is not in deep archive or in deep archive but restored
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
-		if (metadata.getDeepArchiveStatus() != null && metadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.GLACIER)) {
+		if (metadata.getDeepArchiveStatus() != null) {
 			// Get the data object metadata to check for restoration status
-			List<HpcMetadataEntry> metadataEntries = dataTransferService.getDataObjectMetadata(
+			HpcS3ObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
 					metadata.getArchiveLocation(), metadata.getDataTransferType(), 
 					metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId());
 			
-			String restorationStatus = null;
-			for (HpcMetadataEntry entry: metadataEntries) {
-				if (entry.getAttribute().equals("restoration_status"))
-					restorationStatus = entry.getValue();
-			}
+			String restorationStatus = objectMetadata.getRestorationStatus();
 			
 			if (restorationStatus != null && !restorationStatus.equals("success")) {
 				throw new HpcException("Object is in deep archived state. Download request URL cannot be generated.",
@@ -1658,11 +1655,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 		}
 		
-		// Validate the request is for Cloudian only.
-		// YURI TODO update to check flag whether lifecycle is supported
-		if (!HpcIntegratedSystem.CLOUDIAN.equals(dataTransferService.getArchiveProvider(metadata.getConfigurationId(),
-				metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3))) {
-			throw new HpcException("The tiering API is not supported for this archive provider.",
+		// Validate the request if tiering is supported for the provider.
+		if (!dataTransferService.isTieringSupported(metadata.getConfigurationId(),
+				metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3)) {
+			throw new HpcException("The tiering API is not supported for this archive provider." + path,
 					HpcRequestRejectReason.API_NOT_SUPPORTED);
 		}
 
@@ -1764,13 +1760,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				}
 				if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
 					logger.error("Object is not in archived state. It is in "
-							+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+							+ metadata.getDataTransferStatus().value() + " state" + path, HpcRequestRejectReason.FILE_NOT_ARCHIVED);
 					continue;
 				}
 				// Check if any data objects archived where tiering is not supported.
-				if (!HpcIntegratedSystem.CLOUDIAN.equals(dataTransferService.getArchiveProvider(metadata.getConfigurationId(),
-						metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3))) {
-					logger.error("The tiering API is not supported for this archive provider.",
+				if (!dataTransferService.isTieringSupported(metadata.getConfigurationId(),
+						metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3)) {
+					logger.info("The tiering API is not supported for this archive provider." + path,
 							HpcRequestRejectReason.API_NOT_SUPPORTED);
 					continue;
 				}
@@ -3095,9 +3091,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Get the System generated metadata.
 			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(dataObjectEntry.getPath());
 			// Check if any data objects archived where tiering is not supported.
-			if (HpcIntegratedSystem.CLOUDIAN.equals(dataTransferService.getArchiveProvider(
-					metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3))) {
+			if (dataTransferService.isTieringSupported(metadata.getConfigurationId(),
+					metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3)) {
 				dataObjectPaths.add(dataObjectEntry.getPath());
+			} else {
+				logger.info("The tiering API is not supported for this archive provider." + dataObjectEntry.getPath(),
+						HpcRequestRejectReason.API_NOT_SUPPORTED);
 			}
 			
 		}
