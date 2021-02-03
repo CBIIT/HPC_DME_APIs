@@ -37,6 +37,7 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -331,6 +332,22 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 					Boolean.valueOf(metadataMap.get(REGISTRATION_COMPLETION_EVENT_ATTRIBUTE)));
 		}
 
+		if (metadataMap.get(DEEP_ARCHIVE_STATUS_ATTRIBUTE) != null) {
+			try {
+				systemGeneratedMetadata.setDeepArchiveStatus(
+						HpcDeepArchiveStatus.fromValue(metadataMap.get(DEEP_ARCHIVE_STATUS_ATTRIBUTE)));
+
+			} catch (Exception e) {
+				logger.error(
+						"Unable to determine deep archive status: " + metadataMap.get(DEEP_ARCHIVE_STATUS_ATTRIBUTE),
+						e);
+			}
+		}
+		if (metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE) != null) {
+			systemGeneratedMetadata
+					.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
+		}
+		
 		return systemGeneratedMetadata;
 	}
 
@@ -619,7 +636,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
 			String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType, Calendar dataTransferStarted, Calendar dataTransferCompleted,
-			Long sourceSize, String linkSourcePath, HpcDeepArchiveStatus deepArchiveStatus) throws HpcException {
+			Long sourceSize, String linkSourcePath, HpcDeepArchiveStatus deepArchiveStatus, Calendar deepArchiveDate) throws HpcException {
 		// Input validation.
 		if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
 			throw new HpcException("Invalid updated system generated metadata for data object",
@@ -687,6 +704,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_STATUS_ATTRIBUTE, deepArchiveStatus.value()));
 		}
 
+		if (deepArchiveDate != null) {
+			// Update the deep archive date metadata.
+			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE,
+					dateFormat.format(deepArchiveDate.getTime())));
+		}
+		
 		if (!metadataEntries.isEmpty()) {
 			dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
 					metadataEntries);
