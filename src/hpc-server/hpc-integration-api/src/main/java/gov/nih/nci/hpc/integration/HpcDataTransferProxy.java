@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -346,7 +347,7 @@ public interface HpcDataTransferProxy {
    * @return metadataEntries
    * @throws HpcException on data transfer system failure.
    */
-  public default List<HpcMetadataEntry> getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation)
+  public default HpcS3ObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation)
 		throws HpcException {
 	throw new HpcException("getDataObjectMetadata is not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
@@ -375,6 +376,19 @@ public interface HpcDataTransferProxy {
    */
   public default void restoreDataObject(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
     throw new HpcException("restoreDataObject is not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
+   * Check if Lifecycle Policy exists for an archive location
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveLocation The archive location.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default boolean existsLifecyclePolicy(Object authenticatedToken,
+      HpcFileLocation archiveLocation) throws HpcException {
+    throw new HpcException("existsLifecyclePolicy() not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
   }
 
 }
