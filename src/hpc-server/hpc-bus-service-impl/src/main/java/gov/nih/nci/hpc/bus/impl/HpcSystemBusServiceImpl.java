@@ -134,6 +134,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Qualifier("hpcDataObjectDownloadTaskExecutor")
 	Executor dataObjectDownloadTaskExecutor = null;
 
+	
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -177,7 +178,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(),
 						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted(), null,
-						null, null);
+						null, null, null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process queued data transfer upload :" + path, e);
@@ -224,8 +225,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					// Update data management w/ data transfer status, checksum and completion time.
 					dataTransferCompleted = Calendar.getInstance();
+					Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null && objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
-							dataTransferStatus, null, null, dataTransferCompleted, null, null, objectMetadata.getDeepArchiveStatus());
+							dataTransferStatus, null, null, dataTransferCompleted, null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
 
 					// Record data object registration result.
 					systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
@@ -240,7 +242,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					// Update data transfer status.
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus,
-							null, null, null, null, null, null);
+							null, null, null, null, null, null, null);
 					break;
 
 				case FAILED:
@@ -348,7 +350,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Streaming stopped (server shutdown). We just update the status accordingly.
 					logger.info("Upload streaming stopped for: {}", path);
 					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-							HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null, null, null);
+							HpcDataTransferUploadStatus.STREAMING_STOPPED, null, null, null, null, null, null, null);
 				}
 
 			} catch (HpcException e) {
@@ -398,7 +400,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				// Update the transfer status and request id.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, null,
 						uploadResponse.getDataTransferRequestId(), null, uploadResponse.getDataTransferStatus(), null,
-						null, null, null, null, null);
+						null, null, null, null, null, null);
 
 			} catch (HpcException e) {
 				logger.error("Failed to process restart upload streaming for data object:" + path, e);
@@ -1679,7 +1681,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = null;
 		try {
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-					HpcDataTransferUploadStatus.FAILED, null, null, null, null, null, null);
+					HpcDataTransferUploadStatus.FAILED, null, null, null, null, null, null, null);
 
 			systemGeneratedMetadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
@@ -1944,9 +1946,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			Calendar dataTransferCompleted = Calendar.getInstance();
 
 			logger.info("Before updateDataObjectSystemGeneratedMetadata(): {}", path);
+			Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null && objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
 					HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
-					archivePathAttributes.getSize(), null, objectMetadata.getDeepArchiveStatus());
+					archivePathAttributes.getSize(), null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
 			logger.info("After updateDataObjectSystemGeneratedMetadata(): {}", path);
 
 			// Add an event if needed.
@@ -2024,10 +2027,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 
 				// Update system metadata of the data object.
+				Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null && objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
 						uploadResponse.getDataTransferRequestId(), objectMetadata.getChecksum(), uploadResponse.getDataTransferStatus(),
 						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted(), null,
-						null, objectMetadata.getDeepArchiveStatus());
+						null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
 
 				// Data transfer upload completed successfully. Add an event if needed.
 				if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
@@ -2156,11 +2160,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
 
 			// Check the storage class.
-			if (deepArchiveStatus != null && !deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS)) {
+			if (deepArchiveStatus != null) {
 
 				// Add/Update system generated metadata to iRODs
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-						null, null, null, null, null, null, deepArchiveStatus);
+						null, null, null, null, null, null, deepArchiveStatus, null);
+			} else {
+				// Check if there is a delay and toggle deep archive status to delayed
+				if(dataTransferService.deepArchiveDelayed(systemGeneratedMetadata.getDeepArchiveDate())) {
+					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
+							null, null, null, null, null, null, HpcDeepArchiveStatus.DELAYED, null);
+				}
 			}
 
 		} catch (HpcException e) {

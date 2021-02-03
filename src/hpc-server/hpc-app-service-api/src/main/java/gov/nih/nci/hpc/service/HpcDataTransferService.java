@@ -785,4 +785,12 @@ public interface HpcDataTransferService {
 	 */
 	public boolean isTieringSupported(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType) throws HpcException;
+
+	/**
+	 * Check if there is a delay in transition to deep archive.
+	 *
+	 * @param deepArchiveDate          The data/time the deep archive status went to in-progress
+	 * @return True if it is delayed, or false otherwise.
+	 */
+	boolean deepArchiveDelayed(Calendar deepArchiveDate);
 }
