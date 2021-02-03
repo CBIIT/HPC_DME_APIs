@@ -270,13 +270,14 @@ public interface HpcMetadataService {
    * @param sourceSize (Optional) The data source size in bytes.
    * @param linkSourcePath (Optional) linkSourcePath.
    * @param deepArchiveStatus (Optional) The deep archive status.
+   * @param deepArchiveDate (Optional) The date deep archive was requested.
    * @throws HpcException on service failure.
    */
   public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
       String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
       HpcDataTransferType dataTransferType, Calendar dataTransferStarted,
       Calendar dataTransferCompleted, Long sourceSize, String linkSourcePath, 
-      HpcDeepArchiveStatus deepArchiveStatus) throws HpcException;
+      HpcDeepArchiveStatus deepArchiveStatus, Calendar deepArchiveDate) throws HpcException;
 
 	/**
 	 * Update a data object's metadata.

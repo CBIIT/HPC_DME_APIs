@@ -425,7 +425,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		getDataObjectLinks(sourcePath).forEach(link -> {
 			try {
 				metadataService.updateDataObjectSystemGeneratedMetadata(link.getAbsolutePath(), null, null, null, null,
-						null, null, null, null, destinationPath, null);
+						null, null, null, null, destinationPath, null, null);
 			} catch (HpcException e) {
 				logger.error("Failed to point link[{}] to {}", link.getAbsolutePath(), destinationPath);
 			}
