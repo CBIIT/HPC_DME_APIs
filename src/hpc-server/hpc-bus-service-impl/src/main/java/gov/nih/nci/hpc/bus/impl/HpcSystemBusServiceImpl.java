@@ -55,11 +55,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
@@ -217,7 +216,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Data object is archived. Note: This is a configured filesystem archive.
 
 					// Generate archive (File System) system generated metadata.
-					String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+					HpcS3ObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 							systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
 							systemGeneratedMetadata.getConfigurationId(),
 							systemGeneratedMetadata.getS3ArchiveConfigurationId(),
@@ -225,8 +224,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 					// Update data management w/ data transfer status, checksum and completion time.
 					dataTransferCompleted = Calendar.getInstance();
-					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
-							dataTransferStatus, null, null, dataTransferCompleted, null, null, null);
+					metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
+							dataTransferStatus, null, null, dataTransferCompleted, null, null, objectMetadata.getDeepArchiveStatus());
 
 					// Record data object registration result.
 					systemGeneratedMetadata.setDataTransferCompleted(dataTransferCompleted);
@@ -1935,7 +1934,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			// Update the archive data object's system-metadata.
 			logger.info("Before addSystemGeneratedMetadataToDataObject(): {}", path);
-			String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+			HpcS3ObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(),
 					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId(),
 					systemGeneratedMetadata.getObjectId(), systemGeneratedMetadata.getRegistrarId());
@@ -1945,9 +1944,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			Calendar dataTransferCompleted = Calendar.getInstance();
 
 			logger.info("Before updateDataObjectSystemGeneratedMetadata(): {}", path);
-			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum,
+			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(),
 					HpcDataTransferUploadStatus.ARCHIVED, null, null, dataTransferCompleted,
-					archivePathAttributes.getSize(), null, null);
+					archivePathAttributes.getSize(), null, objectMetadata.getDeepArchiveStatus());
 			logger.info("After updateDataObjectSystemGeneratedMetadata(): {}", path);
 
 			// Add an event if needed.
@@ -2013,7 +2012,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						systemGeneratedMetadata.getConfigurationId());
 
 				// Generate archive system generated metadata.
-				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+				HpcS3ObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 						uploadResponse.getArchiveLocation(), uploadResponse.getDataTransferType(),
 						systemGeneratedMetadata.getConfigurationId(),
 						systemGeneratedMetadata.getS3ArchiveConfigurationId(), systemGeneratedMetadata.getObjectId(),
@@ -2026,9 +2025,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Update system metadata of the data object.
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(),
-						uploadResponse.getDataTransferRequestId(), checksum, uploadResponse.getDataTransferStatus(),
+						uploadResponse.getDataTransferRequestId(), objectMetadata.getChecksum(), uploadResponse.getDataTransferStatus(),
 						uploadResponse.getDataTransferType(), null, uploadResponse.getDataTransferCompleted(), null,
-						null, null);
+						null, objectMetadata.getDeepArchiveStatus());
 
 				// Data transfer upload completed successfully. Add an event if needed.
 				if (systemGeneratedMetadata.getRegistrationCompletionEvent()) {
@@ -2095,21 +2094,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				.getDataObjectSystemGeneratedMetadata(downloadTask.getPath());
 
 		// Get the data object metadata to check for restoration status
-		List<HpcMetadataEntry> metadataEntries = dataTransferService.getDataObjectMetadata(
+		HpcS3ObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
 				systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(), 
 				systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
 		
-		String restorationStatus = null;
-		for (HpcMetadataEntry entry: metadataEntries) {
-			if (entry.getAttribute().equals("restoration_status"))
-				restorationStatus = entry.getValue();
-		}
+		String restorationStatus = objectMetadata.getRestorationStatus();
 		
 		if (restorationStatus != null && restorationStatus.equals("in progress")) {
 			logger.info("restore request task: {} - still in-progress",
 					downloadTask.getId());
 		} else {
-			HpcMetadataEntries metadataBefore = metadataService.getDataObjectMetadataEntries(downloadTask.getPath());
 			// Determine the download result.
 			HpcDownloadResult result = HpcDownloadResult.FAILED;
 			if (restorationStatus.equals("success")) {	
@@ -2156,20 +2150,17 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					.getDataObjectSystemGeneratedMetadata(path);
 			
 			// Get the data object metadata.
-			List<HpcMetadataEntry> metadataEntries = dataTransferService.getDataObjectMetadata(
+			HpcS3ObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
 					systemGeneratedMetadata.getArchiveLocation(), systemGeneratedMetadata.getDataTransferType(), 
 					systemGeneratedMetadata.getConfigurationId(), systemGeneratedMetadata.getS3ArchiveConfigurationId());
-			String storageClass = null;
-			for (HpcMetadataEntry entry: metadataEntries) {
-				if (entry.getAttribute().equals("storage_class"))
-					storageClass = entry.getValue();
-			}
+			HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
+
 			// Check the storage class.
-			if (storageClass != null && storageClass.equals("GLACIER")) {
+			if (deepArchiveStatus != null && !deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS)) {
 
 				// Add/Update system generated metadata to iRODs
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-						null, null, null, null, null, null, HpcDeepArchiveStatus.GLACIER);
+						null, null, null, null, null, null, deepArchiveStatus);
 			}
 
 		} catch (HpcException e) {

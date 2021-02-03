@@ -98,6 +98,8 @@
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="IN_PROGRESS" />
 			<xsd:enumeration value="GLACIER" />
+			<xsd:enumeration value="DEEP_ARCHIVE" />
+			<xsd:enumeration value="DELAYED" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -532,6 +534,14 @@
 		<xsd:sequence>
 			<xsd:element name="status" type="hpc-domain-datatransfer:HpcDataTransferDownloadStatus" />
 			<xsd:element name="destination" type="hpc-domain-datatransfer:HpcDataTransferType" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="HpcS3ObjectMetadata">
+		<xsd:sequence>
+			<xsd:element name="checksum" type="xsd:string" />
+			<xsd:element name="restorationStatus" type="xsd:string" />
+			<xsd:element name="deepArchiveStatus" type="hpc-domain-datatransfer:HpcDeepArchiveStatus" />
 		</xsd:sequence>
 	</xsd:complexType>
 

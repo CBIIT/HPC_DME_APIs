@@ -38,15 +38,14 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
-import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -185,10 +184,10 @@ public interface HpcDataTransferService {
 	 * @param objectId                 The data object id from the data management
 	 *                                 system (UUID).
 	 * @param registrarId              The user-id of the data registrar.
-	 * @return The checksum of the data object object.
+	 * @return The checksum and deepArchiveStatus of the data object as HpcS3ObjectMetadata
 	 * @throws HpcException on service failure.
 	 */
-	public String addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+	public HpcS3ObjectMetadata addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
 			String objectId, String registrarId) throws HpcException;
 
@@ -770,20 +769,20 @@ public interface HpcDataTransferService {
 	 * @param dataTransferType	The data transfer type.
 	 * @param configurationId	The configuration ID.
 	 * @param s3ArchiveConfigurationId	(Optional) The S3 configuration ID.
-	 * @return list of HpcMetadataEntry
+	 * @return HpcS3ObjectMetadata The metadata attached to the object.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public List<HpcMetadataEntry> getDataObjectMetadata(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+	public HpcS3ObjectMetadata getDataObjectMetadata(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 
 	/**
-	 * Get the archive provider from configuration Id.
+	 * Check if the archive provider supports tiering.
 	 * @param configurationId The configuration ID
 	 * @param s3ArchiveConfigurationId (Optional) The S3 configuration ID.
 	 * @param dataTransferType (S3 or Globus)
-	 * @return HpcIntegratedSystem
+	 * @return true if tiering is supported by this provider.
 	 * @throws HpcException on data transfer system failure.
 	 */
-	public HpcIntegratedSystem getArchiveProvider(String configurationId, String s3ArchiveConfigurationId,
+	public boolean isTieringSupported(String configurationId, String s3ArchiveConfigurationId,
 			HpcDataTransferType dataTransferType) throws HpcException;
 }
