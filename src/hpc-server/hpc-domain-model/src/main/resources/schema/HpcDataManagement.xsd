@@ -46,6 +46,7 @@
 			<xsd:element name="uploadRequestURLExpiration"
 				type="xsd:int" minOccurs="0" />
 			<xsd:element name="tieringBucket" type="xsd:string" />
+			<xsd:element name="tieringProtocol" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 

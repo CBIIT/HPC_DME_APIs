@@ -454,8 +454,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public void putLifecyclePolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix, String tieringBucket)
-			throws HpcException {
+	public void putLifecyclePolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
+			String tieringBucket, String tieringProtocol) throws HpcException {
 		// Create a rule to archive objects with the prefix to Glacier
 		// immediately.
 		BucketLifecycleConfiguration.Rule newRule = new BucketLifecycleConfiguration.Rule().withId(prefix)
@@ -492,7 +492,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					archiveLocation.getFileContainerId(), configuration);
 
 			// Add Cloudian custom tiering header
-			String customHeader = "S3GLACIER|EndPoint:"
+			String customHeader = tieringProtocol + "|EndPoint:"
 					+ URLEncoder.encode(tieringEndpoint, StandardCharsets.UTF_8.toString()) + ",TieringBucket:"
 					+ tieringBucket;
 			String encodedCustomHeader = URLEncoder.encode(customHeader, StandardCharsets.UTF_8.toString());

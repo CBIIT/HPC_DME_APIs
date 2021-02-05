@@ -1278,7 +1278,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// 4. Data Object is archived (i.e. registration completed).
 		// 5. Data Object is not in deep archive or in deep archive but restored
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
-		if (metadata.getDeepArchiveStatus() != null) {
+		if (metadata.getDeepArchiveStatus() != null && !metadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS)) {
 			// Get the data object metadata to check for restoration status
 			HpcS3ObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
 					metadata.getArchiveLocation(), metadata.getDataTransferType(), 
@@ -1681,7 +1681,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (path == null) {
 			throw new HpcException("Null path for tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
+		path = toNormalizedPath(path);
+		
 		// Validate collection exists.
 		HpcCollection collection = dataManagementService.getCollection(path, true);
 		if (collection == null) {
@@ -1729,7 +1730,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		
-		String tierTaskId = null;
 		List<String> paths = new ArrayList<>();
 		HpcBulkTierRequest bulkTierRequest = new HpcBulkTierRequest();
 		if (!tierRequest.getDataObjectPaths().isEmpty()) {
@@ -1793,7 +1793,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 			// Validate all data object paths requested exist.
 			boolean dataObjectExist = false;
-			for (String path : tierRequest.getCollectionPaths()) {
+			for (String collectionPath : tierRequest.getCollectionPaths()) {
+				String path = toNormalizedPath(collectionPath);
 				HpcCollection collection = dataManagementService.getCollection(path, true);
 				if (collection == null) {
 					throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1960,7 +1961,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return A download response DTO object
 	 */
 	private HpcDataObjectDownloadResponseDTO toDownloadResponseDTO(HpcFileLocation destinationLocation,
-			File destinationFile, String taskId, String downloadRequestURL, boolean restoreInProgress) {
+			File destinationFile, String taskId, String downloadRequestURL, Boolean restoreInProgress) {
 		// Construct and return a DTO
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		downloadResponse.setDestinationFile(destinationFile);
