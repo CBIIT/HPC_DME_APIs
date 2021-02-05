@@ -156,16 +156,21 @@ public class HpcSyncDownloadController extends AbstractHpcController {
 			client.header("Authorization", "Bearer " + authToken);
 			Response restResponse = client.invoke("POST", dto);
 			if (restResponse.getStatus() == 200) {
-				HpcDataObjectDownloadResponseDTO downloadDTO = (HpcDataObjectDownloadResponseDTO) HpcClientUtil
+				try {
+					HpcDataObjectDownloadResponseDTO downloadDTO = (HpcDataObjectDownloadResponseDTO) HpcClientUtil
 						.getObject(restResponse, HpcDataObjectDownloadResponseDTO.class);
-				if (downloadDTO == null) {
+					if (downloadDTO == null) {
+						result.setCode("success");
+					} else {
+						// Treat it as error to display message for restoration
+						// requests.
+						result.setCode("error");
+						result.setMessage(
+								"Object restoration requested. You will recieve an email when it is available for download.");
+					}
+				} catch (HpcWebException e) {
+					// If file is returned, fails to parse record so return success.
 					result.setCode("success");
-				} else {
-					// Treat it as error to display message for restoration
-					// requests.
-					result.setCode("error");
-					result.setMessage(
-							"Object restoration requested. You will recieve an email when it is available for download.");
 				}
 			} else {
 				HpcExceptionDTO exceptionDTO = (HpcExceptionDTO) HpcClientUtil.getObject(restResponse,
