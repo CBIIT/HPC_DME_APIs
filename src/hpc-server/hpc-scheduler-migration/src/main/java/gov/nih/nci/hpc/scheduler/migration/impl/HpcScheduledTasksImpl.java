@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
+import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * HPC Scheduled tasks implementation.
@@ -49,7 +50,8 @@ public class HpcScheduledTasksImpl {
 	/** Process received data migration tasks. */
 	@Scheduled(cron = "${hpc.scheduler.migration.cron.processDataObjectMigrationReceived.delay}")
 	private void processDataObjectMigrationReceivedTask() {
-		execute("processDataObjectMigrationReceivedTask()", systemBusService::processDataObjectMigrationReceived, logger);
+		execute("processDataObjectMigrationReceivedTask()", systemBusService::processDataObjectMigrationReceived,
+				logger);
 	}
 
 	/**
@@ -58,12 +60,12 @@ public class HpcScheduledTasksImpl {
 	 */
 	@SuppressWarnings("unused")
 	private void init() {
-		//try {
-			// All active S3 download tasks needs to be restarted.
-			// systemBusService.restartDataObjectDownloadTasks();
+		try {
+			// All active data migration tasks needs to be restarted.
+			systemBusService.restartDataObjectMigrationTasks();
 
-		//} catch (HpcException e) {
-		//	logger.error("Migration Scheduler failed to initialize", e);
-		//}
+		} catch (HpcException e) {
+			logger.error("Migration Scheduler failed to initialize", e);
+		}
 	}
 }
