@@ -463,7 +463,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// provided S3 bucket. Supported by S3 archive only.
 		// 4. Asynchronous download via streaming data object from S3 Archive to user
 		// provided Google Drive. Supported by S3 archive only.
-		if(deepArchiveStatus != null) {
+		if(deepArchiveStatus != null && !deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS)) {
 			// If status is DEEP_ARCHIVE, and object is not restored, submit a restore request
 			// and create a dataObjectDownloadTask with status RESTORE_REQUESTED
 			HpcS3ObjectMetadata objectMetadata = dataTransferProxies.get(HpcDataTransferType.S_3).getDataObjectMetadata(
@@ -1520,7 +1520,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		// Create life cycle policy with this data object
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
+				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
 		// Add a record of the lifecycle rule
 		lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_DATA_OBJECT, s3ArchiveConfigurationId,
 				Calendar.getInstance(), prefix);
@@ -1544,11 +1544,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		
 		HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
 				
-		String prefix = hpcFileLocation.getFileId() + "/" + path + "/";
+		String prefix = hpcFileLocation.getFileId() + path + "/";
 		// Create life cycle policy with this collection
 		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
+				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
 		// Add a record of the lifecycle rule
 		lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_COLLECTION, s3ArchiveConfigurationId,
 				Calendar.getInstance(), prefix);
@@ -1576,7 +1576,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Create life cycle policy with this collection
 			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
-					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
+					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
 			
 			// Add a record of the lifecycle rule
 			lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_DATA_OBJECT, s3ArchiveConfigurationId,
@@ -1606,7 +1606,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Create life cycle policy with this collection
 			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
 					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
-					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket());
+					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
 			// Add a record of the lifecycle rule
 			lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_COLLECTION, s3ArchiveConfigurationId,
 					Calendar.getInstance(), prefix);
