@@ -917,7 +917,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// location changed after regeneration of the upload url(s).
 			if (uploadResponse.getArchiveLocation() != null) {
 				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(), null,
-						null, null, null, null, null, null, null);
+						null, null, null, null, null, null, null, null);
 			}
 		}
 
