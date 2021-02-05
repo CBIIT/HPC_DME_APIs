@@ -10,9 +10,10 @@ package gov.nih.nci.hpc.service;
 
 import java.util.List;
 
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
-import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -47,7 +48,7 @@ public interface HpcDataMigrationService {
 	 */
 	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
 			throws HpcException;
-	
+
 	/**
 	 * Migrate a data object.
 	 *
@@ -55,5 +56,23 @@ public interface HpcDataMigrationService {
 	 * @throws HpcException on service failure.
 	 */
 	public void migrateDataObject(HpcDataMigrationTask dataObjectMigrationTask) throws HpcException;
+
+	/**
+	 * Complete a data object migration task.
+	 *
+	 * @param dataObjectMigrationTask The data migration details.
+	 * @param result                  The data migration result.
+	 * @param message An error message in case the migration failed
+	 * @throws HpcException on service failure.
+	 */
+	public void completeDataObjectMigrationTask(HpcDataMigrationTask dataObjectMigrationTask,
+			HpcDataMigrationResult result, String message) throws HpcException;
+	
+	/**
+	 * Reset migration tasks that are in-progress
+	 *
+	 * @throws HpcException on service failure.
+	 * **/
+	public void resetMigrationTasksInProcess() throws HpcException;
 
 }

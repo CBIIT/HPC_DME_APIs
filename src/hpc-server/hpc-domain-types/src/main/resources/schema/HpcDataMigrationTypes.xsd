@@ -38,22 +38,4 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
-	<xsd:complexType name="HpcDataMigrationTask">
-		<xsd:sequence>
-			<xsd:element name="id" type="xsd:string" />
-			<xsd:element name="userId" type="xsd:string" />
-			<xsd:element name="path" type="xsd:string" />
-			<xsd:element name="configurationId" type="xsd:string" />
-			<xsd:element name="fromS3ArchiveConfigurationId"
-				type="xsd:string" />
-			<xsd:element name="toS3ArchiveConfigurationId"
-				type="xsd:string" />
-			<xsd:element name="type"
-				type="hpc-domain-datamigration:HpcDataMigrationType" />
-			<xsd:element name="status"
-				type="hpc-domain-datamigration:HpcDataMigrationStatus" />
-			<xsd:element name="created" type="xsd:dateTime" />
-		</xsd:sequence>
-	</xsd:complexType>
-
 </xsd:schema>

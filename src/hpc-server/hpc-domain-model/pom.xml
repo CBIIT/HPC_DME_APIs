@@ -144,6 +144,15 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>${basedir}/xjc-build/schema/HpcDataMigration.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.domain.model</packagename>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-domain-datamigration-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:simple</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
