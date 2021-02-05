@@ -104,7 +104,7 @@
 				$scope.gridOptions1.data = results;
 
 				$scope.showMe= function(val) {
-				    return val == doc.replace(/\'/g, "");
+				    return val == doc.replace(/\'/g, "") || type == "'SYSTEM_ADMIN'" ;
 				  };
 				
 			} ]);
