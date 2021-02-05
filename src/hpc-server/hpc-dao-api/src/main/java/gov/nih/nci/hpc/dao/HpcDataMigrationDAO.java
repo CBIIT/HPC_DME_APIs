@@ -10,11 +10,13 @@
  */
 package gov.nih.nci.hpc.dao;
 
+import java.util.Calendar;
 import java.util.List;
 
+import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
-import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
+import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -24,7 +26,7 @@ import gov.nih.nci.hpc.exception.HpcException;
  */
 public interface HpcDataMigrationDAO {
 	/**
-	 * Store a data migration task. Note: If a new task is inserted,
+	 * Upsert a data migration task. Note: If a new task is inserted,
 	 * dataMigrationTask.getId() will be updated with the generated ID.
 	 *
 	 * @param dataMigrationTask The data migration task to persist.
@@ -50,5 +52,27 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on database error.
 	 */
 	public void deleteDataMigrationTask(String id) throws HpcException;
+
+	/**
+	 * Upsert a data migration task result.
+	 *
+	 * @param dataMigrationTask The data migration task to persist.
+	 * @param completed         The time the migration task completed.
+	 * @param result            The migration result
+	 * @param message           (Optional) error message in case of failure
+	 * @throws HpcException on database error.
+	 */
+	public void upsertDataMigrationTaskResult(HpcDataMigrationTask dataMigrationTask, Calendar completed,
+			HpcDataMigrationResult result, String message) throws HpcException;
+
+	/**
+	 * Update the status of all data migration tasks
+	 *
+	 * @param fromStatus Only update tasks in this status
+	 * @param toStatus   The status to set
+	 * @throws HpcException on database error.
+	 */
+	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, HpcDataMigrationStatus toStatus)
+			throws HpcException;
 
 }

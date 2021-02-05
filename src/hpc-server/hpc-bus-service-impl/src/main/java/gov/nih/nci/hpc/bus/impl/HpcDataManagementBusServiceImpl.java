@@ -863,7 +863,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						// from
 						// the archive.
 						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, checksum, null, null,
-								null, null, null, null);
+								null, null, null, null, null);
 
 						// Automatically extract metadata from the file itself and add to iRODs.
 						if (extractMetadata) {
@@ -2038,7 +2038,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void updateDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus) {
 		try {
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus, null,
-					null, null, null, null);
+					null, null, null, null, null);
 
 		} catch (HpcException e) {
 			logger.error("Failed to update system metadata: " + path + ". Data transfer status: " + dataTransferStatus,
@@ -2356,7 +2356,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Update data-transfer-status system metadata accordingly.
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
 					HpcDataTransferUploadStatus.URL_GENERATED, null, uploadResponse.getDataTransferStarted(), null,
-					null, null);
+					null, null, null);
 
 			return uploadResponse;
 		}
