@@ -619,7 +619,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
 			String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType, Calendar dataTransferStarted, Calendar dataTransferCompleted,
-			Long sourceSize, String linkSourcePath) throws HpcException {
+			Long sourceSize, String linkSourcePath, String s3ArchiveConfigurationId) throws HpcException {
 		// Input validation.
 		if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
 			throw new HpcException("Invalid updated system generated metadata for data object",
@@ -680,6 +680,12 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		if (linkSourcePath != null) {
 			// Update the link source path metadata.
 			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
+		}
+
+		if (s3ArchiveConfigurationId != null) {
+			// Update the S3 archive configuration ID metadata.
+			addMetadataEntry(metadataEntries,
+					toMetadataEntry(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE, s3ArchiveConfigurationId));
 		}
 
 		if (!metadataEntries.isEmpty()) {
