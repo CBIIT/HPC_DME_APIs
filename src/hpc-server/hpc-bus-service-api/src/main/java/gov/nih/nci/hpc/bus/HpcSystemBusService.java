@@ -124,13 +124,6 @@ public interface HpcSystemBusService {
   public void restartDataObjectDownloadTasks() throws HpcException;
   
   /**
-   * Restart data objectmigration tasks that are in progress..
-   *
-   * @throws HpcException on service failure.
-   */
-  public void restartDataObjectMigrationTasks() throws HpcException;
-  
-  /**
    * Restart collection download tasks that are in-process.
    *
    * @throws HpcException on service failure.
@@ -185,13 +178,6 @@ public interface HpcSystemBusService {
    */
   public void processEvents() throws HpcException;
   
-  /**
-   *  Process received data object migration tasks
-   *
-   * @throws HpcException on service failure.
-   */
-  public void processDataObjectMigrationReceived() throws HpcException;
-
   /**
    * Generate summary report event.
    *
