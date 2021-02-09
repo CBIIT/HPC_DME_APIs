@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import gov.nih.nci.hpc.bus.HpcSystemBusService;
+import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -30,7 +30,7 @@ public class HpcScheduledTasksImpl {
 
 	// The System Business Service instance.
 	@Autowired
-	private HpcSystemBusService systemBusService = null;
+	private HpcDataMigrationBusService dataMigrationBusService = null;
 
 	// The Logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -47,10 +47,17 @@ public class HpcScheduledTasksImpl {
 	// Methods
 	// ---------------------------------------------------------------------//
 
-	/** Process received data migration tasks. */
+	/** Process received data object migration tasks. */
 	@Scheduled(cron = "${hpc.scheduler.migration.cron.processDataObjectMigrationReceived.delay}")
 	private void processDataObjectMigrationReceivedTask() {
-		execute("processDataObjectMigrationReceivedTask()", systemBusService::processDataObjectMigrationReceived,
+		execute("processDataObjectMigrationReceivedTask()", dataMigrationBusService::processDataObjectMigrationReceived,
+				logger);
+	}
+
+	/** Process received collection migration tasks. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.processCollectionMigrationReceived.delay}")
+	private void processCollectionMigrationReceivedTask() {
+		execute("processCollectionMigrationReceivedTask()", dataMigrationBusService::processCollectionMigrationReceived,
 				logger);
 	}
 
@@ -62,7 +69,7 @@ public class HpcScheduledTasksImpl {
 	private void init() {
 		try {
 			// All active data migration tasks needs to be restarted.
-			systemBusService.restartDataObjectMigrationTasks();
+			dataMigrationBusService.restartDataObjectMigrationTasks();
 
 		} catch (HpcException e) {
 			logger.error("Migration Scheduler failed to initialize", e);

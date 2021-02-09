@@ -60,19 +60,53 @@ public interface HpcDataMigrationService {
 	/**
 	 * Complete a data object migration task.
 	 *
-	 * @param dataObjectMigrationTask The data migration details.
+	 * @param dataObjectMigrationTask The data migration task.
 	 * @param result                  The data migration result.
-	 * @param message An error message in case the migration failed
+	 * @param message                 (Optional) An error message in case the
+	 *                                migration failed
 	 * @throws HpcException on service failure.
 	 */
 	public void completeDataObjectMigrationTask(HpcDataMigrationTask dataObjectMigrationTask,
 			HpcDataMigrationResult result, String message) throws HpcException;
-	
+
+	/**
+	 * Complete a collection migration task.
+	 *
+	 * @param collectionMigrationTask The collection migration task.
+	 * @param message                 (Optional) An error message in case the
+	 *                                migration failed
+	 * @throws HpcException on service failure.
+	 */
+	public void completeCollectionMigrationTask(HpcDataMigrationTask collectionMigrationTask, String message)
+			throws HpcException;
+
 	/**
 	 * Reset migration tasks that are in-progress
 	 *
 	 * @throws HpcException on service failure.
-	 * **/
+	 **/
 	public void resetMigrationTasksInProcess() throws HpcException;
+
+	/**
+	 * Create a collection migration task.
+	 *
+	 * @param path                       The collection path.
+	 * @param userId                     The user Id requested the migration.
+	 * @param configurationId            The The data object configuration ID.
+	 * @param toS3ArchiveConfigurationId The migration target S3 archive
+	 *                                   configuration ID.
+	 * @return A migration task ID.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
+			String toS3ArchiveConfigurationId) throws HpcException;
+	
+	/**
+	 * Update a migration task.
+	 *
+	 * @param dataMigrationTask The migration task.
+	 * @throws HpcException on service failure.
+	 */
+	public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException;
 
 }

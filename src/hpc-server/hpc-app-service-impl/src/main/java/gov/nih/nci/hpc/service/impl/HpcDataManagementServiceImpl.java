@@ -27,12 +27,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -955,6 +957,20 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public HpcDataTransferConfiguration getS3ArchiveConfiguration(String s3ArchiveConfigurationId) throws HpcException {
 		return dataManagementConfigurationLocator.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
+	}
+
+	@Override
+	public boolean hasDataObjects(HpcCollection collection) throws HpcException {
+
+		if (!CollectionUtils.isEmpty(collection.getDataObjects()))
+			return true;
+
+		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
+			HpcCollection childCollection = getCollection(subCollection.getPath(), true);
+			if (hasDataObjects(childCollection))
+				return true;
+		}
+		return false;
 	}
 
 	// ---------------------------------------------------------------------//
