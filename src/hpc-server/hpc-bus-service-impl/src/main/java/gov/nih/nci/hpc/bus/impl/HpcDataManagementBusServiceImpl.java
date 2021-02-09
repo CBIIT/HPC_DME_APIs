@@ -374,7 +374,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Verify data objects found under this collection.
-		if (!hasDataObjectsUnderPath(collection)) {
+		if (!dataManagementService.hasDataObjects(collection)) {
 			// No data objects found under this collection.
 			throw new HpcException("No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -451,7 +451,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				// Verify at least one data object found under these collection.
-				if (!dataObjectExist && hasDataObjectsUnderPath(collection)) {
+				if (!dataObjectExist && dataManagementService.hasDataObjects(collection)) {
 					dataObjectExist = true;
 				}
 			}
@@ -2803,18 +2803,4 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		resultHpcPermForColl.setPermission(hsPerm.getPermission());
 		return resultHpcPermForColl;
 	}
-
-	private boolean hasDataObjectsUnderPath(HpcCollection collection) throws HpcException {
-
-		if (!CollectionUtils.isEmpty(collection.getDataObjects()))
-			return true;
-
-		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
-			HpcCollection childCollection = dataManagementService.getCollection(subCollection.getPath(), true);
-			if (hasDataObjectsUnderPath(childCollection))
-				return true;
-		}
-		return false;
-	}
-
 }

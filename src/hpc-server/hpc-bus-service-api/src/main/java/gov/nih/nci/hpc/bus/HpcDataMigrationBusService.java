@@ -41,4 +41,25 @@ public interface HpcDataMigrationBusService {
 	 */
 	public HpcMigrationResponseDTO migrateCollection(String path, HpcMigrationRequestDTO migrationRequest)
 			throws HpcException;
+
+	/**
+	 * Process received data object migration tasks
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processDataObjectMigrationReceived() throws HpcException;
+
+	/**
+	 * Process received collection migration tasks
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void processCollectionMigrationReceived() throws HpcException;
+
+	/**
+	 * Restart data object migration tasks that are in progress.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void restartDataObjectMigrationTasks() throws HpcException;
 }
