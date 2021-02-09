@@ -12,6 +12,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
@@ -200,6 +202,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	@Override
 	public void completeDataObjectMigrationTask(HpcDataMigrationTask dataObjectMigrationTask,
 			HpcDataMigrationResult result, String message) throws HpcException {
+		if (!dataObjectMigrationTask.getType().equals(HpcDataMigrationType.DATA_OBJECT)) {
+			throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
 		if (result.equals(HpcDataMigrationResult.COMPLETED)) {
 			try {
 				// Add metadata to the object in the target S3 archive.
@@ -236,8 +242,52 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 	}
 
 	@Override
+	public void completeCollectionMigrationTask(HpcDataMigrationTask collectionMigrationTask, String message)
+			throws HpcException {
+		if (!collectionMigrationTask.getType().equals(HpcDataMigrationType.COLLECTION)) {
+			throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		HpcDataMigrationResult result = null;
+		// Determine the collection migration result.
+		if (!StringUtils.isEmpty(message)) {
+			result = HpcDataMigrationResult.FAILED;
+		} else {
+			result = HpcDataMigrationResult.COMPLETED;
+		}
+
+		// Delete the task and insert a result record.
+		dataMigrationDAO.deleteDataMigrationTask(collectionMigrationTask.getId());
+		dataMigrationDAO.upsertDataMigrationTaskResult(collectionMigrationTask, Calendar.getInstance(), result,
+				message);
+	}
+
+	@Override
 	public void resetMigrationTasksInProcess() throws HpcException {
 		dataMigrationDAO.setDataMigrationTasksStatus(HpcDataMigrationStatus.IN_PROGRESS,
 				HpcDataMigrationStatus.RECEIVED);
+	}
+
+	@Override
+	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
+			String toS3ArchiveConfigurationId) throws HpcException {
+		// Create and persist a migration task.
+		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
+		migrationTask.setPath(path);
+		migrationTask.setUserId(userId);
+		migrationTask.setConfigurationId(configurationId);
+		migrationTask.setToS3ArchiveConfigurationId(toS3ArchiveConfigurationId);
+		migrationTask.setCreated(Calendar.getInstance());
+		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
+		migrationTask.setType(HpcDataMigrationType.COLLECTION);
+
+		// Persist the task.
+		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
+		return migrationTask;
+	}
+
+	@Override
+	public void updateDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException {
+		dataMigrationDAO.upsertDataMigrationTask(dataMigrationTask);
 	}
 }
