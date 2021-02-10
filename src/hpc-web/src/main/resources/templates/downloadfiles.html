@@ -123,7 +123,7 @@
 						<tr><td>&nbsp;</td></tr>
 						<tr>
 							<td>
-								<div class="pull-left" id="message"
+								<div class="alert alert-info pull-left" role="alert" id="message"
 									style="display: none; float: left">
 									<p>&nbsp;</p>
 								</div>
@@ -395,10 +395,19 @@
 									url : "/downloadfiles/download",
 									data : $form.serialize(),
 									success : function(msg) {
-										waitEle.style.display = "none";
-										console.log('SUCCESS: ', msg);
-										$('#message').html(msg.message);
-										ele.style.display = "block";
+										if(msg.code === "success") {
+											waitEle.style.display = "none";
+											console.log('SUCCESS: ', msg);
+											$('#message').html(msg.message);
+											ele.style.display = "block";
+											ele.classList.remove("alert-danger");
+										} else {
+											waitEle.style.display = "none";
+											console.log('SUCCESS: ', msg);
+											$('#message').html(msg.message);
+											ele.style.display = "block";
+											ele.classList.add("alert-danger");
+										}
 									},
 									error : function(e) {
 										$("#wait").html('');
