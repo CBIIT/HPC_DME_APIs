@@ -61,6 +61,13 @@ public class HpcScheduledTasksImpl {
 				logger);
 	}
 
+	/** Complete collection migration tasks that are in-progress. */
+	@Scheduled(cron = "${hpc.scheduler.migration.cron.completeCollectionMigrationInProgress.delay}")
+	private void completeCollectionMigrationInProgressTask() {
+		execute("completeCollectionMigrationInProgressTask()",
+				dataMigrationBusService::completeCollectionMigrationInProgress, logger);
+	}
+
 	/**
 	 * Called by Spring dependency injection. Reset all active S3 upload/download in
 	 * progress tasks, so they are restarted following a server restart.

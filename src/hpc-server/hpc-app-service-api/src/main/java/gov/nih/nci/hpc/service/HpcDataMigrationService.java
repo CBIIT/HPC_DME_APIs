@@ -32,11 +32,15 @@ public interface HpcDataMigrationService {
 	 *                                     configuration ID.
 	 * @param toS3ArchiveConfigurationId   The migration target S3 archive
 	 *                                     configuration ID.
+	 * @param collectionMigrationTaskId    (Optional) The collection migration task
+	 *                                     ID that is associated w/ this data object
+	 *                                     migration task
 	 * @return A migration task ID.
 	 * @throws HpcException on service failure.
 	 */
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
-			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId) throws HpcException;
+			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId)
+			throws HpcException;
 
 	/**
 	 * Get a list of data object migration tasks in specific status and type.
@@ -100,7 +104,7 @@ public interface HpcDataMigrationService {
 	 */
 	public HpcDataMigrationTask createCollectionMigrationTask(String path, String userId, String configurationId,
 			String toS3ArchiveConfigurationId) throws HpcException;
-	
+
 	/**
 	 * Update a migration task.
 	 *

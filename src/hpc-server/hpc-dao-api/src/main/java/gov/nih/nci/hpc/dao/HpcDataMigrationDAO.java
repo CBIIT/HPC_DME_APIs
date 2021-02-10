@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.dao;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
@@ -35,7 +36,7 @@ public interface HpcDataMigrationDAO {
 	public void upsertDataMigrationTask(HpcDataMigrationTask dataMigrationTask) throws HpcException;
 
 	/**
-	 * Get a list of data object migration tasks in specific status and type.
+	 * Get a list of data migration tasks in specific status and type.
 	 *
 	 * @param status The data migration status to query for.
 	 * @param type   The data migration type to query for.
@@ -44,6 +45,16 @@ public interface HpcDataMigrationDAO {
 	 */
 	public List<HpcDataMigrationTask> getDataMigrationTasks(HpcDataMigrationStatus status, HpcDataMigrationType type)
 			throws HpcException;
+
+	/**
+	 * Get a list of data object migration tasks that associated with specific a
+	 * collection migration task
+	 *
+	 * @param collectionMigrationTaskId The collection migration task id.
+	 * @return A List of data object migration tasks
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataMigrationTask> getDataObjectMigrationTasks(String collectionMigrationTaskId) throws HpcException;
 
 	/**
 	 * Delete a data Migration task.
@@ -73,6 +84,15 @@ public interface HpcDataMigrationDAO {
 	 * @throws HpcException on database error.
 	 */
 	public void setDataMigrationTasksStatus(HpcDataMigrationStatus fromStatus, HpcDataMigrationStatus toStatus)
+			throws HpcException;
+
+	/**
+	 * Get result counts for items in a collection migration task
+	 *
+	 * @param collectionMigrationTaskId The collection migration task id.
+	 * @ @throws HpcException on database error.
+	 */
+	public Map<HpcDataMigrationResult, Integer> getCollectionMigrationResultCount(String collectionMigrationTaskId)
 			throws HpcException;
 
 }
