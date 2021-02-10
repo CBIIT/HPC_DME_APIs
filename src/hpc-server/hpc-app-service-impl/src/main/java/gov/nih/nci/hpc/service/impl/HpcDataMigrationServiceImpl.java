@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.service.impl;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -101,7 +102,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public HpcDataMigrationTask createDataObjectMigrationTask(String path, String userId, String configurationId,
-			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId) throws HpcException {
+			String fromS3ArchiveConfigurationId, String toS3ArchiveConfigurationId, String collectionMigrationTaskId)
+			throws HpcException {
 		// Create and persist a migration task.
 		HpcDataMigrationTask migrationTask = new HpcDataMigrationTask();
 		migrationTask.setPath(path);
@@ -112,6 +114,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		migrationTask.setCreated(Calendar.getInstance());
 		migrationTask.setStatus(HpcDataMigrationStatus.RECEIVED);
 		migrationTask.setType(HpcDataMigrationType.DATA_OBJECT);
+		migrationTask.setParentId(collectionMigrationTaskId);
 
 		// Persist the task.
 		dataMigrationDAO.upsertDataMigrationTask(migrationTask);
@@ -248,12 +251,30 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 			throw new HpcException("Migration type mismatch", HpcErrorType.UNEXPECTED_ERROR);
 		}
 
-		HpcDataMigrationResult result = null;
 		// Determine the collection migration result.
+		HpcDataMigrationResult result = HpcDataMigrationResult.COMPLETED;
 		if (!StringUtils.isEmpty(message)) {
 			result = HpcDataMigrationResult.FAILED;
+		} else if (!dataMigrationDAO.getDataObjectMigrationTasks(collectionMigrationTask.getId()).isEmpty()) {
+			// Collection migration task still in progress. At least one data object
+			// migration task is still active.
+			logger.info("Collection migration task still in progress: {}", collectionMigrationTask.getId());
+			return;
 		} else {
-			result = HpcDataMigrationResult.COMPLETED;
+			// Get a map of result counts for data object migrations that are associated w/
+			// this collection migration.
+			Map<HpcDataMigrationResult, Integer> resultsCount = dataMigrationDAO
+					.getCollectionMigrationResultCount(collectionMigrationTask.getId());
+
+			if (Optional.ofNullable(resultsCount.get(HpcDataMigrationResult.FAILED)).orElse(0) > 0) {
+				// All data object migration tasks under this collection migration task
+				// completed, but at least one failed.
+				result = HpcDataMigrationResult.FAILED;
+			} else if (Optional.ofNullable(resultsCount.get(HpcDataMigrationResult.IGNORED)).orElse(0) > 0) {
+				// All data object migration tasks under this collection migration task
+				// completed, but at least one failed.
+				result = HpcDataMigrationResult.COMPLETED_IGNORED_ITEMS;
+			}
 		}
 
 		// Delete the task and insert a result record.
