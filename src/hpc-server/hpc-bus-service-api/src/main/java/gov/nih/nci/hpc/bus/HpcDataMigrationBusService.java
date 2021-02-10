@@ -43,7 +43,7 @@ public interface HpcDataMigrationBusService {
 			throws HpcException;
 
 	/**
-	 * Process received data object migration tasks
+	 * Process received data object migration tasks.
 	 *
 	 * @throws HpcException on service failure.
 	 */
@@ -55,6 +55,13 @@ public interface HpcDataMigrationBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public void processCollectionMigrationReceived() throws HpcException;
+	
+	/**
+	 * Complete in-progress collection migration tasks.
+	 *
+	 * @throws HpcException on service failure.
+	 */
+	public void completeCollectionMigrationInProgress() throws HpcException;
 
 	/**
 	 * Restart data object migration tasks that are in progress.

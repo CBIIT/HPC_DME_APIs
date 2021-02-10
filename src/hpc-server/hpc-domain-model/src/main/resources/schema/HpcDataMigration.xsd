@@ -28,6 +28,7 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="id" type="xsd:string" />
+				<xsd:element name="parentId" type="xsd:string" />
 				<xsd:element name="userId" type="xsd:string" />
 				<xsd:element name="path" type="xsd:string" />
 				<xsd:element name="dataObjectId" type="xsd:string" />
