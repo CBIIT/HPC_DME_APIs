@@ -33,7 +33,8 @@
 	<xsd:simpleType name="HpcDataMigrationResult">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="COMPLETED" />
-			<xsd:enumeration value="FAILED" />
+			<xsd:enumeration value="COMPLETED_IGNORED_ITEMS" />
+			<xsd:enumeration value="FAILED" /> 
 			<xsd:enumeration value="IGNORED" />
 		</xsd:restriction>
 	</xsd:simpleType>

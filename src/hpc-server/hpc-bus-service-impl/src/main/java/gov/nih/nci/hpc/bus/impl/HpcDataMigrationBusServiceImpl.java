@@ -89,7 +89,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	@Override
 	public HpcMigrationResponseDTO migrateDataObject(String path, HpcMigrationRequestDTO migrationRequest)
 			throws HpcException {
-		return migrateDataObject(path, securityService.getRequestInvoker().getNciAccount().getUserId(),
+		return migrateDataObject(path, securityService.getRequestInvoker().getNciAccount().getUserId(), null,
 				migrationRequest);
 	}
 
@@ -148,17 +148,43 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 								.getCollection(collectionMigrationTask.getPath(), true);
 						if (collection == null) {
 							throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
-						} 
+						}
 
 						// Create migration tasks for all data objects under this collection
 						migrateCollection(collection, collectionMigrationTask);
-						
+
 						// Mark the collection migration task - in-progress
 						collectionMigrationTask.setStatus(HpcDataMigrationStatus.IN_PROGRESS);
 						dataMigrationService.updateDataMigrationTask(collectionMigrationTask);
 
 					} catch (HpcException e) {
 						logger.error("Failed to migrate collection: task - {}, path - {}",
+								collectionMigrationTask.getId(), collectionMigrationTask.getPath(), e);
+						try {
+							dataMigrationService.completeCollectionMigrationTask(collectionMigrationTask,
+									e.getMessage());
+
+						} catch (HpcException ex) {
+							logger.error("Failed to complete collection migration: task - {}, path - {}",
+									collectionMigrationTask.getId(), collectionMigrationTask.getPath(), ex);
+						}
+					}
+				});
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
+	public void completeCollectionMigrationInProgress() throws HpcException {
+		dataMigrationService.getDataMigrationTasks(HpcDataMigrationStatus.IN_PROGRESS, HpcDataMigrationType.COLLECTION)
+				.forEach(collectionMigrationTask -> {
+					try {
+						logger.info("Completing Collection Migration: task - {}, path - {}",
+								collectionMigrationTask.getId(), collectionMigrationTask.getPath());
+
+						dataMigrationService.completeCollectionMigrationTask(collectionMigrationTask, null);
+
+					} catch (HpcException e) {
+						logger.error("Failed to complete collection migration: task - {}, path - {}",
 								collectionMigrationTask.getId(), collectionMigrationTask.getPath(), e);
 						try {
 							dataMigrationService.completeCollectionMigrationTask(collectionMigrationTask,
@@ -302,22 +328,23 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 	/**
 	 * Migrate a data object. Validate the request and create a migration task.
 	 *
-	 * @param path             The data object path.
-	 * @param userId           The user ID submitted the request.
-	 * @param migrationRequest The migration request.
+	 * @param path                      The data object path.
+	 * @param userId                    The user ID submitted the request.
+	 * @param collectionMigrationTaskId (Optional) A collection migration task id
+	 *                                  that this data object migration is part of.
+	 * @param migrationRequest          The migration request.
 	 * @throws HpcException If failed to process the request.
 	 */
-	private HpcMigrationResponseDTO migrateDataObject(String path, String userId,
+	private HpcMigrationResponseDTO migrateDataObject(String path, String userId, String collectionMigrationTaskId,
 			HpcMigrationRequestDTO migrationRequest) throws HpcException {
 		// Input validation.
 		HpcSystemGeneratedMetadata metadata = validateDataObjectMigrationRequest(path, migrationRequest);
 
 		// Create a migration task.
 		HpcMigrationResponseDTO migrationResponse = new HpcMigrationResponseDTO();
-		migrationResponse.setTaskId(dataMigrationService
-				.createDataObjectMigrationTask(path, userId, metadata.getConfigurationId(),
-						metadata.getS3ArchiveConfigurationId(), migrationRequest.getS3ArchiveConfigurationId())
-				.getId());
+		migrationResponse.setTaskId(dataMigrationService.createDataObjectMigrationTask(path, userId,
+				metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(),
+				migrationRequest.getS3ArchiveConfigurationId(), collectionMigrationTaskId).getId());
 
 		return migrationResponse;
 	}
@@ -339,7 +366,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 			// migration task for each
 			HpcMigrationRequestDTO migrationRequest = new HpcMigrationRequestDTO();
 			migrationRequest.setS3ArchiveConfigurationId(collectionMigrationTask.getToS3ArchiveConfigurationId());
-			migrateDataObject(dataObjectEntry.getPath(), collectionMigrationTask.getUserId(), migrationRequest);
+			migrateDataObject(dataObjectEntry.getPath(), collectionMigrationTask.getUserId(),
+					collectionMigrationTask.getId(), migrationRequest);
 		}
 
 		// Iterate through the sub-collections and migrate them.
