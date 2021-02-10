@@ -1,9 +1,12 @@
 package gov.nih.nci.hpc.web.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -12,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
@@ -39,7 +43,9 @@ public abstract class AbstractHpcController {
 	
 	@Value("${gov.nih.nci.hpc.server.bookmark}")
 	private String bookmarkServiceURL;
-	
+	@Value("${dme.globus.public.endpoints:}")
+	private String globusPublicEndpoints;
+
 	//Attribute constants
 	protected static final String ATTR_USER_LOGIN = "hpcLogin";
 	protected static final String ATTR_USER_TOKEN = "hpcUserToken";
@@ -124,4 +130,17 @@ public abstract class AbstractHpcController {
 	    }
 	    return retBookmarkList;
 	  }
+	
+	protected String isPublicEndpoint(String endpointUUID) {
+		List<String> endpointEntry = Arrays.stream(globusPublicEndpoints.split(","))
+				.filter(pairString -> pairString.contains(endpointUUID)).collect(Collectors.toList());
+		if (!CollectionUtils.isEmpty(endpointEntry)) {
+			String[] endpoint = endpointEntry.get(0).split("\\|");
+			return "The UUID <b>" + endpoint[0] + "</b> you selected is for public endpoint <b>" + endpoint[1]
+					+ "</b>. "
+					+ "<br/>Use a guest collection on this endpoint or create one using the instructions described in "
+					+ "<a href='https://wiki.nci.nih.gov/x/cAyKFg'>Preparing to Use Globus</a>.";
+		}
+		return null;
+	}
 }
