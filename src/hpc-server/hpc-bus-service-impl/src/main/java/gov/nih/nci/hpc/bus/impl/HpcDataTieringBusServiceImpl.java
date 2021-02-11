@@ -25,6 +25,7 @@ import org.springframework.util.StringUtils;
 import gov.nih.nci.hpc.bus.HpcDataTieringBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
@@ -156,15 +157,19 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			throw new HpcException("No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		// Verify that this collection does not contain a data object that
+		// belongs to another collection
+		verifyArchiveOnlyContainsDataObjectsUnderPath(path);
+		
+		List<String> paths = getDataObjectsUnderPathForTiering(collection);
+
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
 		
 		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
 		// Submit a tier transfer request.
 		dataTieringService.tierCollection(invokerNciAccount.getUserId(), path, HpcDataTransferType.S_3, metadata.getConfigurationId());
-		
-		List<String> paths = getDataObjectsUnderPathForTiering(collection);
-		
+				
 		// Iterate through the individual data object paths and update deep_archive_status to in_progress
 		for (String dataObjectPath : paths) {
 			metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null,
@@ -271,6 +276,10 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				
+				// Verify that this collection does not contain a data object that
+				// belongs to another collection
+				verifyArchiveOnlyContainsDataObjectsUnderPath(path);
+
 				paths.addAll(getDataObjectsUnderPathForTiering(collection));
 
 				HpcBulkTierItem item = new HpcBulkTierItem();
@@ -312,7 +321,12 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			// Check if any data objects archived where tiering is not supported.
 			if (dataTieringService.isTieringSupported(metadata.getConfigurationId(),
 					metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3)) {
-				dataObjectPaths.add(dataObjectEntry.getPath());
+				// Check if the archive file id contains the same logical path
+				if (metadata.getArchiveLocation().getFileId().contains(collection.getAbsolutePath()))
+					dataObjectPaths.add(dataObjectEntry.getPath());
+				else
+					throw new HpcException("Data object in collection is located in a different archive path " + dataObjectEntry.getPath(),
+							HpcErrorType.INVALID_REQUEST_INPUT);
 			} else {
 				logger.info("The tiering API is not supported for this archive provider." + dataObjectEntry.getPath(),
 						HpcRequestRejectReason.API_NOT_SUPPORTED);
@@ -346,4 +360,14 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		return false;
 	}
 	
+	private void verifyArchiveOnlyContainsDataObjectsUnderPath(String path) throws HpcException {
+		List<HpcDataObject> dataObjectsInArchive = dataManagementService.getDataObjectArchiveFileIdContainsPath(path);
+		for (HpcDataObject dataObject: dataObjectsInArchive) {
+			if (!dataObject.getAbsolutePath().contains(path)) {
+				throw new HpcException("Data object in the archive belongs to a different collection path " + dataObject.getAbsolutePath(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		}
+	}
+
 }
