@@ -158,7 +158,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void addMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
 			throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries)) {
+		if (path == null || !isValidMetadataEntries(metadataEntries, false)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -174,7 +174,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateCollectionMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
 			throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries)) {
+		if (path == null || !isValidMetadataEntries(metadataEntries, true)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -400,7 +400,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public HpcMetadataEntry addMetadataToDataObject(String path, List<HpcMetadataEntry> metadataEntries,
 			String configurationId, String collectionType) throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries)) {
+		if (path == null || !isValidMetadataEntries(metadataEntries, false)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -698,7 +698,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId,
 			String collectionType, boolean extractedMetadata) throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries)) {
+		if (path == null || !isValidMetadataEntries(metadataEntries, true)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
