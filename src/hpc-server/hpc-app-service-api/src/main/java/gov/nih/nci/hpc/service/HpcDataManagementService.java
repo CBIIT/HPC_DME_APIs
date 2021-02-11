@@ -522,4 +522,13 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	List<HpcDataObject> getDataObjectsDeepArchiveInProgress() throws HpcException;
+
+	/**
+	 * Get data objects that contains a specified path in the archive file id
+	 *
+	 * @param path The specified path
+	 * @return A list of data objects.
+	 * @throws HpcException on service failure.
+	 */
+	List<HpcDataObject> getDataObjectArchiveFileIdContainsPath(String path) throws HpcException;
 }
