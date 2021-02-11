@@ -134,7 +134,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		
 		// Update deep_archive_status.
 		metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-				null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
+				null, null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
 	}
 
 	@Override
@@ -173,7 +173,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		// Iterate through the individual data object paths and update deep_archive_status to in_progress
 		for (String dataObjectPath : paths) {
 			metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null,
-					null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
+					null, null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
 		}
 				
 	}
@@ -251,7 +251,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			// Iterate through the individual data object paths and update deep_archive_status to in_progress
 			for (String dataObjectPath : paths) {
 				metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null,
-						null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
+						null, null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
 			}
 			
 		} else {
@@ -301,7 +301,7 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 			// Iterate through the individual data object paths and update deep_archive_status to in_progress
 			for (String dataObjectPath : paths) {
 				metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null,
-						null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
+						null, null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
 			}
 		}
 

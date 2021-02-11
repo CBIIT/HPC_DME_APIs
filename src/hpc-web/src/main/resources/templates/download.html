@@ -487,16 +487,26 @@
 										url : "/download",
 										data : $form.serialize(),
 										success : function(msg) {
-											waitEle.style.display = "none";
-											console.log('SUCCESS: ', msg);
-											$('#message').html(msg.message);
-											ele.style.display = "block";
+											if(msg.code === "success") {
+												waitEle.style.display = "none";
+												console.log('SUCCESS: ', msg);
+												$('#message').html(msg.message);
+												ele.style.display = "block";
+												ele.classList.remove("alert-danger");
+											} else {
+												waitEle.style.display = "none";
+												console.log('FAILURE: ', msg);
+												$('#message').html(msg.message);
+												ele.style.display = "block";
+												ele.classList.add("alert-danger");
+											}
 										},
 										error : function(e) {
 											$("#wait").html('');
 											console.log('ERROR: ', e);
 											$('#message').html(e.message);
 											ele.style.display = "block";
+											ele.classList.add("alert-danger");
 										}
 									});
 								} else {

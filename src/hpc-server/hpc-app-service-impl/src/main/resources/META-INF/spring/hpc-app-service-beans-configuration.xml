@@ -140,7 +140,7 @@
 	<bean id="hpcEventService" class="gov.nih.nci.hpc.service.impl.HpcEventServiceImpl" />
 	<bean id="hpcReportService" class="gov.nih.nci.hpc.service.impl.HpcReportServiceImpl" />
 	<bean id="hpcCatalogService" class="gov.nih.nci.hpc.service.impl.HpcCatalogServiceImpl" />
+	<bean id="hpcDataMigrationService" class="gov.nih.nci.hpc.service.impl.HpcDataMigrationServiceImpl" />
 	<bean id="hpcDataTieringService" class="gov.nih.nci.hpc.service.impl.HpcDataTieringServiceImpl" >
 		<constructor-arg ref="hpcDataTransferProxies" index="0" />
-	</bean>
-</beans>
+	</bean></beans>

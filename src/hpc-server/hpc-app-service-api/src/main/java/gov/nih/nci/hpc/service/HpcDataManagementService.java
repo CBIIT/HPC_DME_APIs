@@ -25,6 +25,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
 
@@ -113,7 +114,7 @@ public interface HpcDataManagementService {
 	 *                             archive (prior to deletion).
 	 * @param dataManagementStatus Data management (iRODS) request completion
 	 *                             status.
-	 * @param dataTransferStatus   (Optional) Data transfer (Cleversafe) request
+	 * @param dataTransferStatus   (Optional) Data transfer (archive) request
 	 *                             completion status.
 	 * @param message              (Optional) Error message if the request failed.
 	 * @param userId               (Optional) userId if not executed in a user
@@ -516,6 +517,24 @@ public interface HpcDataManagementService {
 			HpcDataObjectRegistrationResult dataObjectRegistrationResult, Long size) throws HpcException;
 
 	/**
+	 * Get S3 Archive configuration by ID.
+	 *
+	 * @param s3ArchiveConfigurationId The S3 archive configuration ID.
+	 * @return The S3 configuration for the requested S3 configuration ID.
+	 * @throws HpcException if the configuration was not found.
+	 */
+	public HpcDataTransferConfiguration getS3ArchiveConfiguration(String s3ArchiveConfigurationId) throws HpcException;
+	
+	/**
+	 * Determine if a collection has data objects (at least one) under it recursively.
+	 *
+	 * @param collection The collection to check for data objects under
+	 * @return true is the collection has at least one data object under it, or false otherwise.
+	 * @throws HpcException on service error
+	 */
+	public boolean hasDataObjects(HpcCollection collection) throws HpcException;
+
+	/**
 	 * Get data objects that have their deep archive status in-progress.
 	 *
 	 * @return A list of data objects.
@@ -531,4 +550,5 @@ public interface HpcDataManagementService {
 	 * @throws HpcException on service failure.
 	 */
 	List<HpcDataObject> getDataObjectArchiveFileIdContainsPath(String path) throws HpcException;
+
 }

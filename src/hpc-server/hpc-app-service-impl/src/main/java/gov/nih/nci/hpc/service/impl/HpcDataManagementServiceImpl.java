@@ -29,12 +29,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
@@ -45,6 +47,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
+import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -58,6 +61,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -426,7 +430,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		getDataObjectLinks(sourcePath).forEach(link -> {
 			try {
 				metadataService.updateDataObjectSystemGeneratedMetadata(link.getAbsolutePath(), null, null, null, null,
-						null, null, null, null, destinationPath, null, null);
+						null, null, null, null, destinationPath, null, null, null);
 			} catch (HpcException e) {
 				logger.error("Failed to point link[{}] to {}", link.getAbsolutePath(), destinationPath);
 			}
@@ -971,6 +975,25 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
+	public HpcDataTransferConfiguration getS3ArchiveConfiguration(String s3ArchiveConfigurationId) throws HpcException {
+		return dataManagementConfigurationLocator.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
+	}
+
+	@Override
+	public boolean hasDataObjects(HpcCollection collection) throws HpcException {
+
+		if (!CollectionUtils.isEmpty(collection.getDataObjects()))
+			return true;
+
+		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
+			HpcCollection childCollection = getCollection(subCollection.getPath(), true);
+			if (hasDataObjects(childCollection))
+				return true;
+		}
+		return false;
+	}
+
+	@Override
 	public List<HpcDataObject> getDataObjectsDeepArchiveInProgress() throws HpcException {
 		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
 				deepArchiveInProgressQuery);
@@ -1068,9 +1091,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				throw new HpcException("Invalid S3 upload source in registration request for: " + path,
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			if (!isValidS3Account(registrationRequest.getS3UploadSource().getAccount())) {
-				throw new HpcException("Invalid S3 account in registration request for: " + path,
-						HpcErrorType.INVALID_REQUEST_INPUT);
+			HpcDomainValidationResult validationResult = isValidS3Account(
+					registrationRequest.getS3UploadSource().getAccount());
+			if (!validationResult.getValid()) {
+				throw new HpcException("Invalid S3 account [ " + validationResult.getMessage()
+						+ "] in registration request for: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
 

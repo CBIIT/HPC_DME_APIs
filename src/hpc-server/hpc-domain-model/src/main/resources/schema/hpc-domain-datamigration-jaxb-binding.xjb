@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  
+ * hpc-domain-datamigration-jaxb-binding.xjb
+ *
+ * Copyright SVG, Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ -->
+<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb" xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="2.1">
+   <jxb:globalBindings>
+      <jxb:serializable uid="1" />
+      <!-- use Calendar instead of XMLGregorianCalendar -->
+      <jxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime" parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime" printMethod="javax.xml.bind.DatatypeConverter.printDateTime" />
+      <jxb:javaType name="java.util.Calendar" xmlType="xsd:date" parseMethod="javax.xml.bind.DatatypeConverter.parseDate" printMethod="javax.xml.bind.DatatypeConverter.printDate" />
+      <jxb:javaType name="java.util.Calendar" xmlType="xsd:time" parseMethod="javax.xml.bind.DatatypeConverter.parseTime" printMethod="javax.xml.bind.DatatypeConverter.printTime" />
+      <jxb:javaType name="java.lang.String" xmlType="xsd:ID" parseMethod="javax.xml.bind.DatatypeConverter.parseString" printMethod="javax.xml.bind.DatatypeConverter.printString" />
+   </jxb:globalBindings>
+   
+   <jxb:bindings schemaLocation="HpcDataMigrationTypes.xsd">
+      
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDataMigrationStatus']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDataMigrationType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDataMigrationResult']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult" />
+      </jxb:bindings>
+   </jxb:bindings>
+  
+   <jxb:bindings schemaLocation="HpcDataTransferTypes.xsd">
+      <jxb:bindings node="//xsd:complexType[@name='HpcFileLocation']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcArchive']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchive" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcFile']">
+         <jxb:class ref="java.io.File" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcInputStream']">
+         <jxb:class ref="java.io.InputStream" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadRequest']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectUploadResponse']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadResponse" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcMultipartUpload']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcUploadPartURL']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcUploadPartETag']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGlobusDownloadDestination']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcS3Account']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3Account" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcS3DownloadDestination']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGoogleDriveDownloadDestination']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadRequest']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcUploadSource']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcStreamingUploadSource']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcScanDirectory']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcS3ScanDirectory']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcS3ScanDirectory" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcGoogleDriveScanDirectory']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveScanDirectory" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadResponse']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTask']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDownloadTaskResult']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskResult" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDownloadTaskStatus']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskStatus" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcCollectionDownloadTask']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcCollectionDownloadTaskItem']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferUploadStatus']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferUploadMethod']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferDownloadStatus']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferDownloadStatus" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDataTransferType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcArchiveType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcCollectionDownloadTaskStatus']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDownloadTaskType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferUploadReport']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataTransferDownloadReport']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcUserDownloadRequest']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDirectoryScanItem']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcDataObjectDownloadTaskStatusFilter']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTaskStatusFilter" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcPatternType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcPatternType" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcCompressedArchiveType']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcCompressedArchiveType" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:simpleType[@name='HpcDownloadResult']">
+         <jxb:typesafeEnumClass ref="gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult" />
+      </jxb:bindings>
+      <jxb:bindings node="//xsd:complexType[@name='HpcSynchronousDownloadFilter']">
+         <jxb:class ref="gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter" />
+      </jxb:bindings>
+   </jxb:bindings>
+</jxb:bindings>

@@ -241,7 +241,7 @@ public interface HpcDataTransferService {
 			String dataTransferRequestId, String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 
 	/**
-	 * Get path attributes for a given file in Globus or Cleversafe (using system
+	 * Get path attributes for a given file in Globus or S3 archive (using system
 	 * account).
 	 *
 	 * @param dataTransferType         The data transfer type.

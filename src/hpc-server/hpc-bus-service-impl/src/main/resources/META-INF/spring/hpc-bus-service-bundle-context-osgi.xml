@@ -46,6 +46,8 @@
 		          interface="gov.nih.nci.hpc.bus.HpcNotificationBusService" />
 	<osgi:service ref="hpcReportBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcReportBusService" />
+	<osgi:service ref="hpcDataMigrationBusService"
+		          interface="gov.nih.nci.hpc.bus.HpcDataMigrationBusService" />
 	<osgi:service ref="hpcDataTieringBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcDataTieringBusService" />
 
@@ -74,6 +76,8 @@
 		            interface="gov.nih.nci.hpc.service.HpcReportService" />
 	<osgi:reference id="hpcCatalogService"
 		            interface="gov.nih.nci.hpc.service.HpcCatalogService" />
+	<osgi:reference id="hpcDataMigrationService"
+		            interface="gov.nih.nci.hpc.service.HpcDataMigrationService" />
 	<osgi:reference id="hpcDataTieringService"
 		            interface="gov.nih.nci.hpc.service.HpcDataTieringService" />
 

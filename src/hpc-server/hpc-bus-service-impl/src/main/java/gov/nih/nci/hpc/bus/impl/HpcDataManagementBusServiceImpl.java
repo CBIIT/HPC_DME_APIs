@@ -377,7 +377,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Verify data objects found under this collection.
-		if (!hasDataObjectsUnderPath(collection)) {
+		if (!dataManagementService.hasDataObjects(collection)) {
 			// No data objects found under this collection.
 			throw new HpcException("No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
@@ -454,7 +454,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				// Verify at least one data object found under these collection.
-				if (!dataObjectExist && hasDataObjectsUnderPath(collection)) {
+				if (!dataObjectExist && dataManagementService.hasDataObjects(collection)) {
 					dataObjectExist = true;
 				}
 			}
@@ -852,7 +852,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 											.getS3UploadConfigurationId(),
 									registrationCompletionEvent);
 
-					// Generate archive (Cleversafe) system generated metadata. Note: This is only
+					// Generate S3 archive system generated metadata. Note: This is only
 					// performed for synchronous data registration.
 					if (dataObjectFile != null) {
 						HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
@@ -867,7 +867,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						// the archive.
 						Calendar deepArchiveDate = objectMetadata.getDeepArchiveStatus() != null && objectMetadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
 						metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, objectMetadata.getChecksum(), null, null,
-								null, null, null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
+								null, null, null, null, null, objectMetadata.getDeepArchiveStatus(), deepArchiveDate);
 
 						// Automatically extract metadata from the file itself and add to iRODs.
 						if (extractMetadata) {
@@ -916,6 +916,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					.orElse(new HpcDataObjectUploadResponse());
 			responseDTO.setUploadRequestURL(uploadResponse.getUploadRequestURL());
 			responseDTO.setMultipartUpload(uploadResponse.getMultipartUpload());
+
+			// Update system-generated w/ archive location - this is in case the archive
+			// location changed after regeneration of the upload url(s).
+			if (uploadResponse.getArchiveLocation() != null) {
+				metadataService.updateDataObjectSystemGeneratedMetadata(path, uploadResponse.getArchiveLocation(), null,
+						null, null, null, null, null, null, null, null, null, null);
+			}
 		}
 
 		return responseDTO;
@@ -1161,17 +1168,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				securityService.getRequestInvoker().getNciAccount().getUserId(), true);
 	}
 
-	/**
-	 * Download Data Object.
-	 *
-	 * @param path            The data object path.
-	 * @param downloadRequest The download request DTO.
-	 * @param completionEvent If true, an event will be added when async download is
-	 *                        complete.
-	 * @param userId          The user submitting the request.
-	 * @return Download ResponseDTO
-	 * @throws HpcException on service failure.
-	 */
 	@Override
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
 			String userId, boolean completionEvent) throws HpcException {
@@ -1183,11 +1179,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to S3 destination is supported only from Cleversafe archive (i.e.
-		// not POSIX).
-		// 4. Download to Google Drive destination is supported only from Cleversafe
-		// archive (i.e. not
-		// POSIX).
+		// 3. Download to S3 destination is supported only from S3 archive.
+		// 4. Download to Google Drive destination is supported only from S3 archive.
 		// 5. Data Object is archived (i.e. registration completed).
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path,
 				downloadRequest.getS3DownloadDestination() != null,
@@ -1269,8 +1262,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
-		// 3. Download to S3 destination is supported only from Cleversafe archive (i.e.
-		// not POSIX).
+		// 3. Download to S3 destination is supported only from S3 archive.
 		// 4. Data Object is archived (i.e. registration completed).
 		// 5. Data Object is not in deep archive or in deep archive but restored
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
@@ -2102,7 +2094,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	private void updateDataTransferUploadStatus(String path, HpcDataTransferUploadStatus dataTransferStatus) {
 		try {
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null, dataTransferStatus, null,
-					null, null, null, null, null, null);
+					null, null, null, null, null, null, null);
 
 		} catch (HpcException e) {
 			logger.error("Failed to update system metadata: " + path + ". Data transfer status: " + dataTransferStatus,
@@ -2420,7 +2412,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Update data-transfer-status system metadata accordingly.
 			metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
 					HpcDataTransferUploadStatus.URL_GENERATED, null, uploadResponse.getDataTransferStarted(), null,
-					null, null, null, null);
+					null, null, null, null, null);
 
 			return uploadResponse;
 		}
@@ -2531,15 +2523,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					googleDriveDownloadDestination);
 		}
 
-		// Download to S3 destination is supported only from Cleversafe archive.
+		// Download to S3 destination is supported only from S3 archive.
 		if (s3DownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
 			throw new HpcException("S3 download request is not supported for POSIX based file system archive",
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Download to Google Drive destination is supported only from Cleversafe
-		// archive.
+		// Download to Google Drive destination is supported only from S3 archive.
 		if (googleDriveDownloadDestination && (metadata.getDataTransferType() == null
 				|| !metadata.getDataTransferType().equals(HpcDataTransferType.S_3))) {
 			throw new HpcException("Google Drive download request is not supported for POSIX based file system archive",
@@ -2861,18 +2852,4 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		resultHpcPermForColl.setPermission(hsPerm.getPermission());
 		return resultHpcPermForColl;
 	}
-
-	private boolean hasDataObjectsUnderPath(HpcCollection collection) throws HpcException {
-
-		if (!CollectionUtils.isEmpty(collection.getDataObjects()))
-			return true;
-
-		for (HpcCollectionListingEntry subCollection : collection.getSubCollections()) {
-			HpcCollection childCollection = dataManagementService.getCollection(subCollection.getPath(), true);
-			if (hasDataObjectsUnderPath(childCollection))
-				return true;
-		}
-		return false;
-	}
-
 }
