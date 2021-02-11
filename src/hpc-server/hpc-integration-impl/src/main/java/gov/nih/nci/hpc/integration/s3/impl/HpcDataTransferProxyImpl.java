@@ -187,7 +187,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return uploadDataObject(authenticatedToken, uploadRequest.getSourceFile(), archiveDestinationLocation,
 					progressListener, baseArchiveDestination.getType(), metadataEntries);
 		} else {
-			// Upload by streaming from AWS S3 or Google Drive source.
+			// Upload by streaming from AWS, 3rd Party S3 Provider, or Google Drive source.
 			return uploadDataObject(authenticatedToken, uploadRequest.getS3UploadSource(),
 					uploadRequest.getGoogleDriveUploadSource(), archiveDestinationLocation,
 					uploadRequest.getSourceSize(), progressListener, metadataEntries);
@@ -202,7 +202,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
 					downloadRequest.getFileDestination(), progressListener);
 		} else {
-			// This is a download to AWS S3 destination.
+			// This is a download to S3 destination (either AWS or 3rd Party Provider).
 			return downloadDataObject(authenticatedToken, downloadRequest.getArchiveLocation(),
 					downloadRequest.getS3Destination(), progressListener);
 		}
@@ -307,6 +307,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
 					.getObjectMetadata(fileLocation.getFileContainerId(), fileLocation.getFileId());
 			fileExists = true;
+			if (metadata == null) {
+				logger.error("[S3] Received null object metadata for {}:{}", fileLocation.getFileContainerId(),
+						fileLocation.getFileId());
+			}
 
 		} catch (AmazonServiceException ase) {
 			if (ase.getStatusCode() == 404) {
@@ -652,10 +656,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	/**
-	 * Upload a data object file from AWS S3 or Google Drive source.
+	 * Upload a data object file from AWS, 3rd Party S3 Provider or Google Drive
+	 * source.
 	 *
 	 * @param authenticatedToken         An authenticated token.
-	 * @param s3UploadSource             The S3 upload source.
+	 * @param s3UploadSource             The S3 upload source (AWS or 3rd party
+	 *                                   provider)
 	 * @param googleDriveUploadSource    The Google Drive upload source.
 	 * @param archiveDestinationLocation The archive destination location.
 	 * @param size                       the size of the file to upload.
@@ -949,7 +955,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	/**
-	 * Download a data object to AWS S3 destination.
+	 * Download a data object to S3 destination (either AWS or 3rd Party Provider).
 	 *
 	 * @param authenticatedToken An authenticated token.
 	 * @param archiveLocation    The data object archive location.
