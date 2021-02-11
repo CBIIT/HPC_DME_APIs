@@ -158,6 +158,8 @@
 			<xsd:element name="accessKey" type="xsd:string" />
 			<xsd:element name="secretKey" type="xsd:string" />
 			<xsd:element name="region" type="xsd:string" />
+			<xsd:element name="url" type="xsd:string" />
+			<xsd:element name="pathStyleAccessEnabled" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
