@@ -69,7 +69,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcMultipartUpload;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartURL;
@@ -412,9 +412,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public HpcS3ObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
+	public HpcArchiveObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
 
-		HpcS3ObjectMetadata objectMetadata = new HpcS3ObjectMetadata();
+		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
 		// Get metadata for the data-object in the S3 archive.
 		try {
 			ObjectMetadata s3Metadata = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client()
@@ -445,6 +445,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				logger.info("Restoration status: %s.\n",
 					restoreFlag ? "in progress" : "not in progress (finished or failed)");
 
+			objectMetadata.setChecksum(s3Metadata.getETag());
+			
 		} catch (AmazonClientException ace) {
 			throw new HpcException("[S3] Failed to get object metadata: " + ace.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, ace);
@@ -454,7 +456,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public void putLifecyclePolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
+	public synchronized void setTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
 			String tieringBucket, String tieringProtocol) throws HpcException {
 		// Create a rule to archive objects with the prefix to Glacier
 		// immediately.
@@ -464,6 +466,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				.withStatus(BucketLifecycleConfiguration.ENABLED);
 
 		try {
+
 			AmazonS3 s3Client = s3Connection.getTransferManager(authenticatedToken).getAmazonS3Client();
 
 			// Retrieve the configuration.
@@ -491,7 +494,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			SetBucketLifecycleConfigurationRequest request = new SetBucketLifecycleConfigurationRequest(
 					archiveLocation.getFileContainerId(), configuration);
 
-			// Add Cloudian custom tiering header
+			// Add Cloudian custom tiering header, no impact to AWS S3 requests
 			String customHeader = tieringProtocol + "|EndPoint:"
 					+ URLEncoder.encode(tieringEndpoint, StandardCharsets.UTF_8.toString()) + ",TieringBucket:"
 					+ tieringBucket;
@@ -543,7 +546,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	@Override
-	public boolean existsLifecyclePolicy(Object authenticatedToken, HpcFileLocation archiveLocation)
+	public boolean existsTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation)
 			throws HpcException {
 
 		try {

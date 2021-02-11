@@ -197,6 +197,15 @@
 										<arg>-Xbg</arg>
 									</extensionArgs>
 								</xsdOption>
+								<xsdOption>
+									<xsd>${basedir}/xjc-build/schema/HpcDataTiering.xsd</xsd>
+									<packagename>gov.nih.nci.hpc.dto.datatiering</packagename>
+									<bindingFile>${basedir}/xjc-build/schema/hpc-dto-datatiering-jaxb-binding.xjb</bindingFile>
+									<extensionArgs>
+										<arg>-Xts:style:simple</arg>
+										<arg>-Xbg</arg>
+									</extensionArgs>
+								</xsdOption>
 							</xsdOptions>
 						</configuration>
 					</execution>
@@ -218,7 +227,8 @@
 							gov.nih.nci.hpc.dto.databrowse,
 							gov.nih.nci.hpc.dto.notification,
 							gov.nih.nci.hpc.dto.report,
-							gov.nih.nci.hpc.dto.catalog
+							gov.nih.nci.hpc.dto.catalog,
+							gov.nih.nci.hpc.dto.datatiering
 						</Export-Package>
 						<Import-Package>*</Import-Package>
 					</instructions>

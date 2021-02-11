@@ -11,7 +11,6 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
-import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidTierItems;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
@@ -45,7 +44,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
-import gov.nih.nci.hpc.dao.HpcLifecycleDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
@@ -73,11 +71,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGoogleDriveDownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcLifecycleRequestType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
@@ -86,13 +83,10 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.model.HpcBulkTierItem;
-import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferAuthenticatedToken;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProgressListener;
@@ -142,10 +136,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	@Autowired
 	private HpcDataDownloadDAO dataDownloadDAO = null;
 	
-	// Audit DAO.
-	@Autowired
-	private HpcLifecycleDAO lifecycleDAO = null;
-
 	// Event service.
 	@Autowired
 	private HpcEventService eventService = null;
@@ -177,10 +167,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// The max sync download file size.
 	@Value("${hpc.service.dataTransfer.maxSyncDownloadFileSize}")
 	private Long maxSyncDownloadFileSize = null;
-
-	// The max number of days to keep deep archive in progress
-	@Value("${hpc.service.dataTransfer.maxDeepArchiveInProgressDays}")
-	private Integer maxDeepArchiveInProgressDays = null;
 
 	// cancelCollectionDownloadTaskItems() query filter
 	private List<HpcDataObjectDownloadTaskStatusFilter> cancelCollectionDownloadTaskItemsFilter = new ArrayList<>();
@@ -453,20 +439,20 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				.getBaseArchiveDestination();
 
 		// There are 5 methods of downloading data object:
-		// 0. Data is in deep archive, restoration is required. Supported by S3(Cloudian)
+		// 1. Data is in deep archive, restoration is required. Supported by S3(Cloudian)
 		// archive.
-		// 1. Synchronous download via REST API. Supported by S3 & POSIX
+		// 2. Synchronous download via REST API. Supported by S3 & POSIX
 		// archives.
-		// 2. Asynchronous download using Globus. Supported by S3 (in a 2-hop
+		// 3. Asynchronous download using Globus. Supported by S3 (in a 2-hop
 		// solution) & POSIX archives.
-		// 3. Asynchronous download via streaming data object from S3 Archive to user
-		// provided S3 bucket. Supported by S3 archive only.
 		// 4. Asynchronous download via streaming data object from S3 Archive to user
+		// provided S3 bucket. Supported by S3 archive only.
+		// 5. Asynchronous download via streaming data object from S3 Archive to user
 		// provided Google Drive. Supported by S3 archive only.
-		if(deepArchiveStatus != null && !deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS)) {
+		if(deepArchiveStatus != null) {
 			// If status is DEEP_ARCHIVE, and object is not restored, submit a restore request
 			// and create a dataObjectDownloadTask with status RESTORE_REQUESTED
-			HpcS3ObjectMetadata objectMetadata = dataTransferProxies.get(HpcDataTransferType.S_3).getDataObjectMetadata(
+			HpcArchiveObjectMetadata objectMetadata = dataTransferProxies.get(HpcDataTransferType.S_3).getDataObjectMetadata(
 					getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),
 							downloadRequest.getS3ArchiveConfigurationId()),
 					downloadRequest.getArchiveLocation());
@@ -474,7 +460,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			String restorationStatus = objectMetadata.getRestorationStatus();
 			
 			if (restorationStatus != null && !restorationStatus.equals("success")) {
-				requestObjectRestore(downloadRequest, response, restorationStatus);
+				performObjectRestore(downloadRequest, response, restorationStatus);
 				return response;
 			}		
 		} 
@@ -545,7 +531,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public HpcS3ObjectMetadata addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
+	public HpcArchiveObjectMetadata addSystemGeneratedMetadataToDataObject(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId,
 			String objectId, String registrarId) throws HpcException {
 		// Add metadata is done by copying the object to itself w/ attached metadata.
@@ -561,11 +547,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						.getBaseArchiveDestination(),
 				generateMetadata(objectId, registrarId));
 		
-		HpcS3ObjectMetadata objectMetadata = new HpcS3ObjectMetadata();
+		HpcArchiveObjectMetadata objectMetadata = new HpcArchiveObjectMetadata();
 		objectMetadata.setChecksum(checksum);
 		
 		if (dataTransferType.equals(HpcDataTransferType.S_3)
-				&& dataTransferProxies.get(dataTransferType).existsLifecyclePolicy(
+				&& dataTransferProxies.get(dataTransferType).existsTieringPolicy(
 						getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
 						fileLocation)) {
 			// Add deep_archive_status in progress
@@ -1501,120 +1487,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 	
 	@Override
-	public void tierDataObject(String userId, String path, HpcFileLocation hpcFileLocation, HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
-		// Input Validation.
-		if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(path) || StringUtils.isEmpty(configurationId)
-				|| !isValidFileLocation(hpcFileLocation)) {
-			throw new HpcException("Invalid tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Get the S3 archive configuration ID.
-		String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(configurationId)
-				.getS3UploadConfigurationId();
-			
-		// Get the data transfer configuration.
-		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
-			
-		String prefix = hpcFileLocation.getFileId();
-		// Create life cycle policy with this data object
-		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
-				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
-		// Add a record of the lifecycle rule
-		lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_DATA_OBJECT, s3ArchiveConfigurationId,
-				Calendar.getInstance(), prefix);
-	}
-
-	@Override
-	public void tierCollection(String userId, String path, HpcDataTransferType dataTransferType, String configurationId) throws HpcException {
-		
-		// Input Validation.
-		if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(path) || StringUtils.isEmpty(configurationId)) {
-			throw new HpcException("Invalid tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		
-		// Get the S3 archive configuration ID.
-		String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(configurationId)
-				.getS3UploadConfigurationId();
-		
-		// Get the data transfer configuration.
-		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
-		
-		HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
-				
-		String prefix = hpcFileLocation.getFileId() + path + "/";
-		// Create life cycle policy with this collection
-		dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
-				getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
-				hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
-		// Add a record of the lifecycle rule
-		lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_COLLECTION, s3ArchiveConfigurationId,
-				Calendar.getInstance(), prefix);
-	}
-
-	@Override
-	public void tierDataObjects(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException {
-		// Input Validation.
-		if (StringUtils.isEmpty(userId) || !isValidTierItems(bulkTierRequest)) {
-			throw new HpcException("Invalid tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		// Create life cycle policy with these data objects
-		for (HpcBulkTierItem item : bulkTierRequest.getItems()) {
-			// Get the S3 archive configuration ID.
-			String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(item.getConfigurationId())
-					.getS3UploadConfigurationId();
-			
-			// Get the data transfer configuration.
-			HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-					.getDataTransferConfiguration(item.getConfigurationId(), s3ArchiveConfigurationId, dataTransferType);
-			
-			HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
-			
-			String prefix = item.getPath();
-			// Create life cycle policy with this collection
-			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
-					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
-					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
-			
-			// Add a record of the lifecycle rule
-			lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_DATA_OBJECT, s3ArchiveConfigurationId,
-					Calendar.getInstance(), prefix);
-		}
-	}
-
-	@Override
-	public void tierCollections(String userId, HpcBulkTierRequest bulkTierRequest, HpcDataTransferType dataTransferType) throws HpcException {
-		// Input Validation.
-		if (StringUtils.isEmpty(userId) || !isValidTierItems(bulkTierRequest)) {
-			throw new HpcException("Invalid archive request", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		// Create life cycle policy with these data objects
-		for (HpcBulkTierItem item : bulkTierRequest.getItems()) {
-			// Get the S3 archive configuration ID.
-			String s3ArchiveConfigurationId = dataManagementConfigurationLocator.get(item.getConfigurationId())
-					.getS3UploadConfigurationId();
-			
-			// Get the data transfer configuration.
-			HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-					.getDataTransferConfiguration(item.getConfigurationId(), s3ArchiveConfigurationId, dataTransferType);
-			
-			HpcFileLocation hpcFileLocation = dataTransferConfiguration.getBaseArchiveDestination().getFileLocation();
-			
-			String prefix = hpcFileLocation.getFileId() + item.getPath() + "/";
-			// Create life cycle policy with this collection
-			dataTransferProxies.get(dataTransferType).putLifecyclePolicy(
-					getAuthenticatedToken(dataTransferType, item.getConfigurationId(), s3ArchiveConfigurationId),
-					hpcFileLocation, prefix, dataTransferConfiguration.getTieringBucket(), dataTransferConfiguration.getTieringProtocol());
-			// Add a record of the lifecycle rule
-			lifecycleDAO.insert(userId, HpcLifecycleRequestType.TIER_COLLECTION, s3ArchiveConfigurationId,
-					Calendar.getInstance(), prefix);
-		}
-	}
-	
-	@Override
-	public HpcS3ObjectMetadata getDataObjectMetadata(HpcFileLocation fileLocation,
+	public HpcArchiveObjectMetadata getDataObjectMetadata(HpcFileLocation fileLocation,
 			HpcDataTransferType dataTransferType, String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 
 		return dataTransferProxies.get(dataTransferType).getDataObjectMetadata(
@@ -1622,30 +1495,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				fileLocation);
 	}
 
-	@Override
-	public boolean isTieringSupported(String configurationId, String s3ArchiveConfigurationId,
-			HpcDataTransferType dataTransferType) throws HpcException {
-		// Get the data transfer configuration (Globus or S3).
-		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
-				.getDataTransferConfiguration(configurationId, s3ArchiveConfigurationId, dataTransferType);
-
-
-		return HpcIntegratedSystem.CLOUDIAN.equals(dataTransferConfiguration.getArchiveProvider()) || HpcIntegratedSystem.AWS.equals(dataTransferConfiguration.getArchiveProvider());
-	}
-
-	@Override
-	public boolean deepArchiveDelayed(Calendar deepArchiveDate) {
-		if (deepArchiveDate == null) {
-			return true;
-		}
-
-		// Check if there is a delay in toggling the status
-		Date expiration = new Date();
-		expiration.setTime(deepArchiveDate.getTimeInMillis() + 1000 * 60 * 60 * maxDeepArchiveInProgressDays * 24);
-		// If delayed, return true
-		return expiration.before(new Date());
-	}
-	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -2737,7 +2586,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	 * @param restorationStatus      The restoration status.
 	 * @throws HpcException on service failure.
 	 */
-	private void requestObjectRestore(HpcDataObjectDownloadRequest downloadRequest,
+	private void performObjectRestore(HpcDataObjectDownloadRequest downloadRequest,
 			HpcDataObjectDownloadResponse response, String restorationStatus) throws HpcException {
 
 		try {
