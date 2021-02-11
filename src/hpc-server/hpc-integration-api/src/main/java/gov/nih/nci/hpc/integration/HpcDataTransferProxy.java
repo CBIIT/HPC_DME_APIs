@@ -24,7 +24,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -347,13 +347,13 @@ public interface HpcDataTransferProxy {
    * @return metadataEntries
    * @throws HpcException on data transfer system failure.
    */
-  public default HpcS3ObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation)
+  public default HpcArchiveObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation)
 		throws HpcException {
 	throw new HpcException("getDataObjectMetadata is not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
 
   /**
-   * Create/Replace Life cycle Policy on a bucket
+   * Create/Replace Tiering Policy on a bucket
    *
    * @param authenticatedToken An authenticated token.
    * @param archiveLocation The archive location.
@@ -362,9 +362,9 @@ public interface HpcDataTransferProxy {
    * @param tieringProtocol The tiering protocol used. (Optional)
    * @throws HpcException on data transfer system failure.
    */
-	public default void putLifecyclePolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
+	public default void setTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
 			String tieringBucket, String tieringProtocol) throws HpcException {
-	    throw new HpcException("putLifecyclePolicy() not supported",
+	    throw new HpcException("setTieringPolicy() not supported",
         HpcErrorType.UNEXPECTED_ERROR);
   }
   
@@ -380,15 +380,15 @@ public interface HpcDataTransferProxy {
   }
 
   /**
-   * Check if Lifecycle Policy exists for an archive location
+   * Check if Tiering Policy exists for an archive location
    *
    * @param authenticatedToken An authenticated token.
    * @param archiveLocation The archive location.
    * @throws HpcException on data transfer system failure.
    */
-  public default boolean existsLifecyclePolicy(Object authenticatedToken,
+  public default boolean existsTieringPolicy(Object authenticatedToken,
       HpcFileLocation archiveLocation) throws HpcException {
-    throw new HpcException("existsLifecyclePolicy() not supported",
+    throw new HpcException("existsTieringPolicy() not supported",
         HpcErrorType.UNEXPECTED_ERROR);
   }
 
