@@ -80,6 +80,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcSynchronousDownloadFilter;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUserDownloadRequest;
+import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -282,8 +283,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			if (!isValidFileLocation(s3UploadSource.getSourceLocation())) {
 				throw new HpcException("Invalid S3 upload source location", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			if (StringUtils.isEmpty(s3UploadSource.getSourceURL()) && !isValidS3Account(s3UploadSource.getAccount())) {
-				throw new HpcException("Invalid S3 upload account", HpcErrorType.INVALID_REQUEST_INPUT);
+			if (StringUtils.isEmpty(s3UploadSource.getSourceURL())) {
+				HpcDomainValidationResult validationResult = isValidS3Account(s3UploadSource.getAccount());
+				if (!validationResult.getValid()) {
+					throw new HpcException("Invalid S3 account: " + validationResult.getMessage(),
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
 			}
 			if (!StringUtils.isEmpty(s3UploadSource.getSourceURL()) && s3UploadSource.getSourceSize() == null) {
 				throw new HpcException("AWS S3 source URL provided without source size",
@@ -483,8 +488,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			perform2HopDownload(downloadRequest, response, baseArchiveDestination);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && s3DownloadDestination != null) {
-			// This is an asynchronous download request from a S3 archive to a AWS
+			// This is an asynchronous download request from a S3 archive to a user provided
 			// S3 destination.
+			// Note: The user S3 destination can be either AWS or 3rd Party S3 provider.
 			performS3AsynchronousDownload(downloadRequest, response, baseArchiveDestination);
 
 		} else if (dataTransferType.equals(HpcDataTransferType.S_3) && googleDriveDownloadDestination != null) {
@@ -625,8 +631,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		if (!isValidFileLocation(fileLocation)) {
 			throw new HpcException("Invalid file location", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		if (!isValidS3Account(s3Account)) {
-			throw new HpcException("Invalid S3 Account", HpcErrorType.INVALID_REQUEST_INPUT);
+
+		HpcDomainValidationResult validationResult = isValidS3Account(s3Account);
+		if (!validationResult.getValid()) {
+			throw new HpcException("Invalid S3 account: " + validationResult.getMessage(),
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// This is S3 only functionality, so we get the S3 data-transfer-proxy.
@@ -1658,7 +1667,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 		if (uploadRequest.getFileSystemUploadSource() != null) {
-			// The upload from a file system source is done in a scheduled task
+			// The upload from a file system source is done in a scheduled task.
 			HpcDataObjectUploadResponse uploadResponse = new HpcDataObjectUploadResponse();
 			uploadResponse.setDataTransferType(dataTransferType);
 			uploadResponse.setSourceSize(uploadRequest.getSourceSize());
@@ -1864,8 +1873,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				throw new HpcException("Invalid S3 download destination location", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 
-			if (!isValidS3Account(s3DownloadDestination.getAccount())) {
-				throw new HpcException("Invalid S3 account", HpcErrorType.INVALID_REQUEST_INPUT);
+			HpcDomainValidationResult validationResult = isValidS3Account(s3DownloadDestination.getAccount());
+			if (!validationResult.getValid()) {
+				throw new HpcException("Invalid S3 account: " + validationResult.getMessage(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
 
@@ -2139,7 +2150,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcDataObjectDownloadResponse response, HpcArchive baseArchiveDestination,
 			HpcSynchronousDownloadFilter synchronousDownloadFilter) throws HpcException {
 		// Validate max file size not exceeded.
-		if (maxSyncDownloadFileSize != null && downloadRequest.getSize() > maxSyncDownloadFileSize) {
+		if (synchronousDownloadFilter == null && maxSyncDownloadFileSize != null
+				&& downloadRequest.getSize() > maxSyncDownloadFileSize) {
 			throw new HpcException("File size exceeds the sync download limit",
 					HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
 		}
@@ -2172,7 +2184,15 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 						synchronousDownloadFilter.getCompressedArchiveType(),
 						synchronousDownloadFilter.getIncludePatterns(),
 						synchronousDownloadFilter.getPatternType()) > 0) {
+					// Validate max file size not exceeded.
+					if (maxSyncDownloadFileSize != null
+							&& filteredCompressedArchive.length() > maxSyncDownloadFileSize) {
+						throw new HpcException("File size exceeds the sync download limit",
+								HpcRequestRejectReason.INVALID_DOWNLOAD_REQUEST);
+					}
+
 					response.setDestinationFile(filteredCompressedArchive);
+
 				} else {
 					throw new HpcException("Pattern(s) did not match any entry in compressed archive file",
 							HpcErrorType.INVALID_REQUEST_INPUT);
@@ -2266,7 +2286,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		HpcStreamingDownload s3Download = new HpcStreamingDownload(downloadRequest, dataDownloadDAO, eventService,
 				this);
 
-		// Perform the S3 download (From S3 Archive to User's AWS S3 bucket).
+		// Perform the S3 download (From S3 Archive to User's S3 bucket in AWS or 3rd party provider).
 		try {
 			dataTransferProxies.get(HpcDataTransferType.S_3).downloadDataObject(
 					getAuthenticatedToken(HpcDataTransferType.S_3, downloadRequest.getConfigurationId(),

@@ -277,6 +277,10 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 
 			
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
+				if(isPublicEndpoint(downloadFile.getEndPointName()) != null) {
+					result.setMessage(isPublicEndpoint(downloadFile.getEndPointName()));
+					return result;
+				}
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getEndPointName());
 				location.setFileId(downloadFile.getEndPointLocation().trim());
