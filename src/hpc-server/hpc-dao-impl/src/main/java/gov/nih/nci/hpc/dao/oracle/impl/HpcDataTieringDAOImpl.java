@@ -1,5 +1,5 @@
 /**
- * HpcDataManagementAuditDAOImpl.java
+ * HpcDataTieringDAOImpl.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -16,21 +16,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import gov.nih.nci.hpc.dao.HpcLifecycleDAO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcLifecycleRequestType;
+import gov.nih.nci.hpc.dao.HpcDataTieringDAO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcTieringRequestType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Lifecycle DAO Implementation.
+ * HPC Data Tiering DAO Implementation.
  * </p>
  *
  * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
  */
 
-public class HpcLifecycleDAOImpl implements HpcLifecycleDAO {
+public class HpcDataTieringDAOImpl implements HpcDataTieringDAO {
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
@@ -57,7 +57,7 @@ public class HpcLifecycleDAOImpl implements HpcLifecycleDAO {
 	 * Constructor for Spring Dependency Injection.
 	 * 
 	 */
-	private HpcLifecycleDAOImpl() {
+	private HpcDataTieringDAOImpl() {
 	}
 
 	// ---------------------------------------------------------------------//
@@ -65,11 +65,11 @@ public class HpcLifecycleDAOImpl implements HpcLifecycleDAO {
 	// ---------------------------------------------------------------------//
 
 	// ---------------------------------------------------------------------//
-	// HpcDataObjectDeletionDAO Interface Implementation
+	// HpcDataTieringDAO Interface Implementation
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public void insert(String userId, HpcLifecycleRequestType requestType, 
+	public void insert(String userId, HpcTieringRequestType requestType, 
 			String s3ArchiveConfigurationId, Calendar completed, String filterPrefix) throws HpcException {
 		try {
 			jdbcTemplate.update(INSERT_SQL, userId, requestType.value(),

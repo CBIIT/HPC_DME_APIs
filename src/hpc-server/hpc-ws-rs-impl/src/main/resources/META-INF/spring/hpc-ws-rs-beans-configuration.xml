@@ -270,12 +270,14 @@
 					value="${hpc.ws.rs.auth.data-management.get-all-download-summary}" />
 				<entry key="getAllRegistrationSummary"
 					value="${hpc.ws.rs.auth.data-management.get-all-registration-summary}" />
+
+				<!-- Data Tiering Service Authorizations -->
 				<entry key="tierDataObject"
-					value="${hpc.ws.rs.auth.data-management.tier-data-object}" />
+					value="${hpc.ws.rs.auth.data-tiering.tier-data-object}" />
 				<entry key="tierCollection"
-					value="${hpc.ws.rs.auth.data-management.tier-collection}" />
+					value="${hpc.ws.rs.auth.data-tiering.tier-collection}" />
 				<entry key="tierDataObjectsOrCollections"
-					value="${hpc.ws.rs.auth.data-management.tier-data-objects}" />
+					value="${hpc.ws.rs.auth.data-tiering.tier-data-objects}" />
 					
 				<!-- Data Search Service Authorizations -->
 				<entry key="queryCollections" value="${hpc.ws.rs.auth.data-search.query-collections}" />
@@ -337,6 +339,7 @@
 	<bean id="hpcNotificationRestService"
 		class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
 	<bean id="hpcReportRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReportRestServiceImpl" />
+	<bean id="hpcDataTieringRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataTieringRestServiceImpl" />
 
 	<!-- CXF JAX-RS Server Config -->
 	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}"
@@ -348,6 +351,7 @@
 			<ref bean="hpcDataBrowseRestService" />
 			<ref bean="hpcNotificationRestService" />
 			<ref bean="hpcReportRestService" />
+			<ref bean="hpcDataTieringRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />
@@ -381,6 +385,7 @@
 			<ref bean="hpcDataBrowseRestService" />
 			<ref bean="hpcNotificationRestService" />
 			<ref bean="hpcReportRestService" />
+			<ref bean="hpcDataTieringRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />

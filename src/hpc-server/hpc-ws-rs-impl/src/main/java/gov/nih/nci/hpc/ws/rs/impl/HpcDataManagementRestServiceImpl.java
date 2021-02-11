@@ -35,7 +35,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcScanDirectory;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectTierRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectRegistrationRequestDTO;
@@ -785,42 +784,6 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		return bulkMoveResponse.getResult() ? okResponse(bulkMoveResponse, true) : errorResponse(bulkMoveResponse);
 	}
 
-	@Override
-	public Response tierDataObject(String path) {
-		try {
-			dataManagementBusService.tierDataObject(path);
-			
-		} catch (HpcException e) {
-			return errorResponse(e);
-		}
-
-		return okResponse(null, false);
-	}
-
-	@Override
-	public Response tierCollection(String path) {
-		try {
-			dataManagementBusService.tierCollection(path);
-			
-		} catch (HpcException e) {
-			return errorResponse(e);
-		}
-
-		return okResponse(null, false);
-	}
-
-	@Override
-	public Response tierDataObjectsOrCollections(HpcBulkDataObjectTierRequestDTO tierRequest) {
-		try {
-			dataManagementBusService.tierDataObjectsOrCollections(tierRequest);
-			
-		} catch (HpcException e) {
-			return errorResponse(e);
-		}
-
-		return okResponse(null, false);
-	}
-	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

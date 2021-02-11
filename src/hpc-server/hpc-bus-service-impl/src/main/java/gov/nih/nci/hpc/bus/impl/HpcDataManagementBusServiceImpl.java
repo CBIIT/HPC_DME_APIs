@@ -64,7 +64,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcPatternType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
-import gov.nih.nci.hpc.domain.datatransfer.HpcS3ObjectMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -74,8 +74,6 @@ import gov.nih.nci.hpc.domain.metadata.HpcBulkMetadataEntry;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
-import gov.nih.nci.hpc.domain.model.HpcBulkTierItem;
-import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
@@ -85,10 +83,8 @@ import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
-import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectTierRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcBulkMoveResponseDTO;
@@ -859,7 +855,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					// Generate archive (Cleversafe) system generated metadata. Note: This is only
 					// performed for synchronous data registration.
 					if (dataObjectFile != null) {
-						HpcS3ObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
+						HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 								systemGeneratedMetadata.getArchiveLocation(),
 								systemGeneratedMetadata.getDataTransferType(),
 								systemGeneratedMetadata.getConfigurationId(),
@@ -1278,9 +1274,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// 4. Data Object is archived (i.e. registration completed).
 		// 5. Data Object is not in deep archive or in deep archive but restored
 		HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(path, true, false);
-		if (metadata.getDeepArchiveStatus() != null && !metadata.getDeepArchiveStatus().equals(HpcDeepArchiveStatus.IN_PROGRESS)) {
+		if (metadata.getDeepArchiveStatus() != null) {
 			// Get the data object metadata to check for restoration status
-			HpcS3ObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
+			HpcArchiveObjectMetadata objectMetadata = dataTransferService.getDataObjectMetadata(
 					metadata.getArchiveLocation(), metadata.getDataTransferType(), 
 					metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId());
 			
@@ -1630,212 +1626,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return bulkMoveResponse;
 	}
 
-
-	@Override
-	public void tierDataObject(String path) throws HpcException {
-		// Input validation.
-		if (path == null) {
-			throw new HpcException("Null path for archive request", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Validate the data object exists.
-		if (dataManagementService.getDataObject(path) == null) {
-			throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Get the System generated metadata.
-		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
-
-		// Validate the file is archived.
-		HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
-		if (dataTransferStatus == null) {
-			throw new HpcException("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
-		}
-		if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-			throw new HpcException("Object is not in archived state. It is in "
-					+ metadata.getDataTransferStatus().value() + " state", HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-		}
-		
-		// Validate the request if tiering is supported for the provider.
-		if (!dataTransferService.isTieringSupported(metadata.getConfigurationId(),
-				metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3)) {
-			throw new HpcException("The tiering API is not supported for this archive provider." + path,
-					HpcRequestRejectReason.API_NOT_SUPPORTED);
-		}
-
-		List<String> paths = new ArrayList<>();
-		paths.add(path);
-		
-		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
-		// Submit a tiering request.
-		dataTransferService.tierDataObject(invokerNciAccount.getUserId(), path, metadata.getArchiveLocation(), HpcDataTransferType.S_3, metadata.getConfigurationId());
-		
-		// Update deep_archive_status.
-		metadataService.updateDataObjectSystemGeneratedMetadata(path, null, null, null,
-				null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
-	}
-
-	@Override
-	public void tierCollection(String path) throws HpcException {
-		// Input validation.
-		if (path == null) {
-			throw new HpcException("Null path for tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		path = toNormalizedPath(path);
-		
-		// Validate collection exists.
-		HpcCollection collection = dataManagementService.getCollection(path, true);
-		if (collection == null) {
-			throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Verify data objects found under this collection.
-		if (!hasDataObjectsUnderPath(collection)) {
-			// No data objects found under this collection.
-			throw new HpcException("No data objects found under collection" + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Get the System generated metadata.
-		HpcSystemGeneratedMetadata metadata = metadataService.getCollectionSystemGeneratedMetadata(path);
-		
-		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
-		// Submit a tier transfer request.
-		dataTransferService.tierCollection(invokerNciAccount.getUserId(), path, HpcDataTransferType.S_3, metadata.getConfigurationId());
-		
-		List<String> paths = getDataObjectsUnderPathForTiering(collection);
-		
-		// Iterate through the individual data object paths and update deep_archive_status to in_progress
-		for (String dataObjectPath : paths) {
-			metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null,
-					null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
-		}
-				
-	}
-
-	@Override
-	public void tierDataObjectsOrCollections(HpcBulkDataObjectTierRequestDTO tierRequest)
-			throws HpcException {
-		// Input validation.
-		if (tierRequest == null) {
-			throw new HpcException("Null tiering request", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		if (tierRequest.getDataObjectPaths().isEmpty() && tierRequest.getCollectionPaths().isEmpty()) {
-			throw new HpcException("No data object or collection paths", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		if (!tierRequest.getDataObjectPaths().isEmpty() && !tierRequest.getCollectionPaths().isEmpty()) {
-			throw new HpcException("Both data object and collection paths provided",
-					HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
-		
-		List<String> paths = new ArrayList<>();
-		HpcBulkTierRequest bulkTierRequest = new HpcBulkTierRequest();
-		if (!tierRequest.getDataObjectPaths().isEmpty()) {
-			// Submit a request to archive a list of data objects.
-
-			// Validate all data object paths requested exist.
-			for (String path : tierRequest.getDataObjectPaths()) {
-				if (dataManagementService.getDataObject(path) == null) {
-					throw new HpcException("Data object doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-				if (StringUtils.isEmpty(path)) {
-					throw new HpcException("Null / Empty path in registration request", HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-
-				// Validate no multiple registration requests for the same path.
-				if (paths.stream().anyMatch(s -> path.equals(s))) {
-					throw new HpcException("Duplicated path in tiering request list: " + path,
-							HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-				
-				// Get the System generated metadata.
-				HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
-				
-				// Validate the file is archived.
-				HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
-				if (dataTransferStatus == null) {
-					logger.error("Unknown upload data transfer status: " + path, HpcErrorType.UNEXPECTED_ERROR);
-					continue;
-				}
-				if (!dataTransferStatus.equals(HpcDataTransferUploadStatus.ARCHIVED)) {
-					logger.error("Object is not in archived state. It is in "
-							+ metadata.getDataTransferStatus().value() + " state" + path, HpcRequestRejectReason.FILE_NOT_ARCHIVED);
-					continue;
-				}
-				// Check if any data objects archived where tiering is not supported.
-				if (!dataTransferService.isTieringSupported(metadata.getConfigurationId(),
-						metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3)) {
-					logger.info("The tiering API is not supported for this archive provider." + path,
-							HpcRequestRejectReason.API_NOT_SUPPORTED);
-					continue;
-				}
-				
-				paths.add(path);
-				HpcBulkTierItem item = new HpcBulkTierItem();
-				item.setPath(metadata.getArchiveLocation().getFileId());
-				item.setConfigurationId(metadata.getConfigurationId());
-				bulkTierRequest.getItems().add(item);
-			}
-						
-			// Submit a data objects tiering task.
-			dataTransferService.tierDataObjects(invokerNciAccount.getUserId(), bulkTierRequest, HpcDataTransferType.S_3);
-			
-			// Iterate through the individual data object paths and update deep_archive_status to in_progress
-			for (String dataObjectPath : paths) {
-				metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null,
-						null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
-			}
-			
-		} else {
-			// Submit a request to archive a list of collections.
-
-			// Validate all data object paths requested exist.
-			boolean dataObjectExist = false;
-			for (String collectionPath : tierRequest.getCollectionPaths()) {
-				String path = toNormalizedPath(collectionPath);
-				HpcCollection collection = dataManagementService.getCollection(path, true);
-				if (collection == null) {
-					throw new HpcException("Collection doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-				// Verify at least one data object found under these collection.
-				if (!dataObjectExist && hasDataObjectsUnderPath(collection)) {
-					dataObjectExist = true;
-				}
-				
-				// Validate no multiple registration requests for the same path.
-				if (paths.stream().anyMatch(s -> path.equals(s))) {
-					throw new HpcException("Duplicated path in tiering request list: " + path,
-							HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-				
-				paths.addAll(getDataObjectsUnderPathForTiering(collection));
-
-				HpcBulkTierItem item = new HpcBulkTierItem();
-				String configurationId = metadataService
-						.getCollectionSystemGeneratedMetadata(path).getConfigurationId();
-				item.setPath(path);
-				item.setConfigurationId(configurationId);
-				bulkTierRequest.getItems().add(item);
-			}
-
-			if (!dataObjectExist) {
-				// No data objects found under the list of collection.
-				throw new HpcException("No data objects found under collections", HpcErrorType.INVALID_REQUEST_INPUT);
-			}
-	
-			// Submit a data objects tiering task.
-			dataTransferService.tierCollections(invokerNciAccount.getUserId(), bulkTierRequest, HpcDataTransferType.S_3);
-			
-			// Iterate through the individual data object paths and update deep_archive_status to in_progress
-			for (String dataObjectPath : paths) {
-				metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectPath, null, null, null,
-						null, null, null, null, null, null, HpcDeepArchiveStatus.IN_PROGRESS, Calendar.getInstance());
-			}
-		}
-
-	}
 	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
@@ -3083,37 +2873,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				return true;
 		}
 		return false;
-	}
-	
-	private List<String> getDataObjectsUnderPathForTiering(HpcCollection collection) throws HpcException {
-		List<String> dataObjectPaths = new ArrayList<>();
-
-		// Iterate through the data objects in the collection and add to list.
-		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-			// Get the System generated metadata.
-			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(dataObjectEntry.getPath());
-			// Check if any data objects archived where tiering is not supported.
-			if (dataTransferService.isTieringSupported(metadata.getConfigurationId(),
-					metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3)) {
-				dataObjectPaths.add(dataObjectEntry.getPath());
-			} else {
-				logger.info("The tiering API is not supported for this archive provider." + dataObjectEntry.getPath(),
-						HpcRequestRejectReason.API_NOT_SUPPORTED);
-			}
-			
-		}
-
-		// Iterate through the sub-collections and add them.
-		for (HpcCollectionListingEntry subCollectionEntry : collection.getSubCollections()) {
-			String subCollectionPath = subCollectionEntry.getPath();
-			HpcCollection subCollection = dataManagementService.getCollection(subCollectionPath, true);
-			if (subCollection != null) {
-				// add this sub-collection.
-				dataObjectPaths.addAll(getDataObjectsUnderPathForTiering(subCollection));
-			}
-		}
-
-		return dataObjectPaths;
 	}
 
 }

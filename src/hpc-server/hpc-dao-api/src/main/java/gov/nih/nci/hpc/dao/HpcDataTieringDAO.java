@@ -1,5 +1,5 @@
 /**
- * HpcDataManagementAuditDAO.java
+ * HpcDataTieringDAO.java
  *
  * Copyright SVG, Inc.
  * Copyright Leidos Biomedical Research, Inc
@@ -12,18 +12,18 @@ package gov.nih.nci.hpc.dao;
 
 import java.util.Calendar;
 
-import gov.nih.nci.hpc.domain.datatransfer.HpcLifecycleRequestType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcTieringRequestType;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
  * <p>
- * HPC Lifecycle DAO Interface.
+ * HPC Data Tiering DAO Interface.
  * </p>
  *
  * @author <a href="mailto:yuri.dinh@nih.gov">Yuri Dinh</a>
  */
 
-public interface HpcLifecycleDAO 
+public interface HpcDataTieringDAO 
 {    
     /**
      * Store a new lifecycle record.
@@ -35,7 +35,7 @@ public interface HpcLifecycleDAO
      * @param filterPrefix The lifecycle filter prefix that was applied.
      * @throws HpcException on database error.
      */
-    public void insert(String userId, HpcLifecycleRequestType requestType,
+    public void insert(String userId, HpcTieringRequestType requestType,
     		           String s3ArchiveConfigurationId, Calendar completed,
     		           String filterPrefix) 
     		          throws HpcException;
