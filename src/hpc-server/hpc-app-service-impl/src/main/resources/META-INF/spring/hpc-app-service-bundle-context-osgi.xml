@@ -73,6 +73,8 @@
 		          interface="gov.nih.nci.hpc.service.HpcReportService" />	
 	<osgi:service ref="hpcCatalogService"
 		          interface="gov.nih.nci.hpc.service.HpcCatalogService" />
+	<osgi:service ref="hpcDataTieringService"
+		          interface="gov.nih.nci.hpc.service.HpcDataTieringService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
@@ -103,8 +105,8 @@
 	                interface="gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO" />
 	<osgi:reference id="hpcCatalogDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcCatalogDAO" />
-	<osgi:reference id="hpcLifecycleDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcLifecycleDAO" />                 
+	<osgi:reference id="hpcDataTieringDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataTieringDAO" />                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>
