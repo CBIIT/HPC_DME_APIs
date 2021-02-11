@@ -151,6 +151,7 @@
 		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
 		<entry key="http://hpc.nci.nih.gov/dto/report" value="gov.nih.nci.hpc.dto.report" />
 		<entry key="http://hpc.nci.nih.gov/dto/catalog" value="gov.nih.nci.hpc.dto.catalog" />
+		<entry key="http://hpc.nci.nih.gov/dto/datatiering" value="gov.nih.nci.hpc.dto.datatiering" />
 		<entry key="http://hpc.nci.nih.gov/domain/error" value="gov.nih.nci.hpc.domain.error" />
 		<entry key="http://hpc.nci.nih.gov/domain/metadata" value="gov.nih.nci.hpc.domain.metadata" />
 		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />

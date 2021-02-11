@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -657,6 +658,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
 				dataObjectLinksQuery);
+	}
+	
+	@Override
+	public List<HpcDataObject> getDataObjectArchiveFileIdContainsPath(String path) throws HpcException {
+		List<HpcMetadataQuery> dataObjectArchiveFileIdContainsPathQuery = new ArrayList<>();
+		dataObjectArchiveFileIdContainsPathQuery.add(toMetadataQuery(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, HpcMetadataQueryOperator.LIKE, "%" + path + "%"));
+
+		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+				dataObjectArchiveFileIdContainsPathQuery);
 	}
 
 	@Override
