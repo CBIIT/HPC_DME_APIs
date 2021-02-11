@@ -1,0 +1,42 @@
+<!--  
+ * HpcDataMigrationTypes.xsd
+ *
+ * Copyright SVG,  Inc.
+ * Copyright Leidos Biomedical Research, Inc
+ * 
+ * Distributed under the OSI-approved BSD 3-Clause License.
+ * See http://ncip.github.com/HPC/LICENSE.txt for details.
+ *
+ * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
+ -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="1.0"
+	xmlns:hpc-domain-datamigration="http://hpc.nci.nih.gov/domain/datamigration"
+	targetNamespace="http://hpc.nci.nih.gov/domain/datamigration"
+	elementFormDefault="unqualified">
+
+	<xsd:simpleType name="HpcDataMigrationStatus">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="RECEIVED" />
+			<xsd:enumeration value="IN_PROGRESS" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="HpcDataMigrationType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DATA_OBJECT" />
+			<xsd:enumeration value="COLLECTION" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="HpcDataMigrationResult">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="COMPLETED" />
+			<xsd:enumeration value="COMPLETED_IGNORED_ITEMS" />
+			<xsd:enumeration value="FAILED" /> 
+			<xsd:enumeration value="IGNORED" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+</xsd:schema>

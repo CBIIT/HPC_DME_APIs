@@ -37,7 +37,7 @@ public interface HpcDataManagementAuditDAO
      * @param metadataAfter The collection or data object metadata after the request.
      * @param archiveLocation The location of the file in the archive (prior to deletion).
      * @param dataManagementStatus Data management (iRODS) request completion status.
-     * @param dataTransferStatus Data transfer (Cleversafe) request completion status.
+     * @param dataTransferStatus Data transfer (archive) request completion status.
      * @param message Error message if the request failed.
      * @param completed The time the request was completed.
      * @throws HpcException on database error.

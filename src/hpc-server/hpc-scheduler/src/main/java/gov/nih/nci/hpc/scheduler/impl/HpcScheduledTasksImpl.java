@@ -12,9 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+
 import gov.nih.nci.hpc.bus.HpcSystemBusService;
-import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.exception.HpcException;
+import static gov.nih.nci.hpc.util.HpcScheduledTask.execute;
 
 /**
  * HPC Scheduled tasks implementation.
@@ -48,7 +49,7 @@ public class HpcScheduledTasksImpl {
 	/** Process data objects that the data transfer upload status is 'received'. */
 	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadReceived.delay}")
 	private void processDataTranferUploadReceivedTask() {
-		executeTask("processDataTranferUploadReceivedTask()", systemBusService::processDataTranferUploadReceived);
+		execute("processDataTranferUploadReceivedTask()", systemBusService::processDataTranferUploadReceived, logger);
 	}
 
 	/**
@@ -57,7 +58,8 @@ public class HpcScheduledTasksImpl {
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadInProgress.delay}")
 	private void processDataTranferUploadInProgressTask() {
-		executeTask("processDataTranferUploadInProgressTask()", systemBusService::processDataTranferUploadInProgress);
+		execute("processDataTranferUploadInProgressTask()", systemBusService::processDataTranferUploadInProgress,
+				logger);
 	}
 
 	/**
@@ -66,8 +68,8 @@ public class HpcScheduledTasksImpl {
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadInProgressWithGeneratedURL.delay}")
 	private void processDataTranferUploadInProgressWithGeneratedURLTask() {
-		executeTask("processDataTranferUploadInProgressWithGeneratedURLTask()",
-				systemBusService::processDataTranferUploadInProgressWithGeneratedURL);
+		execute("processDataTranferUploadInProgressWithGeneratedURLTask()",
+				systemBusService::processDataTranferUploadInProgressWithGeneratedURL, logger);
 	}
 
 	/**
@@ -76,8 +78,8 @@ public class HpcScheduledTasksImpl {
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingInProgress.delay}")
 	private void processDataTranferUploadStreamingInProgress() {
-		executeTask("processDataTranferUploadStreamingInProgress()",
-				systemBusService::processDataTranferUploadStreamingInProgress);
+		execute("processDataTranferUploadStreamingInProgress()",
+				systemBusService::processDataTranferUploadStreamingInProgress, logger);
 	}
 
 	/**
@@ -86,37 +88,37 @@ public class HpcScheduledTasksImpl {
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.processDataTranferUploadStreamingStopped.delay}")
 	private void processDataTranferUploadStreamingStopped() {
-		executeTask("processDataTranferUploadStreamingStopped()",
-				systemBusService::processDataTranferUploadStreamingStopped);
+		execute("processDataTranferUploadStreamingStopped()",
+				systemBusService::processDataTranferUploadStreamingStopped, logger);
 	}
 
 	/**
-	 * Process data objects in temporary archive task. This tasks uploads data objects
-	 * from the temporary archive to the (permanent) archive and complete data
-	 * object registration.
+	 * Process data objects in temporary archive task. This tasks uploads data
+	 * objects from the temporary archive to the (permanent) archive and complete
+	 * data object registration.
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.processTemporaryArchive.delay}")
 	private void processTemporaryArchiveTask() {
-		executeTask("processTemporaryArchiveTask()", systemBusService::processTemporaryArchive);
+		execute("processTemporaryArchiveTask()", systemBusService::processTemporaryArchive, logger);
 	}
 
 	/**
 	 * Process data objects in file system task. This tasks uploads data objects
-	 * from the local DME file system (NAS) to the archive and complete data
-	 * object registration.
+	 * from the local DME file system (NAS) to the archive and complete data object
+	 * registration.
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.processFileSystemUpload.delay}")
 	private void processFileSystemUploadTask() {
-		executeTask("processFileSystemUploadTask()", systemBusService::processFileSystemUpload);
+		execute("processFileSystemUploadTask()", systemBusService::processFileSystemUpload, logger);
 	}
-	
+
 	/**
 	 * Start Data Object Download Tasks that are in RECEIVED state for Globus
 	 * transfer.
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.startGlobusDataObjectDownloadTasks.delay}")
 	private void startGlobusDataObjectDownloadTasks() {
-		executeTask("startGlobusDataObjectDownloadTasks()", systemBusService::startGlobusDataObjectDownloadTasks);
+		execute("startGlobusDataObjectDownloadTasks()", systemBusService::startGlobusDataObjectDownloadTasks, logger);
 	}
 
 	/**
@@ -124,7 +126,7 @@ public class HpcScheduledTasksImpl {
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.startS3DataObjectDownloadTasks.delay}")
 	private void startS3DataObjectDownloadTasks() {
-		executeTask("startS3DataObjectDownloadTasks()", systemBusService::startS3DataObjectDownloadTasks);
+		execute("startS3DataObjectDownloadTasks()", systemBusService::startS3DataObjectDownloadTasks, logger);
 	}
 
 	/**
@@ -133,118 +135,97 @@ public class HpcScheduledTasksImpl {
 	 */
 	@Scheduled(cron = "${hpc.scheduler.cron.startGoogleDriveDataObjectDownloadTasks.delay}")
 	private void startGoogleDriveDataObjectDownloadTasks() {
-		executeTask("startGoogleDriveDataObjectDownloadTasks()",
-				systemBusService::startGoogleDriveDataObjectDownloadTasks);
+		execute("startGoogleDriveDataObjectDownloadTasks()", systemBusService::startGoogleDriveDataObjectDownloadTasks,
+				logger);
 	}
 
 	/** Complete In-Progress Data Object Download Tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay}")
 	private void completeInProgressDataObjectDownloadTasksTask() {
-		executeTask("completeDataObjectDownloadTasksTask()",
-				systemBusService::completeInProgressDataObjectDownloadTasks);
+		execute("completeDataObjectDownloadTasksTask()", systemBusService::completeInProgressDataObjectDownloadTasks,
+				logger);
 	}
 
 	/** Complete Canceled Data Object Download Tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeCanceledDataObjectDownloadTasks.delay}")
 	private void completeCanceledDataObjectDownloadTasksTask() {
-		executeTask("completeDataObjectDownloadTasksTask()", systemBusService::completeCanceledDataObjectDownloadTasks);
+		execute("completeDataObjectDownloadTasksTask()", systemBusService::completeCanceledDataObjectDownloadTasks,
+				logger);
 	}
 
 	/** Process collection download tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.processCollectionDownloadTasks.delay}")
 	private void processCollectionDownloadTasksTask() {
-		executeTask("processCollectionDownloadTasksTask()", systemBusService::processCollectionDownloadTasks);
+		execute("processCollectionDownloadTasksTask()", systemBusService::processCollectionDownloadTasks, logger);
 	}
 
 	/** Complete collection download tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeCollectionDownloadTasks.delay}")
 	private void completeCollectionDownloadTasksTask() {
-		executeTask("completeCollectionDownloadTasksTask()", systemBusService::completeCollectionDownloadTasks);
+		execute("completeCollectionDownloadTasksTask()", systemBusService::completeCollectionDownloadTasks, logger);
 	}
 
 	/** Process bulk data object registration tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.processBulkDataObjectRegistrationTasks.delay}")
 	private void processDataObjectListRegistrationTasksTask() {
-		executeTask("processDataObjectListRegistrationTasksTask()",
-				systemBusService::processBulkDataObjectRegistrationTasks);
+		execute("processDataObjectListRegistrationTasksTask()",
+				systemBusService::processBulkDataObjectRegistrationTasks, logger);
 	}
 
 	/** Complete bulk data object registration tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeBulkDataObjectRegistrationTasks.delay}")
 	private void completeBulkDataObjectRegistrationTasksTask() {
-		executeTask("completeBulkDataObjectRegistrationTasksTask()",
-				systemBusService::completeBulkDataObjectRegistrationTasks);
+		execute("completeBulkDataObjectRegistrationTasksTask()",
+				systemBusService::completeBulkDataObjectRegistrationTasks, logger);
 	}
 
 	/** Process events and send notifications. */
 	@Scheduled(cron = "${hpc.scheduler.cron.processevents.delay}")
 	private void processEventsTask() {
-		executeTask("processEventsTask()", systemBusService::processEvents);
+		execute("processEventsTask()", systemBusService::processEvents, logger);
 	}
 
 	/** Generate a summary report event. */
 	@Scheduled(cron = "${hpc.scheduler.cron.summaryreport.delay}")
 	private void generateSummaryReportTask() {
-		executeTask("generateSummaryReportTask()", systemBusService::generateSummaryReportEvent);
+		execute("generateSummaryReportTask()", systemBusService::generateSummaryReportEvent, logger);
 	}
 
 	/** Generate a weekly summary report event. */
 	@Scheduled(cron = "${hpc.scheduler.cron.weeklysummaryreport.delay}")
 	private void generateWeeklySummaryReportTask() {
-		executeTask("generateWeeklySummaryReportTask()", systemBusService::generateWeeklySummaryReportEvent);
+		execute("generateWeeklySummaryReportTask()", systemBusService::generateWeeklySummaryReportEvent, logger);
 	}
 
 	/** Refresh the metadata materialized Views. */
 	@Scheduled(cron = "${hpc.scheduler.cron.refreshMetadataViews.delay}")
 	private void refreshMetadataViewsTask() {
-		executeTask("refreshMetadataViewsTask()", systemBusService::refreshMetadataViews);
+		execute("refreshMetadataViewsTask()", systemBusService::refreshMetadataViews, logger);
 	}
 
 	/** Refresh the report materizalized views. */
 	@Scheduled(cron = "${hpc.scheduler.cron.refreshReportViews.delay}")
 	private void refreshReportViewsTask() {
-		executeTask("refreshReportViewsTask()", systemBusService::refreshReportViews);
+		execute("refreshReportViewsTask()", systemBusService::refreshReportViews, logger);
 	}
 	
 	/** Complete tiering request tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeDeepArchiveInProgress.delay}")
 	private void completeDeepArchiveInProgressTask() {
-		executeTask("completeDeepArchiveInProgressTask()",
-				systemBusService::completeDeepArchiveInProgress);
+		execute("completeDeepArchiveInProgressTask()",
+				systemBusService::completeDeepArchiveInProgress, logger);
 	}
 	
 	/** Complete restore request tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeRestoreRequest.delay}")
 	private void completeRestoreRequestTask() {
-		executeTask("completeRestoreRequestTask()",
-				systemBusService::completeRestoreRequest);
+		execute("completeRestoreRequestTask()",
+				systemBusService::completeRestoreRequest, logger);
 	}
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
-
-	/**
-	 * Execute a scheduled task.
-	 *
-	 * @param name The task name.
-	 * @param task The task to execute.
-	 */
-	private void executeTask(String name, HpcScheduledTask task) {
-		long start = System.currentTimeMillis();
-		logger.info("Scheduled task started: {}", name);
-
-		try {
-			task.execute();
-
-		} catch (HpcException e) {
-			logger.error("Scheduled task failed: " + name, e);
-
-		} finally {
-			long executionTime = System.currentTimeMillis() - start;
-			logger.info("Scheduled task completed: {} - Task execution time: {} milliseconds", name, executionTime);
-		}
-	}
 
 	/**
 	 * Called by Spring dependency injection. Reset all active S3 upload/download in
@@ -263,8 +244,7 @@ public class HpcScheduledTasksImpl {
 			systemBusService.restartCollectionDownloadTasks();
 
 		} catch (HpcException e) {
-			logger.error("Failed to update upload status for current S3 streaming tasks", HpcErrorType.UNEXPECTED_ERROR,
-					e);
+			logger.error("Scheduler failed to initialize", e);
 		}
 	}
 }

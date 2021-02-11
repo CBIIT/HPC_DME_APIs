@@ -158,7 +158,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void addMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
 			throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries)) {
+		if (path == null || !isValidMetadataEntries(metadataEntries, false)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -174,7 +174,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateCollectionMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
 			throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries)) {
+		if (path == null || !isValidMetadataEntries(metadataEntries, true)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -417,7 +417,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public HpcMetadataEntry addMetadataToDataObject(String path, List<HpcMetadataEntry> metadataEntries,
 			String configurationId, String collectionType) throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries)) {
+		if (path == null || !isValidMetadataEntries(metadataEntries, false)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -636,7 +636,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
 			String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType, Calendar dataTransferStarted, Calendar dataTransferCompleted,
-			Long sourceSize, String linkSourcePath, HpcDeepArchiveStatus deepArchiveStatus, Calendar deepArchiveDate) throws HpcException {
+			Long sourceSize, String linkSourcePath, String s3ArchiveConfigurationId,
+			HpcDeepArchiveStatus deepArchiveStatus, Calendar deepArchiveDate) throws HpcException {
 		// Input validation.
 		if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
 			throw new HpcException("Invalid updated system generated metadata for data object",
@@ -698,7 +699,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			// Update the link source path metadata.
 			addMetadataEntry(metadataEntries, toMetadataEntry(LINK_SOURCE_PATH_ATTRIBUTE, linkSourcePath));
 		}
-		
+
+		if (s3ArchiveConfigurationId != null) {
+			// Update the S3 archive configuration ID metadata.
+			addMetadataEntry(metadataEntries,
+					toMetadataEntry(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE, s3ArchiveConfigurationId));
+		}
+
 		if (deepArchiveStatus != null) {
 			// Update the deep archive date metadata.
 			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_STATUS_ATTRIBUTE, deepArchiveStatus.value()));
@@ -720,7 +727,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId,
 			String collectionType, boolean extractedMetadata) throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries)) {
+		if (path == null || !isValidMetadataEntries(metadataEntries, true)) {
 			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
