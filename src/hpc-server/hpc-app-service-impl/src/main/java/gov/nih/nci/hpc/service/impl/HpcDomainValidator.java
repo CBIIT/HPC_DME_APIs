@@ -174,14 +174,16 @@ public class HpcDomainValidator {
 	 * Validate metadata entry collection.
 	 *
 	 * @param metadataEntries Metadata entry collection.
+	 * @param editMetadata true if the metadata is being edited. This is to enable delete.
 	 * @return true if valid, false otherwise.
 	 */
-	public static boolean isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries) {
+	public static boolean isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries, boolean editMetadata) {
 		if (metadataEntries == null) {
 			return false;
 		}
 		for (HpcMetadataEntry metadataEntry : metadataEntries) {
-			if (StringUtils.isEmpty(metadataEntry.getAttribute()) || StringUtils.isEmpty(metadataEntry.getValue())) {
+			if (StringUtils.isEmpty(metadataEntry.getAttribute()) ||
+					(editMetadata == false && StringUtils.isEmpty(metadataEntry.getValue()))) {
 				return false;
 			}
 		}
