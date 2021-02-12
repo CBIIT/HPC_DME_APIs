@@ -482,7 +482,7 @@
 					"index": "0"
 				}
 			],
-			"textFormat": "This file is now avaialable for download.<br/>Source path: %1$s<br/>Task ID: %2$s<br/><br/><a href=\"%3$s/download?type=datafile&downloadFilePath=%4$s\">Download from DME</a>",
+			"textFormat": "This file is now available for download.<br/>Source path: %1$s<br/>Task ID: %2$s<br/><br/><a href=\"%3$s/download?type=datafile&downloadFilePath=%4$s\">Download from DME</a>",
 			"textArguments": [
 				{
 					"payloadEntryAttribute": "DATA_OBJECT_PATH",
