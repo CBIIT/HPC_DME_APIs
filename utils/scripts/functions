@@ -1690,7 +1690,7 @@ function dm_register_directory {
         exit 1 
     fi
 
-    local src_path="$1"
+    local src_path=$(readlink -f "$1")
     local dst_path="$2"
 
     #Check if the jar exists:
