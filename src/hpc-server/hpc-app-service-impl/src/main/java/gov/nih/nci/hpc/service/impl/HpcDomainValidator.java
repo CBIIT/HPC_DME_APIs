@@ -177,17 +177,32 @@ public class HpcDomainValidator {
 	 * @param editMetadata true if the metadata is being edited. This is to enable delete.
 	 * @return true if valid, false otherwise.
 	 */
-	public static boolean isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries, boolean editMetadata) {
+	public static HpcDomainValidationResult isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries, boolean editMetadata) {
+		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+		validationResult.setValid(true);
+
 		if (metadataEntries == null) {
-			return false;
+			validationResult.setValid(false);
+			return validationResult;
 		}
+
 		for (HpcMetadataEntry metadataEntry : metadataEntries) {
-			if (StringUtils.isEmpty(metadataEntry.getAttribute()) ||
-					(editMetadata == false && StringUtils.isEmpty(metadataEntry.getValue()))) {
-				return false;
+			if(StringUtils.isEmpty(metadataEntry.getAttribute())) {
+				validationResult.setValid(false);
+				return validationResult;
+
+			} else {
+				if(editMetadata == false && StringUtils.isEmpty(metadataEntry.getValue())) {
+					if(validationResult.getValid()) {
+							validationResult.setMessage("The following entries cannot be empty: " + metadataEntry.getAttribute());
+					} else {
+							validationResult.setMessage(validationResult.getMessage() + ", " + metadataEntry.getAttribute());
+					}
+					validationResult.setValid(false);
+				}
 			}
 		}
-		return true;
+		return validationResult;
 	}
 
 	/**
