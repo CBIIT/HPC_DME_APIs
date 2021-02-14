@@ -160,7 +160,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Calendar completed = Calendar.getInstance();
 		completed.setTime(rs.getTimestamp("COMPLETED"));
 		bulkDdataObjectRegistrationResult.setCompleted(completed);
-
+		
 		return bulkDdataObjectRegistrationResult;
 	};
 
@@ -253,8 +253,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			jdbcTemplate.update(UPSERT_BULK_DATA_OBJECT_REGISTRATION_RESULT_SQL, registrationResult.getId(),
 					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
-					registrationResult.getCompleted(), registrationResult.getId(), registrationResult.getUserId(),
-					registrationResult.getResult(), registrationResult.getMessage(),
+					registrationResult.getCompleted(), registrationResult.getId(), 
+					registrationResult.getUserId(), registrationResult.getResult(), registrationResult.getMessage(),
 					registrationResult.getEffectiveTransferSpeed(), items, registrationResult.getCreated(),
 					registrationResult.getCompleted());
 
@@ -455,6 +455,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 			JSONObject jsonRequest = new JSONObject();
 			HpcDataObjectRegistrationRequest request = registrationItem.getRequest();
+
 			if (request.getCreateParentCollections() != null) {
 				jsonRequest.put("createParentCollection", request.getCreateParentCollections());
 			}

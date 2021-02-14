@@ -31,6 +31,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcBulkTierItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -135,6 +137,28 @@ public class HpcDomainValidator {
 		}
 		return true;
 	}
+	
+	/**
+	 * Validate a tiering request item.
+	 *
+	 * @param bulkTierRequest the object to be validated.
+	 * @return true if valid, false otherwise.
+	 */
+	public static boolean isValidTierItems(HpcBulkTierRequest bulkTierRequest) {
+		if (bulkTierRequest.getItems() == null || bulkTierRequest.getItems().isEmpty()) {
+			logger.info("Empty tiering items");
+			return false;
+		}
+		for (HpcBulkTierItem item : bulkTierRequest.getItems()) {
+			if (StringUtils.isEmpty(item.getConfigurationId())
+					|| StringUtils.isEmpty(item.getPath())) {
+				logger.info("Invalid tiering item: {}", item.getPath());
+				return false;
+			}
+		}
+		return true;
+	}
+	
 
 	/**
 	 * Validate a S3 account.
