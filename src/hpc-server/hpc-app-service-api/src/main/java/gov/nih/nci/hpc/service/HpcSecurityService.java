@@ -139,7 +139,7 @@ public interface HpcSecurityService {
    * Add a group to the system.
    *
    * @param name the name of the group to add.
-   * @throws HpcException
+   * @throws HpcException on service failure.
    */
   public void addGroup(String name) throws HpcException;
 
@@ -148,7 +148,7 @@ public interface HpcSecurityService {
    *
    * @param name The name of the group to update
    * @param active True if the group is to stay active, else false.
-   * @throws HpcException
+   * @throws HpcException on service failure.
    */
   public void updateGroup(String name, boolean active) throws HpcException;
 
@@ -156,7 +156,7 @@ public interface HpcSecurityService {
    * Delete a group from the system.
    *
    * @param name The name of the group to delete
-   * @throws HpcException
+   * @throws HpcException on service failure.
    */
   public void deleteGroup(String name) throws HpcException;
 
@@ -164,8 +164,8 @@ public interface HpcSecurityService {
    * Retrieve a group from the system.
    *
    * @param name The name of the group to retrieve
-   * @return
-   * @throws HpcException
+   * @return group
+   * @throws HpcException on service failure.
    */
   public HpcGroup getGroup(String name) throws HpcException;
 

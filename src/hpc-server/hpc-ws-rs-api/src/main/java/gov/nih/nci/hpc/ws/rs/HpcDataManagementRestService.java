@@ -331,6 +331,7 @@ public interface HpcDataManagementRestService {
 	public Response registerDataObjects(
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest);
 
+
 	/**
 	 * Get bulk data object registration task status.
 	 *
@@ -666,4 +667,5 @@ public interface HpcDataManagementRestService {
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response movePaths(HpcBulkMoveRequestDTO bulkMoveRequest);
+	
 }

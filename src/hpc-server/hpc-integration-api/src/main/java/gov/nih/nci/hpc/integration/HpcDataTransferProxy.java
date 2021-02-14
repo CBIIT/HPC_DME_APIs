@@ -24,6 +24,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadReport;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadPartETag;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
@@ -187,7 +188,7 @@ public interface HpcDataTransferProxy {
       HpcArchive baseArchiveDestination) throws HpcException {
     throw new HpcException("deleteDataObject is not supported", HpcErrorType.UNEXPECTED_ERROR);
   }
-
+  
   /**
    * Get a data transfer upload request status.
    *
@@ -337,4 +338,58 @@ public interface HpcDataTransferProxy {
 
     return archiveDestination;
   }
+  
+  /**
+   * Get metadata for object file in the archive.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param fileLocation The file location.
+   * @return metadataEntries
+   * @throws HpcException on data transfer system failure.
+   */
+  public default HpcArchiveObjectMetadata getDataObjectMetadata(Object authenticatedToken, HpcFileLocation fileLocation)
+		throws HpcException {
+	throw new HpcException("getDataObjectMetadata is not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
+   * Create/Replace Tiering Policy on a bucket
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveLocation The archive location.
+   * @param prefix The prefix to add .
+   * @param tieringBucket The bucket name to tier to. (Optional)
+   * @param tieringProtocol The tiering protocol used. (Optional)
+   * @throws HpcException on data transfer system failure.
+   */
+	public default void setTieringPolicy(Object authenticatedToken, HpcFileLocation archiveLocation, String prefix,
+			String tieringBucket, String tieringProtocol) throws HpcException {
+	    throw new HpcException("setTieringPolicy() not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
+  }
+  
+  /**
+   * Restore a data object file.
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param fileLocation The file location.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default void restoreDataObject(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
+    throw new HpcException("restoreDataObject is not supported", HpcErrorType.UNEXPECTED_ERROR);
+  }
+
+  /**
+   * Check if Tiering Policy exists for an archive location
+   *
+   * @param authenticatedToken An authenticated token.
+   * @param archiveLocation The archive location.
+   * @throws HpcException on data transfer system failure.
+   */
+  public default boolean existsTieringPolicy(Object authenticatedToken,
+      HpcFileLocation archiveLocation) throws HpcException {
+    throw new HpcException("existsTieringPolicy() not supported",
+        HpcErrorType.UNEXPECTED_ERROR);
+  }
+
 }

@@ -142,6 +142,7 @@ public interface HpcDataSearchRestService {
    * Add a new named query.
    *
    * @param queryName The query name.
+   * @param userId The user id.
    * @param compoundMetadataQuery The compound metadata query DTO.
    * @return The REST service response.
    */
