@@ -73,6 +73,9 @@ public class HpcMetadataValidator {
   public static final String DEEP_ARCHIVE_STATUS_ATTRIBUTE = "deep_archive_status";
   public static final String DEEP_ARCHIVE_DATE_ATTRIBUTE = "deep_archive_date";
 
+  private static final String MANDATORY_METADATA_ERROR = "mandatoryMetadataError";
+  private static final String CONDITIONAL_METADATA_ERROR = "conditionalMetadataError";
+
   // ---------------------------------------------------------------------//
   // Instance members
   // ---------------------------------------------------------------------//
@@ -101,7 +104,7 @@ public class HpcMetadataValidator {
         DATA_TRANSFER_STARTED_ATTRIBUTE, DATA_TRANSFER_COMPLETED_ATTRIBUTE,
         SOURCE_FILE_SIZE_ATTRIBUTE, CALLER_OBJECT_ID_ATTRIBUTE, CHECKSUM_ATTRIBUTE,
         METADATA_UPDATED_ATTRIBUTE, REGISTRATION_COMPLETION_EVENT_ATTRIBUTE,
-        LINK_SOURCE_PATH_ATTRIBUTE, EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE, 
+        LINK_SOURCE_PATH_ATTRIBUTE, EXTRACTED_METADATA_ATTRIBUTES_ATTRIBUTE,
         DEEP_ARCHIVE_STATUS_ATTRIBUTE, DEEP_ARCHIVE_DATE_ATTRIBUTE);
     List<String> collectionAttributes = Arrays.asList(ID_ATTRIBUTE, DME_ID_ATTRIBUTE, REGISTRAR_ID_ATTRIBUTE,
         REGISTRAR_NAME_ATTRIBUTE, CONFIGURATION_ID_ATTRIBUTE, METADATA_UPDATED_ATTRIBUTE);
@@ -255,6 +258,7 @@ public class HpcMetadataValidator {
     }
 
     // Execute the validation rules.
+    Map<String, String> errors = new HashMap<>();
     for (HpcMetadataValidationRule metadataValidationRule : metadataValidationRules) {
       // Check if rules needs to be skipped.
       if (skipRule(metadataValidationRule, metadataEntriesMap, collectionType)) {
@@ -272,14 +276,16 @@ public class HpcMetadataValidator {
 
       // Validate a mandatory metadata is provided.
       if (metadataValidationRule.getMandatory()
-          && !metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())) {
+          && StringUtils.isEmpty(metadataEntriesMap.get(metadataValidationRule.getAttribute()))) {
         // Metadata entry is missing, but no default is defined.
-        throw new HpcException(
-            "Missing mandatory metadata: " + metadataValidationRule.getAttribute(),
-            HpcErrorType.INVALID_REQUEST_INPUT);
+        if(StringUtils.isEmpty(errors.get(MANDATORY_METADATA_ERROR))) {
+            errors.put(MANDATORY_METADATA_ERROR, "Missing or empty mandatory metadata: " + metadataValidationRule.getAttribute());
+        } else {
+            errors.put(MANDATORY_METADATA_ERROR, errors.get(MANDATORY_METADATA_ERROR) + ", " + metadataValidationRule.getAttribute());
+        }
       }
 
-    //Check if there is a dependency on a controllerAttribute and that exists
+      //Check if there is a dependency on a controllerAttribute and that exists
       String controllerAttribute = metadataValidationRule.getControllerAttribute();
       if(!StringUtils.isEmpty(controllerAttribute) && 
     		  metadataEntriesMap.containsKey(controllerAttribute)) {
@@ -289,27 +295,40 @@ public class HpcMetadataValidator {
     	  String controllerValue = metadataValidationRule.getControllerValue();
     	  if((StringUtils.isEmpty(controllerValue) || 
               metadataEntriesMap.get(controllerAttribute).matches(controllerValue)) &&
-    		  (!metadataEntriesMap.containsKey(metadataValidationRule.getAttribute()))) {   		  
-    		      throw new HpcException(
-    		      "Missing controlled metadata: " + metadataValidationRule.getAttribute(),
-    		      HpcErrorType.INVALID_REQUEST_INPUT);
-    			  
-    	  } 
+              StringUtils.isEmpty(metadataEntriesMap.get(metadataValidationRule.getAttribute()))) {
+              if(StringUtils.isEmpty(errors.get(CONDITIONAL_METADATA_ERROR))) {
+                  errors.put(CONDITIONAL_METADATA_ERROR, "Missing or empty conditional metadata: " + metadataValidationRule.getAttribute());
+              } else {
+                  errors.put(CONDITIONAL_METADATA_ERROR, errors.get(CONDITIONAL_METADATA_ERROR) + ", " + metadataValidationRule.getAttribute());
+              }
+          }
       }
 
       // Validate the metadata value is valid.
       if (metadataValidationRule.getValidValues() != null
           && !metadataValidationRule.getValidValues().isEmpty()) {
         String value = metadataEntriesMap.get(metadataValidationRule.getAttribute());
-        if (metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())
+        //We validate only non-empty values because empty value has already been
+        //validated in the mandatory or conditional attribute checks above, and if this
+        //is not a mandatory or conditional attribute, then it's value shouldn't matter.
+        if (!StringUtils.isEmpty(value) 
+        	&& metadataEntriesMap.containsKey(metadataValidationRule.getAttribute())
             && !metadataValidationRule.getValidValues().contains(value)) {
           throw new HpcException(
-              "Invalid Metadata Value: " + metadataValidationRule.getAttribute() + " = " + value
+              "Invalid metadata value for attribute " + metadataValidationRule.getAttribute() + ": " + value
                   + ". Valid values: " + metadataValidationRule.getValidValues(),
               HpcErrorType.INVALID_REQUEST_INPUT);
         }
       }
     }
+
+    if(!errors.isEmpty()) {
+        String errorMessage =
+            errors.get(MANDATORY_METADATA_ERROR) != null ? errors.get(MANDATORY_METADATA_ERROR) : errors.get(CONDITIONAL_METADATA_ERROR);
+
+            // Metadata entry is missing, but no default is defined.
+            throw new HpcException(errorMessage, HpcErrorType.INVALID_REQUEST_INPUT);
+    } 
   }
 
   /**
