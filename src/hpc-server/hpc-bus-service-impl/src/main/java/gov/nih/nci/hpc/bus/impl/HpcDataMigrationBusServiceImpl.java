@@ -200,7 +200,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 	@Override
 	@HpcExecuteAsSystemAccount
-	public void restartDataObjectMigrationTasks() throws HpcException {
+	public void restartDataMigrationTasks() throws HpcException {
 		dataMigrationService.resetMigrationTasksInProcess();
 	}
 
