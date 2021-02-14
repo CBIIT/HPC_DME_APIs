@@ -554,9 +554,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					if (attrValue.length > 0 && !attrValue[0].isEmpty())
 						entry.setValue(attrValue[0]);
 					else
-						throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+						throw new HpcWebException("Invalid value for metadata attribute " + attrName[0] + ": Value cannot be empty");
 				} else if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
-					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
+					throw new HpcWebException("Invalid metadata attribute name for value " + attrValue[0] + ": Name cannot be empty");
 				} else {
 					//If both attrName and attrValue are empty, then we just
 					//ignore it and move to the next element
@@ -885,7 +885,6 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					continue;
 				entry.setValue(attrValue[0]);
 				entry.setAttribute(attrName);
-				entry.setValue(attrValue[0]);
 				metadataEntries.add(entry);
 				attrEntry.setAttrName(attrName);
 				attrEntry.setAttrValue(attrValue[0]);
@@ -901,9 +900,9 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					if (attrValue.length > 0 && !attrValue[0].isEmpty())
 						entry.setValue(attrValue[0]);
 					else
-						throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+						throw new HpcWebException("Invalid value for metadata attribute " + attrName[0] + ": Value cannot be empty");
 				} else if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
-					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
+					throw new HpcWebException("Invalid metadata attribute name for value " + attrValue[0] + ": Name cannot be empty");
 				} else {
 					//If both attrName and attrValue are empty, then we just
 					//ignore it and move to the next element
