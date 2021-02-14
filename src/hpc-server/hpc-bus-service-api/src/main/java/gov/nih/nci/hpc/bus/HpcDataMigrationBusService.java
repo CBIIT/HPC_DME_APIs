@@ -32,7 +32,7 @@ public interface HpcDataMigrationBusService {
 			throws HpcException;
 
 	/**
-	 * Migrate a cllection to another archive.
+	 * Migrate a collection to another archive.
 	 *
 	 * @param path             The collection path.
 	 * @param migrationRequest The migration request DTO.
@@ -64,9 +64,9 @@ public interface HpcDataMigrationBusService {
 	public void completeCollectionMigrationInProgress() throws HpcException;
 
 	/**
-	 * Restart data object migration tasks that are in progress.
+	 * Restart data object and collection migration tasks that are in progress.
 	 *
 	 * @throws HpcException on service failure.
 	 */
-	public void restartDataObjectMigrationTasks() throws HpcException;
+	public void restartDataMigrationTasks() throws HpcException;
 }
