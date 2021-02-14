@@ -20,6 +20,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
@@ -272,12 +273,15 @@ public interface HpcMetadataService {
 	 * @param sourceSize               (Optional) The data source size in bytes.
 	 * @param linkSourcePath           (Optional) linkSourcePath.
 	 * @param s3ArchiveConfigurationId (Optional) The S3 archive configuration ID.
+	 * @param deepArchiveStatus        (Optional) The deep archive status.
+	 * @param deepArchiveDate          (Optional) The date deep archive was requested.
 	 * @throws HpcException on service failure.
 	 */
 	public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
 			String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType, Calendar dataTransferStarted, Calendar dataTransferCompleted,
-			Long sourceSize, String linkSourcePath, String s3ArchiveConfigurationId) throws HpcException;
+			Long sourceSize, String linkSourcePath, String s3ArchiveConfigurationId,
+			HpcDeepArchiveStatus deepArchiveStatus, Calendar deepArchiveDate) throws HpcException;
 
 	/**
 	 * Update a data object's metadata.

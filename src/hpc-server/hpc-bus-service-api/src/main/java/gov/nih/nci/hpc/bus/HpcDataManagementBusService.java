@@ -470,4 +470,5 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcBulkMoveResponseDTO movePaths(HpcBulkMoveRequestDTO bulkMoveRequest) throws HpcException;
+
 }

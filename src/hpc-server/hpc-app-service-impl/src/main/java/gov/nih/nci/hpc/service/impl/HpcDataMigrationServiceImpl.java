@@ -23,8 +23,10 @@ import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
@@ -212,18 +214,21 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		if (result.equals(HpcDataMigrationResult.COMPLETED)) {
 			try {
 				// Add metadata to the object in the target S3 archive.
-				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+				HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 						dataObjectMigrationTask.getToS3ArchiveLocation(), HpcDataTransferType.S_3,
 						dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
 						dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId());
-
+				String checksum = objectMetadata.getChecksum();
+				HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
+				Calendar deepArchiveDate = deepArchiveStatus != null && deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
 				// Update the system metadata w/ the new S3 archive id and location after
 				// migration.
 				securityService.executeAsSystemAccount(Optional.empty(),
 						() -> metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath(),
 								dataObjectMigrationTask.getToS3ArchiveLocation(), null, checksum, null, null, null,
-								null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId()));
+								null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId(), 
+								deepArchiveStatus, deepArchiveDate));
 
 				// Delete the data object from the source S3 archive.
 				dataTransferService.deleteDataObject(dataObjectMigrationTask.getFromS3ArchiveLocation(),

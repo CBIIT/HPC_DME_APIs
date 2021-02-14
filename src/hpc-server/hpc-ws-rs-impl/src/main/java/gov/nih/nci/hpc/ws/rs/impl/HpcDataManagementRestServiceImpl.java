@@ -396,14 +396,14 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 		if (response
 				.getEntity() instanceof gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO) {
-			HpcBulkDataObjectRegistrationResponseDTO registrationResponse = toV1(
+		HpcBulkDataObjectRegistrationResponseDTO registrationResponse = toV1(
 					(gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO) response
 							.getEntity());
 
-			return !StringUtils.isEmpty(registrationResponse.getTaskId())
-					? createdResponse(registrationResponse.getTaskId(), registrationResponse)
-					: okResponse(registrationResponse, false);
-		}
+		return !StringUtils.isEmpty(registrationResponse.getTaskId())
+				? createdResponse(registrationResponse.getTaskId(), registrationResponse)
+				: okResponse(registrationResponse, false);
+	}
 
 		return response;
 	}
@@ -485,22 +485,22 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 	@Override
 	public Response getAllRegistrationSummary(Integer page, Boolean totalCount) {
-		gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO registrationSummary = null;
-		try {
-			registrationSummary = dataManagementBusService.getRegistrationSummary(page != null ? page : 1,
-					totalCount != null ? totalCount : false, true);
+	    gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO registrationSummary = null;
+	    try {
+	        registrationSummary = dataManagementBusService.getRegistrationSummary(page != null ? page : 1,
+	                totalCount != null ? totalCount : false, true);
 
-		} catch (HpcException e) {
-			return errorResponse(e);
-		}
+	    } catch (HpcException e) {
+	            return errorResponse(e);
+	    }
 
-		return okResponse(
-				registrationSummary.getActiveTasks().isEmpty() && registrationSummary.getCompletedTasks().isEmpty()
-						? null
-						: registrationSummary,
-				true);
+	    return okResponse(
+	            registrationSummary.getActiveTasks().isEmpty() && registrationSummary.getCompletedTasks().isEmpty()
+	                    ? null
+	                    : registrationSummary,
+	            true);
 	}
-
+	   
 	@Deprecated
 	@Override
 	public Response getDataObjectV1(String path, Boolean includeAcl) {
@@ -727,23 +727,23 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 						: downloadSummary,
 				true);
 	}
-
+	
 	@Override
-	public Response getAllDownloadSummary(Integer page, Boolean totalCount) {
-		HpcDownloadSummaryDTO downloadSummary = null;
-		try {
-			downloadSummary = dataManagementBusService.getDownloadSummary(page != null ? page : 1,
-					totalCount != null ? totalCount : false, true);
+    public Response getAllDownloadSummary(Integer page, Boolean totalCount) {
+        HpcDownloadSummaryDTO downloadSummary = null;
+        try {
+            downloadSummary = dataManagementBusService.getDownloadSummary(page != null ? page : 1,
+                    totalCount != null ? totalCount : false, true);
 
-		} catch (HpcException e) {
-			return errorResponse(e);
-		}
+        } catch (HpcException e) {
+            return errorResponse(e);
+        }
 
-		return okResponse(
-				downloadSummary.getActiveTasks().isEmpty() && downloadSummary.getCompletedTasks().isEmpty() ? null
-						: downloadSummary,
-				true);
-	}
+        return okResponse(
+                downloadSummary.getActiveTasks().isEmpty() && downloadSummary.getCompletedTasks().isEmpty() ? null
+                        : downloadSummary,
+                true);
+    }
 
 	@Override
 	public Response getDataManagementModels() {
@@ -1094,4 +1094,5 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 
 		return registrationSummary;
 	}
+
 }
