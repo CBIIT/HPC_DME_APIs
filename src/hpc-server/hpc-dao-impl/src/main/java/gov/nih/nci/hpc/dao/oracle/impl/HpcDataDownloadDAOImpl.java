@@ -71,12 +71,12 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "DATA_TRANSFER_TYPE = ?, DATA_TRANSFER_STATUS = ?, DOWNLOAD_FILE_PATH = ?, ARCHIVE_LOCATION_FILE_CONTAINER_ID = ?, ARCHIVE_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_ID = ?, DESTINATION_TYPE = ?, S3_ACCOUNT_ACCESS_KEY = ?, "
 			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_DRIVE_ACCESS_TOKEN = ?, "
-			+ "COMPLETION_EVENT = ?, PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ? "
+			+ "COMPLETION_EVENT = ?, PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ?, RESTORE_REQUESTED = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, CONFIGURATION_ID, S3_ARCHIVE_CONFIGURATION_ID, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, "
 			+ "DATA_TRANSFER_STATUS, DOWNLOAD_FILE_PATH, ARCHIVE_LOCATION_FILE_CONTAINER_ID, ARCHIVE_LOCATION_FILE_ID, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, S3_ACCOUNT_ACCESS_KEY, S3_ACCOUNT_SECRET_KEY, S3_ACCOUNT_REGION, S3_ACCOUNT_URL, "
-			+ "S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, GOOGLE_DRIVE_ACCESS_TOKEN, COMPLETION_EVENT, PERCENT_COMPLETE, DATA_SIZE, CREATED, PROCESSED, IN_PROCESS, PRIORITY) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED, GOOGLE_DRIVE_ACCESS_TOKEN, COMPLETION_EVENT, PERCENT_COMPLETE, DATA_SIZE, CREATED, PROCESSED, IN_PROCESS, PRIORITY, RESTORE_REQUESTED) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
@@ -96,6 +96,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASKS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK order by PRIORITY, CREATED";
 
+	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? ";
+	
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? "
 			+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
 
@@ -107,11 +109,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "when matched then update set USER_ID = ?, PATH = ?, DATA_TRANSFER_REQUEST_ID = ?, DATA_TRANSFER_TYPE = ?, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_ID = ?, DESTINATION_LOCATION_FILE_CONTAINER_NAME = ?, DESTINATION_LOCATION_FILE_ID = ?, "
 			+ "DESTINATION_TYPE = ?, RESULT = ?, TYPE = ?, MESSAGE = ?, COMPLETION_EVENT = ?, EFFECTIVE_TRANSFER_SPEED = ?, "
-			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ? "
+			+ "DATA_SIZE = ?, CREATED = ?, COMPLETED = ?, RESTORE_REQUESTED = ? "
 			+ "when not matched then insert (ID, USER_ID, PATH, DATA_TRANSFER_REQUEST_ID, DATA_TRANSFER_TYPE, DESTINATION_LOCATION_FILE_CONTAINER_ID, "
 			+ "DESTINATION_LOCATION_FILE_CONTAINER_NAME, DESTINATION_LOCATION_FILE_ID, DESTINATION_TYPE, RESULT, TYPE, MESSAGE, COMPLETION_EVENT, "
-			+ "EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED) "
-			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+			+ "EFFECTIVE_TRANSFER_SPEED, DATA_SIZE, CREATED, COMPLETED, RESTORE_REQUESTED) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 	private static final String UPDATE_DOWNLOAD_TASK_RESULT_ITEMS_SQL = "update HPC_DOWNLOAD_TASK_RESULT set ITEMS = ? where ID = ?";
 
@@ -221,6 +223,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		dataObjectDownloadTask.setPercentComplete(rs.getInt("PERCENT_COMPLETE"));
 		dataObjectDownloadTask.setSize(rs.getLong("DATA_SIZE"));
 		dataObjectDownloadTask.setInProcess(rs.getBoolean("IN_PROCESS"));
+		dataObjectDownloadTask.setRestoreRequested(rs.getBoolean("RESTORE_REQUESTED"));
 
 		String archiveLocationFileContainerId = rs.getString("ARCHIVE_LOCATION_FILE_CONTAINER_ID");
 		String archiveLocationFileId = rs.getString("ARCHIVE_LOCATION_FILE_ID");
@@ -327,6 +330,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 		Calendar completed = Calendar.getInstance();
 		completed.setTime(rs.getTimestamp("COMPLETED"));
 		downloadTaskResult.setCompleted(completed);
+		downloadTaskResult.setRestoreRequested(rs.getBoolean("RESTORE_REQUESTED"));
 
 		return downloadTaskResult;
 	};
@@ -489,6 +493,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
 					dataObjectDownloadTask.getProcessed(),
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
+					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getId(), dataObjectDownloadTask.getUserId(),
 					dataObjectDownloadTask.getPath(), dataObjectDownloadTask.getConfigurationId(),
 					dataObjectDownloadTask.getS3ArchiveConfigurationId(),
@@ -505,7 +510,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					dataObjectDownloadTask.getSize(), dataObjectDownloadTask.getCreated(),
 					dataObjectDownloadTask.getProcessed(),
 					Optional.ofNullable(dataObjectDownloadTask.getInProcess()).orElse(false),
-					this.getMaxDownloadTaskPriority(dataObjectDownloadTask.getConfigurationId()) + 1);
+					this.getMaxDownloadTaskPriority(dataObjectDownloadTask.getConfigurationId()) + 1,
+					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false));
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to upsert a data object download task: " + e.getMessage(),
@@ -599,6 +605,20 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByStatus(
+			HpcDataTransferDownloadStatus dataTransferStatus)
+			throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_ALL_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL, dataObjectDownloadTaskRowMapper,
+					dataTransferStatus.value());
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get data object download tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+	
+	@Override
 	public List<HpcDataObjectDownloadTask> getNextDataObjectDownloadTask(
 			HpcDataTransferDownloadStatus dataTransferStatus, HpcDataTransferType dataTransferType, Date processed)
 			throws HpcException {
@@ -666,14 +686,16 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
 					taskResult.getType().value(), taskResult.getMessage(), taskResult.getCompletionEvent(),
 					taskResult.getEffectiveTransferSpeed(), taskResult.getSize(), taskResult.getCreated(),
-					taskResult.getCompleted(), taskResult.getId(), taskResult.getUserId(), taskResult.getPath(),
+					taskResult.getCompleted(),
+					Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false), 
+					taskResult.getId(), taskResult.getUserId(), taskResult.getPath(),
 					taskResult.getDataTransferRequestId(), dataTransferType,
 					taskResult.getDestinationLocation().getFileContainerId(),
 					taskResult.getDestinationLocation().getFileContainerName(),
 					taskResult.getDestinationLocation().getFileId(), destinationType, taskResult.getResult().value(),
 					taskResult.getType().value(), taskResult.getMessage(), taskResult.getCompletionEvent(),
 					taskResult.getEffectiveTransferSpeed(), taskResult.getSize(), taskResult.getCreated(),
-					taskResult.getCompleted());
+					taskResult.getCompleted(), Optional.ofNullable(taskResult.getRestoreRequested()).orElse(false));
 
 			jdbcTemplate.update(UPDATE_DOWNLOAD_TASK_RESULT_ITEMS_SQL,
 					new Object[] { new SqlLobValue(toJSON(taskResult.getItems()), lobHandler), taskResult.getId() },
@@ -1055,6 +1077,9 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			if (downloadItem.getPercentComplete() != null) {
 				jsonDownloadItem.put("percentComplete", downloadItem.getPercentComplete());
 			}
+			if (downloadItem.getRestoreInProgress() != null) {
+				jsonDownloadItem.put("restoreInProgress", downloadItem.getRestoreInProgress());
+			}
 
 			jsonDownloadItems.add(jsonDownloadItem);
 		}
@@ -1138,6 +1163,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 				Object percentComplete = jsonDownloadItem.get("percentComplete");
 				if (percentComplete != null) {
 					downloadItem.setPercentComplete(Integer.valueOf(percentComplete.toString()));
+				}
+				
+				Object restoreInProgress = jsonDownloadItem.get("restoreInProgress");
+				if (restoreInProgress != null) {
+					downloadItem.setRestoreInProgress(restoreInProgress.toString().equals("true"));
 				}
 
 				downloadItems.add(downloadItem);

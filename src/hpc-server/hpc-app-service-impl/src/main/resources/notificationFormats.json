@@ -472,6 +472,64 @@
 					"index": "1"
 				}
 			]
+		},
+		{
+			"eventType": "RESTORE_REQUEST_COMPLETED",
+			"subjectFormat": "DME Restore Request Completed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "This file is now available for download.<br/>Source path: %1$s<br/>Task ID: %2$s<br/><br/><a href=\"%3$s/download?type=datafile&downloadFilePath=%4$s\">Download from DME</a>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "3"
+				}
+			]
+		},
+		{
+			"eventType": "RESTORE_REQUEST_FAILED",
+			"subjectFormat": "DME Restore Request Failed at %1$s",
+			"subjectArguments": [
+				{
+					"payloadEntryAttribute": "DATA_TRANSFER_COMPLETED",
+					"index": "0"
+				}
+			],
+			"textFormat": "Restore request failed.<br/>Source path: %1$s<br/>Task ID: %2$s<br/>Reason for failure: %3$s<br/>",
+			"textArguments": [
+				{
+					"payloadEntryAttribute": "DATA_OBJECT_PATH",
+					"index": "0"
+				},
+				{
+					"payloadEntryAttribute": "DOWNLOAD_TASK_ID",
+					"index": "1"
+				},
+				{
+					"payloadEntryAttribute": "ERROR_MESSAGE",
+					"index": "2"
+				},
+				{
+					"payloadEntryAttribute": "BASE_UI_URL",
+					"index": "3"
+				}
+			]
 		}
 	]
 }

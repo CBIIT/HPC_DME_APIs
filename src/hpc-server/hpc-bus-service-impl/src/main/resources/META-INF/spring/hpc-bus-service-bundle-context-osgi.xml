@@ -48,6 +48,8 @@
 		          interface="gov.nih.nci.hpc.bus.HpcReportBusService" />
 	<osgi:service ref="hpcDataMigrationBusService"
 		          interface="gov.nih.nci.hpc.bus.HpcDataMigrationBusService" />
+	<osgi:service ref="hpcDataTieringBusService"
+		          interface="gov.nih.nci.hpc.bus.HpcDataTieringBusService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcSecurityService"
@@ -76,5 +78,7 @@
 		            interface="gov.nih.nci.hpc.service.HpcCatalogService" />
 	<osgi:reference id="hpcDataMigrationService"
 		            interface="gov.nih.nci.hpc.service.HpcDataMigrationService" />
+	<osgi:reference id="hpcDataTieringService"
+		            interface="gov.nih.nci.hpc.service.HpcDataTieringService" />
 
 </beans>
