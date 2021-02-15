@@ -219,15 +219,17 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 						dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
 						dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId());
+
+				// Update the system metadata w/ the new S3 archive id, location and
+				// deep-archive status/date after migration.
 				String checksum = objectMetadata.getChecksum();
 				HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
-				Calendar deepArchiveDate = deepArchiveStatus != null && deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
-				// Update the system metadata w/ the new S3 archive id and location after
-				// migration.
+				Calendar deepArchiveDate = deepArchiveStatus != null
+						&& deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
 				securityService.executeAsSystemAccount(Optional.empty(),
 						() -> metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath(),
 								dataObjectMigrationTask.getToS3ArchiveLocation(), null, checksum, null, null, null,
-								null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId(), 
+								null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
 								deepArchiveStatus, deepArchiveDate));
 
 				// Delete the data object from the source S3 archive.
