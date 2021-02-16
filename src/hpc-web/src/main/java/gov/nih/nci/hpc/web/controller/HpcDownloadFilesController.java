@@ -316,6 +316,7 @@ public class HpcDownloadFilesController extends AbstractHpcController {
 					.downloadFiles(authToken, downloadServiceURL, dto, sslCertPath, sslCertPassword);
 				if (downloadDTO != null) {
 					String taskType = downloadType.equals("datafiles") ? HpcDownloadTaskType.DATA_OBJECT_LIST.name(): HpcDownloadTaskType.COLLECTION_LIST.name();
+					result.setCode("success");
 					result.setMessage("Download request successful. Task Id: <a href='downloadtask?type="+ taskType +"&taskId=" + downloadDTO.getTaskId()+"'>"+downloadDTO.getTaskId()+"</a>");
 				}
 				return result;
