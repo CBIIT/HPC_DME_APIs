@@ -690,7 +690,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		HpcFileLocation sourceLocation = null;
 
 		if (s3UploadSource != null) {
-			// Upload by streaming from AWS S3.
+			// Upload by streaming from AWS or S3 Provider.
 			uploadMethod = HpcDataTransferUploadMethod.S_3;
 			sourceLocation = s3UploadSource.getSourceLocation();
 
@@ -742,8 +742,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				// Attach a progress listener.
 				s3Upload.addProgressListener(new HpcS3ProgressListener(progressListener, sourceDestinationLogMessage));
 
-				logger.info("S3 upload AWS->{} [{}] started. Source size - {} bytes. Read limit - {}",
-						s3Connection.getS3Provider(authenticatedToken).toString(), sourceDestinationLogMessage, size,
+				logger.info("S3 upload AWS/S3 Provider->{} [{}] started. Source size - {} bytes. Read limit - {}",
+						s3Connection.getS3Provider(authenticatedToken), sourceDestinationLogMessage, size,
 						request.getRequestClientOptions().getReadLimit());
 
 				// Wait for the result. This ensures the input stream to the URL remains opened
