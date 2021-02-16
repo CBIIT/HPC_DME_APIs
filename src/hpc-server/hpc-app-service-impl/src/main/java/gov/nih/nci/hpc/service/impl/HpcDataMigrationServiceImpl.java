@@ -131,8 +131,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void migrateDataObject(HpcDataMigrationTask dataObjectMigrationTask) throws HpcException {
-		if (dataObjectMigrationTask.getFromS3ArchiveConfigurationId()
-				.equals(dataObjectMigrationTask.getToS3ArchiveConfigurationId())) {
+		if (dataObjectMigrationTask.getToS3ArchiveConfigurationId()
+				.equals(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
 			// Migration not needed.
 			completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.IGNORED, null);
 			return;
@@ -143,6 +143,10 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		HpcDataTransferConfiguration fromS3ArchiveDataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getFromS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
+		if (StringUtils.isEmpty(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
+			dataObjectMigrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveDataTransferConfiguration.getId());
+		}
+
 		HpcDataTransferConfiguration toS3ArchiveDataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getToS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
