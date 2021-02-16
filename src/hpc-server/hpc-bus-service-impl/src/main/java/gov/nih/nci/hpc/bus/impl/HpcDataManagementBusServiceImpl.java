@@ -1274,7 +1274,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			
 			String restorationStatus = objectMetadata.getRestorationStatus();
 			
-			if (restorationStatus != null && !restorationStatus.equals("success")) {
+			if (objectMetadata.getDeepArchiveStatus() != null && restorationStatus != null && !restorationStatus.equals("success")) {
 				throw new HpcException("Object is in deep archived state. Download request URL cannot be generated.",
 						HpcRequestRejectReason.FILE_NOT_FOUND);
 			}	
