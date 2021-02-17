@@ -238,7 +238,7 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
 		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
-			throw new HpcException("Migration request is not supported links", HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Migration request is not supported for soft-links", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Migration supported only from S3 archive.
