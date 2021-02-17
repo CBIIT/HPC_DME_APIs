@@ -108,6 +108,12 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 
+		// Validate links.
+		if(metadata.getLinkSourcePath() != null && !metadata.getLinkSourcePath().isEmpty()) {
+			throw new HpcException("This is a link to a data object " + path,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		
 		// Validate the file is archived.
 		HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
 		if (dataTransferStatus == null) {
@@ -219,6 +225,11 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 				// Get the System generated metadata.
 				HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
 				
+				// Validate links.
+				if(metadata.getLinkSourcePath() != null && !metadata.getLinkSourcePath().isEmpty()) {
+					throw new HpcException("This is a link to a data object " + path,
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
 				// Validate the file is archived.
 				HpcDataTransferUploadStatus dataTransferStatus = metadata.getDataTransferStatus();
 				if (dataTransferStatus == null) {
@@ -318,6 +329,22 @@ public class HpcDataTieringBusServiceImpl implements HpcDataTieringBusService {
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
 			// Get the System generated metadata.
 			HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(dataObjectEntry.getPath());
+			// Check if this object is a link.
+			if(metadata.getLinkSourcePath() != null && !metadata.getLinkSourcePath().isEmpty()) {
+				throw new HpcException("Collection contains a link to data object " + dataObjectEntry.getPath(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			// Check if it is in archived state.
+			if (metadata.getDataTransferStatus() == null) {
+				throw new HpcException("Collection contains object with unknown upload data transfer status: "
+						+ dataObjectEntry.getPath(), HpcErrorType.UNEXPECTED_ERROR);
+			}
+			if (!metadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+				throw new HpcException(
+						"Collection contains object not in archived state. It is in "
+								+ metadata.getDataTransferStatus().value() + " state" + dataObjectEntry.getPath(),
+						HpcRequestRejectReason.FILE_NOT_ARCHIVED);
+			}
 			// Check if any data objects archived where tiering is not supported.
 			if (dataTieringService.isTieringSupported(metadata.getConfigurationId(),
 					metadata.getS3ArchiveConfigurationId(), HpcDataTransferType.S_3)) {
