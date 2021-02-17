@@ -84,7 +84,7 @@ public class HpcDataMigrationProgressListener implements HpcDataTransferProgress
 				dataObjectMigrationTask.getId());
 		try {
 			dataMigrationService.completeDataObjectMigrationTask(dataObjectMigrationTask,
-					HpcDataMigrationResult.FAILED, null);
+					HpcDataMigrationResult.FAILED, message);
 
 		} catch (HpcException e) {
 			logger.error("Failed to complete a migration task for {} [task-id: {}]", dataObjectMigrationTask.getPath(),
