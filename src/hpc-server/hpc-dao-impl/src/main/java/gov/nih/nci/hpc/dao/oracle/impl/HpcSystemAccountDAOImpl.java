@@ -36,7 +36,7 @@ public class HpcSystemAccountDAOImpl implements HpcSystemAccountDAO {
 
 	// SQL Queries.
 	private static final String UPSERT_SQL = "insert into HPC_SYSTEM_ACCOUNT ( "
-			+ "USERNAME, PASSWORD, SYSTEM, DATA_TRANSFER_TYPE, CLASSIFIER) values (?, ?, ?, ?, ?)";
+			+ "ID, USERNAME, PASSWORD, SYSTEM, DATA_TRANSFER_TYPE, CLASSIFIER) values (HPC_SYSTEM_ACCOUNT_SEQ.nextval, ?, ?, ?, ?, ?)";
 
 	private static final String UPDATE_SQL = "update HPC_SYSTEM_ACCOUNT set USERNAME = ?, PASSWORD = ?, DATA_TRANSFER_TYPE = ?, CLASSIFIER = ? where SYSTEM = ?";
 
