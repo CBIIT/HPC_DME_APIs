@@ -222,9 +222,10 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Migration request is not empty.
-		// 2. Data Object exists.
-		// 3. Migration is supported only from S3 archive to S3 Archive.
-		// 4. Data Object is archived (i.e. registration completed).
+		// 3. Data Object exists.
+		// 4. Migration is not supported for links.
+		// 5. Migration is supported only from S3 archive to S3 Archive.
+		// 6. Data Object is archived (i.e. registration completed).
 
 		validateMigrationRequest(path, migrationRequest);
 
@@ -235,6 +236,10 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
 
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+
+		if (!StringUtils.isEmpty(metadata.getLinkSourcePath())) {
+			throw new HpcException("Migration request is not supported links", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		// Migration supported only from S3 archive.
 		if (metadata.getDataTransferType() == null || !metadata.getDataTransferType().equals(HpcDataTransferType.S_3)) {

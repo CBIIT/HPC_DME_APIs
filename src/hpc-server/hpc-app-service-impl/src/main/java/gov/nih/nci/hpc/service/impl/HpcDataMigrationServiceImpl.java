@@ -151,7 +151,7 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 				.getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getToS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
 
-		// Get the data transfer system accounts to access both both source and target
+		// Get the data transfer system accounts to access both source and target
 		// S3 archives in
 		// this migration task.
 		HpcIntegratedSystemAccount fromS3ArchiveDataTransferSystemAccount = systemAccountLocator
@@ -242,9 +242,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 						dataObjectMigrationTask.getFromS3ArchiveConfigurationId());
 
 			} catch (HpcException e) {
-				message = "Failed to cleanup data migration for task: " + dataObjectMigrationTask.getId() + " ["
-						+ e.getMessage() + " ]";
-				logger.error(message);
+				message = "Failed to complete data migration for task: " + dataObjectMigrationTask.getId() + " ["
+						+ e.getMessage() + " ] - " + dataObjectMigrationTask.getPath();
+				logger.error(message, e);
 				result = HpcDataMigrationResult.FAILED;
 			}
 		}
