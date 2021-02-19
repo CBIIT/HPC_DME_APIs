@@ -27,6 +27,7 @@ import gov.nih.nci.hpc.cli.download.HPCBatchCollectionDownload;
 import gov.nih.nci.hpc.cli.globus.HPCCmdRegisterGlobusFile;
 import gov.nih.nci.hpc.cli.local.HPCBatchLocalfile;
 import gov.nih.nci.hpc.cli.util.Constants;
+import gov.nih.nci.hpc.cli.util.HpcCmdException;
 import gov.nih.nci.hpc.cli.util.HpcConfigProperties;
 
 @Component
@@ -269,7 +270,10 @@ public class HPCCommands implements CommandMarker {
 		criteriaMap.put("checksum", checksum);
 		criteriaMap.put("threads", threads);
 		batchLocalFiles.setCriteria("registerFromFilePathS3", criteriaMap);
-		return batchLocalFiles.process(null);
+		String returnCode = batchLocalFiles.process(null);
+		if(!returnCode.equals(Constants.CLI_SUCCESS))
+			throw new HpcCmdException("Failure: exit with return code 1");
+		return returnCode;
 	}
 	
 	@CliCommand(value = "putCollections", help = "Batch upload Collections to HPC Archive. Usage: putCollections --source <file path>")
