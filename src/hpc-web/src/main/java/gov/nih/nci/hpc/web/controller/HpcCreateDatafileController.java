@@ -16,6 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -29,9 +31,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataHierarchy;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementModelDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataManagementRulesDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.web.HpcWebException;
 import gov.nih.nci.hpc.web.model.HpcDatafileModel;
@@ -63,6 +67,9 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 	private String bulkRegistrationURL;
 	@Value("${dme.archive.naming.forbidden.chararacters}")
 	private String forbiddenChars;
+	
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	/**
 	 * Get selected collection details from its path
@@ -119,43 +126,49 @@ public class HpcCreateDatafileController extends HpcCreateCollectionDataFileCont
 			}
 
 			String basePath = null;
-			if (parent != null)
+			if (parent != null) {
 				basePath = HpcClientUtil.getBasePath(authToken, collectionServiceURL, parent, sslCertPath,
 						sslCertPassword, modelDTO);
-			else
+			} else {
 				basePath = HpcClientUtil.getBasePath(request);
-			// User Session validation
-
-			if (basePath == null)
+			}
+			if (basePath == null) {
 				basePath = (String) session.getAttribute("basePathSelected");
-			else
+			} else {
 				session.setAttribute("basePathSelected", basePath);
+			}
 
-			if (parent == null || basePath == null)
+			if (parent == null || basePath == null) {
 				populateBasePaths(request, session, model, path);
-			else
+			} else {
 				setDatafilePath(model, request, parent);
+			}
+			
 			if (parent != null && !parent.isEmpty())
 				checkParent(parent, session);
 
 			String collectionType = getParentCollectionType(request, session);
-
+			HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
+			if (basePathRules != null) {
+				HpcDataHierarchy dataHierarchy = basePathRules.getDataHierarchy();
+				if(!isDataObjectContainer(collectionType, dataHierarchy)) {
+					throw new HpcWebException("Adding a data file is not allowed under collection type " + collectionType);
+				}
+			}
 			populateFormAttributes(request, session, model, basePath,
 					collectionType, false, true);
 
-			// setGlobusParameters(model, request, session, path, parent,
-			// source);
 			if (parent == null || parent.isEmpty())
 				populateCollectionTypes(session, model, basePath, parent);
 
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed to initialize add data file: " + e.getMessage());
+			logger.error("Failed to register data file: " + e.getMessage());
+			model.addAttribute("error", "Failed to register data file: " + e.getMessage());
 			model.addAttribute("create", false);
-			e.printStackTrace();
 		}
 		model.addAttribute("hpcDatafile", new HpcDatafileModel());
 		model.addAttribute("serverURL", serverURL);
-    model.addAttribute("invalidCharacters4PathName", forbiddenChars);
+		model.addAttribute("invalidCharacters4PathName", forbiddenChars);
 		return "adddatafile";
 	}
 
