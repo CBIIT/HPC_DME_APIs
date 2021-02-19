@@ -683,7 +683,7 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		return types;
 	}
 	
-	private boolean isDataObjectContainer(String collectionType, HpcDataHierarchy dataHierarchy) {
+	protected boolean isDataObjectContainer(String collectionType, HpcDataHierarchy dataHierarchy) {
 		if (dataHierarchy == null)
 			return true;
 		if (dataHierarchy.getCollectionType().equals(collectionType))
@@ -712,11 +712,10 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		HpcDataManagementRulesDTO basePathRules = HpcClientUtil.getBasePathManagementRules(modelDTO, basePath);
 		if (basePathRules != null) {
 			HpcDataHierarchy dataHierarchy = basePathRules.getDataHierarchy();
-			if(dataHierarchy != null)
+			if(dataHierarchy != null) {
 				model.addAttribute("hasHierarchy", true);
+			}
 			if (datafile) {
-				if(!refresh && !isDataObjectContainer(collectionType, dataHierarchy))
-					throw new HpcWebException("Adding a data file is not allowed under collection type: " + collectionType);
 				rules = basePathRules.getDataObjectMetadataValidationRules();
 			}
 			else
@@ -726,8 +725,6 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 		HpcCollectionDTO collectionDTO = (HpcCollectionDTO) session.getAttribute("parentCollection");
 		List<HpcMetadataAttrEntry> cachedEntries = (List<HpcMetadataAttrEntry>) session.getAttribute("metadataEntries");
 		List<HpcMetadataAttrEntry> cachedUserEntries = (List<HpcMetadataAttrEntry>) session.getAttribute("userMetadataEntries");
-		// if (collectionType == null)
-		// collectionType = "Folder";
 
 		// For each collection type, get required attributes
 		// Build list as type1:attribute1, type1:attribute2, type2:attribute2,
@@ -752,10 +749,11 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 					entry.setAttrValue(
 							getFormAttributeValue(request, "zAttrStr_" + rule.getAttribute(), cachedEntries, "zAttrStr_"));
 					if (entry.getAttrValue() == null) {
-						if (!refresh)
+						if (!refresh) {
 							entry.setAttrValue(getCollectionAttrValue(collectionDTO, rule.getAttribute()));
-						else
+						} else {
 							entry.setAttrValue(rule.getDefaultValue());
+						}
 					}
 					if (rule.getValidValues() != null && !rule.getValidValues().isEmpty()) {
 						List<String> validValues = new ArrayList<String>();
@@ -788,15 +786,16 @@ public abstract class HpcCreateCollectionDataFileController extends AbstractHpcC
 			}
 		}
 
-		if (!attributeNames.isEmpty())
+		if (!attributeNames.isEmpty()) {
 			model.addAttribute("attributeNames", attributeNames);
-		if (collectionType != null && !collectionType.isEmpty())
+		}
+		if (collectionType != null && !collectionType.isEmpty()) {
 			model.addAttribute("collection_type", collectionType);
-		else
+		}
+		else {
 			model.addAttribute("collection_type", "_select_null");
+		}
 
-		// if (!path.isEmpty())
-		// model.addAttribute("collectionPath", path);
 		model.addAttribute("basePath", basePath);
 		
 		session.setAttribute("metadataEntries", metadataEntries);
