@@ -293,7 +293,10 @@ public class HPCBatchLocalFolderExecutor {
     if (executorService != null) {
       executorService.shutdown();
     }
-    return Constants.CLI_SUCCESS;
+    if(success)
+    	return Constants.CLI_SUCCESS;
+    
+    return Constants.CLI_6;
   }
 
   private boolean generateJobReport(List<JobReport> jobReports, String returnCode) {
