@@ -1690,9 +1690,15 @@ function dm_register_directory {
         exit 1 
     fi
 
-    local src_path=$(readlink -f "$1")
+    local src_path="$1"
     local dst_path="$2"
 
+	case "$(uname -s)" in
+	    Linux|CYGWIN*|MINGW32*|MSYS*)
+	      src_path=$(readlink -f "$1")
+	    ;;
+	esac
+	
     #Check if the jar exists:
     local jar_file=$(get_jar)
     local jar_path=$HPC_DM_UTILS/hpc-client/$jar_file
