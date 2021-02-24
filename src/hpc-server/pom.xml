@@ -277,6 +277,11 @@
 				<version>${amazon-aws.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>aws-java-sdk-secretsmanager</artifactId>
+				<version>${amazon-aws.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-core</artifactId>
 				<version>${jargon.version}</version>
