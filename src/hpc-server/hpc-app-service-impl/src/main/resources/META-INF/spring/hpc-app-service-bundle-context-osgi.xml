@@ -29,6 +29,9 @@
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriodSso">120</prop>
 		<prop key="hpc.service.security.dataManagementAccountExpirationPeriod">480</prop>
+		<prop key="hpc.service.systemAccount.aws.secretName">ncif-hpcdm-svc</prop>
+		<prop key="hpc.service.systemAccount.aws.region">us-east-1</prop>
+		<prop key="hpc.service.systemAccount.aws.useSecretsManager">false</prop>
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
 		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
 		<prop key="hpc.service.notification.mail.port">25</prop>

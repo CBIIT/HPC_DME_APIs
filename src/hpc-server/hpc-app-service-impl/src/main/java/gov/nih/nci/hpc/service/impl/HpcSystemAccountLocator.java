@@ -8,16 +8,30 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.secretsmanager.AWSSecretsManager;
+import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
+import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
+import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
+
+
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 import gov.nih.nci.hpc.dao.HpcSystemAccountDAO;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
@@ -120,10 +134,21 @@ public class HpcSystemAccountLocator {
   //      new ConcurrentHashMap<>();
 
   // System Accounts DAO
+
   @Autowired HpcSystemAccountDAO systemAccountDAO = null;
 
   @Autowired HpcDataManagementConfigurationLocator dataMgmtConfigLocator = null;
 
+  //The IAM user in the Secrets Manager
+  @Value("${hpc.service.systemAccount.aws.secretName}")
+  private String secretName = null;
+
+  //The region of the user
+  @Value("${hpc.service.systemAccount.aws.region}")
+  private String region = null;
+
+  @Value("${hpc.service.systemAccount.aws.useSecretsManager}")
+  private boolean useSecretsManager = false;
   //---------------------------------------------------------------------//
   // Constructors
   //---------------------------------------------------------------------//
@@ -141,6 +166,9 @@ public class HpcSystemAccountLocator {
    * @throws HpcException on service failure.
    */
   public void reload() throws HpcException {
+	if(useSecretsManager) {
+		refreshAwsSecret();
+	}
     initSystemAccountsData();
     initDataTransferAccountsData();
     this.dataMgmtConfigLocator.reload();
@@ -169,6 +197,7 @@ public class HpcSystemAccountLocator {
 
     return retSysAcct;
   }
+
 
   /**
    * Get system account by data transfer type and DOC classifier
@@ -315,6 +344,69 @@ public class HpcSystemAccountLocator {
     }
   }
 
+
+  private void refreshAwsSecret() throws HpcException {
+	  String secret = null;
+	  HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+
+	  //get the current credentials from the HPC System Account table
+	  final List<HpcIntegratedSystemAccount> accounts = systemAccountDAO.getSystemAccount(HpcIntegratedSystem.AWS);
+      if (accounts == null || accounts.isEmpty()) {
+	      String message = "Error retrieving secret from AWS system account ";
+	      logger.error(message);
+	      throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
+      }
+      HpcIntegratedSystemAccount systemAccount = accounts.get(0);
+
+      //Get the new credentials from the AWS Secrets Manager
+
+	  //Create the credential provider based on the configured credentials.
+	  BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(systemAccount.getUsername(), systemAccount.getPassword());
+	      AWSStaticCredentialsProvider awsCredentialsProvider = new AWSStaticCredentialsProvider(s3ArchiveCredentials);
+
+      // Create a Secrets Manager client
+	  AWSSecretsManager client  = AWSSecretsManagerClientBuilder.standard()
+	      .withRegion(region).withCredentials(awsCredentialsProvider).build();
+
+	  try {
+	      GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest()
+                   .withSecretId(secretName);
+		  GetSecretValueResult getSecretValueResult = client.getSecretValue(getSecretValueRequest);
+	      // Decrypt the secret using the associated KMS CMK,
+		  //depending on whether the secret is a string or binary
+		  if (getSecretValueResult.getSecretString() != null) {
+		      secret = getSecretValueResult.getSecretString();
+		  }
+		  else {
+		      secret = new String(Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
+		  }
+	  } catch (Exception e) {
+	      String message = "Error retrieving secret from AWS Secrets Manager: " + e.getMessage();
+	      logger.error(message, e.getStackTrace());
+	      throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
+	  }
+
+	  try {
+		  // extract the AccessKeyID and SecretAccessKey
+	      Object obj = new JSONParser().parse(secret);
+          JSONObject jsonObj = (JSONObject) obj;
+          account.setUsername((String) jsonObj.get("AccessKeyId"));
+          account.setPassword((String) jsonObj.get("SecretAccessKey"));
+	  } catch (Exception e){
+	      String message = "Error extracting credentials from secret for AWS S3";
+	      logger.error(message + ": " + secret, e.getStackTrace());
+	      throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
+	  }
+
+      //Store the latest credentials if different from current one
+      if(!systemAccount.getUsername().contentEquals(account.getUsername())) {
+          //There is a different key now, so update the existing one
+          account.setIntegratedSystem(HpcIntegratedSystem.AWS);
+          systemAccountDAO.update(account, null, null);
+      }
+  }
+
+
   // Logic for selecting which "pool" of Globus app accounts to utilize based on HPC Data Mgmt
   // Configuration ID
   private List<PooledSystemAccountWrapper> accessProperPool(String hpcDataMgmtConfigId)
@@ -328,6 +420,7 @@ public class HpcSystemAccountLocator {
         multiDataTransferAccounts.get(HpcDataTransferType.GLOBUS);
     final HpcDataManagementConfiguration dmConfig =
         this.dataMgmtConfigLocator.get(hpcDataMgmtConfigId);
+
     if (null == dmConfig) {
       logger.info(
           String.format(
