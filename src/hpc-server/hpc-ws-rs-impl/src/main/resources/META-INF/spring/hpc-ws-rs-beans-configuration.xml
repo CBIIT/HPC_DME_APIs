@@ -151,6 +151,8 @@
 		<entry key="http://hpc.nci.nih.gov/dto/notification" value="gov.nih.nci.hpc.dto.notification" />
 		<entry key="http://hpc.nci.nih.gov/dto/report" value="gov.nih.nci.hpc.dto.report" />
 		<entry key="http://hpc.nci.nih.gov/dto/catalog" value="gov.nih.nci.hpc.dto.catalog" />
+		<entry key="http://hpc.nci.nih.gov/dto/datamigration" value="gov.nih.nci.hpc.dto.datamigration" />
+		
 		<entry key="http://hpc.nci.nih.gov/domain/error" value="gov.nih.nci.hpc.domain.error" />
 		<entry key="http://hpc.nci.nih.gov/domain/metadata" value="gov.nih.nci.hpc.domain.metadata" />
 		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
@@ -159,6 +161,7 @@
 		<entry key="http://hpc.nci.nih.gov/domain/report" value="gov.nih.nci.hpc.domain.report" />
 		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
 		<entry key="http://hpc.nci.nih.gov/domain/catalog" value="gov.nih.nci.hpc.domain.catalog" />
+		<entry key="http://hpc.nci.nih.gov/domain/datamigration" value="gov.nih.nci.hpc.domain.datamigration" />
 	</util:map>
 
 	<!-- Multipart Provider -->
@@ -324,46 +327,12 @@
 
 	<!-- JAX-RS Service Beans -->
 	<bean id="hpcSecurityRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcSecurityRestServiceImpl" />
-	<bean id="hpcDataManagementRestService"
-		class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
+	<bean id="hpcDataManagementRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataManagementRestServiceImpl" />
 	<bean id="hpcDataSearchRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataSearchRestServiceImpl" />
 	<bean id="hpcDataBrowseRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataBrowseRestServiceImpl" />
-	<bean id="hpcNotificationRestService"
-		class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
+	<bean id="hpcNotificationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcNotificationRestServiceImpl" />
 	<bean id="hpcReportRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcReportRestServiceImpl" />
-
-	<!-- CXF JAX-RS Server Config -->
-	<jaxrs:server id="hpc-server" address="${hpc.ws.rs.url}"
-		bus="cxf">
-		<jaxrs:serviceBeans>
-			<ref bean="hpcSecurityRestService" />
-			<ref bean="hpcDataManagementRestService" />
-			<ref bean="hpcDataSearchRestService" />
-			<ref bean="hpcDataBrowseRestService" />
-			<ref bean="hpcNotificationRestService" />
-			<ref bean="hpcReportRestService" />
-		</jaxrs:serviceBeans>
-		<jaxrs:providers>
-			<ref bean="jaxbProvider" />
-			<ref bean="jsonProvider" />
-			<ref bean="hpcMultipartProvider" />
-			<ref bean="hpcAuthenticationExceptionMapper" />
-			<ref bean="hpcAuthorizationExceptionMapper" />
-			<ref bean="hpcWebApplicationExceptionMapper" />
-		</jaxrs:providers>
-		<jaxrs:inInterceptors>
-			<ref bean="hpcProfileInInterceptor" />
-			<ref bean="hpcAuthenticationInterceptor" />
-			<ref bean="hpcIPAddressRestrictionInterceptor" />
-			<ref bean="hpcAuthorizationInterceptor" />
-		</jaxrs:inInterceptors>
-		<jaxrs:outInterceptors>
-			<ref bean="hpcAPIVersionInterceptor" />
-			<ref bean="hpcCleanupInterceptor" />
-			<ref bean="hpcCleanupFaultInterceptor" />
-			<ref bean="hpcProfileOutInterceptor" />
-		</jaxrs:outInterceptors>
-	</jaxrs:server>
+	<bean id="hpcDataMigrationRestService" class="gov.nih.nci.hpc.ws.rs.impl.HpcDataMigrationRestServiceImpl" />
 
 	<!-- CXF JAX-RS Secured Server Config -->
 	<jaxrs:server id="hpc-secured-server" address="${hpc.ws.rs.secured-url}"
@@ -375,6 +344,7 @@
 			<ref bean="hpcDataBrowseRestService" />
 			<ref bean="hpcNotificationRestService" />
 			<ref bean="hpcReportRestService" />
+			<ref bean="hpcDataMigrationRestService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="jaxbProvider" />

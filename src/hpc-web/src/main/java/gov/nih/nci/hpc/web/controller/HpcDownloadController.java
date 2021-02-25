@@ -249,6 +249,10 @@ public class HpcDownloadController extends AbstractHpcController {
         .getDestinationPath()).encode().toUri().toURL().toExternalForm();
 			HpcDownloadRequestDTO dto = new HpcDownloadRequestDTO();
 			if (downloadFile.getSearchType() != null && downloadFile.getSearchType().equals("async")) {
+				if(isPublicEndpoint(downloadFile.getEndPointName()) != null) {
+					result.setMessage(isPublicEndpoint(downloadFile.getEndPointName()));
+					return result;
+				}
 				HpcGlobusDownloadDestination destination = new HpcGlobusDownloadDestination();
 				HpcFileLocation location = new HpcFileLocation();
 				location.setFileContainerId(downloadFile.getEndPointName());
