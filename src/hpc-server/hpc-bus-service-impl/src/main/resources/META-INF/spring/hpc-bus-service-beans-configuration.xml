@@ -31,6 +31,7 @@
 	<bean id="hpcSystemBusService" class="gov.nih.nci.hpc.bus.impl.HpcSystemBusServiceImpl" />
 	<bean id="hpcNotificationBusService" class="gov.nih.nci.hpc.bus.impl.HpcNotificationBusServiceImpl" />
 	<bean id="hpcReportBusService" class="gov.nih.nci.hpc.bus.impl.HpcReportBusServiceImpl" />
+	<bean id="hpcDataMigrationBusService" class="gov.nih.nci.hpc.bus.impl.HpcDataMigrationBusServiceImpl" />
 
 	<!-- Business Services Aspects -->
 	<bean id="hpcBusServiceAspect" class="gov.nih.nci.hpc.bus.aspect.HpcBusServiceAspect" />

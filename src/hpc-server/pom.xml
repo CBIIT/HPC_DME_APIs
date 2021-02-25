@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc</artifactId>
-		<version>2.4.1</version>
+		<version>2.5.0</version>
 	</parent>
 	<artifactId>hpc-server</artifactId>
 	<packaging>pom</packaging>
@@ -59,6 +59,7 @@
 		<module>hpc-bus-service-api</module>
 		<module>hpc-bus-service-impl</module>
 		<module>hpc-scheduler</module>
+		<module>hpc-scheduler-migration</module>
 		<module>hpc-ws-rs-api</module>
 		<module>hpc-ws-rs-impl</module>
 		<module>hpc-ws-rs-test</module>
