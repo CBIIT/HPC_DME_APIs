@@ -52,5 +52,6 @@
 	<osgi:service ref="hpcDataManagementConfigurationDAO" interface="gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO" />
 	<osgi:service ref="hpcCatalogDAO" interface="gov.nih.nci.hpc.dao.HpcCatalogDAO" />
 	<osgi:service ref="hpcDataMigrationDAO" interface="gov.nih.nci.hpc.dao.HpcDataMigrationDAO" />
-
+	<osgi:service ref="hpcDataTieringDAO" interface="gov.nih.nci.hpc.dao.HpcDataTieringDAO" />
+	
 </beans>

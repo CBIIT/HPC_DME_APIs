@@ -31,6 +31,8 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryAttributeMatch;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryLevelFilter;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataQueryOperator;
 import gov.nih.nci.hpc.domain.metadata.HpcNamedCompoundMetadataQuery;
+import gov.nih.nci.hpc.domain.model.HpcBulkTierItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkTierRequest;
 import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.notification.HpcNotificationSubscription;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
@@ -135,6 +137,28 @@ public class HpcDomainValidator {
 		}
 		return true;
 	}
+	
+	/**
+	 * Validate a tiering request item.
+	 *
+	 * @param bulkTierRequest the object to be validated.
+	 * @return true if valid, false otherwise.
+	 */
+	public static boolean isValidTierItems(HpcBulkTierRequest bulkTierRequest) {
+		if (bulkTierRequest.getItems() == null || bulkTierRequest.getItems().isEmpty()) {
+			logger.info("Empty tiering items");
+			return false;
+		}
+		for (HpcBulkTierItem item : bulkTierRequest.getItems()) {
+			if (StringUtils.isEmpty(item.getConfigurationId())
+					|| StringUtils.isEmpty(item.getPath())) {
+				logger.info("Invalid tiering item: {}", item.getPath());
+				return false;
+			}
+		}
+		return true;
+	}
+	
 
 	/**
 	 * Validate a S3 account.
@@ -177,17 +201,32 @@ public class HpcDomainValidator {
 	 * @param editMetadata true if the metadata is being edited. This is to enable delete.
 	 * @return true if valid, false otherwise.
 	 */
-	public static boolean isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries, boolean editMetadata) {
+	public static HpcDomainValidationResult isValidMetadataEntries(List<HpcMetadataEntry> metadataEntries, boolean editMetadata) {
+		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+		validationResult.setValid(true);
+
 		if (metadataEntries == null) {
-			return false;
+			validationResult.setValid(false);
+			return validationResult;
 		}
+
 		for (HpcMetadataEntry metadataEntry : metadataEntries) {
-			if (StringUtils.isEmpty(metadataEntry.getAttribute()) ||
-					(editMetadata == false && StringUtils.isEmpty(metadataEntry.getValue()))) {
-				return false;
+			if(StringUtils.isEmpty(metadataEntry.getAttribute())) {
+				validationResult.setValid(false);
+				return validationResult;
+
+			} else {
+				if(editMetadata == false && StringUtils.isEmpty(metadataEntry.getValue())) {
+					if(validationResult.getValid()) {
+							validationResult.setMessage("The following entries cannot be empty: " + metadataEntry.getAttribute());
+					} else {
+							validationResult.setMessage(validationResult.getMessage() + ", " + metadataEntry.getAttribute());
+					}
+					validationResult.setValid(false);
+				}
 			}
 		}
-		return true;
+		return validationResult;
 	}
 
 	/**
