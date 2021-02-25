@@ -14,6 +14,8 @@ import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocatio
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DATA_TRANSFER_STATUS_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.LINK_SOURCE_PATH_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,7 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
 import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
@@ -161,6 +164,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// for an upload.
 	private List<HpcMetadataQuery> dataTransferInFileSystemQuery = new ArrayList<>();
 
+	// Prepared query to get data objects that have tier deep archive in-progress
+	private List<HpcMetadataQuery> deepArchiveInProgressQuery = new ArrayList<>();
+
 	// List of subjects (user-id / group-name) that permission update is not
 	// allowed.
 	private List<String> systemAdminSubjects = new ArrayList<>();
@@ -230,6 +236,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// upload.
 		dataTransferInFileSystemQuery.add(toMetadataQuery(DATA_TRANSFER_STATUS_ATTRIBUTE,
 				HpcMetadataQueryOperator.EQUAL, HpcDataTransferUploadStatus.IN_FILE_SYSTEM.value()));
+
+		// Prepare the query to get data objects in deep archive status in-progress 
+		deepArchiveInProgressQuery.add(toMetadataQuery(DEEP_ARCHIVE_STATUS_ATTRIBUTE,
+				HpcMetadataQueryOperator.EQUAL, HpcDeepArchiveStatus.IN_PROGRESS.value()));
 
 		// Populate the list of system admin subjects (user-id / group-name). Set
 		// permission is not
@@ -420,7 +430,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		getDataObjectLinks(sourcePath).forEach(link -> {
 			try {
 				metadataService.updateDataObjectSystemGeneratedMetadata(link.getAbsolutePath(), null, null, null, null,
-						null, null, null, null, destinationPath, null);
+						null, null, null, null, destinationPath, null, null, null);
 			} catch (HpcException e) {
 				logger.error("Failed to point link[{}] to {}", link.getAbsolutePath(), destinationPath);
 			}
@@ -653,6 +663,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
 				dataObjectLinksQuery);
 	}
+	
+	@Override
+	public List<HpcDataObject> getDataObjectArchiveFileIdContainsPath(String path) throws HpcException {
+		List<HpcMetadataQuery> dataObjectArchiveFileIdContainsPathQuery = new ArrayList<>();
+		dataObjectArchiveFileIdContainsPathQuery.add(toMetadataQuery(ARCHIVE_LOCATION_FILE_ID_ATTRIBUTE, HpcMetadataQueryOperator.LIKE, "%" + path + "%"));
+
+		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+				dataObjectArchiveFileIdContainsPathQuery);
+	}
 
 	@Override
 	public void closeConnection() {
@@ -714,7 +733,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
 		return bulkDataObjectRegistrationTask.getId();
 	}
-
+	
 	@Override
 	public List<HpcBulkDataObjectRegistrationTask> getBulkDataObjectRegistrationTasks(
 			HpcBulkDataObjectRegistrationTaskStatus status) throws HpcException {
@@ -773,11 +792,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 							s3Account.setAccessKey("****");
 							s3Account.setSecretKey("****");
 						}));
-
+		
 		// Persist to DB.
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
 	}
-
+	
 	@Override
 	public HpcBulkDataObjectRegistrationStatus getBulkDataObjectRegistrationTaskStatus(String taskId)
 			throws HpcException {
@@ -809,45 +828,45 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public List<HpcBulkDataObjectRegistrationTask> getRegistrationTasks(String userId, String doc) throws HpcException {
-		List<HpcBulkDataObjectRegistrationTask> registrationTasks = null;
-		if (doc == null) {
-			registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
-		} else if (doc.equals("ALL")) {
-			registrationTasks = dataRegistrationDAO.getAllBulkDataObjectRegistrationTasks();
-		} else {
-			registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasksForDoc(doc);
-		}
-		return registrationTasks;
+  	    List<HpcBulkDataObjectRegistrationTask> registrationTasks = null;
+        if (doc == null) {
+            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasks(userId);
+        } else if (doc.equals("ALL")) {
+            registrationTasks = dataRegistrationDAO.getAllBulkDataObjectRegistrationTasks();
+        } else {
+            registrationTasks = dataRegistrationDAO.getBulkDataObjectRegistrationTasksForDoc(doc);
+        }
+        return registrationTasks;
 	}
 
 	@Override
 	public List<HpcBulkDataObjectRegistrationResult> getRegistrationResults(String userId, int page, String doc)
 			throws HpcException {
-		List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
-		if (doc == null) {
+  	    List<HpcBulkDataObjectRegistrationResult> registrationResults = null;
+        if (doc == null) {
 			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResults(userId,
 					pagination.getOffset(page), pagination.getPageSize());
-		} else if (doc.equals("ALL")) {
+        } else if (doc.equals("ALL")) {
 			registrationResults = dataRegistrationDAO
 					.getAllBulkDataObjectRegistrationResults(pagination.getOffset(page), pagination.getPageSize());
-		} else {
+        } else {
 			registrationResults = dataRegistrationDAO.getBulkDataObjectRegistrationResultsForDoc(doc,
 					pagination.getOffset(page), pagination.getPageSize());
-		}
+        }
 		return registrationResults;
 	}
 
 	@Override
 	public int getRegistrationResultsCount(String userId, String doc) throws HpcException {
-		int count = 0;
-		if (doc == null) {
-			count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
-		} else if (doc.equals("ALL")) {
-			count = dataRegistrationDAO.getAllBulkDataObjectRegistrationResultsCount();
-		} else {
-			count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCountForDoc(doc);
-		}
-		return count;
+  	  int count = 0;
+        if (doc == null) {
+            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCount(userId);
+        } else if (doc.equals("ALL")) {
+            count = dataRegistrationDAO.getAllBulkDataObjectRegistrationResultsCount();
+        } else {
+            count = dataRegistrationDAO.getBulkDataObjectRegistrationResultsCountForDoc(doc);
+        }
+        return count;
 	}
 
 	@Override
@@ -922,6 +941,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		addDataObjectRegistrationResult(path, dataObjectRegistrationResult, systemGeneratedMetadata.getSourceSize());
 	}
 
+	@Override
 	public void addDataObjectRegistrationResult(String path,
 			HpcDataObjectRegistrationResult dataObjectRegistrationResult, Long size) throws HpcException {
 		if (StringUtils.isEmpty(path)) {
@@ -973,6 +993,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		return false;
 	}
 
+	@Override
+	public List<HpcDataObject> getDataObjectsDeepArchiveInProgress() throws HpcException {
+		return dataManagementProxy.getDataObjects(dataManagementAuthenticator.getAuthenticatedToken(),
+				deepArchiveInProgressQuery);
+	}
+	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//

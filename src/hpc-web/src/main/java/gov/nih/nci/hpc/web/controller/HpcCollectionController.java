@@ -293,7 +293,7 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 				session.removeAttribute("selectedUsers");
 			}
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute(ATTR_ERROR, "Failed to update data file: " + e.getMessage());
+			redirectAttributes.addFlashAttribute(ATTR_ERROR, "Failed to update metadata. " + e.getMessage());
 		}
 		final Map<String, String> paramsMap = new HashMap<>();
 		paramsMap.put("path", hpcCollection.getPath());
@@ -391,10 +391,10 @@ public class HpcCollectionController extends HpcCreateCollectionDataFileControll
 					if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
 						entry.setValue(attrValue[0]);
 					} else {
-						throw new HpcWebException("Invalid metadata attribute value. Empty value is not valid!");
+						throw new HpcWebException("Invalid value for metadata attribute " + attrName[0] + ": Value cannot be empty");
 					}
 				} else if (attrValue.length > 0 && !attrValue[0].isEmpty()) {
-					throw new HpcWebException("Invalid metadata attribute name. Empty value is not valid!");
+					throw new HpcWebException("Invalid metadata attribute name for value " + attrValue[0] + ": Name cannot be empty");
 				} else {
 					//If both attrName and attrValue are empty, then we just
 					//ignore it and move to the next element

@@ -24,10 +24,14 @@
 	<osgix:cm-properties id="preProps" persistent-id="gov.nih.nci.hpc">
 		<prop key="hpc.service.dataTransfer.downloadDirectory">/mnt/IRODsScratch/data/S3</prop>
 		<prop key="hpc.service.dataTransfer.maxSyncDownloadFileSize"></prop>
+		<prop key="hpc.service.dataTransfer.maxDeepArchiveInProgressDays">2</prop>
 		<prop key="hpc.service.security.authenticationTokenSignatureKey">hpc-token-signature-key</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriod">2160</prop>
 		<prop key="hpc.service.security.authenticationTokenExpirationPeriodSso">120</prop>
 		<prop key="hpc.service.security.dataManagementAccountExpirationPeriod">480</prop>
+		<prop key="hpc.service.systemAccount.aws.secretName">ncif-hpcdm-svc</prop>
+		<prop key="hpc.service.systemAccount.aws.region">us-east-1</prop>
+		<prop key="hpc.service.systemAccount.aws.useSecretsManager">false</prop>
 		<prop key="hpc.service.notification.formatsPath">${karaf.base}/etc/hpc-server/notificationFormats.json</prop>
 		<prop key="hpc.service.notification.mail.host">mailfwd.nih.gov</prop>
 		<prop key="hpc.service.notification.mail.port">25</prop>
@@ -40,7 +44,7 @@
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.level">1</prop>
 		<prop key="hpc.service.dataSearch.defaultDataObjectLevelFilter.operator">NUM_GREATER_OR_EQUAL</prop>
 		<prop key="hpc.service.dataManagement.systemAdminSubjects">rods rodsadmin</prop>
-		<prop key="hpc.service.dataManagement.defaultBaseUiURL">https://fr-s-hpcdm-gp-d.ncifcrf.gov</prop>
+		<prop key="hpc.service.dataManagement.defaultBaseUiURL">https://fsdmel-dsapi01d.ncifcrf.gov</prop>
 		<prop key="hpc.service.dataManagement.defaultBulkRegistrationStatusUiDeepLink">uploadtask?taskId={task_id}&amp;type=</prop>
 		<prop key="hpc.service.dataManagement.downloadResultsPageSize">100</prop>
 		<prop key="hpc.service.dataManagement.registrationResultsPageSize">100</prop>
@@ -75,6 +79,9 @@
 	<osgi:service ref="hpcDataMigrationService"
 		          interface="gov.nih.nci.hpc.service.HpcDataMigrationService" />
 
+	<osgi:service ref="hpcDataTieringService"
+		          interface="gov.nih.nci.hpc.service.HpcDataTieringService" />
+
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcUserDAO" />
@@ -103,7 +110,9 @@
 	<osgi:reference id="hpcDataManagementConfigurationDAO" 
 	                interface="gov.nih.nci.hpc.dao.HpcDataManagementConfigurationDAO" />
 	<osgi:reference id="hpcCatalogDAO" 
-	                interface="gov.nih.nci.hpc.dao.HpcCatalogDAO" />                 
+	                interface="gov.nih.nci.hpc.dao.HpcCatalogDAO" />
+	<osgi:reference id="hpcDataTieringDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataTieringDAO" />                 
 	<osgi:reference id="hpcGlobusDataTransferProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcDataTransferProxy" 
 		            bean-name="hpcGlobusDataTransferProxy"/>

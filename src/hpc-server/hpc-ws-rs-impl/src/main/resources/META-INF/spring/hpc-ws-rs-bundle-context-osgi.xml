@@ -92,6 +92,10 @@
 		<prop key="hpc.ws.rs.auth.data-management.get-all-download-summary">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		<prop key="hpc.ws.rs.auth.data-management.get-all-registration-summary">SYSTEM_ADMIN GROUP_ADMIN</prop>
 		
+		<prop key="hpc.ws.rs.auth.data-tiering.tier-data-object">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.data-tiering.tier-collection">SYSTEM_ADMIN</prop>
+		<prop key="hpc.ws.rs.auth.data-tiering.tier-data-objects">SYSTEM_ADMIN</prop>
+		
 		<prop key="hpc.ws.rs.auth.data-search.query-collections">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-search.query-data-objects">SYSTEM_ADMIN GROUP_ADMIN USER RESTRICTED</prop>
 		<prop key="hpc.ws.rs.auth.data-search.add-query">SYSTEM_ADMIN GROUP_ADMIN USER</prop>
@@ -137,4 +141,6 @@
 		            interface="gov.nih.nci.hpc.bus.HpcSystemBusService" />
 	<osgi:reference id="hpcDataMigrationBusService"
 		            interface="gov.nih.nci.hpc.bus.HpcDataMigrationBusService" />
+	<osgi:reference id="hpcDataTieringBusService"
+		            interface="gov.nih.nci.hpc.bus.HpcDataTieringBusService" />
 </beans>

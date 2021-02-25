@@ -296,15 +296,26 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 	@Override
 	public void updateDataObjectMetadata(Object authenticatedToken, String path, List<HpcMetadataEntry> metadataEntries)
 			throws HpcException {
+
 		try {
 			String absolutePath = getAbsolutePath(path);
 			DataObjectAO dataObjectAO = irodsConnection.getDataObjectAO(authenticatedToken);
+			List<MetaDataAndDomainData> metadataAvus = dataObjectAO.findMetadataValuesForDataObject(absolutePath);
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
-				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
-				if(StringUtils.isEmpty(metadataEntry.getValue())) {
-					dataObjectAO.deleteAVUMetadata(absolutePath, avuData);
+
+				if (StringUtils.isEmpty(metadataEntry.getValue())) {
+
+					//Attribute does not have value, so delete it
+					for (MetaDataAndDomainData metadata : metadataAvus) {
+						 if(metadataEntry.getAttribute().contentEquals(metadata.getAvuAttribute())) {
+							dataObjectAO.deleteAVUMetadata(absolutePath,
+								AvuData.instance(metadata.getAvuAttribute(), metadata.getAvuValue(), metadata.getAvuUnit()));
+							break;
+						 }
+					}
 				} else {
+					AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
+						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
 					try {
 						dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 

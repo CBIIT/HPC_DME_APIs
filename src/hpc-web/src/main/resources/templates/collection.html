@@ -251,12 +251,25 @@
 											    <input type="text" class="form-control" th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 											      th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 												  th:value="${metadataItem.getAttrValue()}"></input></td>
-											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() != null}">
+											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() != null and metadataItem.isMandatory()}">
 													<select size="1"
 													th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 													th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
 													class="form-control" th:required="required">
-														<option value="_select_null">----Select----</option>
+														<option value="">----Select----</option>
+														<option
+															th:each="validValue : ${metadataItem.getValidValues()}"
+															th:value="${validValue}" th:text="${validValue}"
+															th:selected="${validValue.equals(metadataItem.getAttrValue())}">
+															Wireframe</option>
+													</select>
+											  </td>
+											  <td th:if="${metadataItem.isEncrypted() == false and metadataItem.getValidValues() != null and not metadataItem.isMandatory()}">
+													<select size="1"
+													th:id="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+													th:name="@{'zAttrStr_'+${metadataItem.getAttrName()}}"
+													class="form-control">
+														<option value="">----Select----</option>
 														<option
 															th:each="validValue : ${metadataItem.getValidValues()}"
 															th:value="${validValue}" th:text="${validValue}"

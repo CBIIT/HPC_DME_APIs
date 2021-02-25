@@ -88,6 +88,17 @@ public interface HpcDataDownloadDAO {
 	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTasks() throws HpcException;
 
 	/**
+	 * Get all data object download task by data transfer status
+	 *
+	 * @param dataTransferStatus The data object download task data transfer status.
+	 * @return A data object download tasks.
+	 * @throws HpcException on database error.
+	 */
+	public List<HpcDataObjectDownloadTask> getDataObjectDownloadTaskByStatus(
+			HpcDataTransferDownloadStatus dataTransferStatus)
+			throws HpcException;
+
+	/**
 	 * Get next data object download task by data transfer status and data transfer
 	 * type.
 	 *
@@ -121,7 +132,7 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Set a data object download task processed value.
 	 *
-	 * @param id        The data object download task ID.
+	 * @param id         The data object download task ID.
 	 * @param processed The processed time.
 	 * @throws HpcException on database error.
 	 */
@@ -219,7 +230,7 @@ public interface HpcDataDownloadDAO {
 	/**
 	 * Reset a collection download task in-process value.
 	 *
-	 * @param id The collection download task ID.
+	 * @param id        The collection download task ID.
 	 * @throws HpcException on database error.
 	 */
 	public void resetCollectionDownloadTaskInProcess(String id) throws HpcException;

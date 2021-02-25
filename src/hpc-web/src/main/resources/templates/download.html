@@ -63,6 +63,7 @@
 			  <div class="col-lg-9 col-md-12">
 			    <div class="panel panel-default">
 
+				  <div th:if="${restoreMsg != null}" class="alert alert-info" th:text="${restoreMsg}"></div>
 				  <div th:if="${error != null}">
 					<div class="alert alert-error">
 						<a class="close" data-dismiss="alert">�</a> <label
@@ -252,6 +253,9 @@
                                th:value="${downloadFilePath}" /> <input type="hidden"
                                class="form-control" th:field="*{downloadFileName}"
                                id="downloadFileName" placeholder="Enter Download File Name" />
+                       <input type="hidden"
+                               class="form-control" name="s3Path"
+                               id="presignurl"/>
                </form>
 				<form class="form-horizontal" id="criteriaForm"
 					th:object="${hpcSearch}" method="POST" th:action="@{/criteria}">
@@ -360,11 +364,63 @@
 				document.getElementById("downloadSyncForm").elements
 						.namedItem("downloadFileName").value = downloadFileName;
 				$('#downloadSyncForm').attr('action', '/downloadsync');
-				$("#downloadSyncForm").submit();
+				downloadSyncUrl(downloadFileName);
 				return false;
 			}
 		}
 
+		function downloadSyncUrl(fileName) {
+			var ele = document.getElementById("message");
+            var $form = $('#downloadSyncForm');
+            $.ajax({
+            	type: "POST",
+                url: "/downloadsync/url",
+                data : $form.serialize(),
+                success: function (data) {
+                    if (data.code === "success") {
+                    	// perform url download
+                    	document.getElementById("presignurl").value = data.message;
+                    	$('#downloadSyncForm').attr('action', '/downloadsync/urldownload');
+                    	$("#downloadSyncForm").submit();
+                    } else {
+                    	// perform sync download
+                    	downloadSyncFile(fileName);
+                    }
+                },
+                error : function(e) {
+					console.log('ERROR: ', e);
+					$('#message').html(e.responseText);
+					ele.style.display = "block";
+				}
+            });
+        }
+        
+		function downloadSyncFile(fileName) {
+			var ele = document.getElementById("message");
+            var $form = $('#downloadSyncForm');
+            $.ajax({
+            	type: "POST",
+                url: "/downloadsync/sync",
+                data : $form.serialize(),
+                success: function (data) {
+                    if (data.code === "success") {
+                    	// perfrom sync download
+                    	$('#downloadSyncForm').attr('action', '/downloadsync/syncdownload');
+                    	$("#downloadSyncForm").submit();
+                    } else {
+                    	// display message
+                    	$('#message').html(data.message);
+    					ele.style.display = "block";
+                    }
+                },
+                error : function(e) {
+					console.log('ERROR: ', e);
+					$('#message').html(e.responseText);
+					ele.style.display = "block";
+				}
+            });
+        }
+		
 		function refreshAttributes(type)
 	    {
 			//$("#actionType").val(type);

@@ -206,7 +206,7 @@ public class HpcEventServiceImpl implements HpcEventService {
     addDataTransferEvent(userId, HpcEventType.BULK_DATA_OBJECT_REGISTRATION_FAILED, null, null,
         null, registrationTaskId, completed, null, null, errorMessage, null);
   }
-
+  
   @Override
   public void generateReportsEvents(List<String> userIds, HpcReportCriteria criteria)
       throws HpcException {
@@ -274,7 +274,22 @@ public class HpcEventServiceImpl implements HpcEventService {
     addCollectionUpdatedEvent(path, DATA_OBJECT_REGISTRATION_PAYLOAD_VALUE,
         DATA_OBJECT_REGISTRATION_DESCRIPTION_PAYLOAD_VALUE, userId);
   }
+  
+  @Override
+  public void addRestoreRequestCompletedEvent(String userId, String restoreTaskId,
+      String path, Calendar completed)
+      throws HpcException {
+    addDataTransferEvent(userId, HpcEventType.RESTORE_REQUEST_COMPLETED, null, restoreTaskId,
+    	path, null, completed, null, null, null, null);
+  }
 
+  @Override
+  public void addRestoreRequestFailedEvent(String userId, String restoreTaskId,
+	  String path, Calendar completed, String errorMessage) throws HpcException {
+    addDataTransferEvent(userId, HpcEventType.RESTORE_REQUEST_FAILED, null, restoreTaskId,
+    	path, null, completed, null, null, errorMessage, null);
+  }
+  
   // ---------------------------------------------------------------------//
   // Helper Methods
   // ---------------------------------------------------------------------//
@@ -537,23 +552,30 @@ public class HpcEventServiceImpl implements HpcEventService {
     StringBuilder registrationItemsStr = new StringBuilder();
     registrationItems.forEach(registrationItem -> {
       String source = null;
-      if (registrationItem.getRequest().getLinkSourcePath() != null) {
-        source = registrationItem.getRequest().getLinkSourcePath();
-      } else {
-        HpcFileLocation sourceLocation = null;
-        if (registrationItem.getRequest().getGlobusUploadSource() != null) {
-          sourceLocation =
-              registrationItem.getRequest().getGlobusUploadSource().getSourceLocation();
-        } else if (registrationItem.getRequest().getS3UploadSource() != null) {
-          sourceLocation = registrationItem.getRequest().getS3UploadSource().getSourceLocation();
-        } else {
-          sourceLocation =
-              registrationItem.getRequest().getGoogleDriveUploadSource().getSourceLocation();
-        }
-        source = toString(sourceLocation);
+      if (registrationItem.getRequest().getLinkSourcePath() != null || 
+    		  registrationItem.getRequest().getGlobusUploadSource() != null || 
+    		  registrationItem.getRequest().getS3UploadSource() != null || 
+    		  registrationItem.getRequest().getGoogleDriveUploadSource() != null) {
+	      if (registrationItem.getRequest().getLinkSourcePath() != null) {
+	        source = registrationItem.getRequest().getLinkSourcePath();
+	      } else {
+	        HpcFileLocation sourceLocation = null;
+	        if (registrationItem.getRequest().getGlobusUploadSource() != null) {
+	          sourceLocation =
+	              registrationItem.getRequest().getGlobusUploadSource().getSourceLocation();
+	        } else if (registrationItem.getRequest().getS3UploadSource() != null) {
+	          sourceLocation = registrationItem.getRequest().getS3UploadSource().getSourceLocation();
+	        } else {
+	          sourceLocation =
+	              registrationItem.getRequest().getGoogleDriveUploadSource().getSourceLocation();
+	        }
+	        source = toString(sourceLocation);
+	      }
       }
-
-      registrationItemsStr.append("\n\t" + source + " -> " + registrationItem.getTask().getPath());
+      if (source != null)
+    	  registrationItemsStr.append("\n\t" + source + " -> " + registrationItem.getTask().getPath());
+      else
+    	  registrationItemsStr.append("\n\t" + registrationItem.getTask().getPath());
     });
 
     return registrationItemsStr.toString();
