@@ -76,7 +76,7 @@ public class HpcScheduledTasksImpl {
 	private void init() {
 		try {
 			// All active data migration tasks needs to be restarted.
-			dataMigrationBusService.restartDataObjectMigrationTasks();
+			dataMigrationBusService.restartDataMigrationTasks();
 
 		} catch (HpcException e) {
 			logger.error("Migration Scheduler failed to initialize", e);

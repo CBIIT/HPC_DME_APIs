@@ -23,8 +23,10 @@ import gov.nih.nci.hpc.dao.HpcDataMigrationDAO;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
@@ -129,8 +131,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
 	@Override
 	public void migrateDataObject(HpcDataMigrationTask dataObjectMigrationTask) throws HpcException {
-		if (dataObjectMigrationTask.getFromS3ArchiveConfigurationId()
-				.equals(dataObjectMigrationTask.getToS3ArchiveConfigurationId())) {
+		if (dataObjectMigrationTask.getToS3ArchiveConfigurationId()
+				.equals(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
 			// Migration not needed.
 			completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.IGNORED, null);
 			return;
@@ -141,11 +143,15 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		HpcDataTransferConfiguration fromS3ArchiveDataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getFromS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
+		if (StringUtils.isEmpty(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
+			dataObjectMigrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveDataTransferConfiguration.getId());
+		}
+
 		HpcDataTransferConfiguration toS3ArchiveDataTransferConfiguration = dataManagementConfigurationLocator
 				.getDataTransferConfiguration(dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getToS3ArchiveConfigurationId(), HpcDataTransferType.S_3);
 
-		// Get the data transfer system accounts to access both both source and target
+		// Get the data transfer system accounts to access both source and target
 		// S3 archives in
 		// this migration task.
 		HpcIntegratedSystemAccount fromS3ArchiveDataTransferSystemAccount = systemAccountLocator
@@ -212,18 +218,23 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 		if (result.equals(HpcDataMigrationResult.COMPLETED)) {
 			try {
 				// Add metadata to the object in the target S3 archive.
-				String checksum = dataTransferService.addSystemGeneratedMetadataToDataObject(
+				HpcArchiveObjectMetadata objectMetadata = dataTransferService.addSystemGeneratedMetadataToDataObject(
 						dataObjectMigrationTask.getToS3ArchiveLocation(), HpcDataTransferType.S_3,
 						dataObjectMigrationTask.getConfigurationId(),
 						dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
 						dataObjectMigrationTask.getDataObjectId(), dataObjectMigrationTask.getRegistrarId());
 
-				// Update the system metadata w/ the new S3 archive id and location after
-				// migration.
+				// Update the system metadata w/ the new S3 archive id, location and
+				// deep-archive status/date after migration.
+				String checksum = objectMetadata.getChecksum();
+				HpcDeepArchiveStatus deepArchiveStatus = objectMetadata.getDeepArchiveStatus();
+				Calendar deepArchiveDate = deepArchiveStatus != null
+						&& deepArchiveStatus.equals(HpcDeepArchiveStatus.IN_PROGRESS) ? Calendar.getInstance() : null;
 				securityService.executeAsSystemAccount(Optional.empty(),
 						() -> metadataService.updateDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath(),
 								dataObjectMigrationTask.getToS3ArchiveLocation(), null, checksum, null, null, null,
-								null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId()));
+								null, null, null, dataObjectMigrationTask.getToS3ArchiveConfigurationId(),
+								deepArchiveStatus, deepArchiveDate));
 
 				// Delete the data object from the source S3 archive.
 				dataTransferService.deleteDataObject(dataObjectMigrationTask.getFromS3ArchiveLocation(),
@@ -231,9 +242,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 						dataObjectMigrationTask.getFromS3ArchiveConfigurationId());
 
 			} catch (HpcException e) {
-				message = "Failed to cleanup data migration for task: " + dataObjectMigrationTask.getId() + " ["
-						+ e.getMessage() + " ]";
-				logger.error(message);
+				message = "Failed to complete data migration for task: " + dataObjectMigrationTask.getId() + " ["
+						+ e.getMessage() + " ] - " + dataObjectMigrationTask.getPath();
+				logger.error(message, e);
 				result = HpcDataMigrationResult.FAILED;
 			}
 		}

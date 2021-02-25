@@ -60,5 +60,6 @@
 	      init-method="dbConnect"/>
 	 <bean id="hpcCatalogDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcCatalogDAOImpl" /> 
 	 <bean id="hpcDataMigrationDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataMigrationDAOImpl" /> 
+	 <bean id="hpcDataTieringDAO" class="gov.nih.nci.hpc.dao.oracle.impl.HpcDataTieringDAOImpl" /> 
 
 </beans>

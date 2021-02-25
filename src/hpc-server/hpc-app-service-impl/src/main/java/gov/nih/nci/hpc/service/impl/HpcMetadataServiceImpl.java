@@ -36,7 +36,8 @@ import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_SIZE
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_FILE_URL_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_CONTAINER_ID_ATTRIBUTE;
 import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.SOURCE_LOCATION_FILE_ID_ATTRIBUTE;
-
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_STATUS_ATTRIBUTE;
+import static gov.nih.nci.hpc.service.impl.HpcMetadataValidator.DEEP_ARCHIVE_DATE_ATTRIBUTE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -64,15 +65,17 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.xml.sax.SAXException;
-
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcGroupedMetadataEntries;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -84,6 +87,7 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 
+
 /**
  * HPC Data Management Application Service Implementation.
  *
@@ -94,12 +98,13 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	// Constants
 	// ---------------------------------------------------------------------//
 
-	private static final String INVALID_PATH_METADATA_MSG = "Invalid path or metadata entry";
+	private static final String INVALID_PATH_MSG = "Invalid collection or object path";
+	private static final String INVALID_METADATA_MSG = "Invalid metadata entry in request";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
-	// The Data Management Service
+	//The Data Management Service
 	@Autowired
 	private HpcDataManagementService dataManagementService = null;
 
@@ -158,8 +163,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void addMetadataToCollection(String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
 			throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries, false)) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		if (path == null) {
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		} else {
+			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, false);
+			if(!validationResult.getValid()) {
+				if(StringUtils.isEmpty(validationResult.getMessage())) {
+					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+				} else {
+					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+			}
 		}
 
 		// Validate Metadata.
@@ -174,8 +188,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateCollectionMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId)
 			throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries, true)) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		if (path == null) {
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		} else {
+			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, true);
+			if(!validationResult.getValid()) {
+				if(StringUtils.isEmpty(validationResult.getMessage())) {
+					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+				} else {
+					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+			}
 		}
 
 		// Validate collection type is not in the update request.
@@ -200,10 +223,11 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			String userName, String configurationId) throws HpcException {
 		// Input validation.
 		if (path == null) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
+
 
 		// Generate a UUID and add it as metadata.
 		metadataEntries.add(generateIdMetadata());
@@ -229,7 +253,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public HpcSystemGeneratedMetadata getCollectionSystemGeneratedMetadata(String path) throws HpcException {
 		// Input validation.
 		if (path == null) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		return toSystemGeneratedMetadata(
@@ -331,6 +355,22 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 					Boolean.valueOf(metadataMap.get(REGISTRATION_COMPLETION_EVENT_ATTRIBUTE)));
 		}
 
+		if (metadataMap.get(DEEP_ARCHIVE_STATUS_ATTRIBUTE) != null) {
+			try {
+				systemGeneratedMetadata.setDeepArchiveStatus(
+						HpcDeepArchiveStatus.fromValue(metadataMap.get(DEEP_ARCHIVE_STATUS_ATTRIBUTE)));
+
+			} catch (Exception e) {
+				logger.error(
+						"Unable to determine deep archive status: " + metadataMap.get(DEEP_ARCHIVE_STATUS_ATTRIBUTE),
+						e);
+			}
+		}
+		if (metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE) != null) {
+			systemGeneratedMetadata
+					.setDeepArchiveDate(toCalendar(metadataMap.get(DEEP_ARCHIVE_DATE_ATTRIBUTE)));
+		}
+		
 		return systemGeneratedMetadata;
 	}
 
@@ -400,8 +440,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public HpcMetadataEntry addMetadataToDataObject(String path, List<HpcMetadataEntry> metadataEntries,
 			String configurationId, String collectionType) throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries, false)) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		if (path == null) {
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		} else {
+			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, false);
+			if(!validationResult.getValid()) {
+				if(StringUtils.isEmpty(validationResult.getMessage())) {
+					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+				} else {
+					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+			}
 		}
 
 		// Validate Metadata.
@@ -493,7 +542,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		// Input validation.
 		if (path == null || dataTransferStatus == null || dataTransferType == null || dataTransferMethod == null
 				|| dataTransferStarted == null || dataObjectIdMetadataEntry == null) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if ((archiveLocation != null && !isValidFileLocation(archiveLocation))
 				|| (sourceLocation != null && !isValidFileLocation(sourceLocation))) {
@@ -581,7 +630,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 			String userId, String userName, String configurationId, String linkSourcePath) throws HpcException {
 		// Input validation.
 		if (path == null || configurationId == null || linkSourcePath == null || dataObjectIdMetadataEntry == null) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		List<HpcMetadataEntry> metadataEntries = new ArrayList<>();
@@ -608,7 +657,7 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public HpcSystemGeneratedMetadata getDataObjectSystemGeneratedMetadata(String path) throws HpcException {
 		// Input validation.
 		if (path == null) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		return toSystemGeneratedMetadata(
@@ -619,7 +668,8 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectSystemGeneratedMetadata(String path, HpcFileLocation archiveLocation,
 			String dataTransferRequestId, String checksum, HpcDataTransferUploadStatus dataTransferStatus,
 			HpcDataTransferType dataTransferType, Calendar dataTransferStarted, Calendar dataTransferCompleted,
-			Long sourceSize, String linkSourcePath, String s3ArchiveConfigurationId) throws HpcException {
+			Long sourceSize, String linkSourcePath, String s3ArchiveConfigurationId,
+			HpcDeepArchiveStatus deepArchiveStatus, Calendar deepArchiveDate) throws HpcException {
 		// Input validation.
 		if (path == null || (archiveLocation != null && !isValidFileLocation(archiveLocation))) {
 			throw new HpcException("Invalid updated system generated metadata for data object",
@@ -688,6 +738,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 					toMetadataEntry(S3_ARCHIVE_CONFIGURATION_ID_ATTRIBUTE, s3ArchiveConfigurationId));
 		}
 
+		if (deepArchiveStatus != null) {
+			// Update the deep archive date metadata.
+			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_STATUS_ATTRIBUTE, deepArchiveStatus.value()));
+		}
+
+		if (deepArchiveDate != null) {
+			// Update the deep archive date metadata.
+			addMetadataEntry(metadataEntries, toMetadataEntry(DEEP_ARCHIVE_DATE_ATTRIBUTE,
+					dateFormat.format(deepArchiveDate.getTime())));
+		}
+		
 		if (!metadataEntries.isEmpty()) {
 			dataManagementProxy.updateDataObjectMetadata(dataManagementAuthenticator.getAuthenticatedToken(), path,
 					metadataEntries);
@@ -698,8 +759,17 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 	public void updateDataObjectMetadata(String path, List<HpcMetadataEntry> metadataEntries, String configurationId,
 			String collectionType, boolean extractedMetadata) throws HpcException {
 		// Input validation.
-		if (path == null || !isValidMetadataEntries(metadataEntries, true)) {
-			throw new HpcException(INVALID_PATH_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		if (path == null) {
+			throw new HpcException(INVALID_PATH_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+		} else {
+			HpcDomainValidationResult validationResult = isValidMetadataEntries(metadataEntries, true);
+			if(!validationResult.getValid()) {
+				if(StringUtils.isEmpty(validationResult.getMessage())) {
+					throw new HpcException(INVALID_METADATA_MSG, HpcErrorType.INVALID_REQUEST_INPUT);
+				} else {
+					throw new HpcException(validationResult.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+			}
 		}
 
 		// Validate the metadata.
@@ -802,15 +872,18 @@ public class HpcMetadataServiceImpl implements HpcMetadataService {
 		return toMetadataEntry(ID_ATTRIBUTE, keyGenerator.generateKey());
 	}
 
+
 	/**
 	 * Generate the global DME ID metadata.
-	 * 
+	 *
 	 * @param collectionId The (iRODs) collection ID.
 	 * @return The Generated global DME ID metaData
 	 */
 	private HpcMetadataEntry generateDmeIdMetadata(int collectionId) {
 		return toMetadataEntry(DME_ID_ATTRIBUTE, "NCI-DME-MS01-" + collectionId);
 	}
+
+
 
 	/**
 	 * Generate Metadata Updated Metadata.
