@@ -32,218 +32,212 @@ import gov.nih.nci.hpc.integration.HpcDataManagementProxy;
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public class HpcDataManagementConfigurationLocator
-    extends HashMap<String, HpcDataManagementConfiguration> {
-  // ---------------------------------------------------------------------//
-  // Instance members
-  // ---------------------------------------------------------------------//
+public class HpcDataManagementConfigurationLocator extends HashMap<String, HpcDataManagementConfiguration> {
+	// ---------------------------------------------------------------------//
+	// Instance members
+	// ---------------------------------------------------------------------//
 
-  private static final long serialVersionUID = -2233828633688868458L;
+	private static final long serialVersionUID = -2233828633688868458L;
 
-  // The Data Management Proxy instance.
-  @Autowired
-  private HpcDataManagementProxy dataManagementProxy = null;
+	// The Data Management Proxy instance.
+	@Autowired
+	private HpcDataManagementProxy dataManagementProxy = null;
 
-  // The Data Management Configuration DAO instance.
-  @Autowired
-  private HpcDataManagementConfigurationDAO dataManagementConfigurationDAO = null;
+	// The Data Management Configuration DAO instance.
+	@Autowired
+	private HpcDataManagementConfigurationDAO dataManagementConfigurationDAO = null;
 
-  // A map of all supported base paths (to allow quick search).
-  private Map<String, HpcDataManagementConfiguration> basePathConfigurations = new HashMap<>();
+	// A map of all supported base paths (to allow quick search).
+	private Map<String, HpcDataManagementConfiguration> basePathConfigurations = new HashMap<>();
 
-  // A set of all supported docs (to allow quick search).
-  private Set<String> docs = new HashSet<>();
+	// A set of all supported docs (to allow quick search).
+	private Set<String> docs = new HashSet<>();
 
-  // A map of all supported S3 archive configurations (to allow quick search by ID).
-  private Map<String, HpcDataTransferConfiguration> s3ArchiveConfigurations = new HashMap<>();
+	// A map of all supported S3 archive configurations (to allow quick search by
+	// ID).
+	private Map<String, HpcDataTransferConfiguration> s3ArchiveConfigurations = new HashMap<>();
 
-  // The logger instance.
-  private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-  // ---------------------------------------------------------------------//
-  // Constructors
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Constructors
+	// ---------------------------------------------------------------------//
 
-  /** Default constructor for Spring Dependency Injection. */
-  private HpcDataManagementConfigurationLocator() {
-    super();
-  }
+	/** Default constructor for Spring Dependency Injection. */
+	private HpcDataManagementConfigurationLocator() {
+		super();
+	}
 
-  // ---------------------------------------------------------------------//
-  // Methods
-  // ---------------------------------------------------------------------//
+	// ---------------------------------------------------------------------//
+	// Methods
+	// ---------------------------------------------------------------------//
 
-  /**
-   * Get all supported base paths.
-   *
-   * @return A list of all supported base paths.
-   */
-  public Set<String> getBasePaths() {
-    return basePathConfigurations.keySet();
-  }
+	/**
+	 * Get all supported base paths.
+	 *
+	 * @return A list of all supported base paths.
+	 */
+	public Set<String> getBasePaths() {
+		return basePathConfigurations.keySet();
+	}
 
-  /**
-   * Get all supported DOCs.
-   *
-   * @return A list of all supported base paths.
-   */
-  public Set<String> getDocs() {
-    return docs;
-  }
+	/**
+	 * Get all supported DOCs.
+	 *
+	 * @return A list of all supported base paths.
+	 */
+	public Set<String> getDocs() {
+		return docs;
+	}
 
-  /**
-   * Get configuration ID by base path.
-   *
-   * @param basePath The base path to get the config for.
-   * @return A configuration ID, or null if not found.
-   */
-  public String getConfigurationId(String basePath) {
-    HpcDataManagementConfiguration configuration = basePathConfigurations.get(basePath);
-    return configuration != null ? configuration.getId() : null;
-  }
+	/**
+	 * Get configuration ID by base path.
+	 *
+	 * @param basePath The base path to get the config for.
+	 * @return A configuration ID, or null if not found.
+	 */
+	public String getConfigurationId(String basePath) {
+		HpcDataManagementConfiguration configuration = basePathConfigurations.get(basePath);
+		return configuration != null ? configuration.getId() : null;
+	}
 
-  /**
-   * Get Data Transfer configuration to access a file in the archive (upload, download , delete, etc)
-   *
-   * @param configurationId The data management configuration ID.
-   * @param s3ArchiveConfigurationId (Optional) S3 archive configuration ID.
-   * @param dataTransferType The data transfer type.
-   * @return The data transfer configuration for the requested configuration ID and data transfer
-   *         type for uploading.
-   * @throws HpcException if the configuration was not found.
-   */
-  public HpcDataTransferConfiguration getDataTransferConfiguration(String configurationId,
-      String s3ArchiveConfigurationId, HpcDataTransferType dataTransferType) throws HpcException {
-    HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
-    if (dataManagementConfiguration != null) {
-      return dataTransferType.equals(HpcDataTransferType.S_3)
-          ? getS3ArchiveConfiguration(
-              !StringUtils.isEmpty(s3ArchiveConfigurationId) ? s3ArchiveConfigurationId
-                  : dataManagementConfiguration.getS3DefaultDownloadConfigurationId())
-          : dataManagementConfiguration.getGlobusConfiguration();
-    }
+	/**
+	 * Get Data Transfer configuration to access a file in the archive (upload,
+	 * download , delete, etc)
+	 *
+	 * @param configurationId          The data management configuration ID.
+	 * @param s3ArchiveConfigurationId (Optional) S3 archive configuration ID.
+	 * @param dataTransferType         The data transfer type.
+	 * @return The data transfer configuration for the requested configuration ID
+	 *         and data transfer type for uploading.
+	 * @throws HpcException if the configuration was not found.
+	 */
+	public HpcDataTransferConfiguration getDataTransferConfiguration(String configurationId,
+			String s3ArchiveConfigurationId, HpcDataTransferType dataTransferType) throws HpcException {
+		HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
+		if (dataManagementConfiguration != null) {
+			return dataTransferType.equals(HpcDataTransferType.S_3)
+					? getS3ArchiveConfiguration(
+							!StringUtils.isEmpty(s3ArchiveConfigurationId) ? s3ArchiveConfigurationId
+									: dataManagementConfiguration.getS3DefaultDownloadConfigurationId())
+					: dataManagementConfiguration.getGlobusConfiguration();
+		}
 
-    // Configuration was not found.
-    throw new HpcException("Could not locate data transfer configuration: " + configurationId
-        + ", " + dataTransferType.value() + ", S3 Archive: " + s3ArchiveConfigurationId, HpcErrorType.UNEXPECTED_ERROR);
-  }
+		// Configuration was not found.
+		throw new HpcException("Could not locate data transfer configuration: " + configurationId + ", "
+				+ dataTransferType.value() + ", S3 Archive: " + s3ArchiveConfigurationId,
+				HpcErrorType.UNEXPECTED_ERROR);
+	}
 
-  /**
-   * Get the Archive Data Transfer type.
-   *
-   * @param configurationId The data management configuration ID.
-   * @return The archive data transfer type for this configuration ID.
-   * @throws HpcException if the configuration was not found.
-   */
-  public HpcDataTransferType getArchiveDataTransferType(String configurationId)
-      throws HpcException {
-    HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
-    if (dataManagementConfiguration != null) {
-      return dataManagementConfiguration.getArchiveDataTransferType();
-    }
+	/**
+	 * Get the Archive Data Transfer type.
+	 *
+	 * @param configurationId The data management configuration ID.
+	 * @return The archive data transfer type for this configuration ID.
+	 * @throws HpcException if the configuration was not found.
+	 */
+	public HpcDataTransferType getArchiveDataTransferType(String configurationId) throws HpcException {
+		HpcDataManagementConfiguration dataManagementConfiguration = get(configurationId);
+		if (dataManagementConfiguration != null) {
+			return dataManagementConfiguration.getArchiveDataTransferType();
+		}
 
-    // Configuration was not found.
-    throw new HpcException("Could not locate configuration: " + configurationId,
-        HpcErrorType.UNEXPECTED_ERROR);
-  }
+		// Configuration was not found.
+		throw new HpcException("Could not locate configuration: " + configurationId, HpcErrorType.UNEXPECTED_ERROR);
+	}
 
-  /**
-   * Load the data management configurations from the DB. Called by spring as init-method.
-   *
-   * @throws HpcException On configuration error.
-   */
-  public void reload() throws HpcException {
-    clear();
-    basePathConfigurations.clear();
-    docs.clear();
-    s3ArchiveConfigurations.clear();
+	/**
+	 * Load the data management configurations from the DB. Called by spring as
+	 * init-method.
+	 *
+	 * @throws HpcException On configuration error.
+	 */
+	public void reload() throws HpcException {
+		clear();
+		basePathConfigurations.clear();
+		docs.clear();
+		s3ArchiveConfigurations.clear();
 
-    // Load the S3 archive configurations
-    for (HpcDataTransferConfiguration s3ArchiveConfiguration : dataManagementConfigurationDAO
-        .getS3ArchiveConfigurations()) {
-      s3ArchiveConfigurations.put(s3ArchiveConfiguration.getId(), s3ArchiveConfiguration);
-    }
+		// Load the S3 archive configurations
+		for (HpcDataTransferConfiguration s3ArchiveConfiguration : dataManagementConfigurationDAO
+				.getS3ArchiveConfigurations()) {
+			s3ArchiveConfigurations.put(s3ArchiveConfiguration.getId(), s3ArchiveConfiguration);
+		}
 
-    // Load the data management configurations
-    for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationDAO
-        .getDataManagementConfigurations()) {
-      // Ensure the base path is in the form of a relative path, and one level deep (i.e.
-      // /base-path).
-      String basePath =
-          dataManagementProxy.getRelativePath(dataManagementConfiguration.getBasePath());
-      if (basePath.split("/").length != 2) {
-        throw new HpcException(
-            "Invalid base path [" + basePath + "]. Only one level path supported.",
-            HpcErrorType.UNEXPECTED_ERROR);
-      }
-      dataManagementConfiguration.setBasePath(basePath);
+		// Load the data management configurations
+		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationDAO
+				.getDataManagementConfigurations()) {
+			// Ensure the base path is in the form of a relative path, and one level deep
+			// (i.e.
+			// /base-path).
+			String basePath = dataManagementProxy.getRelativePath(dataManagementConfiguration.getBasePath());
+			if (basePath.split("/").length != 2) {
+				throw new HpcException("Invalid base path [" + basePath + "]. Only one level path supported.",
+						HpcErrorType.UNEXPECTED_ERROR);
+			}
+			dataManagementConfiguration.setBasePath(basePath);
 
-      // Ensure base path is unique (i.e. no 2 configurations share the same base path).
-      if (basePathConfigurations.put(basePath, dataManagementConfiguration) != null) {
-        throw new HpcException("Duplicate base-path in data management configurations:"
-            + dataManagementConfiguration.getBasePath(), HpcErrorType.UNEXPECTED_ERROR);
-      }
+			// Ensure base path is unique (i.e. no 2 configurations share the same base
+			// path).
+			if (basePathConfigurations.put(basePath, dataManagementConfiguration) != null) {
+				throw new HpcException("Duplicate base-path in data management configurations:"
+						+ dataManagementConfiguration.getBasePath(), HpcErrorType.UNEXPECTED_ERROR);
+			}
 
-      // Determine the archive data transfer type.
-      // Note: Currently the transfer into the archive can be supported by either S3 or Globus
-      // or Globus archive (Isilon file system).
-      HpcArchiveType globusArchiveType = dataManagementConfiguration.getGlobusConfiguration()
-          .getBaseArchiveDestination().getType();
-      boolean s3Archive =
-          !StringUtils.isEmpty(dataManagementConfiguration.getS3UploadConfigurationId());
-      if (s3Archive && (globusArchiveType == null
-          || globusArchiveType.equals(HpcArchiveType.TEMPORARY_ARCHIVE))) {
-        dataManagementConfiguration.setArchiveDataTransferType(HpcDataTransferType.S_3);
-      } else if ((globusArchiveType != null && globusArchiveType.equals(HpcArchiveType.ARCHIVE))
-          && !s3Archive) {
-        dataManagementConfiguration.setArchiveDataTransferType(HpcDataTransferType.GLOBUS);
-      } else {
-        throw new HpcException("Invalid S3/Globus archive type configuration: "
-            + dataManagementConfiguration.getBasePath(), HpcErrorType.UNEXPECTED_ERROR);
-      }
+			// Determine the archive data transfer type.
+			// Note: Currently the transfer into the archive can be supported by either S3
+			// or Globus
+			// or Globus archive (Isilon file system).
+			HpcArchiveType globusArchiveType = dataManagementConfiguration.getGlobusConfiguration()
+					.getBaseArchiveDestination().getType();
+			boolean s3Archive = !StringUtils.isEmpty(dataManagementConfiguration.getS3UploadConfigurationId());
+			if (s3Archive
+					&& (globusArchiveType == null || globusArchiveType.equals(HpcArchiveType.TEMPORARY_ARCHIVE))) {
+				dataManagementConfiguration.setArchiveDataTransferType(HpcDataTransferType.S_3);
+			} else if ((globusArchiveType != null && globusArchiveType.equals(HpcArchiveType.ARCHIVE)) && !s3Archive) {
+				dataManagementConfiguration.setArchiveDataTransferType(HpcDataTransferType.GLOBUS);
+			} else {
+				throw new HpcException(
+						"Invalid S3/Globus archive type configuration: " + dataManagementConfiguration.getBasePath(),
+						HpcErrorType.UNEXPECTED_ERROR);
+			}
 
-      // Validate S3 Archive configurations.
-      if (s3Archive) {
-        // If the upload S3 configuration or default S3 download configuration not found, an
-        // exception will be thrown.
-        getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId());
-        getS3ArchiveConfiguration(
-            dataManagementConfiguration.getS3DefaultDownloadConfigurationId());
-      }
+			// Validate S3 Archive configurations.
+			if (s3Archive) {
+				// If the upload S3 configuration or default S3 download configuration not
+				// found, an
+				// exception will be thrown.
+				getS3ArchiveConfiguration(dataManagementConfiguration.getS3UploadConfigurationId());
+				getS3ArchiveConfiguration(dataManagementConfiguration.getS3DefaultDownloadConfigurationId());
+			}
 
-      // Populate the DOCs list.
-      docs.add(dataManagementConfiguration.getDoc());
+			// Populate the DOCs list.
+			docs.add(dataManagementConfiguration.getDoc());
 
-      // Populate the configurationId -> configuration map.
-      put(dataManagementConfiguration.getId(), dataManagementConfiguration);
-    }
+			// Populate the configurationId -> configuration map.
+			put(dataManagementConfiguration.getId(), dataManagementConfiguration);
+		}
 
-    logger.info("Data Management Configurations: " + toString());
-  }
+		logger.info("Data Management Configurations: " + toString());
+	}
 
-  // ---------------------------------------------------------------------//
-  // Helper Methods
-  // ---------------------------------------------------------------------//
+	/**
+	 * Get S3 Archive configuration by ID.
+	 *
+	 * @param s3ArchiveConfigurationId The S3 archive configuration ID.
+	 * @return The S3 configuration for the requested S3 configuration ID.
+	 * @throws HpcException if the configuration was not found.
+	 */
+	public HpcDataTransferConfiguration getS3ArchiveConfiguration(String s3ArchiveConfigurationId) throws HpcException {
+		HpcDataTransferConfiguration s3ArchiveConfiguration = s3ArchiveConfigurations.get(s3ArchiveConfigurationId);
 
-  /**
-   * Get S3 Archive configuration by ID.
-   *
-   * @param s3ArchiveConfigurationId The S3 archive configuration ID.
-   * @return The S3 configuration for the requested S3 configuration ID.
-   * @throws HpcException if the configuration was not found.
-   */
-  private HpcDataTransferConfiguration getS3ArchiveConfiguration(String s3ArchiveConfigurationId)
-      throws HpcException {
-    HpcDataTransferConfiguration s3ArchiveConfiguration =
-        s3ArchiveConfigurations.get(s3ArchiveConfigurationId);
+		if (s3ArchiveConfiguration == null) {
+			throw new HpcException("Could not locate S3 archive configuration: " + s3ArchiveConfigurationId,
+					HpcErrorType.UNEXPECTED_ERROR);
+		}
 
-    if (s3ArchiveConfiguration == null) {
-      throw new HpcException(
-          "Could not locate S3 archive configuration: " + s3ArchiveConfigurationId,
-          HpcErrorType.UNEXPECTED_ERROR);
-    }
-
-    return s3ArchiveConfiguration;
-  }
+		return s3ArchiveConfiguration;
+	}
 
 }

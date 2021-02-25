@@ -230,21 +230,40 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 		try {
 			String absolutePath = getAbsolutePath(path);
 			CollectionAO collectionAO = irodsConnection.getCollectionAO(authenticatedToken);
-			for (HpcMetadataEntry metadataEntry : metadataEntries) {
-				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
-						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
-				try {
-					collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
+			List<MetaDataAndDomainData> metadataAvus = collectionAO.findMetadataValuesForCollection(absolutePath);
 
-				} catch (DataNotFoundException e) {
+			for (HpcMetadataEntry metadataEntry : metadataEntries) {
+
+				if (StringUtils.isEmpty(metadataEntry.getValue())) {
+
+					//Attribute does not have value, so delete it
+					for (MetaDataAndDomainData metadata : metadataAvus) {
+						 if(metadataEntry.getAttribute().contentEquals(metadata.getAvuAttribute())) {
+							collectionAO.deleteAVUMetadata(absolutePath,
+									AvuData.instance(metadata.getAvuAttribute(), metadata.getAvuValue(), metadata.getAvuUnit()));
+							break;
+						 }
+					}
+				} else {
+
+					AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
+						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
+					try {
+						collectionAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
+
+					} catch (DataNotFoundException e) {
 					// Metadata was not found to update. Add it.
-					collectionAO.addAVUMetadata(absolutePath, avuData);
+						collectionAO.addAVUMetadata(absolutePath, avuData);
+					}
 				}
 			}
 
 		} catch (JargonException e) {
 			throw new HpcException("Failed to update collection metadata for path " + path + ": " + e.getMessage(),
 					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e);
+		} catch (JargonQueryException e1) {
+			throw new HpcException("Failed to obtain collection metadata for path: " + path + ": " + e1.getMessage(),
+					HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS, e1);
 		}
 	}
 
@@ -283,12 +302,16 @@ public class HpcDataManagementProxyImpl implements HpcDataManagementProxy {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				AvuData avuData = AvuData.instance(metadataEntry.getAttribute(), metadataEntry.getValue(),
 						!StringUtils.isEmpty(metadataEntry.getUnit()) ? metadataEntry.getUnit() : DEFAULT_METADATA_UNIT);
-				try {
-					dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
+				if(StringUtils.isEmpty(metadataEntry.getValue())) {
+					dataObjectAO.deleteAVUMetadata(absolutePath, avuData);
+				} else {
+					try {
+						dataObjectAO.modifyAvuValueBasedOnGivenAttributeAndUnit(absolutePath, avuData);
 
-				} catch (DataNotFoundException e) {
+					} catch (DataNotFoundException e) {
 					// Metadata was not found to update. Add it.
 					dataObjectAO.addAVUMetadata(absolutePath, avuData);
+					}
 				}
 			}
 
