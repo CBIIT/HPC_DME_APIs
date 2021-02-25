@@ -177,7 +177,7 @@ public interface HpcSystemBusService {
    * @throws HpcException on service failure.
    */
   public void processEvents() throws HpcException;
-
+  
   /**
    * Generate summary report event.
    *

@@ -72,6 +72,8 @@
 		          interface="gov.nih.nci.hpc.service.HpcReportService" />	
 	<osgi:service ref="hpcCatalogService"
 		          interface="gov.nih.nci.hpc.service.HpcCatalogService" />
+	<osgi:service ref="hpcDataMigrationService"
+		          interface="gov.nih.nci.hpc.service.HpcDataMigrationService" />
 
 	<!-- OSGi beans import -->
 	<osgi:reference id="hpcUserDAO" 
@@ -117,4 +119,6 @@
 		            interface="gov.nih.nci.hpc.integration.HpcDataManagementProxy" />				
 	<osgi:reference id="hpcSpsAuthorizationProxy"
 		            interface="gov.nih.nci.hpc.integration.HpcSpsAuthorizationProxy" />		
+	<osgi:reference id="hpcDataMigrationDAO" 
+	                interface="gov.nih.nci.hpc.dao.HpcDataMigrationDAO" />	
 </beans>
