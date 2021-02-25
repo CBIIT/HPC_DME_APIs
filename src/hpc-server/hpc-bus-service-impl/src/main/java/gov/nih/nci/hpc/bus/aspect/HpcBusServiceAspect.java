@@ -29,7 +29,7 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
  * HPC Bus Services Aspect - implement cross cutting concerns: 1. Basic business service profiler -
  * log execution time. 2. Exception logger - logging when exceptions are thrown by Bus Services API
  * impl. 3. Notify System Administrator if an error occurred with an integrated system (iRODS, LDAP,
- * CLEVERSAFE, GLOBUS, ORACLE)
+ * CLEVERSAFE, CLOUDIAN, AWS, GLOBUS, ORACLE)
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */

@@ -11,8 +11,10 @@
 package gov.nih.nci.hpc.integration.s3.impl;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.SdkClientException;
@@ -73,7 +75,8 @@ public class HpcS3Connection {
 	// ---------------------------------------------------------------------//
 
 	/**
-	 * Authenticate an account
+	 * Authenticate a (system) data transfer account to S3 (AWS or 3rd Party
+	 * Provider)
 	 *
 	 * @param dataTransferAccount A data transfer account to authenticate.
 	 * @param s3URLorRegion       The S3 URL if authenticating with a 3rd party S3
@@ -86,66 +89,34 @@ public class HpcS3Connection {
 	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URLorRegion)
 			throws HpcException {
 		if (dataTransferAccount.getIntegratedSystem().equals(HpcIntegratedSystem.AWS)) {
-			// AWS authentication required. Invoke the overloaded method w/ S3 account
-			HpcS3Account s3Account = new HpcS3Account();
-			s3Account.setAccessKey(dataTransferAccount.getUsername());
-			s3Account.setSecretKey(dataTransferAccount.getPassword());
-			s3Account.setRegion(s3URLorRegion);
-			return authenticate(s3Account);
+			return authenticateAWS(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(), s3URLorRegion);
+		} else {
+			// Determine if this S3 provider require path-style enabled.
+			boolean pathStyleAccessEnabled = pathStyleAccessEnabledProviders
+					.contains(dataTransferAccount.getIntegratedSystem());
+
+			return authenticateS3Provider(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(),
+					s3URLorRegion, pathStyleAccessEnabled, dataTransferAccount.getIntegratedSystem());
 		}
-
-		// 3rd Party S3 Provider authentication.
-
-		// Create the credential provider based on the configured credentials.
-		BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(dataTransferAccount.getUsername(),
-				dataTransferAccount.getPassword());
-		AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
-				s3ArchiveCredentials);
-
-		// Setup the endpoint configuration.
-		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(s3URLorRegion, null);
-
-		// Determine if this S3 provider require path-style enabled.
-		boolean pathStyleEnabled = pathStyleAccessEnabledProviders.contains(dataTransferAccount.getIntegratedSystem());
-
-		// Create and return the S3 transfer manager.
-		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-		s3TransferManager.transferManager = TransferManagerBuilder.standard()
-				.withS3Client(AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
-						.withPathStyleAccessEnabled(pathStyleEnabled).withEndpointConfiguration(endpointConfiguration)
-						.build())
-				.withMinimumUploadPartSize(minimumUploadPartSize).withMultipartUploadThreshold(multipartUploadThreshold)
-				.build();
-		s3TransferManager.s3Provider = dataTransferAccount.getIntegratedSystem();
-		return s3TransferManager;
 	}
 
 	/**
-	 * Authenticate an AWS S3 account.
+	 * Authenticate a (user) S3 account S3 (AWS or 3rd Party Provider)
 	 *
 	 * @param s3Account AWS S3 account.
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
 	public Object authenticate(HpcS3Account s3Account) throws HpcException {
-		try {
-			// Create the credential provider based on provided S3 account.
-			BasicAWSCredentials awsCredentials = new BasicAWSCredentials(s3Account.getAccessKey(),
-					s3Account.getSecretKey());
-			AWSStaticCredentialsProvider awsCredentialsProvider = new AWSStaticCredentialsProvider(awsCredentials);
+		if (!StringUtils.isEmpty(s3Account.getRegion())) {
+			return authenticateAWS(s3Account.getAccessKey(), s3Account.getSecretKey(), s3Account.getRegion());
+		} else {
+			// Default S3 provider require path-style enabled to true if not provided by the
+			// user.
+			boolean pathStyleAccessEnabled = Optional.ofNullable(s3Account.getPathStyleAccessEnabled()).orElse(true);
 
-			// Create and return the S3 transfer manager.
-			HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
-			s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(AmazonS3ClientBuilder
-					.standard().withRegion(s3Account.getRegion()).withCredentials(awsCredentialsProvider).build())
-					.build();
-			s3TransferManager.s3Provider = HpcIntegratedSystem.AWS;
-			return s3TransferManager;
-
-		} catch (SdkClientException e) {
-			throw new HpcException(
-					"Failed to authenticate S3 account in region [" + s3Account.getRegion() + "] - " + e.getMessage(),
-					HpcErrorType.INVALID_REQUEST_INPUT, e);
+			return authenticateS3Provider(s3Account.getAccessKey(), s3Account.getSecretKey(), s3Account.getUrl(),
+					pathStyleAccessEnabled, HpcIntegratedSystem.USER_S_3_PROVIDER);
 		}
 	}
 
@@ -186,5 +157,68 @@ public class HpcS3Connection {
 	private class HpcS3TransferManager {
 		private TransferManager transferManager = null;
 		private HpcIntegratedSystem s3Provider = null;
+	}
+
+	/**
+	 * Authenticate a 'S3 3rd Party Provider' account.
+	 *
+	 * @param username               The S3 account user name.
+	 * @param password               The S3 account password.
+	 * @param url                    The S3 3rd party provider URL.
+	 * @param pathStyleAccessEnabled true if the S3 3rd Party provider supports path
+	 *                               style access.
+	 * @param s3Provider             The 3rd party provider.
+	 * @return TransferManager
+	 * @throws HpcException if authentication failed
+	 */
+	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
+			HpcIntegratedSystem s3Provider) throws HpcException {
+		// Create the credential provider based on the configured credentials.
+		BasicAWSCredentials s3ArchiveCredentials = new BasicAWSCredentials(username, password);
+		AWSStaticCredentialsProvider s3ArchiveCredentialsProvider = new AWSStaticCredentialsProvider(
+				s3ArchiveCredentials);
+
+		// Setup the endpoint configuration.
+		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(url, null);
+
+		// Create and return the S3 transfer manager.
+		HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
+		s3TransferManager.transferManager = TransferManagerBuilder.standard()
+				.withS3Client(AmazonS3ClientBuilder.standard().withCredentials(s3ArchiveCredentialsProvider)
+						.withPathStyleAccessEnabled(pathStyleAccessEnabled)
+						.withEndpointConfiguration(endpointConfiguration).build())
+				.withMinimumUploadPartSize(minimumUploadPartSize).withMultipartUploadThreshold(multipartUploadThreshold)
+				.build();
+		s3TransferManager.s3Provider = s3Provider;
+		return s3TransferManager;
+	}
+
+	/**
+	 * Authenticate an AWS S3 account.
+	 *
+	 * @param accessKey The AWS account access key.
+	 * @param secretKey The AWS account secret key.
+	 * @param region    The AWS account region.
+	 * @return TransferManager
+	 * @throws HpcException if authentication failed
+	 */
+	private Object authenticateAWS(String accessKey, String secretKey, String region) throws HpcException {
+		try {
+			// Create the credential provider based on provided S3 account.
+			BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+			AWSStaticCredentialsProvider awsCredentialsProvider = new AWSStaticCredentialsProvider(awsCredentials);
+
+			// Create and return the S3 transfer manager.
+			HpcS3TransferManager s3TransferManager = new HpcS3TransferManager();
+			s3TransferManager.transferManager = TransferManagerBuilder.standard().withS3Client(
+					AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(awsCredentialsProvider).build())
+					.build();
+			s3TransferManager.s3Provider = HpcIntegratedSystem.AWS;
+			return s3TransferManager;
+
+		} catch (SdkClientException e) {
+			throw new HpcException("Failed to authenticate S3 account in region [" + region + "] - " + e.getMessage(),
+					HpcErrorType.INVALID_REQUEST_INPUT, e);
+		}
 	}
 }
